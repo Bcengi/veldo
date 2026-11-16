@@ -1,11 +1,14 @@
 {
- "budget_seconds": 29384.0,
+ "budget_seconds": 29408.0,
  "case_deadlines": {
   "check_teeth_mutations.py:space340-answered-group-takes-a-join": 120,
+  "check_teeth_mutations.py:space340-answered-read-scans-every-request": 120,
   "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree": 120,
   "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree": 120,
   "check_teeth_mutations.py:space340-group-target-without-its-members": 120,
   "check_teeth_mutations.py:space340-join-without-a-new-version": 120,
+  "check_teeth_mutations.py:space340-join-without-the-read-in-the-write": 120,
+  "check_teeth_mutations.py:space340-ledger-takes-a-target-short-of-the-listed-items": 120,
   "check_teeth_mutations.py:space340-one-day-for-every-deferral": 120,
   "check_teeth_mutations.py:space340-one-request-per-worktree": 120,
   "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member": 120,
@@ -82,6 +85,27 @@
    "reason": "unknown_closure",
    "source": "fresh",
    "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-join-without-the-read-in-the-write",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-ledger-takes-a-target-short-of-the-listed-items",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-answered-read-scans-every-request",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
   }
  ],
  "drivers": {
@@ -94,24 +118,24 @@
    "worker_seconds": 0
   },
   "check_teeth_mutations.py": {
-   "executed": 10,
-   "inventory_digest": "86e1a12729ec152070c8450b1674fd05c313e4db8778b2138954b8b2c3f130d2",
-   "registered": 10,
+   "executed": 13,
+   "inventory_digest": "9f749966808c4e1d63f82e1ccf7ec53202d9c234c652f7ce8b4341aef82ca925",
+   "registered": 13,
    "reused": 0,
-   "wall_seconds": 89.85708862030879,
-   "worker_seconds": 177.04691597959027
+   "wall_seconds": 156.33642190834507,
+   "worker_seconds": 302.65760565781966
   }
  },
- "elapsed": 94.55759660713375,
- "executed": 10,
+ "elapsed": 162.29552420414984,
+ "executed": 13,
  "force_fresh": false,
  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "input_digest": "38c6b3e48f16d309aa2b38f96ee405d0bb59280e8aecc46e86752a14354ccf0d",
+ "input_digest": "42bd51fc27b01297295c33a894c743d52b142515ee1efc2e59feeedaf4e34b6b",
  "invalid_results": [],
  "parallel_workers": 2,
  "peak_workers": 2,
- "registered": 10,
- "rejected": 10,
+ "registered": 13,
+ "rejected": 13,
  "resources": {
   "capacities": {
    "new_project_fixture": 2,
@@ -132,7 +156,7 @@
  "results": [
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -253,6 +277,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -285,7 +313,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -323,6 +359,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -331,7 +368,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -353,15 +392,16 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 8.542243767995387,
+   "elapsed": 10.234405658673495,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac1/next-day",
      "space340/ac1/one-request",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -369,6 +409,8 @@
      "space340/ac3/discard",
      "space340/ac3/keep",
      "space340/ac3/save",
+     "space340/cost/answered-by-id",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "observations": [
@@ -489,6 +531,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
       "space340/ac2/new-version",
       false
      ],
@@ -521,8 +567,16 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      false
+     ],
+     [
       "space340/terms/group",
       true
+     ],
+     [
+      "space340/terms/ledger-target",
+      false
      ],
      [
       "space340/worker/group",
@@ -559,6 +613,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -567,7 +622,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -578,7 +635,7 @@
    },
    "new_digest": "15dd204949638b69ae3e692adfade926e9eff890a9b89aeb7ac535db3b9d88f3",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -699,6 +756,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -731,7 +792,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -769,6 +838,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -777,7 +847,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -795,7 +867,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -916,6 +988,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -948,7 +1024,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -986,6 +1070,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -994,7 +1079,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -1016,21 +1103,23 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 11.244050252251327,
+   "elapsed": 14.12306906701997,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac1/next-day",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
      "space340/ac3/closed",
      "space340/ac3/discard",
      "space340/ac3/save",
-     "space340/worker/group"
+     "space340/cost/answered-by-id",
+     "space340/terms/ledger-target"
     ],
     "observations": [
      [
@@ -1150,6 +1239,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
       "space340/ac2/new-version",
       false
      ],
@@ -1182,12 +1275,20 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      false
+     ],
+     [
       "space340/terms/group",
       true
      ],
      [
-      "space340/worker/group",
+      "space340/terms/ledger-target",
       false
+     ],
+     [
+      "space340/worker/group",
+      true
      ]
     ],
     "row_names": [
@@ -1220,6 +1321,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -1228,7 +1330,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -1237,9 +1341,9 @@
      ]
     }
    },
-   "new_digest": "641edc15aa3e2f9a03810ddf4ac59dffc983a859bfacc7dfcc6bbe2cb61b1d73",
+   "new_digest": "e156360cc78ca9ee9dfcab6b016213fe95e9f86c20b411feb803a3b5b9ddd533",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1360,6 +1464,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -1392,7 +1500,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -1430,6 +1546,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -1438,7 +1555,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -1447,7 +1566,7 @@
      ]
     }
    },
-   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -1456,7 +1575,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1577,6 +1696,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -1609,7 +1732,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -1647,6 +1778,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -1655,7 +1787,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -1677,11 +1811,11 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.13314789161086,
+   "elapsed": 14.785892671905458,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac1/one-request",
@@ -1689,7 +1823,8 @@
      "space340/ac3/closed",
      "space340/ac3/discard",
      "space340/ac3/keep",
-     "space340/ac3/save"
+     "space340/ac3/save",
+     "space340/terms/ledger-target"
     ],
     "observations": [
      [
@@ -1809,6 +1944,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       false
      ],
@@ -1841,8 +1980,16 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
       true
+     ],
+     [
+      "space340/terms/ledger-target",
+      false
      ],
      [
       "space340/worker/group",
@@ -1879,6 +2026,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -1887,7 +2035,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -1896,9 +2046,9 @@
      ]
     }
    },
-   "new_digest": "1df765e6f0ae070c1957138cc8b953c1fc0fafd28ec2a503d13708a9160cf952",
+   "new_digest": "bb1cf650e492fb547b5f0739e4b0ee49ca8c745276101197237934489fecb7c8",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2019,6 +2169,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -2051,7 +2205,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -2089,6 +2251,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -2097,7 +2260,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -2106,7 +2271,7 @@
      ]
     }
    },
-   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -2115,7 +2280,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2236,6 +2401,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -2268,7 +2437,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -2306,6 +2483,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -2314,7 +2492,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -2336,11 +2516,11 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 8.113332905806601,
+   "elapsed": 15.469252719078213,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac2/unseen-member",
@@ -2464,6 +2644,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -2496,7 +2680,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -2534,6 +2726,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -2542,7 +2735,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -2551,9 +2746,9 @@
      ]
     }
    },
-   "new_digest": "ed0e92ca9dade8f41d8209927ca2544ce488dd304b37de40fb6626fd3cd6aed8",
+   "new_digest": "05dd12b49792eee6d746da5d24d1b916e92a1f7cb43920abbd646c8b97617cfc",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2674,6 +2869,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -2706,7 +2905,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -2744,6 +2951,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -2752,7 +2960,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -2761,7 +2971,7 @@
      ]
     }
    },
-   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -2770,7 +2980,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2891,6 +3101,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -2923,7 +3137,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -2961,6 +3183,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -2969,7 +3192,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -2991,11 +3216,11 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.35819590324536,
+   "elapsed": 15.37842483818531,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac3/closed",
@@ -3119,6 +3344,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -3151,7 +3380,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -3189,6 +3426,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -3197,7 +3435,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -3208,7 +3448,7 @@
    },
    "new_digest": "d49d7f98f75abdcbeca844bc01a5f3ba3bc45db8b3f09695fc1afca93b3ae1ec",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3329,6 +3569,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -3361,7 +3605,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -3399,6 +3651,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -3407,7 +3660,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -3425,7 +3680,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3546,6 +3801,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -3578,7 +3837,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -3616,6 +3883,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -3624,7 +3892,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -3647,18 +3917,20 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.33593186084181,
+   "elapsed": 14.693396147806197,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
+     "space340/ac2/join-races-answer",
      "space340/ac2/unseen-member",
      "space340/ac3/closed",
      "space340/ac3/discard",
      "space340/ac3/keep",
      "space340/ac3/save",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "observations": [
@@ -3779,6 +4051,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -3811,8 +4087,16 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
       true
+     ],
+     [
+      "space340/terms/ledger-target",
+      false
      ],
      [
       "space340/worker/group",
@@ -3849,6 +4133,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -3857,7 +4142,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -3869,9 +4156,9 @@
      ]
     }
    },
-   "new_digest": "975cb30edf7a1b988badea40e3a9fe61f98451d98102cadc907d8851d7d0df53",
+   "new_digest": "5b6a6d035190eb9969e0da40da10ac9c5fa8340b6caf16f7569d23261db00b17",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3992,6 +4279,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -4024,7 +4315,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -4062,6 +4361,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -4070,7 +4370,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -4079,7 +4381,7 @@
      ]
     }
    },
-   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -4088,7 +4390,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4209,6 +4511,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -4241,7 +4547,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -4279,6 +4593,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -4287,7 +4602,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -4309,14 +4626,16 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.935261578764766,
+   "elapsed": 14.977543529123068,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
-     "space340/ac3/answered-takes-no-join"
+     "space340/ac2/join-races-answer",
+     "space340/ac3/answered-takes-no-join",
+     "space340/cost/answered-by-id"
     ],
     "observations": [
      [
@@ -4436,6 +4755,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -4468,7 +4791,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      false
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -4506,6 +4837,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -4514,7 +4846,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -4523,9 +4857,9 @@
      ]
     }
    },
-   "new_digest": "c5b2bd08b73688749d04597a93c8cef7d7b0f3b1266c46b8bba2254b7bcb788f",
+   "new_digest": "430a3b692f5dc7771352df68157b3ffa5b79f28d6c83830e62af9fa363ec618e",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4646,6 +4980,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -4678,7 +5016,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -4716,6 +5062,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -4724,7 +5071,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -4733,7 +5082,7 @@
      ]
     }
    },
-   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -4742,7 +5091,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4863,6 +5212,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -4895,7 +5248,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -4933,6 +5294,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -4941,7 +5303,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -4964,17 +5328,19 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 10.239526273217052,
+   "elapsed": 16.657709510065615,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
+     "space340/ac2/join-races-answer",
      "space340/ac2/unseen-member",
      "space340/ac3/closed",
      "space340/ac3/discard",
      "space340/ac3/save",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "observations": [
@@ -5095,6 +5461,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -5127,8 +5497,16 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
       true
+     ],
+     [
+      "space340/terms/ledger-target",
+      false
      ],
      [
       "space340/worker/group",
@@ -5165,6 +5543,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -5173,7 +5552,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -5187,7 +5568,7 @@
    },
    "new_digest": "169de3aab2001ebecb69958cd9d5b9680de210ca3b2124e556a61ade4287e595",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5308,6 +5689,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -5340,7 +5725,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -5378,6 +5771,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -5386,7 +5780,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -5404,7 +5800,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5525,6 +5921,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -5557,7 +5957,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -5595,6 +6003,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -5603,7 +6012,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -5625,11 +6036,11 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.537221530918032,
+   "elapsed": 21.10586542217061,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/ac4/builder"
@@ -5752,6 +6163,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -5784,7 +6199,15 @@
       false
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -5822,6 +6245,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -5830,7 +6254,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -5841,7 +6267,7 @@
    },
    "new_digest": "9861f7a293fad885fd2f16d7b4863c97cdb1701791c9d0e43cc91ff5579deb12",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5962,6 +6388,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -5994,7 +6424,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -6032,6 +6470,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -6040,7 +6479,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -6058,7 +6499,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -6179,6 +6620,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -6211,7 +6656,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -6249,6 +6702,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -6257,7 +6711,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -6279,11 +6735,11 @@
     ],
     "suite": "150_veldo_0340_review_groups.py"
    },
-   "elapsed": 9.636364511214197,
+   "elapsed": 20.455759909003973,
    "fixture_version": 1,
-   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space340/terms/group"
@@ -6406,6 +6862,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -6438,8 +6898,16 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
       false
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
      ],
      [
       "space340/worker/group",
@@ -6476,6 +6944,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -6484,7 +6953,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -6495,7 +6966,7 @@
    },
    "new_digest": "28311d89f5e33287d48c5b90af77be531acb79a05d415503c240636c0cc0101f",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -6616,6 +7087,10 @@
       true
      ],
      [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
       "space340/ac2/new-version",
       true
      ],
@@ -6648,7 +7123,15 @@
       true
      ],
      [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
       "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
       true
      ],
      [
@@ -6686,6 +7169,7 @@
      "space340/ac1/next-day",
      "space340/ac1/one-request",
      "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
      "space340/ac2/new-version",
      "space340/ac2/unseen-member",
      "space340/ac3/answered-takes-no-join",
@@ -6694,7 +7178,9 @@
      "space340/ac3/keep",
      "space340/ac3/save",
      "space340/ac4/builder",
+     "space340/cost/answered-by-id",
      "space340/terms/group",
+     "space340/terms/ledger-target",
      "space340/worker/group"
     ],
     "targets": {
@@ -6704,6 +7190,2103 @@
     }
    },
    "old_digest": "1cf6e2248f67eb7ebef33639ae5aab86fd599b6679fbef7765f45f06214e3039",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-join-without-the-read-in-the-write",
+    "module": "control_space.py",
+    "name": "space340-join-without-the-read-in-the-write",
+    "new": "        if False:\n            raise Refused('space_group_closed', 'not the",
+    "old": "        if gid != self._group_to_join(scope, day)[0]:\n            raise Refused('space_group_closed', 'not the",
+    "rows": [
+     "space340/ac2/join-races-answer"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 14.794855160173029,
+   "fixture_version": 1,
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac2/join-races-answer"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      false
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac2/join-races-answer": [
+      false
+     ]
+    }
+   },
+   "new_digest": "181d5e3c2ca898674b73a00aff103f0ae9d7f572824a3d8ea1bb39fc5ece277f",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-ledger-takes-a-target-short-of-the-listed-items",
+    "module": "control_space.py",
+    "name": "space340-ledger-takes-a-target-short-of-the-listed-items",
+    "new": "                and True)",
+    "old": "                and target.get('members') == [tree.get('item') for tree in listed])",
+    "rows": [
+     "space340/terms/ledger-target"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 15.23023066110909,
+   "fixture_version": 1,
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/terms/ledger-target"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      false
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/terms/ledger-target": [
+      false
+     ]
+    }
+   },
+   "new_digest": "f1a66a5151d64a58477e203ec7fc5f8369fead4762bfe74a953402e8865b5dd3",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-answered-read-scans-every-request",
+    "module": "control_space.py",
+    "name": "space340-answered-read-scans-every-request",
+    "new": "        request = next((one for one in (json.loads(raw) for (raw,) in self.conn.execute(\n            \"SELECT data FROM entities WHERE kind='assignment'\")) if one.get('alias') == alias), None)",
+    "old": "        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None",
+    "rows": [
+     "space340/cost/answered-by-id"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 14.933465984184295,
+   "fixture_version": 1,
+   "input_digest": "7d0b58585616a5c43e76ebd96a8c7d22af854a83947c8d33ce4fa9c881d62f83",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/cost/answered-by-id"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      false
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/cost/answered-by-id": [
+      false
+     ]
+    }
+   },
+   "new_digest": "c84ff33402102f7b7d0f0f2e9beb7ee97f3cc53d73308385789d144ad099e2f7",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/join-races-answer",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/cost/answered-by-id",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/terms/ledger-target",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/join-races-answer",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/cost/answered-by-id",
+     "space340/terms/group",
+     "space340/terms/ledger-target",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -6720,323 +9303,377 @@
  "surviving_workers": 0,
  "unmeasured_cases": [
   "check_teeth_mutations.py:space340-answered-group-takes-a-join",
+  "check_teeth_mutations.py:space340-answered-read-scans-every-request",
   "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
   "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
   "check_teeth_mutations.py:space340-group-target-without-its-members",
   "check_teeth_mutations.py:space340-join-without-a-new-version",
+  "check_teeth_mutations.py:space340-join-without-the-read-in-the-write",
+  "check_teeth_mutations.py:space340-ledger-takes-a-target-short-of-the-listed-items",
   "check_teeth_mutations.py:space340-one-day-for-every-deferral",
   "check_teeth_mutations.py:space340-one-request-per-worktree",
   "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
   "check_teeth_mutations.py:space340-pick-reaches-one-member",
   "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition"
  ],
- "worker_invocations": 18,
+ "worker_invocations": 21,
  "worker_outcomes": [
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.620915842242539,
+   "elapsed": 12.674191793892533,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0340_review_groups.py:control_space_signal.py:False:noop",
-   "output_directory": "/tmp/v340/teeth3/logs/1",
-   "pid": 2296729,
+   "output_directory": "/tmp/v340fix/teeth/logs/1",
+   "pid": 3163652,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3034
+   "stdout_bytes": 3254
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.793518878985196,
+   "elapsed": 12.786753560882062,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0340_review_groups.py:control_space_signal.py:False:baseline",
-   "output_directory": "/tmp/v340/teeth3/logs/0",
-   "pid": 2296723,
+   "output_directory": "/tmp/v340fix/teeth/logs/0",
+   "pid": 3163651,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3034
+   "stdout_bytes": 3254
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.734712514095008,
+   "elapsed": 12.266726707108319,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0340_review_groups.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v340/teeth3/logs/2",
-   "pid": 2304572,
+   "output_directory": "/tmp/v340fix/teeth/logs/2",
+   "pid": 3174485,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3031
+   "stdout_bytes": 3251
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.752199079375714,
+   "elapsed": 12.323916631285101,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0340_review_groups.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v340/teeth3/logs/3",
-   "pid": 2304625,
+   "output_directory": "/tmp/v340fix/teeth/logs/3",
+   "pid": 3174509,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3031
+   "stdout_bytes": 3251
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.625533850863576,
+   "elapsed": 12.378053978085518,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0340_review_groups.py:control_space_remove.py:False:baseline",
-   "output_directory": "/tmp/v340/teeth3/logs/4",
-   "pid": 2312731,
+   "output_directory": "/tmp/v340fix/teeth/logs/4",
+   "pid": 3184748,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3030
+   "stdout_bytes": 3250
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.766324623953551,
+   "elapsed": 12.280434456188232,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0340_review_groups.py:control_space_remove.py:False:noop",
-   "output_directory": "/tmp/v340/teeth3/logs/5",
-   "pid": 2312769,
+   "output_directory": "/tmp/v340fix/teeth/logs/5",
+   "pid": 3184807,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3030
+   "stdout_bytes": 3250
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.807713308837265,
+   "elapsed": 12.501845602411777,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0340_review_groups.py:control_request_settlement.py:False:baseline",
-   "output_directory": "/tmp/v340/teeth3/logs/6",
-   "pid": 2319501,
+   "output_directory": "/tmp/v340fix/teeth/logs/6",
+   "pid": 3195602,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3030
+   "stdout_bytes": 3250
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 139,
+    "directories": 168,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.786531351041049,
+   "elapsed": 12.478555785026401,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0340_review_groups.py:control_request_settlement.py:False:noop",
-   "output_directory": "/tmp/v340/teeth3/logs/7",
-   "pid": 2319683,
+   "output_directory": "/tmp/v340fix/teeth/logs/7",
+   "pid": 3195633,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3030
+   "stdout_bytes": 3250
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 134,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 8.551482975948602,
+   "elapsed": 10.242283239029348,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-one-request-per-worktree",
-   "output_directory": "/tmp/v340/teeth3/logs/8",
-   "pid": 2326703,
+   "output_directory": "/tmp/v340fix/teeth/logs/8",
+   "pid": 3206122,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3307
+   "stdout_bytes": 3628
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 125,
+    "directories": 148,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.252769618295133,
+   "elapsed": 14.133235177025199,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-one-day-for-every-deferral",
-   "output_directory": "/tmp/v340/teeth3/logs/9",
-   "pid": 2326705,
+   "output_directory": "/tmp/v340fix/teeth/logs/9",
+   "pid": 3206123,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3253
+   "stdout_bytes": 3548
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 130,
+    "directories": 162,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.142051327973604,
+   "elapsed": 14.79693112289533,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-join-without-a-new-version",
-   "output_directory": "/tmp/v340/teeth3/logs/10",
-   "pid": 2332994,
+   "output_directory": "/tmp/v340fix/teeth/logs/10",
+   "pid": 3214873,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3184
+   "stdout_bytes": 3437
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 135,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 8.119655206799507,
+   "elapsed": 15.47784062800929,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
-   "output_directory": "/tmp/v340/teeth3/logs/11",
-   "pid": 2334723,
+   "output_directory": "/tmp/v340fix/teeth/logs/11",
+   "pid": 3218241,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3092
+   "stdout_bytes": 3312
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 134,
+    "directories": 163,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.365215410012752,
+   "elapsed": 15.386287606786937,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
-   "output_directory": "/tmp/v340/teeth3/logs/12",
-   "pid": 2339963,
+   "output_directory": "/tmp/v340fix/teeth/logs/12",
+   "pid": 3225968,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3078
+   "stdout_bytes": 3298
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 129,
+    "directories": 160,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.342697973828763,
+   "elapsed": 14.703519449103624,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-pick-reaches-one-member",
-   "output_directory": "/tmp/v340/teeth3/logs/13",
-   "pid": 2340884,
+   "output_directory": "/tmp/v340fix/teeth/logs/13",
+   "pid": 3228411,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3206
+   "stdout_bytes": 3494
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 138,
+    "directories": 166,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.944377820007503,
+   "elapsed": 14.988675795029849,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-answered-group-takes-a-join",
-   "output_directory": "/tmp/v340/teeth3/logs/14",
-   "pid": 2346882,
+   "output_directory": "/tmp/v340fix/teeth/logs/14",
+   "pid": 3236751,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3084
+   "stdout_bytes": 3372
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 144,
+    "directories": 179,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.248898975085467,
+   "elapsed": 16.666537656914443,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition",
-   "output_directory": "/tmp/v340/teeth3/logs/15",
-   "pid": 2347706,
+   "output_directory": "/tmp/v340fix/teeth/logs/15",
+   "pid": 3239567,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3187
+   "stdout_bytes": 3475
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 134,
+    "directories": 163,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.546501653268933,
+   "elapsed": 21.116635552141815,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
-   "output_directory": "/tmp/v340/teeth3/logs/16",
-   "pid": 2354347,
+   "output_directory": "/tmp/v340fix/teeth/logs/16",
+   "pid": 3248132,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3054
+   "stdout_bytes": 3274
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 141,
+    "directories": 170,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.645815568976104,
+   "elapsed": 20.46696302993223,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space340-group-target-without-its-members",
-   "output_directory": "/tmp/v340/teeth3/logs/17",
-   "pid": 2355504,
+   "output_directory": "/tmp/v340fix/teeth/logs/17",
+   "pid": 3252946,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3054
+   "stdout_bytes": 3274
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 167,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 14.802680748980492,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-join-without-the-read-in-the-write",
+   "output_directory": "/tmp/v340fix/teeth/logs/18",
+   "pid": 3269633,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3294
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 168,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 15.241373261902481,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-ledger-takes-a-target-short-of-the-listed-items",
+   "output_directory": "/tmp/v340fix/teeth/logs/19",
+   "pid": 3272878,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3290
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 168,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 14.944163875188679,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-answered-read-scans-every-request",
+   "output_directory": "/tmp/v340fix/teeth/logs/20",
+   "pid": 3280714,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3290
   }
  ]
 }

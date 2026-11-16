@@ -7,6 +7,7 @@
   "mutant_failed": [
    "space340/ac1/next-day",
    "space340/ac1/one-request",
+   "space340/ac2/join-races-answer",
    "space340/ac2/new-version",
    "space340/ac2/unseen-member",
    "space340/ac3/answered-takes-no-join",
@@ -14,6 +15,8 @@
    "space340/ac3/discard",
    "space340/ac3/keep",
    "space340/ac3/save",
+   "space340/cost/answered-by-id",
+   "space340/terms/ledger-target",
    "space340/worker/group"
   ],
   "name": "space340-one-request-per-worktree",
@@ -37,20 +40,22 @@
   "module": "control_space.py",
   "mutant_failed": [
    "space340/ac1/next-day",
+   "space340/ac2/join-races-answer",
    "space340/ac2/new-version",
    "space340/ac2/unseen-member",
    "space340/ac3/answered-takes-no-join",
    "space340/ac3/closed",
    "space340/ac3/discard",
    "space340/ac3/save",
-   "space340/worker/group"
+   "space340/cost/answered-by-id",
+   "space340/terms/ledger-target"
   ],
   "name": "space340-one-day-for-every-deferral",
   "new": "        return '2026-11-16'",
-  "new_digest": "641edc15aa3e2f9a03810ddf4ac59dffc983a859bfacc7dfcc6bbe2cb61b1d73",
+  "new_digest": "e156360cc78ca9ee9dfcab6b016213fe95e9f86c20b411feb803a3b5b9ddd533",
   "noop_failed": [],
   "old": "        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()",
-  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -70,14 +75,15 @@
    "space340/ac3/closed",
    "space340/ac3/discard",
    "space340/ac3/keep",
-   "space340/ac3/save"
+   "space340/ac3/save",
+   "space340/terms/ledger-target"
   ],
   "name": "space340-join-without-a-new-version",
   "new": "        elif False:",
-  "new_digest": "1df765e6f0ae070c1957138cc8b953c1fc0fafd28ec2a503d13708a9160cf952",
+  "new_digest": "bb1cf650e492fb547b5f0739e4b0ee49ca8c745276101197237934489fecb7c8",
   "noop_failed": [],
   "old": "        elif (assignment.get('subject') or {}).get('ref') != tid:",
-  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -97,10 +103,10 @@
   ],
   "name": "space340-pick-reaches-an-unseen-member",
   "new": "            elif False:",
-  "new_digest": "ed0e92ca9dade8f41d8209927ca2544ce488dd304b37de40fb6626fd3cd6aed8",
+  "new_digest": "05dd12b49792eee6d746da5d24d1b916e92a1f7cb43920abbd646c8b97617cfc",
   "noop_failed": [],
   "old": "            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:",
-  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -138,19 +144,21 @@
   "final_run_executions": 1,
   "module": "control_space.py",
   "mutant_failed": [
+   "space340/ac2/join-races-answer",
    "space340/ac2/unseen-member",
    "space340/ac3/closed",
    "space340/ac3/discard",
    "space340/ac3/keep",
    "space340/ac3/save",
+   "space340/terms/ledger-target",
    "space340/worker/group"
   ],
   "name": "space340-pick-reaches-one-member",
   "new": "        if False:\n            return self._group_change(",
-  "new_digest": "975cb30edf7a1b988badea40e3a9fe61f98451d98102cadc907d8851d7d0df53",
+  "new_digest": "5b6a6d035190eb9969e0da40da10ac9c5fa8340b6caf16f7569d23261db00b17",
   "noop_failed": [],
   "old": "        if record['disposition'].get('group'):\n            return self._group_change(",
-  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -166,14 +174,16 @@
   "final_run_executions": 1,
   "module": "control_space.py",
   "mutant_failed": [
-   "space340/ac3/answered-takes-no-join"
+   "space340/ac2/join-races-answer",
+   "space340/ac3/answered-takes-no-join",
+   "space340/cost/answered-by-id"
   ],
   "name": "space340-answered-group-takes-a-join",
   "new": "        return group['state'] == 'open'",
-  "new_digest": "c5b2bd08b73688749d04597a93c8cef7d7b0f3b1266c46b8bba2254b7bcb788f",
+  "new_digest": "430a3b692f5dc7771352df68157b3ffa5b79f28d6c83830e62af9fa363ec618e",
   "noop_failed": [],
   "old": "        return group['state'] == 'open' and not self._group_answered(group)",
-  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -188,10 +198,12 @@
   "final_run_executions": 1,
   "module": "control_space_remove.py",
   "mutant_failed": [
+   "space340/ac2/join-races-answer",
    "space340/ac2/unseen-member",
    "space340/ac3/closed",
    "space340/ac3/discard",
    "space340/ac3/save",
+   "space340/terms/ledger-target",
    "space340/worker/group"
   ],
   "name": "space340-scratch-removal-inside-a-disposition",
@@ -221,7 +233,6 @@
   "new": "    return (record.get('kind') == 'worktree' and bool(run)",
   "new_digest": "9861f7a293fad885fd2f16d7b4863c97cdb1701791c9d0e43cc91ff5579deb12",
   "noop_failed": [],
-  "note": "The specification says of the AC4 falsifier that the builder file is deleted. Under this mutant, which is in Signal, it is not: the remover and the keep step judge the station themselves and refuse, so the worktree is deferred as remove_refused with no request of its own, and the row fails on that.",
   "old": "    return (record.get('kind') == 'worktree' and run.get('station') == 'review'",
   "old_digest": "d49229a6ec1f9a63f240fd53b58eceda12d06d4ece236646e181a557dae91c16",
   "replacement_count": 1,
@@ -252,6 +263,72 @@
   "suite": "150_veldo_0340_review_groups.py",
   "target_rows": [
    "space340/terms/group"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2 (review finding 1)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac2/join-races-answer"
+  ],
+  "name": "space340-join-without-the-read-in-the-write",
+  "new": "        if False:\n            raise Refused('space_group_closed', 'not the",
+  "new_digest": "181d5e3c2ca898674b73a00aff103f0ae9d7f572824a3d8ea1bb39fc5ece277f",
+  "noop_failed": [],
+  "old": "        if gid != self._group_to_join(scope, day)[0]:\n            raise Refused('space_group_closed', 'not the",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac2/join-races-answer"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "widened terms (review finding 2)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/terms/ledger-target"
+  ],
+  "name": "space340-ledger-takes-a-target-short-of-the-listed-items",
+  "new": "                and True)",
+  "new_digest": "f1a66a5151d64a58477e203ec7fc5f8369fead4762bfe74a953402e8865b5dd3",
+  "noop_failed": [],
+  "old": "                and target.get('members') == [tree.get('item') for tree in listed])",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/terms/ledger-target"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "review finding 3 (cost of the answered read)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/cost/answered-by-id"
+  ],
+  "name": "space340-answered-read-scans-every-request",
+  "new": "        request = next((one for one in (json.loads(raw) for (raw,) in self.conn.execute(\n            \"SELECT data FROM entities WHERE kind='assignment'\")) if one.get('alias') == alias), None)",
+  "new_digest": "c84ff33402102f7b7d0f0f2e9beb7ee97f3cc53d73308385789d144ad099e2f7",
+  "noop_failed": [],
+  "old": "        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None",
+  "old_digest": "b47614234665e2d4d07b2abe1c1c761ca043b44cbbd6df02843da045a57faacc",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/cost/answered-by-id"
   ]
  }
 ]

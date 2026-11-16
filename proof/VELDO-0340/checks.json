@@ -9,63 +9,13 @@
    "--suite",
    "150_veldo_0340_review_groups"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "failed_rows": [],
   "name": "targeted 150_veldo_0340_review_groups",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 13
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "150_veldo_0318_unique_work"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 150_veldo_0318_unique_work",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 45
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "150_veldo_0327_disposition"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 150_veldo_0327_disposition",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 27
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "140_veldo_0345_space_keep"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 140_veldo_0345_space_keep",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 31
+  "ticket_rows_passed": 16,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
  },
  {
   "command": [
@@ -77,16 +27,68 @@
    "--suite",
    "153_veldo_0336_run_worktree"
   ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [
-   "VELDO-0336 loss/owner-keep",
-   "VELDO-0336 loss/kept-child"
-  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
   "name": "targeted 153_veldo_0336_run_worktree",
-  "note": "loss/owner-keep and loss/kept-child are red on the base d0e2461a too: run there from an export of that commit, same two rows, 19 green. This one suite above 150 was run once because the brief names the 0336 rows; no other suite of 151 and up was run.",
+  "note": "21 of 21: loss/owner-keep and loss/kept-child, red since VELDO-0318 a9628b86, now drive the Keep through the settled answer and the owner signed packet (lead decision c). The one suite of 151 and up that was run.",
   "processes": "space supervisors: []",
-  "status": "failed_inherited",
-  "ticket_rows_passed": 19
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 21,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0318_unique_work"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0318_unique_work",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0327_disposition"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0327_disposition",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 27,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "140_veldo_0345_space_keep"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 140_veldo_0345_space_keep",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
  },
  {
   "command": [
@@ -98,83 +100,13 @@
    "--suite",
    "138_veldo_0300_space_remove"
   ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "failed_rows": [],
   "name": "targeted 138_veldo_0300_space_remove",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 39
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "139_veldo_0301_space_signal"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [
-   "VELDO-0301 ac4/no-clock"
-  ],
-  "name": "targeted 139_veldo_0301_space_signal",
-  "note": "ac4/no-clock is red on the base d0e2461a too (Signal holds a function-local import of json since before this ticket); left by the lead's decision. This ticket adds no import and no clock name to Signal.",
-  "processes": "space supervisors: []",
-  "status": "failed_inherited",
-  "ticket_rows_passed": 17
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "132_veldo_0297_space_ledger"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 132_veldo_0297_space_ledger",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 31
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "69_veldo_0068_settlement"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 69_veldo_0068_settlement",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 8
- },
- {
-  "command": [
-   "nice",
-   "-n",
-   "10",
-   "python3",
-   "scripts/selftest.py",
-   "--suite",
-   "60_veldo_0064_inbox"
-  ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
-  "failed_rows": [],
-  "name": "targeted 60_veldo_0064_inbox",
-  "processes": "space supervisors: []",
-  "status": "diagnostic_only",
-  "ticket_rows_passed": 18
+  "ticket_rows_passed": 39,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
  },
  {
   "command": [
@@ -186,12 +118,13 @@
    "--suite",
    "149_veldo_0312_ticket_ended"
   ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "failed_rows": [],
   "name": "targeted 149_veldo_0312_ticket_ended",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 41
+  "ticket_rows_passed": 41,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
  },
  {
   "command": [
@@ -203,12 +136,88 @@
    "--suite",
    "150_veldo_0317_full_pool"
   ],
-  "commit": "efacf19135b8fe638f79c169835948feca140303",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "failed_rows": [],
   "name": "targeted 150_veldo_0317_full_pool",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 23
+  "ticket_rows_passed": 23,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "132_veldo_0297_space_ledger"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 132_veldo_0297_space_ledger",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "139_veldo_0301_space_signal"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [
+   "VELDO-0301 ac4/no-clock"
+  ],
+  "name": "targeted 139_veldo_0301_space_signal",
+  "note": "ac4/no-clock is red on the base d0e2461a too, and at 4a705a98 (the review confirmed it inherited); left by the lead decision.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 17,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "69_veldo_0068_settlement"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 69_veldo_0068_settlement",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 8,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "60_veldo_0064_inbox"
+  ],
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
+  "failed_rows": [],
+  "name": "targeted 60_veldo_0064_inbox",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 18,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
  },
  {
   "command": [
@@ -219,9 +228,10 @@
    ".veldo/validate.py",
    "all"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "validate",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -232,9 +242,10 @@
    "bash",
    "scripts/check_docs.sh"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "docs",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -245,9 +256,10 @@
    "bash",
    "scripts/check_template_sync.sh"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "template-sync",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -258,9 +270,10 @@
    "bash",
    "scripts/check_lint.sh"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "lint",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -271,9 +284,10 @@
    "python3",
    "scripts/check_space_boundary.py"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "space-boundary",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -284,9 +298,10 @@
    "python3",
    "scripts/check_git_boundary.py"
   ],
-  "commit": "ed136897da464810267795ca883638d9a10fce56",
+  "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
   "exit_code": 0,
   "name": "git-boundary",
+  "processes": "space supervisors: []",
   "status": "passed"
  }
 ]

@@ -1,6 +1,6 @@
 {
  "all_green": true,
- "count": 13,
+ "count": 16,
  "criteria": {
   "AC1": [
    "ac1/next-day",
@@ -8,6 +8,7 @@
   ],
   "AC2": [
    "ac2/clock",
+   "ac2/join-races-answer",
    "ac2/new-version",
    "ac2/unseen-member"
   ],
@@ -21,8 +22,12 @@
   "AC4": [
    "ac4/builder"
   ],
+  "fix round 1, review finding 3": [
+   "cost/answered-by-id"
+  ],
   "widened terms and the unchanged service task": [
    "terms/group",
+   "terms/ledger-target",
    "worker/group"
   ]
  },
@@ -32,11 +37,21 @@
   "AC3": "space340/ac3/discard",
   "AC4": "space340/ac4/builder"
  },
+ "fix_round_1": {
+  "lead decision (c)": [
+   "VELDO-0336 loss/owner-keep",
+   "VELDO-0336 loss/kept-child"
+  ],
+  "review finding 1": "space340/ac2/join-races-answer",
+  "review finding 2": "space340/terms/ledger-target",
+  "review finding 3": "space340/cost/answered-by-id"
+ },
  "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
  "rows": [
   "space340/ac1/next-day",
   "space340/ac1/one-request",
   "space340/ac2/clock",
+  "space340/ac2/join-races-answer",
   "space340/ac2/new-version",
   "space340/ac2/unseen-member",
   "space340/ac3/answered-takes-no-join",
@@ -45,8 +60,10 @@
   "space340/ac3/keep",
   "space340/ac3/save",
   "space340/ac4/builder",
+  "space340/cost/answered-by-id",
   "space340/terms/group",
+  "space340/terms/ledger-target",
   "space340/worker/group"
  ],
- "source": "scripts/suites/150_veldo_0340_review_groups.py at ed136897da464810267795ca883638d9a10fce56"
+ "source": "scripts/suites/150_veldo_0340_review_groups.py at 41c8d791388f3004350a6a42de377a642e9f75cf"
 }

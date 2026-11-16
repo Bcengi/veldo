@@ -10,11 +10,11 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v340/teeth3/logs",
+  "/tmp/v340fix/teeth/logs",
   "--diff-dir",
-  "/tmp/v340/teeth3/diffs"
+  "/tmp/v340fix/teeth/diffs"
  ],
- "commit": "ed136897da464810267795ca883638d9a10fce56",
+ "commit": "41c8d791388f3004350a6a42de377a642e9f75cf",
  "earlier_runs": [
   {
    "commit": "efacf19135b8fe638f79c169835948feca140303",
@@ -25,15 +25,20 @@
    "commit": "efacf19135b8fe638f79c169835948feca140303",
    "summary": "mutations: failed registered=10 executed=10 reused=0 rejected=9 workers=18 elapsed=109.989s",
    "why": "space340-one-request-per-worktree was invalid, not surviving: with no group at all a later part of the suite raised and its rows were missing (baseline rows removed). The suite was changed so a part that raises fails its own rows (commit ed136897), and the final run is the one above."
+  },
+  {
+   "commit": "ed136897da464810267795ca883638d9a10fce56",
+   "summary": "mutations: passed registered=10 executed=10 reused=0 rejected=10 workers=18 elapsed=94.558s",
+   "why": "The build run, before fix round 1: ten cases. Superseded by the run above, which holds those ten and the three of the fix round."
   }
  ],
- "elapsed": 94.55759660713375,
+ "elapsed": 162.29552420414984,
  "exit_code": 0,
  "ran_last": true,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=10 executed=10 reused=0 rejected=10 workers=18 elapsed=94.558s",
+ "summary": "mutations: passed registered=13 executed=13 reused=0 rejected=13 workers=21 elapsed=162.296s",
  "supervisors_after": [],
  "supervisors_before": [],
- "tree": "b80755a41a97253cbe16ba579dbfe9de27f59dab"
+ "tree": "3a634b9941c17446d9280e791398d7044c03d18e"
 }
