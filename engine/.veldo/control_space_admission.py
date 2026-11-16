@@ -26,6 +26,10 @@ can be in different modes; the numbers are the same for both.
 Waiting holds keep their recorded answer. The freeing-event retry and Signal request belong to
 VELDO-0334. The service submits initial admission to its serial space worker; its pipe completion
 wakes the factory. No free-space reader, project file read or lock wait runs on the service loop.
+
+A HOLD NO RUN ANSWERS FOR IS RELEASED BY THE WORKER (reconcile): at service start, and when an offer
+leaves the backlog, a dispatch hold that is admitted or advised, that no dispatch record carries and
+that has no live offer is released. The snapshot is the caller's; there is no timer.
 """
 import contextlib
 import fcntl
@@ -210,6 +214,35 @@ def prepare(space, *, repository, project, unit, station, attempt):
                 'detail': str(error)[:300]}
 
 
+def reconcile(space, left=None):
+    """Release the dispatch holds no run will ever answer for: admitted or advised, carried by no
+    dispatch record, and with no live offer. `left` is the snapshot the caller took: None at service
+    start, when no offer is live yet, so every such hold; else the offers (repository, unit,
+    station, attempt) that left the backlog, and only their holds. Runs in the space worker, under
+    the admission lock. A hold a dispatch record carries is released by that dispatch's own end."""
+    if not enabled(space):
+        return {'ok': True, 'released': []}
+    ledger = space['ledger']
+    try:
+        with lock(ledger):
+            bases = None if left is None else {identity_of(*key) for key in left}
+            carried = set()
+            for (raw,) in ledger.conn.execute("SELECT data FROM entities WHERE kind='dispatch'"):
+                carried.add(((json.loads(raw).get('contract') or {}).get('space') or {}).get('hold'))
+            released = []
+            for identity, hold in sorted(ledger.holds().items()):
+                if (not identity.startswith('dispatch/') or hold['state'] not in COUNTED
+                        or identity in carried
+                        or bases is not None and '/'.join(identity.split('/')[:2]) not in bases):
+                    continue
+                accepted(ledger.release(identity))
+                released.append(identity)
+            return {'ok': True, 'released': released}
+    except Exception as error:  # named, and tried again at the next start or leaving
+        return {'ok': False, 'code': getattr(error, 'code', 'space_admission_unread'),
+                'detail': str(error)[:300]}
+
+
 class Requests:
     """Initial judgments on the existing consumer, coalesced by dispatch attempt.
 
@@ -220,12 +253,29 @@ class Requests:
     """
     def __init__(self, service, loop):
         self.service, self.loop, self.answers = service, loop, {}
+        # The offers asked since the last pass ended, and the count of leavings sent to the worker.
+        self.asked, self.leavings = set(), 0
+
+    def passed(self):
+        """The end of one factory pass of this line. An answered offer the pass did not ask again
+        has left the backlog: its answer is dropped here, and the worker releases its hold when no
+        dispatch record carries it (reconcile). Nothing is read or written on the service loop."""
+        left = sorted(set(self.answers) - self.asked)
+        self.asked = set()
+        for key in left:
+            del self.answers[key]
+        space, consumer = self.service.space, self.service.space_consumer
+        if left and consumer is not None and enabled(space):
+            self.leavings += 1
+            consumer.submit(('admission_left', id(self), self.leavings), lambda: reconcile(space, left))
+        return left
 
     def prepare(self, **given):
         space = self.service.space
         if not enabled(space):
             return {'ok': True, 'space': None}
         key = tuple(given[name] for name in ('repository', 'unit', 'station', 'attempt'))
+        self.asked.add(key)
         answer = self.answers.get(key)
         if answer is not None:
             # Only an answer that carries a hold is kept: waiting, admitted or advised. Any other

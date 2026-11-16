@@ -1661,6 +1661,15 @@ class Service:
         if self.space_consumer is not None:
             self.space_consumer.start(replay, reconcile)
 
+    def space_holds_start(self):
+        """VELDO-0316: at service start no offer is live, so the worker releases every dispatch hold
+        that is admitted or advised and that no dispatch record carries (ADMISSION.reconcile). One
+        task of the serial worker, queued before any first judgment; nothing waits on it here."""
+        space, consumer = self.space, self.space_consumer
+        if consumer is None or not L.ADMISSION.enabled(space):
+            return None
+        return consumer.submit(('admission_start',), lambda: L.ADMISSION.reconcile(space))
+
     def space_received_reconcile(self):
         ledger = self.space['ledger']
         with self.space_floors(ledger.conn) as floors:
@@ -3205,6 +3214,7 @@ class Line:
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
         # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
         if getattr(self, 'closing', False):
+            self.space_left()
             return
         # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
         # run on the loop's factory line (VELDO-0143).
@@ -3221,6 +3231,14 @@ class Line:
             self.next(unit, latest, report)
         if getattr(self, 'batches', None) is not None:
             report.setdefault('batches', []).extend(self.batches.pass_once())
+        self.space_left()
+
+    def space_left(self):
+        """VELDO-0316: this pass offered what it offers. An admission answer it did not ask for again
+        belongs to a unit that left the backlog; the space worker releases that unit's unused hold."""
+        requests = getattr(self, 'space_admission', None)
+        if requests is not None:
+            requests.passed()
 
     def wants_cycles(self):
         """Whether this line runs project cycles: an active project executes in its repository, or it is the
@@ -4489,6 +4507,7 @@ def serve(config_path):
             space_listener = service.space_listen()
             service.space_owned.append(space_listener)
             service.space_worker_start(reconcile=service.space_received_reconcile)
+            service.space_holds_start()
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
             next_pass = time.monotonic()

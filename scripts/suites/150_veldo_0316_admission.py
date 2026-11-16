@@ -533,6 +533,90 @@ def _v316_suite():
                       and consumer.active is None and not consumer.tasks)
                 consumer.stop()
                 consumer = None
+
+            # Fix 2: a hold no run answers for is released by the worker, at start and at leaving.
+            def judged(f, requests, consumer, unit):
+                asked = dict(given, unit=unit)
+                requests.prepare(**asked)
+                pump(consumer)
+                return requests.prepare(**asked)
+
+            def starting(f):
+                consumer = CON.Consumer(f.ledger)
+                service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
+                return consumer, SV.Service.space_holds_start(service)
+
+            f = fixture('withdrawn-restart')
+            f.free['host'] = 1000
+            consumer, requests = worker(f, [])
+            admitted = judged(f, requests, consumer, 'unit')
+            contract = f.offer('carried')
+            A.accepted(f.ledger.place_hold('other', {'host': 5}, {'host': 'default'}))
+            A.accepted(f.ledger.admit('other', 'admitted'))
+            f.free['host'] = 0
+            waits = judged(f, requests, consumer, 'short')
+            consumer.stop()
+            hold = admitted['space']['hold']
+            check('fix2/withdrawn-restart', 'admitted hold with no dispatch before the restart',
+                  admitted.get('answer') == 'admitted' and f.ledger.hold(hold)['state'] == 'admitted'
+                  and waits.get('code') == 'space_wait:host')
+            journal = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+            before = time.monotonic()
+            consumer, ticket = starting(f)
+            check('fix2/withdrawn-restart', 'start queues one worker task and writes nothing itself',
+                  ticket is not None and list(consumer.tasks) == [('admission_start',)]
+                  and time.monotonic() - before < 1
+                  and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
+            pump(consumer)
+            check('fix2/withdrawn-restart', 'hold released in the worker', ticket['answer'] ==
+                  {'ok': True, 'released': [hold]} and f.ledger.hold(hold)['state'] == 'released')
+            check('fix2/withdrawn-restart', 'carried, foreign and waiting holds untouched',
+                  f.ledger.hold(contract['space']['hold'])['state'] == 'admitted'
+                  and f.ledger.hold('other')['state'] == 'admitted'
+                  and f.ledger.hold(waits['space']['hold'])['state'] == 'waiting')
+            consumer.stop()
+            consumer, ticket = starting(f)
+            pump(consumer)
+            check('fix2/withdrawn-restart', 'a second start releases nothing more',
+                  ticket['answer'] == {'ok': True, 'released': []})
+            consumer.stop()
+            consumer = None
+
+            f = fixture('withdrawn-report', act=False)
+            consumer, requests = worker(f, [])
+            advised = judged(f, requests, consumer, 'unit')
+            consumer.stop()
+            consumer, ticket = starting(f)
+            pump(consumer)
+            check('fix2/withdrawn-restart', 'advised hold released too', advised.get('answer') == 'advised'
+                  and f.ledger.hold(advised['space']['hold'])['state'] == 'released')
+            consumer.stop()
+            consumer = None
+
+            f = fixture('left-backlog')
+            f.free['host'] = 1000
+            consumer, requests = worker(f, [])
+            stays = judged(f, requests, consumer, 'stays')
+            leaves = judged(f, requests, consumer, 'leaves')
+            check('fix2/left-backlog', 'a pass that asked both keeps both', requests.passed() == []
+                  and not consumer.tasks)
+            requests.prepare(**dict(given, unit='stays'))
+            line = object.__new__(SV.Line)
+            line.closing, line.space_admission, line.activate = True, requests, lambda: None
+            line.runner = types.SimpleNamespace(honor_stops=lambda: None, release_orphans=lambda: [], orphans=[])
+            journal = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+            SV.Line.run(line, {'released': [], 'ended': []}, [])
+            check('fix2/left-backlog', 'the line pass sends the leaving to the worker', len(consumer.tasks) == 1
+                  and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
+            pump(consumer)
+            check('fix2/left-backlog', 'left unit released, offered unit kept',
+                  f.ledger.hold(leaves['space']['hold'])['state'] == 'released'
+                  and f.ledger.hold(stays['space']['hold'])['state'] == 'admitted')
+            back = judged(f, requests, consumer, 'leaves')
+            check('fix2/left-backlog', 'a unit that returns is judged afresh', back.get('answer') == 'admitted'
+                  and back['space']['hold'] == leaves['space']['hold'] + '/1')
+            consumer.stop()
+            consumer = None
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:
