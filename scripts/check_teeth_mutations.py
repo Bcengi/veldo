@@ -15204,9 +15204,9 @@ def cases():
            "        holders = []\n        if any(one[\"how\"] in (\"descendant\", \"group\") for one in holders) or seen[\"group\"] != \"empty\":\n",
            ['fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit'])
     run313('space313-what-the-command-left-is-killed',
-           "                left = set(descriptors)\n",
+           "                left, again = set(descriptors), False\n",
            "                [os.kill(one[\"pid\"], 9) for one in waited if one[\"how\"] != \"supervisor\"]\n"
-           "                left = set(descriptors)\n",
+           "                left, again = set(descriptors), False\n",
            ['fix2/end-follows-their-exit'])
     run313('space313-end-waits-on-a-timer',
            "                    for descriptor, _event in poller.poll():\n",
@@ -16379,10 +16379,13 @@ def cases():
                "            while not ticket['done']:\n"
                "                pipes = self.space_pipes()\n"
                "                nested = [request.listener] if request is not None else []\n"
-               "                for fd in select.select(nested + sorted(pipes), [], [], ACCEPT_SECONDS)[0]:\n"
+               "                packets = [one for one in self.space_owned[-1:] if nested and one is not None]\n"
+               "                for fd in select.select(nested + packets + sorted(pipes), [], [], ACCEPT_SECONDS)[0]:\n"
                "                    if nested and fd == request.listener:\n"
                "                        with contextlib.suppress(OSError):\n"
                "                            self.serve_request(request.listener, request.authority)\n"
+               "                    elif fd in packets:\n"
+               "                        self.space_packet(fd)\n"
                "                    else:\n"
                "                        self.space_readable(fd)\n"
                "            return ticket['answer']\n")])
