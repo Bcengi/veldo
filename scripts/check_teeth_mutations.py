@@ -15561,9 +15561,12 @@ def cases():
                ("                                          'branch': subject['branch'], 'start': subject['start']})",
                 "                                          'branch': None, 'start': subject['start']})"),
                ("    if there or subject['branch'] is not None:\n", "    if there:\n")])
+    # VELDO-0347 AC1 added a clause to this condition (an ignored path that is work is not review
+    # scratch), which moved the anchor; the case names the condition as it is now. The same defect.
     run336('space336-scratch-is-unique-work', 'control_space_signal.py',
-           "if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record))",
-           "if True", ['ac3/scratch-saved-and-removed'])
+           "if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record)\n"
+           "                     and not facts.get('ignored'))]\n",
+           "if True]\n", ['ac3/scratch-saved-and-removed'])
     run336('space336-scratch-not-saved', 'control_space_keep.py',
            "            attempt, saved = _snapshot(ledger, identity, record, path, header, commands)\n",
            "            attempt = None\n"
@@ -15692,9 +15695,11 @@ def cases():
         ['safety/failed-clone-work'])
 
     # VELDO-0302 fix round: the form agent, and a source that is a linked worktree.
+    # VELDO-0347 gave the forms a name (FORMS, the form agent first), which moved the anchor; the
+    # case names the line as it is now. The same defect: the form agent is refused.
     add(302, 'space302-agent-form-refused', '153_veldo_0302_space_creators.py', 'control_space.py',
-        "                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):",
-        "                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):",
+        "        if form is not None and (kind != 'agent_repository' or form not in FORMS):\n",
+        "        if form is not None and (kind != 'agent_repository' or form not in FORMS[1:]):\n",
         ['ledger/forms'])
     add(302, 'space302-worktree-source-not-resolved', '153_veldo_0302_space_creators.py', 'control_clone.py',
         "        return Path(main)\n    return Path(common)\n",
@@ -15725,9 +15730,11 @@ def cases():
         "    if not label:\n        raise RuntimeError('ledger required')",
         ['ac4/standalone'])
     result[-1]['dir'] = 'scripts'
+    # VELDO-0347 put the worker clone's branch after these two lines, which moved the anchor; the
+    # case names the lines as they are now. The same defect: the keep step is not asked.
     add(324, 'space324-failed-keep-still-deletes', '154_veldo_0324_batch_sandbox.py', 'control_space_remove.py',
-        "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
-        "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
+        "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+        "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    if saved:\n",
         ['safety/keep-failure'])
     add(324, 'space324-nested-repository-deleted', '154_veldo_0324_batch_sandbox.py', 'control_space_remove.py',
         "        if own is not None and ('.git' in names or GIT_FOLDER <= names):",
@@ -15774,9 +15781,11 @@ def cases():
     add(324, 'space324-observation-as-scratch', '154_veldo_0324_batch_sandbox.py', 'control_batch.py',
         "with creation.item('evidence', directory):",
         "with creation.item('scratch', directory):", ['ac1/observation-end'])
+    # VELDO-0347 has the form pick the events (ending), which moved the anchor; the case names the
+    # line as it is now. The same defect: an evidence item is given verdict recorded alone.
     add(324, 'space324-ledger-drops-ticket-end', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
-        "'events': list(self.lifecycle['ends_on'][kind])},",
-        "'events': [e for e in self.lifecycle['ends_on'][kind] if kind != 'evidence' or e == 'verdict_recorded']},",
+        "'events': list(ending)},",
+        "'events': [e for e in ending if kind != 'evidence' or e == 'verdict_recorded']},",
         ['ac1/observation-end'])
     add(324, 'space324-declare-end-option', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
         "                pool=None, principal=None, command_id=None, form=None):\n"

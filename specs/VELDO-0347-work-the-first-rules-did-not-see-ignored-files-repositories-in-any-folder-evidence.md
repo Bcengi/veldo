@@ -156,6 +156,69 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-16: fix round 2, on the independent review of 25f56001 (review-veldo-0347.md, verdict FIX, no
+  path that loses work). Four findings, each fixed or decided, and two defects found on the way.
+  - Finding 1, the table ruling was not kept by the code. Signal's rule 5, Signal's hand-over to the
+    remover and the remover chose the clone's handling by the item's form alone, and the Ledger took a
+    clone's request by the form alone, so an item with a clone form that was declared under table 1
+    was judged by table 2. Now each is chosen by the row the kind registry answers for the item from
+    the table of the item's own version: rule 5 reads a clone's work tree only when that row is
+    agent_repository_clone (rules is given the row); Signal tells the remover the row only then, and
+    the remover saves and compares a worker clone only when told; the Ledger takes a clone's request
+    only for an item whose version is the version of the table it was given and whose form that
+    table names. A clone declared under table 1 is judged, asked about and removed as before this
+    ticket: no reading of its work tree by rule 5, no request, and a dirty one is refused by the
+    remover, keep_failed, in place. The request needs no test of its own: it is raised only on rule
+    5's word work_tree, which rule 5 says for the clone's row alone (a mutant that adds or drops a
+    row test there changes nothing, so none is written). Reconcile chooses no handling: it declares
+    through the Ledger and ends items through Signal, and was not changed (it is outside the
+    footprint). The Ledger is given one table, so of an item of any other version it reads no
+    clone's row; whoever issues a table 3 gives the Ledger what it needs for table 2 items. Rows:
+    ac3/table-1-clone and ac3/table-2-clone, the same two clones at the same event under each table.
+  - Finding 3, the Ledger's own refusal of a settled Save or Discard of a clone had no row. Row
+    ac3/ledger-keep-only plants the settled answer in the store, past the settlement path that would
+    refuse to write it, and expects space_disposition_choice with the item unchanged; the same
+    planted Discard of a worktree is taken, which shows the refusal is the guard's.
+  - Finding 4, the rows of the ticket suite were not independent. Every row now runs under its own
+    guard and builds its own state, or asks for the fixture of its criterion (AC4's copies), so a
+    row that raises is red with what was raised and the rows after it run. Measured with the
+    reviewer's mutants: the look beneath scratch left out reds six rows, all of AC2, where it reddened
+    about twenty; the logs left out reds one row.
+  - Trunk-only evidence (the reviewer's note on AC4). No criterion requires a removal: AC4 says an
+    evidence file is removed ONLY when a copy is held, and names the trunk as one place a copy may
+    be. No caller of Signal passes the declared trunk (control_space_worker.py, control_service.py,
+    dispatch.py, control_space_reconcile.py and scripts/gate_space.py, all outside the footprint), so
+    a file whose only copy is in a commit of the trunk is KEPT. That is the safe direction: space is
+    not freed, no work is lost. Follow-up for the lead to file: pass trunk(repository) to Signal from
+    the callers that know the declared trunk, with a row of its own in the caller's suite; the
+    remover already takes it (ac4/held-files-go, ac4/unreadable-is-no-copy, ac4/trunk-never-guessed).
+  - Finding 2, the teeth of finding 301 could not start. This repairs VELDO-0334's anchor: its commit
+    c638ab1f replaced the line "... if carried else []" of control_space_signal.py with a loop over
+    the due items grouped by ending event and left the teeth case space301-returns-after-marking-due
+    as it was. The case now changes "if selected:" of that loop to "if False:", the same defect (the
+    call returns after marking due and removes nothing), and reds ac1/removes-before-return. Found
+    with it, the same kind: the anchor of space301-refused-item-not-deferred was moved by VELDO-0318
+    (a9628b86, the written deferral is kept in a name); repaired on the same write.
+  - Found on the way, a defect of VELDO-0317 (e8c903d4) in a file of this footprint: rule 5 imported
+    json and read the store itself, so 0301 ac4/no-clock and 0330 rules/write-nothing ("Signal imports
+    nothing") were red on every base since, and with a red baseline no teeth case of finding 301 can
+    be judged. The read is now the Ledger's (no_space_ends) and rule 5 asks for it; the line the teeth
+    case space317-remove-failed-worktree changes is as it was and still reds its rows. Both rows are
+    green; suite 0317 is green.
+  - scripts/suites/140_veldo_0345_space_keep.py: the fixture's own call of the remover (the attempt
+    that stands in for the next event) names the registry row of the item, as Signal does. Nothing a
+    row asserts changed.
+  - Four more anchors, moved by this ticket's own build (each matched once on the base 0a80f89b and
+    matched nothing at 25f56001), found by reading every teeth case of the changed modules against
+    the code: space336-scratch-is-unique-work (AC1 added a clause to the condition it changes),
+    space302-agent-form-refused (the forms were given a name), space324-ledger-drops-ticket-end (the
+    form picks the events) and space324-failed-keep-still-deletes (the worker clone's branch follows
+    the two lines it names). Each case now names its line as it is and makes the same defect; each
+    anchor matches once and each changed module still parses. NOT SHOWN RED: their suites are 153
+    and 154, which this round must not run, so the teeth of findings 336, 302 and 324 are for the
+    lead to run. For the lead as well, not changed: space306-volumes-first anchors a line of
+    control_space_kinds.py that was not on the base either (the ORDER line, changed by VELDO-0337).
+
 - 2026-11-16: fix round, on the lead's decisions after the triage of the red accepted rows
   (triage-veldo-0347-reds.md: every red row pinned behaviour AC1 or AC5 replaces, none was a regression).
   No production file changed in this round; only rows of accepted suites, each with a History line in its
