@@ -245,6 +245,84 @@ def _v318_suite():
                 check('ac1/files', event, ledger.item(item)['disposition']['proposal']['worktrees'][0]['files']
                       == RM.disposition_files(ledger, ledger.item(item), str(path)))
 
+            # VELDO-0327 fix round 1, F2: a clean tree whose only unique work is unlanded commits.
+            def committed(label, ticket=True):
+                item, path, owner = tree(label, ticket=ticket)
+                git(path, 'add', 'draft.txt')
+                git(path, 'commit', '-q', '-m', 'unlanded ' + label)
+                return item, path, owner, git(path, 'rev-parse', 'HEAD')
+
+            def shown(item):
+                decision = ledger.item(item).get('disposition') or {}
+                return ((decision.get('proposal') or {}).get('worktrees') or [{}])[0]
+
+            for ticket in (True, False):
+                label = 'commits-request-' + str(ticket)
+                item, path, owner, tip = committed(label, ticket)
+                sent = len(transport.sent)
+                result = signal(item, owner, 'ticket_ended' if ticket else 'run_finished')
+                terms = shown(item)
+                if terms:
+                    presenter.present(request(item))
+                held = label if ticket else RM.disposition_branch(ledger.item(item))
+                brief = '\n'.join(transport.sent[sent:])
+                check('commits/request', label + ' terms ' + repr(terms) + repr(result),
+                      terms.get('files') == [] and terms.get('commits') == [tip]
+                      and terms.get('branch') == (label if ticket else None)
+                      and terms.get('kept_branch') == (None if ticket else held))
+                check('commits/request', label + ' brief ' + repr(brief),
+                      'Discard removes no uncommitted file; the commits stay on "' + held + '"' in brief
+                      and '"' + tip + '"' in brief and 'Files Discard would remove' not in brief)
+                check('commits/request', label + ' nothing moved', path.exists()
+                      and git(path, 'rev-parse', 'HEAD') == tip)
+
+            item, path, owner, tip = committed('commits-discard')
+            signal(item, owner)
+            if shown(item):
+                rid = settle(item, 'discard')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                result = act(item)
+                record = ledger.item(item)
+                check('commits/discard-keeps', repr(result), record['state'] == 'removed' and not path.exists()
+                      and git(repo, 'rev-parse', 'commits-discard') == tip
+                      and '--force' in str(record.get('removal', {}).get('commands')))
+            else:
+                check('commits/discard-keeps', 'no request was raised', False)
+
+            for ticket in (True, False):
+                item, path, owner, tip = committed('commits-save-' + str(ticket), ticket)
+                signal(item, owner, 'ticket_ended' if ticket else 'run_finished')
+                if not shown(item):
+                    check('commits/save', 'no request was raised', False)
+                    continue
+                rid = settle(item, 'save')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                result = act(item)
+                record = ledger.item(item)
+                check('commits/save', str(ticket) + repr(result), record['state'] == 'removed' and not path.exists()
+                      and git(repo, 'rev-parse', RM.disposition_branch(record)) == tip
+                      and '--force' not in str(record.get('removal', {}).get('commands')))
+
+            for choice in ('save', 'discard'):
+                item, path, owner, tip = committed('commits-late-' + choice)
+                signal(item, owner)
+                if not shown(item):
+                    check('commits/late-commit', 'no request was raised', False)
+                    continue
+                rid = settle(item, choice)
+                assert ledger.authorize_disposition(item, rid)['ok']
+                (path / 'later.txt').write_text('committed after the request was shown')
+                git(path, 'add', 'later.txt')
+                git(path, 'commit', '-q', '-m', 'not shown')
+                late = git(path, 'rev-parse', 'HEAD')
+                result = act(item)
+                check('commits/late-commit', choice + repr(result), path.exists()
+                      and ledger.item(item)['state'] == 'deferred' and git(path, 'rev-parse', 'HEAD') == late
+                      and git(repo, 'rev-parse', 'commits-late-' + choice) == late)
+                check('commits/late-commit', choice + ' the next request names the new tip ' + repr(shown(item)),
+                      shown(item).get('commits') == [late] and shown(item).get('files') == []
+                      and request(item) != rid)
+
             agent = trees / 'agent'
             git(trees, 'clone', '-q', str(repo), str(agent))
             git(agent, 'config', 'user.name', 'Owner Fixture')

@@ -195,3 +195,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   fixtures now use signed Keep commands, with their existing settlement fixture boundary.
   Its static due-writer check includes the settled disposition transition and the accepted
   admission retry transition. No acceptance criterion or protected path changed.
+
+- 2026-11-16: rebased onto the accepted VELDO-0327 (4a705a98) and adapted to its fix round 1, F2.
+  The terms handed to the owner carry the member commits: the tips of the unlanded commits that
+  rule 5 reads as unique. The file list is now the uncommitted state Discard removes (what the
+  snapshot saves), and no longer every tracked file, so a clean tree whose only unique work is
+  unlanded commits is asked about with an empty file list and its commits. Save and Discard run
+  only while the commits shown are still the worktree's tip; a commit made after the request was
+  shown refuses the removal and the next request names it. Rows commits/request,
+  commits/discard-keeps, commits/save and commits/late-commit, one teeth case each. A request
+  that cannot be built at the deferral is said in the result and leaves the item deferred; before,
+  it ended the whole signal (VELDO-0345's row ac3/main-repository-gone was red). No acceptance
+  criterion changed. Not built here: VELDO-0327's History (fix round 1, F4) says releasing the
+  kept worktree's pin after a no-space end (VELDO-0317 fix round 1, F3) is this ticket's, and no
+  criterion or History line of this specification assigned it before this one; it is reported to
+  the lead and waits for the lead's decision.

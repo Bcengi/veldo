@@ -16678,8 +16678,8 @@ def cases():
             "        if prior and prior.get('state') != 'refused':\n            raise Refused('space_disposition_exists', 'the item already has its request')",
             "        if False:\n            raise Refused('space_disposition_exists', 'the item already has its request')")])
     add(318, 'space318-commit-at-deferral', disposition318, 'control_space_signal.py',
-        "        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))",
-        "        remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))",
+        "            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])",
+        "            remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])",
         ['space318/ac2/no-unsettled-commit'])
     add(318, 'space318-save-without-comparison', disposition318, 'control_space_remove.py',
         "        else:\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
@@ -16695,8 +16695,23 @@ def cases():
                 "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None",
                 "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) and name != path else None")])
     add(318, 'space318-discard-without-list', disposition318, 'control_space_remove.py',
-        "    if disposition_files(ledger, record, path) != decision['proposal']['worktrees'][0]['files']:",
+        "    if disposition_files(ledger, record, path) != shown['files']:",
         "    if False:", ['space318/ac3/list-comparison'])
+    # VELDO-0327 fix round 1, F2, as VELDO-0318 carries it: the commit-only worktree.
+    add(318, 'space318-terms-without-commits', disposition318, 'control_space_remove.py',
+        "        'files': disposition_files(ledger, record, path), 'commits': list(commits),",
+        "        'files': disposition_files(ledger, record, path), 'commits': [],",
+        ['space318/commits/request'])
+    add(318, 'space318-clean-tree-is-a-failed-snapshot', disposition318, 'control_space_remove.py',
+        "    else:\n        manifest = {'files': {}, 'deleted_worktree': [], 'deleted_index': []}",
+        "    else:\n        raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')",
+        ['space318/commits/discard-keeps'])
+    add(318, 'space318-save-invents-a-commit', disposition318, 'control_space_remove.py',
+        "    exists = code == 0\n    if changed:", "    exists = code == 0\n    if True:",
+        ['space318/commits/save'])
+    add(318, 'space318-discard-without-commit-comparison', disposition318, 'control_space_remove.py',
+        "    if shown['commits'] and (code != 0 or shown['commits'] != [head.strip()]):",
+        "    if False:", ['space318/commits/late-commit'])
     add(318, 'space318-keep-left-deferred', disposition318, 'control_space.py',
         "            record['state'] = 'kept'\n            record['disposition']['state'] = 'kept'",
         "            record['state'] = 'deferred'\n            record['disposition']['state'] = 'kept'",

@@ -834,18 +834,25 @@ def _r_worktree(ctx, identity, record, answer):
 
 
 def disposition_files(ledger, record, path):
-    """The complete file names shown to the owner, including clean tracked files.
+    """The uncommitted files Discard would remove, as the owner is shown them.
 
-    Clean files matter for an unlanded-only worktree. Include deleted names too:
-    the index and the deletion are part of the state the snapshot saves.
+    These are the names the snapshot saves: changed, untracked and ignored work, and deleted names
+    too, because the index and the deletion are part of that state. A clean tracked file is in a
+    commit and is not listed: a clean tree whose only unique work is unlanded commits has an empty
+    list here and is asked about by its commits (VELDO-0327 AC2).
     """
     keeper = _sibling('control_space_keep')
     listing = keeper.listing(ledger, record, path)
-    code, tracked = _git([], '-C', path, 'ls-files', '-z')
-    if code != 0:
-        raise _Refusal(KEEP_FAILED, 'git could not list the files')
-    return sorted(set(tracked.split('\0')[:-1]) | set(listing['files'])
-                  | set(listing['deleted_worktree']) | set(listing['deleted_index']))
+    return sorted(set(listing['files']) | set(listing['deleted_worktree']) | set(listing['deleted_index']))
+
+
+def disposition_commits(probe, path, landed=(), shared=None, run=None):
+    """The tips of the unlanded commits that make the work unique (rule 5, case 5), or None when
+    the worktree cannot be read."""
+    facts = probe.unique_work(path, landed, shared, run)
+    if facts.get('read') is not True:
+        return None
+    return [facts['unlanded']] if facts.get('unlanded') else []
 
 
 def disposition_branch(record):
@@ -854,7 +861,7 @@ def disposition_branch(record):
     return 'space-saved-' + space.kept_part(owner.get('ticket') or (owner.get('run') or {}).get('id') or 'none')
 
 
-def disposition_proposal(ledger, identity, record):
+def disposition_proposal(ledger, identity, record, commits):
     import shlex
     settlement = _sibling('control_request_settlement')
     path = record['locator']['path']
@@ -865,7 +872,8 @@ def disposition_proposal(ledger, identity, record):
     return {'discard': settlement.SPACE_DISCARD, 'worktrees': [{
         'item': identity, 'path': path, 'branch': branch, 'unheld_commits': branch is None,
         'kept_branch': disposition_branch(record) if branch is None else None,
-        'files': disposition_files(ledger, record, path), 'restore': 'veldo space restore ' + shlex.quote(identity)}]}
+        'files': disposition_files(ledger, record, path), 'commits': list(commits),
+        'restore': 'veldo space restore ' + shlex.quote(identity)}]}
 
 
 def _snapshot_equal(ctx, record, kept, path):
@@ -908,8 +916,14 @@ def _r_disposition(ctx, identity, record, answer):
     if effect['choice'] != 'accept ' + choice or owner != decision['by']:
         raise _Refusal(REFUSED, 'the settled choice is not this removal')
     path = _plain(record['locator']['path'])
-    if disposition_files(ledger, record, path) != decision['proposal']['worktrees'][0]['files']:
+    shown = decision['proposal']['worktrees'][0]
+    if disposition_files(ledger, record, path) != shown['files']:
         raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')
+    # The commits the owner was shown are the tip this removal leaves on its branch. A commit made
+    # after the request was shown is not in those terms: nothing runs, and the next request names it.
+    code, head = _git(ctx['commands'], '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    if shown['commits'] and (code != 0 or shown['commits'] != [head.strip()]):
+        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')
     keeper = _sibling('control_space_keep')
     ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)
     before = _kept(ctx, identity, record)

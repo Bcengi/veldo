@@ -452,7 +452,17 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
             and record['kind'] == 'worktree' and not _is_review_worktree(record)
             and (event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released')
                  or event == 'run_finished' and not _is_review_worktree(record))):
-        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))
+        # The deferral is written. A request that cannot be built is said and leaves it deferred:
+        # the next event asks again, and nothing is removed meanwhile.
+        try:
+            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])
+            if commits is None:
+                raise ValueError('the worktree cannot be read for its unlanded commits')
+            asked = ledger.request_disposition(
+                identity, remover.disposition_proposal(ledger, identity, record, commits))
+        except Exception as error:
+            result['request_refusal'] = _raised(error)
+            return result
         result['decision_request'] = asked
         publish = getattr(ledger, 'disposition_publish', None)
         if asked.get('ok') and publish is not None:
@@ -501,11 +511,21 @@ def disposition(ledger, probe, remover, identity, free=None, owner_live=None, ru
         if result.get('ok'):
             current = ledger.item(identity)
             try:
+                commits = _unlanded(ledger, probe, remover, current, unused.get('landed') or (), run)
+                if commits is None:
+                    raise ValueError('the worktree cannot be read for its unlanded commits')
                 result['decision_request'] = ledger.request_disposition(
-                    identity, remover.disposition_proposal(ledger, identity, current))
+                    identity, remover.disposition_proposal(ledger, identity, current, commits))
             except Exception as error:
                 result['request_refusal'] = _raised(error)
         return result
+
+
+def _unlanded(ledger, probe, remover, record, landed, run):
+    """The unlanded commits a disposition request names, read as rule 5 reads them: against the
+    shared repository for an agent's worktree, against the other refs of its own otherwise."""
+    shared = _scope_repository(ledger, record) if _agent_repository(ledger, record) else None
+    return remover.disposition_commits(probe, record['locator']['path'], landed, shared, run)
 
 
 # ---------------------------------------------------------------------------------------------
