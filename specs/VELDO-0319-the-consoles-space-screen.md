@@ -250,3 +250,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   request or response within its test budget. Failed tests are repaired, never retried to green.
   F4, owner VELDO-0316 at aa1c5560: give the VELDO-0174 stand-in service space=None, matching
   an installation without space admission; prove suite 123 twice alongside 121 and 122 twice.
+
+- 2026-11-16: validation BLOCKED by the mandatory host gate lock. The immutable rebased
+  baseline at a5244013 passed all 22 VELDO-0342 rows with no surviving supervisor. The next
+  queued job took the lock and entered the three-hour quiet-host guard. Per the lead's stop
+  rule, own queued jobs were cancelled before execution. F1 through F4 are committed but
+  unverified; 0319, suites 121/122/123 twice, the remaining regressions, fast checks and teeth
+  are pending. No gate or guard was bypassed. See proof/VELDO-0319/fix-round-blocked.json.

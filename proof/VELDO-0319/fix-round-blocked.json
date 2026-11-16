@@ -1,0 +1,119 @@
+{
+  "reviewed_head": "498c20c4",
+  "rebase_onto": "bab38780",
+  "rebased_head": "a5244013f14dfccb28e1ffb7d4a185824edc296f",
+  "implementation": "5aed9334e15671bac37a2b64a071c66bae2b881f",
+  "checks": [
+    {
+      "name": "suite:150_veldo_0342_member_picks",
+      "head": "a5244013f14dfccb28e1ffb7d4a185824edc296f",
+      "exit": -15,
+      "seconds": 330.01,
+      "nice": 10,
+      "surviving_supervisors": {},
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "failed_rows": [],
+      "suite_rows": {},
+      "phase": "queue cancelled before execution to preserve immutable baseline input",
+      "status": "not_started",
+      "cost_details": []
+    },
+    {
+      "name": "suite:150_veldo_0342_member_picks",
+      "head": "5aed9334e15671bac37a2b64a071c66bae2b881f",
+      "exit": 2,
+      "seconds": 1759.58,
+      "nice": 10,
+      "surviving_supervisors": {},
+      "log_sha256": "332821561b9f21b0671d30b7b77aa85ef310cbf05464c6bc8acd6d1bc8ee1695",
+      "input_root": "/tmp/space0319-rebased-a5244013",
+      "failed_rows": [],
+      "suite_rows": {
+        "150_veldo_0342_member_picks": 22
+      },
+      "input_head": "a5244013f14dfccb28e1ffb7d4a185824edc296f",
+      "scheduling": "nice increment 10, inherited priority 10",
+      "phase": "rebased baseline, immutable archive",
+      "status": "rows_green",
+      "cost_details": []
+    },
+    {
+      "name": "suite:150_veldo_0319_space_screen",
+      "head": "5aed9334e15671bac37a2b64a071c66bae2b881f",
+      "exit": -15,
+      "seconds": 61.62,
+      "nice": 10,
+      "surviving_supervisors": {},
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_root": "/tmp/space0319-rebased-a5244013",
+      "failed_rows": [],
+      "suite_rows": {},
+      "input_head": "a5244013f14dfccb28e1ffb7d4a185824edc296f",
+      "scheduling": "nice increment 10, inherited priority 10",
+      "phase": "rebased baseline, immutable archive",
+      "status": "not_started",
+      "cost_details": []
+    }
+  ],
+  "status": "blocked_before_fix_validation",
+  "blocker": {
+    "rule": "engine/ui/CLAUDE.md and scripts/gate_host.json require the host gate lock for these runs",
+    "holder": "99zy4-veldo-0343-suite156",
+    "guard": "/home/dmitry/projects/myday/research/lock-queue/quiet.sh",
+    "detail": "After the earlier quiet-host guard waited three hours, the rebased 0342 suite ran. The next queued job took the lock and entered the same guard. Stopped under the user instruction; no lock or guard bypass."
+  },
+  "findings": {
+    "F1": {
+      "implementation": "7743c19d",
+      "rows": [
+        "space319ui/ac1/numeric-alignment-1440"
+      ],
+      "validation": "pending; replacement 1440 screenshots not captured"
+    },
+    "F2": {
+      "implementation": "a2166767",
+      "rows": [
+        "space319/ac2/removal-stamp",
+        "space319/cost/removed-index",
+        "space319/cost/carried-index"
+      ],
+      "validation": "pending; scan falsifiers registered, not executed"
+    },
+    "F3": {
+      "owner": "VELDO-0131",
+      "implementation": [
+        "ac8a7a2d",
+        "5aed9334"
+      ],
+      "rows": [
+        "ac1/screens-360",
+        "ac1/screens-390",
+        "ac1/screens-1280",
+        "ac1/screens-1440"
+      ],
+      "validation": "suites 121 and 122 twice each pending"
+    },
+    "F4": {
+      "owner": "VELDO-0316",
+      "implementation": "75153edc",
+      "validation": "suite 123 twice pending"
+    }
+  },
+  "pending": [
+    "rebased 0319 API and browser",
+    "fixed 0319 API and browser, including 1440 screenshots",
+    "121 twice",
+    "122 twice",
+    "123 twice",
+    "engine/ui Vitest and typecheck",
+    "fixed 0342, 0340 and 0318 rows",
+    "validation, docs, template sync, lint, space boundary and Git boundary",
+    "teeth 319 last"
+  ],
+  "cleanup": "Both own queued jobs cancelled before test execution; no space supervisor found. No active test was abandoned.",
+  "limits": [
+    "No full gate or suite numbered 151 or higher was run by this task.",
+    "Protected files and the protect list were not changed.",
+    "The browser suite is absent from the protected unconfined list; teeth may be blocked there as well. That check has not run."
+  ]
+}
