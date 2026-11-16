@@ -85,27 +85,37 @@ def _admit(ledger, identity, free, principal=None, command_id=None, given=None):
             return {'ok': True, 'answer': hold['state'], 'reason': hold.get('reason')}
         reason = judge(ledger, identity, free)
         if given is not None and reason is not None and not hold.get('retry_asked'):
-            # Claim this hold's one request before entering Signal. A crash cannot send it twice;
-            # deferred work stays in the ledger and reconcile can recover it.
-            claimed = ledger.admit(identity, 'waiting', reason, retry_asked=True,
+            # Claim this hold's one request before entering Signal, in one write with the answer its
+            # scope's mode gives now. A crash cannot send it twice, and a report-mode hold is advised
+            # already: nothing Signal does, and no lost worker, can leave it waiting (design 6.7).
+            claim = answer_of(ledger, scope, reason)
+            claimed = ledger.admit(identity, claim, reason, retry_asked=True,
                 principal=principal, expected_version=version)
             if claimed.get('reason') == 'stale_version':
                 continue
             if not claimed.get('ok'):
                 return claimed
             signal = _organ('control_space_signal').signal
-            sent = signal(ledger, 'admission_requested', {'pool': reason['pool']},
-                          emitter={'hold': identity}, **(given or {}))
-            accepted(sent)
+            # A refused Signal frees nothing and changes no answer: the judgment below still stands.
+            signal(ledger, 'admission_requested', {'pool': reason['pool']},
+                   emitter={'hold': identity}, **(given or {}))
             version, hold = ledger.hold_snapshot(identity)
+            if hold['state'] != 'waiting':
+                return dict(claimed, answer=hold['state'], reason=hold.get('reason'))
             if hold.get('freed'):
                 reason = judge(ledger, identity, free)
-        answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
+        answer = answer_of(ledger, scope, reason)
         options = {'expected_version': version} if versioned and version is not None else {}
         result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id, **options)
         if result.get('reason') == 'stale_version':
             continue
         return dict(result, answer=answer, reason=reason) if result['ok'] else result
+
+
+def answer_of(ledger, scope, reason):
+    """The one place the mode decides: admitted when no pool is short, else waiting in act mode and
+    advised in report mode."""
+    return 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
 
 
 def admit(ledger, identity, free, principal=None, command_id=None, **given):

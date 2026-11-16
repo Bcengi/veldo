@@ -16503,8 +16503,8 @@ def cases():
              "            raise D.Refused(answer.get('code', 'space_wait'))\n"
              "        launch = self.receiver(contract)")])
     add(316, 'space316-block-report', admission316, 'control_space_admission.py',
-        "answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'",
-        "answer = 'admitted' if reason is None else 'waiting'", ['space316/ac3/report-starts'])
+        "return 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'",
+        "return 'admitted' if reason is None else 'waiting'", ['space316/ac3/report-starts'])
     add(316, 'space316-measured-after-one', admission316, 'control_space_admission.py',
         "elif len(recent) == 5 and all(type(run.get(name)) is int for run in recent):",
         "elif len(recent) >= 1 and all(type(run.get(name)) is int for run in recent):",

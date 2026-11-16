@@ -419,6 +419,40 @@ def _v334_suite():
             result = f.ledger._original(seen, {'parameters': {'hold': 'wrapped'}})
             check('ac3/release-replay', 'release replay answers the target hold', result['state'] == 'released')
 
+            # Fix round 1, finding 1: report mode never blocks, whatever Signal does.
+            def refusing(*args, **kwargs):
+                calls.append((args[1], args[2]))
+                return {'ok': False, 'reason': 'space_fixture_refused'}
+            def dying(*args, **kwargs):
+                raise RuntimeError('fixture: the worker is lost inside Signal')
+            for name, broken in (('refused', refusing), ('lost', dying)):
+                f = fixture('report-' + name, act=False)
+                SIG.signal = broken
+                try:
+                    first = f.request()
+                finally:
+                    SIG.signal = counted
+                identity = next(iter(f.ledger.holds()))
+                hold = f.ledger.hold(identity)
+                check('fix1/report-refused-signal', name + ': the hold is advised with its one request claimed: '
+                      + repr((first, hold['state'])), hold['state'] == 'advised' and hold['retry_asked']
+                      and hold['reason']['pool'] == 'host' and (first['ok'] or name == 'lost'))
+                before_calls = len(calls)
+                second = f.request()
+                check('fix1/report-refused-signal', name + ': the next offer is advised and asks nothing',
+                      second['ok'] and second['answer'] == 'advised' and second['space']['hold'] == identity
+                      and len(calls) == before_calls)
+            f = fixture('act-refused')
+            SIG.signal = refusing
+            try:
+                first = f.request()
+            finally:
+                SIG.signal = counted
+            hold = f.ledger.hold(first['space']['hold']) if first.get('space') else {}
+            check('fix1/act-refused-signal', 'a refused Signal still answers waiting, by numbers: ' + repr(first),
+                  first.get('code') == 'space_wait:host' and hold.get('state') == 'waiting'
+                  and hold.get('retry_asked') and hold['reason']['pool'] == 'host')
+
             f = fixture('completion-race')
             svc, loop, requests = wired(f)
             result = requests.prepare(**given)
