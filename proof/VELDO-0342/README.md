@@ -1,5 +1,9 @@
 # VELDO-0342 proof
 
+Current fix round: [fix-round.md](fix-round.md), with compact results in
+[fix-round.json](fix-round.json), supersedes the original Keep waiting behavior and its stated risk.
+The remainder of this file records the original build at df1d2c6a.
+
 Implementation df1d2c6a, on VELDO-0340 fix round 1 at 73c7b832 (the blocker record e5dbc0df is between
 them and holds no code). Builder evidence, not independent review. All three criteria remain pending
 the lead gate and independent review. Every suite, check and teeth case in the json files beside this
