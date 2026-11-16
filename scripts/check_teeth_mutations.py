@@ -16602,6 +16602,11 @@ def cases():
         "            requests.taken(contract)",
         "            pass  # defect: the kept answer outlives the dispatch that carries its hold",
         ['space317/fix1/spent-answer'])
+    # Fix round 1, F2 (the reviewer's P2): a failed owner notice is kept and never sent again.
+    add(317, 'space317-failed-andon-notice-kept', full317, 'control_service.py',
+        "            if not answers[record['dispatch_id']]['outcome']:",
+        "            if False:  # defect: a failed delivery is kept for the life of the service",
+        ['space317/fix2/andon-redelivery'])
 
     return result
 

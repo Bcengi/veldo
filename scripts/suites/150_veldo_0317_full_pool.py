@@ -489,6 +489,60 @@ def _v317_suite():
             one.offer(report(), 'unit', 'review', {'identity': 'builder', 'adapter': 'fixture', 'payload': {},
                 'configuration': {}, 'seconds': 60}, revision='HEAD')
             check('fix1/spent-answer', 'the factory line spends the answer when it offers', key not in requests.answers)
+
+            # Fix round 1, F2: the first owner notice fails, the inbox is healthy afterwards.
+            f = fixture('andon-redelivery')
+            wire(f)
+            run(f)
+            f.free['host'] = 10000
+            second, _, _, _ = run(f)
+            one, wakes, reports = line(f), [], []
+            consumer = CON.Consumer(f.ledger)
+            one.service.space_consumer = consumer
+            one.loop = types.SimpleNamespace(wake=lambda *args: wakes.append(args))
+            one.service.inbox = lambda repo: types.SimpleNamespace(read=lambda identity: one.service.conn.execute(
+                "SELECT data FROM entities WHERE id=?", (identity,)).fetchone())
+            flag = f.root / 'inbox-down'
+            flag.write_text('down')
+            def flaky(inbox, alias, unit, brief, choices, subject, key):
+                if flag.exists():
+                    flag.unlink()
+                    return 'owner', {'ok': False, 'reason': 'inbox_unavailable'}
+                data = dict(unit=unit)
+                one.service.conn.execute('INSERT INTO entities(id,kind,version,digest,data) VALUES(?,?,?,?,?)',
+                    (SV.I.assignment_id('repository', alias), 'fixture_notice', 1, D.digest(data),
+                     json.dumps(data, sort_keys=True)))
+                one.service.conn.commit()
+                return 'owner', {'ok': True}
+            one.open_question = flaky
+            reran = []
+            one.rerun = lambda *args: reran.append(args)
+            def passed():
+                reports.append(report())
+                one.limited(second, reports[-1])
+                while consumer.active:
+                    poller = select.poll()
+                    poller.register(consumer.active[0], select.POLLIN | select.POLLHUP)
+                    if not poller.poll(10000):
+                        raise RuntimeError('owner notice worker did not complete')
+                    consumer.readable(consumer.active[0])
+            def delivered():
+                return f.conn.execute("SELECT count(*) FROM entities WHERE kind='fixture_notice'").fetchone()[0]
+            passed()   # submits; the delivery fails
+            passed()   # reports the failure once and drops it
+            failed_once = [entry.get('refusal') for entry in reports[1]['asked']] == ['inbox_unavailable'] \
+                and delivered() == 0 and len(wakes) == 1
+            passed()   # submits again; delivered
+            after = delivered()
+            for _ in range(3):
+                passed()
+            check('fix2/andon-redelivery', 'a failed delivery is reported once and sent again', failed_once
+                  and not reports[2]['asked'] and after == 1)
+            check('fix2/andon-redelivery', 'exactly one notice, no further delivery and no third run',
+                  delivered() == 1 and len(wakes) == 2 and not reran
+                  and all(len(rep['stopped']) == 1 for rep in reports))
+            consumer.stop()
+            consumer = None
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:

@@ -3748,7 +3748,7 @@ class Line:
     def space_andon(self, record, report):
         """Durable stop in the dispatch, delivered through the existing owner inbox.
 
-        Delivery failure never permits a third run. Space disposition is a later ticket;
+        Delivery failure never permits a third run, and is tried again. Space disposition is a later ticket;
         this request informs the owner and does not authorize automatic resumption.
         """
         contract = record['contract']
@@ -3762,7 +3762,12 @@ class Line:
             return None
         answers = self.__dict__.setdefault('space_andon_answers', {})
         if record['dispatch_id'] in answers:
+            # Only a delivered notice is kept. A failed delivery is reported by name once and dropped:
+            # its completion woke the factory, and the pass after the one that reports it submits the
+            # notice again (as a failed admission judgment is, VELDO-0316). No third run either way.
             report['asked'].append(dict(entry, **answers[record['dispatch_id']]))
+            if not answers[record['dispatch_id']]['outcome']:
+                del answers[record['dispatch_id']]
             return None
         consumer = getattr(self.service, 'space_consumer', None)
         if consumer is None:
