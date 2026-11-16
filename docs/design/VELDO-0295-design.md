@@ -1656,7 +1656,7 @@ container still uses is deferred by the engine's own refusal.
 | Drop caches in an evidence folder | Remove the sub-folders the project declares as caches; nothing else | |
 | Mark a branch contained | A ledger write; git is not called | |
 | Remove review scratch | For a review worktree only. Asks git for the worktree's untracked paths that it does not ignore and removes each one: a folder by the folder remover's rename, second probe and delete, a file by a plain delete, a link by deleting the link and never what it points at. Each path passes rules 1, 2, 3, 4 and 6 first, and the snapshot of all of them is in the snapshot store, with its keep record written, before the first is deleted (0.3). Immediately before each file is deleted, its mode and digest are compared with the manifest; for a folder that is done for each file in it. No force option and no clean command of git is used | A path resolves outside the worktree, is on the protect list, or is in use; the snapshot could not be written, synced, read back or renamed into place; a file is not in the manifest or differs from it |
-| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, each worktree of a review group, or the one member a member pick names. For a detached worktree whose checked-out commit no ref holds, the Ledger first creates a kept branch at that commit. Then the keep step and the snapshot of the uncommitted state (0.2, 0.3), and the remove runs only after both. Before the remove the worktree is moved to a marked name beside itself by git's worktree move, without the force option, the in-use probe and the comparison with the snapshot are made again under that name, and a user or a difference moves it back to its path | The decision is not settled, does not name that worktree, the worktree's list of changed files differs from the list the owner was shown, the kept branch could not be created, a kept ref could not be written, the snapshot could not be written, synced, read back or renamed into place, the worktree no longer equals the snapshot, git refuses the move to the marked name, or the worktree is in use under that name |
+| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, each worktree of a review group, or the one member a member pick names. First the keep step and the snapshot of the uncommitted state (0.2, 0.3), and both are compared with the terms the owner was shown. Then, for a detached worktree whose checked-out commit no ref holds, a kept branch is created at that commit in the shared repository, read back, and recorded by the Ledger. The remove runs only after all three. Before the remove the worktree is moved to a marked name beside itself by git's worktree move, without the force option, the in-use probe and the comparison with the snapshot are made again under that name, and a user or a difference moves it back to its path | The decision is not settled, does not name that worktree, the worktree's list of changed files differs from the list the owner was shown, the kept branch could not be created, a kept ref could not be written, the snapshot could not be written, synced, read back or renamed into place, the worktree no longer equals the snapshot, git refuses the move to the marked name, or the worktree is in use under that name |
 
 No remover calls a prune command. No remover passes a force option, with the one exception in the last
 row. Discard is the one forced removal, and it is allowed only after the owner's discard answer (section
@@ -1664,9 +1664,12 @@ row. Discard is the one forced removal, and it is allowed only after the owner's
 it.
 
 Discard never loses a commit (the lead's decision (g)). A detached worktree has no branch, so a commit
-made in it can be reachable from no ref (rule 5, case 5). Before the discard remover runs on such a
-worktree, the Ledger creates a kept branch at the commit checked out at that moment and records it as a
-branch item in state kept. The branch is named as Save names one: the ticket's kept-branch name for a
+made in it can be reachable from no ref (rule 5, case 5). On such a worktree the settled Discard first
+runs the keep step and the snapshot and compares both with the terms the owner was shown, so the
+checked-out commit is the one the owner saw, and a Discard refused for changed terms writes no ref.
+Then, before the worktree is moved or removed, the discard remover creates a kept branch at that commit
+and reads it back, and the Ledger, which reads the branch and the worktree's HEAD itself, records it as
+a branch item in state kept. The branch is named as Save names one: the ticket's kept-branch name for a
 ticket's worktree, otherwise the prefix space-saved, then the run's label. Every character of the label
 that git refuses in a ref name is replaced by '-', and git checks the name before the write. Only then is
 the worktree removed with the force option. What Discard removes from disk is uncommitted work only:
@@ -1677,13 +1680,22 @@ The order has one failure. When the branch cannot be created, because the name i
 that does not hold the commit or because git refuses the ref, the discard does not run and the worktree
 is deferred as remove_refused with everything in it. Discard never proceeds without the branch.
 
+The commit has a ref at every point where the process can stop. Before the branch it is on the kept ref
+the keep step wrote, and the worktree is untouched. Between the branch and its record it is on both,
+and the next Discard of that worktree finds the branch at its commit under the same name and records
+it: one branch, one item, never a second name. After the record it is on the recorded branch.
+
 Creating the branch is a ref write. It is not a removal, so Discard stays the one forced removal. It is
 not a commit, so "Veldo never commits on its own" still holds. git runs the reference-transaction hook
 for it, and the hook sends nothing, because the ref is neither the trunk nor a declared landing ref
 (6.9).
 
-An agent's worktree needs no new branch. Its commits are on its branch in the agent repository, which
-rule 5 keeps until the runner's integrate has brought them across. Discard of an agent's worktree
+An agent's worktree on its branch needs no new branch. Its commits are on its branch in the agent
+repository, which rule 5 keeps until the runner's integrate has brought them across. A detached worktree
+of an agent repository whose commit no ref holds gets its kept branch in the shared repository, where
+the keep step has already put the commit on a kept ref, and never in the agent repository, which is
+private and goes later (0.2). When the shared repository cannot take the branch the discard does not
+run. Discard of an agent's worktree
 removes the worktree and leaves the agent repository and its branch in place, kept. The worktree's
 kept refs are in the shared repository by then (0.2), so they are still there after the agent
 repository has gone too.

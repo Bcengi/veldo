@@ -142,7 +142,8 @@ reaches. Before the discard remover removes such a worktree it creates a branch 
 and keep_branch records that branch as a branch item in state kept, with its name (the locator's ref),
 its commit (start, and kept_branch.commit) and the worktree it was made for (kept_branch.worktree). The
 Ledger trusts nothing its caller says: inside the command's transaction it reads, through the one Git
-boundary, the worktree's HEAD and the branch in the repository the worktree's branches are in, and
+boundary, the worktree's HEAD and the branch in the main repository of the worktree's scope (never in
+an agent repository, which is private and is removed later: design 0.2, VELDO-0343 fix round 1), and
 refuses a branch that is not there at that commit (space_keep_branch_ref), a commit that is not the
 worktree's HEAD (space_keep_branch_head), a worktree that is on a branch (space_keep_branch_attached),
 and a worktree that is not removing under an authorized Discard (space_keep_branch_state). A branch
@@ -1508,7 +1509,7 @@ class Ledger:
         record = self.item(item) if _is_str(item) else None
         branch_item, also = None, {}
         if record is not None and _is_str(branch):
-            repository = self._repository_of(record)
+            repository = self._main_of(record)
             held = self._at(locator_key('branch', {'repository': repository, 'ref': branch})) if repository else None
             if held is not None:
                 branch_item, also = held[0], {held[0]: held[1]}
@@ -2536,9 +2537,11 @@ class Ledger:
         if not _is_str(branch) or branch.startswith('refs/') or not (
                 _is_str(commit) and len(commit) in (40, 64) and not set(commit) - set('0123456789abcdef')):
             raise _invalid('branch', 'the short name of the kept branch, and its commit')
-        repository = self._repository_of(record)
+        # The main repository, for an agent's worktree too: an agent repository is private and is
+        # removed later, so a kept branch is never read or recorded there (design 0.2).
+        repository = self._main_of(record)
         if repository is None:
-            raise Refused('space_keep_branch_repository', 'no repository is known for the branches of this worktree')
+            raise Refused('space_keep_branch_repository', 'no main repository is known for this worktree')
         path = record['locator']['path']
         if self._item_head(path) != commit:
             raise Refused('space_keep_branch_head', 'the commit is not the one checked out in the worktree')

@@ -875,10 +875,26 @@ def disposition_branch(record, taken=None):
 BRANCH_NAMES = 1000
 
 
-def _branch_holds(commands, path, branch):
+def _kept_home(ledger, identity, record, path):
+    """The repository the kept branch of a Discard is written in. A worktree of the main repository
+    reaches it through its own path. A worktree inside an agent repository does not: that repository
+    is private and is removed later, so its kept branch goes in the main repository, where the keep
+    step has already put the commit on a kept ref (design 0.2, VELDO-0343 fix round 1). With no main
+    repository at its path there is nowhere to keep the branch, and that is a refusal."""
+    parent = ledger.item(record['parent']) if record.get('parent') else None
+    if parent is None or parent.get('kind') != 'agent_repository':
+        return path
+    main = ledger.main_repository(identity)
+    if not main or not os.path.isdir(main):
+        raise _Refusal(REFUSED, 'no main repository is at its path to hold the kept branch of an agent worktree')
+    return main
+
+
+def _branch_holds(commands, path, branch, home=None):
     """What the kept branch `branch` is to the worktree at `path`: None when no such branch exists,
-    False when it holds exactly the worktree's HEAD, True when it holds other work."""
-    code, held = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
+    False when it holds exactly the worktree's HEAD, True when it holds other work. The branch is
+    read in the repository at `home`, or in the worktree's own."""
+    code, held = _git(commands, '-C', home or path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
     if code == 1 and not str(held).strip():
         return None
     if code != 0:
@@ -897,6 +913,12 @@ def _free_branch(ledger, identity, record, path, commands):
             for tree in (decision.get('proposal') or {}).get('worktrees') or ():
                 if tree.get('kept_branch'):
                     named.add(tree['kept_branch'])
+    home = _kept_home(ledger, identity, record, path)
+    if home != path:
+        # An agent worktree's name is free in both repositories: Save writes it in the agent
+        # repository, and the kept branch of a Discard is written in the main one.
+        return disposition_branch(record, lambda name: name in named or any(
+            _branch_holds(commands, path, name, where) is True for where in (path, home)))
     return disposition_branch(record, lambda name: name in named or _branch_holds(commands, path, name) is True)
 
 
@@ -1014,7 +1036,8 @@ def _discard_branch(ctx, identity, record, path, answer, shown, kept):
     """Only the settled Discard path calls this, before the worktree is moved or removed. For a
     detached worktree whose checked-out commit no branch, tag or remote-tracking ref of its repository
     reaches, create the kept branch at that commit, read it back, and have the Ledger record it as a
-    branch item in state kept. The branch is named as Save names one: the name the terms showed, or
+    branch item in state kept. The branch is written in the main repository, for an agent's worktree
+    too (_kept_home): never in the agent repository, which is removed later. The branch is named as Save names one: the name the terms showed, or
     the next one free. It is a ref write: no commit is made and nothing is removed. Any failure is the
     refusal remove_refused, and the worktree stays with everything in it.
 
@@ -1025,14 +1048,19 @@ def _discard_branch(ctx, identity, record, path, answer, shown, kept):
     if kept.get('branch') is not None or not commit:
         return  # on a branch, which holds its commits and stays; or no commit at all
     commands = ctx['commands']
+    home = _kept_home(ctx['ledger'], identity, record, path)
     branch = shown.get('kept_branch') or _free_branch(ctx['ledger'], identity, record, path, commands)
     ref = 'refs/heads/' + branch
-    code, out = _git(commands, '-C', path, 'for-each-ref', '--format=%(refname)', '--contains', commit,
-                     *(prefix.rstrip('/') for prefix in HOLDING_REFS))
-    if code != 0:
-        raise _Refusal(REFUSED, 'git could not say which refs hold the commit: ' + str(out)[:200])
-    holders = [name for name in out.split('\n')[:-1] if name.startswith(HOLDING_REFS)]
-    holds = _branch_holds(commands, path, branch)  # None: no such branch; False: it is at this commit
+    holders = []
+    for where in dict.fromkeys((path, home)):
+        code, out = _git(commands, '-C', where, 'for-each-ref', '--format=%(refname)', '--contains', commit,
+                         *(prefix.rstrip('/') for prefix in HOLDING_REFS))
+        if code != 0:
+            raise _Refusal(REFUSED, 'git could not say which refs hold the commit: ' + str(out)[:200])
+        holders += [name for name in out.split('\n')[:-1] if name.startswith(HOLDING_REFS)]
+    # None: no such branch; False: it is at this commit. A branch at this commit under the kept name
+    # is the one a Discard that stopped before its record left: it is recorded, never counted a holder.
+    holds = _branch_holds(commands, path, branch, home)
     if holds is not False:
         if holders:
             answer['commit_held_by'] = holders[:NAMED]
@@ -1040,16 +1068,16 @@ def _discard_branch(ctx, identity, record, path, answer, shown, kept):
         if holds:
             raise _Refusal(REFUSED, 'the kept branch name is taken by a branch that does not hold the commit',
                            kept_branch=branch, commit=commit)
-        code, out = _git(commands, '-C', path, 'check-ref-format', '--branch', branch)
+        code, out = _git(commands, '-C', home, 'check-ref-format', '--branch', branch)
         if code != 0:
             raise _Refusal(REFUSED, 'git refused the kept branch name: ' + str(out)[:200], kept_branch=branch)
         # Created and never moved: the empty old value lets the write through only when no such ref is there.
-        code, out = _git(commands, '-C', path, 'update-ref', '-m', 'veldo: kept branch before a Discard',
+        code, out = _git(commands, '-C', home, 'update-ref', '-m', 'veldo: kept branch before a Discard',
                          ref, commit, '')
         if code != 0:
             raise _Refusal(REFUSED, 'git refused the kept branch: ' + str(out)[:300], kept_branch=branch,
                            commit=commit)
-    code, out = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+    code, out = _git(commands, '-C', home, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
     if code != 0 or out.strip() != commit:
         raise _Refusal(REFUSED, 'the kept branch was not read back at the commit', kept_branch=branch, commit=commit)
     try:

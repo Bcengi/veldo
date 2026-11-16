@@ -16819,6 +16819,31 @@ def cases():
     add(343, 'space343-ledger-trusts-the-commit', discard343, 'control_space.py',
         "        if self._item_head(path) != commit:",
         "        if False:", ['space343/ac2/ledger-reads'])
+    # Fix round 1. The kept branch of an agent's detached worktree is in the main repository, a branch
+    # left by a Discard that stopped before its record is recorded and never counted a holder, and
+    # the observer is refused the three commands VELDO-0326's list had not been given.
+    add(343, 'space343-kept-branch-in-the-agent-repository', discard343, 'control_space_remove.py',
+        "    home = _kept_home(ctx['ledger'], identity, record, path)\n",
+        "    home = path  # defect: an agent's worktree gets its kept branch in the agent repository\n",
+        ['space343/ac3/detached'])
+    add(343, 'space343-ledger-records-in-the-agent-repository', discard343, 'control_space.py',
+        "        repository = self._main_of(record)\n        if repository is None:\n"
+        "            raise Refused('space_keep_branch_repository'",
+        "        repository = self._repository_of(record)\n        if repository is None:\n"
+        "            raise Refused('space_keep_branch_repository'",
+        ['space343/ac3/detached'])
+    add(343, 'space343-orphan-branch-counted-a-holder', discard343, 'control_space_remove.py',
+        "    if holds is not False:\n        if holders:\n",
+        "    if holds is not False or holders:\n        if holders:\n",
+        ['space343/ac1/stopped-before-record'])
+    for label343, name343 in (('keeps-a-branch', 'KEEP_BRANCH'), ('requests-a-disposition', 'REQUEST'),
+                              ('signs-a-disposition', 'DISPOSITION')):
+        add(343, 'space343-observer-' + label343, '133_veldo_0326_space_principals.py', 'control_space.py',
+            "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+            "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == "
+            + name343 + "):\n            return\n        parameters = ",
+            ['ac2/observer-refused-by-name'])
+        result[-1]['siblings'] = True
 
     return result
 

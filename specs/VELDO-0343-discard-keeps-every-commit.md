@@ -17,6 +17,8 @@ footprint:
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
   - "scripts/suites/*_veldo_0343_*.py"
+  - "scripts/suites/133_veldo_0326_space_principals.py"
+  - "docs/design/VELDO-0295-design.md"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -128,3 +130,30 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   Reported, not changed: VELDO-0326's row ac2/observer-refused-by-name (suite 133, outside this
   footprint) lists the ledger commands by hand and is red on the base d0e2461a, where it does not
   list space_disposition_request; space_keep_branch is one more name it does not list.
+- 2026-11-16: fix round 1, after the independent review (verdict FIX, no path that loses work). No
+  acceptance criterion changed.
+  Finding 1: the kept branch of a detached worktree inside an agent repository was written and
+  recorded in the agent repository, which is private and goes later. It is now written, read back
+  and recorded in the main repository of the worktree's scope, where the keep step has already put
+  the commit on a kept ref (remover: _kept_home; Ledger: keep_branch reads and records there). A
+  ref of either repository that holds the commit still means no branch is made. When the main
+  repository is not at its path or cannot take the branch, the Discard is remove_refused. The name
+  shown for an agent's detached worktree is free in both repositories, because Save writes it in the
+  agent repository. Rows ac3/detached and ac3/detached-refused.
+  Finding 2: row ac1/stopped-before-record stops the Discard inside keep_branch, after the ref write,
+  makes reconcile's deferral, and requires that the next Discard names the same branch and leaves one
+  branch, one kept branch item and no -2 name. No code changed for it.
+  Lead decision (a): the built order is kept. The kept branch is made after the keep step and the
+  snapshot were compared with the terms, and before the move; at every point where the process can
+  stop the commit has a ref. Design 6.5 was reworded to this order, and to finding 1's placement;
+  the footprint is widened by the lead to docs/design/VELDO-0295-design.md, section 6.5 only (the file
+  is not a protected path).
+  Lead decision (b): VELDO-0326's row ac2/observer-refused-by-name (suite 133) held a stale list, not
+  a gap. It now sends space_keep_branch (this ticket's) and space_disposition_request and
+  space_disposition (VELDO-0318's), and the observer's refusal of each is asserted by name; the
+  footprint is widened by the lead to scripts/suites/133_veldo_0326_space_principals.py. VELDO-0301's
+  row ac4/no-clock is inherited and left.
+  Six more teeth cases under finding 343, fourteen in all: the kept branch in the agent repository,
+  the Ledger recording there, a branch left by a stopped Discard counted a holder, and the observer
+  let through for each of the three commands. Not taken up, the lead's call: findings 4, 5 and 6 of
+  the review.

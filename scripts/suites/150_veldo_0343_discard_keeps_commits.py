@@ -124,6 +124,7 @@ def _v343_suite():
         SP, SIG, RM, KP, K, PR, CFG = (load(name) for name in (
             'control_space', 'control_space_signal', 'control_space_remove', 'control_space_keep',
             'control_space_kinds', 'control_space_probe', 'control_space_config'))
+        REC = load('control_space_reconcile')
         repo, trees, state, proc = (base / name for name in ('repo', 'trees', 'state', 'proc'))
         for folder in (repo, trees, state, proc):
             folder.mkdir()
@@ -433,6 +434,52 @@ def _v343_suite():
                 'space_keep_branch_state', 'space_keep_branch_ref', 'space_keep_branch_ref',
                 'space_keep_branch_head', 'invalid_input:branch'] and branch_items('space-saved-ledger-reads') == {})
 
+            # A Discard that stops between the branch write and its record (the process dies inside
+            # keep_branch): the branch is there and no item records it. Reconcile defers the removing
+            # worktree, and the next Discard records that same branch: one branch, one item, no -2.
+            class Stopped(BaseException):
+                pass
+
+            def stop(*given, **named):
+                raise Stopped()
+
+            item, path, owner, tip = detached('stopped')
+            stopped = False
+            with patch.object(ledger, 'keep_branch', stop):
+                try:
+                    discard(item, owner)
+                except Stopped:
+                    stopped = True
+            name, record = shown(item).get('kept_branch'), ledger.item(item)
+            left = bool(name) and subprocess.run(
+                ['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet', 'refs/heads/' + name],
+                capture_output=True).stdout.decode().strip()
+            check('ac1/stopped-before-record', 'stopped after the branch write: %r, branch at %r, items %r'
+                  % (record['state'], left, branch_items(name)),
+                  stopped and name == 'space-saved-stopped' and left == tip and branch_items(name) == {}
+                  and record['state'] == 'removing' and path.exists()
+                  and contents(path / 'draft.txt') == 'draft stopped' and git(path, 'rev-parse', 'HEAD') == tip)
+            # What reconcile writes for a removing item it finds at its path, before the event is sent again.
+            deferred = REC.Reconciler(dict(given, ledger=ledger)).defer(item, record, 'retry from rule 1')
+            result = discard(item, owner) if deferred.get('ok') else None
+            again, record = shown(item).get('kept_branch'), ledger.item(item)
+            family = [line for line in branches(repo).split('\n') if line.startswith('refs/heads/space-saved-stopped')]
+            found = branch_items(name)
+            kept = list(found.values())[0] if len(found) == 1 else {}
+            check('ac1/stopped-before-record', 'the next Discard names the same branch and removes: %r, named %r, '
+                  'branches %r' % (result, again, family),
+                  result is not None and again == name and record['state'] == 'removed' and not path.exists()
+                  and family == ['refs/heads/%s %s' % (name, tip)] and holders(repo, tip) == ['refs/heads/' + name])
+            check('ac1/stopped-before-record', 'one kept branch item records it, and no second name: ' + repr(found),
+                  len(found) == 1 and kept.get('state') == 'kept' and kept.get('start') == tip
+                  and (kept.get('kept_branch') or {}).get('commit') == tip
+                  and (kept.get('kept_branch') or {}).get('worktree') == item
+                  and (record.get('kept_branch') or {}).get('item') in found
+                  and branch_items(str(name) + '-2') == {} and order(item, found))
+            saved = snapshot(item)
+            check('ac1/stopped-before-record', 'the uncommitted file is in the snapshot ' + repr(saved),
+                  saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft stopped')
+
             # AC3: an agent's worktree, on its branch in the agent repository.
             agent = trees / 'agent'
             git(trees, 'clone', '-q', str(repo), str(agent))
@@ -476,6 +523,74 @@ def _v343_suite():
             saved = snapshot(item)
             check('ac3/agent', 'the uncommitted file is in the snapshot ' + repr(saved),
                   saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft agent')
+
+            # A detached worktree of the agent repository, with a commit no ref holds. Its kept branch
+            # is written and recorded in the shared repository, where the commit's kept ref is: the
+            # agent repository is private and goes later, so nothing is written there.
+            def agent_detached(label):
+                path = trees / label
+                git(agent, 'worktree', 'add', '-q', '--detach', str(path))
+                (path / 'made.txt').write_text('committed in ' + label)
+                git(path, 'add', 'made.txt')
+                git(path, 'commit', '-q', '-m', 'made in ' + label)
+                (path / 'draft.txt').write_text('draft ' + label)
+                owner = {'scope': scope, 'ticket': label}
+                made = ledger.declare('worktree', {'path': str(path)}, owner, 'record', parent=parent,
+                                      branch=None, start=head)
+                assert made['ok'], made
+                assert ledger.confirm(made['item'])['ok']
+                return made['item'], path, owner, git(path, 'rev-parse', 'HEAD')
+
+            def agent_discard(item, owner, between=None):
+                signal(item, owner, 'released')
+                if not shown(item):
+                    return None
+                rid = settle(item, 'discard')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                if between:
+                    between(shown(item))
+                return act(item)
+
+            item, path, owner, tip = agent_detached('agent-detached')
+            before, unheld = branches(agent), holders(agent, tip) == []
+            result = agent_discard(item, owner)
+            record, name = ledger.item(item), shown(item).get('kept_branch')
+            at = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
+                                 'refs/heads/' + str(name)], capture_output=True).stdout.decode().strip()
+            check('ac3/detached', '%r %r, branch %r in the shared repository at %r' % (
+                      result, record.get('deferral'), name, at),
+                  result is not None and unheld and name == 'space-saved-agent-detached'
+                  and record['state'] == 'removed' and not path.exists() and at == tip
+                  and holders(repo, tip) == ['refs/heads/' + name]
+                  and git(repo, 'show', name + ':made.txt') == 'committed in agent-detached')
+            found = branch_items(name)
+            kept = list(found.values())[0] if len(found) == 1 else {}
+            check('ac3/detached', 'recorded there, as one kept branch item: ' + repr(found),
+                  len(found) == 1 and kept.get('state') == 'kept'
+                  and kept.get('locator') == {'repository': str(repo), 'ref': name}
+                  and kept.get('start') == tip and (kept.get('kept_branch') or {}).get('worktree') == item
+                  and order(item, found))
+            check('ac3/detached', 'nothing was written in the agent repository: ' + repr(branches(agent)),
+                  agent.exists() and branches(agent) == before and holders(agent, tip) == []
+                  and not any(one['locator'].get('repository') == str(agent) and one.get('kept_branch')
+                              for one in branch_items().values()))
+            saved = snapshot(item)
+            check('ac3/detached', 'the uncommitted file is in the snapshot ' + repr(saved),
+                  saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft agent-detached')
+
+            # The shared repository cannot take the branch: the name is taken there by other work.
+            # The Discard does not run, and no branch is made in the agent repository instead.
+            item, path, owner, tip = agent_detached('agent-taken')
+            before, taken = branches(agent), {}
+            result = agent_discard(item, owner, lambda terms: (taken.update(name=terms['kept_branch']),
+                                                               git(repo, 'branch', terms['kept_branch'], head)))
+            stays('ac3/detached-refused', 'agent-taken', item, path, tip, result, taken.get('name'))
+            check('ac3/detached-refused', 'the branch that had the name is where it was, and the agent repository '
+                  'has no new branch', bool(taken) and git(repo, 'rev-parse', 'refs/heads/' + taken['name']) == head
+                  and branches(agent) == before)
+            check('ac3/detached-refused', 'the next request names the next free name: '
+                  + repr(shown(item).get('kept_branch')),
+                  bool(taken) and shown(item).get('kept_branch') == taken['name'] + '-2')
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:
