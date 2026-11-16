@@ -16473,6 +16473,11 @@ def cases():
             "    if code == 0 and text.rstrip('\\n') not in ('', str(state_root)):\n",
             "    if False:  # defect: another installation's state root is overwritten\n",
             ['space329/fix4/two-installations'])
+    # The re-review's finding (second fix round).
+    hook329('space329-worktree-hooks-path-unseen',
+            "    if elsewhere:\n",
+            "    if False:  # defect: a worktree's own hooks path is not reported\n",
+            ['space329/fix7/worktree-configuration'])
 
     return result
 

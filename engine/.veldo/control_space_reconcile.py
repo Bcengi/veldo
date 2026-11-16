@@ -61,8 +61,11 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   folder every linked worktree uses, or the folder core.hooksPath configures in the
                   repository's own local configuration. core.hooksPath is read as the owner's git
                   reads it, with the global and the system file: set there (a global hook manager), or
-                  in one worktree's own file, it names a folder that is not this repository's alone,
-                  so the install is REFUSED whole and reconcile reports hooks_folder with why. So is
+                  in the named worktree's own file, it names a folder that is not this repository's alone,
+                  so the install is REFUSED whole and reconcile reports hooks_folder with why. With
+                  extensions.worktreeConfig on, reconcile also reads every other worktree's own file
+                  and reports each that sets core.hooksPath (worktree_configuration): git runs that
+                  worktree's hooks from there, and the shared folder's install is left as it is. So is
                   a relative core.hooksPath (a different, committed folder in every worktree), a
                   folder that is a link or is reached through one (it may be shared with repositories
                   nobody bound), and a folder inside a work tree or another repository: Veldo never
@@ -70,7 +73,8 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   own hook goes there under its own name, veldo-post-checkout and
                   veldo-reference-transaction. Where no hook file exists, a two line file is written:
                   the shell line and one marked line that starts Veldo's hook, under timeout(1)
-                  with a deadline of HOOK_SECONDS so a blocked CLI cannot hold a commit. Where a hook file
+                  with a deadline of HOOK_SECONDS (and a kill HOOK_KILL_SECONDS later) so a blocked CLI
+                  cannot hold a commit. Where a hook file
                   exists and is an executable shell script, the one marked line is added after its
                   first line and every other line is left as it was. The line for
                   reference-transaction hands Veldo's hook a copy of git's input and gives the
@@ -914,6 +918,7 @@ HOOK_MARK = '# veldo-space-hook'
 HOOK_OURS = 'veldo-'
 HOOK_SIGN = b'# Veldo space management'  # the second line of each hook Veldo ships
 HOOK_SECONDS = 10  # the deadline of a marked line: the longest Veldo's hook can hold a git command
+HOOK_KILL_SECONDS = 2  # a hook that ignores the request to end at the deadline is killed this much later
 HOOK_SHELLS = ('sh', 'bash', 'dash', 'ksh', 'zsh')
 HOOK_CONFIG = {'stateroot': 'veldo.space.stateroot', 'cli': 'veldo.space.cli',
                'installation': 'veldo.space.installation', 'trunk': 'veldo.space.trunk'}
@@ -1008,14 +1013,15 @@ def hook_line(folder, name):
 
     The line has a deadline of its own, HOOK_SECONDS: Veldo's hook is started under timeout(1), which
     ends it and everything it started, so a CLI that blocks cannot hold one run of a hook longer than
-    that (a git command that runs both hooks waits that long for each at most). On a host with no timeout(1) the hook is started plainly, and the bound is then the
+    that (a git command that runs both hooks waits that long for each at most). What timeout(1)
+    started is killed HOOK_KILL_SECONDS later if it ignored the request to end (timeout -k). On a host with no timeout(1) the hook is started plainly, and the bound is then the
     CLI's own: it waits control_space_spool.REACH_SECONDS for each answer of the authority and no
     longer. Either way the line ends with success and git goes on."""
     ours = shlex.quote(os.path.join(folder, HOOK_OURS + name))
 
     def bounded(feed):
-        return ('if command -v timeout >/dev/null 2>&1; then timeout %d %s "$@" %s; else %s "$@" %s; fi || :'
-                % (HOOK_SECONDS, ours, feed, ours, feed))
+        return ('if command -v timeout >/dev/null 2>&1; then timeout -k %d %d %s "$@" %s; else %s "$@" %s; fi || :'
+                % (HOOK_KILL_SECONDS, HOOK_SECONDS, ours, feed, ours, feed))
 
     if name == 'reference-transaction':
         beside = shlex.quote(os.path.join(folder, '.veldo-in.XXXXXX'))
@@ -1105,9 +1111,12 @@ def hooks_place(repository, git, environ=None):
     """(hooks folder, None), or (the folder git runs hooks from, why Veldo installs nothing there).
 
     The folder must be this repository's alone, and nothing in it may be a tracked file:
-      - core.hooksPath is read with the owner's global and system configuration. Set anywhere but in
-        the repository's own local configuration (a global hook manager, the system file, one
-        worktree's own file) it names a folder other repositories use too.
+      - core.hooksPath is read with the owner's global and system configuration, at the one worktree
+        `repository` names. Set anywhere but in the repository's own local configuration (a global
+        hook manager, the system file, that worktree's own file) it names a folder other
+        repositories use too.
+      - The other worktrees' own files are not read here. hooks_path_in_worktrees reads them, and
+        hooks_missing reports each one that takes its worktree's hooks elsewhere.
       - A relative core.hooksPath is a different folder in every worktree, and a committed one.
       - A folder that is a link, or is reached through one, may be shared with other repositories.
       - With no core.hooksPath the folder is hooks in the repository's common directory, the one every
@@ -1147,6 +1156,36 @@ def hooks_place(repository, git, environ=None):
     return folder, None
 
 
+def hooks_path_in_worktrees(repository, git, environ=None):
+    """The worktrees of `repository` whose own configuration file sets core.hooksPath, in git's order.
+
+    With extensions.worktreeConfig on, every worktree has a file of its own (config.worktree) and git
+    runs that worktree's hooks from the folder it names: the hooks installed in the shared folder never
+    start there. Read only when the extension is on; a worktree whose folder is gone runs no hook and
+    is left out. A worktree git could not read is named too, as unread."""
+    code, text = git([], '-C', repository, 'config', '--type=bool', '--get', 'extensions.worktreeConfig')
+    if code != 0 or text.strip() != 'true':
+        return []
+    code, text = git([], '-C', repository, 'worktree', 'list', '--porcelain')
+    if code != 0:
+        raise ValueError('git could not list the worktrees of ' + repository + ': ' + str(text)[:200])
+    found = []
+    for line in text.split('\n'):
+        tree = line[len('worktree '):] if line.startswith('worktree ') else None
+        if not tree or not os.path.isdir(tree):
+            continue
+        code, text = _owner_git('-C', tree, 'config', '--show-scope', '--show-origin', '--type=path',
+                                '-z', '--get-all', HOOKS_PATH, environ=environ)
+        if code == 1:  # the key is set nowhere
+            continue
+        fields = text.split('\0') if code == 0 else []
+        if code != 0:
+            found.append('unread:' + tree)
+        elif 'worktree' in fields[0:len(fields) - 1:3]:
+            found.append(tree)
+    return found
+
+
 def hooks_folder(repository, git, environ=None):
     """The folder git runs this repository's hooks from, whether or not Veldo installs there."""
     return hooks_place(repository, git, environ)[0]
@@ -1172,6 +1211,10 @@ def hooks_missing(repository, state_root, git, source=None, environ=None):
         missing['configuration'] = 'state_root_of_another_installation:' + told[:200]
     elif not missing and told != str(state_root):
         missing['configuration'] = 'state_root_not_this_installation'
+    elsewhere = hooks_path_in_worktrees(repository, git, environ)
+    if elsewhere:
+        missing['worktree_configuration'] = 'hooks_path_set_in_worktree_configuration:' + ','.join(
+            tree[:200] for tree in elsewhere)
     return folder, missing
 
 

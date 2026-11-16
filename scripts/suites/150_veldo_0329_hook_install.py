@@ -761,7 +761,8 @@ def _v329_suite():
               and again_blocked.get('config') == {key: 'present' for key in KEYS}
               and all(told_to(blocked, key) for key in KEYS))
         check(row, 'the marked line names its deadline: ' + repr(marked(blocked / '.git' / 'hooks' / 'post-checkout')),
-              all(b'timeout 2 ' in marked(blocked / '.git' / 'hooks' / name)[0] for name in R.HOOKS)
+              all(b'timeout -k %d 2 ' % R.HOOK_KILL_SECONDS in marked(blocked / '.git' / 'hooks' / name)[0]
+                  for name in R.HOOKS)
               and shutil.which('timeout') is not None)
         try:
             began = time.monotonic()
@@ -800,6 +801,94 @@ def _v329_suite():
                     os.kill(pid, 9)
                 except OSError:
                     pass
+
+        # What timeout(1) started ignores the request to end: the deadline's second step kills it.
+        stubborn = repository('stubborn')
+        deaf_pids = temp / 'stubborn-pids'
+        deaf_source = temp / 'hooks-that-ignore-term'
+        deaf_source.mkdir()
+        for name in R.HOOKS:
+            (deaf_source / name).write_text(
+                "#!/bin/sh\n# Veldo space management\n[ \"$1\" = committed ] || exit 0\ntrap '' TERM\n"
+                'echo $$ >>' + str(deaf_pids) + '\nexec sleep 60\n')
+        kept_seconds, R.HOOK_SECONDS, R.HOOK_KILL_SECONDS = (R.HOOK_SECONDS, R.HOOK_KILL_SECONDS), 1, 1
+        try:
+            R.install_git_hooks(str(stubborn), str(state), str(cli), str(installation), 'main', str(deaf_source), G)
+        finally:
+            R.HOOK_SECONDS, R.HOOK_KILL_SECONDS = kept_seconds
+        try:
+            began = time.monotonic()
+            git(stubborn, 'commit', '-q', '--allow-empty', '-m', 'the CLI ignores TERM')
+            deaf_took = time.monotonic() - began
+            started = [int(line) for line in deaf_pids.read_text().split()] if deaf_pids.exists() else []
+            until = time.monotonic() + 5
+            while any(alive(pid) for pid in started) and time.monotonic() < until:
+                time.sleep(0.05)
+            check(row, 'a hook that ignores TERM is killed after the deadline, and git succeeds: %.1f s, %d start'
+                  % (deaf_took, len(started)),
+                  len(started) == 1 and 1.5 < deaf_took < 15 and not any(alive(pid) for pid in started)
+                  and b'timeout -k 1 1 ' in marked(stubborn / '.git' / 'hooks' / 'reference-transaction')[0]
+                  and git(stubborn, 'log', '-1', '--format=%s', 'main') == 'the CLI ignores TERM')
+        finally:
+            for pid in ([int(line) for line in deaf_pids.read_text().split()] if deaf_pids.exists() else []):
+                try:
+                    os.kill(pid, 9)
+                except OSError:
+                    pass
+
+        # ---- The re-review's finding (second fix round) ------------------------------
+        row = 'fix7/worktree-configuration'
+        several = repository('several')
+        record = direct(several)
+        tree = temp / 'several-trees' / 'one'
+        git(several, 'worktree', 'add', '-q', '-b', 'one', str(tree))
+        check(row, 'with no worktree configuration the hooks are in place, asked through either worktree: '
+              + str(record),
+              record.get('ok') is True and R.hooks_missing(str(several), str(state), G)[1] == {}
+              and R.hooks_missing(str(tree), str(state), G)[1] == {}
+              and R.hooks_path_in_worktrees(str(several), G) == [])
+        git(several, 'config', 'extensions.worktreeConfig', 'true')
+        check(row, 'the extension alone changes nothing: still in place',
+              R.hooks_missing(str(several), str(state), G) == (str(several / '.git' / 'hooks'), {}))
+        tree_hooks = temp / 'several-tree-hooks'
+        tree_hooks.mkdir()
+        git(tree, 'config', '--worktree', 'core.hooksPath', str(tree_hooks))
+        check(row, 'git runs the linked worktree\'s hooks from its own folder, the main worktree\'s from the shared one',
+              git(tree, 'rev-parse', '--git-path', 'hooks') == str(tree_hooks)
+              and os.path.realpath(os.path.join(str(several), git(several, 'rev-parse', '--git-path', 'hooks')))
+              == str(several / '.git' / 'hooks'))
+        before = len(told())
+        git(tree, 'checkout', '-q', '-b', 'unseen')
+        check(row, 'so a branch switch in that worktree starts no Veldo hook', len(told()) == before)
+        WHY = 'hooks_path_set_in_worktree_configuration:'
+        folder, missing = R.hooks_missing(str(several), str(state), G)
+        check(row, 'asked through the bound repository the report names the worktree, never "in place": '
+              + str((folder, missing)),
+              folder == str(several / '.git' / 'hooks') and missing == {'worktree_configuration': WHY + str(tree)})
+        folder, missing = R.hooks_missing(str(tree), str(state), G)
+        check(row, 'asked through the worktree itself the folder is refused whole: ' + str((folder, missing)),
+              folder == str(tree_hooks) and list(missing) == ['hooks_folder']
+              and missing['hooks_folder'].startswith(WHY + 'file:'))
+        record = direct(several)
+        before = len(told())
+        git(several, 'checkout', '-q', '-b', 'seen')
+        check(row, 'the install for the other worktrees is unchanged, and nothing is written to the worktree\'s folder: '
+              + str(record),
+              record.get('ok') is True and record.get('hooks_folder') == str(several / '.git' / 'hooks')
+              and set(record.get('hooks', {}).values()) == {'present'} and entries(tree_hooks) == []
+              and any('--branch seen' in words for words, _lines in told()[before:]))
+        second = temp / 'several-trees' / 'two'
+        git(several, 'worktree', 'add', '-q', '-b', 'two', str(second))
+        git(second, 'config', '--worktree', 'core.hooksPath', str(tree_hooks))
+        git(several, 'worktree', 'add', '-q', '-b', 'three', str(temp / 'several-trees' / 'three'))
+        shutil.rmtree(temp / 'several-trees' / 'three')
+        check(row, 'every such worktree is named, one whose folder is gone is not: '
+              + str(R.hooks_path_in_worktrees(str(several), G)),
+              R.hooks_path_in_worktrees(str(several), G) == [str(tree), str(second)])
+        git(tree, 'config', '--worktree', '--unset', 'core.hooksPath')
+        git(second, 'config', '--worktree', '--unset', 'core.hooksPath')
+        check(row, 'with the worktrees\' settings gone the report is in place again',
+              R.hooks_missing(str(several), str(state), G) == (str(several / '.git' / 'hooks'), {}))
 
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
