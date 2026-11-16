@@ -1,5 +1,5 @@
 {
-  "scope": "Every mutation registered for finding 329 (sixteen), applied once by hand to a copy of .veldo/control_space_reconcile.py at commit e3abb1e7, from a scratch folder outside the worktree. The teeth driver run is recorded in teeth.json. No full gate.",
+  "scope": "Every mutation registered for finding 329 (sixteen), applied once by hand to a copy of .veldo/control_space_reconcile.py at commit e3abb1e7, from a scratch folder outside the worktree. The teeth driver run is recorded in teeth.json. No full gate. Second fix round: the two new cases (space329-worktree-hooks-path-unseen, space329-included-hooks-path-used) were NOT applied by hand; the teeth driver rejected both (teeth.json), and the sixteen below were not applied by hand again.",
   "baseline": {
     "rows": [
       "space329/ac1/bound-and-plain",

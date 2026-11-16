@@ -5,8 +5,8 @@
     "scope": "partial",
     "exit_code": 2,
     "summary": [
-      "selftest (PARTIAL, 1 of 236 suites): 44 passed, 0 failed in 10.20s",
-      "18 rows of this suite and the 26 checks of the shared preamble. A green selected run returns 2 by design. The row fix6/blocked-cli-bounded waits about six seconds on purpose."
+      "selftest (PARTIAL, 1 of 236 suites): 46 passed, 0 failed in 13.25s",
+      "20 rows of this suite and the 26 checks of the shared preamble. A green selected run returns 2 by design. The row fix6/blocked-cli-bounded waits about eight seconds on purpose. No process named space supervise was left by the run."
     ],
     "rows": [
       "space329/ac1/bound-and-plain",
@@ -26,9 +26,11 @@
       "space329/fix5/duplicate-keys",
       "space329/fix5/concurrent-write",
       "space329/fix6/blocked-cli-bounded",
+      "space329/fix7/worktree-configuration",
+      "space329/fix8/included-file",
       "space329/wiring/bootstrap-installs"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "9e030280 (run on the same tree before the commit)"
   },
   {
     "name": "git hooks regression",
@@ -54,7 +56,7 @@
     "name": "teeth anchors of other findings",
     "command": "every registered case whose module is control_space_reconcile.py: each old text counted in the changed module",
     "summary": [
-      "42 cases at commit e3abb1e7, each anchor found exactly once. Two anchors of finding 329 were moved with the code they name: space329-shared-folder-always and space329-settings-rewritten."
+      "44 cases at commit 9e030280, each anchor found exactly once."
     ]
   },
   {
@@ -62,16 +64,16 @@
     "command": "nice -n 10 python3 -B scripts/selftest.py --suite 156_veldo_0315_reconcile",
     "scope": "partial",
     "exit_code": 2,
-    "at_commit": "e3abb1e7",
+    "at_commit": "9e030280 (run on the same tree before the commit)",
     "summary": [
-      "selftest (PARTIAL, 1 of 236 suites): 51 passed, 0 failed in 24.89s",
+      "selftest (PARTIAL, 1 of 236 suites): 51 passed, 0 failed in 27.18s",
       "No process named space supervise was left by the run."
     ]
   },
   {
     "name": "not run",
     "summary": [
-      "The full gate (./scripts/verify.sh), the policy check, and suites 151, 153, 154 and 155 were not run. Suites 148 and 149 were not run again in the fix round."
+      "The full gate (./scripts/verify.sh), the policy check, and suites 151, 153, 154 and 155 were not run. Suites 148 and 149 were not run again in either fix round; the hook files they cover are unchanged."
     ]
   }
 ]

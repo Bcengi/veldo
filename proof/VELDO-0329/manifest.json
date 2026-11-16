@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0329",
-  "commit": "e3abb1e78b751cb011ff058f15924e992c974e3c",
-  "tree": "8461e48ace059bc2a850d9d369885e8d314211e2",
-  "producer": "Claude implementation agent (build 3cc596c0, hook line fix 6c98a907, fix round 1e435d13 to e3abb1e7 after the independent review); not an independent reviewer",
-  "produced_at": "2026-11-16T06:28:05.135114+00:00",
+  "commit": "9e0302803bb2428636b26c34dfc521e1d08acfc2",
+  "tree": "ae8be611c293550eaed6acfc9ca960d3697ea080",
+  "producer": "Claude implementation agent (build 3cc596c0, hook line fix 6c98a907, fix round 1e435d13 to e3abb1e7 after the independent review, second fix round 6460458d and 9e030280 after the re-review); not an independent reviewer",
+  "produced_at": "2026-11-16T06:43:47.154708+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -64,6 +64,11 @@
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0329_hook_install.py",
           "detail": "space329/fix6/blocked-cli-bounded (review finding 6): with a CLI that blocks for a minute and a deadline of 2 seconds each hook run ends at the deadline, git succeeds, the owner's lines get git's input, the blocked CLI is ended; the record lists the four veldo.space.* keys, written then present."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/fix8/included-file (re-review note): a local core.hooksPath that comes from a file the configuration includes is refused with hooks_path_set_in_included_file and the file; nothing is written to the folder another repository shares or to the configuration; the same path in the repository's own config file is taken, asked through either worktree. In fix6/blocked-cli-bounded the marked line carries timeout -k, and a hook that ignores TERM is killed one grace period after the deadline while git succeeds."
         }
       ]
     },
@@ -131,6 +136,11 @@
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0329_hook_install.py",
           "detail": "Rows fix1, fix2, fix3 and fix4 also hold reconcile's side: hooks_missing names hooks_folder with the refusal reason, or the state root of another installation, and session_hooks_missing names another installation; a git that did not run is raised to the reconciler, never read as in place."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/fix7/worktree-configuration (re-review finding 1): with extensions.worktreeConfig on and core.hooksPath in a linked worktree's own file, git runs that worktree's hooks elsewhere and a branch switch there starts no Veldo hook; hooks_missing on the bound repository names worktree_configuration with the worktree, every such worktree is named and one whose folder is gone is not, the install for the other worktrees is unchanged, and with the setting gone the report is in place again. Row fix8 holds reconcile's side of the included file: hooks_folder with the refusal."
         }
       ]
     }
@@ -139,31 +149,31 @@
     {
       "name": "unit",
       "status": "passed",
-      "command": "python3 scripts/selftest.py --suite 150_veldo_0329_hook_install at e3abb1e7: 18 rows, 44 checks including the shared preamble, 0 failed; partial exit 2."
+      "command": "python3 scripts/selftest.py --suite 150_veldo_0329_hook_install on the tree of 9e030280: 20 rows, 46 checks including the shared preamble, 0 failed; partial exit 2."
     },
     {
       "name": "integration",
       "status": "passed",
-      "command": "The same suite: git runs the installed hooks, a session started through the installed command reaches the Ledger over the spool socket with a signed packet. Suite 156_veldo_0315_reconcile at e3abb1e7: 51 passed, 0 failed; partial exit 2. Suites 148 and 149 passed at 3cc596c0 and were not run again."
+      "command": "The same suite: git runs the installed hooks, a session started through the installed command reaches the Ledger over the spool socket with a signed packet. Suite 156_veldo_0315_reconcile on the tree of 9e030280: 51 passed, 0 failed; partial exit 2. Suites 148 and 149 passed at 3cc596c0 and were not run again."
     },
     {
       "name": "teeth",
       "status": "passed",
-      "command": "python3 scripts/check_teeth_mutations.py --finding 329 at e3abb1e7: passed, registered 16, executed 16, rejected 16, reused 0, surviving workers 0. Run last, on a clean worktree."
+      "command": "python3 scripts/check_teeth_mutations.py --finding 329 at 9e030280: passed, registered 18, executed 18, rejected 18, reused 0, surviving workers 0. Run last, on a clean worktree."
     },
     {
       "name": "fast checks",
       "status": "passed",
-      "command": "validate.py all, check_docs.sh, check_template_sync.sh, check_generated.sh, check_lint.sh, check_git_boundary.py, check_space_boundary.py: each exit 0 at e3abb1e7 (proof/VELDO-0329/fast-checks.json)."
+      "command": "validate.py all, check_docs.sh, check_template_sync.sh: each exit 0 on the tree of 9e030280. check_generated.sh, check_lint.sh, check_git_boundary.py, check_space_boundary.py: each exit 0 at e3abb1e7 and not run again (proof/VELDO-0329/fast-checks.json)."
     },
     {
       "name": "review falsifiers",
       "status": "passed",
-      "command": "The independent review's seven falsifier cases run again against the fixed module from a scratch folder: each is now refused or bounded (proof/VELDO-0329/reviewer-falsifiers.json). All sixteen registered falsifiers applied once by hand: each target row red (proof/VELDO-0329/falsifiers.json)."
+      "command": "The independent review's seven falsifier cases and the re-review's wtcfg case run against the fixed module from a scratch folder: each is now refused, bounded or reported (proof/VELDO-0329/reviewer-falsifiers.json). The sixteen falsifiers of the first fix round applied once by hand at e3abb1e7: each target row red (proof/VELDO-0329/falsifiers.json); the two new ones were rejected by the teeth driver only."
     }
   ],
   "assumptions": [
-    "Criteria remain pending until the lead runs the canonical gate, ./scripts/verify.sh. Neither the full gate, the policy check, nor suites 151, 153, 154 and 155 were run. Suite 156_veldo_0315_reconcile was run in the fix round and passed. The fix round is not yet reviewed: its review runs in a fresh context.",
+    "Criteria remain pending until the lead runs the canonical gate, ./scripts/verify.sh. Neither the full gate, the policy check, nor suites 151, 153, 154 and 155 were run. Suite 156_veldo_0315_reconcile was run in the fix round and passed. The first fix round was re-reviewed (FIX, one finding). The second fix round is not yet reviewed: its review runs in a fresh context.",
     "Binding installs at the service's start: bootstrap reads the bound repositories and calls the installer, so a repository gets its hooks at the first start after it is bound. No bind command outside the footprint was changed. The first start of a real service with space management enabled therefore writes into the hooks folder and git configuration of every bound and named plain repository and into settings.json of every named account folder. Nothing on the protect list is touched, and no live repository or account folder was touched by this build.",
     "The engine finds its hook files in hooks/ beside .veldo (or engine/hooks in this repository) and the session script in packs/claude/scripts beside or above the engine. Whether a deployed engine carries both there was not measured. Where it does not, the install record names the refusal and reconcile reports the hooks as missing; nothing is silent.",
     "Chained hooks are shell hooks only (sh, bash, dash, ksh, zsh by their first line). A program, a link, a file with no first line naming a shell and a hook that is not executable are refused and reported, by the owner's rule that an existing hook is kept and chained or refused. An owner's shell hook that the marked line precedes still receives git's input; where neither the hooks folder nor the temporary folder takes the input copy, the owner's lines run and that landing is left to the next reconcile.",
@@ -173,7 +183,10 @@
     "Fix round, finding 2: a relative core.hooksPath and a hooks folder inside a work tree are refused, not served. A repository that keeps its hooks committed gets no Veldo hook and is reported. The check for a work tree or repository above the folder walks the folder's ancestors for a .git entry or a git directory; a fixture or temporary folder that itself lies inside a work tree would be refused the same way.",
     "Fix round, finding 4: refusing was chosen over a second entry. The git hook reads one veldo.space.stateroot, and a session reported to two ledgers would have two owners. The design names no case of two installations for one folder; this is the builder's reading, for the owner to confirm. An installation whose state root moves is reported as another installation until the owner takes the old entries out.",
     "Fix round, finding 5: the client takes no lock, so a client write between the compare and the rename itself (a few system calls) can still be replaced; the lock serializes Veldo installers only, and the read after the rename catches a write that follows. The lock file .settings.json.veldo-lock stays in the account folder.",
-    "Fix round, finding 6: the deadline is 10 seconds for each run of a hook, under timeout(1). On a host with no timeout(1) the hook runs without it and the bound is the CLI's own wait (control_space_spool.REACH_SECONDS for each answer); that path was not run. A repository installed before this fix has its marked line rewritten at the next start."
+    "Fix round, finding 6: the deadline is 10 seconds for each run of a hook, under timeout(1). On a host with no timeout(1) the hook runs without it and the bound is the CLI's own wait (control_space_spool.REACH_SECONDS for each answer); that path was not run. A repository installed before this fix has its marked line rewritten at the next start.",
+    "Second fix round, finding 1: the other worktrees' own files are read only when extensions.worktreeConfig is true in the repository's configuration, at reconcile, not at install; a worktree found there is reported and nothing is installed in its folder. A worktree whose folder is gone is left out, and one git could not read is named as unread. The report is one finding for the repository, with the worktrees joined by commas.",
+    "Second fix round, included file: a configured hooks folder is taken only where git names the repository's own config file (the common directory's config) as the origin of core.hooksPath. A config file that is itself a link is refused the same way.",
+    "Second fix round, timeout -k: the marked lines use timeout -k 2 10. timeout(1) kills what it started, Veldo's hook, when that ignores TERM. Measured by hand in a scratch folder: under the shipped hook, a CLI that ignores TERM is NOT killed. The hook's shell ends at TERM, timeout(1) leaves with it before the kill step, git goes on at the deadline, and the CLI is left running without a parent. Ending such a CLI needs a change in engine/hooks (for one, trap : TERM, so the shell stays until the kill step), which this round did not touch."
   ],
   "rollback": "Revert the fix round's commits and the two build commits. Hooks already installed stay where they are and keep working; a repository bound afterwards gets none. The marked lines, Veldo's own files and the lock file beside a settings file can be taken out by hand; nothing of the owner's was changed beyond the one marked line."
 }

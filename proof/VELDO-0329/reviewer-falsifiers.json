@@ -42,6 +42,13 @@
       "case": "hang",
       "review_saw": "one commit took 20.0 s",
       "now": "the commit took 10.0 s, the line's deadline, against a CLI that sleeps 20 s; git succeeded, the owner's hook got git's input, no input copy left; the record lists the veldo.space.* keys"
+    },
+    {
+      "finding": "re-review 1",
+      "case": "wtcfg",
+      "review_saw": "a branch switch in the linked worktree started no Veldo hook, and hooks_missing on the bound repository returned {} (in place)",
+      "now": "hooks_missing on the bound repository returns {'worktree_configuration': 'hooks_path_set_in_worktree_configuration:<the linked worktree>'}; the install for the main worktree is unchanged (ok, both hooks installed in the shared folder)",
+      "how": "/tmp/rr329/own/wtcfg.py and /tmp/rr329/harness.py copied to /tmp/v329fix2/rr with only paths changed (module under test: this worktree at 9e030280; every write under /tmp/v329fix2/rr; HOME and GIT_CONFIG_GLOBAL pointed there), run with nice -n 10 python3 -B"
     }
   ],
   "surviving_processes": "none named space supervise after the run"

@@ -5,7 +5,7 @@
     "summary": [
       "Validation exit 0; the existing historical proof notices remain."
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "9e030280 (run on the same tree before the commit)"
   },
   {
     "command": "bash scripts/check_docs.sh",
@@ -13,7 +13,7 @@
     "summary": [
       "docs hygiene: pass"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "9e030280 (run on the same tree before the commit)"
   },
   {
     "command": "bash scripts/check_template_sync.sh",
@@ -21,7 +21,7 @@
     "summary": [
       "template sync: pass (324 pair(s) compared, 6 declared per-repo, 367 engine-only)"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "9e030280 (run on the same tree before the commit)"
   },
   {
     "command": "bash scripts/check_generated.sh",
@@ -29,7 +29,7 @@
     "summary": [
       "generated: pass"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "e3abb1e7; NOT run again in the second fix round"
   },
   {
     "command": "bash scripts/check_lint.sh",
@@ -37,7 +37,7 @@
     "summary": [
       "lint: pass (1243 python, 39 shell)"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "e3abb1e7; NOT run again in the second fix round"
   },
   {
     "command": "python3 -B scripts/check_git_boundary.py",
@@ -45,7 +45,7 @@
     "summary": [
       "Git subprocess boundary: pass"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "e3abb1e7; NOT run again in the second fix round"
   },
   {
     "command": "python3 -B scripts/check_space_boundary.py",
@@ -53,6 +53,6 @@
     "summary": [
       "Space boundary: pass"
     ],
-    "at_commit": "e3abb1e7"
+    "at_commit": "e3abb1e7; NOT run again in the second fix round"
   }
 ]
