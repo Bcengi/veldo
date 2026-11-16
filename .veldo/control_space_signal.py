@@ -483,7 +483,9 @@ def disposition(ledger, probe, remover, identity, free=None, owner_live=None, ru
         if choice not in ('save', 'discard'):
             return {'ok': False, 'reason': 'space_disposition_choice'}
         effect, owner = ledger.disposition_effect(identity, decision['request'])
-        if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+        # The settled answer is this action for this item: a group pick, or the member pick that
+        # names this member's index (VELDO-0342).
+        if ledger.settled_action(effect, decision) != choice or owner != decision['by']:
             return {'ok': False, 'reason': 'space_disposition_unsettled'}
         facts = {'event': (record.get('due') or {}).get('event'), 'action': choice, 'carrier': _carrier(probe, None)}
         said = {}

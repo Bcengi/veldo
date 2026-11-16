@@ -70,6 +70,7 @@ named refusals, never rationale text, signatures or keys. Standard library only.
 import hashlib
 import importlib.util
 import json
+import re
 import shlex
 from pathlib import Path
 import sqlite3
@@ -225,12 +226,19 @@ def space_presentation(proposal):
 
     Terms with a group (VELDO-0340: `group`, the review group record's identity) name one or more
     worktrees, each a different item listed in full as a single worktree is: its own path, files,
-    commits and restore command, under its number in the list. The three choices are then the
-    group picks, one answer for every worktree listed. Member picks belong to VELDO-0342.
+    commits and restore command, under its number. The number is the member's index in the group
+    record (`indexes`, one per worktree listed, ascending): it is given once, at the join, and
+    stays when another member leaves, so the text and the picks name a worktree alike. The first
+    three choices are the group picks, one answer for every worktree listed. After them come the
+    member picks (VELDO-0342): for each index of `picks`, the same three with the letter w and
+    the index, an answer for that worktree alone. `picks` holds the lowest indexes listed, as
+    many as the requester found to fit one message part; the brief names every worktree listed
+    that has no pick of its own in this request.
     This is a description and an obligation; filesystem effects belong to VELDO-0318.
     """
     grouped = isinstance(proposal, dict) and 'group' in proposal
-    if (not isinstance(proposal, dict) or set(proposal) - {'group'} != {'discard', 'worktrees'}
+    if (not isinstance(proposal, dict)
+            or set(proposal) - ({'group', 'indexes', 'picks'} if grouped else set()) != {'discard', 'worktrees'}
             or proposal.get('discard') != SPACE_DISCARD
             or not isinstance(proposal.get('worktrees'), list)
             or not grouped and len(proposal['worktrees']) != 1):
@@ -245,16 +253,48 @@ def space_presentation(proposal):
     group, trees = proposal['group'], proposal['worktrees']
     if not _is_str(group) or not group.startswith(SPACE_GROUP_PREFIX) or not trees:
         raise Refused('invalid_input', 'group space terms name the review group and at least one worktree')
+    indexes, picks = proposal.get('indexes'), proposal.get('picks')
+    if (not isinstance(indexes, list) or len(indexes) != len(trees)
+            or not all(type(index) is int and index > 0 for index in indexes)
+            or any(low >= high for low, high in zip(indexes, indexes[1:]))):
+        raise Refused('invalid_input', 'group space terms give each worktree its index in the group, ascending')
+    if not isinstance(picks, list) or picks != indexes[:len(picks)]:
+        raise Refused('invalid_input', 'member picks are offered to the lowest indexes listed')
     lines += ['Review group: ' + quoted(group),
               'One answer applies to every worktree listed: %d' % len(trees)]
+    if picks:
+        lines.append('An answer for one worktree adds w and its number, as in accept discard w%d: it applies '
+                     'to that worktree alone, and the others get a new request.' % picks[0])
+    without = indexes[len(picks):]
+    if without:
+        lines.append('Worktrees with no answer of their own in this request: %s. They get one after an '
+                     'answer for a worktree before them.' % ', '.join('%d' % index for index in without))
     seen = set()
-    for number, tree in enumerate(trees, 1):
+    for index, tree in zip(indexes, trees):
         described = _space_tree(tree)
         if tree['item'] in seen or tree['path'] in seen:
             raise Refused('invalid_input', 'group space terms list each worktree once')
         seen.update((tree['item'], tree['path']))
-        lines += ['Worktree %d: %s' % (number, quoted(tree['path']))] + described
-    return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CHOICES)}
+        lines += ['Worktree %d: %s' % (index, quoted(tree['path']))] + described
+    return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': space_group_choices(picks)}
+
+
+SPACE_MEMBER_LETTER = 'w'
+_SPACE_PICK = re.compile(r'accept (save|keep|discard)(?: %s([1-9][0-9]*))?' % SPACE_MEMBER_LETTER)
+
+
+def space_group_choices(picks):
+    """The choices of a group's request: the three group picks, then the three member picks of
+    each index in `picks`."""
+    return list(SPACE_CHOICES) + ['%s %s%d' % (choice, SPACE_MEMBER_LETTER, index)
+                                  for index in picks for choice in SPACE_CHOICES]
+
+
+def space_pick(choice):
+    """(action, index) of a space choice, or None when it is not one: the action is save, keep or
+    discard, and the index is the member a member pick names, None for an answer without one."""
+    found = _SPACE_PICK.fullmatch(choice) if isinstance(choice, str) else None
+    return (found.group(1), int(found.group(2)) if found.group(2) else None) if found else None
 
 
 def space_group_target_problem(target, proposal):

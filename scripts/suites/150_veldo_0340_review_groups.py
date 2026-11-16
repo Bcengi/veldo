@@ -20,7 +20,8 @@ ac3/answered-takes-no-join (a deferral after the answer and before it is applied
 group). AC4 row: ac4/builder (a detached worktree of a build run keeps its untracked file at run finished
 and raises a request of its own, in no group).
 Terms rows: terms/group (the widened terms: a group target that names every member; one worktree
-without a group as before), worker/group (the service's own disposition task publishes a group's
+without a group as before; since VELDO-0342 a group's choices are the three group picks and then
+the member picks of each index, and its terms carry the indexes), worker/group (the service's own disposition task publishes a group's
 request and carries its pick in the worker child, unchanged).
 Fix round rows: ac2/join-races-answer (the owner's answer settles between a deferral's read of the
 group it joins and its write: the write reads again, and the deferral opens the next group),
@@ -623,7 +624,9 @@ def _v340_suite():
                 def offered(trees, group='space:group:fixture:2026-11-16:1'):
                     proposal = {'discard': ST.SPACE_DISCARD, 'worktrees': trees}
                     if group is not None:
-                        proposal['group'] = group
+                        # VELDO-0342: group terms give each worktree its index and the indexes offered a pick.
+                        numbers = list(range(1, len(trees) + 1))
+                        proposal.update(group=group, indexes=numbers, picks=numbers)
                     return proposal
 
                 def record_terms(proposal, **target):
@@ -641,7 +644,9 @@ def _v340_suite():
                       all(text in shown['brief'] for n in (1, 2) for text in (
                           'Worktree %d: "/fixture/terms-%d"' % (n, n), '"a-%d.txt"' % n,
                           'Restore: ' + entry(n)['restore']))
-                      and shown['choices'] == ['accept save', 'accept keep', 'accept discard'])
+                      and shown['choices'] == ['accept save', 'accept keep', 'accept discard',
+                                               'accept save w1', 'accept keep w1', 'accept discard w1',
+                                               'accept save w2', 'accept keep w2', 'accept discard w2'])
                 refusals = {
                     'the target is one item': dict(kind='space_item', ref=entry(1)['item']),
                     'the target names another group': dict(kind='space_group', ref=pair['group'] + '9',

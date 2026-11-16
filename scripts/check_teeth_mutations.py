@@ -16844,6 +16844,75 @@ def cases():
         "            \"SELECT data FROM entities WHERE kind='assignment'\")) if one.get('alias') == alias), None)",
         ['space340/cost/answered-by-id'])
 
+    # VELDO-0342: an answer for one worktree of a review group, and a second group on the same day.
+    picks342 = '150_veldo_0342_member_picks.py'
+    # AC1, declared: a member pick is applied to the whole group.
+    add(342, 'space342-member-pick-reaches-the-whole-group', picks342, 'control_space.py',
+        "            elif picked is not None and member['index'] != picked:",
+        "            elif False:",
+        ['space342/ac1/member-discard'])
+    # AC2, declared: every member pick is offered whatever the size.
+    add(342, 'space342-every-member-pick-whatever-the-size', picks342, 'control_space.py',
+        "            return shown.utf16_units(shown.TEXT.visible(tail)) <= room",
+        "            return True",
+        ['space342/ac2/fit'])
+    # AC3, declared: the day key is reused.
+    add(342, 'space342-reuse-the-day-key', picks342, 'control_space.py',
+        "                return identity, version\n            sequence += 1",
+        "                return identity, version\n            return identity, 0",
+        ['space342/ac3/next-sequence'])
+    # A member pick is an answer for no other member: the Ledger, Signal and the remover, each alone.
+    add(342, 'space342-ledger-takes-a-pick-for-another-member', picks342, 'control_space.py',
+        "        return len(indexes) == len(listed) and indexes[listed.index(mine)] == index",
+        "        return True",
+        ['space342/pick/ledger'])
+    add(342, 'space342-signal-carries-a-pick-for-another-member', picks342, 'control_space_signal.py',
+        "        if ledger.settled_action(effect, decision) != choice or owner != decision['by']:",
+        "        if owner != decision['by']:",
+        ['space342/pick/signal'])
+    add(342, 'space342-remover-takes-a-pick-for-another-member', picks342, 'control_space_remove.py',
+        "    if picked[1] is not None and (not decision.get('group') or decision.get('index') != picked[1]):",
+        "    if False:",
+        ['space342/pick/remover'])
+    add(342, 'space342-one-worktree-request-takes-a-member-pick', picks342, 'control_space.py',
+        "            return index is None and shown == request.get('proposal') and target.get('ref') == identity",
+        "            return shown == request.get('proposal') and target.get('ref') == identity",
+        ['space342/pick/single'])
+    add(342, 'space342-authority-keeps-by-a-member-pick', picks342, 'control_space.py',
+        "            if _settlement().space_pick(effect['choice'])[0] == 'keep':",
+        "            if effect['choice'] == 'accept keep':",
+        ['space342/ac1/member-keep'])
+    # The request for the members left.
+    add(342, 'space342-next-request-while-the-pick-can-be-applied', picks342, 'control_space.py',
+        "                if member['index'] == index:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+        "                if False:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+        ['space342/ac1/member-discard'])
+    add(342, 'space342-no-next-request-when-the-named-member-is-gone', picks342, 'control_space.py',
+        "            raised = self._group_next(gid)",
+        "            raised = {'ok': False}",
+        ['space342/next/gone'])
+    add(342, 'space342-answered-member-cannot-join-again', picks342, 'control_space.py',
+        "        if any(member['item'] == identity and in_group(member) for member in group['members']):",
+        "        if any(member['item'] == identity for member in group['members']):",
+        ['space342/ac1/changed-member'])
+    add(342, 'space342-join-in-the-window-opens-a-second-group', picks342, 'control_space.py',
+        "        if group['state'] == 'open' and self._awaited(group) is not None:\n            # A settled member pick leaves",
+        "        if False:\n            # A settled member pick leaves",
+        ['space342/ac3/pending-join'])
+    # The terms: a worktree is named by its member index, and the members without a pick are named.
+    add(342, 'space342-worktrees-numbered-by-their-place', picks342, 'control_request_settlement.py',
+        "    for index, tree in zip(indexes, trees):",
+        "    for index, tree in enumerate(trees, 1):",
+        ['space342/terms/indexes', 'space342/ac1/member-discard'])
+    add(342, 'space342-members-without-a-pick-not-named', picks342, 'control_request_settlement.py',
+        "    if without:",
+        "    if False:",
+        ['space342/ac2/fit', 'space342/terms/indexes'])
+    add(342, 'space342-picks-for-any-indexes', picks342, 'control_request_settlement.py',
+        "    if not isinstance(picks, list) or picks != indexes[:len(picks)]:",
+        "    if not isinstance(picks, list):",
+        ['space342/terms/indexes'])
+
     return result
 
 

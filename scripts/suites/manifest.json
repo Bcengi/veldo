@@ -2230,6 +2230,15 @@
    ],
    "regions": "VELDO-0340 AC1 to AC4: one review group request per scope and day, a new version per later deferral, group Save, Keep and Discard with the comparison per worktree, a builder's worktree asks for itself. Fix round: a join that races the answer, the Ledger's own check of a group target, the answered read by identity at a bounded cost.",
    "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers, child worker. Fixture clock, process table, pool space and Telegram transport."
+  },
+  {
+   "name": "150_veldo_0342_member_picks",
+   "file": "150_veldo_0342_member_picks.py",
+   "requires": [
+    "150_veldo_0342_member_picks"
+   ],
+   "regions": "VELDO-0342 AC1 to AC3: member picks of a review group (an answer for one worktree, a new request for the members left on the same record, request_closed for the settled one), the picks that fit one message part with the members without one named, one open group per scope and day and the next sequence number after a closing answer. Also a member pick refused for another member by the Ledger, Signal and the remover, the terms with their indexes, a named member that is gone, the unchanged service task.",
+   "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers, child worker. Fixture clock, process table, pool space and Telegram transport."
   }
  ],
  "resource_capacities": {
