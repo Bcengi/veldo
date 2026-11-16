@@ -1417,7 +1417,9 @@ class _Copies:
 
     A COMMIT holds the file when a blob with the file's git object name is in a tree of a commit
     reached from the trunk or from a ref under refs/veldo/kept/ of the item's main repository, and
-    that blob, read back from the repository, has the file's SHA-256. The trunk is the one
+    that blob, read back from the repository, has the file's SHA-256. The object name is worked out
+    here, from the bytes read through the file's own descriptor, in both of git's object formats;
+    git is never handed the file to hash. The trunk is the one
     `trunk(repository)` names; it is never guessed, and with none given only kept refs are read."""
 
     KEPT = 'refs/veldo/kept/'
@@ -1475,21 +1477,18 @@ class _Copies:
             self._said('the commits could not be read: ' + _said(error))
         return self.objects
 
-    def _commit(self, at, sha):
+    def _commit(self, names, sha):
         reached = self._reached()
-        if not reached:
+        name = next((name for name in names if name in reached), None)
+        if name is None:
             return False
-        commands = self.ctx['commands']
-        code, name = _git(commands, '-C', self.main, 'hash-object', '--no-filters', '--', at)
-        if code != 0 or name.strip() not in reached:
-            return False
-        code, out = _git(commands, '-C', self.main, 'cat-file', 'blob', name.strip())
+        code, out = _git(self.ctx['commands'], '-C', self.main, 'cat-file', 'blob', name)
         return code == 0 and hashlib.sha256(out.encode('utf-8', 'surrogateescape')).hexdigest() == sha
 
-    def find(self, at, sha):
-        """Where a copy of the file open at `at`, whose content has the SHA-256 `sha`, is held: store,
-        commit, or None."""
-        for where, held in (('store', self._store), ('commit', lambda digest: self._commit(at, digest))):
+    def find(self, names, sha):
+        """Where a copy of the file whose content has the SHA-256 `sha` and the git object names
+        `names` (one for each object format) is held: store, commit, or None."""
+        for where, held in (('store', self._store), ('commit', lambda digest: self._commit(names, digest))):
             if held(sha):
                 self.counts[where] += 1
                 return where
@@ -1510,10 +1509,16 @@ def _held_file(ctx, copies, name, dir_fd, relative, answer, removed, kept):
         if not stat.S_ISREG(found.st_mode):
             kept.append(relative)
             return
-        digest = hashlib.sha256()
+        digest, header, size = hashlib.sha256(), b'blob %d\0' % found.st_size, 0
+        blobs = (hashlib.sha1(header), hashlib.sha256(header))  # the file as a git blob, in each object format
         for block in iter(lambda: os.read(descriptor, 1 << 20), b''):
-            digest.update(block)
-        held = copies.find('/proc/self/fd/%d' % descriptor, digest.hexdigest())
+            size += len(block)
+            for hashed in (digest,) + blobs:
+                hashed.update(block)
+        if size != found.st_size:
+            kept.append(relative)  # it grew or shrank while it was read
+            return
+        held = copies.find([hashed.hexdigest() for hashed in blobs], digest.hexdigest())
         if held is None or _signature(os.lstat(name, dir_fd=dir_fd)) != _signature(found):
             kept.append(relative)  # no copy, or written since it was read: it stays
             return

@@ -2230,6 +2230,15 @@
    ],
    "regions": "VELDO-0343 AC1 to AC4: the kept branch of a detached worktree before its Discard, no discard without it, an agent's worktree, no commit and no event.",
    "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers. Fixture process table and pool space."
+  },
+  {
+   "name": "150_veldo_0347_unseen_work",
+   "file": "150_veldo_0347_unseen_work.py",
+   "requires": [
+    "150_veldo_0347_unseen_work"
+   ],
+   "regions": "VELDO-0347 AC1 to AC5: ignored files that are work, a repository beneath scratch or build output, clones as private repositories, evidence by a digest read at the removal, the own-folder look and the clone row of table 2.",
+   "requires_note": "ROOT and expect only. Temporary Git and SQLite, the real Ledger, Signal, probes, keep step and removers. Fixture process table and pool space."
   }
  ],
  "resource_capacities": {
