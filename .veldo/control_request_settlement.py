@@ -171,22 +171,13 @@ def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')
 
 
-def space_presentation(proposal):
-    """The signed request content for one worktree, derived only from its signed terms.
+SPACE_GROUP_TARGET = 'space_group'
+SPACE_GROUP_PREFIX = 'space:group:'
 
-    Callers supply the probe's file list, the tips of the unlanded commits that make the work
-    unique, branch (null for detached), whether commits are unheld, and the kept branch when
-    detached commits need one. One of the two lists is non-empty: a clean tree whose only unique
-    work is unlanded commits is asked about too (design 7, Save; 13, answer 2), and its brief says
-    Discard removes no uncommitted file and the commits stay. The Ledger's request producer
-    uses this before signing its ordinary inbox open command. Group picks belong to VELDO-0342.
-    This is a description and an obligation; filesystem effects belong to VELDO-0318.
-    """
-    if (not isinstance(proposal, dict) or set(proposal) != {'discard', 'worktrees'}
-            or proposal.get('discard') != SPACE_DISCARD
-            or not isinstance(proposal.get('worktrees'), list) or len(proposal['worktrees']) != 1):
-        raise Refused('invalid_input', 'space terms name one worktree and say Discard saves before removal')
-    tree = proposal['worktrees'][0]
+
+def _space_tree(tree):
+    """The lines of one worktree of space terms, after its path: the item, its branch state, the
+    files Discard would remove, the unlanded commits and the restore command."""
     fields = {'item', 'path', 'branch', 'unheld_commits', 'kept_branch', 'files', 'commits', 'restore'}
     if (not isinstance(tree, dict) or set(tree) != fields
             or not all(_is_str(tree.get(k)) for k in ('item', 'path'))
@@ -208,8 +199,7 @@ def space_presentation(proposal):
         raise Refused('invalid_input', 'space terms carry the restore command for this item')
     # JSON quoting keeps a newline in a filename distinct from a second file or an instruction.
     quoted = lambda value: json.dumps(value, ensure_ascii=True)
-    lines = ['Space disposition', proposal['discard'], 'Worktree: ' + quoted(tree['path']),
-             'Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch'])]
+    lines = ['Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch'])]
     if files:
         lines += ['Files Discard would remove:'] + ['  ' + quoted(path) for path in files]
     else:
@@ -219,7 +209,63 @@ def space_presentation(proposal):
     if tree['branch'] is None and tree['unheld_commits']:
         lines.append('Kept branch for detached commits: ' + quoted(tree['kept_branch']))
     lines.append('Restore: ' + tree['restore'])
+    return lines
+
+
+def space_presentation(proposal):
+    """The signed request content, derived only from its signed terms.
+
+    Terms without a group name exactly one worktree. Callers supply the probe's file list, the
+    tips of the unlanded commits that make the work unique, branch (null for detached), whether
+    commits are unheld, and the kept branch when detached commits need one. One of the two lists
+    is non-empty: a clean tree whose only unique work is unlanded commits is asked about too
+    (design 7, Save; 13, answer 2), and its brief says Discard removes no uncommitted file and
+    the commits stay. The Ledger's request producer uses this before signing its ordinary inbox
+    open command.
+
+    Terms with a group (VELDO-0340: `group`, the review group record's identity) name one or more
+    worktrees, each a different item listed in full as a single worktree is: its own path, files,
+    commits and restore command, under its number in the list. The three choices are then the
+    group picks, one answer for every worktree listed. Member picks belong to VELDO-0342.
+    This is a description and an obligation; filesystem effects belong to VELDO-0318.
+    """
+    grouped = isinstance(proposal, dict) and 'group' in proposal
+    if (not isinstance(proposal, dict) or set(proposal) - {'group'} != {'discard', 'worktrees'}
+            or proposal.get('discard') != SPACE_DISCARD
+            or not isinstance(proposal.get('worktrees'), list)
+            or not grouped and len(proposal['worktrees']) != 1):
+        raise Refused('invalid_input', 'space terms name one worktree and say Discard saves before removal')
+    quoted = lambda value: json.dumps(value, ensure_ascii=True)
+    lines = ['Space disposition', proposal['discard']]
+    if not grouped:
+        tree = proposal['worktrees'][0]
+        described = _space_tree(tree)
+        lines += ['Worktree: ' + quoted(tree['path'])] + described
+        return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CHOICES)}
+    group, trees = proposal['group'], proposal['worktrees']
+    if not _is_str(group) or not group.startswith(SPACE_GROUP_PREFIX) or not trees:
+        raise Refused('invalid_input', 'group space terms name the review group and at least one worktree')
+    lines += ['Review group: ' + quoted(group),
+              'One answer applies to every worktree listed: %d' % len(trees)]
+    seen = set()
+    for number, tree in enumerate(trees, 1):
+        described = _space_tree(tree)
+        if tree['item'] in seen or tree['path'] in seen:
+            raise Refused('invalid_input', 'group space terms list each worktree once')
+        seen.update((tree['item'], tree['path']))
+        lines += ['Worktree %d: %s' % (number, quoted(tree['path']))] + described
     return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CHOICES)}
+
+
+def space_group_target_problem(target, proposal):
+    """Why the target of group space terms does not name what the terms list, or None: a group is
+    targeted as the group, with every member item named in the order the terms list them. Call
+    after space_presentation accepted the proposal."""
+    items = [tree['item'] for tree in proposal['worktrees']]
+    if (target['kind'] != SPACE_GROUP_TARGET or target['ref'] != proposal['group']
+            or target.get('members') != items):
+        return 'group space terms target the group and every listed item'
+    return None
 
 
 def digest(value):
@@ -525,7 +571,11 @@ class Settlement:
                 raise Refused('invalid_input', 'proposal is a mapping or null')
             if c['touchpoint'] == 'space_disposition':
                 space_presentation(c['proposal'])
-                if target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:
+                if 'group' in c['proposal']:
+                    problem = space_group_target_problem(target, c['proposal'])
+                    if problem:
+                        raise Refused('invalid_input', problem)
+                elif target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:
                     raise Refused('invalid_input', 'space terms target the listed item')
             self._verified(c['principal'], c, packet.get('signature'), self.AC.BOUNDARIES['proposal_commit'])
             tid = terms_id(self.ids['repository_uuid'], c['terms'])

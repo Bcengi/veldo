@@ -790,7 +790,10 @@ def _r_worktree(ctx, identity, record, answer):
     owner = record.get('owner') or {}
     review = (not record.get('branch') and not owner.get('ticket')
               and (owner.get('run') or {}).get('station') == 'review')
-    if review:
+    if review and not ctx.get('disposition'):
+        # The owner's Save and Discard of a review group member (VELDO-0340) are not the scratch
+        # removal: Save has committed the untracked files, and Discard removes exactly what the
+        # snapshot holds, compared below under the marked name.
         _review_scratch(ctx, identity, record, kept, answer)
     repository = ctx['probe'].repository(path, ctx['run'])
     if repository is None:

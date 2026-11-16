@@ -2221,6 +2221,15 @@
    ],
    "regions": "VELDO-0318 AC1 to AC4: one request, signed disposition, safe Save and Discard, atomic owner Keep.",
    "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers. Fixture process table and pool space."
+  },
+  {
+   "name": "150_veldo_0340_review_groups",
+   "file": "150_veldo_0340_review_groups.py",
+   "requires": [
+    "150_veldo_0340_review_groups"
+   ],
+   "regions": "VELDO-0340 AC1 to AC4: one review group request per scope and day, a new version per later deferral, group Save, Keep and Discard with the comparison per worktree, a builder's worktree asks for itself.",
+   "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers, child worker. Fixture clock, process table, pool space and Telegram transport."
   }
  ],
  "resource_capacities": {

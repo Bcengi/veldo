@@ -16782,6 +16782,54 @@ def cases():
         ['ac3/commands'])
     result[-1]['siblings'] = True
 
+    # VELDO-0340: review worktrees with unique work share one request per scope and day.
+    groups340 = '150_veldo_0340_review_groups.py'
+    # AC1, declared: one request per worktree.
+    add(340, 'space340-one-request-per-worktree', groups340, 'control_space_signal.py',
+        "    if _is_review_worktree(record):\n        # One request per scope and day for review worktrees",
+        "    if False:\n        # One request per scope and day for review worktrees",
+        ['space340/ac1/one-request'])
+    add(340, 'space340-one-day-for-every-deferral', groups340, 'control_space.py',
+        "        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()",
+        "        return '2026-11-16'",
+        ['space340/ac1/next-day'])
+    # AC2, declared: the worktree is added without a new version of the request.
+    add(340, 'space340-join-without-a-new-version', groups340, 'control_space.py',
+        "        elif (assignment.get('subject') or {}).get('ref') != tid:",
+        "        elif False:",
+        ['space340/ac2/new-version'])
+    add(340, 'space340-pick-reaches-an-unseen-member', groups340, 'control_space.py',
+        "            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:",
+        "            elif False:",
+        ['space340/ac2/unseen-member'])
+    # AC3, declared: the comparison per worktree is skipped.
+    add(340, 'space340-discard-without-the-comparison-per-worktree', groups340, 'control_space_remove.py',
+        "    if saved_names != shown['files']:",
+        "    if False:",
+        ['space340/ac3/discard'])
+    add(340, 'space340-pick-reaches-one-member', groups340, 'control_space.py',
+        "        if record['disposition'].get('group'):\n            return self._group_change(",
+        "        if False:\n            return self._group_change(",
+        ['space340/ac3/save', 'space340/ac3/keep'])
+    add(340, 'space340-answered-group-takes-a-join', groups340, 'control_space.py',
+        "        return group['state'] == 'open' and not self._group_answered(group)",
+        "        return group['state'] == 'open'",
+        ['space340/ac3/answered-takes-no-join'])
+    add(340, 'space340-scratch-removal-inside-a-disposition', groups340, 'control_space_remove.py',
+        "    if review and not ctx.get('disposition'):",
+        "    if review:",
+        ['space340/ac3/save', 'space340/ac3/discard'])
+    # AC4, declared: every run-owned worktree is treated as a review worktree.
+    add(340, 'space340-every-run-worktree-is-a-review-worktree', groups340, 'control_space_signal.py',
+        "    return (record.get('kind') == 'worktree' and run.get('station') == 'review'",
+        "    return (record.get('kind') == 'worktree' and bool(run)",
+        ['space340/ac4/builder'])
+    # The widened terms: a group's target names every member item.
+    add(340, 'space340-group-target-without-its-members', groups340, 'control_request_settlement.py',
+        "            or target.get('members') != items):",
+        "            or False):",
+        ['space340/terms/group'])
+
     return result
 
 

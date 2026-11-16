@@ -449,11 +449,11 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
         return write('gone', {})
     result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
     if (result.get('outcome') == 'deferred' and judged['deferral'] == 'unique_work'
-            and record['kind'] == 'worktree' and not _is_review_worktree(record)
-            and (event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released')
-                 or event == 'run_finished' and not _is_review_worktree(record))):
+            and record['kind'] == 'worktree'
+            and event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'run_finished')):
         # The deferral is written. A request that cannot be built is said and leaves it deferred:
-        # the next event asks again, and nothing is removed meanwhile.
+        # the next event asks again, and nothing is removed meanwhile. A review worktree gets no
+        # request of its own: it joins its scope's review group of the day (VELDO-0340).
         try:
             asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])
         except Exception as error:
@@ -515,15 +515,20 @@ def disposition(ledger, probe, remover, identity, free=None, owner_live=None, ru
 
 
 def _request(ledger, probe, remover, identity, record, landed, run):
-    """Reserve the item's request: its terms, and the commit the worktree was at when they were read.
+    """Reserve the item's request, or for a review worktree its place in the day's review group:
+    its terms, and the commit the worktree was at when they were read.
     The commit is read first, so a commit made while the lists are read leaves a request whose
     recorded commit is not the worktree's, and Save and Discard refuse it."""
     head = remover.disposition_head(record['locator']['path'])
     commits = _unlanded(ledger, probe, remover, record, landed, run)
     if commits is None:
         raise ValueError('the worktree cannot be read for its unlanded commits')
-    return ledger.request_disposition(
-        identity, remover.disposition_proposal(ledger, identity, record, commits), head)
+    proposal = remover.disposition_proposal(ledger, identity, record, commits)
+    if _is_review_worktree(record):
+        # One request per scope and day for review worktrees: the member's own entry of the terms
+        # goes to the group, and the Ledger reads the day of this deferral.
+        return ledger.request_group(identity, proposal['worktrees'][0], head)
+    return ledger.request_disposition(identity, proposal, head)
 
 
 def _unlanded(ledger, probe, remover, record, landed, run):

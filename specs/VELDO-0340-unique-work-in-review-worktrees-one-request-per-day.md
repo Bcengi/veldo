@@ -18,6 +18,8 @@ footprint:
   - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
+  - "engine/.veldo/control_request_settlement.py"
+  - ".veldo/control_request_settlement.py"
   - "scripts/suites/*_veldo_0340_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -123,3 +125,44 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   worktrees, and a target kind for a review group), with the VELDO-0327 suite if a row of it holds the
   one-entry refusal. engine/.veldo/control_service.py does not need to change: its disposition task
   can reach a group through the members' own records.
+- 2026-11-16: LEAD DECISION on the blocker above: the footprint widening is accepted. This ticket may
+  change engine/.veldo/control_request_settlement.py and its synced copy so the space terms carry one
+  or more worktrees and a group target kind, every member listed with its own path, files, commits
+  and restore command, and the target naming the group and every member item; and the VELDO-0327
+  suite where a row asserts the one-entry refusal. Every single-worktree behavior of VELDO-0327 and
+  VELDO-0318 stays as it is. A group is never written as one worktree entry.
+  engine/.veldo/control_service.py does not change. The two settlement files are added to the
+  footprint above. The VELDO-0327 suite was not changed: terms without a group still name exactly
+  one worktree, so no row of it asserted anything that moved.
+- 2026-11-16: built. What the build decided where the design leaves room:
+  - Terms. Space terms with a `group` (the review group record's identity) list one or more
+    worktrees and are targeted as space_group, with `members` naming every item in the order
+    listed. Terms without a group are what they were, one worktree targeted as space_item.
+  - The record (design 4.9): space:group:<scope>:<day>:<sequence>, with the day, the sequence, the
+    members (index, review run, file list, kept branch, the commit read, the whole entry shown),
+    the current request with its version, and the state. Each member's own disposition holds its
+    own entry alone and names the group, so Save and Discard compare each worktree with what was
+    shown for that worktree, through the same remover checks as a single request.
+  - The day is read once, as the deferral is recorded, through the Ledger's clock in the
+    installation's time zone. Signal still imports nothing and names no clock. Nothing is opened,
+    closed or sent when the clock moves.
+  - A new version is a new terms record (terms are immutable) and a revision of the one request,
+    then its framing. The settlement refuses an answer bound to the earlier presentation as
+    stale_presentation, before and after the new version is presented.
+  - A join is taken by the day's first group that is open and whose request no answer has ended.
+    So a deferral after the answer, and before it is applied, opens the next sequence number. The
+    sequence number is built here because AC3 defers a changed member "into a new group"; the
+    rest of VELDO-0342 (member picks, the size rule) is not built.
+  - A group pick is one write: every member still in the group (deferred, its requested
+    disposition naming the group) that the settled terms list gets the pick, and the group closes.
+    A member that joined after the presentation the owner answered was never shown: the pick does
+    not reach it, and it joins a new group at its next publish. Save and Discard are authorized by
+    the service's disposition task as for one worktree and carried per member by Signal; Keep is
+    the owner's signed space_disposition packet naming any member with the group's request, as
+    VELDO-0318 AC4 has it for one worktree.
+  - The owner's Save and Discard of a review worktree do not run the review scratch remover: Save
+    has committed the untracked files and Discard removes exactly what its snapshot holds.
+  - Not built, and why: member picks and the one-message size rule (VELDO-0342); a client that
+    signs the owner's Keep packet (none exists in the repository, as VELDO-0318 found); a group
+    whose request was canceled or declined keeps its members without a live request until their
+    next deferral, which no criterion here names.
