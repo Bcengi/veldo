@@ -149,6 +149,7 @@ def gate_exit(root, gate_source):
                   text, flags=re.M)
     (root / 'scripts/verify.sh').write_text(text)
     (root / 'scripts/check_template_sync.sh').write_text('exit 0\n')
+    (root / 'scripts/check_space_boundary.py').write_text('')
     for name in ('validate.py', 'shape_gate.py', 'events.py', 'version.py'):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
     return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
