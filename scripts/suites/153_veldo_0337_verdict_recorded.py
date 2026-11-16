@@ -554,14 +554,16 @@ def _v337_verdict_suite():
         (adopt_path / 'work.txt').write_text('adopt planted\n')
         locator = {'path': str(adopt_path)}
         before, at = L.items(), journal_length()
-        # The public adopt helper has no ends argument. Send it through the shared command
-        # builder to exercise the ledger's adoption transition, with an otherwise valid subset.
-        refused = L._create(SP.ADOPT, 'scratch', locator, owner, 'reconcile',
-                            None, None, None, None, None, 'owner_adopt', None, None,
-                            ends=['verdict_recorded'])
-        check(row, 'adopt refuses valid end events without an item or journal write',
-              not refused['ok'] and str(refused.get('reason')).startswith('invalid_input:ends')
-              and L.items() == before and journal_length() == at
+        # The lead's decision at assembly: no creator gives an end list, by declare or by adopt; the
+        # end events come from the kind. The shared command builder takes none either.
+        try:
+            refused = not L._create(SP.ADOPT, 'scratch', locator, owner, 'reconcile',
+                                    None, None, None, None, None, 'owner_adopt', None, None,
+                                    ends=['verdict_recorded'])['ok']
+        except TypeError:
+            refused = True
+        check(row, 'adopt takes no end list and makes no item or journal write for one',
+              refused and L.items() == before and journal_length() == at
               and text_of(adopt_path / 'work.txt') == 'adopt planted\n')
         accepted = L.adopt('scratch', locator, owner, 'owner_adopt')
         adopted = L.item(accepted.get('item')) or {}

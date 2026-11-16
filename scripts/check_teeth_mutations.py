@@ -14460,8 +14460,8 @@ def cases():
                '            if record.get("domain") != self.domain or record.get("repository") != self.repository:\n'
                '                continue\n', '', ['ac1/reconcile-domain-and-repository'])
     verdict337('space337-adopt-accepts-ends', 'control_space.py',
-               '            if (adopted or not isinstance(ends, (list, tuple)) or not ends\n',
-               '            if (not isinstance(ends, (list, tuple)) or not ends\n',
+               '                principal, command_id, form=None):\n',
+               '                principal, command_id, form=None, ends=None):\n',
                ['ac1/adopt-refuses-ends'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
