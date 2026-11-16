@@ -2185,6 +2185,15 @@
    ],
    "regions": "VELDO-0316 AC1 to AC4: admission boundaries, waiting before reservation, report start, need precedence, contract digest and asynchronous first judgment.",
    "requires_note": "Only ROOT and expect. Real temporary SQLite Ledger, reservations, dispatches and Consumer; fixture eligibility, configuration, source and receiver seam. No live engines or process reader."
+  },
+  {
+   "name": "150_veldo_0334_space_wait",
+   "file": "150_veldo_0334_space_wait.py",
+   "requires": [
+    "150_veldo_0334_space_wait"
+   ],
+   "regions": "VELDO-0334 AC1 to AC3: one request, recorded waiting answers, atomic pool marks and event wakes.",
+   "requires_note": "Only ROOT and expect. Temporary SQLite, real Ledger, Signal, folder remover, Runner and serial Consumer. Fixture process table, free-space reader, eligibility and source. No live engines."
   }
  ],
  "resource_capacities": {

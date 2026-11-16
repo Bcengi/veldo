@@ -1621,6 +1621,7 @@ class Service:
         # With no store, or inside a transaction (whose records are not committed), the first pass marks it.
         if wired is not None and self.space_seen is None and self.conn is not None and not self.conn.in_transaction:
             self.space_seen = self.watermark()
+        self.space_freed_seen = self.watermark() if wired is not None and self.conn is not None else None
         self._space = wired
         self.space_consumer = None if wired is None else SPACE_CONSUMER.Consumer(
             wired['ledger'], {key: value for key, value in wired.items() if key != 'ledger'},
@@ -2249,11 +2250,31 @@ class Service:
         observation['accepted_versions'] = dict(result.pop('accepted_versions', None) or {})
         return result
 
+    def space_wake(self):
+        """Read freeing writes on journal/worker notifications, never on a timer.
+
+        The ledger commits the mark with its cause. Reading the committed transition also
+        covers a worker whose answer pipe was lost after its write.
+        """
+        seen = getattr(self, 'space_freed_seen', None)
+        if seen is None or self.conn is None or self.conn.in_transaction:
+            return
+        head = self.watermark()
+        for (raw,) in self.conn.execute('SELECT transition FROM journal WHERE seq > ? AND seq <= ? ORDER BY seq',
+                                        (seen, head)):
+            changed = json.loads(raw)
+            marked = [key for key, value in changed.items() if value.get('kind') == 'space_hold'
+                      and value['data'].get('freed') and value['data']['state'] == 'waiting']
+            if marked and self.loop is not None:
+                self.loop.wake('space', marked)
+        self.space_freed_seen = head
+
     def hint_after(self, before, consume=True):
         """After a packet or pass that advanced the journal, the head record's hint to every subscribed
         API; a failure is logged by name and never ends the service. The same advance wakes the factory loop
         (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
         new-project pass due (VELDO-0143)."""
+        self.space_wake()
         if self.watermark() > before:
             self.projects_due = True
             consumer = getattr(self, 'space_consumer', None)
@@ -2689,6 +2710,7 @@ class Service:
                 return sent
             # Only what is committed is read: the journal, after the commit, by its own sequence.
             head = self.watermark()
+            self.space_wake()
             records = self.space_committed(head) if head > self.space_seen else []
             for record in records:
                 for found in self.space_events([record]):

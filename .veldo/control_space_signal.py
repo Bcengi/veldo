@@ -241,9 +241,18 @@ def signal(ledger, event, subject, carry_out=None, principal=None, command_id=No
             left.append(identity)
     if probe is None or kinds is None or remover is None:
         carried, left = [], left + carried
-    outcomes = _carry(ledger, probe, kinds, remover, event, carried, emitter=emitter, free=free, keep=keep,
-                      owner_live=owner_live, landed=landed, queued=queued, run=run, proc=proc, seq=result.get('seq'),
-                      borrow_root=borrow_root) if carried else []
+    groups = {event: carried}
+    if event == 'admission_requested':
+        groups = {}
+        for identity in carried:
+            ending = ledger.item(identity)['due']['event']
+            groups.setdefault(ending, []).append(identity)
+    outcomes = []
+    for ending, selected in groups.items():
+        if selected:
+            outcomes.extend(_carry(ledger, probe, kinds, remover, ending, selected, emitter=emitter, free=free,
+                keep=keep, owner_live=owner_live, landed=landed, queued=queued, run=run, proc=proc,
+                seq=result.get('seq'), borrow_root=borrow_root))
     counts = {'removed': 0, 'gone': 0, 'kept': 0, 'removing': 0, 'left': len(left), 'deferred': {}}
     for entry in outcomes:
         if entry['outcome'] == 'deferred':

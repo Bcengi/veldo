@@ -16530,6 +16530,39 @@ def cases():
         "        with contextlib.nullcontext():\n            base = identity_of",
         ['space316/ac1/concurrent'])
 
+    # VELDO-0334: each specification falsifier, then the transaction and cache races.
+    wait334 = '150_veldo_0334_space_wait.py'
+    cached334 = "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):"
+    add(334, 'space334-request-every-pass', wait334, 'control_space_admission.py',
+        cached334, "        if hold['state'] != 'waiting':", ['space334/ac1/one-signal'], also=[
+            ("        if given is not None and reason is not None and not hold.get('retry_asked'):", "        if given is not None and reason is not None:")])
+    add(334, 'space334-read-every-pass', wait334, 'control_space_admission.py',
+        cached334, "        if hold['state'] != 'waiting':", ['space334/ac2/manual-free-timer'])
+    add(334, 'space334-mark-without-wake', wait334, 'control_service.py',
+        "                self.loop.wake('space', marked)",
+        "                pass  # defect: the freeing write never wakes the factory",
+        ['space334/ac3/stopped-clock'])
+    add(334, 'space334-no-freed-marks', wait334, 'control_space.py',
+        "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=True)}",
+        "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=False)}",
+        ['space334/ac3/outcome', 'space334/ac3/release', 'space334/ac3/reconcile'])
+    add(334, 'space334-mark-never-cleared', wait334, 'control_space.py',
+        "        record['freed'] = False", "        pass  # defect: every later offer can read space",
+        ['space334/ac3/release'])
+    add(334, 'space334-freeing-race-lost', wait334, 'control_space_admission.py',
+        "        options = {'expected_version': version} if versioned and version is not None else {}",
+        "        options = {}  # defect: use the version after reading free space",
+        ['space334/ac3/free-during-judgment'])
+    add(334, 'space334-cache-hides-freed', wait334, 'control_space_admission.py',
+        "            if not hold or (hold['state'] != 'released' and not (\n"
+        "                    hold['state'] == 'waiting' and hold.get('freed'))):",
+        "            if not hold or hold['state'] != 'released':",
+        ['space334/ac3/completion-race', 'space334/ac3/stopped-clock'])
+    add(334, 'space334-retry-loses-ending', wait334, 'control_space_signal.py',
+        "            ending = ledger.item(identity)['due']['event']",
+        "            ending = event  # defect: retry forgets why the item ended",
+        ['space334/ac1/signal-can-admit'])
+
     return result
 
 

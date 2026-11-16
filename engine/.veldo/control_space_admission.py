@@ -23,8 +23,7 @@ working folder is inside, else no project; design 6.7). The ledger checks the an
 again when it writes it, and refuses advised for a hold of a scope in act mode. Two projects on one pool
 can be in different modes; the numbers are the same for both.
 
-Waiting holds keep their recorded answer. The freeing-event retry and Signal request belong to
-VELDO-0334. The service submits initial admission to its serial space worker; its pipe completion
+Waiting holds keep their recorded answer until a freeing write marks them (VELDO-0334). The service submits initial admission to its serial space worker; its pipe completion
 wakes the factory. No free-space reader, project file read or lock wait runs on the service loop.
 
 A HOLD NO RUN ANSWERS FOR IS RELEASED BY THE WORKER (reconcile): at service start, and when an offer
@@ -35,6 +34,7 @@ import contextlib
 import fcntl
 import hashlib
 import importlib.util
+import inspect
 import json
 import os
 from pathlib import Path
@@ -69,25 +69,51 @@ def judge(ledger, identity, free):
     return None
 
 
-def _admit(ledger, identity, free, principal=None, command_id=None):
-    """Judge a waiting hold and write the answer: admitted, or with the reason waiting for a run of a
-    scope in act mode and advised for a run of a scope in report mode. The scope is the one the hold
-    records. Returns the ledger's answer with the answer and the reason added."""
-    hold = ledger.hold(identity)
-    if hold is None:
-        return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
-    scope = hold.get('scope')
-    reason = judge(ledger, identity, free)
-    answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
-    result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id)
-    return dict(result, answer=answer, reason=reason) if result['ok'] else result
+def _admit(ledger, identity, free, principal=None, command_id=None, given=None):
+    """One request per hold; only a freeing write permits another judgment.
+
+    Every judgment writes against the version read before its free-space read. A freeing
+    write during that read cannot be erased: a stale write retries from the new snapshot.
+    """
+    versioned = 'expected_version' in inspect.signature(ledger.admit).parameters
+    while True:
+        version, hold = ledger.hold_snapshot(identity) if hasattr(ledger, 'hold_snapshot') else (None, ledger.hold(identity))
+        if hold is None:
+            return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
+        scope = hold.get('scope')
+        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):
+            return {'ok': True, 'answer': hold['state'], 'reason': hold.get('reason')}
+        reason = judge(ledger, identity, free)
+        if given is not None and reason is not None and not hold.get('retry_asked'):
+            # Claim this hold's one request before entering Signal. A crash cannot send it twice;
+            # deferred work stays in the ledger and reconcile can recover it.
+            claimed = ledger.admit(identity, 'waiting', reason, retry_asked=True,
+                principal=principal, expected_version=version)
+            if claimed.get('reason') == 'stale_version':
+                continue
+            if not claimed.get('ok'):
+                return claimed
+            signal = _organ('control_space_signal').signal
+            sent = signal(ledger, 'admission_requested', {'pool': reason['pool']},
+                          emitter={'hold': identity}, **(given or {}))
+            accepted(sent)
+            version, hold = ledger.hold_snapshot(identity)
+            if hold.get('freed'):
+                reason = judge(ledger, identity, free)
+        answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
+        options = {'expected_version': version} if versioned and version is not None else {}
+        result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id, **options)
+        if result.get('reason') == 'stale_version':
+            continue
+        return dict(result, answer=answer, reason=reason) if result['ok'] else result
 
 
-def admit(ledger, identity, free, principal=None, command_id=None):
-    # Gate and wrapped-run callers share the dispatch admission lock. Readers without a
-    # store (test doubles) keep the original pure ledger interface.
+def admit(ledger, identity, free, principal=None, command_id=None, **given):
+    # Gate and wrapped-run callers share the dispatch admission lock. Their existing
+    # read/write adapters have no Signal context and are not queued factory units.
+    # Dispatch prepare supplies that context on the worker below.
     with lock(ledger) if getattr(ledger, 'state_root', None) else contextlib.nullcontext():
-        return _admit(ledger, identity, free, principal, command_id)
+        return _admit(ledger, identity, free, principal, command_id, given or None)
 
 
 class Refused(Exception):
@@ -177,7 +203,7 @@ def identity_of(repository, unit, station, attempt):
 
 
 def prepare(space, *, repository, project, unit, station, attempt):
-    """Place and judge before reserving anything. No removals or retry scheduling here."""
+    """Place and judge before reserving anything, on the caller or space worker."""
     if not enabled(space):
         return {'ok': True, 'space': None}
     ledger = space['ledger']
@@ -196,13 +222,14 @@ def prepare(space, *, repository, project, unit, station, attempt):
                 needs, sources = needs_of(ledger, project, station)
                 accepted(ledger.place_hold(identity, needs, sources, scope={'type': 'project', 'id': project}))
                 hold = ledger.hold(identity)
-            if hold['state'] == 'waiting' and hold.get('reason') is None:
+            if hold['state'] == 'waiting':
                 def free(pool):
                     value = space['free'](pool)
                     if type(value) is not int or value < 0:
                         raise Refused('space_free_unread:' + pool['name'])
                     return value
-                accepted(_admit(ledger, identity, free))
+                accepted(_admit(ledger, identity, free, given={key: value for key, value in space.items()
+                    if key != 'ledger'}))
                 hold = ledger.hold(identity)
             answer = {'ok': True, 'space': {'hold': identity, 'needs': hold['needs']},
                       'answer': hold['state'], 'reason': hold.get('reason'), 'source': hold['source']}
@@ -244,12 +271,13 @@ def reconcile(space, left=None):
 
 
 class Requests:
-    """Initial judgments on the existing consumer, coalesced by dispatch attempt.
+    """Judgments on the existing consumer, coalesced by dispatch attempt.
 
     Completed answers that carry a hold are retained: unrelated factory passes do no work for
-    them. A later ticket supplies the freeing-event retry. An answer with no hold (a failed
-    read, a lost worker) is reported by name once and then dropped: its completion wakes the
-    factory, and the pass after the one that reports it submits the judgment again.
+    them. A waiting answer is invalidated by its hold's committed freed mark (VELDO-0334). An
+    answer with no hold (a failed read, a lost worker) is reported by name once and then dropped:
+    its completion wakes the factory, and the pass after the one that reports it submits the
+    judgment again, so a freed mark that outlived a failed judgment is looked at again.
     """
     def __init__(self, service, loop):
         self.service, self.loop, self.answers = service, loop, {}
@@ -280,13 +308,14 @@ class Requests:
         if answer is not None:
             # Only an answer that carries a hold is kept: waiting, admitted or advised. Any other
             # answer (an unread pool, a lost worker) is returned once, and the next pass asks again.
+            # A waiting answer whose hold a freeing write marked is dropped and judged again.
             bound = answer.get('space')
             hold = space['ledger'].hold(bound['hold']) if bound else None
             del self.answers[key]
             if hold is None:
                 if not bound:
                     return answer
-            elif hold['state'] != 'released':
+            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):
                 self.answers[key] = answer
                 return answer
         consumer = self.service.space_consumer

@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_space_admission.py"
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
   - "scripts/suites/*_veldo_0334_*.py"
@@ -87,3 +89,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-16: footprint includes Signal and its synced copy. Admission requested retries a pool
+  through the existing ending event, rules, keep step and removers. No acceptance criterion changed.

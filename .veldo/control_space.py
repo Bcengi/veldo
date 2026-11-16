@@ -883,11 +883,11 @@ class Ledger:
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
                              kinds={ITEM_KIND: ITEM_OPERATIONS, POOL_KIND: (POOL,),
-                                    HOLD_KIND: (HOLD, ADMIT, RELEASE), RECONCILE_KIND: (RECONCILE,),
+                                    HOLD_KIND: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_KIND: (RECONCILE,),
                                     MODE_KIND: (MODE,), RUN_KIND: (ISSUE,), EVENT_KIND: (EVENT, CONSUMED),
                                     PACKET_KIND: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              prefixes={ITEM_PREFIX: ITEM_OPERATIONS, POOL_PREFIX: (POOL,),
-                                       HOLD_PREFIX: (HOLD, ADMIT, RELEASE), RECONCILE_PREFIX: (RECONCILE,),
+                                       HOLD_PREFIX: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_PREFIX: (RECONCILE,),
                                        MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,), EVENT_PREFIX: (EVENT, CONSUMED),
                                        PACKET_PREFIX: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              module=__file__)
@@ -1007,6 +1007,10 @@ class Ledger:
     def hold(self, identity):
         return self._row(hold_id(identity), HOLD_KIND)[1] if _is_str(identity) else None
 
+    def hold_snapshot(self, identity):
+        """Version and data from one read, for admission's compare-and-write."""
+        return self._row(hold_id(identity), HOLD_KIND)
+
     def reconcile_record(self, identity):
         return self._row(identity, RECONCILE_KIND)[1] if _is_str(identity) else None
 
@@ -1084,6 +1088,24 @@ class Ledger:
     # The command path.
 
     def _send(self, operation, parameters, versions, principal, command_id, about, nonce=None):
+        if operation in (OUTCOME, RELEASE, RECONCILE):
+            # Declare the waiting set, then check it again inside the write transaction.
+            # A concurrent admission or new hold retries only this optimistic snapshot.
+            original = dict(versions)
+            while True:
+                waiting = {identity: version for identity, version, raw in self.conn.execute(
+                    'SELECT id, version, data FROM entities WHERE kind=?', (HOLD_KIND,))
+                    if json.loads(raw)['state'] == 'waiting'}
+                result = self._send_once(operation, parameters, dict(waiting, **original),
+                                         principal, command_id, about, nonce)
+                if result.get('reason') not in ('stale_version', 'space_holds_changed'):
+                    return result
+                if any(self.conn.execute('SELECT version FROM entities WHERE id=?', (key,)).fetchone()
+                       != ((version,) if version else None) for key, version in original.items()):
+                    return result
+        return self._send_once(operation, parameters, versions, principal, command_id, about, nonce)
+
+    def _send_once(self, operation, parameters, versions, principal, command_id, about, nonce=None):
         packet = self._packet
         if packet is not None and principal == packet['principal'] and operation == packet['operation']:
             # The command of a signed packet: its record is written in this transaction, against the
@@ -1308,14 +1330,17 @@ class Ledger:
         and then `principal` must be the owner, which the transition reads from this store itself."""
         about = {'item': None, 'event': event, 'subject': subject}
         try:
-            if event not in self.lifecycle['events']:
+            if event not in self.lifecycle['events'] and event != 'admission_requested':
                 raise Refused('space_unknown_event', 'not an event of the lifecycle table')
-            subject = _checked_subject(subject)
+            subject = self._retry_subject(subject) if event == 'admission_requested' else _checked_subject(subject)
             self.permit(principal, SIGNAL, {'event': event, 'subject': subject})
         except Refused as refusal:
             return self._refuse(SIGNAL, refusal, about, principal)
         try:
-            if 'items' in subject:
+            if event == 'admission_requested':
+                versions = {key: self._row(key, ITEM_KIND)[0] for key, value in self.items().items()
+                            if self._retry_item(value, subject['pool'])}
+            elif 'items' in subject:
                 versions = {one['item']: one['version'] for one in subject['items']}
                 self._named(event, subject, {identity: self._row(identity, ITEM_KIND) for identity in versions})
             else:
@@ -1376,23 +1401,25 @@ class Ledger:
         return self._send(HOLD, parameters, {hold_id(identity): self._row(hold_id(identity), HOLD_KIND)[0]},
                           principal, command_id, about)
 
-    def admit(self, identity, answer, reason=None, used=None, retry_asked=None, principal=None, command_id=None):
+    def admit(self, identity, answer, reason=None, used=None, retry_asked=None, principal=None, command_id=None,
+              expected_version=None):
         """Write the answer admission gave for a waiting hold: admitted, advised or waiting, with the
         reason as numbers for waiting and advised. The judgement is admission's; this records it, and
         refuses advised for a hold whose scope is in act mode."""
         return self._hold_command(ADMIT, identity, {'answer': answer, 'reason': reason, 'used': used,
-                                                    'retry_asked': retry_asked}, principal, command_id)
+                                                    'retry_asked': retry_asked}, principal, command_id, expected_version)
 
     def release(self, identity, used=None, principal=None, command_id=None):
         """waiting, advised or admitted to released."""
         return self._hold_command(RELEASE, identity, {'used': used}, principal, command_id)
 
-    def _hold_command(self, operation, identity, parameters, principal, command_id):
+    def _hold_command(self, operation, identity, parameters, principal, command_id, expected_version=None):
         about = {'item': None, 'hold': identity}
         if not _is_str(identity):
             return self._refuse(operation, _invalid('hold', 'a hold identity'), about)
         entity = hold_id(identity)
-        result = self._send(operation, dict(parameters, hold=entity), {entity: self._row(entity, HOLD_KIND)[0]},
+        version = self._row(entity, HOLD_KIND)[0] if expected_version is None else expected_version
+        result = self._send(operation, dict(parameters, hold=entity), {entity: version},
                             principal, command_id, about)
         if result['ok']:
             result['state'] = self.hold(identity)['state']
@@ -1770,8 +1797,9 @@ class Ledger:
         elif operation == EVENT:
             answer['event'] = next((identity for identity in wrote if identity.startswith(EVENT_PREFIX)), None)
         elif operation in (ADMIT, RELEASE):
-            answer['state'] = next((value['state'] for identity, value in wrote.items()
-                                    if identity.startswith(HOLD_PREFIX)), None)
+            target = parameters.get('hold')
+            target = target if _is_str(target) and target.startswith(HOLD_PREFIX) else hold_id(target)
+            answer['state'] = (wrote.get(target) or {}).get('state')
         elif operation != HOLD:
             item = parameters.get('item') if operation != DECLARE else (items[0] if items else None)
             answer.update(item=item, state=(wrote.get(item) or {}).get('state'))
@@ -2087,8 +2115,28 @@ class Ledger:
         record['size'] = {'bytes': params['bytes'], 'event': params['event']}
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 
+    def _retry_subject(self, subject):
+        if not isinstance(subject, dict) or set(subject) != {'pool'} or subject['pool'] not in self.config['pools']:
+            raise _invalid('subject', 'the pool requesting admission')
+        return dict(subject)
+
+    def _retry_item(self, record, pool):
+        return (record.get('state') == 'deferred' and record.get('pool') == pool
+                and not record.get('owner_keep')
+                and (record.get('due') or {}).get('event') in record['ends_on']['events'])
+
     def _t_signal(self, conn, params, before):
         event = params.get('event')
+        if event == 'admission_requested':
+            subject = self._retry_subject(params.get('subject'))
+            changes = {}
+            for identity, old in before.items():
+                record = dict(old['data'])
+                if old['kind'] == ITEM_KIND and self._retry_item(record, subject['pool']):
+                    record['state'] = 'due'
+                    _new_removal(record)
+                    changes[identity] = {'kind': ITEM_KIND, 'data': record}
+            return changes
         if event not in self.lifecycle['events']:
             raise Refused('space_unknown_event', 'not an event of the lifecycle table')
         changes = {}
@@ -2119,6 +2167,15 @@ class Ledger:
             _new_removal(record)
             changes[identity] = {'kind': ITEM_KIND, 'data': record}
         return changes
+
+    def _freed(self, before, pools, exclude=None):
+        waiting = {hold_id(key): value for key, value in self.holds().items()
+                   if value['state'] == 'waiting' and set(value['needs']).intersection(pools)
+                   and hold_id(key) != exclude}
+        if any(key not in before for key in waiting):
+            raise Refused('space_holds_changed', 'a waiting hold appeared before the freeing write')
+        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=True)}
+                for key, value in waiting.items()}
 
     def _t_outcome(self, conn, params, before):
         identity, record = self._stored(params, before)
@@ -2165,7 +2222,15 @@ class Ledger:
             by = self._owner(params, mark['at'], 'the owner\'s Keep')
             record['owner_keep'] = dict(mark, by=by)
         record['state'] = outcome
-        return {identity: {'kind': ITEM_KIND, 'data': record}}
+        pools = set()
+        if outcome == 'removed':
+            if type(facts.get('freed')) is int and facts['freed'] > 0:
+                pools.add(record['pool'])
+            host = facts['host'] if isinstance(facts.get('host'), dict) else {}
+            backing = (self.pool(record['pool']) or {}).get('backing')
+            if backing and host.get('pool') == backing and type(host.get('freed')) is int and host['freed'] > 0:
+                pools.add(backing)
+        return dict(self._freed(before, pools), **{identity: {'kind': ITEM_KIND, 'data': record}})
 
     def _t_keep(self, conn, params, before):
         identity, record = self._stored(params, before)
@@ -2319,6 +2384,7 @@ class Ledger:
         if answer == 'advised' and self.acts(record.get('scope') or NO_PROJECT):
             raise Refused('space_answer_mode:' + ACTING, 'a run of a scope in act mode waits; it is not advised')
         record['state'], record['reason'] = answer, reason
+        record['freed'] = False
         if params.get('used') is not None:
             record['used'] = self._per_pool(params['used'], 'used')
         if params.get('retry_asked') is True:
@@ -2332,7 +2398,8 @@ class Ledger:
         if params.get('used') is not None:
             record['used'] = self._per_pool(params['used'], 'used')
         record['state'] = 'released'
-        return {identity: {'kind': HOLD_KIND, 'data': record}}
+        return dict(self._freed(before, record['needs'], exclude=identity),
+                    **{identity: {'kind': HOLD_KIND, 'data': record}})
 
     def _t_reconcile(self, conn, params, before):
         identity, counts = params.get('reconcile'), params.get('counts')
@@ -2346,9 +2413,9 @@ class Ledger:
         if not isinstance(counts, dict) or set(counts) != set(RECONCILE_COUNTS) \
                 or not all(_is_bytes(value) for value in counts.values()):
             raise _invalid('counts', 'the counts ' + ', '.join(RECONCILE_COUNTS))
-        return {identity: {'kind': RECONCILE_KIND, 'data': {
+        return dict(self._freed(before, self.config['pools']), **{identity: {'kind': RECONCILE_KIND, 'data': {
             'started_by': params['started_by'], 'roots': list(params['roots']), 'engines': list(params['engines']),
-            'counts': dict(counts)}}}
+            'counts': dict(counts)}}})
 
     def _t_issue(self, conn, params, before):
         entity, identity, principal = params.get('run'), params.get('identity'), params.get('principal')
