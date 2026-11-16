@@ -1,0 +1,107 @@
+{
+ "artifacts": {
+  "README.md": "sha256:f78fbce6748b7f54669f6e4d3511683ab07caebd52a25770a1cf09b6e3cff184",
+  "checks.json": "sha256:edebb1b216bb009c77a04991b2de3ff892401e24b2f5d1d790e741cb20f8ffaa",
+  "falsifiers.json": "sha256:4c44b11971af847abb1c8d1a6dabde98b21f36220ea08118a51a7bad63418f47",
+  "rows.json": "sha256:c968dd64a62397c4833079b8912ba41a4cfa86234ae0ca31bc8ccd38efc37b58",
+  "sources.json": "sha256:536bb131423db88159708208f3d4772a2673338a78f97fbc4df98b9b56443dce",
+  "teeth-receipt.json": "sha256:934974b82e090430aea07141f842e2d3203a7c568b0aae9b11fb5c88e625c90e",
+  "teeth-run.json": "sha256:901b0a02870a6ff846ca078acbd02d62fa4306ec4cb5965aca2819e5499a113e"
+ },
+ "assumptions": [
+  "The owner-signed Keep packet is required in addition to the settled request, as for one worktree (VELDO-0318 AC4); one packet naming any member keeps every member still in the group.",
+  "Still in the group means deferred with the requested disposition naming the group; a member the settled terms do not list is not reached and joins a new group.",
+  "The day is read once at the deferral through the Ledger clock, in the installation time zone.",
+  "Fixture process table, pool space and clock do not establish host readiness.",
+  "All criteria remain pending aggregate verification and independent review."
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "reason": "Partial selftests only; no aggregate unit evidence.",
+   "status": "not_run"
+  },
+  {
+   "name": "integration",
+   "reason": "The lead owns aggregate integration and gate.",
+   "status": "not_run"
+  },
+  {
+   "detail": "13 ticket rows green. 0318 45, 0327 27, 0345 31, 0300 39, 0297 31, 0312 41, 0317 23 rows green; 0068 and 0064 green. 0301 17 green with ac4/no-clock red, and 0336 19 green with loss/owner-keep and loss/kept-child red, each red on the base d0e2461a too.",
+   "name": "targeted regressions",
+   "status": "diagnostic_only"
+  },
+  {
+   "detail": "Validation, docs, template sync, lint and the two boundary checks.",
+   "name": "fast checks",
+   "status": "passed"
+  },
+  {
+   "detail": "10 of 10 rejected in the final run: the 4 declared falsifiers and 6 for what the build added; no reuse, no invalid result, no surviving worker.",
+   "name": "falsifiers",
+   "status": "passed"
+  },
+  {
+   "name": "gate",
+   "reason": "Lead gate lock required.",
+   "status": "not_run"
+  }
+ ],
+ "commit": "ed136897da464810267795ca883638d9a10fce56",
+ "criteria": [
+  {
+   "evidence": [
+    {
+     "detail": "AC1 rows green and the specification falsifier red (one request per day); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0340/teeth-receipt.json",
+     "sha256": "934974b82e090430aea07141f842e2d3203a7c568b0aae9b11fb5c88e625c90e",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC1",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC2 rows green and the specification falsifier red (a new version per later deferral, and the clock); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0340/teeth-receipt.json",
+     "sha256": "934974b82e090430aea07141f842e2d3203a7c568b0aae9b11fb5c88e625c90e",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC2",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC3 rows green and the specification falsifier red (the group pick); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0340/teeth-receipt.json",
+     "sha256": "934974b82e090430aea07141f842e2d3203a7c568b0aae9b11fb5c88e625c90e",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC3",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC4 rows green and the specification falsifier red (only a review run worktree); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0340/teeth-receipt.json",
+     "sha256": "934974b82e090430aea07141f842e2d3203a7c568b0aae9b11fb5c88e625c90e",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC4",
+   "status": "pending"
+  }
+ ],
+ "produced_at": "2026-11-16T16:31:52.964133+00:00",
+ "producer": "Claude builder for VELDO-0340; not an independent reviewer.",
+ "rollback": "Revert the change. A review worktree with tracked edits raises a request of its own; group records, kept refs, snapshots and work remain.",
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0340",
+ "tree": "b80755a41a97253cbe16ba579dbfe9de27f59dab"
+}

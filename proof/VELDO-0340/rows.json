@@ -1,0 +1,52 @@
+{
+ "all_green": true,
+ "count": 13,
+ "criteria": {
+  "AC1": [
+   "ac1/next-day",
+   "ac1/one-request"
+  ],
+  "AC2": [
+   "ac2/clock",
+   "ac2/new-version",
+   "ac2/unseen-member"
+  ],
+  "AC3": [
+   "ac3/answered-takes-no-join",
+   "ac3/closed",
+   "ac3/discard",
+   "ac3/keep",
+   "ac3/save"
+  ],
+  "AC4": [
+   "ac4/builder"
+  ],
+  "widened terms and the unchanged service task": [
+   "terms/group",
+   "worker/group"
+  ]
+ },
+ "falsifier_rows": {
+  "AC1": "space340/ac1/one-request",
+  "AC2": "space340/ac2/new-version",
+  "AC3": "space340/ac3/discard",
+  "AC4": "space340/ac4/builder"
+ },
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
+ "rows": [
+  "space340/ac1/next-day",
+  "space340/ac1/one-request",
+  "space340/ac2/clock",
+  "space340/ac2/new-version",
+  "space340/ac2/unseen-member",
+  "space340/ac3/answered-takes-no-join",
+  "space340/ac3/closed",
+  "space340/ac3/discard",
+  "space340/ac3/keep",
+  "space340/ac3/save",
+  "space340/ac4/builder",
+  "space340/terms/group",
+  "space340/worker/group"
+ ],
+ "source": "scripts/suites/150_veldo_0340_review_groups.py at ed136897da464810267795ca883638d9a10fce56"
+}

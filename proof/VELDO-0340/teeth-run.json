@@ -1,0 +1,39 @@
+{
+ "command": [
+  "nice",
+  "-n",
+  "10",
+  "python3",
+  "scripts/check_teeth_mutations.py",
+  "--finding",
+  "340",
+  "--jobs",
+  "2",
+  "--worker-log-dir",
+  "/tmp/v340/teeth3/logs",
+  "--diff-dir",
+  "/tmp/v340/teeth3/diffs"
+ ],
+ "commit": "ed136897da464810267795ca883638d9a10fce56",
+ "earlier_runs": [
+  {
+   "commit": "efacf19135b8fe638f79c169835948feca140303",
+   "summary": "mutations: failed registered=10 executed=0 reused=0 rejected=0 workers=0 elapsed=2.659s",
+   "why": "The builder had made the worker log folder before the run; the driver makes it itself and stopped with File exists. No case ran."
+  },
+  {
+   "commit": "efacf19135b8fe638f79c169835948feca140303",
+   "summary": "mutations: failed registered=10 executed=10 reused=0 rejected=9 workers=18 elapsed=109.989s",
+   "why": "space340-one-request-per-worktree was invalid, not surviving: with no group at all a later part of the suite raised and its rows were missing (baseline rows removed). The suite was changed so a part that raises fails its own rows (commit ed136897), and the final run is the one above."
+  }
+ ],
+ "elapsed": 94.55759660713375,
+ "exit_code": 0,
+ "ran_last": true,
+ "status_after": "",
+ "status_before": "",
+ "summary": "mutations: passed registered=10 executed=10 reused=0 rejected=10 workers=18 elapsed=94.558s",
+ "supervisors_after": [],
+ "supervisors_before": [],
+ "tree": "b80755a41a97253cbe16ba579dbfe9de27f59dab"
+}

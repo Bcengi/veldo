@@ -1,0 +1,257 @@
+[
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space340/ac1/next-day",
+   "space340/ac1/one-request",
+   "space340/ac2/new-version",
+   "space340/ac2/unseen-member",
+   "space340/ac3/answered-takes-no-join",
+   "space340/ac3/closed",
+   "space340/ac3/discard",
+   "space340/ac3/keep",
+   "space340/ac3/save",
+   "space340/worker/group"
+  ],
+  "name": "space340-one-request-per-worktree",
+  "new": "    if False:\n        # One request per scope and day for review worktrees",
+  "new_digest": "15dd204949638b69ae3e692adfade926e9eff890a9b89aeb7ac535db3b9d88f3",
+  "noop_failed": [],
+  "old": "    if _is_review_worktree(record):\n        # One request per scope and day for review worktrees",
+  "old_digest": "d49229a6ec1f9a63f240fd53b58eceda12d06d4ece236646e181a557dae91c16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac1/one-request"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac1/next-day",
+   "space340/ac2/new-version",
+   "space340/ac2/unseen-member",
+   "space340/ac3/answered-takes-no-join",
+   "space340/ac3/closed",
+   "space340/ac3/discard",
+   "space340/ac3/save",
+   "space340/worker/group"
+  ],
+  "name": "space340-one-day-for-every-deferral",
+  "new": "        return '2026-11-16'",
+  "new_digest": "641edc15aa3e2f9a03810ddf4ac59dffc983a859bfacc7dfcc6bbe2cb61b1d73",
+  "noop_failed": [],
+  "old": "        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()",
+  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac1/next-day"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac1/one-request",
+   "space340/ac2/new-version",
+   "space340/ac3/closed",
+   "space340/ac3/discard",
+   "space340/ac3/keep",
+   "space340/ac3/save"
+  ],
+  "name": "space340-join-without-a-new-version",
+  "new": "        elif False:",
+  "new_digest": "1df765e6f0ae070c1957138cc8b953c1fc0fafd28ec2a503d13708a9160cf952",
+  "noop_failed": [],
+  "old": "        elif (assignment.get('subject') or {}).get('ref') != tid:",
+  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac2/new-version"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac2/unseen-member",
+   "space340/worker/group"
+  ],
+  "name": "space340-pick-reaches-an-unseen-member",
+  "new": "            elif False:",
+  "new_digest": "ed0e92ca9dade8f41d8209927ca2544ce488dd304b37de40fb6626fd3cd6aed8",
+  "noop_failed": [],
+  "old": "            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:",
+  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac2/unseen-member"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space340/ac3/closed",
+   "space340/ac3/discard"
+  ],
+  "name": "space340-discard-without-the-comparison-per-worktree",
+  "new": "    if False:",
+  "new_digest": "d49d7f98f75abdcbeca844bc01a5f3ba3bc45db8b3f09695fc1afca93b3ae1ec",
+  "noop_failed": [],
+  "old": "    if saved_names != shown['files']:",
+  "old_digest": "f45951fba56c0b612a76ccd805f2eaed47e55204fa60664f6074734c179be871",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac3/discard"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac2/unseen-member",
+   "space340/ac3/closed",
+   "space340/ac3/discard",
+   "space340/ac3/keep",
+   "space340/ac3/save",
+   "space340/worker/group"
+  ],
+  "name": "space340-pick-reaches-one-member",
+  "new": "        if False:\n            return self._group_change(",
+  "new_digest": "975cb30edf7a1b988badea40e3a9fe61f98451d98102cadc907d8851d7d0df53",
+  "noop_failed": [],
+  "old": "        if record['disposition'].get('group'):\n            return self._group_change(",
+  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac3/save",
+   "space340/ac3/keep"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space340/ac3/answered-takes-no-join"
+  ],
+  "name": "space340-answered-group-takes-a-join",
+  "new": "        return group['state'] == 'open'",
+  "new_digest": "c5b2bd08b73688749d04597a93c8cef7d7b0f3b1266c46b8bba2254b7bcb788f",
+  "noop_failed": [],
+  "old": "        return group['state'] == 'open' and not self._group_answered(group)",
+  "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac3/answered-takes-no-join"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space340/ac2/unseen-member",
+   "space340/ac3/closed",
+   "space340/ac3/discard",
+   "space340/ac3/save",
+   "space340/worker/group"
+  ],
+  "name": "space340-scratch-removal-inside-a-disposition",
+  "new": "    if review:",
+  "new_digest": "169de3aab2001ebecb69958cd9d5b9680de210ca3b2124e556a61ade4287e595",
+  "noop_failed": [],
+  "old": "    if review and not ctx.get('disposition'):",
+  "old_digest": "f45951fba56c0b612a76ccd805f2eaed47e55204fa60664f6074734c179be871",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac3/save",
+   "space340/ac3/discard"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space340/ac4/builder"
+  ],
+  "name": "space340-every-run-worktree-is-a-review-worktree",
+  "new": "    return (record.get('kind') == 'worktree' and bool(run)",
+  "new_digest": "9861f7a293fad885fd2f16d7b4863c97cdb1701791c9d0e43cc91ff5579deb12",
+  "noop_failed": [],
+  "note": "The specification says of the AC4 falsifier that the builder file is deleted. Under this mutant, which is in Signal, it is not: the remover and the keep step judge the station themselves and refuse, so the worktree is deferred as remove_refused with no request of its own, and the row fails on that.",
+  "old": "    return (record.get('kind') == 'worktree' and run.get('station') == 'review'",
+  "old_digest": "d49229a6ec1f9a63f240fd53b58eceda12d06d4ece236646e181a557dae91c16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/ac4/builder"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "widened terms (lead decision)",
+  "final_run_executions": 1,
+  "module": "control_request_settlement.py",
+  "mutant_failed": [
+   "space340/terms/group"
+  ],
+  "name": "space340-group-target-without-its-members",
+  "new": "            or False):",
+  "new_digest": "28311d89f5e33287d48c5b90af77be531acb79a05d415503c240636c0cc0101f",
+  "noop_failed": [],
+  "old": "            or target.get('members') != items):",
+  "old_digest": "1cf6e2248f67eb7ebef33639ae5aab86fd599b6679fbef7765f45f06214e3039",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0340_review_groups.py",
+  "target_rows": [
+   "space340/terms/group"
+  ]
+ }
+]

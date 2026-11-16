@@ -1,0 +1,7042 @@
+{
+ "budget_seconds": 29384.0,
+ "case_deadlines": {
+  "check_teeth_mutations.py:space340-answered-group-takes-a-join": 120,
+  "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree": 120,
+  "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree": 120,
+  "check_teeth_mutations.py:space340-group-target-without-its-members": 120,
+  "check_teeth_mutations.py:space340-join-without-a-new-version": 120,
+  "check_teeth_mutations.py:space340-one-day-for-every-deferral": 120,
+  "check_teeth_mutations.py:space340-one-request-per-worktree": 120,
+  "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member": 120,
+  "check_teeth_mutations.py:space340-pick-reaches-one-member": 120,
+  "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition": 120
+ },
+ "case_receipts": [
+  {
+   "identity": "check_teeth_mutations.py:space340-one-request-per-worktree",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-one-day-for-every-deferral",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-join-without-a-new-version",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-pick-reaches-one-member",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-answered-group-takes-a-join",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space340-group-target-without-its-members",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  }
+ ],
+ "drivers": {
+  "check_review_mutations.py": {
+   "executed": 0,
+   "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "registered": 0,
+   "reused": 0,
+   "wall_seconds": 0,
+   "worker_seconds": 0
+  },
+  "check_teeth_mutations.py": {
+   "executed": 10,
+   "inventory_digest": "86e1a12729ec152070c8450b1674fd05c313e4db8778b2138954b8b2c3f130d2",
+   "registered": 10,
+   "reused": 0,
+   "wall_seconds": 89.85708862030879,
+   "worker_seconds": 177.04691597959027
+  }
+ },
+ "elapsed": 94.55759660713375,
+ "executed": 10,
+ "force_fresh": false,
+ "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+ "input_digest": "38c6b3e48f16d309aa2b38f96ee405d0bb59280e8aecc46e86752a14354ccf0d",
+ "invalid_results": [],
+ "parallel_workers": 2,
+ "peak_workers": 2,
+ "registered": 10,
+ "rejected": 10,
+ "resources": {
+  "capacities": {
+   "new_project_fixture": 2,
+   "systemd_user_manager": 16,
+   "ui_browser": 4
+  },
+  "peak_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 0
+  },
+  "remaining_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 0
+  }
+ },
+ "results": [
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/one-request": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-one-request-per-worktree",
+    "module": "control_space_signal.py",
+    "name": "space340-one-request-per-worktree",
+    "new": "    if False:\n        # One request per scope and day for review worktrees",
+    "old": "    if _is_review_worktree(record):\n        # One request per scope and day for review worktrees",
+    "rows": [
+     "space340/ac1/one-request"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 8.542243767995387,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/worker/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      false
+     ],
+     [
+      "space340/ac1/one-request",
+      false
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      false
+     ],
+     [
+      "space340/ac2/unseen-member",
+      false
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      false
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      false
+     ],
+     [
+      "space340/ac3/save",
+      false
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/one-request": [
+      false
+     ]
+    }
+   },
+   "new_digest": "15dd204949638b69ae3e692adfade926e9eff890a9b89aeb7ac535db3b9d88f3",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/one-request": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d49229a6ec1f9a63f240fd53b58eceda12d06d4ece236646e181a557dae91c16",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-one-day-for-every-deferral",
+    "module": "control_space.py",
+    "name": "space340-one-day-for-every-deferral",
+    "new": "        return '2026-11-16'",
+    "old": "        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()",
+    "rows": [
+     "space340/ac1/next-day"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 11.244050252251327,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac1/next-day",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/save",
+     "space340/worker/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      false
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      false
+     ],
+     [
+      "space340/ac2/unseen-member",
+      false
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      false
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      false
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      false
+     ]
+    }
+   },
+   "new_digest": "641edc15aa3e2f9a03810ddf4ac59dffc983a859bfacc7dfcc6bbe2cb61b1d73",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-join-without-a-new-version",
+    "module": "control_space.py",
+    "name": "space340-join-without-a-new-version",
+    "new": "        elif False:",
+    "old": "        elif (assignment.get('subject') or {}).get('ref') != tid:",
+    "rows": [
+     "space340/ac2/new-version"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.13314789161086,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac1/one-request",
+     "space340/ac2/new-version",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      false
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      false
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      false
+     ],
+     [
+      "space340/ac3/save",
+      false
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac2/new-version": [
+      false
+     ]
+    }
+   },
+   "new_digest": "1df765e6f0ae070c1957138cc8b953c1fc0fafd28ec2a503d13708a9160cf952",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
+    "module": "control_space.py",
+    "name": "space340-pick-reaches-an-unseen-member",
+    "new": "            elif False:",
+    "old": "            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:",
+    "rows": [
+     "space340/ac2/unseen-member"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 8.113332905806601,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac2/unseen-member",
+     "space340/worker/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      false
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac2/unseen-member": [
+      false
+     ]
+    }
+   },
+   "new_digest": "ed0e92ca9dade8f41d8209927ca2544ce488dd304b37de40fb6626fd3cd6aed8",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
+    "module": "control_space_remove.py",
+    "name": "space340-discard-without-the-comparison-per-worktree",
+    "new": "    if False:",
+    "old": "    if saved_names != shown['files']:",
+    "rows": [
+     "space340/ac3/discard"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.35819590324536,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac3/closed",
+     "space340/ac3/discard"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      false
+     ]
+    }
+   },
+   "new_digest": "d49d7f98f75abdcbeca844bc01a5f3ba3bc45db8b3f09695fc1afca93b3ae1ec",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f45951fba56c0b612a76ccd805f2eaed47e55204fa60664f6074734c179be871",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-pick-reaches-one-member",
+    "module": "control_space.py",
+    "name": "space340-pick-reaches-one-member",
+    "new": "        if False:\n            return self._group_change(",
+    "old": "        if record['disposition'].get('group'):\n            return self._group_change(",
+    "rows": [
+     "space340/ac3/save",
+     "space340/ac3/keep"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.33593186084181,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac2/unseen-member",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/worker/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      false
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      false
+     ],
+     [
+      "space340/ac3/save",
+      false
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/keep": [
+      false
+     ],
+     "space340/ac3/save": [
+      false
+     ]
+    }
+   },
+   "new_digest": "975cb30edf7a1b988badea40e3a9fe61f98451d98102cadc907d8851d7d0df53",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-answered-group-takes-a-join",
+    "module": "control_space.py",
+    "name": "space340-answered-group-takes-a-join",
+    "new": "        return group['state'] == 'open'",
+    "old": "        return group['state'] == 'open' and not self._group_answered(group)",
+    "rows": [
+     "space340/ac3/answered-takes-no-join"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.935261578764766,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac3/answered-takes-no-join"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      false
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/answered-takes-no-join": [
+      false
+     ]
+    }
+   },
+   "new_digest": "c5b2bd08b73688749d04597a93c8cef7d7b0f3b1266c46b8bba2254b7bcb788f",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/next-day": [
+      true
+     ]
+    }
+   },
+   "old_digest": "4af7c6cb272898b1d2346f0bc055ca02def73dba75d5dc523e4620faace88a1e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition",
+    "module": "control_space_remove.py",
+    "name": "space340-scratch-removal-inside-a-disposition",
+    "new": "    if review:",
+    "old": "    if review and not ctx.get('disposition'):",
+    "rows": [
+     "space340/ac3/save",
+     "space340/ac3/discard"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 10.239526273217052,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac2/unseen-member",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/save",
+     "space340/worker/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      false
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      false
+     ],
+     [
+      "space340/ac3/discard",
+      false
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      false
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      false
+     ],
+     "space340/ac3/save": [
+      false
+     ]
+    }
+   },
+   "new_digest": "169de3aab2001ebecb69958cd9d5b9680de210ca3b2124e556a61ade4287e595",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac3/discard": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f45951fba56c0b612a76ccd805f2eaed47e55204fa60664f6074734c179be871",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/one-request": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
+    "module": "control_space_signal.py",
+    "name": "space340-every-run-worktree-is-a-review-worktree",
+    "new": "    return (record.get('kind') == 'worktree' and bool(run)",
+    "old": "    return (record.get('kind') == 'worktree' and run.get('station') == 'review'",
+    "rows": [
+     "space340/ac4/builder"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.537221530918032,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/ac4/builder"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      false
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac4/builder": [
+      false
+     ]
+    }
+   },
+   "new_digest": "9861f7a293fad885fd2f16d7b4863c97cdb1701791c9d0e43cc91ff5579deb12",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/ac1/one-request": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d49229a6ec1f9a63f240fd53b58eceda12d06d4ece236646e181a557dae91c16",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/terms/group": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 340,
+    "identity": "check_teeth_mutations.py:space340-group-target-without-its-members",
+    "module": "control_request_settlement.py",
+    "name": "space340-group-target-without-its-members",
+    "new": "            or False):",
+    "old": "            or target.get('members') != items):",
+    "rows": [
+     "space340/terms/group"
+    ],
+    "suite": "150_veldo_0340_review_groups.py"
+   },
+   "elapsed": 9.636364511214197,
+   "fixture_version": 1,
+   "input_digest": "60b60bf027b82ffd179322148bbc02e94b18284c00cb4cdc61b9b2306290b0cc",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space340/terms/group"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      false
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/terms/group": [
+      false
+     ]
+    }
+   },
+   "new_digest": "28311d89f5e33287d48c5b90af77be531acb79a05d415503c240636c0cc0101f",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space340/ac1/next-day",
+      true
+     ],
+     [
+      "space340/ac1/one-request",
+      true
+     ],
+     [
+      "space340/ac2/clock",
+      true
+     ],
+     [
+      "space340/ac2/new-version",
+      true
+     ],
+     [
+      "space340/ac2/unseen-member",
+      true
+     ],
+     [
+      "space340/ac3/answered-takes-no-join",
+      true
+     ],
+     [
+      "space340/ac3/closed",
+      true
+     ],
+     [
+      "space340/ac3/discard",
+      true
+     ],
+     [
+      "space340/ac3/keep",
+      true
+     ],
+     [
+      "space340/ac3/save",
+      true
+     ],
+     [
+      "space340/ac4/builder",
+      true
+     ],
+     [
+      "space340/terms/group",
+      true
+     ],
+     [
+      "space340/worker/group",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space340/ac1/next-day",
+     "space340/ac1/one-request",
+     "space340/ac2/clock",
+     "space340/ac2/new-version",
+     "space340/ac2/unseen-member",
+     "space340/ac3/answered-takes-no-join",
+     "space340/ac3/closed",
+     "space340/ac3/discard",
+     "space340/ac3/keep",
+     "space340/ac3/save",
+     "space340/ac4/builder",
+     "space340/terms/group",
+     "space340/worker/group"
+    ],
+    "targets": {
+     "space340/terms/group": [
+      true
+     ]
+    }
+   },
+   "old_digest": "1cf6e2248f67eb7ebef33639ae5aab86fd599b6679fbef7765f45f06214e3039",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  }
+ ],
+ "reuse_integrity_errors": [],
+ "reuse_qualified": 0,
+ "reused": 0,
+ "schema": "veldo.mutation-stage/v1",
+ "scope": "selected",
+ "status": "passed",
+ "surviving_workers": 0,
+ "unmeasured_cases": [
+  "check_teeth_mutations.py:space340-answered-group-takes-a-join",
+  "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
+  "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
+  "check_teeth_mutations.py:space340-group-target-without-its-members",
+  "check_teeth_mutations.py:space340-join-without-a-new-version",
+  "check_teeth_mutations.py:space340-one-day-for-every-deferral",
+  "check_teeth_mutations.py:space340-one-request-per-worktree",
+  "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
+  "check_teeth_mutations.py:space340-pick-reaches-one-member",
+  "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition"
+ ],
+ "worker_invocations": 18,
+ "worker_outcomes": [
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 10.620915842242539,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0340_review_groups.py:control_space_signal.py:False:noop",
+   "output_directory": "/tmp/v340/teeth3/logs/1",
+   "pid": 2296729,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3034
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 10.793518878985196,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0340_review_groups.py:control_space_signal.py:False:baseline",
+   "output_directory": "/tmp/v340/teeth3/logs/0",
+   "pid": 2296723,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3034
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 10.734712514095008,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0340_review_groups.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v340/teeth3/logs/2",
+   "pid": 2304572,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3031
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 10.752199079375714,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0340_review_groups.py:control_space.py:False:noop",
+   "output_directory": "/tmp/v340/teeth3/logs/3",
+   "pid": 2304625,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3031
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.625533850863576,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0340_review_groups.py:control_space_remove.py:False:baseline",
+   "output_directory": "/tmp/v340/teeth3/logs/4",
+   "pid": 2312731,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3030
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.766324623953551,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0340_review_groups.py:control_space_remove.py:False:noop",
+   "output_directory": "/tmp/v340/teeth3/logs/5",
+   "pid": 2312769,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3030
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.807713308837265,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0340_review_groups.py:control_request_settlement.py:False:baseline",
+   "output_directory": "/tmp/v340/teeth3/logs/6",
+   "pid": 2319501,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3030
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 139,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.786531351041049,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0340_review_groups.py:control_request_settlement.py:False:noop",
+   "output_directory": "/tmp/v340/teeth3/logs/7",
+   "pid": 2319683,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3030
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 134,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 8.551482975948602,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-one-request-per-worktree",
+   "output_directory": "/tmp/v340/teeth3/logs/8",
+   "pid": 2326703,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3307
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 125,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 11.252769618295133,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-one-day-for-every-deferral",
+   "output_directory": "/tmp/v340/teeth3/logs/9",
+   "pid": 2326705,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3253
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 130,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.142051327973604,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-join-without-a-new-version",
+   "output_directory": "/tmp/v340/teeth3/logs/10",
+   "pid": 2332994,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3184
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 110,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 8.119655206799507,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-pick-reaches-an-unseen-member",
+   "output_directory": "/tmp/v340/teeth3/logs/11",
+   "pid": 2334723,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3092
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 134,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.365215410012752,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-discard-without-the-comparison-per-worktree",
+   "output_directory": "/tmp/v340/teeth3/logs/12",
+   "pid": 2339963,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3078
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 129,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.342697973828763,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-pick-reaches-one-member",
+   "output_directory": "/tmp/v340/teeth3/logs/13",
+   "pid": 2340884,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3206
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 138,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.944377820007503,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-answered-group-takes-a-join",
+   "output_directory": "/tmp/v340/teeth3/logs/14",
+   "pid": 2346882,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3084
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 144,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 10.248898975085467,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-scratch-removal-inside-a-disposition",
+   "output_directory": "/tmp/v340/teeth3/logs/15",
+   "pid": 2347706,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3187
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 134,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.546501653268933,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-every-run-worktree-is-a-review-worktree",
+   "output_directory": "/tmp/v340/teeth3/logs/16",
+   "pid": 2354347,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3054
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 141,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 9.645815568976104,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space340-group-target-without-its-members",
+   "output_directory": "/tmp/v340/teeth3/logs/17",
+   "pid": 2355504,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3054
+  }
+ ]
+}
