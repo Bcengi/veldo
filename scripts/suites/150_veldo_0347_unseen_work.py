@@ -1053,6 +1053,12 @@ def _v347_suite():
         check(ROW, 'the same item declared under table 1 reads the agent repository\'s row, as before [%s]' % (got,),
               len(got) == 1 and got[0]['row'] == 'agent_repository' and got[0]['version'] == '1'
               and K.due('run_finished', [(item, old)], look=lambda identity, found: {}) == [])
+        plain = dict(record, form=None,
+                     ends_on={'version': '2', 'events': list(second_table['ends_on']['agent_repository'])})
+        got = K.due('landed', [(item, plain)], look=lambda identity, found: {})
+        check(ROW, 'an item with no form reads the agent repository\'s own row under table 2 [%s]' % (got,),
+              len(got) == 1 and got[0]['row'] == 'agent_repository'
+              and got[0].get('requires') == 'branches_in_shared_repository')
 
         ROW = 'ac5/no-form'
         OWN = [event for event in K.EVENTS if event in second_table['rows'].get('agent_repository', {})]

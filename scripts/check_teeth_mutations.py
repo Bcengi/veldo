@@ -16872,6 +16872,98 @@ def cases():
             ['ac2/observer-refused-by-name'])
         result[-1]['siblings'] = True
 
+    # VELDO-0347: work the first rules did not see. The declared falsifiers of AC1 to AC5, each on a
+    # row of its own, then the guards beside them.
+    unseen347 = '150_veldo_0347_unseen_work.py'
+    add(347, 'space347-ignored-paths-left-out-of-case-3', unseen347, 'control_space_probe.py',
+        "    untracked = untracked + [name for name in work['work'] if name not in untracked]\n",
+        "    untracked = list(untracked)  # defect: ignored paths are left out of case 3\n",
+        ['space347/ac1/loose-ignored-file', 'space347/ac1/personal-rule', 'space347/ac1/untraced-rule'])
+    add(347, 'space347-look-beneath-worktrees-and-agent-repositories-only', unseen347, 'control_space_signal.py',
+        "    if record.get('kind') in HOLDS_UNPUSHED and path and ('path:' + path) not in found:\n",
+        "    if False and path and ('path:' + path) not in found:  # defect: scratch and build output are not looked in\n",
+        ['space347/ac2/unpushed-commit', 'space347/ac2/build-output'])
+    add(347, 'space347-logs-left-out', unseen347, 'control_space_probe.py',
+        "            tips.update(git('rev-list', '--walk-reflogs', 'HEAD', '--exclude=refs/remotes/*', '--all').split())\n",
+        "            pass  # defect: the logs are left out\n",
+        ['space347/ac2/log-only-commit'])
+    add(347, 'space347-remote-tracking-ref-taken-at-its-word', unseen347, 'control_space_probe.py',
+        "        elif local:\n            # What only a local remote's ref holds must be in that remote now.\n",
+        "        elif False:  # defect: a remote-tracking ref is taken at its word\n",
+        ['space347/ac2/hand-written-ref'])
+    add(347, 'space347-clone-removed-by-the-folder-remover-alone', unseen347, 'control_space_remove.py',
+        "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+        "    kept = {'ok': True, 'tips': tips(path, record.get('kind'), ctx['commands'])}  # defect: no keep step\n"
+        "    pools = _before(ctx, record, answer)\n    if saved:\n",
+        ['space347/ac3/keep-first'])
+    add(347, 'space347-worker-clone-removed-without-the-snapshot', unseen347, 'control_space_remove.py',
+        "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=True)\n",
+        "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=False)  # defect\n",
+        ['space347/ac3/worker-clone-saved'])
+    add(347, 'space347-worker-clone-deleted-without-the-comparison', unseen347, 'control_space_remove.py',
+        "            before_file=lambda relative, descriptor, name: _clone_compare(state, relative, descriptor, name),\n",
+        "            before_file=None,  # defect: no file is compared with the manifest before it is deleted\n",
+        ['space347/ac3/changed-after-snapshot'])
+    add(347, 'space347-folder-left-under-its-marked-name', unseen347, 'control_space_remove.py',
+        "        stuck = _put_back(parent, tail, base)\n        if stuck is not None:\n",
+        "        stuck = _put_back(parent, tail, base) if before_file is None else None  # defect\n"
+        "        if stuck is not None:\n",
+        ['space347/ac3/renamed-back'])
+    add(347, 'space347-evidence-digest-of-the-last-measurement', unseen347, 'control_space_remove.py',
+        "        held = copies.find([hashed.hexdigest() for hashed in blobs], digest.hexdigest())\n",
+        "        held = copies.find([hashed.hexdigest() for hashed in blobs], globals().setdefault(\n"
+        "            '_MEASURED', {}).setdefault(relative, digest.hexdigest()))  # defect: the digest first measured\n",
+        ['space347/ac4/changed-after-measure'])
+    add(347, 'space347-look-beneath-the-item-only', unseen347, 'control_space_signal.py',
+        "    if record.get('kind') in DISK_KINDS and record.get('kind') not in HOLDS_REPOSITORIES and path:\n"
+        "        own = probe.is_repository(path)\n",
+        "    if False and path:  # defect: the look starts beneath the item\n"
+        "        own = probe.is_repository(path)\n",
+        ['space347/ac5/own-folder-holds'])
+    add(347, 'space347-no-form-given-the-clone-row', unseen347, 'control_space.py',
+        "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form), self.lifecycle['ends_on'][kind])\n",
+        "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form or 'worker_clone'),  # defect\n"
+        "                                               self.lifecycle['ends_on'][kind])\n",
+        ['space347/ac5/no-form'])
+    # The guards beside them.
+    add(347, 'space347-any-traced-rule-makes-build-output', unseen347, 'control_space_probe.py',
+        "        if declared or own:\n            build.append(name)\n",
+        "        if declared or own or source is not None:  # defect: a personal rule makes build output\n"
+        "            build.append(name)\n",
+        ['space347/ac1/personal-rule'])
+    add(347, 'space347-remover-takes-any-repository-in-the-folder', unseen347, 'control_space_remove.py',
+        "        ctx, identity, record, record['locator']['path'], look=lambda name: _clean_clones(ctx, name),\n",
+        "        ctx, identity, record, record['locator']['path'], look=lambda name: set(  # defect: no last look\n"
+        "            os.path.relpath(found, name) for found in ctx['probe'].nested(name)['repositories']),\n",
+        ['space347/ac2/last-look'])
+    add(347, 'space347-clone-with-files-raises-no-request', unseen347, 'control_space_signal.py',
+        "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n"
+        "            and found.get('work_tree') is True):\n",
+        "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n"
+        "            and False):  # defect: a clone is deferred and nobody is asked\n",
+        ['space347/ac3/clone-request'])
+    add(347, 'space347-ledger-takes-a-worktree-request-for-a-clone', unseen347, 'control_space.py',
+        "                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):\n",
+        "                or False):  # defect: a clone may be asked about as a worktree\n",
+        ['space347/ac3/clone-request'])
+    add(347, 'space347-any-item-with-the-form-is-a-worker-clone', unseen347, 'control_space_signal.py',
+        "            if shown['clone'] is True:\n                return None\n"
+        "            return dict(found, not_shown_a_worker_clone=shown['said'])\n",
+        "            return None  # defect: the manifest is not asked\n",
+        ['space347/ac3/not-shown'])
+    add(347, 'space347-evidence-file-written-while-read-is-deleted', unseen347, 'control_space_remove.py',
+        "        if held is None or _signature(os.lstat(name, dir_fd=dir_fd)) != _signature(found):\n",
+        "        if held is None:  # defect: the file is not looked at again before its delete\n",
+        ['space347/ac4/changed-after-measure'])
+    add(347, 'space347-trunk-guessed', unseen347, 'control_space_remove.py',
+        "            named = trunk(main) if callable(trunk) else None\n",
+        "            named = trunk(main) if callable(trunk) else 'main'  # defect: the trunk is guessed\n",
+        ['space347/ac4/trunk-never-guessed'])
+    add(347, 'space347-registry-gives-no-form-the-clone-row', unseen347, 'control_space_kinds.py',
+        "        row = FORM_ROWS.get((record['kind'], record.get('form')))\n",
+        "        row = FORM_ROWS.get((record['kind'], record.get('form') or 'worker_clone'))  # defect\n",
+        ['space347/ac5/registry-row'])
+
     return result
 
 
