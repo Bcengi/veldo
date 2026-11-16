@@ -1,0 +1,7102 @@
+{
+  "budget_seconds": 57664.0,
+  "case_deadlines": {
+    "check_teeth_mutations.py:space316-accept-released": 120,
+    "check_teeth_mutations.py:space316-admission-at-acceptance": 120,
+    "check_teeth_mutations.py:space316-block-report": 120,
+    "check_teeth_mutations.py:space316-ignore-floor": 120,
+    "check_teeth_mutations.py:space316-lost-completion-wake": 120,
+    "check_teeth_mutations.py:space316-measured-after-one": 120,
+    "check_teeth_mutations.py:space316-release-winning-promise": 120,
+    "check_teeth_mutations.py:space316-wait-listed-refused": 120
+  },
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:space316-ignore-floor",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-admission-at-acceptance",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-block-report",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-measured-after-one",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-wait-listed-refused",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-accept-released",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-lost-completion-wake",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space316-release-winning-promise",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "drivers": {
+    "check_review_mutations.py": {
+      "executed": 0,
+      "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "registered": 0,
+      "reused": 0,
+      "wall_seconds": 0,
+      "worker_seconds": 0
+    },
+    "check_teeth_mutations.py": {
+      "executed": 8,
+      "inventory_digest": "4cad058bcaa7154f147bfd000085539da83fb151ea675745b156950bba0627c0",
+      "registered": 8,
+      "reused": 0,
+      "wall_seconds": 154.0405665957369,
+      "worker_seconds": 153.74846307747066
+    }
+  },
+  "elapsed": 156.8662151368335,
+  "executed": 8,
+  "force_fresh": false,
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "fd36aa4a393a0d3833d047f9086e88455115dc5a36383c5186d5f22f065d65e5",
+  "invalid_results": [],
+  "parallel_workers": 1,
+  "peak_workers": 1,
+  "registered": 8,
+  "rejected": 8,
+  "resources": {
+    "capacities": {
+      "new_project_fixture": 2,
+      "systemd_user_manager": 16,
+      "ui_browser": 4
+    },
+    "peak_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    },
+    "remaining_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    }
+  },
+  "results": [
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-ignore-floor",
+        "module": "control_space_admission.py",
+        "name": "space316-ignore-floor",
+        "new": "if free_now - others < need:",
+        "old": "if free_now - others < need + record['floor']:",
+        "rows": [
+          "space316/ac1/floor-boundaries"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 8.703337353654206,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac2/before-reservation",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac3/report-starts",
+          "space316/ac4/one-run-default"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            false
+          ],
+          [
+            "space316/ac1/metrics",
+            false
+          ],
+          [
+            "space316/ac1/other-holds",
+            false
+          ],
+          [
+            "space316/ac1/second-pool",
+            false
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            false
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            false
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            false
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            false
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            false
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            false
+          ]
+        }
+      },
+      "new_digest": "6ae7c2f3f81e55c945fb63086df515bf07209b05fa8e16c128de37b6cf43c06f",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/before-reservation": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "also": [
+          [
+            "        space = admission.get('space')\n",
+            "        space = admission.get('space') if admission.get('ok') else None\n"
+          ],
+          [
+            "        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)",
+            "        contract = self.prepare(unit, station, **kwargs)\n        answer = ADMISSION.prepare(self.space, repository=self.dispatches.repository,\n            project=contract['reservation']['project'], unit=unit, station=station,\n            attempt=contract['attempt'])\n        if not answer.get('ok'):\n            raise D.Refused(answer.get('code', 'space_wait'))\n        launch = self.receiver(contract)"
+          ]
+        ],
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-admission-at-acceptance",
+        "module": "control_launch.py",
+        "name": "space316-admission-at-acceptance",
+        "new": "        if False:  # defect: preparation does not wait for admission\n",
+        "old": "        if not admission.get('ok'):\n",
+        "rows": [
+          "space316/ac2/before-reservation"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 9.511697355657816,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac2/before-reservation",
+          "space316/ac2/factory-waiting"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            false
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            false
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/before-reservation": [
+            false
+          ]
+        }
+      },
+      "new_digest": "af408a6db51613bfe549366311449d2df98a598f50ab751b565d8041e54ec0fc",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/before-reservation": [
+            true
+          ]
+        }
+      },
+      "old_digest": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-block-report",
+        "module": "control_space_admission.py",
+        "name": "space316-block-report",
+        "new": "answer = 'admitted' if reason is None else 'waiting'",
+        "old": "answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'",
+        "rows": [
+          "space316/ac3/report-starts"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 10.091135942842811,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac1/metrics",
+          "space316/ac3/report-starts"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            false
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            false
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac3/report-starts": [
+            false
+          ]
+        }
+      },
+      "new_digest": "65e918f122e5de4b01b8dd479bfef218b2a01ccf252be2eb86ae0ff302079a56",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-measured-after-one",
+        "module": "control_space_admission.py",
+        "name": "space316-measured-after-one",
+        "new": "elif len(recent) >= 1 and all(type(run.get(name)) is int for run in recent):",
+        "old": "elif len(recent) == 5 and all(type(run.get(name)) is int for run in recent):",
+        "rows": [
+          "space316/ac4/one-run-default"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 9.045186657924205,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac4/one-run-default"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            false
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac4/one-run-default": [
+            false
+          ]
+        }
+      },
+      "new_digest": "7476a559f8af1078af9f69bb99391d1e3001039e5af184c1f9311b708d472e5e",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/factory-waiting": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-wait-listed-refused",
+        "module": "control_service.py",
+        "name": "space316-wait-listed-refused",
+        "new": "if code == 'space_pending':",
+        "old": "if code.startswith('space_wait:') or code == 'space_pending':",
+        "rows": [
+          "space316/ac2/factory-waiting"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 8.90374570293352,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac2/factory-waiting"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            false
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/factory-waiting": [
+            false
+          ]
+        }
+      },
+      "new_digest": "b3905ee2ecfee9f31c1bd18e925a60dba766ca21a9201c6ee8866ff9b6bf86e6",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/factory-waiting": [
+            true
+          ]
+        }
+      },
+      "old_digest": "7406dc6088697423b361f2b56edc82c328903709efa37b7cb5d4d03eaff50c47",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/acceptance-rechecks": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-accept-released",
+        "module": "control_dispatch.py",
+        "name": "space316-accept-released",
+        "new": "        # defect: the promised hold is not read at acceptance\n        if _identity_problems(params.get('receiver'), ('principal',))",
+        "old": "        _space_bound(conn, contract)\n        if _identity_problems(params.get('receiver'), ('principal',))",
+        "rows": [
+          "space316/ac2/acceptance-rechecks"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 11.786105267703533,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac2/acceptance-rechecks"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            false
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/acceptance-rechecks": [
+            false
+          ]
+        }
+      },
+      "new_digest": "e1568ac5b9119ceb1ad85d6edd3703a9e1aed9ab52e8cb5c201fef46251fb941",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/acceptance-rechecks": [
+            true
+          ]
+        }
+      },
+      "old_digest": "164061843526454a851b74d58d77627a7a8934e42c750ea16fe465df92a68730",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-lost-completion-wake",
+        "module": "control_space_admission.py",
+        "name": "space316-lost-completion-wake",
+        "new": "            pass  # defect: the factory never hears the completed judgment",
+        "old": "            self.loop.wake('space_admission', key)",
+        "rows": [
+          "space316/ac2/completion-wakes"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 12.326252181082964,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac2/completion-wakes"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            false
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/completion-wakes": [
+            false
+          ]
+        }
+      },
+      "new_digest": "718f6075582ba9f2fb39162069b6a5b8224eab149416281a4e07504a7c79de14",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac1/floor-boundaries": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/before-reservation": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-release-winning-promise",
+        "module": "control_launch.py",
+        "name": "space316-release-winning-promise",
+        "new": "            if space is not None:",
+        "old": "            if space is not None and promised != space:",
+        "rows": [
+          "space316/ac2/racing-prepare"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "elapsed": 11.324062746949494,
+      "fixture_version": 1,
+      "input_digest": "f13e1a0e40022a0e448b70ad0951cd501235a5dec583a67fc68bf6b42556efdc",
+      "mutant": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [
+          "space316/ac2/racing-prepare"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            false
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/racing-prepare": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0701500e91d6f7619daf58de62dfb48a14cdb1dbb2bf97ab51a096f14a7e587a",
+      "noop": {
+        "count": 51,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space316/ac1/concurrent",
+            true
+          ],
+          [
+            "space316/ac1/floor-boundaries",
+            true
+          ],
+          [
+            "space316/ac1/metrics",
+            true
+          ],
+          [
+            "space316/ac1/other-holds",
+            true
+          ],
+          [
+            "space316/ac1/second-pool",
+            true
+          ],
+          [
+            "space316/ac1/unread-pool",
+            true
+          ],
+          [
+            "space316/ac2/acceptance-rechecks",
+            true
+          ],
+          [
+            "space316/ac2/before-reservation",
+            true
+          ],
+          [
+            "space316/ac2/cancel-releases",
+            true
+          ],
+          [
+            "space316/ac2/completion-wakes",
+            true
+          ],
+          [
+            "space316/ac2/factory-waiting",
+            true
+          ],
+          [
+            "space316/ac2/racing-prepare",
+            true
+          ],
+          [
+            "space316/ac2/recorded-wait",
+            true
+          ],
+          [
+            "space316/ac2/reservation-failure",
+            true
+          ],
+          [
+            "space316/ac2/service-wiring",
+            true
+          ],
+          [
+            "space316/ac2/worker-responsive",
+            true
+          ],
+          [
+            "space316/ac3/report-starts",
+            true
+          ],
+          [
+            "space316/ac4/contract-digest",
+            true
+          ],
+          [
+            "space316/ac4/finished-measurement",
+            true
+          ],
+          [
+            "space316/ac4/last-five",
+            true
+          ],
+          [
+            "space316/ac4/off-and-legacy",
+            true
+          ],
+          [
+            "space316/ac4/one-run-default",
+            true
+          ],
+          [
+            "space316/ac4/project-file",
+            true
+          ],
+          [
+            "space316/ac4/unmeasured-default",
+            true
+          ],
+          [
+            "space316/ac4/unread-declaration",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space316/ac1/concurrent",
+          "space316/ac1/floor-boundaries",
+          "space316/ac1/metrics",
+          "space316/ac1/other-holds",
+          "space316/ac1/second-pool",
+          "space316/ac1/unread-pool",
+          "space316/ac2/acceptance-rechecks",
+          "space316/ac2/before-reservation",
+          "space316/ac2/cancel-releases",
+          "space316/ac2/completion-wakes",
+          "space316/ac2/factory-waiting",
+          "space316/ac2/racing-prepare",
+          "space316/ac2/recorded-wait",
+          "space316/ac2/reservation-failure",
+          "space316/ac2/service-wiring",
+          "space316/ac2/worker-responsive",
+          "space316/ac3/report-starts",
+          "space316/ac4/contract-digest",
+          "space316/ac4/finished-measurement",
+          "space316/ac4/last-five",
+          "space316/ac4/off-and-legacy",
+          "space316/ac4/one-run-default",
+          "space316/ac4/project-file",
+          "space316/ac4/unmeasured-default",
+          "space316/ac4/unread-declaration"
+        ],
+        "targets": {
+          "space316/ac2/before-reservation": [
+            true
+          ]
+        }
+      },
+      "old_digest": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    }
+  ],
+  "reuse_integrity_errors": [],
+  "reuse_qualified": 0,
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "surviving_workers": 0,
+  "unmeasured_cases": [
+    "check_teeth_mutations.py:space316-accept-released",
+    "check_teeth_mutations.py:space316-admission-at-acceptance",
+    "check_teeth_mutations.py:space316-block-report",
+    "check_teeth_mutations.py:space316-ignore-floor",
+    "check_teeth_mutations.py:space316-lost-completion-wake",
+    "check_teeth_mutations.py:space316-measured-after-one",
+    "check_teeth_mutations.py:space316-release-winning-promise",
+    "check_teeth_mutations.py:space316-wait-listed-refused"
+  ],
+  "worker_invocations": 16,
+  "worker_outcomes": [
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.896057900972664,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0316_admission.py:control_space_admission.py:False:baseline",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/0",
+      "pid": 743253,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4037
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.212198799010366,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0316_admission.py:control_space_admission.py:False:noop",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/1",
+      "pid": 747281,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4037
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.168402655981481,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0316_admission.py:control_launch.py:False:baseline",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/2",
+      "pid": 750396,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4039
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.748401486780494,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0316_admission.py:control_launch.py:False:noop",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/3",
+      "pid": 755879,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4039
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.290373767726123,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0316_admission.py:control_service.py:False:baseline",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/4",
+      "pid": 759582,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4036
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.242752889171243,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0316_admission.py:control_service.py:False:noop",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/5",
+      "pid": 762183,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4036
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.737177482806146,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0316_admission.py:control_dispatch.py:False:baseline",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/6",
+      "pid": 764572,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4040
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.7308020000346,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0316_admission.py:control_dispatch.py:False:noop",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/7",
+      "pid": 765722,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4040
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.70722818095237,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-ignore-floor",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/8",
+      "pid": 768207,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4320
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.515752793755382,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-admission-at-acceptance",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/9",
+      "pid": 769462,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4107
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 10.094775510951877,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-block-report",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/10",
+      "pid": 771652,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4089
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.048468385823071,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-measured-after-one",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/11",
+      "pid": 775767,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4068
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.907962926663458,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-wait-listed-refused",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/12",
+      "pid": 778850,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4068
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 11.789961760863662,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-accept-released",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/13",
+      "pid": 781544,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4076
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 12.330304275732487,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-lost-completion-wake",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/14",
+      "pid": 784019,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4070
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 11.327842260245234,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space316-release-winning-promise",
+      "output_directory": "/tmp/veldo0316-final-teeth-workers/15",
+      "pid": 785890,
+      "returncode": 0,
+      "stderr_bytes": 60,
+      "stdout_bytes": 4066
+    }
+  ]
+}

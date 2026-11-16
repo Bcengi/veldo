@@ -1,0 +1,357 @@
+{
+  "commit": "42ea5a5a0de00f0158f74e9d1c84a09c88db6ae2",
+  "status": "passed",
+  "executed": 8,
+  "rejected": 8,
+  "reused": 0,
+  "surviving_workers": 0,
+  "cases": [
+    {
+      "name": "space316-ignore-floor",
+      "rows": [
+        "space316/ac1/floor-boundaries"
+      ],
+      "module": "control_space_admission.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac1/floor-boundaries",
+            "space316/ac1/metrics",
+            "space316/ac1/other-holds",
+            "space316/ac1/second-pool",
+            "space316/ac2/before-reservation",
+            "space316/ac2/completion-wakes",
+            "space316/ac2/factory-waiting",
+            "space316/ac3/report-starts",
+            "space316/ac4/one-run-default"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "new_digest": "6ae7c2f3f81e55c945fb63086df515bf07209b05fa8e16c128de37b6cf43c06f"
+    },
+    {
+      "name": "space316-admission-at-acceptance",
+      "rows": [
+        "space316/ac2/before-reservation"
+      ],
+      "module": "control_launch.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/before-reservation": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/before-reservation": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/before-reservation": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac2/before-reservation",
+            "space316/ac2/factory-waiting"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+      "new_digest": "af408a6db51613bfe549366311449d2df98a598f50ab751b565d8041e54ec0fc"
+    },
+    {
+      "name": "space316-block-report",
+      "rows": [
+        "space316/ac3/report-starts"
+      ],
+      "module": "control_space_admission.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac3/report-starts": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac1/metrics",
+            "space316/ac3/report-starts"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "new_digest": "65e918f122e5de4b01b8dd479bfef218b2a01ccf252be2eb86ae0ff302079a56"
+    },
+    {
+      "name": "space316-measured-after-one",
+      "rows": [
+        "space316/ac4/one-run-default"
+      ],
+      "module": "control_space_admission.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac4/one-run-default": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac4/one-run-default"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "new_digest": "7476a559f8af1078af9f69bb99391d1e3001039e5af184c1f9311b708d472e5e"
+    },
+    {
+      "name": "space316-wait-listed-refused",
+      "rows": [
+        "space316/ac2/factory-waiting"
+      ],
+      "module": "control_service.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/factory-waiting": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/factory-waiting": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/factory-waiting": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac2/factory-waiting"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "7406dc6088697423b361f2b56edc82c328903709efa37b7cb5d4d03eaff50c47",
+      "new_digest": "b3905ee2ecfee9f31c1bd18e925a60dba766ca21a9201c6ee8866ff9b6bf86e6"
+    },
+    {
+      "name": "space316-accept-released",
+      "rows": [
+        "space316/ac2/acceptance-rechecks"
+      ],
+      "module": "control_dispatch.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/acceptance-rechecks": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/acceptance-rechecks": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/acceptance-rechecks": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac2/acceptance-rechecks"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "164061843526454a851b74d58d77627a7a8934e42c750ea16fe465df92a68730",
+      "new_digest": "e1568ac5b9119ceb1ad85d6edd3703a9e1aed9ab52e8cb5c201fef46251fb941"
+    },
+    {
+      "name": "space316-lost-completion-wake",
+      "rows": [
+        "space316/ac2/completion-wakes"
+      ],
+      "module": "control_space_admission.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac1/floor-boundaries": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/completion-wakes": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac2/completion-wakes"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+      "new_digest": "718f6075582ba9f2fb39162069b6a5b8224eab149416281a4e07504a7c79de14"
+    },
+    {
+      "name": "space316-release-winning-promise",
+      "rows": [
+        "space316/ac2/racing-prepare"
+      ],
+      "module": "control_launch.py",
+      "observed": {
+        "baseline": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/before-reservation": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "noop": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/before-reservation": [
+              true
+            ]
+          },
+          "failed_rows": []
+        },
+        "mutant": {
+          "count": 51,
+          "targets": {
+            "space316/ac2/racing-prepare": [
+              false
+            ]
+          },
+          "failed_rows": [
+            "space316/ac2/racing-prepare"
+          ]
+        }
+      },
+      "replacement_count": 1,
+      "status": "rejected",
+      "old_digest": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+      "new_digest": "0701500e91d6f7619daf58de62dfb48a14cdb1dbb2bf97ab51a096f14a7e587a"
+    }
+  ],
+  "note": "Each selected mutation executed once in the final stage. The first stage is recorded separately."
+}

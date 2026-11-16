@@ -1,0 +1,107 @@
+{
+  "implementation_commit": "42ea5a5a0de00f0158f74e9d1c84a09c88db6ae2",
+  "suite": "150_veldo_0316_admission",
+  "meaning": "Selected diagnostic rows, not aggregate gate evidence.",
+  "rows": [
+    {
+      "id": "space316/ac1/concurrent",
+      "passed": true
+    },
+    {
+      "id": "space316/ac1/floor-boundaries",
+      "passed": true
+    },
+    {
+      "id": "space316/ac1/metrics",
+      "passed": true
+    },
+    {
+      "id": "space316/ac1/other-holds",
+      "passed": true
+    },
+    {
+      "id": "space316/ac1/second-pool",
+      "passed": true
+    },
+    {
+      "id": "space316/ac1/unread-pool",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/acceptance-rechecks",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/before-reservation",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/cancel-releases",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/completion-wakes",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/factory-waiting",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/racing-prepare",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/recorded-wait",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/reservation-failure",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/service-wiring",
+      "passed": true
+    },
+    {
+      "id": "space316/ac2/worker-responsive",
+      "passed": true
+    },
+    {
+      "id": "space316/ac3/report-starts",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/contract-digest",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/finished-measurement",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/last-five",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/off-and-legacy",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/one-run-default",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/project-file",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/unmeasured-default",
+      "passed": true
+    },
+    {
+      "id": "space316/ac4/unread-declaration",
+      "passed": true
+    }
+  ]
+}

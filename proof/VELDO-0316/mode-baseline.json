@@ -1,0 +1,96 @@
+{
+  "base": "29131baa56e34bd6bf8af513a20402352fb6f3e9",
+  "baseline": {
+    "rows": [
+      {
+        "row": "VELDO-0331 ac1/no-record-is-report: raised FileNotFoundError: [Errno 2] No such file or directory: '/tmp/v331-hwxl0zlo/state'     root = os.open(self.state_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac1/act-refused-until-built",
+        "passed": true
+      },
+      {
+        "row": "VELDO-0331 ac1/own-record-per-scope",
+        "passed": true
+      },
+      {
+        "row": "VELDO-0331 ac1/act-beside-report",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac1/history",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac1/owner-signs",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac1/ledger-checks-signature",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac1/ledger-checks-sender",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac2/admission-by-scope",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac2/advised-counts-as-held",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac2/hold-keeps-its-scope",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac2/signal-by-scope",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac2/adoption-by-scope",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac3/switch-back-accepted",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 ac3/then-due-and-nothing-removed",
+        "passed": false
+      },
+      {
+        "row": "VELDO-0331 mode/canon",
+        "passed": false
+      }
+    ],
+    "passed": 2,
+    "failed": 14
+  },
+  "candidate": {
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "134_veldo_0331_space_mode"
+    ],
+    "exit": 1,
+    "seconds": 0.64,
+    "supervisors": [],
+    "own_survivors": 0
+  },
+  "baseline_process_check": {
+    "command": [
+      "python3",
+      "/tmp/veldo0316_baseline.py"
+    ],
+    "exit": 0,
+    "seconds": 1.59,
+    "supervisors": [],
+    "own_survivors": 0
+  },
+  "comparison": "The same 14 of 16 mode-suite rows failed at unchanged base and with this implementation. The first failure is the absent fixture state root. No mode suite was edited."
+}

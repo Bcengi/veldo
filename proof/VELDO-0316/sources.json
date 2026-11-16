@@ -1,0 +1,19 @@
+{
+  "commit": "42ea5a5a0de00f0158f74e9d1c84a09c88db6ae2",
+  "tree": "22d8821e9a1e268a1ce62296d4c4bebe7b742d22",
+  "sha256": {
+    ".veldo/control_space_admission.py": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+    ".veldo/control_launch.py": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+    ".veldo/control_dispatch.py": "164061843526454a851b74d58d77627a7a8934e42c750ea16fe465df92a68730",
+    ".veldo/control_service.py": "7406dc6088697423b361f2b56edc82c328903709efa37b7cb5d4d03eaff50c47",
+    "engine/.veldo/control_space_admission.py": "d6b7b28760c0ca4a89898063f782dc002a60aeefc00b52c35edbd77db0481e85",
+    "engine/.veldo/control_launch.py": "1bafd2a32d663de666945ff73d838aa95eb59f3207a7188ae196e4bd1fc95748",
+    "engine/.veldo/control_dispatch.py": "164061843526454a851b74d58d77627a7a8934e42c750ea16fe465df92a68730",
+    "engine/.veldo/control_service.py": "7406dc6088697423b361f2b56edc82c328903709efa37b7cb5d4d03eaff50c47",
+    "scripts/suites/150_veldo_0316_admission.py": "bf562c2301dad1bacf99cec7fea768aa5b0347af09866ec9d3ed2530d1058403",
+    "scripts/check_teeth_mutations.py": "19fc2eb3841971c3cdbd7f87521c4c1655a9ae6efcdec0c3cb470cb9b5f3249e",
+    "scripts/suites/manifest.json": "797aefabff5caa20e05633f70029a5b554a5612f56af5c20c21909f8f78ea87d",
+    "scripts/suites/requires.json": "e8d20a381a7a467a7b88f0efab14e3d5159a4e7a5d23a39aca9b3da8b4f01026",
+    "specs/VELDO-0316-admission-by-pool-need-hold-and-floor.md": "33e8b77a2274b8c4b750a31a2309bdab51f99b94445bc079f974c3c8be255d08"
+  }
+}
