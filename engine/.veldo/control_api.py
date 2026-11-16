@@ -12,7 +12,8 @@ THE ROUTES are one published table, ROUTES: each route's name, method, path, fam
 session, its exact body fields and the authority operation it asks for. The handlers are registered by
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
 route is a defect the suite names. The families are auth, messages, decisions, reads (the published
-contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
+contract, every read model of control_api_models.READ_MODELS and, VELDO-0319, the four reads of the console's
+Space screen: space.pools, space.usage, space.pending and space.removed), configuration (a workflow revision's
 read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap; VELDO-0312:
 space.abandon, the owner's Abandon of one worktree at the version the screen showed) and events
 (the event read and the live stream). A GET's query parameters are its
@@ -209,6 +210,10 @@ ROUTES = (
           ('project',), (), 'reconcile_space'),
     Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,
           ('item', 'version'), (), 'abandon_worktree'),
+) + tuple(Route(name, 'GET', '/api/v1/domains/{domain}/space/' + view, 'reads', True, (), (), None)
+          # VELDO-0319 (design 6.6): the four reads of the console's Space screen, each one view of the space
+          # ledger's records (control_api_models.SPACE_VIEWS), served by the authority for the session's member.
+          for name, view in MO.SPACE_VIEWS.items()) + (
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -476,6 +481,7 @@ class ControlApi:
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
         self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})
+        self.handlers.update({name: self._space_read for name in MO.SPACE_VIEWS})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
@@ -854,6 +860,9 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _space_read(self, route, body, session, extra, headers):
+        return 200, self._ask(self.authority.read, route.name, session['principal'])
 
     def _metadata_read(self, route, body, session, extra, headers):
         model = next(m.name for m in MO.METADATA_READS if m.route == route.name)

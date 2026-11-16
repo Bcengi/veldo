@@ -64,6 +64,16 @@ serves the API: control_service.Service.space_abandon, with the cause owner_aban
 none, or with no space ledger, the answer is unavailable_service:space_ledger. Abandon removes no unique work:
 the answer names under discard_required each item that stays until the owner's Discard, which saves first.
 
+THE SPACE READS (VELDO-0319, design 6.6). `read` also serves, by its route's name, one of the four views of the space ledger the console's
+Space screen shows (control_api_models.SPACE_VIEWS: pools, usage, pending, removed) for a principal judged as
+every reader is (`_answer`: a current person member whose scope covers a project of this domain), from one read
+of the ledger's kinds at one watermark under that member's scope. They come through `read`, the one call
+the API has for a read model, so the API reaches them over the service socket as it reaches every other
+(control_client_api.read) and no second way in exists. It reads the store and nothing else: no file, no filesystem and no engine. For a
+waiting or an advised hold a dispatch record carries, it names that run (the dispatch, its unit and its
+station) when the member's scope serves the dispatch. The owner's actions on that screen are the commands
+above and below (reconcile_space, abandon_worktree) and the settlement's answer_decision; a read writes nothing.
+
 READS (AC2). `inspect` is the read the API's session checks go through: named committed entities and the
 journal watermark, as the VELDO-0047 service's inspect answers them. `read` serves one published read
 model (control_api_models.read_model) from this connection for a principal who is a current person
@@ -317,6 +327,8 @@ class ApiAuthority:
     def read(self, model, principal):
         """One published read model, or one metadata read of control_api_models.METADATA_READS (VELDO-0131), for
         `principal`, read on this connection now."""
+        if model in MO.SPACE_VIEWS:
+            return self._space(MO.SPACE_VIEWS[model], principal)
         if model not in MO.MODELS and model not in MO.METADATA:
             return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
         def produce():
@@ -331,6 +343,35 @@ class ApiAuthority:
             self._observe_read(principal, model, scope, answer)
             return answer
         return self._answer(principal, produce)
+
+    def _space(self, view, principal):
+        """One view of the space ledger (control_api_models.SPACE_VIEWS) for `principal`, read on this
+        connection now (VELDO-0319)."""
+        def produce():
+            scope = self._read_scope(principal)
+            answer = MO.read_model(self.S, self.conn, MO.SPACE_MODEL.name, scope=scope)
+            carried = self._carried(answer['items']['space_hold'], scope) if view == 'pools' else None
+            served = MO.space_view(self.conn, view, answer, scope.universal, carried)
+            self._observe_read(principal, 'space.' + view, scope, served)
+            return served
+        return self._answer(principal, produce)
+
+    def _carried(self, holds, scope):
+        """{hold: {dispatch, unit, station}} for each waiting or advised hold a dispatch record names in its
+        contract (control_dispatch: contract.space.hold), when the reader's scope serves that dispatch."""
+        found = {}
+        for hold in holds:
+            if hold['data'].get('state') not in MO.SPACE_LISTED:
+                continue
+            identity = hold['id'][len('space:hold:'):]
+            for eid, text in self.conn.execute("SELECT id, data FROM entities WHERE kind='dispatch' AND instr(data, ?)",
+                                               (json.dumps(identity),)):
+                data = json.loads(text)
+                contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
+                if (contract.get('space') or {}).get('hold') == identity and scope.visible(eid, 'dispatch', data):
+                    found[hold['id']] = {'dispatch': eid[len('dispatch:'):], 'unit': contract.get('unit'),
+                                         'station': contract.get('station')}
+        return found
 
     def workflow(self, principal, workflow, version=None):
         """VELDO-0132's stored canvas document of one revision (the head when `version` is None)."""
