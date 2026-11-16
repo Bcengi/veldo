@@ -21,7 +21,8 @@ THE REMOVERS, by the table's action and the item's kind (REMOVERS):
   drop_caches       evidence                the folder remover on each sub-folder the project declares as
                                             a cache, and on nothing else
   save              worktree                settled Save, snapshot, owner commit, non-forced removal
-  discard           worktree                settled Discard, snapshot, forced removal of this worktree
+  discard           worktree                settled Discard, kept branch for a detached worktree whose
+                                            commit no ref holds, snapshot, forced removal of this worktree
 
 Any other pair has no remover and is refused. A branch is marked, never removed, and that is a ledger
 write. Review scratch is saved by the keep step, compared file by file and removed before the
@@ -992,6 +993,10 @@ def _r_disposition(ctx, identity, record, answer):
         raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')
     before = dict(before, snapshot=manifest)
     _snapshot_equal(ctx, record, before, path)
+    if choice == 'discard':
+        # Discard never loses a commit (design 6.5, VELDO-0343): the kept branch of a detached
+        # worktree is there, read back and on the Ledger before anything is moved or removed.
+        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])
     if choice == 'save':
         _save_commit(ctx, identity, record, path, answer, shown)
         ctx['keep'] = keeper.keeper(ledger, event='space_disposition')
@@ -1000,6 +1005,60 @@ def _r_disposition(ctx, identity, record, answer):
     ctx['keep'] = lambda item, current: before
     ctx['disposition'] = choice
     _r_worktree(ctx, identity, record, answer)
+
+
+HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')  # rule 5's: a kept ref and a stash hold nothing
+
+
+def _discard_branch(ctx, identity, record, path, answer, shown, kept):
+    """Only the settled Discard path calls this, before the worktree is moved or removed. For a
+    detached worktree whose checked-out commit no branch, tag or remote-tracking ref of its repository
+    reaches, create the kept branch at that commit, read it back, and have the Ledger record it as a
+    branch item in state kept. The branch is named as Save names one: the name the terms showed, or
+    the next one free. It is a ref write: no commit is made and nothing is removed. Any failure is the
+    refusal remove_refused, and the worktree stays with everything in it.
+
+    A worktree on a branch needs none: Discard removes the worktree and never the branch, in an agent
+    repository as anywhere else. `kept` is what the keep step read: the commit is the one it recorded,
+    which the caller has compared with the commit the owner was shown."""
+    commit = kept.get('head')
+    if kept.get('branch') is not None or not commit:
+        return  # on a branch, which holds its commits and stays; or no commit at all
+    commands = ctx['commands']
+    branch = shown.get('kept_branch') or _free_branch(ctx['ledger'], identity, record, path, commands)
+    ref = 'refs/heads/' + branch
+    code, out = _git(commands, '-C', path, 'for-each-ref', '--format=%(refname)', '--contains', commit,
+                     *(prefix.rstrip('/') for prefix in HOLDING_REFS))
+    if code != 0:
+        raise _Refusal(REFUSED, 'git could not say which refs hold the commit: ' + str(out)[:200])
+    holders = [name for name in out.split('\n')[:-1] if name.startswith(HOLDING_REFS)]
+    holds = _branch_holds(commands, path, branch)  # None: no such branch; False: it is at this commit
+    if holds is not False:
+        if holders:
+            answer['commit_held_by'] = holders[:NAMED]
+            return  # a ref reaches the commit: it survives the worktree
+        if holds:
+            raise _Refusal(REFUSED, 'the kept branch name is taken by a branch that does not hold the commit',
+                           kept_branch=branch, commit=commit)
+        code, out = _git(commands, '-C', path, 'check-ref-format', '--branch', branch)
+        if code != 0:
+            raise _Refusal(REFUSED, 'git refused the kept branch name: ' + str(out)[:200], kept_branch=branch)
+        # Created and never moved: the empty old value lets the write through only when no such ref is there.
+        code, out = _git(commands, '-C', path, 'update-ref', '-m', 'veldo: kept branch before a Discard',
+                         ref, commit, '')
+        if code != 0:
+            raise _Refusal(REFUSED, 'git refused the kept branch: ' + str(out)[:300], kept_branch=branch,
+                           commit=commit)
+    code, out = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+    if code != 0 or out.strip() != commit:
+        raise _Refusal(REFUSED, 'the kept branch was not read back at the commit', kept_branch=branch, commit=commit)
+    try:
+        recorded = ctx['ledger'].keep_branch(identity, branch, commit)
+    except Exception as error:  # noqa: BLE001 - a branch the Ledger did not record is not a kept branch
+        raise _Refusal(REFUSED, 'the kept branch could not be recorded: ' + _said(error), kept_branch=branch)
+    if not isinstance(recorded, dict) or recorded.get('ok') is not True:
+        raise _Refusal(REFUSED, 'the Ledger did not record the kept branch', kept_branch=branch, found=recorded)
+    answer['kept_branch'], answer['kept_branch_item'] = branch, recorded.get('branch_item')
 
 
 def _save_commit(ctx, identity, record, path, answer, shown):

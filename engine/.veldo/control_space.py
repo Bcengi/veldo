@@ -45,6 +45,8 @@ AN ITEM'S STATES AND THE ONLY MOVES (design 4.1):
   outcome kept       due to kept. A removing item is removed to the end: the decision was recorded
   outcome removing   written again for a removing item only to record where its thing was left (left_at)
   keep               writes the keep record of a due or removing worktree or agent repository; moves nothing
+  keep branch        records the kept branch a settled Discard made for a removing, detached worktree as a
+                     branch item in state kept (THE KEPT BRANCH OF A DISCARD, below); moves the worktree nowhere
   gone               declared, present, due or deferred to gone
   adopt              nothing (or a report record) to present, adopted
   measure, rebranch  write fields and move nothing
@@ -134,6 +136,19 @@ A KEEP WRITE ADDS AND NEVER REMOVES. For an item that has a record, the refs and
 it. A ref the record holds at another commit is space_keep_ref_moved:<ref>, an attempt number the record
 holds with other figures is space_keep_snapshot_replaced, and nothing a keep command is given takes a ref
 or an attempt off the record. The journal holds each version.
+
+THE KEPT BRANCH OF A DISCARD (VELDO-0343, design 6.5). A detached worktree can hold a commit no ref
+reaches. Before the discard remover removes such a worktree it creates a branch at the checked-out commit,
+and keep_branch records that branch as a branch item in state kept, with its name (the locator's ref),
+its commit (start, and kept_branch.commit) and the worktree it was made for (kept_branch.worktree). The
+Ledger trusts nothing its caller says: inside the command's transaction it reads, through the one Git
+boundary, the worktree's HEAD and the branch in the repository the worktree's branches are in, and
+refuses a branch that is not there at that commit (space_keep_branch_ref), a commit that is not the
+worktree's HEAD (space_keep_branch_head), a worktree that is on a branch (space_keep_branch_attached),
+and a worktree that is not removing under an authorized Discard (space_keep_branch_state). A branch
+item already at the locator is written kept when it is declared, present or kept, with the same fields;
+in any other state the command is refused. It is a record of a ref write: it makes no commit, removes
+nothing, and writes no event record.
 
 THE OWNER'S KEEP IS ABSOLUTE (design 0.4, VELDO-0312 fix round). The state kept is two things: an item
 whose table action at its last event removes nothing (a worktree measured at run finished, a branch),
@@ -375,8 +390,9 @@ POOL, HOLD, ADMIT, RELEASE, RECONCILE = ('space_pool', 'space_hold', 'space_admi
                                          'space_reconcile')
 KEEP = 'space_keep'
 REQUEST = 'space_disposition_request'
+KEEP_BRANCH = 'space_keep_branch'
 ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP,
-                   REQUEST, 'space_disposition')
+                   REQUEST, 'space_disposition', KEEP_BRANCH)
 # Issue is the authority's: the run or gate identity a principal may then hold, declare for and signal.
 ISSUE = 'space_issue'
 OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE, ISSUE)
@@ -877,6 +893,7 @@ class Ledger:
                        RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
                        PACKET: self._t_packet, KEEP: self._t_keep,
                        REQUEST: self._t_disposition_request, DISPOSITION: self._t_disposition,
+                       KEEP_BRANCH: self._t_keep_branch,
                        EVENT: self._t_event, CONSUMED: self._t_consumed}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
@@ -1482,6 +1499,27 @@ class Ledger:
         item that has a record the refs and the attempt are added; none is replaced or removed."""
         return self._item_command(KEEP, item, {'repository': repository, 'refs': refs, 'snapshot': snapshot},
                                   principal, command_id)
+
+    def keep_branch(self, item, branch, commit, principal=None, command_id=None):
+        """Record the kept branch `branch`, which a settled Discard made at `commit` for the removing,
+        detached worktree `item`, as a branch item in state kept (VELDO-0343). The Ledger reads the
+        worktree's HEAD and the branch itself before it writes. Returns the branch item under
+        branch_item."""
+        record = self.item(item) if _is_str(item) else None
+        branch_item, also = None, {}
+        if record is not None and _is_str(branch):
+            repository = self._repository_of(record)
+            held = self._at(locator_key('branch', {'repository': repository, 'ref': branch})) if repository else None
+            if held is not None:
+                branch_item, also = held[0], {held[0]: held[1]}
+            else:
+                branch_item = item_id(self.new_id())
+                also = {branch_item: 0}
+        result = self._item_command(KEEP_BRANCH, item, {'branch': branch, 'commit': commit,
+                                                        'branch_item': branch_item}, principal, command_id, also)
+        if result['ok']:
+            result['branch_item'] = branch_item
+        return result
 
     def gone(self, item, principal=None, command_id=None):
         """present, declared, due or deferred to gone: nothing is at the locator any more."""
@@ -2114,6 +2152,26 @@ class Ledger:
         lines = done.stdout.decode('utf-8', 'surrogateescape').split('\n')[:-1]
         return {name: commit for commit, _, name in (line.partition(' ') for line in lines)}
 
+    def _item_branch(self, path):
+        """The branch HEAD names in the item at `path`, as a full ref, or None when it is detached, read
+        now by git through the one Git boundary. Raises Refused when git cannot say."""
+        global _git_process
+        if _git_process is None:
+            _git_process = _sibling('git_process')
+        try:
+            done = _git_process.run(['git', '-C', path, 'symbolic-ref', '--quiet', 'HEAD'],
+                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    timeout=GIT_SECONDS)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            raise Refused('space_keep_item', 'git could not read the item: %s' % error)
+        out = done.stdout.decode('utf-8', 'replace').strip()
+        said = done.stderr.decode('utf-8', 'replace').strip()
+        if done.returncode == 0 and out:
+            return out
+        if done.returncode == 1 and not out and not said and os.path.isdir(path):
+            return None
+        raise Refused('space_keep_item', 'git could not read the branch of the item: ' + said[-300:])
+
     def _item_head(self, path):
         """The commit HEAD names in the item at `path`, read now by git through the one Git boundary, or
         None when git reads the item and its HEAD names no commit. Raises Refused when git cannot read
@@ -2466,6 +2524,47 @@ class Ledger:
         record['kept'] = {'repository': repository, 'path': prior['path'], 'refs': merged, 'snapshots': snapshots,
                           'attempt': {'number': number, 'head': head}}
         return {identity: {'kind': ITEM_KIND, 'data': record}}
+
+    def _t_keep_branch(self, conn, params, before):
+        identity, record = self._stored(params, before)
+        decision = record.get('disposition') or {}
+        if (record['kind'] != 'worktree' or record['state'] != 'removing'
+                or decision.get('state') != 'authorized' or decision.get('choice') != 'discard'):
+            raise Refused('space_keep_branch_state', 'a kept branch is recorded for a worktree that is removing '
+                          'under an authorized Discard')
+        branch, commit = params.get('branch'), params.get('commit')
+        if not _is_str(branch) or branch.startswith('refs/') or not (
+                _is_str(commit) and len(commit) in (40, 64) and not set(commit) - set('0123456789abcdef')):
+            raise _invalid('branch', 'the short name of the kept branch, and its commit')
+        repository = self._repository_of(record)
+        if repository is None:
+            raise Refused('space_keep_branch_repository', 'no repository is known for the branches of this worktree')
+        path = record['locator']['path']
+        if self._item_head(path) != commit:
+            raise Refused('space_keep_branch_head', 'the commit is not the one checked out in the worktree')
+        if self._item_branch(path) is not None:
+            raise Refused('space_keep_branch_attached', 'the worktree is on a branch: its branch holds the commit')
+        name = 'refs/heads/' + branch
+        if self._kept_refs(repository, name).get(name) != commit:
+            raise Refused('space_keep_branch_ref', 'the repository does not hold the branch at the commit named')
+        canonical = {'repository': repository, 'ref': branch}
+        fields = {'commit': commit, 'worktree': identity, 'request': decision.get('alias')}
+        held = self._at(locator_key('branch', canonical))
+        new = params.get('branch_item')
+        if held is not None:
+            if new != held[0] or new not in before or held[2]['state'] not in ('declared', 'present', 'kept'):
+                raise Refused('space_keep_branch_item', 'the branch item at this locator changed, or is in the '
+                              'state ' + held[2]['state'])
+            item = dict(before[new]['data'], state='kept', kept_branch=fields)
+        else:
+            if not _is_str(new) or not new.startswith(ITEM_PREFIX) or new in before:
+                raise _invalid('branch_item', 'a new item identity for the branch')
+            item = dict(self._new_item(
+                {'item': new, 'kind': 'branch', 'host': record['host'], 'locator': canonical,
+                 'owner': record['owner'], 'creator': record['creator'], 'start': commit,
+                 'device': self.device(repository)}, 'kept', False), kept_branch=fields)
+        record['kept_branch'] = {'branch': branch, 'commit': commit, 'item': new}
+        return {identity: {'kind': ITEM_KIND, 'data': record}, new: {'kind': ITEM_KIND, 'data': item}}
 
     def _t_gone(self, conn, params, before):
         identity, record = self._stored(params, before)

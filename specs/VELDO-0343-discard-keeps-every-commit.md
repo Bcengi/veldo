@@ -106,3 +106,25 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   does not enter git; commits stay on kept refs (design 0.3). AC4: Discard makes no commit at all, where
   it said none on any branch, because its snapshot is no longer a commit; the row counts the commits in
   the repository. The falsifier is unchanged.
+- 2026-11-16: built. No acceptance criterion changed.
+  Where it runs: in the settled Discard, after the keep step and the snapshot have been compared
+  with the terms the owner was shown, and before the worktree is moved to its marked name. Design
+  6.5 names the branch first and the keep step after it; the branch is made once the commit is
+  known to be the one the owner was shown, so a Discard refused for changed terms writes no ref.
+  The remove still runs only after the branch, the kept refs and the snapshot.
+  Which worktree: one with no branch whose checked-out commit no branch, tag or remote-tracking ref
+  of its repository reaches (rule 5's holding refs; a kept ref and a stash hold nothing). A worktree
+  on a branch gets none, in an agent repository as anywhere else. A read that fails refuses.
+  The name is the one the terms showed (VELDO-0327, VELDO-0318 fix round 1), else the next free
+  one. The ref is written create-only at the commit, read back, and then recorded by the Ledger's
+  new command space_keep_branch as a branch item in state kept, with its commit and the worktree it
+  was made for. The Ledger reads the worktree's HEAD and the branch itself before it writes. A name
+  taken by a branch that does not hold the commit, a ref git refuses, and a branch the Ledger did
+  not record are each remove_refused, with the worktree and everything in it in place; the refusal
+  spends the answer and the next request names the next free name (VELDO-0318).
+  Rows: ac1/name, ac1/kept-branch, ac1/branch-item, ac1/snapshot, ac1/only-unheld, ac2/name-taken,
+  ac2/next-name, ac2/git-refuses, ac2/not-recorded, ac2/ledger-reads, ac3/agent, ac4/no-commit,
+  ac4/no-event. Eight teeth cases under finding 343: the four declared falsifiers and four guards.
+  Reported, not changed: VELDO-0326's row ac2/observer-refused-by-name (suite 133, outside this
+  footprint) lists the ledger commands by hand and is red on the base d0e2461a, where it does not
+  list space_disposition_request; space_keep_branch is one more name it does not list.

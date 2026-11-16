@@ -16782,6 +16782,44 @@ def cases():
         ['ac3/commands'])
     result[-1]['siblings'] = True
 
+    # VELDO-0343: Discard keeps every commit. The four declared falsifiers, then the guards beside them.
+    discard343 = '150_veldo_0343_discard_keeps_commits.py'
+    branch343 = "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])"
+    add(343, 'space343-discard-without-the-branch', discard343, 'control_space_remove.py',
+        branch343, "        pass  # defect: no kept branch before the Discard",
+        ['space343/ac1/kept-branch', 'space343/ac1/branch-item'])
+    add(343, 'space343-remove-after-the-failed-branch-write', discard343, 'control_space_remove.py',
+        branch343,
+        "        try:\n    " + branch343 + "\n"
+        "        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
+        ['space343/ac2/name-taken', 'space343/ac2/git-refuses'])
+    add(343, 'space343-agent-repository-goes-with-the-worktree', discard343, 'control_space_remove.py',
+        "        if os.path.lexists(name):\n"
+        "            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+        "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n"
+        "            import shutil\n"
+        "            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n"
+        "        if os.path.lexists(name):\n"
+        "            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+        ['space343/ac3/agent'])
+    add(343, 'space343-discard-commits-as-save-does', discard343, 'control_space_remove.py',
+        "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
+        "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
+        ['space343/ac4/no-commit'])
+    add(343, 'space343-branch-made-and-not-recorded', discard343, 'control_space_remove.py',
+        "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
+        "    if False:", ['space343/ac2/not-recorded'])
+    add(343, 'space343-branch-for-a-held-commit', discard343, 'control_space_remove.py',
+        "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
+        "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
+        ['space343/ac1/only-unheld'])
+    add(343, 'space343-ledger-trusts-the-branch', discard343, 'control_space.py',
+        "        if self._kept_refs(repository, name).get(name) != commit:",
+        "        if False:", ['space343/ac2/ledger-reads'])
+    add(343, 'space343-ledger-trusts-the-commit', discard343, 'control_space.py',
+        "        if self._item_head(path) != commit:",
+        "        if False:", ['space343/ac2/ledger-reads'])
+
     return result
 
 
