@@ -1,0 +1,6665 @@
+{
+  "budget_seconds": 29032.0,
+  "case_deadlines": {
+    "check_teeth_mutations.py:space327-bare-choices": 120,
+    "check_teeth_mutations.py:space327-empty-file-list": 120,
+    "check_teeth_mutations.py:space327-expand-rulings": 120,
+    "check_teeth_mutations.py:space327-hide-request-list": 120,
+    "check_teeth_mutations.py:space327-no-detached-branch": 120,
+    "check_teeth_mutations.py:space327-no-save-explanation": 120,
+    "check_teeth_mutations.py:space327-ruling-instead-of-choice": 120,
+    "check_teeth_mutations.py:space327-wrong-restore": 120
+  },
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:space327-bare-choices",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-empty-file-list",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-ruling-instead-of-choice",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-expand-rulings",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-hide-request-list",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-no-detached-branch",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-no-save-explanation",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space327-wrong-restore",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "drivers": {
+    "check_review_mutations.py": {
+      "executed": 0,
+      "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "registered": 0,
+      "reused": 0,
+      "wall_seconds": 0,
+      "worker_seconds": 0
+    },
+    "check_teeth_mutations.py": {
+      "executed": 8,
+      "inventory_digest": "718cce3203c03d21f90db2f548cdb695b7cdd5841b951b5de56185cafc5b8358",
+      "registered": 8,
+      "reused": 0,
+      "wall_seconds": 39.02822073781863,
+      "worker_seconds": 76.55544292740524
+    }
+  },
+  "elapsed": 41.812689024955034,
+  "executed": 8,
+  "force_fresh": false,
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "13f2fa6339cc9761feaa5de2e760498556d4d5f64dceca5b8157ebbb4a9b5902",
+  "invalid_results": [],
+  "parallel_workers": 2,
+  "peak_workers": 2,
+  "registered": 8,
+  "rejected": 8,
+  "resources": {
+    "capacities": {
+      "new_project_fixture": 2,
+      "systemd_user_manager": 16,
+      "ui_browser": 4
+    },
+    "peak_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    },
+    "remaining_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    }
+  },
+  "results": [
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-bare-choices",
+        "module": "control_request_settlement.py",
+        "name": "space327-bare-choices",
+        "new": "SPACE_CHOICES = ('save', 'keep', 'discard')",
+        "old": "SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')",
+        "rows": [
+          "space327/ac1/presented"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 5.491996259894222,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac1/owner",
+          "space327/ac1/presented",
+          "space327/ac2/shown",
+          "space327/ac2/whole-list",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            false
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            false
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            false
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            false
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            false
+          ],
+          [
+            "space327/ac3/choice",
+            false
+          ],
+          [
+            "space327/ac3/once",
+            false
+          ],
+          [
+            "space327/ac3/rollback",
+            false
+          ],
+          [
+            "space327/ac3/stale",
+            false
+          ],
+          [
+            "space327/ac3/unmatched",
+            false
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            false
+          ]
+        }
+      },
+      "new_digest": "f50528f26b4af10406b2a884989fea86f720c3aef33319c3b2930eacc2f937ce",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-empty-file-list",
+        "module": "control_request_settlement.py",
+        "name": "space327-empty-file-list",
+        "new": "if not isinstance(files, list) or not all(_is_str(path) for path in files):",
+        "old": "if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):",
+        "rows": [
+          "space327/ac2/empty-files"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 6.547876412048936,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac2/empty-files"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            false
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac2/empty-files": [
+            false
+          ]
+        }
+      },
+      "new_digest": "70fd436bf366ff999cc141c5267a8b102b10588b1657ffb6310c15ea3a18e7f7",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-ruling-instead-of-choice",
+        "module": "control_request_settlement.py",
+        "name": "space327-ruling-instead-of-choice",
+        "new": "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': ruling, 'ruling': ruling,",
+        "old": "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,",
+        "rows": [
+          "space327/ac3/choice"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 9.280429949052632,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac3/choice",
+          "space327/ac3/rollback",
+          "space327/ac4/existing-effects"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            false
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            false
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            false
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac3/choice": [
+            false
+          ]
+        }
+      },
+      "new_digest": "53146827cb128353192d8f7214268c13ebce254b235e292e7ab19b7be89cd073",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac4/rulings": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-expand-rulings",
+        "module": "authority_contract.py",
+        "name": "space327-expand-rulings",
+        "new": "RULINGS = (\"approve\", \"reject\", \"return_for_elaboration\", \"save\", \"keep\", \"discard\")",
+        "old": "RULINGS = (\"approve\", \"reject\", \"return_for_elaboration\")",
+        "rows": [
+          "space327/ac4/rulings"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 9.240090772043914,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac4/rulings"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            false
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac4/rulings": [
+            false
+          ]
+        }
+      },
+      "new_digest": "26e8d5cf95b0e392d6675c8f9af785969c582ba57657c15015f899be39bdd992",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac4/rulings": [
+            true
+          ]
+        }
+      },
+      "old_digest": "84f01e9592e86568b98dc74a94c1e877cdf80a825d25d05b13f2b19e1a8387e9",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-hide-request-list",
+        "module": "control_request_settlement.py",
+        "name": "space327-hide-request-list",
+        "new": "                    pass",
+        "old": "                    self._terms(data)",
+        "rows": [
+          "space327/ac2/request-binding"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 5.760407013818622,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac2/request-binding"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            false
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac2/request-binding": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0a8b8ca976db0e5d79ab908772ab3db29fedcf91b2c2bc9fc0cc9ebd84b91adf",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-no-detached-branch",
+        "module": "control_request_settlement.py",
+        "name": "space327-no-detached-branch",
+        "new": "if False:",
+        "old": "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
+        "rows": [
+          "space327/ac2/missing-kept-branch"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 5.6400059326551855,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac2/missing-kept-branch"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            false
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac2/missing-kept-branch": [
+            false
+          ]
+        }
+      },
+      "new_digest": "ac41bfe285faf24fedad18a1d833655a9701c5b2ea1ec1a8033cb7bd147831b6",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-no-save-explanation",
+        "module": "control_request_settlement.py",
+        "name": "space327-no-save-explanation",
+        "new": "or False",
+        "old": "or proposal.get('discard') != SPACE_DISCARD",
+        "rows": [
+          "space327/ac2/missing-save"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 5.826071424875408,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac2/missing-save"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            false
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac2/missing-save": [
+            false
+          ]
+        }
+      },
+      "new_digest": "80b061cd95491e205ff9770b4f3dcb304a7840899c0f0921201481fed248036b",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 327,
+        "identity": "check_teeth_mutations.py:space327-wrong-restore",
+        "module": "control_request_settlement.py",
+        "name": "space327-wrong-restore",
+        "new": "if False:",
+        "old": "if tree['restore'] != restore:",
+        "rows": [
+          "space327/ac2/wrong-restore"
+        ],
+        "suite": "150_veldo_0327_disposition.py"
+      },
+      "elapsed": 6.1075394987128675,
+      "fixture_version": 1,
+      "input_digest": "c9d59ff2e5132ad496c50e23efcd14734a092fd2ac365454bfb966e2eda1dd14",
+      "mutant": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [
+          "space327/ac2/wrong-restore"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            false
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac2/wrong-restore": [
+            false
+          ]
+        }
+      },
+      "new_digest": "6238cfe438868f7b7b72353f6bf8c1c6d178cdb337e99c036d1a8ed1eff09849",
+      "noop": {
+        "count": 48,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space327/ac1/owner",
+            true
+          ],
+          [
+            "space327/ac1/policy",
+            true
+          ],
+          [
+            "space327/ac1/presented",
+            true
+          ],
+          [
+            "space327/ac2/bad-files",
+            true
+          ],
+          [
+            "space327/ac2/empty-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-files",
+            true
+          ],
+          [
+            "space327/ac2/missing-kept-branch",
+            true
+          ],
+          [
+            "space327/ac2/missing-save",
+            true
+          ],
+          [
+            "space327/ac2/request-binding",
+            true
+          ],
+          [
+            "space327/ac2/shown",
+            true
+          ],
+          [
+            "space327/ac2/tier",
+            true
+          ],
+          [
+            "space327/ac2/whole-list",
+            true
+          ],
+          [
+            "space327/ac2/wrong-restore",
+            true
+          ],
+          [
+            "space327/ac3/atomic",
+            true
+          ],
+          [
+            "space327/ac3/choice",
+            true
+          ],
+          [
+            "space327/ac3/once",
+            true
+          ],
+          [
+            "space327/ac3/rollback",
+            true
+          ],
+          [
+            "space327/ac3/stale",
+            true
+          ],
+          [
+            "space327/ac3/unmatched",
+            true
+          ],
+          [
+            "space327/ac4/existing-effects",
+            true
+          ],
+          [
+            "space327/ac4/rulings",
+            true
+          ],
+          [
+            "space327/ac4/touchpoints",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space327/ac1/owner",
+          "space327/ac1/policy",
+          "space327/ac1/presented",
+          "space327/ac2/bad-files",
+          "space327/ac2/empty-files",
+          "space327/ac2/missing-files",
+          "space327/ac2/missing-kept-branch",
+          "space327/ac2/missing-save",
+          "space327/ac2/request-binding",
+          "space327/ac2/shown",
+          "space327/ac2/tier",
+          "space327/ac2/whole-list",
+          "space327/ac2/wrong-restore",
+          "space327/ac3/atomic",
+          "space327/ac3/choice",
+          "space327/ac3/once",
+          "space327/ac3/rollback",
+          "space327/ac3/stale",
+          "space327/ac3/unmatched",
+          "space327/ac4/existing-effects",
+          "space327/ac4/rulings",
+          "space327/ac4/touchpoints"
+        ],
+        "targets": {
+          "space327/ac1/presented": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    }
+  ],
+  "reuse_integrity_errors": [],
+  "reuse_qualified": 0,
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "surviving_workers": 0,
+  "unmeasured_cases": [
+    "check_teeth_mutations.py:space327-bare-choices",
+    "check_teeth_mutations.py:space327-empty-file-list",
+    "check_teeth_mutations.py:space327-expand-rulings",
+    "check_teeth_mutations.py:space327-hide-request-list",
+    "check_teeth_mutations.py:space327-no-detached-branch",
+    "check_teeth_mutations.py:space327-no-save-explanation",
+    "check_teeth_mutations.py:space327-ruling-instead-of-choice",
+    "check_teeth_mutations.py:space327-wrong-restore"
+  ],
+  "worker_invocations": 12,
+  "worker_outcomes": [
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.636330706067383,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0327_disposition.py:control_request_settlement.py:False:baseline",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/0",
+      "pid": 2060188,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3590
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.705036042723805,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0327_disposition.py:control_request_settlement.py:False:noop",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/1",
+      "pid": 2060190,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3590
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.570985002443194,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0327_disposition.py:authority_contract.py:False:baseline",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/2",
+      "pid": 2070695,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3588
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.654606604017317,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0327_disposition.py:authority_contract.py:False:noop",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/3",
+      "pid": 2070785,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3588
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 164,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.50244261091575,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-bare-choices",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/4",
+      "pid": 2081157,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3836
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 203,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.559559214860201,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-empty-file-list",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/5",
+      "pid": 2081158,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3620
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.291958428919315,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-ruling-instead-of-choice",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/6",
+      "pid": 2089546,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3670
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 199,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 9.251830155029893,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-expand-rulings",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/7",
+      "pid": 2090648,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3612
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 203,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.772632116917521,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-hide-request-list",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/8",
+      "pid": 2099043,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3628
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 200,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.651837912853807,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-no-detached-branch",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/9",
+      "pid": 2100100,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3636
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 200,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.838229674845934,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-no-save-explanation",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/10",
+      "pid": 2106160,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3622
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 200,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.119994457811117,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space327-wrong-restore",
+      "output_directory": "/tmp/veldo0327-build/teeth-logs/11",
+      "pid": 2106793,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3624
+    }
+  ]
+}

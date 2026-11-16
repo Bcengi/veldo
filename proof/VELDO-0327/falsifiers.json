@@ -1,0 +1,197 @@
+[
+  {
+    "name": "space327-bare-choices",
+    "criterion": "AC1",
+    "specification_falsifier": true,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "f50528f26b4af10406b2a884989fea86f720c3aef33319c3b2930eacc2f937ce",
+    "targeted_rows": [
+      "space327/ac1/presented"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac1/owner",
+      "space327/ac1/presented",
+      "space327/ac2/shown",
+      "space327/ac2/whole-list",
+      "space327/ac3/atomic",
+      "space327/ac3/choice",
+      "space327/ac3/once",
+      "space327/ac3/rollback",
+      "space327/ac3/stale",
+      "space327/ac3/unmatched"
+    ],
+    "mutant_targets": {
+      "space327/ac1/presented": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-empty-file-list",
+    "criterion": "AC2",
+    "specification_falsifier": true,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "70fd436bf366ff999cc141c5267a8b102b10588b1657ffb6310c15ea3a18e7f7",
+    "targeted_rows": [
+      "space327/ac2/empty-files"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac2/empty-files"
+    ],
+    "mutant_targets": {
+      "space327/ac2/empty-files": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-ruling-instead-of-choice",
+    "criterion": "AC3",
+    "specification_falsifier": true,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "53146827cb128353192d8f7214268c13ebce254b235e292e7ab19b7be89cd073",
+    "targeted_rows": [
+      "space327/ac3/choice"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac3/choice",
+      "space327/ac3/rollback",
+      "space327/ac4/existing-effects"
+    ],
+    "mutant_targets": {
+      "space327/ac3/choice": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-expand-rulings",
+    "criterion": "AC4",
+    "specification_falsifier": true,
+    "source": "fresh",
+    "module": "authority_contract.py",
+    "replacement_count": 1,
+    "old_digest": "84f01e9592e86568b98dc74a94c1e877cdf80a825d25d05b13f2b19e1a8387e9",
+    "new_digest": "26e8d5cf95b0e392d6675c8f9af785969c582ba57657c15015f899be39bdd992",
+    "targeted_rows": [
+      "space327/ac4/rulings"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac4/rulings"
+    ],
+    "mutant_targets": {
+      "space327/ac4/rulings": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-hide-request-list",
+    "criterion": "AC2",
+    "specification_falsifier": false,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "0a8b8ca976db0e5d79ab908772ab3db29fedcf91b2c2bc9fc0cc9ebd84b91adf",
+    "targeted_rows": [
+      "space327/ac2/request-binding"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac2/request-binding"
+    ],
+    "mutant_targets": {
+      "space327/ac2/request-binding": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-no-detached-branch",
+    "criterion": "AC2",
+    "specification_falsifier": false,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "ac41bfe285faf24fedad18a1d833655a9701c5b2ea1ec1a8033cb7bd147831b6",
+    "targeted_rows": [
+      "space327/ac2/missing-kept-branch"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac2/missing-kept-branch"
+    ],
+    "mutant_targets": {
+      "space327/ac2/missing-kept-branch": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-no-save-explanation",
+    "criterion": "AC2",
+    "specification_falsifier": false,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "80b061cd95491e205ff9770b4f3dcb304a7840899c0f0921201481fed248036b",
+    "targeted_rows": [
+      "space327/ac2/missing-save"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac2/missing-save"
+    ],
+    "mutant_targets": {
+      "space327/ac2/missing-save": [
+        false
+      ]
+    }
+  },
+  {
+    "name": "space327-wrong-restore",
+    "criterion": "AC2",
+    "specification_falsifier": false,
+    "source": "fresh",
+    "module": "control_request_settlement.py",
+    "replacement_count": 1,
+    "old_digest": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+    "new_digest": "6238cfe438868f7b7b72353f6bf8c1c6d178cdb337e99c036d1a8ed1eff09849",
+    "targeted_rows": [
+      "space327/ac2/wrong-restore"
+    ],
+    "baseline_failed_rows": [],
+    "noop_failed_rows": [],
+    "mutant_failed_rows": [
+      "space327/ac2/wrong-restore"
+    ],
+    "mutant_targets": {
+      "space327/ac2/wrong-restore": [
+        false
+      ]
+    }
+  }
+]

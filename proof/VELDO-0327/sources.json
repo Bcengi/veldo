@@ -1,0 +1,10 @@
+{
+  ".veldo/control_request_settlement.py": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+  "engine/.veldo/control_request_settlement.py": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
+  "scripts/check_teeth_mutations.py": "8f189e6b3e0e3cdde626f1d9abce258b41c43d6391808b13d4e8ea7860e80b98",
+  "scripts/suites/150_veldo_0327_disposition.py": "45913cd468c253ed940dd0eddbd0c3e03496384a625f5e8dd5e21011e2d46a31",
+  "scripts/suites/69_veldo_0068_settlement.py": "8de43d3ea9c8cd20e3c6d78a34a58832e73fb3abe8ac4923b13947957a2e27d7",
+  "scripts/suites/manifest.json": "1b8a79126d546306e5590da8cbb9cb1b3334bf80dd6dcf5b053b0d09b745c2e2",
+  "scripts/suites/requires.json": "791afab7648ed5fdaff7c95468376437d8062f794fdd2de7605c680d390713a2",
+  "specs/VELDO-0327-the-space-disposition-touchpoint.md": "dc8a166f8736a1329f9d8c48f0d04a5af4c94ac73268d9514e33903565b3aa45"
+}

@@ -1,0 +1,101 @@
+{
+  "note": "Rows from the final teeth baseline. Builder evidence; acceptance remains pending the lead gate and review.",
+  "criteria": {
+    "AC1": [
+      {
+        "row": "space327/ac1/owner",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac1/policy",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac1/presented",
+        "baseline": true
+      }
+    ],
+    "AC2": [
+      {
+        "row": "space327/ac2/bad-files",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/empty-files",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/missing-files",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/missing-kept-branch",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/missing-save",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/request-binding",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/shown",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/tier",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/whole-list",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac2/wrong-restore",
+        "baseline": true
+      }
+    ],
+    "AC3": [
+      {
+        "row": "space327/ac3/atomic",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac3/choice",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac3/once",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac3/rollback",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac3/stale",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac3/unmatched",
+        "baseline": true
+      }
+    ],
+    "AC4": [
+      {
+        "row": "space327/ac4/existing-effects",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac4/rulings",
+        "baseline": true
+      },
+      {
+        "row": "space327/ac4/touchpoints",
+        "baseline": true
+      }
+    ]
+  }
+}
