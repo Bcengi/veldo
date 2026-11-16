@@ -122,12 +122,15 @@ command runs and the command leaves nothing; the real space_supervise, in a proc
 the run's end through its follower, after it has itself ended. The row is about that branch alone, so
 it has no ledger: the end it makes is a stand-in that records what it was given, and a process this
 account cannot read is no holder there, as with the process reader).
+supervise/none-stays-on-nothing (finding 3: when the suite ends, each supervisor it started that the
+kernel still shows is classified before it is ended: one that stays while the kernel shows no process
+this account cannot read that started after it stays on nothing, and the row is red and names it).
 
 WHAT A FIXTURE LEAVES. Every row ends what its command left before the row ends, by its latch. On a
 host shared with other accounts' containers a supervisor also stays on their processes, which this
 account cannot read (fail closed), for as long as they keep starting. So the suite ends every
-supervisor it started that is still there when the suite ends: they are the suite's own children, and
-no row reads them after that.
+supervisor it started that is still there when the suite ends: they are the suite's own children.
+supervise/none-stays-on-nothing reads each of them first, and no row reads them after that.
 
 AC2 rows. ac2/command-status (the wrapper returns the command's own status: 0, 7, 143 for a command a
 signal ended, 127 for a command that is not there; each of those runs ends with its hold released).
@@ -226,7 +229,7 @@ def _v313_space_run_suite():
             'supervise/report-loss-keeps-supervising', 'supervise/report-loss-end-is-made',
             'supervise/stop-after-the-command-ends-nothing', 'supervise/stop-after-the-command-end-is-made',
             'supervise/staying-is-idle', 'supervise/wait-reads-again-at-a-read-holders-exit',
-            'supervise/wrapper-gone-the-follower-makes-the-end',
+            'supervise/wrapper-gone-the-follower-makes-the-end', 'supervise/none-stays-on-nothing',
             'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/environment-not-whole-holds',
             'fix3/same-program-holds', 'fix3/rewritten-environment-cwd-in-scratch',
             'fix3/rewritten-environment-open-file-in-worktree', 'fix3/rule-3-reads-the-kernel',
@@ -2382,6 +2385,27 @@ def _v313_space_run_suite():
         # still there stays on processes that are no part of the fixture (another account's, which
         # this account cannot read), and it is the suite's own child: it is ended and collected.
         import signal
+        try:
+            row = 'supervise/none-stays-on-nothing'
+            # Read before any of them is ended: one the kernel still shows, with no process this
+            # account cannot read that started after it, stays on nothing. It is given five
+            # seconds to end first, as stays_or_ends gives.
+            stayed = []
+            for process in supervisors:
+                one = {'pid': process['pid'], 'started': process.get('started')}
+                if not there(one, 0.0):
+                    continue
+                held = unread_by(one, process.get('run'))
+                if not held and there(one, 5.0):
+                    held = unread_by(one, process.get('run'))
+                    stayed.append((process['pid'], process.get('run'), 'unread' if held else 'stays on nothing'))
+                elif held:
+                    stayed.append((process['pid'], process.get('run'), 'unread'))
+            check(row, 'of the %d supervisors the suite started, each one the kernel still shows at the suite\'s '
+                       'end stays on processes this account cannot read that started after it %s'
+                  % (len(supervisors), stayed), all(how == 'unread' for _, _, how in stayed))
+        except Exception as error:
+            stopped(row, error)
         for process in supervisors:
             try:
                 now = CLI._space_process(process['pid'])
