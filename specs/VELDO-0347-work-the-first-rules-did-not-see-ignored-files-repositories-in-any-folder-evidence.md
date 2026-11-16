@@ -208,7 +208,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - scripts/suites/140_veldo_0345_space_keep.py: the fixture's own call of the remover (the attempt
     that stands in for the next event) names the registry row of the item, as Signal does. Nothing a
     row asserts changed.
-  - Four more anchors, moved by this ticket's own build (each matched once on the base 0a80f89b and
+  - Five more anchors, moved by this ticket's own build (each matched once on the base 0a80f89b and
     matched nothing at 25f56001), found by reading every teeth case of the changed modules against
     the code: space336-scratch-is-unique-work (AC1 added a clause to the condition it changes),
     space302-agent-form-refused (the forms were given a name), space324-ledger-drops-ticket-end (the
@@ -216,7 +216,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     the two lines it names). Each case now names its line as it is and makes the same defect; each
     anchor matches once and each changed module still parses. NOT SHOWN RED: their suites are 153
     and 154, which this round must not run, so the teeth of findings 336, 302 and 324 are for the
-    lead to run. For the lead as well, not changed: space306-volumes-first anchors a line of
+    lead to run. A fifth, the same kind, whose suite this round may run:
+    space327-target-another-item (the terms name a worktree or a clone through space_target); it
+    names its line as it is, and its mutant reds space327/fix3/target-item. For the lead as well,
+    not changed: space306-volumes-first anchors a line of
     control_space_kinds.py that was not on the base either (the ORDER line, changed by VELDO-0337).
 
 - 2026-11-16: fix round, on the lead's decisions after the triage of the red accepted rows

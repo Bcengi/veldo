@@ -16670,8 +16670,10 @@ def cases():
         "if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):",
         "if False:", ['space327/ac2/missing-kept-branch'])
     # Fix round 1, F3: the terms target names the listed item (the reviewer's M4).
+    # VELDO-0347 has the terms name a worktree or a clone (space_target), which moved the anchor; the
+    # case names the line as it is now. The same defect: the target may name another item.
     add(327, 'space327-target-another-item', disposition327, 'control_request_settlement.py',
-        "if target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:",
+        "if target['kind'] != 'space_item' or target['ref'] != space_target(c['proposal'])['item']:",
         "if target['kind'] != 'space_item':", ['space327/fix3/target-item'])
     # Fix round 1, F2: a clean tree whose only unique work is unlanded commits is asked about.
     add(327, 'space327-files-only', disposition327, 'control_request_settlement.py',
