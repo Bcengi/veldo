@@ -10,6 +10,7 @@ def _v316_suite():
     import copy
     import importlib.util
     import json
+    import multiprocessing
     import os
     from pathlib import Path
     import select
@@ -17,6 +18,7 @@ def _v316_suite():
     import subprocess
     import sys
     import tempfile
+    import threading
     import time
     import traceback
     import types
@@ -396,8 +398,19 @@ def _v316_suite():
                   and str(getattr(error, 'code', '')).startswith('active_dispatch:')
                   and f.ledger.hold(winner[0]['space']['hold'])['state'] == 'admitted')
 
+            # Fix 3: the free reader holds each child inside judge until the other is inside too, or
+            # until the wait ends. Under the admission lock the second child can never arrive, so the
+            # barrier breaks; without the lock both arrive, both read 120 and both are admitted.
             f = fixture('concurrent')
             f.free['host'] = 120
+            barrier = multiprocessing.get_context('fork').Barrier(2)
+            def raced_free(pool):
+                try:
+                    barrier.wait(2)
+                except threading.BrokenBarrierError:
+                    pass
+                return f.free[pool['name']]
+            f.space['free'] = raced_free
             children = []
             ready_read, ready_write = os.pipe()
             try:
@@ -432,6 +445,7 @@ def _v316_suite():
                     check('ac1/concurrent', 'child completed', status == 0)
                 check('ac1/concurrent', 'one promise at exact capacity',
                       sorted(a.get('answer') for a in answers) == ['admitted', 'waiting'])
+                check('ac1/concurrent', 'never two children inside judge', barrier.broken)
             finally:
                 os.close(ready_read)
                 os.close(ready_write)

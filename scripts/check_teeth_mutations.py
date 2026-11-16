@@ -16524,6 +16524,11 @@ def cases():
     add(316, 'space316-release-winning-promise', admission316, 'control_launch.py',
         "            if space is not None and promised != space:",
         "            if space is not None:", ['space316/ac2/racing-prepare'])
+    # The reviewer's M1: two preparations judge at once, and both fit alone.
+    add(316, 'space316-prepare-without-lock', admission316, 'control_space_admission.py',
+        "        with lock(ledger):\n            base = identity_of",
+        "        with contextlib.nullcontext():\n            base = identity_of",
+        ['space316/ac1/concurrent'])
 
     return result
 
