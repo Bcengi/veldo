@@ -1,7 +1,56 @@
 # VELDO-0343 proof
 
-Implementation 8e43624de12a5ae17d01f9103b2fa991aebbd6c5. Builder evidence, not independent review. All
-four criteria remain pending the lead gate and independent review.
+Implementation c8a68865c03d7041e86585390392c5e4b044b1a9 (fix round 1; first built at 8e43624d). Builder
+evidence, not independent review. All four criteria remain pending the lead gate and independent review.
+
+## Fix round 1, 2026-11-16
+
+Independent review of 62a511f5, verdict FIX, no path that loses work. Where this section gives counts
+they replace the ones below.
+
+- Finding 1, fixed. A detached worktree inside an agent repository had its kept branch written and
+  recorded in the agent repository, which is private and goes later. It is now written, read back
+  and recorded in the main repository of the worktree's scope, where the keep step has already put
+  the commit on a kept ref (remover _kept_home; the Ledger's keep_branch reads and records there).
+  A ref of either repository that holds the commit still means no branch. With no main repository
+  at its path, or a name taken there by other work, the Discard is remove_refused and nothing is
+  written in the agent repository instead. The name shown for such a worktree is free in both
+  repositories, because Save writes it in the agent one. Rows ac3/detached and
+  ac3/detached-refused. Falsifiers: the branch written in the agent repository, and the Ledger
+  recording there; each turned ac3/detached red.
+- Finding 2, row added, no code changed. ac1/stopped-before-record stops the Discard inside
+  keep_branch after the ref write, writes reconcile's deferral, and requires that the next Discard
+  names the same branch and leaves one branch, one kept branch item and no -2 name. Falsifier: the
+  reviewer's mutation, a branch left by the stopped Discard counted a holder; it turned the row red.
+- Lead decision (a). The built order is kept: the branch is made after the keep step and the
+  snapshot were compared with the terms, before the move. Design 6.5 is reworded to it, with the
+  crash points and finding 1's placement (docs/design/VELDO-0295-design.md is not a protected
+  path; that one section only). The spec History records it.
+- Lead decision (b). VELDO-0326 ac2/observer-refused-by-name (suite 133) now sends
+  space_disposition_request, space_disposition and space_keep_branch as the observer and requires
+  each refused by its name. Suite 133 is 30 green, where it was 29 and that row red. Falsifiers: the
+  observer let through for each of the three commands; each turned the row red.
+- Not taken up, the lead's call: review findings 4, 5 and 6. VELDO-0301 ac4/no-clock is inherited
+  and left; suite 139 was not run again.
+
+Rows: 16 green in the ticket suite. Neighbours run again: 0318 45, 0345 31, 0300 39, 0327 27, suite
+133 30, all green. Not run again: 0312, 0297, 0317, 0301 (checks.json keeps their earlier results).
+Fast checks passed: validation, docs, template sync, lint, space boundary, git boundary. All 155
+registered teeth cases that mutate the two engine modules find their anchor exactly once (counted).
+One 0318 anchor (space318-second-worktree-takes-the-first-name) sits on a line this round first
+rewrote; the line was put back as it was, so that case is unchanged.
+
+Teeth, finding 343, final run, last, on the clean committed tree: 14 registered, 14 executed, 14
+rejected, no reuse, no invalid result, no surviving worker, 200 s. It was not the only run
+(teeth-run.json, earlier_runs). The first start stopped with a driver error before any mutant,
+because the builder had made the log folder. The second applied all 14 and rejected 13: the
+declared AC3 falsifier, which deletes the agent repository, was an invalid result, because the two
+new agent rows were absent instead of red. The suite now marks both red when the agent repository
+is gone (c8a68865), and the whole finding ran again. So 13 mutants were applied twice and one three
+times, where the brief asked for once.
+
+The sections below describe the first build; the kept branch's repository for an agent's detached
+worktree, the row and falsifier counts, and the suite 133 row are as this section says.
 
 ## What was built
 

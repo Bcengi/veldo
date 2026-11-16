@@ -3,23 +3,27 @@
   "baseline_failed": [],
   "criterion": "AC1",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space343/ac1/branch-item",
    "space343/ac1/kept-branch",
+   "space343/ac1/stopped-before-record",
    "space343/ac2/git-refuses",
    "space343/ac2/name-taken",
    "space343/ac2/next-name",
    "space343/ac2/not-recorded",
+   "space343/ac3/detached",
+   "space343/ac3/detached-refused",
    "space343/ac4/no-commit",
    "space343/ac4/no-event"
   ],
   "name": "space343-discard-without-the-branch",
   "new": "        pass  # defect: no kept branch before the Discard",
-  "new_digest": "8b8c2077e86ef9bfffc81637defee4b83c6aa64a45c7a848fbba43fa296e3baa",
+  "new_digest": "125c22b4dd53bf61c769cc11730fb646c1bd420314e83be10f6e2089dc097324",
   "noop_failed": [],
   "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -41,19 +45,21 @@
   "baseline_failed": [],
   "criterion": "AC2",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space343/ac2/git-refuses",
    "space343/ac2/name-taken",
    "space343/ac2/next-name",
-   "space343/ac2/not-recorded"
+   "space343/ac2/not-recorded",
+   "space343/ac3/detached-refused"
   ],
   "name": "space343-remove-after-the-failed-branch-write",
   "new": "        try:\n            _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])\n        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
-  "new_digest": "ccf6b2374f56bce1d08cc5a10e09d4bd5c84af1baf3b6e7054870847d3dfc492",
+  "new_digest": "d11ac4ef233054fc64aaf4bec00e22118097c4ddb601d9cf67d7e931041085c9",
   "noop_failed": [],
   "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -75,16 +81,19 @@
   "baseline_failed": [],
   "criterion": "AC3",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
-   "space343/ac3/agent"
+   "space343/ac3/agent",
+   "space343/ac3/detached",
+   "space343/ac3/detached-refused"
   ],
   "name": "space343-agent-repository-goes-with-the-worktree",
   "new": "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n            import shutil\n            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
-  "new_digest": "35ebb941fa505d8d7dc37504ba69c0f4378707d508b8a4c4104b2e14e4601185",
+  "new_digest": "114b686405e89487c02fe9a1710d5d8281a11ba55f5e42e0a2dffb2758ee6fbf",
   "noop_failed": [],
   "old": "        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -102,23 +111,26 @@
   "baseline_failed": [],
   "criterion": "AC4",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space343/ac1/branch-item",
    "space343/ac1/kept-branch",
    "space343/ac1/only-unheld",
    "space343/ac1/snapshot",
+   "space343/ac1/stopped-before-record",
    "space343/ac2/next-name",
    "space343/ac3/agent",
+   "space343/ac3/detached",
    "space343/ac4/no-commit",
    "space343/ac4/no-event"
   ],
   "name": "space343-discard-commits-as-save-does",
   "new": "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
-  "new_digest": "529d7e0b3e1bad0c3059f6ce4f3a086d5d256568f6727cb78a6035146e5bc3df",
+  "new_digest": "1196250119a9748ad94b179a4be7debec8b872b837fc521c164f9af8c59255c8",
   "noop_failed": [],
   "old": "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -136,16 +148,17 @@
   "baseline_failed": [],
   "criterion": "AC2",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space343/ac2/not-recorded"
   ],
   "name": "space343-branch-made-and-not-recorded",
   "new": "    if False:",
-  "new_digest": "acb729ac3647a46f49789571048efbceb9e9baa5e1e94b6dbb38ffbab0e947a3",
+  "new_digest": "944ae009ea0ddb871fce0331571cd2e6af4fbe1aa027e568ac945f59e5858e21",
   "noop_failed": [],
   "old": "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -163,16 +176,17 @@
   "baseline_failed": [],
   "criterion": "AC1",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space343/ac1/only-unheld"
   ],
   "name": "space343-branch-for-a-held-commit",
   "new": "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
-  "new_digest": "8a6272178926220f2b80405514db1343742a7179c42fe4a9abbe491259386fde",
+  "new_digest": "7880235c81c043592fd38c6339ec00d9ccc06a7300cb8ce369219dcc5d3df0a3",
   "noop_failed": [],
   "old": "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
-  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -190,16 +204,17 @@
   "baseline_failed": [],
   "criterion": "AC2",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space.py",
   "mutant_failed": [
    "space343/ac2/ledger-reads"
   ],
   "name": "space343-ledger-trusts-the-branch",
   "new": "        if False:",
-  "new_digest": "00a9bbd245511ee2592a4ace44cb71bc38765428493c5afb06e4e5b9eaf6bd31",
+  "new_digest": "995d54f54f0c295a81d4a8897eb76362dcbc1e88e4c1cef8aa124f040d8d2397",
   "noop_failed": [],
   "old": "        if self._kept_refs(repository, name).get(name) != commit:",
-  "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -217,16 +232,17 @@
   "baseline_failed": [],
   "criterion": "AC2",
   "final_run_executions": 1,
+  "fix_round": 0,
   "module": "control_space.py",
   "mutant_failed": [
    "space343/ac2/ledger-reads"
   ],
   "name": "space343-ledger-trusts-the-commit",
   "new": "        if False:",
-  "new_digest": "2c41ad89c25fe638b0a83f318ad08f0ca2149380853efc1d87fc601230078d1b",
+  "new_digest": "d178ee90e2ff91eef509fc1a7ea6e64f8d6a16df5662f6a24270fd565c387463",
   "noop_failed": [],
   "old": "        if self._item_head(path) != commit:",
-  "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -238,6 +254,176 @@
   },
   "targets": [
    "space343/ac2/ledger-reads"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3, review finding 1",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac3/detached",
+   "space343/ac3/detached-refused"
+  ],
+  "name": "space343-kept-branch-in-the-agent-repository",
+  "new": "    home = path  # defect: an agent's worktree gets its kept branch in the agent repository\n",
+  "new_digest": "1b932616f62b5c74d5dd99082fe5cc4c6bfd604dc675160e33e5de6bea90eb28",
+  "noop_failed": [],
+  "old": "    home = _kept_home(ctx['ledger'], identity, record, path)\n",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac3/detached": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac3/detached"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3, review finding 1",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space343/ac3/detached"
+  ],
+  "name": "space343-ledger-records-in-the-agent-repository",
+  "new": "        repository = self._repository_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+  "new_digest": "fa8909674fad774c0e1fe9e50fb6495aa374e6fca4476c5e6f242a44b69aae4b",
+  "noop_failed": [],
+  "old": "        repository = self._main_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac3/detached": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac3/detached"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1, review finding 2",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/stopped-before-record"
+  ],
+  "name": "space343-orphan-branch-counted-a-holder",
+  "new": "    if holds is not False or holders:\n        if holders:\n",
+  "new_digest": "c332f7fbe885a83fce3e7dc9c6b2421f43e99544aac9dc80f3f96f70514ba537",
+  "noop_failed": [],
+  "old": "    if holds is not False:\n        if holders:\n",
+  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/stopped-before-record": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/stopped-before-record"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "VELDO-0326 AC2, lead decision (b)",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "VELDO-0326 ac2/observer-refused-by-name"
+  ],
+  "name": "space343-observer-keeps-a-branch",
+  "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == KEEP_BRANCH):\n            return\n        parameters = ",
+  "new_digest": "95dcb027cdf0fa841dc6f7aeedac7935fd9b9e9e5bdc2a619f16a30056690711",
+  "noop_failed": [],
+  "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "133_veldo_0326_space_principals.py",
+  "target_results": {
+   "ac2/observer-refused-by-name": [
+    false
+   ]
+  },
+  "targets": [
+   "ac2/observer-refused-by-name"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "VELDO-0326 AC2, lead decision (b)",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "VELDO-0326 ac2/observer-refused-by-name"
+  ],
+  "name": "space343-observer-requests-a-disposition",
+  "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == REQUEST):\n            return\n        parameters = ",
+  "new_digest": "4c6a11eb1b65954dc103c40f3625ecbef4d734a480983ad89e1e7afba60b44c5",
+  "noop_failed": [],
+  "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "133_veldo_0326_space_principals.py",
+  "target_results": {
+   "ac2/observer-refused-by-name": [
+    false
+   ]
+  },
+  "targets": [
+   "ac2/observer-refused-by-name"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "VELDO-0326 AC2, lead decision (b)",
+  "final_run_executions": 1,
+  "fix_round": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "VELDO-0326 ac2/observer-refused-by-name",
+   "VELDO-0326 ac4/owner-actions-refused"
+  ],
+  "name": "space343-observer-signs-a-disposition",
+  "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == DISPOSITION):\n            return\n        parameters = ",
+  "new_digest": "95bee3dd3beef96d3b27f6f6d983202e04928d340269e6c179210db13f7bc3ff",
+  "noop_failed": [],
+  "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "133_veldo_0326_space_principals.py",
+  "target_results": {
+   "ac2/observer-refused-by-name": [
+    false
+   ]
+  },
+  "targets": [
+   "ac2/observer-refused-by-name"
   ]
  }
 ]

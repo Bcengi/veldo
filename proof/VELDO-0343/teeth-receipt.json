@@ -1,13 +1,19 @@
 {
- "budget_seconds": 29368.0,
+ "budget_seconds": 29416.0,
  "case_deadlines": {
   "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree": 120,
   "check_teeth_mutations.py:space343-branch-for-a-held-commit": 120,
   "check_teeth_mutations.py:space343-branch-made-and-not-recorded": 120,
   "check_teeth_mutations.py:space343-discard-commits-as-save-does": 120,
   "check_teeth_mutations.py:space343-discard-without-the-branch": 120,
+  "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository": 120,
+  "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository": 120,
   "check_teeth_mutations.py:space343-ledger-trusts-the-branch": 120,
   "check_teeth_mutations.py:space343-ledger-trusts-the-commit": 120,
+  "check_teeth_mutations.py:space343-observer-keeps-a-branch": 120,
+  "check_teeth_mutations.py:space343-observer-requests-a-disposition": 120,
+  "check_teeth_mutations.py:space343-observer-signs-a-disposition": 120,
+  "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder": 120,
   "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write": 120
  },
  "case_receipts": [
@@ -66,6 +72,48 @@
    "reason": "unknown_closure",
    "source": "fresh",
    "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-observer-requests-a-disposition",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-observer-signs-a-disposition",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
   }
  ],
  "drivers": {
@@ -78,24 +126,24 @@
    "worker_seconds": 0
   },
   "check_teeth_mutations.py": {
-   "executed": 8,
-   "inventory_digest": "139470738866303e75b417612c53595749b795043f4f6bd529d310d360232b0e",
-   "registered": 8,
+   "executed": 14,
+   "inventory_digest": "68af9382db833637f1009719ade89f932719df64ec3934e03774436275b01154",
+   "registered": 14,
    "reused": 0,
-   "wall_seconds": 35.5234411531128,
-   "worker_seconds": 70.10602708393708
+   "wall_seconds": 196.85484292684123,
+   "worker_seconds": 362.06418802635744
   }
  },
- "elapsed": 37.99994569364935,
- "executed": 8,
+ "elapsed": 199.84773503709584,
+ "executed": 14,
  "force_fresh": false,
  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "input_digest": "c7b5879e5d6d39843bce17fbb07511e89dbd0b4fdd66febd0fae59391b3a1b2c",
+ "input_digest": "5a627bbea701f48efa2db5e1ddc09f979c96ca483795b06bd9b64f2261f7cf8c",
  "invalid_results": [],
  "parallel_workers": 2,
  "peak_workers": 2,
- "registered": 8,
- "rejected": 8,
+ "registered": 14,
+ "rejected": 14,
  "resources": {
   "capacities": {
    "new_project_fixture": 2,
@@ -116,7 +164,7 @@
  "results": [
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -245,6 +293,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -266,6 +318,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -309,12 +369,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -341,19 +404,22 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.60830858303234,
+   "elapsed": 8.96311907703057,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -483,6 +549,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      false
+     ],
+     [
       "space343/ac2/git-refuses",
       false
      ],
@@ -505,6 +575,14 @@
      [
       "space343/ac3/agent",
       true
+     ],
+     [
+      "space343/ac3/detached",
+      false
+     ],
+     [
+      "space343/ac3/detached-refused",
+      false
      ],
      [
       "space343/ac4/no-commit",
@@ -547,12 +625,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -565,9 +646,9 @@
      ]
     }
    },
-   "new_digest": "8b8c2077e86ef9bfffc81637defee4b83c6aa64a45c7a848fbba43fa296e3baa",
+   "new_digest": "125c22b4dd53bf61c769cc11730fb646c1bd420314e83be10f6e2089dc097324",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -696,6 +777,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -717,6 +802,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -760,12 +853,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -778,7 +874,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -787,7 +883,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -916,6 +1012,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -937,6 +1037,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -980,12 +1088,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -1012,17 +1123,18 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.614856387022883,
+   "elapsed": 9.473799696192145,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/git-refuses",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
-     "space343/ac2/not-recorded"
+     "space343/ac2/not-recorded",
+     "space343/ac3/detached-refused"
     ],
     "observations": [
      [
@@ -1150,6 +1262,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       false
      ],
@@ -1172,6 +1288,14 @@
      [
       "space343/ac3/agent",
       true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      false
      ],
      [
       "space343/ac4/no-commit",
@@ -1214,12 +1338,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -1232,9 +1359,9 @@
      ]
     }
    },
-   "new_digest": "ccf6b2374f56bce1d08cc5a10e09d4bd5c84af1baf3b6e7054870847d3dfc492",
+   "new_digest": "d11ac4ef233054fc64aaf4bec00e22118097c4ddb601d9cf67d7e931041085c9",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1363,6 +1490,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -1384,6 +1515,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -1427,12 +1566,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -1445,7 +1587,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -1454,7 +1596,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1583,6 +1725,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -1604,6 +1750,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -1647,12 +1801,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -1678,14 +1835,16 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.790427803993225,
+   "elapsed": 8.498320686165243,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
-     "space343/ac3/agent"
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused"
     ],
     "observations": [
      [
@@ -1813,6 +1972,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -1834,6 +1997,14 @@
      ],
      [
       "space343/ac3/agent",
+      false
+     ],
+     [
+      "space343/ac3/detached",
+      false
+     ],
+     [
+      "space343/ac3/detached-refused",
       false
      ],
      [
@@ -1877,12 +2048,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -1892,9 +2066,9 @@
      ]
     }
    },
-   "new_digest": "35ebb941fa505d8d7dc37504ba69c0f4378707d508b8a4c4104b2e14e4601185",
+   "new_digest": "114b686405e89487c02fe9a1710d5d8281a11ba55f5e42e0a2dffb2758ee6fbf",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2023,6 +2197,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -2044,6 +2222,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -2087,12 +2273,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -2105,7 +2294,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -2114,7 +2303,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2243,6 +2432,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -2264,6 +2457,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -2307,12 +2508,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -2338,19 +2542,21 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 6.44017077004537,
+   "elapsed": 11.309712163172662,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/next-name",
      "space343/ac3/agent",
+     "space343/ac3/detached",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -2480,6 +2686,10 @@
       false
      ],
      [
+      "space343/ac1/stopped-before-record",
+      false
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -2502,6 +2712,14 @@
      [
       "space343/ac3/agent",
       false
+     ],
+     [
+      "space343/ac3/detached",
+      false
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
      ],
      [
       "space343/ac4/no-commit",
@@ -2544,12 +2762,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -2559,9 +2780,9 @@
      ]
     }
    },
-   "new_digest": "529d7e0b3e1bad0c3059f6ce4f3a086d5d256568f6727cb78a6035146e5bc3df",
+   "new_digest": "1196250119a9748ad94b179a4be7debec8b872b837fc521c164f9af8c59255c8",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2690,6 +2911,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -2711,6 +2936,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -2754,12 +2987,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -2772,7 +3008,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -2781,7 +3017,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2910,6 +3146,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -2931,6 +3171,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -2974,12 +3222,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -3005,11 +3256,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.554268823936582,
+   "elapsed": 10.64246780378744,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/not-recorded"
@@ -3140,6 +3391,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -3161,6 +3416,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -3204,12 +3467,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -3219,9 +3485,9 @@
      ]
     }
    },
-   "new_digest": "acb729ac3647a46f49789571048efbceb9e9baa5e1e94b6dbb38ffbab0e947a3",
+   "new_digest": "944ae009ea0ddb871fce0331571cd2e6af4fbe1aa027e568ac945f59e5858e21",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3350,6 +3616,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -3371,6 +3641,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -3414,12 +3692,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -3432,7 +3713,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -3441,7 +3722,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3570,6 +3851,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -3591,6 +3876,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -3634,12 +3927,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -3665,11 +3961,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.654963691253215,
+   "elapsed": 11.119586078915745,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/only-unheld"
@@ -3800,6 +4096,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -3821,6 +4121,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -3864,12 +4172,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -3879,9 +4190,9 @@
      ]
     }
    },
-   "new_digest": "8a6272178926220f2b80405514db1343742a7179c42fe4a9abbe491259386fde",
+   "new_digest": "7880235c81c043592fd38c6339ec00d9ccc06a7300cb8ce369219dcc5d3df0a3",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4010,6 +4321,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -4031,6 +4346,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -4074,12 +4397,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -4092,7 +4418,7 @@
      ]
     }
    },
-   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -4101,7 +4427,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4230,6 +4556,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -4251,6 +4581,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -4294,12 +4632,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -4322,11 +4663,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.612875860184431,
+   "elapsed": 11.889839155599475,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/ledger-reads"
@@ -4457,6 +4798,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -4478,6 +4823,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -4521,12 +4874,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -4536,9 +4892,9 @@
      ]
     }
    },
-   "new_digest": "00a9bbd245511ee2592a4ace44cb71bc38765428493c5afb06e4e5b9eaf6bd31",
+   "new_digest": "995d54f54f0c295a81d4a8897eb76362dcbc1e88e4c1cef8aa124f040d8d2397",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4667,6 +5023,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -4688,6 +5048,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -4731,12 +5099,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -4746,7 +5117,7 @@
      ]
     }
    },
-   "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -4755,7 +5126,7 @@
   },
   {
    "baseline": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4884,6 +5255,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -4905,6 +5280,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -4948,12 +5331,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -4976,11 +5362,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 5.592259533237666,
+   "elapsed": 12.354351170826703,
    "fixture_version": 1,
-   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
    "mutant": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/ledger-reads"
@@ -5111,6 +5497,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -5132,6 +5522,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -5175,12 +5573,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -5190,9 +5591,9 @@
      ]
     }
    },
-   "new_digest": "2c41ad89c25fe638b0a83f318ad08f0ca2149380853efc1d87fc601230078d1b",
+   "new_digest": "d178ee90e2ff91eef509fc1a7ea6e64f8d6a16df5662f6a24270fd565c387463",
    "noop": {
-    "count": 39,
+    "count": 42,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5321,6 +5722,10 @@
       true
      ],
      [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
@@ -5342,6 +5747,14 @@
      ],
      [
       "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
       true
      ],
      [
@@ -5385,12 +5798,15 @@
      "space343/ac1/name",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
      "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
      "space343/ac4/no-commit",
      "space343/ac4/no-event"
     ],
@@ -5400,7 +5816,4867 @@
      ]
     }
    },
-   "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
+    "module": "control_space_remove.py",
+    "name": "space343-kept-branch-in-the-agent-repository",
+    "new": "    home = path  # defect: an agent's worktree gets its kept branch in the agent repository\n",
+    "old": "    home = _kept_home(ctx['ledger'], identity, record, path)\n",
+    "rows": [
+     "space343/ac3/detached"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.674107955768704,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      false
+     ],
+     [
+      "space343/ac3/detached-refused",
+      false
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac3/detached": [
+      false
+     ]
+    }
+   },
+   "new_digest": "1b932616f62b5c74d5dd99082fe5cc4c6bfd604dc675160e33e5de6bea90eb28",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
+    "module": "control_space.py",
+    "name": "space343-ledger-records-in-the-agent-repository",
+    "new": "        repository = self._repository_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+    "old": "        repository = self._main_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+    "rows": [
+     "space343/ac3/detached"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.982101034373045,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac3/detached"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      false
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac3/detached": [
+      false
+     ]
+    }
+   },
+   "new_digest": "fa8909674fad774c0e1fe9e50fb6495aa374e6fca4476c5e6f242a44b69aae4b",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
+    "module": "control_space_remove.py",
+    "name": "space343-orphan-branch-counted-a-holder",
+    "new": "    if holds is not False or holders:\n        if holders:\n",
+    "old": "    if holds is not False:\n        if holders:\n",
+    "rows": [
+     "space343/ac1/stopped-before-record"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.392782458104193,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/stopped-before-record"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      false
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/stopped-before-record": [
+      false
+     ]
+    }
+   },
+   "new_digest": "c332f7fbe885a83fce3e7dc9c6b2421f43e99544aac9dc80f3f96f70514ba537",
+   "noop": {
+    "count": 42,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
+    "module": "control_space.py",
+    "name": "space343-observer-keeps-a-branch",
+    "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == KEEP_BRANCH):\n            return\n        parameters = ",
+    "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+    "rows": [
+     "ac2/observer-refused-by-name"
+    ],
+    "siblings": true,
+    "suite": "133_veldo_0326_space_principals.py"
+   },
+   "elapsed": 42.702522702049464,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 56,
+    "failed_details": [
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      "space_keep_branch is refused by its name [space_no_command:space_keep_branch]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0326 ac2/observer-refused-by-name"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      false
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      false
+     ]
+    }
+   },
+   "new_digest": "95dcb027cdf0fa841dc6f7aeedac7935fd9b9e9e5bdc2a619f16a30056690711",
+   "noop": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-observer-requests-a-disposition",
+    "module": "control_space.py",
+    "name": "space343-observer-requests-a-disposition",
+    "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == REQUEST):\n            return\n        parameters = ",
+    "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+    "rows": [
+     "ac2/observer-refused-by-name"
+    ],
+    "siblings": true,
+    "suite": "133_veldo_0326_space_principals.py"
+   },
+   "elapsed": 41.18512035999447,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 56,
+    "failed_details": [
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      "space_disposition_request is refused by its name [space_no_command:space_disposition_request]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0326 ac2/observer-refused-by-name"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      false
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      false
+     ]
+    }
+   },
+   "new_digest": "4c6a11eb1b65954dc103c40f3625ecbef4d734a480983ad89e1e7afba60b44c5",
+   "noop": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-observer-signs-a-disposition",
+    "module": "control_space.py",
+    "name": "space343-observer-signs-a-disposition",
+    "new": "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == DISPOSITION):\n            return\n        parameters = ",
+    "old": "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+    "rows": [
+     "ac2/observer-refused-by-name"
+    ],
+    "siblings": true,
+    "suite": "133_veldo_0326_space_principals.py"
+   },
+   "elapsed": 37.410242869053036,
+   "fixture_version": 1,
+   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "mutant": {
+    "count": 56,
+    "failed_details": [
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      "space_disposition is refused by its name [space_no_command:space_disposition]"
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      "space_disposition from space-observer is refused by its name [space_no_command:space_disposition]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac4/owner-actions-refused"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      false
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      false
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      false
+     ]
+    }
+   },
+   "new_digest": "95bee3dd3beef96d3b27f6f6d983202e04928d340269e6c179210db13f7bc3ff",
+   "noop": {
+    "count": 56,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-makes-keys",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/install-without-owner",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/hook-signs-as-observer",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/signature-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cli-route",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-expired",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-replayed",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-retry",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/packet-resent",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/revoked-key-final",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/enroll-both-or-neither",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/cleanup-keeps-held-key",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/keys-folder-checked",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-setup-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-enrolls",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/setup-never-ambient",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/rerun-stop-service-remedy",
+      true
+     ],
+     [
+      "VELDO-0326 ac1/factory-rerun-repairs",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-may",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-refused-by-name",
+      true
+     ],
+     [
+      "VELDO-0326 ac2/observer-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-own-run",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-takes-over-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/observer-names-run-first",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-signal",
+      true
+     ],
+     [
+      "VELDO-0326 ac3/runner-other-run-commands",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/owner-actions-refused",
+      true
+     ],
+     [
+      "VELDO-0326 ac4/abandon",
+      true
+     ],
+     [
+      "VELDO-0326 principals/canon",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0326 ac1/install-makes-keys",
+     "VELDO-0326 ac1/install-enrolls",
+     "VELDO-0326 ac1/install-without-owner",
+     "VELDO-0326 ac1/hook-signs-as-observer",
+     "VELDO-0326 ac1/signature-checked",
+     "VELDO-0326 ac1/cli-route",
+     "VELDO-0326 ac1/packet-expired",
+     "VELDO-0326 ac1/packet-replayed",
+     "VELDO-0326 ac1/packet-retry",
+     "VELDO-0326 ac1/packet-resent",
+     "VELDO-0326 ac1/revoked-key-final",
+     "VELDO-0326 ac1/enroll-both-or-neither",
+     "VELDO-0326 ac1/cleanup-keeps-held-key",
+     "VELDO-0326 ac1/keys-folder-checked",
+     "VELDO-0326 ac1/factory-setup-enrolls",
+     "VELDO-0326 ac1/factory-rerun-enrolls",
+     "VELDO-0326 ac1/setup-never-ambient",
+     "VELDO-0326 ac1/rerun-stop-service-remedy",
+     "VELDO-0326 ac1/factory-rerun-repairs",
+     "VELDO-0326 ac2/observer-may",
+     "VELDO-0326 ac2/observer-refused-by-name",
+     "VELDO-0326 ac2/observer-signal",
+     "VELDO-0326 ac3/runner-own-run",
+     "VELDO-0326 ac3/runner-takes-over-refused",
+     "VELDO-0326 ac3/observer-names-run-first",
+     "VELDO-0326 ac3/runner-other-run-signal",
+     "VELDO-0326 ac3/runner-other-run-commands",
+     "VELDO-0326 ac4/owner-actions-refused",
+     "VELDO-0326 ac4/abandon",
+     "VELDO-0326 principals/canon"
+    ],
+    "targets": {
+     "ac2/observer-refused-by-name": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -5421,215 +10697,367 @@
   "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
   "check_teeth_mutations.py:space343-discard-commits-as-save-does",
   "check_teeth_mutations.py:space343-discard-without-the-branch",
+  "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
+  "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
   "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
   "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+  "check_teeth_mutations.py:space343-observer-keeps-a-branch",
+  "check_teeth_mutations.py:space343-observer-requests-a-disposition",
+  "check_teeth_mutations.py:space343-observer-signs-a-disposition",
+  "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
   "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write"
  ],
- "worker_invocations": 12,
+ "worker_invocations": 20,
  "worker_outcomes": [
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.020444929134101,
+   "elapsed": 11.764090724755079,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:baseline",
-   "output_directory": "/tmp/v343/teeth/logs/0",
-   "pid": 1686626,
+   "output_directory": "/tmp/v343r1/teeth/logs/0",
+   "pid": 2070238,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3086
+   "stdout_bytes": 3302
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.02714792592451,
+   "elapsed": 11.913513720035553,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:noop",
-   "output_directory": "/tmp/v343/teeth/logs/1",
-   "pid": 1686627,
+   "output_directory": "/tmp/v343r1/teeth/logs/1",
+   "pid": 2070239,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3086
+   "stdout_bytes": 3302
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.055889721959829,
+   "elapsed": 11.39147091191262,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v343/teeth/logs/2",
-   "pid": 1691476,
+   "output_directory": "/tmp/v343r1/teeth/logs/2",
+   "pid": 2082627,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3051
+   "stdout_bytes": 3267
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.0826139519922435,
+   "elapsed": 11.492046923842281,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v343/teeth/logs/3",
-   "pid": 1691477,
+   "output_directory": "/tmp/v343r1/teeth/logs/3",
+   "pid": 2082980,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3051
+   "stdout_bytes": 3267
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 176,
+    "units": [
+     "v1713c38fd.slice"
+    ]
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 35.89974220888689,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "133_veldo_0326_space_principals.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v343r1/teeth/logs/4",
+   "pid": 2093046,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4736
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 75,
+    "directories": 176,
+    "units": [
+     "v17170ad07.slice"
+    ]
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 35.82149179279804,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "133_veldo_0326_space_principals.py:control_space.py:False:noop",
+   "output_directory": "/tmp/v343r1/teeth/logs/5",
+   "pid": 2093148,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4736
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 96,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.6151054268702865,
+   "elapsed": 8.970683344174176,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-without-the-branch",
-   "output_directory": "/tmp/v343/teeth/logs/4",
-   "pid": 1696368,
+   "output_directory": "/tmp/v343r1/teeth/logs/6",
+   "pid": 2109488,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3311
+   "stdout_bytes": 3626
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 75,
+    "directories": 103,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.6213810332119465,
+   "elapsed": 9.481511757243425,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
-   "output_directory": "/tmp/v343/teeth/logs/5",
-   "pid": 1696369,
+   "output_directory": "/tmp/v343r1/teeth/logs/7",
+   "pid": 2109489,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3199
+   "stdout_bytes": 3449
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 96,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.795661674812436,
+   "elapsed": 8.5041208663024,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
-   "output_directory": "/tmp/v343/teeth/logs/6",
-   "pid": 1700752,
+   "output_directory": "/tmp/v343r1/teeth/logs/8",
+   "pid": 2117318,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3066
+   "stdout_bytes": 3342
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.4454739219509065,
+   "elapsed": 11.318586231209338,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
-   "output_directory": "/tmp/v343/teeth/logs/7",
-   "pid": 1700753,
+   "output_directory": "/tmp/v343r1/teeth/logs/9",
+   "pid": 2117513,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3263
+   "stdout_bytes": 3544
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.56121797580272,
+   "elapsed": 10.650072107091546,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
-   "output_directory": "/tmp/v343/teeth/logs/8",
-   "pid": 1705594,
+   "output_directory": "/tmp/v343r1/teeth/logs/10",
+   "pid": 2124069,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3080
+   "stdout_bytes": 3296
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.661925942171365,
+   "elapsed": 11.125888976734132,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
-   "output_directory": "/tmp/v343/teeth/logs/9",
-   "pid": 1705935,
+   "output_directory": "/tmp/v343r1/teeth/logs/11",
+   "pid": 2126997,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3078
+   "stdout_bytes": 3294
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.61993372021243,
+   "elapsed": 11.902556728571653,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
-   "output_directory": "/tmp/v343/teeth/logs/10",
-   "pid": 1710293,
+   "output_directory": "/tmp/v343r1/teeth/logs/12",
+   "pid": 2133209,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3080
+   "stdout_bytes": 3296
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 82,
+    "directories": 110,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.5992308598943055,
+   "elapsed": 12.361096362117678,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
-   "output_directory": "/tmp/v343/teeth/logs/11",
-   "pid": 1710728,
+   "output_directory": "/tmp/v343r1/teeth/logs/13",
+   "pid": 2136576,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3080
+   "stdout_bytes": 3296
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 110,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.681155214086175,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
+   "output_directory": "/tmp/v343r1/teeth/logs/14",
+   "pid": 2146239,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3322
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 110,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.98902773624286,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
+   "output_directory": "/tmp/v343r1/teeth/logs/15",
+   "pid": 2150724,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3288
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 110,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.403226130176336,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
+   "output_directory": "/tmp/v343r1/teeth/logs/16",
+   "pid": 2160718,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3314
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 176,
+    "units": [
+     "v171116637.slice"
+    ]
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 42.740471249911934,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
+   "output_directory": "/tmp/v343r1/teeth/logs/17",
+   "pid": 2164844,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4903
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 176,
+    "units": [
+     "v171051465.slice"
+    ]
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 41.21503646718338,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-observer-requests-a-disposition",
+   "output_directory": "/tmp/v343r1/teeth/logs/18",
+   "pid": 2173292,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4919
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 176,
+    "units": [
+     "v17131d7c3.slice"
+    ]
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 37.43839857308194,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-observer-signs-a-disposition",
+   "output_directory": "/tmp/v343r1/teeth/logs/19",
+   "pid": 2202777,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 5087
   }
  ]
 }

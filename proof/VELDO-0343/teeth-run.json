@@ -10,25 +10,42 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v343/teeth/logs",
+  "/tmp/v343r1/teeth/logs",
   "--diff-dir",
-  "/tmp/v343/teeth/diffs"
+  "/tmp/v343r1/teeth/diffs"
  ],
- "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
- "elapsed": 38.0,
- "executed": 8,
+ "commit": "c8a68865c03d7041e86585390392c5e4b044b1a9",
+ "earlier_runs": [
+  {
+   "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+   "executed": 0,
+   "exit_code": 1,
+   "what": "driver_error before any mutant: the worker log folder already existed, made by the builder. Nothing was applied."
+  },
+  {
+   "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+   "elapsed": 162.0,
+   "executed": 14,
+   "exit_code": 1,
+   "registered": 14,
+   "rejected": 13,
+   "what": "One invalid result, missing_target, for the declared AC3 falsifier space343-agent-repository-goes-with-the-worktree: with the agent repository deleted by the mutant, the two new rows ac3/detached and ac3/detached-refused were absent instead of red. The suite was changed so both are red when the agent repository is gone (commit c8a68865), and the whole finding was run again. So thirteen mutants were applied twice and that one three times."
+  }
+ ],
+ "elapsed": 200.0,
+ "executed": 14,
  "exit_code": 0,
  "invalid_results": [],
- "note": "The only run of finding 343. Each mutant was applied once. Nothing was written in the worktree while it ran.",
+ "note": "The final run of finding 343 in fix round 1, on the clean committed tree. Nothing was written in the worktree while it ran. It is the third start, and the second that applied mutants; earlier_runs says what the other two were.",
  "ran_last": true,
- "registered": 8,
- "rejected": 8,
+ "registered": 14,
+ "rejected": 14,
  "reused": 0,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=8 executed=8 reused=0 rejected=8 workers=12 elapsed=38.000s",
+ "summary": "mutations: passed registered=14 executed=14 reused=0 rejected=14 workers=20 elapsed=199.848s",
  "supervisors_after": [],
  "supervisors_before": [],
  "surviving_workers": 0,
- "tree": "c1a286ddb2767e8b8e028a744d5610d43f1ef1e4"
+ "tree": "50bae75ac8c323e7096660a46479ebdcfde923d9"
 }
