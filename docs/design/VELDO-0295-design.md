@@ -1163,7 +1163,7 @@ Identity: space:item: followed by a new identifier. One record per thing.
 
 | Field | Content |
 | :- | :- |
-| kind | One of the ten kinds |
+| kind | One of the twelve kinds: the ten of the table in section 5, and review run scratch and review run build output (amended 2026-11-16, the lead's decision at assembly; the notes under that table) |
 | form | For an agent repository item: which private repository it is. One of agent, worker clone, batch clone, candidate workspace. The creator states it at declare and reconcile at adopt. An item with no form is read as agent, the form that ends on the fewest events |
 | host | The host the thing is on |
 | pool | The pool its bytes count against |
@@ -1367,8 +1367,8 @@ removes only an item whose own end events list run finished, and never an item t
 event. They go at verdict recorded, which the writer of the verdict sends after its commit
 (VELDO-0337); a verdict recorded that was lost between the commit and the send is sent again at start,
 from the committed verdict. A review that ends with no verdict sends run finished only, and its scratch
-folder and build root then wait for their later events (landed or contained, ticket ended, project
-ended, worktree abandoned). Everything else of a review run keeps its row: its run directory ends at
+folder and build root then wait for their later events (ticket ended, project ended). Everything else
+of a review run keeps its row: its run directory ends at
 run finished, the build output the census declares inside its worktree goes at run finished before
 the worktree, and its worktree is removed as the review worktree row says. The ledger holds the
 declaration on the item (4.1, ends_on), so every sender of run finished is bound by it, not only the
@@ -1381,6 +1381,15 @@ an item's end events come from its kind in the kind registry alone (4.1, 6.1). T
 therefore declared with kinds of their own, review run scratch and review run build output, removed by
 the folder remover, whose end events are verdict recorded, ticket ended and project ended, and never run
 finished.
+
+Amended 2026-11-16 (the lead's decision, from the review of the assembly, finding 5). The wording
+follows the two kinds. A review's scratch folder and build root end on verdict recorded, ticket ended
+and project ended, and on no other event: the note of 2026-11-15 above said that with no verdict they
+wait for "landed or contained, ticket ended, project ended, worktree abandoned", which was the end
+list of the plain scratch and build output kinds less run finished, and it now names the two events
+they do wait for. Landed, contained, worktree abandoned and released do nothing to them. There are
+twelve kinds, the ten of the table above and these two, and 4.1 says so; "the ten kinds stay" in the
+revision table of 0.8 is what was true of VELDO-0298 at that revision.
 
 Two more events. Session ended removes the scratch a session owns. Released by its creator has the
 actions of the worktree abandoned column for every kind; it differs only in who may send it (below and
