@@ -43,10 +43,12 @@ AC4 row: ac4/no-clock (the declared falsifier row: a scratch folder 31 days old,
 days forward, and no event for it: a call for another run and a call with an unknown event change
 nothing, the folder and its file are there and the item is present; Signal imports nothing).
 
-AC5 rows: ac5/keep-failed-passed-through (the declared falsifier row: a worktree with a file only
-info/exclude ignores, which is work, due at an event, is deferred as keep_failed by the remover, not
-remove_refused; the worktree is at its path with the file byte for byte, and the next event defers it
-again), ac5/remover-deferrals (the remover's remove_refused, in_use and keep_failed each written as
+AC5 rows: ac5/keep-failed-passed-through (the declared falsifier row: a worktree whose kept ref cannot
+be written, because the main repository's refs are read-only, due at an event, is deferred as
+keep_failed by the remover, not remove_refused; the worktree is whole at its path, and the next event
+defers it again. History, VELDO-0347 fix round, the lead's decision of 2026-11-16: the row's cause was a
+file only info/exclude ignores; superseded by VELDO-0347 AC1, under which rule 5 refuses that file
+first, so the row now plants a cause rule 5 lets through), ac5/remover-deferrals (the remover's remove_refused, in_use and keep_failed each written as
 they are; a deferral that is none of the three, an answer with none and an answer that is no mapping
 are remove_refused; a remover that raises is remove_refused; the folder is on disk each time; a folder
 still at its path with something else at its marked name is deferred, not removing),
@@ -587,32 +589,42 @@ def _v301_space_signal_suite():
         ticket = {'scope': A, 'ticket': 'VELDO-9109'}
         tree, tree_path = worktree('ignored-work', ticket)
         mark = RM.marked(str(tree_path), tree)
-        exclude = Path(git(tree_path, 'rev-parse', '--path-format=absolute', '--git-path', 'info/exclude'))
-        exclude.parent.mkdir(exist_ok=True)
-        with open(str(exclude), 'a') as rules_file:
-            rules_file.write('notes-private.md\n')
-        (tree_path / 'notes-private.md').write_text('notes only info/exclude ignores\n')
-        check(ROW, 'git sees the worktree as clean: the file is ignored', git(tree_path, 'status', '--porcelain') == '')
-        done = send('landed', {'ticket': 'VELDO-9109'})
-        deferral = (L.item(tree) or {}).get('deferral') or {}
-        check(ROW, 'the worktree is deferred as keep_failed, by the remover, not as remove_refused [%s]'
-              % (named(done, tree),),
-              named(done, tree) == ('deferred', 'keep_failed', 'tool') and state_of(tree) == 'deferred'
-              and handed == [tree] and done['counts']['deferred'] == {'keep_failed': 1})
-        check(ROW, 'the deferral record holds keep_failed and rule 7 [%s]'
-              % ({key: deferral.get(key) for key in ('rule', 'refused_by', 'order', 'event', 'attempts')},),
-              deferral.get('rule') == 'keep_failed' and deferral.get('refused_by') == 'tool'
-              and deferral.get('order') == 7 and deferral.get('event') == 'landed' and deferral.get('attempts') == 1)
-        check(ROW, 'the worktree is at its own path with the file byte for byte',
-              text_of(tree_path / 'notes-private.md') == 'notes only info/exclude ignores\n'
-              and text_of(tree_path / 'tracked.txt') == 'base\n' and listed(tree_path)
-              and not os.path.lexists(mark))
-        done = send('ticket_ended', {'ticket': 'VELDO-9109'})
-        check(ROW, 'the next event defers it again, the file still there [%s %s]'
+        # VELDO-0347 AC1 supersedes the cause this row planted, a file only info/exclude ignores: rule 5
+        # now refuses that first, as unique work, and the remover is not reached. The cause is now one
+        # rule 5 lets through: the main repository's refs cannot be written, so the keep step cannot
+        # write the worktree's kept ref and the remover answers keep_failed. What the row proves is as
+        # it was: Signal writes the remover's keep_failed as keep_failed.
+        refs = Path(git(REPOSITORY, 'rev-parse', '--path-format=absolute', '--git-common-dir')) / 'refs'
+        modes = {}
+        for folder in [refs] + sorted(one for one in refs.rglob('*') if one.is_dir()):
+            modes[folder] = folder.stat().st_mode & 0o7777
+            os.chmod(str(folder), 0o555)
+        check(ROW, 'git sees the worktree as clean, and a ref of the main repository cannot be written',
+              git(tree_path, 'status', '--porcelain') == '' and os.geteuid() != 0
+              and not os.access(str(refs), os.W_OK))
+        try:
+            done = send('landed', {'ticket': 'VELDO-9109'})
+            deferral = (L.item(tree) or {}).get('deferral') or {}
+            check(ROW, 'the worktree is deferred as keep_failed, by the remover, not as remove_refused [%s]'
+                  % (named(done, tree),),
+                  named(done, tree) == ('deferred', 'keep_failed', 'tool') and state_of(tree) == 'deferred'
+                  and handed == [tree] and done['counts']['deferred'] == {'keep_failed': 1})
+            check(ROW, 'the deferral record holds keep_failed and rule 7 [%s]'
+                  % ({key: deferral.get(key) for key in ('rule', 'refused_by', 'order', 'event', 'attempts')},),
+                  deferral.get('rule') == 'keep_failed' and deferral.get('refused_by') == 'tool'
+                  and deferral.get('order') == 7 and deferral.get('event') == 'landed' and deferral.get('attempts') == 1)
+            check(ROW, 'the worktree is at its own path, whole, and git lists it',
+                  text_of(tree_path / 'tracked.txt') == 'base\n' and listed(tree_path)
+                  and not os.path.lexists(mark))
+            done = send('ticket_ended', {'ticket': 'VELDO-9109'})
+        finally:
+            for folder, mode in modes.items():
+                os.chmod(str(folder), mode)
+        check(ROW, 'the next event defers it again, the worktree still there [%s %s]'
               % (named(done, tree), ((L.item(tree) or {}).get('deferral') or {}).get('attempts')),
               named(done, tree) == ('deferred', 'keep_failed', 'tool')
               and ((L.item(tree) or {}).get('deferral') or {}).get('attempts') == 2
-              and text_of(tree_path / 'notes-private.md') == 'notes only info/exclude ignores\n')
+              and text_of(tree_path / 'tracked.txt') == 'base\n' and listed(tree_path))
 
         ROW = 'ac5/remover-deferrals'
 
