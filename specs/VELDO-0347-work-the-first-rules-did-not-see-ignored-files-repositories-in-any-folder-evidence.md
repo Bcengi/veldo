@@ -36,6 +36,8 @@ footprint:
   - "scripts/suites/135_veldo_0298_space_kinds.py"
   - "scripts/suites/136_veldo_0299_space_probe.py"
   - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/139_veldo_0301_space_signal.py"
+  - "scripts/suites/140_veldo_0345_space_keep.py"
   - "scripts/suites/142_veldo_0303_space_paths.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -153,6 +155,51 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-16: fix round, on the lead's decisions after the triage of the red accepted rows
+  (triage-veldo-0347-reds.md: every red row pinned behaviour AC1 or AC5 replaces, none was a regression).
+  No production file changed in this round; only rows of accepted suites, each with a History line in its
+  own suite that names the row and the criterion that supersedes it.
+  - The table ruling stands: table 2 is kept and table 1 gains no row. Adding the clone's row to table 1
+    would change how items already declared under table 1 are judged: since VELDO-0302 the batch, the
+    launch, the landing line, the clone provisioner and reconcile adoption declare agent repositories
+    with a form under table 1, and the form would route those items to the new row, with another
+    requires and another handling of unique work. That breaks "decided under table N, judged by table
+    N". VELDO-0337 is not a precedent: it added rows for two new kinds that no existing item could read,
+    so no judgment changed.
+  - The footprint is widened, row by row, to the suites the triage names; it gains
+    scripts/suites/139_veldo_0301_space_signal.py and scripts/suites/140_veldo_0345_space_keep.py.
+  - scripts/suites/135_veldo_0298_space_kinds.py, superseded by AC5 (table 2 is current): the 92 rows
+    ac1/<row>/<event> declare their fixture item under table 1 by its number and still prove the table
+    of design section 5 at version 1; ac4/keeps-its-version and ac4/action-of-its-version file the
+    fixture's second table under the next number no table has; kinds/ledger-accepts expects the current
+    version and the names <kind>:<form>.
+  - scripts/suites/138_veldo_0300_space_remove.py: work/worktree-second-probe, superseded by AC1 (it
+    plants build output rule 5 lets through where it planted a loose ignored file; in_use as before);
+    work/repository-in-a-folder, superseded by AC5 (rule 6 holds a scratch folder that is a repository,
+    as unrecorded; the remover asked past the rules refuses as before) and, for its two statements on a
+    repository deep inside a scratch folder, by AC2 (the remover's last look defers in_use where any
+    repository was remove_refused; the folder is whole). These two statements were not in the triage:
+    the row's first failure hid them. work/adopted-build-output, superseded by AC1 (rule 5 refuses and
+    names build/ with its rule; the remover asked past the rules refuses keep_failed as before; a
+    snapshot alone does not pass rule 5, and by the rules of a settled answer the worktree goes).
+  - scripts/suites/139_veldo_0301_space_signal.py, ac5/keep-failed-passed-through, superseded by AC1: its
+    cause was a file only info/exclude ignores, which rule 5 now refuses; the cause is now a kept ref
+    that cannot be written, which rule 5 lets through. Signal still writes the remover's keep_failed as
+    keep_failed.
+  - scripts/suites/140_veldo_0345_space_keep.py, superseded by AC1: the rows that drove the keep step's
+    snapshot with a worktree holding a loose ignored file (ac4/outside-git, and with it the snapshot
+    ac4/store-protected reads; ac5/failed-save-removes-nothing; ac5/kill-points; ac5/retry-compares;
+    ac5/folders-synced; ac4/modes-kept) drive it with a worker clone of a run that has ended, which
+    production still saves and removes with no answer by the same keep step. ac6/removing-put-back
+    writes its file after the keep step answered. ac4/modes-kept and ac6/removing-put-back were not in
+    the triage: the raise in ac5/kill-points hid them. ac5/kill-points now reds its own row when a
+    folder of the store is not there. The suite hands the remover the keeper module it loaded, the same
+    file, so the failing disk and the kill seams it plants are in the keep step that runs. Measured row
+    by row on the base (7e457e85) and after: the same number of keep step calls, of calls that answered
+    ok and of snapshots written in every row, and as many kept refs written or more (a clone keeps
+    every ref it has); proof/VELDO-0347/keep-step-0345.json.
+  - Still red and inherited, the same on the base: 0301 ac4/no-clock. Suites 151 and up were not run.
 
 - 2026-11-16: built, on the lead's three decisions for the blocker below. All five criteria are built and
   the ticket suite has 27 green rows. The build is NOT green as a whole: accepted rows the decisions do not
