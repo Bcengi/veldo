@@ -21,6 +21,12 @@ nine, released equals worktree abandoned for every row, session ended holds a ce
 a scratch no session owns is not removed by it; which worktree reads which row; an item that is not due
 gets nothing).
 
+History, VELDO-0347 (fix round, the lead's decision of 2026-11-16): the 92 rows ac1/<row>/<event>,
+ac4/keeps-its-version, ac4/action-of-its-version and kinds/ledger-accepts are superseded by VELDO-0347
+AC5, which issued table 2. The fixture items are declared under table 1 by its number, so each cell row
+still proves the table of design section 5 at version 1; the fixture's second table of the two AC4 rows
+takes the next number no table has; kinds/ledger-accepts expects the current version and the form names.
+
 AC2 rows: ac2/deferred-build-folder-first (the declared falsifier row: a worktree and, declared after
 it, a build folder that was deferred and is due again at the event; the folder comes back first and the
 worktree after it, naming it), ac2/child-holds-worktree (a worktree with a child that is present, one
@@ -51,8 +57,8 @@ table changes a cell's action, the old item gets the old action and the new item
 whose table version the registry does not hold comes back with wait), ac4/registry-untouched (calls
 change neither the registry nor the records).
 
-kinds/ledger-accepts (the Ledger's checked_lifecycle accepts LIFECYCLE, which names version 1, the nine
-events and the ten kinds), kinds/pure (the module imports nothing and defines one function),
+kinds/ledger-accepts (the Ledger's checked_lifecycle accepts LIFECYCLE, which names the current version,
+the nine events, the ten kinds and each form with a row of its own), kinds/pure (the module imports nothing and defines one function),
 kinds/canon (the engine canon equals this repository copy).
 """
 
@@ -159,10 +165,14 @@ def _v298_space_kinds_suite():
         K = load('v298_control_space_kinds', PRODUCTION['control_space_kinds.py'])
         PROJECT = {'type': 'project', 'id': 'orchard'}
         KIND_OF = {'worktree_review_run': 'worktree', 'worktree_station_run': 'worktree'}
+        FIRST = {'version': '1', 'events': list(K.REGISTRY['tables']['1']['events']),
+                 'ends_on': K.REGISTRY['tables']['1']['ends_on']}
 
         def item(kind, state='due', parent=None, owner=None, branch='agent/a/T-1', lifecycle=None, **more):
-            """An item record as the Ledger holds it, declared under `lifecycle` (the current table)."""
-            lifecycle = lifecycle or K.LIFECYCLE
+            """An item record as the Ledger holds it, declared under `lifecycle`: table 1, by its number,
+            unless a row gives another. VELDO-0347 AC5 issued table 2, so the current table is no longer
+            the one design section 5 transcribes here; the rows of this suite read table 1."""
+            lifecycle = lifecycle or FIRST
             record = {'kind': kind, 'state': state, 'parent': parent,
                       'owner': dict({'scope': dict(PROJECT), 'ticket': 'T-1'}, **(owner or {})),
                       'ends_on': {'version': lifecycle['version'], 'events': list(lifecycle['ends_on'][kind])}}
@@ -484,9 +494,11 @@ def _v298_space_kinds_suite():
         second['rows']['evidence']['run_finished'] = {'action': 'keep'}       # was measure
         second['rows']['image_tag']['run_finished'] = {'action': 'remove_tag'}  # was empty
         second['ends_on']['image_tag'].insert(0, 'run_finished')
-        CHANGED['tables']['2'] = second
-        CHANGED['version'] = '2'
-        SECOND = {'version': '2', 'events': list(second['events']), 'ends_on': second['ends_on']}
+        # VELDO-0347 AC5 issued table 2, so the fixture's own table takes the next number no table has.
+        NEXT = str(max(int(version) for version in K.REGISTRY['tables']) + 1)
+        CHANGED['tables'][NEXT] = second
+        CHANGED['version'] = NEXT
+        SECOND = {'version': NEXT, 'events': list(second['events']), 'ends_on': second['ends_on']}
 
         old = item('scratch')
         new = item('scratch', lifecycle=SECOND)
@@ -502,7 +514,7 @@ def _v298_space_kinds_suite():
               got == [])
         got = due('run_finished', [('i:new', item('image_tag', lifecycle=SECOND))], registry=CHANGED)
         check('ac4/keeps-its-version', 'it reaches an item declared under the second table [%s]' % got,
-              cell(got) == tag and got[0]['version'] == '2')
+              cell(got) == tag and got[0]['version'] == NEXT and NEXT not in before['tables'])
 
         got = due('run_finished', [('i:old', item('evidence'))], registry=CHANGED)
         check('ac4/action-of-its-version', 'the old evidence item is measured, as its table says [%s]' % got,
@@ -537,9 +549,13 @@ def _v298_space_kinds_suite():
         SP = load('v298_control_space', PRODUCTION['control_space_kinds.py'].with_name('control_space.py'))
         accepted = SP.checked_lifecycle(K.LIFECYCLE)
         check('kinds/ledger-accepts', 'the Ledger accepts LIFECYCLE as given [%s]' % accepted.get('version'),
-              accepted == K.LIFECYCLE and accepted['version'] == '1' and tuple(accepted['events']) == EVENTS)
-        check('kinds/ledger-accepts', 'it names the ten kinds of the Ledger',
-              set(K.LIFECYCLE['ends_on']) == set(SP.KINDS) and set(K.KINDS) == set(SP.KINDS))
+              accepted == K.LIFECYCLE and accepted['version'] == K.REGISTRY['version']
+              and tuple(accepted['events']) == EVENTS)
+        forms = {'%s:%s' % named for named in K.FORM_ROWS}
+        check('kinds/ledger-accepts', 'it names the ten kinds of the Ledger, and each form with a row of its '
+              'own as <kind>:<form> [%s]' % sorted(forms),
+              set(K.LIFECYCLE['ends_on']) == set(SP.KINDS) | forms and set(K.KINDS) == set(SP.KINDS)
+              and bool(forms) and all(named[0] in SP.KINDS for named in K.FORM_ROWS))
         check('kinds/ledger-accepts', 'a worktree ends on the events of its three rows together [%s]'
               % K.LIFECYCLE['ends_on']['worktree'],
               K.LIFECYCLE['ends_on']['worktree'] == [event for event in EVENTS if any(
