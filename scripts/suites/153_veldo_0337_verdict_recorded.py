@@ -29,6 +29,7 @@ def _v337_verdict_suite():
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
         'control_space.py': ROOT / ".veldo" / "control_space.py",
         'control_space_kinds.py': ROOT / ".veldo" / "control_space_kinds.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
     }
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -790,6 +791,40 @@ def _v337_verdict_suite():
                   and all(text_of(path / 'work.txt') == key + ' planted\n'
                           for key, path in f.paths.items()))
 
+        # The review of the assembly, finding 2: the scratch in-use rule holds for a review run's
+        # scratch too. A borrowed login that is not settled (a journal under the borrow root, named as
+        # the scratch folder is) defers it at verdict recorded; once settled, the same event takes it.
+        row = 'safety/review-scratch-in-use'
+        f = planted('22', 'pass')
+        borrowed = temp / 'borrowed-logins'
+        journal = borrowed / f.paths['scratch'].name
+        journal.mkdir(parents=True)
+        (journal / 'borrow.json').write_text('{}\n')
+        floor.space['borrow_root'] = str(borrowed)
+        try:
+            record(f)
+            held = L.item(f.items['scratch'])
+            deferral = held.get('deferral') or {}
+            found = (deferral.get('found') or {}).get('scratch') or {}
+            check(row, 'a review run scratch in use under the borrow root is deferred at verdict recorded '
+                       'and stays whole [%s %s %s]' % (held.get('state'), deferral.get('rule'), found),
+                  held['kind'] == 'review_run_scratch' and held['state'] == 'deferred'
+                  and deferral.get('rule') == 'in_use' and deferral.get('event') == 'verdict_recorded'
+                  and found.get('login_unsettled') is True and found.get('journal') == str(journal)
+                  and text_of(f.paths['scratch'] / 'work.txt') == 'scratch planted\n'
+                  and [r['verdict'] for r in floor.record(f.unit)['reviews']] == ['pass'])
+            check(row, 'the same send took the review build root, which no borrower holds',
+                  state_of(f.items['build']) == 'removed' and not f.paths['build'].exists())
+            (journal / 'recovery.json').write_text('{}\n')
+            scratch_item = f.items['scratch']
+            again = send('verdict_recorded',
+                         {'items': [{'item': scratch_item, 'version': versions([scratch_item])[scratch_item]}]},
+                         borrow_root=str(borrowed))
+            check(row, 'once the borrowed login is settled, verdict recorded removes it [%s]' % (again.get('ok'),),
+                  state_of(scratch_item) == 'removed' and not f.paths['scratch'].exists())
+        finally:
+            del floor.space['borrow_root']
+
         row = 'paths/wiring-and-canon'
         import ast
         tree = ast.parse((VELDO / 'control_launch_work.py').read_text())
@@ -802,7 +837,8 @@ def _v337_verdict_suite():
                   and any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
                           and c.func.attr == 'reconcile_verdicts' for c in ast.walk(n))]
         check(row, 'Runtime reconciles lost verdict events at its start', len(starts) == 1)
-        for name in ('dispatch.py', 'control_launch_work.py', 'control_launch.py', 'control_space.py'):
+        for name in ('dispatch.py', 'control_launch_work.py', 'control_launch.py', 'control_space.py',
+                     'control_space_signal.py', 'control_space_kinds.py'):
             check(row, name + ' equals engine canon',
                   (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())
     except Exception as error:
