@@ -58,3 +58,7 @@ part by part, so a long path is served and only a part that looks like a credent
 
 Usage figures and their column headers share a right edge on desktop. The browser row
 `ac1/numeric-alignment-1440` checks text bounds in light and dark, including the totals row.
+
+Removal order comes from the sequence stamped by the Ledger at removal, with its time read by
+publication key. A legacy record without that stamp stays visible with unknown order and time.
+The dispatch link uses the hold index; neither read scans history.

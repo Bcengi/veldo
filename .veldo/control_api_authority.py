@@ -364,8 +364,9 @@ class ApiAuthority:
             if hold['data'].get('state') not in MO.SPACE_LISTED:
                 continue
             identity = hold['id'][len('space:hold:'):]
-            for eid, text in self.conn.execute("SELECT id, data FROM entities WHERE kind='dispatch' AND instr(data, ?)",
-                                               (json.dumps(identity),)):
+            for eid, text in self.conn.execute("SELECT id, data FROM entities WHERE kind='dispatch' "
+                                               "AND json_extract(data, '$.contract.space.hold')=?",
+                                               (identity,)):
                 data = json.loads(text)
                 contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
                 if (contract.get('space') or {}).get('hold') == identity and scope.visible(eid, 'dispatch', data):

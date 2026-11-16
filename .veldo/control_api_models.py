@@ -586,7 +586,7 @@ def space_pending(items, groups):
 def space_removed(items, written):
     """Every removed item, newest first (design 6.6 and 10): what, whose, which event, how much and the
     pool's free space before and after. `written` is {item: (journal sequence, commit time)} of the record
-    that last wrote each (space_written); an engine pool's host figure is served apart."""
+    that removed each (space_written); an engine pool's host figure is served apart."""
     rows = []
     for item in items:
         data = item['data']
@@ -611,24 +611,20 @@ def space_removed(items, written):
     return {'items': rows}
 
 
-def space_written(conn, identities):
-    """{item: (journal sequence, commit time)} of the journal record that last wrote each of `identities`:
-    one bounded pass over the journal, newest first, that stops when every one is found."""
-    wanted, found = set(identities), {}
-    if not wanted:
-        return found
-    rows = conn.execute("SELECT j.seq, j.after_versions, p.committed_at FROM journal j LEFT JOIN publication p "
-                        "ON p.seq = j.seq WHERE instr(j.after_versions, 'space:item:') > 0 ORDER BY j.seq DESC")
-    for seq, after, committed in rows:
-        try:
-            touched = json.loads(after)
-        except ValueError:
+def space_written(conn, items):
+    """Removal order is on the item, stamped by the Ledger in its write transaction. The
+    publication time is a primary-key lookup. Older unstamped records keep an unknown order;
+    a read never scans or backfills their history."""
+    found = {}
+    for item in items:
+        if item['data'].get('state') != 'removed':
             continue
-        for identity in wanted.intersection(touched if isinstance(touched, dict) else ()):
-            found[identity] = (seq, committed)
-        wanted.difference_update(found)
-        if not wanted:
-            break
+        seq = _mapping(item['data'].get('removal')).get('seq')
+        if type(seq) is not int or seq <= 0:
+            found[item['id']] = (None, None)
+            continue
+        row = conn.execute('SELECT committed_at FROM publication WHERE seq=?', (seq,)).fetchone()
+        found[item['id']] = (seq, row[0] if row else None)
     return found
 
 
@@ -678,8 +674,7 @@ def space_view(conn, view, answer, universal, carried=None):
     elif view == 'pending':
         body = space_pending(items, groups)
     elif view == 'removed':
-        body = space_removed(items, space_written(conn, [item['id'] for item in items
-                                                         if item['data'].get('state') == 'removed']))
+        body = space_removed(items, space_written(conn, items))
     elif view == 'pools':
         body = space_pools(answer['items']['space_pool'], holds, carried)
     else:

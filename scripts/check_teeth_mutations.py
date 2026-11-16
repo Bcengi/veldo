@@ -16982,9 +16982,60 @@ def cases():
         "            return piece",
         ['space319/redact/locator'])
 
+    # Review F2: restoring either history scan must increase the measured read cost.
+    add(319, 'space319-removed-restores-journal-scan', api319, 'control_api_models.py',
+        'def space_written(conn, items):\n'
+        '    """Removal order is on the item, stamped by the Ledger in its write transaction. The\n'
+        '    publication time is a primary-key lookup. Older unstamped records keep an unknown order;\n'
+        '    a read never scans or backfills their history."""\n'
+        '    found = {}\n'
+        '    for item in items:\n'
+        "        if item['data'].get('state') != 'removed':\n"
+        '            continue\n'
+        "        seq = _mapping(item['data'].get('removal')).get('seq')\n"
+        '        if type(seq) is not int or seq <= 0:\n'
+        "            found[item['id']] = (None, None)\n"
+        '            continue\n'
+        "        row = conn.execute('SELECT committed_at FROM publication WHERE seq=?', (seq,)).fetchone()\n"
+        "        found[item['id']] = (seq, row[0] if row else None)\n"
+        '    return found\n',
+        'def space_written(conn, items):\n'
+        '    """{item: (journal sequence, commit time)} of the journal record that last wrote each of `identities`:\n'
+        '    one bounded pass over the journal, newest first, that stops when every one is found."""\n'
+        "    wanted, found = {item['id'] for item in items if item['data'].get('state') == 'removed'}, {}\n"
+        '    if not wanted:\n'
+        '        return found\n'
+        '    rows = conn.execute("SELECT j.seq, j.after_versions, p.committed_at FROM journal j LEFT JOIN publication p "\n'
+        '                        "ON p.seq = j.seq WHERE instr(j.after_versions, \'space:item:\') > 0 ORDER BY j.seq DESC")\n'
+        '    for seq, after, committed in rows:\n'
+        '        try:\n'
+        '            touched = json.loads(after)\n'
+        '        except ValueError:\n'
+        '            continue\n'
+        '        for identity in wanted.intersection(touched if isinstance(touched, dict) else ()):\n'
+        '            found[identity] = (seq, committed)\n'
+        '        wanted.difference_update(found)\n'
+        '        if not wanted:\n'
+        '            break\n'
+        '    return found\n',
+        ['space319/cost/removed-index'])
+    add(319, 'space319-carried-restores-dispatch-scan', api319, 'control_api_authority.py',
+        "AND json_extract(data, '$.contract.space.hold')=?",
+        "AND instr(data, ?)",
+        ['space319/cost/carried-index'])
+    add(319, 'space319-removal-without-ledger-stamp', api319, 'control_space.py',
+        "            record['removal'] = dict(facts, seq=seq)",
+        "            record['removal'] = dict(facts)",
+        ['space319/ac2/removal-stamp'])
+
     def ui319(name, directory, module, old, new, rows):
         add(319, name, '150_veldo_0319_space_ui.py', module, old, new, rows)
         result[-1]['dir'] = directory
+
+    ui319('space319-numeric-cells-lose-to-table-rule', 'engine/ui/src/features/space', 'space.css',
+          "  .space-num,\n  .factory-table td.space-num {",
+          "  .space-num {",
+          ['space319ui/ac1/numeric-alignment-1440'])
 
     # AC4, declared: poll on an interval. The screen still says it is live; with the page's clock stopped
     # no timer fires and the row that waits for the new hold sees no update.

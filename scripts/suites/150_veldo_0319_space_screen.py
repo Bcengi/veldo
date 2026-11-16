@@ -60,13 +60,14 @@ def _v319_suite():
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
         'control_api.py': ROOT / ".veldo" / "control_api.py",
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
         'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
     }
     ROWS = ('ac1/per-project-ticket-kind', 'ac1/totals', 'ac1/deferred-counts', 'ac1/plain-and-no-project',
             'ac1/worktrees',
-            'ac2/in-use-folder', 'ac2/every-pending', 'ac2/requests', 'ac2/removed',
+            'cost/removed-index', 'cost/carried-index', 'ac2/removal-stamp', 'ac2/in-use-folder', 'ac2/every-pending', 'ac2/requests', 'ac2/removed',
             'ac3/routes-signed', 'ac3/unsigned-refused', 'ac3/not-owner-refused', 'ac3/owner-accepted',
             'ac3/no-dead-route',
             'ac4/pools-numbers', 'ac4/record-reaches-read',
@@ -753,8 +754,45 @@ def _v319_suite():
               all(("'%s'" % name) in signal_text for name in ('in_use', 'unique_work', 'protected', 'not_in_ledger',
                                                                'remove_refused', 'keep_failed')) and len(named) == 17)
 
+        R = 'ac2/removal-stamp'
+        for identity in gone_ids:
+            stamp = L.item(identity)['removal'].get('seq')
+            check(R, 'the Ledger stamps the removal with its actual journal order',
+                  type(stamp) is int and stamp > 0)
+            if type(stamp) is int:
+                committed = conn.execute('SELECT after_versions FROM journal WHERE seq=?', (stamp,)).fetchone()
+                check(R, 'the stamped record wrote this item',
+                      committed is not None and identity in json.loads(committed[0]))
+        # Count SQLite virtual-machine steps, not wall time: the rendered result stays fixed
+        # while both the journal and unrelated dispatch population grow by 4096 records.
+        def cost(view):
+            steps = [0]
+            def step():
+                steps[0] += 1
+                return 0
+            conn.set_progress_handler(step, 1)
+            try:
+                answer = read('olga', view)
+            finally:
+                conn.set_progress_handler(None, 0)
+            return steps[0], answer
+        small = {view: cost(view) for view in ('removed', 'pools')}
+        for n in range(4096):
+            put('dispatch:cost-%d' % n, 'dispatch',
+                {'contract': {'space': {'hold': 'unrelated-%d' % n},
+                              'reservation': {'project': ORCHARD}}})
+        large = {view: cost(view) for view in ('removed', 'pools')}
+        for view, row, field in (('removed', 'cost/removed-index', 'items'),
+                                 ('pools', 'cost/carried-index', 'pools')):
+            before_steps, before_answer = small[view]
+            after_steps, after_answer = large[view]
+            check(row, 'same SQL steps with 4096 more journal entries and dispatches: %d -> %d'
+                  % (before_steps, after_steps), before_steps == after_steps)
+            check(row, 'the full authority read still serves the same records',
+                  before_answer[field] == after_answer[field])
+
         R = 'canon/synced'
-        check(R, 'the engine canon of the three API modules equals the repository\'s copy',
+        check(R, 'the engine canon of the API and Ledger modules equals the repository\'s copy',
               all((ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes()
                   for name in PRODUCTION))
         text = PRODUCTION['control_api_models.py'].read_text() + PRODUCTION['control_api_authority.py'].read_text()

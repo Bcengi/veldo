@@ -956,6 +956,11 @@ class Ledger:
                                for part, paths in self.roots.items()}
         self.engines = list(config['engines'])
         self.state_root = canonical_path(state_root)
+        # Install read indexes when the Ledger is opened, before serving live reads. SQLite
+        # maintains them in the same transaction as each entity write, including dispatches.
+        conn.execute('CREATE INDEX IF NOT EXISTS space_entities_kind ON entities(kind, id)')
+        conn.execute("CREATE INDEX IF NOT EXISTS space_dispatch_hold ON entities "
+                     "(json_extract(data, '$.contract.space.hold')) WHERE kind='dispatch'")
         # The snapshot store is protected in every installation: by the Ledger, not by a file.
         self.snapshot_store = snapshot_store(state_root)
         self.protect = protect_list(config, self.projects) + [
@@ -3027,7 +3032,10 @@ class Ledger:
                 if record['disposition'].get('group'):
                     record['deferral']['review_group'] = record['disposition']['group']
         elif outcome == 'removed':
-            record['removal'] = dict(facts)
+            # The store holds its write transaction here. This is the sequence it will append,
+            # just as received is stamped on an event; caller facts cannot choose the order.
+            seq = conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
+            record['removal'] = dict(facts, seq=seq)
             record['confirmed'] = None
         elif outcome == 'removing':
             record['removal'] = dict(facts)
