@@ -14433,6 +14433,16 @@ def cases():
                "    'review_run_scratch': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),\n"
                "    'review_run_build_output': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),\n",
                ['ac1/real-ordering', 'ac1/declared-at-creation'])
+    # The review of the assembly, finding 3: the build root accepted under one build kind only (the
+    # run's own, or every other run's), so a run after a run of the other kind is refused its root.
+    reuse337 = ("                if (known[1].get('kind') not in (kind, SPACE_REVIEW_KINDS[kind]) "
+                "or (name == 'scratch' and not mine)\n")
+    verdict337('space337-build-root-own-kind-only', 'control_launch.py', reuse337,
+               reuse337.replace('not in (kind, SPACE_REVIEW_KINDS[kind])', '!= declared_as'),
+               ['ac1/build-root-passes-between-kinds'])
+    verdict337('space337-build-root-plain-kind-only', 'control_launch.py', reuse337,
+               reuse337.replace('not in (kind, SPACE_REVIEW_KINDS[kind])', '!= kind'),
+               ['ac1/build-root-passes-between-kinds'])
     # The review of the assembly, finding 2: the scratch in-use rule (a held lock, a borrowed login not
     # settled) left out for a review run's scratch, so a borrower's scratch goes at the verdict.
     verdict337('space337-review-scratch-in-use-skipped', 'control_space_signal.py',
