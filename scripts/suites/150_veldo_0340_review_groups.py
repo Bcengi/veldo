@@ -288,377 +288,423 @@ def _v340_suite():
         def state_of(item):
             return (ledger.item(item) or {}).get('state')
 
+        publish = ledger.disposition_publish
+
+        def broke(named):
+            # A part that raises fails its own rows, and the parts after it still run.
+            for row in named:
+                check(row, traceback.format_exc(), False)
+
         try:
-            # AC1: two on one day raise one request; a third on the next day raises a second.
-            before = set(assignments())
-            first, first_path, first_owner = review('one-a')
-            second, second_path, second_owner = review('one-b')
-            results = [finish(first, first_owner), finish(second, second_owner)]
-            day_one = {eid: row for eid, row in assignments().items() if eid not in before}
-            gid, group = group_of(first)
-            check('ac1/one-request', 'day 1 holds one request for the two worktrees, not %d: %r'
-                  % (len(day_one), sorted(row[1].get('alias') for row in day_one.values())), len(day_one) == 1)
-            check('ac1/one-request', 'both are deferred as unique work, each still on disk with its edit '
-                  + repr(results), all(state_of(one) == 'deferred' for one in (first, second))
-                  and contents(first_path / 'base.txt') == 'edited by one-a\n'
-                  and contents(second_path / 'base.txt') == 'edited by one-b\n')
-            check('ac1/one-request', 'one group record of the scope and day, sequence 1, open ' + repr(group),
-                  gid == SP.group_id(scope, today(), 1) == group_of(second)[0] and len(ledger.groups()) == 1
-                  and group.get('state') == 'open' and group.get('day') == today() and group.get('sequence') == 1
-                  and group.get('scope') == scope)
-            members = group.get('members') or []
-            check('ac1/one-request', 'the record holds each member with its index, run and file list ' + repr(members),
-                  [(one['index'], one['item'], one['run'], one['files']) for one in members]
-                  == [(1, first, 'one-a', ['base.txt']), (2, second, 'one-b', ['base.txt'])])
-            check('ac1/one-request', 'the record holds the current request with its version '
-                  + repr(group.get('request')), (group.get('request') or {}).get('version') == 2
-                  and [one['item'] for one in group['request']['proposal']['worktrees']] == [first, second])
-            check('ac1/one-request', 'each item names the group in its deferral',
-                  all(ledger.item(one)['deferral'].get('review_group') == gid for one in (first, second)))
-            if len(day_one) == 1:
-                rid = next(iter(day_one))
-                sent = len(transport.sent)
-                presenter.present(rid)
-                brief = '\n'.join(transport.sent[sent:])
-                check('ac1/one-request', 'the one request shows both worktrees, each with its path, files and '
-                      'restore command ' + repr(brief), all(text in brief for text in (
-                          'Review group: ' + json.dumps(gid), 'Worktree 1: ' + json.dumps(str(first_path)),
-                          'Worktree 2: ' + json.dumps(str(second_path)), 'Item: ' + json.dumps(first),
-                          'Item: ' + json.dumps(second), 'veldo space restore'))
-                      and brief.count('"base.txt"') == 2)
-                terms = ledger._row(day_one[rid][1]['subject']['ref'], ST.TERMS_KIND)[1] or {}
-                check('ac1/one-request', 'its terms target the group and name every member item '
-                      + repr(terms.get('target')), (terms.get('target') or {}).get('kind') == 'space_group'
-                      and terms['target'].get('ref') == gid and terms['target'].get('members') == [first, second])
-            frozen = (assignments(), ledger._row(gid, SP.GROUP_KIND), len(transport.sent))
-            next_day()
-            third, third_path, third_owner = review('one-c')
-            finish(third, third_owner)
-            later, later_group = group_of(third)
-            added = {eid: row for eid, row in assignments().items() if eid not in frozen[0]}
-            check('ac1/next-day', 'the third worktree, a day later, raises a second request ' + repr(sorted(added)),
-                  len(added) == 1 and later == SP.group_id(scope, today(), 1) and later != gid
-                  and [one['item'] for one in later_group.get('members') or []] == [third])
-            check('ac1/next-day', 'the first day request and its record are unchanged',
-                  all(assignments().get(eid) == row for eid, row in frozen[0].items())
-                  and ledger._row(gid, SP.GROUP_KIND) == frozen[1])
-            with patch.dict(ledger.config, {'time_zone': 'Pacific/Auckland'}):
-                far = ledger.day_of(now[0])
-            check('ac1/next-day', 'the day is read in the installation time zone: noon UTC is %s there' % far,
-                  far == (datetime.datetime.fromtimestamp(now[0], datetime.timezone.utc).date()
-                          + datetime.timedelta(days=1)).isoformat() and ledger.day_of(now[0]) == today())
-
-            # AC2: a later deferral of the day is a new version; the old presentation settles nothing.
-            next_day()
-            early, early_path, early_owner = review('version-a')
-            finish(early, early_owner)
-            gid, group = group_of(early)
-            rid = request(early) if gid else None
-            if rid:
-                presenter.present(rid)
-            old = presenter.current(rid) if rid else None
-            late, late_path, late_owner = review('version-b')
-            finish(late, late_owner)
-            same, group = group_of(late)
-            record = (ledger._row(rid, 'assignment')[1] or {}) if rid else {}
-            check('ac2/new-version', 'the later deferral joins the same group and request ' + repr((gid, same)),
-                  bool(gid) and same == gid and bool(rid) and request(late) == rid)
-            check('ac2/new-version', 'the request is at a new version, with terms that list both: version %r, '
-                  'record version %r' % (record.get('request_version'), (group.get('request') or {}).get('version')),
-                  bool(old) and record.get('request_version') == old['request_version'] + 1
-                  and (group.get('request') or {}).get('version') == 2
-                  and json.dumps(str(late_path)) in record.get('brief', ''))
-            if old:
-                unpresented = answer(rid, old, 'discard')
-                check('ac2/new-version', 'an answer bound to the earlier presentation settles nothing, before the '
-                      'new one is presented ' + repr(unpresented), unpresented.get('outcome') == 'refused'
-                      and unpresented.get('reason') == 'stale_presentation')
-                presenter.present(rid)
-                new = presenter.current(rid)
-                presented = answer(rid, old, 'discard')
-                check('ac2/new-version', 'and after it is presented ' + repr(presented),
-                      presented.get('outcome') == 'refused' and presented.get('reason') == 'stale_presentation'
-                      and new['presentation_id'] != old['presentation_id']
-                      and new['request_version'] == old['request_version'] + 1)
-                check('ac2/new-version', 'nothing was settled: the request is open, the group open, both worktrees '
-                      'deferred and on disk', ledger._row(rid, 'assignment')[1]['state'] == 'OFFERED'
-                      and group_of(early)[1].get('state') == 'open'
-                      and all(state_of(one) == 'deferred' for one in (early, late))
-                      and contents(early_path / 'base.txt') == 'edited by version-a\n'
-                      and contents(late_path / 'base.txt') == 'edited by version-b\n')
-                try:
-                    ledger.disposition_effect(late, rid)
-                    reached = True
-                except SP.Refused:
-                    reached = False
-                check('ac2/new-version', 'the worktree the owner never saw has no settled answer', not reached)
-
-            # AC2: the clock opens and sends nothing.
-            def counted():
-                return (assignments(), ledger.groups(), len(transport.sent),
-                        conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
-            def shown_again():
-                for member in (first, second, third, early, late):
-                    ledger.disposition_publish(member)
-                    presenter.present(request(member))
-            shown_again()
-            still = counted()
-            next_day()
-            other = SIG.signal(ledger, 'run_finished', {'run': 'a-run-with-no-item'}, **given)
-            check('ac2/clock', 'with the clock moved a day and no deferral there is no new request, group, '
-                  'version or message ' + repr(other.get('items')), other.get('ok') is True
-                  and other.get('items') == [] and counted() == still)
-            shown_again()
-            after = counted()
-            check('ac2/clock', 'publishing and presenting again a day later changes no request and no group, '
-                  'and writes nothing: journal %d then %d' % (still[3], after[3]), after == still)
-
-            # An answer that settled before the new version was published reaches only what it showed.
-            next_day()
-            seen, seen_path, seen_owner = review('unseen-a')
-            finish(seen, seen_owner)
-            rid = request(seen)
-            publish = ledger.disposition_publish
-            ledger.disposition_publish = None
-            unseen, unseen_path, unseen_owner = review('unseen-b')
-            finish(unseen, unseen_owner)
-            ledger.disposition_publish = publish
-            gid, group = group_of(unseen)
-            settled = settle(seen, 'discard')
-            said = publish(unseen)
-            applied = ledger.authorize_disposition(seen, settled)
-            closed = ledger.group(gid)
-            check('ac2/unseen-member', 'the pick reaches the member it showed and closes the group '
-                  + repr((applied, closed.get('answer'))), applied.get('ok') and state_of(seen) == 'due'
-                  and closed['state'] == 'closed' and closed['answer']['applied'] == [1]
-                  and closed['answer']['unseen'] == [2])
-            check('ac2/unseen-member', 'the member that joined unpublished is untouched, and its publish said the '
-                  'request was answered ' + repr(said), state_of(unseen) == 'deferred' and unseen_path.exists()
-                  and said.get('reason') == 'space_group_answered'
-                  and ledger.item(unseen)['disposition']['state'] == 'requested')
-            again = publish(unseen)
-            moved, moved_group = group_of(unseen)
-            check('ac2/unseen-member', 'at its next publish it joins a new group of its day with its own request '
-                  + repr(again), again.get('ok') and moved == SP.group_id(scope, today(), 2)
-                  and moved_group.get('state') == 'open'
-                  and [one['item'] for one in moved_group['members']] == [unseen]
-                  and request(unseen) != rid and ledger._row(request(unseen), 'assignment')[1] is not None)
-            carried = act(seen)
-            check('ac2/unseen-member', 'the shown member is discarded, the other stays ' + repr(carried),
-                  state_of(seen) == 'removed' and not seen_path.exists() and unseen_path.exists()
-                  and contents(unseen_path / 'base.txt') == 'edited by unseen-b\n')
-
-            # AC3, Save: each on its kept branch, removed without force.
-            next_day()
-            made = [review('save-a'), review('save-b')]
-            for item, path, owner in made:
-                finish(item, owner)
-            gid, group = group_of(made[0][0])
-            rid = settle(made[0][0], 'save')
-            applied = ledger.authorize_disposition(made[1][0], rid)
-            check('ac3/save', 'one pick makes every member due and closes the group ' + repr(applied),
-                  applied.get('ok') and all(state_of(item) == 'due' for item, _, _ in made)
-                  and ledger.group(gid)['state'] == 'closed' and ledger.group(gid)['answer']['applied'] == [1, 2])
-            for item, path, owner in made:
-                label = owner['run']['id']
-                result = act(item)
-                record = ledger.item(item)
-                branch = 'space-saved-' + label
-                try:
-                    kept = git(repo, 'show', branch + ':base.txt')
-                except subprocess.CalledProcessError:
-                    kept = None
-                check('ac3/save', label + ' is committed on ' + branch + ' and removed without force ' + repr(result),
-                      record['state'] == 'removed' and not path.exists() and kept == 'edited by ' + label
-                      and record['removal'].get('kept_branch') == branch
-                      and '--force' not in str(record['removal'].get('commands')))
-
-            # AC3, Keep: the owner's signed packet for one member keeps each.
-            next_day()
-            made = [review('keep-a'), review('keep-b')]
-            for item, path, owner in made:
-                finish(item, owner)
-            gid, group = group_of(made[0][0])
-            rid = settle(made[0][0], 'keep')
-            # Answered and not yet applied: the request takes no join, so a deferral opens the next group.
-            after, after_path, after_owner = review('keep-c')
-            finish(after, after_owner)
-            check('ac3/answered-takes-no-join', 'a deferral after the answer opens the next group of the day '
-                  + repr(group_of(after)[0]), group_of(after)[0] == SP.group_id(scope, today(), 2)
-                  and [one['item'] for one in ledger.group(gid)['members']] == [made[0][0], made[1][0]]
-                  and ledger.group(gid)['request']['version'] == 2
-                  and ledger._row(request(after), 'assignment')[1] is not None and request(after) != rid)
-            refused = ledger.authorize_disposition(made[0][0], rid)
-            start = conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
-            applied = authorize(made[0][0], rid)
-            writes = [json.loads(raw) for (raw,) in conn.execute('SELECT transition FROM journal WHERE seq>?', (start,))]
-            check('ac3/keep', 'Keep is the owner signed packet, never the authority alone ' + repr(refused),
-                  not refused.get('ok'))
-            check('ac3/keep', 'one packet sets each member to kept, with the mark, and closes the group, in one write '
-                  + repr(applied), applied.get('ok') and all(
-                      state_of(item) == 'kept' and ledger.item(item).get('owner_keep') == {'by': 'owner'}
-                      and path.exists() and contents(path / 'base.txt') == 'edited by ' + owner['run']['id'] + '\n'
-                      for item, path, owner in made)
-                  and ledger.group(gid)['state'] == 'closed' and len(writes) == 1
-                  and {made[0][0], made[1][0], gid} <= set(writes[0]))
-            check('ac3/answered-takes-no-join', 'and the Keep leaves it deferred in its own open group',
-                  state_of(after) == 'deferred' and not ledger.item(after).get('owner_keep')
-                  and group_of(after)[1].get('state') == 'open')
-
-            # AC3, Discard: saved first; a member whose list changed is deferred again, into a new group.
-            next_day()
-            made = [review('discard-a'), review('discard-b')]
-            for item, path, owner in made:
-                finish(item, owner)
-            gid, group = group_of(made[0][0])
-            rid = request(made[0][0])
-            presenter.present(rid)
-            (made[1][1] / 'late.txt').write_text('written after the request was shown')
-            settle(made[0][0], 'discard')
-            applied = ledger.authorize_disposition(made[0][0], rid)
-            results = [act(item) for item, _, _ in made]
-            item, path, owner = made[0]
-            record = ledger.item(item)
-            check('ac3/discard', 'the unchanged member is saved in the snapshot store and then removed '
-                  + repr(results[0]), applied.get('ok') and record['state'] == 'removed' and not path.exists()
-                  and snapshot(item) is not None
-                  and contents(snapshot(item) / 'work' / 'base.txt') == 'edited by discard-a\n'
-                  and str(snapshot(item)).startswith(str(state / 'space-saved'))
-                  and '--force' in str(record['removal'].get('commands')))
-            item, path, owner = made[1]
-            check('ac3/discard', 'the member with a file added after the request was shown is not removed: the file '
-                  'and the edit are on disk ' + repr(results[1]), path.exists() and state_of(item) == 'deferred'
-                  and contents(path / 'late.txt') == 'written after the request was shown'
-                  and contents(path / 'base.txt') == 'edited by discard-b\n')
-            again, again_group = group_of(item)
-            ledger.disposition_publish(item)
-            check('ac3/discard', 'it is deferred again into a new group, whose request lists the new file '
-                  + repr((again, again_group.get('members'))), again == SP.group_id(scope, today(), 2)
-                  and again_group.get('state') == 'open'
-                  and [(one['item'], one['files']) for one in again_group.get('members') or []]
-                  == [(item, ['base.txt', 'late.txt'])]
-                  and request(item) != rid and ledger._row(request(item), 'assignment')[1] is not None)
-            check('ac3/closed', 'the answered group is closed and is not added to ' + repr(ledger.group(gid)),
-                  ledger.group(gid)['state'] == 'closed' and len(ledger.group(gid)['members']) == 2
-                  and ledger.group(gid)['request']['version'] == 2)
-            fresh, fresh_path, fresh_owner = review('discard-c')
-            finish(fresh, fresh_owner)
-            check('ac3/closed', 'a later deferral of the day joins the open group with the next sequence number',
-                  group_of(fresh)[0] == again and [one['index'] for one in group_of(fresh)[1]['members']] == [1, 2])
-
-            # AC4: a detached worktree of a run of another station keeps its file and asks for itself.
-            next_day()
-            groups = ledger.groups()
-            item, path, owner = tree('builder', ticket=False, station='build')
-            result = signal(item, owner, 'run_finished')
-            decision = (ledger.item(item) or {}).get('disposition') or {}
-            asked = ledger._row(request(item), 'assignment')[1] if decision else None
-            check('ac4/builder', 'the builder untracked file is on disk and the worktree deferred ' + repr(result),
-                  contents(path / 'draft.txt') == 'draft builder' and state_of(item) == 'deferred'
-                  and ledger.item(item)['deferral']['rule'] == 'unique_work')
-            check('ac4/builder', 'it raises a request of its own, for that one worktree, in no group '
-                  + repr(decision), bool(asked) and 'group' not in decision
-                  and decision.get('alias', '').startswith('space-disposition-')
-                  and decision['proposal']['worktrees'][0]['files'] == ['draft.txt']
-                  and ledger.groups() == groups
-                  and 'review_group' not in ledger.item(item)['deferral'])
-            scratch, scratch_path, scratch_owner = tree('reviewer-scratch', ticket=False, station='review')
-            finish(scratch, scratch_owner)
-            check('ac4/builder', 'a review worktree with only an untracked file is in no group either',
-                  not (ledger.item(scratch) or {}).get('disposition') and ledger.groups() == groups)
-
-            # The widened terms (the lead's decision, specification History).
-            def entry(n):
-                name = 'space:item:terms-%d' % n
-                return dict(item=name, path='/fixture/terms-%d' % n, branch=None, unheld_commits=True,
-                            kept_branch='space-saved-terms-%d' % n, files=['a-%d.txt' % n], commits=[],
-                            restore='veldo space restore ' + name)
-
-            def offered(trees, group='space:group:fixture:2026-11-16:1'):
-                proposal = {'discard': ST.SPACE_DISCARD, 'worktrees': trees}
-                if group is not None:
-                    proposal['group'] = group
-                return proposal
-
-            def record_terms(proposal, **target):
-                target.setdefault('digest', ST.digest(proposal))
-                return settlement.terms(signed(command('terms', terms='terms-' + next_id(),
-                    touchpoint='space_disposition', target=target, proposal=proposal, required_roles=[], quorum=None)))
-
-            pair = offered([entry(1), entry(2)])
-            good = record_terms(pair, kind='space_group', ref=pair['group'],
-                                members=[entry(1)['item'], entry(2)['item']])
-            check('terms/group', 'terms for a group of two, targeting the group and both items, are recorded '
-                  + repr(good), good.get('outcome') == 'recorded')
-            shown = ST.space_presentation(pair)
-            check('terms/group', 'each member is listed with its own path, files and restore command',
-                  all(text in shown['brief'] for n in (1, 2) for text in (
-                      'Worktree %d: "/fixture/terms-%d"' % (n, n), '"a-%d.txt"' % n,
-                      'Restore: ' + entry(n)['restore']))
-                  and shown['choices'] == ['accept save', 'accept keep', 'accept discard'])
-            refusals = {
-                'the target is one item': dict(kind='space_item', ref=entry(1)['item']),
-                'the target names another group': dict(kind='space_group', ref=pair['group'] + '9',
-                                                       members=[entry(1)['item'], entry(2)['item']]),
-                'the target leaves a member out': dict(kind='space_group', ref=pair['group'],
-                                                       members=[entry(1)['item']]),
-                'the target names no member': dict(kind='space_group', ref=pair['group']),
-            }
-            for label, target in refusals.items():
-                result = record_terms(pair, **target)
-                check('terms/group', label + ' ' + repr(result), result.get('outcome') == 'refused')
-            for label, proposal in (
-                    ('two worktrees with no group', offered([entry(1), entry(2)], group=None)),
-                    ('a group with no worktree', offered([])),
-                    ('one worktree listed twice', offered([entry(1), entry(1)])),
-                    ('a group that is not a review group record', offered([entry(1)], group='fixture'))):
-                try:
-                    ST.space_presentation(proposal)
-                    refused = False
-                except ST.Refused:
-                    refused = True
-                check('terms/group', label + ' is refused', refused)
-            single = offered([entry(1)], group=None)
-            check('terms/group', 'one worktree without a group is targeted as that item, as before',
-                  record_terms(single, kind='space_item', ref=entry(1)['item']).get('outcome') == 'recorded'
-                  and record_terms(single, kind='space_group', ref=pair['group'],
-                                   members=[entry(1)['item']]).get('outcome') == 'refused'
-                  and ST.space_presentation(single)['brief'].split('\n')[2] == 'Worktree: "/fixture/terms-1"')
-
-            # The service's disposition task, unchanged, publishes a group and carries its pick.
-            next_day()
-            SV, CON = load('control_service'), load('control_space_consumer')
-            service = object.__new__(SV.Service)
-            service._space = dict(given, ledger=ledger)
-            service.conn, service.domain, service.store = conn, ids['domain_uuid'], ids['store_uuid']
-            service.principal, service.sign, service.generation = 'steward', journal_sign, 1
-            service.config = {'journal_key': str(keys['steward'])}
-            service.channel = types.SimpleNamespace(record=lambda: {'owner': 'owner'},
-                ingress=types.SimpleNamespace(activations=types.SimpleNamespace(ids=ids)))
-            service.space_consumer = CON.Consumer(ledger, given)
-            ledger.disposition_publish = None
-            made = [review('worker-a'), review('worker-b')]
-            for item, path, owner in made:
-                finish(item, owner)
-            ledger.disposition_publish = publish
-            gid, group = group_of(made[0][0])
             try:
-                result = service.space_consumer.run(service._space_dispositions)
+                ledger.disposition_publish = publish
+                # AC1: two on one day raise one request; a third on the next day raises a second.
+                before = set(assignments())
+                first, first_path, first_owner = review('one-a')
+                second, second_path, second_owner = review('one-b')
+                results = [finish(first, first_owner), finish(second, second_owner)]
+                day_one = {eid: row for eid, row in assignments().items() if eid not in before}
+                gid, group = group_of(first)
+                check('ac1/one-request', 'day 1 holds one request for the two worktrees, not %d: %r'
+                      % (len(day_one), sorted(row[1].get('alias') for row in day_one.values())), len(day_one) == 1)
+                check('ac1/one-request', 'both are deferred as unique work, each still on disk with its edit '
+                      + repr(results), all(state_of(one) == 'deferred' for one in (first, second))
+                      and contents(first_path / 'base.txt') == 'edited by one-a\n'
+                      and contents(second_path / 'base.txt') == 'edited by one-b\n')
+                check('ac1/one-request', 'one group record of the scope and day, sequence 1, open ' + repr(group),
+                      gid == SP.group_id(scope, today(), 1) == group_of(second)[0] and len(ledger.groups()) == 1
+                      and group.get('state') == 'open' and group.get('day') == today() and group.get('sequence') == 1
+                      and group.get('scope') == scope)
+                members = group.get('members') or []
+                check('ac1/one-request', 'the record holds each member with its index, run and file list ' + repr(members),
+                      [(one['index'], one['item'], one['run'], one['files']) for one in members]
+                      == [(1, first, 'one-a', ['base.txt']), (2, second, 'one-b', ['base.txt'])])
+                check('ac1/one-request', 'the record holds the current request with its version '
+                      + repr(group.get('request')), (group.get('request') or {}).get('version') == 2
+                      and [one['item'] for one in group['request']['proposal']['worktrees']] == [first, second])
+                check('ac1/one-request', 'each item names the group in its deferral',
+                      all(ledger.item(one)['deferral'].get('review_group') == gid for one in (first, second)))
+                if len(day_one) == 1:
+                    rid = next(iter(day_one))
+                    sent = len(transport.sent)
+                    presenter.present(rid)
+                    brief = '\n'.join(transport.sent[sent:])
+                    check('ac1/one-request', 'the one request shows both worktrees, each with its path, files and '
+                          'restore command ' + repr(brief), all(text in brief for text in (
+                              'Review group: ' + json.dumps(gid), 'Worktree 1: ' + json.dumps(str(first_path)),
+                              'Worktree 2: ' + json.dumps(str(second_path)), 'Item: ' + json.dumps(first),
+                              'Item: ' + json.dumps(second), 'veldo space restore'))
+                          and brief.count('"base.txt"') == 2)
+                    terms = ledger._row(day_one[rid][1]['subject']['ref'], ST.TERMS_KIND)[1] or {}
+                    check('ac1/one-request', 'its terms target the group and name every member item '
+                          + repr(terms.get('target')), (terms.get('target') or {}).get('kind') == 'space_group'
+                          and terms['target'].get('ref') == gid and terms['target'].get('members') == [first, second])
+                frozen = (assignments(), ledger._row(gid, SP.GROUP_KIND), len(transport.sent))
+                next_day()
+                third, third_path, third_owner = review('one-c')
+                finish(third, third_owner)
+                later, later_group = group_of(third)
+                added = {eid: row for eid, row in assignments().items() if eid not in frozen[0]}
+                check('ac1/next-day', 'the third worktree, a day later, raises a second request ' + repr(sorted(added)),
+                      len(added) == 1 and later == SP.group_id(scope, today(), 1) and later != gid
+                      and [one['item'] for one in later_group.get('members') or []] == [third])
+                check('ac1/next-day', 'the first day request and its record are unchanged',
+                      all(assignments().get(eid) == row for eid, row in frozen[0].items())
+                      and ledger._row(gid, SP.GROUP_KIND) == frozen[1])
+                with patch.dict(ledger.config, {'time_zone': 'Pacific/Auckland'}):
+                    far = ledger.day_of(now[0])
+                check('ac1/next-day', 'the day is read in the installation time zone: noon UTC is %s there' % far,
+                      far == (datetime.datetime.fromtimestamp(now[0], datetime.timezone.utc).date()
+                              + datetime.timedelta(days=1)).isoformat() and ledger.day_of(now[0]) == today())
+            except Exception:
+                broke(('ac1/one-request', 'ac1/next-day'))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC2: a later deferral of the day is a new version; the old presentation settles nothing.
+                next_day()
+                early, early_path, early_owner = review('version-a')
+                finish(early, early_owner)
+                gid, group = group_of(early)
+                rid = request(early) if gid else None
+                if rid:
+                    presenter.present(rid)
+                old = presenter.current(rid) if rid else None
+                late, late_path, late_owner = review('version-b')
+                finish(late, late_owner)
+                same, group = group_of(late)
+                record = (ledger._row(rid, 'assignment')[1] or {}) if rid else {}
+                check('ac2/new-version', 'the later deferral joins the same group and request ' + repr((gid, same)),
+                      bool(gid) and same == gid and bool(rid) and request(late) == rid)
+                check('ac2/new-version', 'the request is at a new version, with terms that list both: version %r, '
+                      'record version %r' % (record.get('request_version'), (group.get('request') or {}).get('version')),
+                      bool(old) and record.get('request_version') == old['request_version'] + 1
+                      and (group.get('request') or {}).get('version') == 2
+                      and json.dumps(str(late_path)) in record.get('brief', ''))
+                if old:
+                    unpresented = answer(rid, old, 'discard')
+                    check('ac2/new-version', 'an answer bound to the earlier presentation settles nothing, before the '
+                          'new one is presented ' + repr(unpresented), unpresented.get('outcome') == 'refused'
+                          and unpresented.get('reason') == 'stale_presentation')
+                    presenter.present(rid)
+                    new = presenter.current(rid)
+                    presented = answer(rid, old, 'discard')
+                    check('ac2/new-version', 'and after it is presented ' + repr(presented),
+                          presented.get('outcome') == 'refused' and presented.get('reason') == 'stale_presentation'
+                          and new['presentation_id'] != old['presentation_id']
+                          and new['request_version'] == old['request_version'] + 1)
+                    check('ac2/new-version', 'nothing was settled: the request is open, the group open, both worktrees '
+                          'deferred and on disk', ledger._row(rid, 'assignment')[1]['state'] == 'OFFERED'
+                          and group_of(early)[1].get('state') == 'open'
+                          and all(state_of(one) == 'deferred' for one in (early, late))
+                          and contents(early_path / 'base.txt') == 'edited by version-a\n'
+                          and contents(late_path / 'base.txt') == 'edited by version-b\n')
+                    try:
+                        ledger.disposition_effect(late, rid)
+                        reached = True
+                    except SP.Refused:
+                        reached = False
+                    check('ac2/new-version', 'the worktree the owner never saw has no settled answer', not reached)
+            except Exception:
+                broke(('ac2/new-version',))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC2: the clock opens and sends nothing.
+                def counted():
+                    return (assignments(), ledger.groups(), len(transport.sent),
+                            conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
+                def shown_again():
+                    for member in (first, second, third, early, late):
+                        ledger.disposition_publish(member)
+                        presenter.present(request(member))
+                shown_again()
+                still = counted()
+                next_day()
+                other = SIG.signal(ledger, 'run_finished', {'run': 'a-run-with-no-item'}, **given)
+                check('ac2/clock', 'with the clock moved a day and no deferral there is no new request, group, '
+                      'version or message ' + repr(other.get('items')), other.get('ok') is True
+                      and other.get('items') == [] and counted() == still)
+                shown_again()
+                after = counted()
+                check('ac2/clock', 'publishing and presenting again a day later changes no request and no group, '
+                      'and writes nothing: journal %d then %d' % (still[3], after[3]), after == still)
+            except Exception:
+                broke(('ac2/clock',))
+
+            try:
+                ledger.disposition_publish = publish
+                # An answer that settled before the new version was published reaches only what it showed.
+                next_day()
+                seen, seen_path, seen_owner = review('unseen-a')
+                finish(seen, seen_owner)
+                rid = request(seen)
+                ledger.disposition_publish = None
+                unseen, unseen_path, unseen_owner = review('unseen-b')
+                finish(unseen, unseen_owner)
+                ledger.disposition_publish = publish
+                gid, group = group_of(unseen)
+                settled = settle(seen, 'discard')
+                said = publish(unseen)
+                applied = ledger.authorize_disposition(seen, settled)
+                closed = ledger.group(gid)
+                check('ac2/unseen-member', 'the pick reaches the member it showed and closes the group '
+                      + repr((applied, closed.get('answer'))), applied.get('ok') and state_of(seen) == 'due'
+                      and closed['state'] == 'closed' and closed['answer']['applied'] == [1]
+                      and closed['answer']['unseen'] == [2])
+                check('ac2/unseen-member', 'the member that joined unpublished is untouched, and its publish said the '
+                      'request was answered ' + repr(said), state_of(unseen) == 'deferred' and unseen_path.exists()
+                      and said.get('reason') == 'space_group_answered'
+                      and ledger.item(unseen)['disposition']['state'] == 'requested')
+                again = publish(unseen)
+                moved, moved_group = group_of(unseen)
+                check('ac2/unseen-member', 'at its next publish it joins a new group of its day with its own request '
+                      + repr(again), again.get('ok') and moved == SP.group_id(scope, today(), 2)
+                      and moved_group.get('state') == 'open'
+                      and [one['item'] for one in moved_group['members']] == [unseen]
+                      and request(unseen) != rid and ledger._row(request(unseen), 'assignment')[1] is not None)
+                carried = act(seen)
+                check('ac2/unseen-member', 'the shown member is discarded, the other stays ' + repr(carried),
+                      state_of(seen) == 'removed' and not seen_path.exists() and unseen_path.exists()
+                      and contents(unseen_path / 'base.txt') == 'edited by unseen-b\n')
+            except Exception:
+                broke(('ac2/unseen-member',))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC3, Save: each on its kept branch, removed without force.
+                next_day()
+                made = [review('save-a'), review('save-b')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                gid, group = group_of(made[0][0])
+                rid = settle(made[0][0], 'save')
+                applied = ledger.authorize_disposition(made[1][0], rid)
+                check('ac3/save', 'one pick makes every member due and closes the group ' + repr(applied),
+                      applied.get('ok') and all(state_of(item) == 'due' for item, _, _ in made)
+                      and ledger.group(gid)['state'] == 'closed' and ledger.group(gid)['answer']['applied'] == [1, 2])
+                for item, path, owner in made:
+                    label = owner['run']['id']
+                    result = act(item)
+                    record = ledger.item(item)
+                    branch = 'space-saved-' + label
+                    try:
+                        kept = git(repo, 'show', branch + ':base.txt')
+                    except subprocess.CalledProcessError:
+                        kept = None
+                    check('ac3/save', label + ' is committed on ' + branch + ' and removed without force ' + repr(result),
+                          record['state'] == 'removed' and not path.exists() and kept == 'edited by ' + label
+                          and record['removal'].get('kept_branch') == branch
+                          and '--force' not in str(record['removal'].get('commands')))
+            except Exception:
+                broke(('ac3/save',))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC3, Keep: the owner's signed packet for one member keeps each.
+                next_day()
+                made = [review('keep-a'), review('keep-b')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                gid, group = group_of(made[0][0])
+                rid = settle(made[0][0], 'keep')
+                # Answered and not yet applied: the request takes no join, so a deferral opens the next group.
+                after, after_path, after_owner = review('keep-c')
+                finish(after, after_owner)
+                check('ac3/answered-takes-no-join', 'a deferral after the answer opens the next group of the day '
+                      + repr(group_of(after)[0]), group_of(after)[0] == SP.group_id(scope, today(), 2)
+                      and [one['item'] for one in ledger.group(gid)['members']] == [made[0][0], made[1][0]]
+                      and ledger.group(gid)['request']['version'] == 2
+                      and ledger._row(request(after), 'assignment')[1] is not None and request(after) != rid)
+                refused = ledger.authorize_disposition(made[0][0], rid)
+                start = conn.execute('SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0]
+                applied = authorize(made[0][0], rid)
+                writes = [json.loads(raw) for (raw,) in conn.execute('SELECT transition FROM journal WHERE seq>?', (start,))]
+                check('ac3/keep', 'Keep is the owner signed packet, never the authority alone ' + repr(refused),
+                      not refused.get('ok'))
+                check('ac3/keep', 'one packet sets each member to kept, with the mark, and closes the group, in one write '
+                      + repr(applied), applied.get('ok') and all(
+                          state_of(item) == 'kept' and ledger.item(item).get('owner_keep') == {'by': 'owner'}
+                          and path.exists() and contents(path / 'base.txt') == 'edited by ' + owner['run']['id'] + '\n'
+                          for item, path, owner in made)
+                      and ledger.group(gid)['state'] == 'closed' and len(writes) == 1
+                      and {made[0][0], made[1][0], gid} <= set(writes[0]))
+                check('ac3/answered-takes-no-join', 'and the Keep leaves it deferred in its own open group',
+                      state_of(after) == 'deferred' and not ledger.item(after).get('owner_keep')
+                      and group_of(after)[1].get('state') == 'open')
+            except Exception:
+                broke(('ac3/keep', 'ac3/answered-takes-no-join'))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC3, Discard: saved first; a member whose list changed is deferred again, into a new group.
+                next_day()
+                made = [review('discard-a'), review('discard-b')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                gid, group = group_of(made[0][0])
                 rid = request(made[0][0])
-                opened = ledger._row(rid, 'assignment')[1] or {}
-                check('worker/group', 'the task publishes the one group request, in the worker ' + repr(result),
-                      result.get('ok') and result.get('worker') != os.getpid()
-                      and all(json.dumps(str(path)) in opened.get('brief', '') for _, path, _ in made))
+                presenter.present(rid)
+                (made[1][1] / 'late.txt').write_text('written after the request was shown')
                 settle(made[0][0], 'discard')
-                result = service.space_consumer.run(service._space_dispositions)
-                check('worker/group', 'and carries the settled Discard for every member ' + repr(result),
-                      result.get('ok') and result.get('worker') != os.getpid()
-                      and all(state_of(item) == 'removed' and not path.exists()
-                              and contents(snapshot(item) / 'work' / 'base.txt')
-                              == 'edited by ' + owner['run']['id'] + '\n' for item, path, owner in made)
-                      and ledger.group(gid)['state'] == 'closed')
-            finally:
-                service.space_consumer.stop()
+                applied = ledger.authorize_disposition(made[0][0], rid)
+                results = [act(item) for item, _, _ in made]
+                item, path, owner = made[0]
+                record = ledger.item(item)
+                check('ac3/discard', 'the unchanged member is saved in the snapshot store and then removed '
+                      + repr(results[0]), applied.get('ok') and record['state'] == 'removed' and not path.exists()
+                      and snapshot(item) is not None
+                      and contents(snapshot(item) / 'work' / 'base.txt') == 'edited by discard-a\n'
+                      and str(snapshot(item)).startswith(str(state / 'space-saved'))
+                      and '--force' in str(record['removal'].get('commands')))
+                item, path, owner = made[1]
+                check('ac3/discard', 'the member with a file added after the request was shown is not removed: the file '
+                      'and the edit are on disk ' + repr(results[1]), path.exists() and state_of(item) == 'deferred'
+                      and contents(path / 'late.txt') == 'written after the request was shown'
+                      and contents(path / 'base.txt') == 'edited by discard-b\n')
+                again, again_group = group_of(item)
+                ledger.disposition_publish(item)
+                check('ac3/discard', 'it is deferred again into a new group, whose request lists the new file '
+                      + repr((again, again_group.get('members'))), again == SP.group_id(scope, today(), 2)
+                      and again_group.get('state') == 'open'
+                      and [(one['item'], one['files']) for one in again_group.get('members') or []]
+                      == [(item, ['base.txt', 'late.txt'])]
+                      and request(item) != rid and ledger._row(request(item), 'assignment')[1] is not None)
+                check('ac3/closed', 'the answered group is closed and is not added to ' + repr(ledger.group(gid)),
+                      ledger.group(gid)['state'] == 'closed' and len(ledger.group(gid)['members']) == 2
+                      and ledger.group(gid)['request']['version'] == 2)
+                fresh, fresh_path, fresh_owner = review('discard-c')
+                finish(fresh, fresh_owner)
+                check('ac3/closed', 'a later deferral of the day joins the open group with the next sequence number',
+                      group_of(fresh)[0] == again and [one['index'] for one in group_of(fresh)[1]['members']] == [1, 2])
+            except Exception:
+                broke(('ac3/discard', 'ac3/closed'))
+
+            try:
+                ledger.disposition_publish = publish
+                # AC4: a detached worktree of a run of another station keeps its file and asks for itself.
+                next_day()
+                groups = ledger.groups()
+                item, path, owner = tree('builder', ticket=False, station='build')
+                result = signal(item, owner, 'run_finished')
+                decision = (ledger.item(item) or {}).get('disposition') or {}
+                asked = ledger._row(request(item), 'assignment')[1] if decision else None
+                check('ac4/builder', 'the builder untracked file is on disk and the worktree deferred ' + repr(result),
+                      contents(path / 'draft.txt') == 'draft builder' and state_of(item) == 'deferred'
+                      and ledger.item(item)['deferral']['rule'] == 'unique_work')
+                check('ac4/builder', 'it raises a request of its own, for that one worktree, in no group '
+                      + repr(decision), bool(asked) and 'group' not in decision
+                      and decision.get('alias', '').startswith('space-disposition-')
+                      and decision['proposal']['worktrees'][0]['files'] == ['draft.txt']
+                      and ledger.groups() == groups
+                      and 'review_group' not in ledger.item(item)['deferral'])
+                scratch, scratch_path, scratch_owner = tree('reviewer-scratch', ticket=False, station='review')
+                finish(scratch, scratch_owner)
+                check('ac4/builder', 'a review worktree with only an untracked file is in no group either',
+                      not (ledger.item(scratch) or {}).get('disposition') and ledger.groups() == groups)
+            except Exception:
+                broke(('ac4/builder',))
+
+            try:
+                ledger.disposition_publish = publish
+                # The widened terms (the lead's decision, specification History).
+                def entry(n):
+                    name = 'space:item:terms-%d' % n
+                    return dict(item=name, path='/fixture/terms-%d' % n, branch=None, unheld_commits=True,
+                                kept_branch='space-saved-terms-%d' % n, files=['a-%d.txt' % n], commits=[],
+                                restore='veldo space restore ' + name)
+
+                def offered(trees, group='space:group:fixture:2026-11-16:1'):
+                    proposal = {'discard': ST.SPACE_DISCARD, 'worktrees': trees}
+                    if group is not None:
+                        proposal['group'] = group
+                    return proposal
+
+                def record_terms(proposal, **target):
+                    target.setdefault('digest', ST.digest(proposal))
+                    return settlement.terms(signed(command('terms', terms='terms-' + next_id(),
+                        touchpoint='space_disposition', target=target, proposal=proposal, required_roles=[], quorum=None)))
+
+                pair = offered([entry(1), entry(2)])
+                good = record_terms(pair, kind='space_group', ref=pair['group'],
+                                    members=[entry(1)['item'], entry(2)['item']])
+                check('terms/group', 'terms for a group of two, targeting the group and both items, are recorded '
+                      + repr(good), good.get('outcome') == 'recorded')
+                shown = ST.space_presentation(pair)
+                check('terms/group', 'each member is listed with its own path, files and restore command',
+                      all(text in shown['brief'] for n in (1, 2) for text in (
+                          'Worktree %d: "/fixture/terms-%d"' % (n, n), '"a-%d.txt"' % n,
+                          'Restore: ' + entry(n)['restore']))
+                      and shown['choices'] == ['accept save', 'accept keep', 'accept discard'])
+                refusals = {
+                    'the target is one item': dict(kind='space_item', ref=entry(1)['item']),
+                    'the target names another group': dict(kind='space_group', ref=pair['group'] + '9',
+                                                           members=[entry(1)['item'], entry(2)['item']]),
+                    'the target leaves a member out': dict(kind='space_group', ref=pair['group'],
+                                                           members=[entry(1)['item']]),
+                    'the target names no member': dict(kind='space_group', ref=pair['group']),
+                }
+                for label, target in refusals.items():
+                    result = record_terms(pair, **target)
+                    check('terms/group', label + ' ' + repr(result), result.get('outcome') == 'refused')
+                for label, proposal in (
+                        ('two worktrees with no group', offered([entry(1), entry(2)], group=None)),
+                        ('a group with no worktree', offered([])),
+                        ('one worktree listed twice', offered([entry(1), entry(1)])),
+                        ('a group that is not a review group record', offered([entry(1)], group='fixture'))):
+                    try:
+                        ST.space_presentation(proposal)
+                        refused = False
+                    except ST.Refused:
+                        refused = True
+                    check('terms/group', label + ' is refused', refused)
+                single = offered([entry(1)], group=None)
+                check('terms/group', 'one worktree without a group is targeted as that item, as before',
+                      record_terms(single, kind='space_item', ref=entry(1)['item']).get('outcome') == 'recorded'
+                      and record_terms(single, kind='space_group', ref=pair['group'],
+                                       members=[entry(1)['item']]).get('outcome') == 'refused'
+                      and ST.space_presentation(single)['brief'].split('\n')[2] == 'Worktree: "/fixture/terms-1"')
+            except Exception:
+                broke(('terms/group',))
+
+            try:
+                ledger.disposition_publish = publish
+                # The service's disposition task, unchanged, publishes a group and carries its pick.
+                next_day()
+                SV, CON = load('control_service'), load('control_space_consumer')
+                service = object.__new__(SV.Service)
+                service._space = dict(given, ledger=ledger)
+                service.conn, service.domain, service.store = conn, ids['domain_uuid'], ids['store_uuid']
+                service.principal, service.sign, service.generation = 'steward', journal_sign, 1
+                service.config = {'journal_key': str(keys['steward'])}
+                service.channel = types.SimpleNamespace(record=lambda: {'owner': 'owner'},
+                    ingress=types.SimpleNamespace(activations=types.SimpleNamespace(ids=ids)))
+                service.space_consumer = CON.Consumer(ledger, given)
+                ledger.disposition_publish = None
+                made = [review('worker-a'), review('worker-b')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                ledger.disposition_publish = publish
+                gid, group = group_of(made[0][0])
+                try:
+                    result = service.space_consumer.run(service._space_dispositions)
+                    rid = request(made[0][0])
+                    opened = ledger._row(rid, 'assignment')[1] or {}
+                    check('worker/group', 'the task publishes the one group request, in the worker ' + repr(result),
+                          result.get('ok') and result.get('worker') != os.getpid()
+                          and all(json.dumps(str(path)) in opened.get('brief', '') for _, path, _ in made))
+                    settle(made[0][0], 'discard')
+                    result = service.space_consumer.run(service._space_dispositions)
+                    check('worker/group', 'and carries the settled Discard for every member ' + repr(result),
+                          result.get('ok') and result.get('worker') != os.getpid()
+                          and all(state_of(item) == 'removed' and not path.exists()
+                                  and contents(snapshot(item) / 'work' / 'base.txt')
+                                  == 'edited by ' + owner['run']['id'] + '\n' for item, path, owner in made)
+                          and ledger.group(gid)['state'] == 'closed')
+                finally:
+                    service.space_consumer.stop()
+            except Exception:
+                broke(('worker/group',))
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:
