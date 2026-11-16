@@ -49,3 +49,20 @@ race in the unchanged control; the bounded observation wait fixed it. No
 worktree writes occurred during either teeth run; the final run was followed
 only by recording this summary and committing. After every run, no
 `space supervise` process from these runs survived.
+
+## Gate fix round, 2026-11-16
+
+Implementation `94952250`, tested with the other fixes at `50c69b7ee35a36f6ea8fa729ea3e913058a24624`. The installer and both
+missing-hook reports now live in control_space_install.py and its engine copy; the scaffold
+ships that module, and installation.py supplies the child environment. The accepted footprint
+widening is dated in the spec History. The 0307 invariant and all acceptance criteria are unchanged.
+
+Selected suites pass: 0329 (47 rows), 0307 (51), 0315 (61), 0259 (46), 0304 (77), scaffold
+(898), and upgrade equivalence (60). Counts include dispatcher prerequisites.
+All ran with nice -n 10. Personal-setup checking reports zero findings. No full gate was run.
+
+Teeth 329 ran last with the 154, 307 and 315 checks: 18 executed, 18 rejected,
+0 reused, zero invalid results and zero surviving workers. The final four findings reject
+all 90 mutations. No worktree writes occurred during the teeth runs, and no space supervisor
+remained. The 0315 README records the initial invalid test configurations, their reruns, and
+the unresolved 0208, 0215 and host-reader rows.

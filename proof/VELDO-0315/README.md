@@ -254,3 +254,37 @@ Finding 323 was not run in this round.
 
 Only summaries are stored here. Logs, receipts, diffs and the probe scripts are in `/tmp/v315-r4/`
 (round 4) and `/tmp/r5/` (round 5) on the build host. Historical proof under `review-fix/` is unchanged.
+
+## Gate fix round, 2026-11-16
+
+Targeted checks at `50c69b7ee35a36f6ea8fa729ea3e913058a24624`; no full gate was run or claimed.
+Group commits: integration `2823e011`, 0315 `ae0009b3`, 0329 `94952250`, host `50c69b7e`.
+The only protected file changed was the explicitly authorized `scripts/gate_unconfined.json`.
+
+All 19 selected suites ran with `nice -n 10 python3 scripts/selftest.py --suite NAME`.
+16 selections had zero failed rows. Passing selections: `03_plugin_extension_loading_runner`, `104_veldo_0210_mutation_workers`, `107_veldo_0153_identity_push`, `108_veldo_0153_executor_profile`, `126_veldo_0230_qualify_reproduces`, `127_veldo_0259_installation`, `134_veldo_0331_space_mode`, `143_veldo_0305_space_census`, `144_veldo_0306_space_docker`, `145_veldo_0307_space_docker_ownership`, `14_warp_0717_subset_runner`, `150_veldo_0329_hook_install`, `155_veldo_0304_space_boundary`, `156_veldo_0315_reconcile`, `86_veldo_0168_text`, `86_veldo_0189_engine_upgrade`.
+Personal-setup checking reports zero findings. State-root error naming was checked directly.
+
+Remaining rows were preserved: 0208 has two failing kernel-double rows (unavailable/old ABI);
+0215 store-pruned expects age deletion, conflicting with accepted 0304 removal only for a gone
+authority, and a row correction still needs the lead ruling requested during this run;
+0344 ac6/installed reports `no_pin`, because the host space section names no reader digest.
+The compiler builds themselves succeeded with their temporary files inside fixture folders.
+
+Teeth ran last, with no worktree writes during any run:
+
+| Finding | Status | Executed | Rejected | Reused | Surviving workers |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 154 | passed | 10 | 10 | 0 | 0 |
+| 307 | passed | 37 | 37 | 0 | 0 |
+| 315 | passed | 25 | 25 | 0 | 0 |
+| 329 | passed | 18 | 18 | 0 | 0 |
+
+The first direct 154 run was invalid because standalone teeth confines every worker; its final
+run uses `check_gate_mutations.py --finding 154`, which reads the existing authority declaration
+and runs the same teeth driver in its declared host leg. The first 315 run was invalid because
+the retained worker-log path exceeded the Unix socket path limit; its final run uses a short
+worker directory. Neither rerun changed code or rows. All final receipts have zero invalid
+results and zero surviving workers. No space supervisor from this round remained.
+
+Logs and receipts are retained in `/tmp/space-0329b-gate-fix/` on this host.
