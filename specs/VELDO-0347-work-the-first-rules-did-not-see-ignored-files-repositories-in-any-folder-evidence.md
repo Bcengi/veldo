@@ -30,7 +30,13 @@ footprint:
   - ".veldo/lander.py"
   - "engine/.veldo/control_launch_work.py"
   - ".veldo/control_launch_work.py"
+  - "engine/.veldo/control_request_settlement.py"
+  - ".veldo/control_request_settlement.py"
   - "scripts/suites/*_veldo_0347_*.py"
+  - "scripts/suites/135_veldo_0298_space_kinds.py"
+  - "scripts/suites/136_veldo_0299_space_probe.py"
+  - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/142_veldo_0303_space_paths.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -147,6 +153,81 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-16: built, on the lead's three decisions for the blocker below. All five criteria are built and
+  the ticket suite has 27 green rows. The build is NOT green as a whole: accepted rows the decisions do not
+  name pin what AC1, AC5 and table 2 replace, they were left as they are, and they are red (listed last).
+  The decisions, and what was done under each:
+  - Decision 1, the footprint is extended to four accepted suites, for the rows named and no other. Each
+    row now asserts the new behaviour:
+    - scripts/suites/135_veldo_0298_space_kinds.py, ac1/whole-table: superseded by AC5. It read the
+      current table; it now reads table 1 by its number, so it says that table 1 stays exactly the
+      fourteen rows it was issued with. A new row beside it, ac1/table-2, asserts table 2.
+    - scripts/suites/136_veldo_0299_space_probe.py, ac2/case-3-untracked: superseded by AC1. It said a
+      file git ignores is not unique work; it now says a loose ignored file is, case 3, named with the
+      rule that covers it.
+    - scripts/suites/138_veldo_0300_space_remove.py, work/ignored-files (the row with notes-private.md
+      and settings.local): superseded by AC1. It said rules 1 to 6 pass and the remover refuses; rule 5
+      now refuses first, as unique work, naming the two files. The remover's own refusals in that row
+      are asked of the remover directly, past the rules, and are as they were.
+    - scripts/suites/142_veldo_0303_space_paths.py, ac2/uncommitted-stays: superseded by AC3. An ended
+      worker clone with an uncommitted file was deferred keep_failed and its teardown refused; the file
+      is now saved in the snapshot store, the clone removed with no request, and the teardown goes
+      through. And ac4/candidate-with-work-stays: superseded by AC3. A candidate workspace with an
+      unsaved file was deferred keep_failed; it is now deferred as unique work and one request is raised
+      that names it as a clone. For these two rows the fixture declares the item with its form, as the
+      creators do, and the fixture's remover stand-in passes on the two functions Signal asks of the
+      removers for a clone's request.
+  - Decision 2, table 2 is issued. Neither the registry nor the design has a line that allows a row to be
+    added to an issued table: the registry says "A table is never edited once issued: a change is a new
+    version beside the old one", and design section 5 and 0.8 say only that "the table gains one row".
+    So table 1 is byte for byte as it was (a row of the ticket suite pins its digest), table 2 is table 1
+    and the row agent_repository_clone, and table 2 is the table a new item is declared under. The form
+    picks the row and the events: an item with no form, or with the form agent, reads the agent
+    repository's own row.
+  - Decision 3, a clone's request names a clone. The footprint is extended to
+    control_request_settlement.py and its synced copy. Terms with the field clones (and no worktrees)
+    are a clone's: the item, its path, its form and the files in no commit. A clone is never listed as a
+    worktree, and the Ledger refuses a worktree's terms for a clone and a clone's for a worktree. No
+    criterion asks for a remover that carries a Save or a Discard of a private repository, so a clone's
+    request offers Keep and nothing else, its terms say that nothing is removed, and the Ledger refuses
+    any other settled choice for a clone. Worktree and group terms are unchanged.
+  Follow-ups for the lead to file, none built here:
+  - A Save and a Discard remover for a batch clone and a candidate workspace. Until one exists such a
+    clone with files in no commit stays, deferred, with its request, and no work is lost.
+  - Nothing in the footprint gives Signal the declared trunk: the callers of Signal are outside it. The
+    evidence remover takes trunk(repository) and never guesses, so until a caller passes it, a file is
+    removed only on a copy in the store or in a commit a kept ref reaches. That errs toward keeping.
+  - With no ledger (the standalone remover) there is no snapshot store, so a worker clone with
+    uncommitted files still stays, keep_failed, as before this ticket.
+  Read as built, and worth a reviewer's eye: "a blob the store holds" is read as a row of the store's
+  entities whose digest is the file's and whose own content, encoded again, has that digest; the store
+  has no other blob table. The clone provisioner, the batch and the landing line already declare their
+  repositories with the form (VELDO-0302), so those four files of the footprint did not change. A defect
+  of the stopped run was found by the ticket's rows and fixed: the evidence remover asked git to hash a
+  file through a descriptor path the git process cannot see, so no copy in a commit was ever found.
+  STILL PINNED AND RED, not changed, because the lead's decision names other rows: for the lead to decide
+  (extend the footprint row by row, as for the four above, or amend).
+  - scripts/suites/135_veldo_0298_space_kinds.py: 92 rows ac1/<row>/<event>, one per cell of the table,
+    each assert that the item reads version 1; ac4/keeps-its-version and ac4/action-of-its-version build
+    their fixture's second table under the number 2, which is now taken; kinds/ledger-accepts asserts
+    that LIFECYCLE names version 1 and holds the kinds and nothing else. All follow from decision 2: with
+    table 2 current, a new item carries version 2. Every cell these rows read is unchanged.
+  - scripts/suites/138_veldo_0300_space_remove.py: work/worktree-second-probe (its worktree holds an
+    ignored settings.local so that the remover is reached; rule 5 now refuses first, AC1),
+    work/repository-in-a-folder (a scratch folder that is a repository: "rules 1 to 6 pass and the
+    remover refuses"; rule 6 now holds it, AC5) and work/adopted-build-output (an adopted worktree with a
+    committed-ignore folder: the remover refused keep_failed; rule 5 now refuses first, AC1).
+  - scripts/suites/139_veldo_0301_space_signal.py, ac5/keep-failed-passed-through: a worktree with a
+    file only info/exclude ignores is deferred keep_failed by the remover; rule 5 now refuses first, AC1.
+    This suite is not in the footprint at all.
+  - scripts/suites/140_veldo_0345_space_keep.py, not in the footprint: ac4/outside-git ("a worktree whose
+    only work is that ignored file is removed once the file is saved", at landed, with no owner's answer)
+    and ac5/failed-save-removes-nothing (the same worktree, expected keep_failed from the remover). Under
+    AC1 rule 5 refuses both first. The second raises in its fixture, and the 17 rows after it in that
+    suite are then empty and red with it: 19 red rows, two causes.
+  - Suites 151 and up were not run (the lead runs them): 153_veldo_0302, 154_veldo_0324, 156_veldo_0315
+    and others may pin the same three things. Not known.
 
 - 2026-11-16: build blocked by the declared footprint, on base 0a80f89b. No production change, no suite
   change and no AC amendment was made; nothing was built. Four accepted suites that the footprint does not

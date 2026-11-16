@@ -782,6 +782,9 @@ def _v347_suite():
             rules_file.write('notes-private.md\n')
         (work / 'notes-private.md').write_text('notes a personal rule hides\n')
         (work / 'settings.local').write_text('key = local\n')
+        (work / 'sketches' / 'deep').mkdir(parents=True)
+        (work / 'sketches' / 'deep' / 'idea.txt').write_text('an idea in an untracked folder\n')
+        os.symlink('draft.txt', str(work / 'latest'))
         (work / 'build').mkdir()
         (work / 'build' / 'out.bin').write_bytes(b'o' * 500)
         done = run_finished(run)
@@ -799,6 +802,9 @@ def _v347_suite():
               and text_of(saved / 'draft.txt') == 'a draft the worker never committed\n'
               and text_of(saved / 'notes-private.md') == 'notes a personal rule hides\n'
               and text_of(saved / 'settings.local') == 'key = local\n')
+        check(ROW, 'a file in an untracked folder is saved at its own path, and a link as a link',
+              text_of(saved / 'sketches' / 'deep' / 'idea.txt') == 'an idea in an untracked folder\n'
+              and os.path.islink(str(saved / 'latest')) and os.readlink(str(saved / 'latest')) == 'draft.txt')
         check(ROW, 'build output is not saved, and the clone\'s commit is on a kept ref of the main repository',
               not os.path.lexists(str(saved / 'build')) and held_in_main(own))
 
