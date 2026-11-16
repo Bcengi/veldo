@@ -2203,6 +2203,15 @@
    ],
    "regions": "VELDO-0317 AC1 to AC4: receiver snapshot, atomic refund, one unconfirmed repeat, retained worktree and bounded environment retries.",
    "requires_note": "Only ROOT and expect. Real temporary SQLite, receiver reap and finish, Python child, Ledger, Signal, keep and removers. Fixture eligibility, source, pool free bytes and process table. No live engine."
+  },
+  {
+   "name": "150_veldo_0327_disposition",
+   "file": "150_veldo_0327_disposition.py",
+   "requires": [
+    "150_veldo_0327_disposition"
+   ],
+   "regions": "VELDO-0327 AC1 to AC4: signed owner choices, complete Discard terms and presentation, one atomic settlement, stale and unoffered answer refusals, unchanged existing touchpoints.",
+   "requires_note": "Only ROOT and expect. Real temporary SQLite, signed membership and API answers, inbox, presentation and settlement. Fixture Telegram transport; no engine or filesystem removal."
   }
  ],
  "resource_capacities": {

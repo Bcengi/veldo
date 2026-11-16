@@ -481,7 +481,9 @@ def _v68_checks(base):
 
         # AC1: every enabled touchpoint answered with every offered choice through real signed Telegram answers.
         with section(RU):
-            journey = sorted(ST.JOURNEY) if ST is not None else []
+            # VELDO-0327 adds picks with their own required file-list terms and suite.
+            # Keep this original five-touchpoint, fifteen-effect Telegram matrix intact.
+            journey = sorted(tp for tp in ST.JOURNEY if tp != 'space_disposition') if ST is not None else []
             check(RU, 'the journey enables exactly the touchpoints the specification names', journey == sorted(_V68_NAMED))
             touchpoints = journey or list(_V68_NAMED)
             asked = {}
@@ -864,7 +866,7 @@ def _v68_checks(base):
                     except ST.Refused as exc:
                         derived[tp] = exc.code
             check(UQ, 'every touchpoint\'s own predicate is derived from the journey configuration and is settleable',
-                  ST is not None and len(derived) == 5 and all(
+                  ST is not None and set(derived) == set(_V68_NAMED) | {'space_disposition'} and all(
                       derived[tp] == {'roles': sorted(c['roles']), 'count': c['quorum']['count'],
                                       'min_independence': c['quorum']['min_independence']} for tp, c in ST.JOURNEY.items()))
             quorum_cases = {}

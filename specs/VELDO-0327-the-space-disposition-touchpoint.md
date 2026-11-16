@@ -15,6 +15,7 @@ footprint:
   - "engine/.veldo/control_request_settlement.py"
   - ".veldo/control_request_settlement.py"
   - "scripts/suites/*_veldo_0327_*.py"
+  - "scripts/suites/69_veldo_0068_settlement.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -109,3 +110,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   store under the state root, and never in a repository's object store, so a secret in an ignored file
   does not enter git; commits stay on kept refs (design 0.3). AC2: the terms state that the files are
   saved first, and no longer say on a kept ref. The falsifier is unchanged.
+
+- 2026-11-16: built the settlement touchpoint and its signed terms/presentation contract. The original
+  settlement suite's footprint is included because it asserted that the journey had exactly five
+  entries. Its fifteen original Telegram answer/effect cases stay intact; the new suite covers the
+  space picks and required terms. No acceptance criterion changed. Request triggering, filesystem
+  effects and review groups remain in their later tickets.

@@ -14,7 +14,7 @@ The control store is the only authority: a second store, a file, a tracker statu
 record in the repository is never read as settlement state, and no other store can be attached.
 
 THE TOUCHPOINTS. JOURNEY is the configuration of the running journey's enabled request touchpoints
-(grooming, admission, priority, finding disposition, decision disposition): the assignment kind
+(grooming, admission, priority, finding disposition, decision disposition, space disposition): the assignment kind
 each is presented as, its policy predicates (the roles an answering principal must hold, the count
 of distinct principals and the independence required) and the typed effect each ruling produces.
 A request names its touchpoint through signed terms: the requester records `settlement_terms`
@@ -70,6 +70,7 @@ named refusals, never rationale text, signatures or keys. Standard library only.
 import hashlib
 import importlib.util
 import json
+import shlex
 from pathlib import Path
 import sqlite3
 import time
@@ -124,7 +125,13 @@ JOURNEY = {
                              'quorum': {'count': 1, 'min_independence': 1},
                              'effects': {'approve': 'decision_approved', 'reject': 'decision_rejected',
                                          'return_for_elaboration': 'decision_returned'}},
+    'space_disposition': {'assignment_kind': 'decision', 'roles': ('project_owner',),
+                          'quorum': {'count': 1, 'min_independence': 1},
+                          'effects': {'approve': 'space_disposition_decided'}},
 }
+SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')
+SPACE_DISCARD = ('Discard removes the worktree and its listed files from disk. The files are saved first '
+                 'outside git; commits are kept before removal. Nothing is removed if saving fails.')
 QUORUM_FIELDS = ('count', 'min_independence')
 # What Release 1 settles: one presented owner, at most separation from the requester.
 SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}
@@ -162,6 +169,45 @@ def _is_str(v):
 
 def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')
+
+
+def space_presentation(proposal):
+    """The signed request content for one worktree, derived only from its signed terms.
+
+    Callers supply the probe's file list, branch (null for detached), whether commits are
+    unheld, and the kept branch when detached commits need one. The Ledger's request producer
+    uses this before signing its ordinary inbox open command. Group picks belong to VELDO-0342.
+    This is a description and an obligation; filesystem effects belong to VELDO-0318.
+    """
+    if (not isinstance(proposal, dict) or set(proposal) != {'discard', 'worktrees'}
+            or proposal.get('discard') != SPACE_DISCARD
+            or not isinstance(proposal.get('worktrees'), list) or len(proposal['worktrees']) != 1):
+        raise Refused('invalid_input', 'space terms name one worktree and say Discard saves before removal')
+    tree = proposal['worktrees'][0]
+    fields = {'item', 'path', 'branch', 'unheld_commits', 'kept_branch', 'files', 'restore'}
+    if (not isinstance(tree, dict) or set(tree) != fields
+            or not all(_is_str(tree.get(k)) for k in ('item', 'path'))
+            or tree['branch'] is not None and not _is_str(tree['branch'])
+            or type(tree['unheld_commits']) is not bool
+            or tree['kept_branch'] is not None and not _is_str(tree['kept_branch'])):
+        raise Refused('invalid_input', 'space terms name the worktree and its branch state')
+    files = tree['files']
+    if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):
+        raise Refused('invalid_input', 'Discard requires the list of files it would remove')
+    if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):
+        raise Refused('invalid_input', 'detached unheld commits require their kept branch name')
+    restore = 'veldo space restore ' + shlex.quote(tree['item'])
+    if tree['restore'] != restore:
+        raise Refused('invalid_input', 'space terms carry the restore command for this item')
+    # JSON quoting keeps a newline in a filename distinct from a second file or an instruction.
+    quoted = lambda value: json.dumps(value, ensure_ascii=True)
+    lines = ['Space disposition', proposal['discard'], 'Worktree: ' + quoted(tree['path']),
+             'Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch']),
+             'Files Discard would remove:'] + ['  ' + quoted(path) for path in files]
+    if tree['branch'] is None and tree['unheld_commits']:
+        lines.append('Kept branch for detached commits: ' + quoted(tree['kept_branch']))
+    lines.append('Restore: ' + tree['restore'])
+    return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CHOICES)}
 
 
 def digest(value):
@@ -298,6 +344,11 @@ class Settlement:
         conn.command_registry[SETTLE] = {'transition': self._settle_transition, 'writes': WRITES}
         conn.command_registry[TERMS] = {'transition': self._new_transition, 'writes': WRITES}
         conn.command_registry[API] = {'transition': self._new_transition, 'writes': WRITES}
+        # Validate space request content at the inbox's write boundary, including revisions.
+        # The inbox still performs its own transition and claim checks in this transaction.
+        # No channel map or existing touchpoint changes, and no disk probe runs here.
+        conn.command_registry[self.I.OPERATION] = {'transaction_transition': self._inbox_transition,
+                                                   'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={SETTLEMENT_KIND: (SETTLE,), EFFECT_KIND: (SETTLE,),
                                                  RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,),
                                                  DECISION_SETTLEMENT_KIND: (SETTLE,)},
@@ -366,6 +417,21 @@ class Settlement:
         return entry, key
 
     # transitions
+
+    def _inbox_transition(self, conn, params, before):
+        changes = self.inbox._in_transaction(conn, params, before)
+        try:
+            for entity in changes.values():
+                if entity['kind'] != self.I.ENTITY_KIND:
+                    continue
+                data = entity['data']
+                subject = data.get('subject') or {}
+                terms = self._data(subject.get('ref'), TERMS_KIND) if subject.get('kind') == SUBJECT_KIND else None
+                if terms is not None and terms.get('touchpoint') == 'space_disposition':
+                    self._terms(data)
+        except Refused as exc:
+            raise self.store.StoreRefused(exc.code, exc.detail) from exc
+        return changes
 
     def _new_transition(self, params, before):
         eid, kind, data = params.get('entity_id'), params.get('kind'), params.get('data')
@@ -441,6 +507,10 @@ class Settlement:
                 raise Refused('invalid_input', 'quorum is a mapping or null')
             if c['proposal'] is not None and not isinstance(c['proposal'], dict):
                 raise Refused('invalid_input', 'proposal is a mapping or null')
+            if c['touchpoint'] == 'space_disposition':
+                space_presentation(c['proposal'])
+                if target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:
+                    raise Refused('invalid_input', 'space terms target the listed item')
             self._verified(c['principal'], c, packet.get('signature'), self.AC.BOUNDARIES['proposal_commit'])
             tid = terms_id(self.ids['repository_uuid'], c['terms'])
             data = {'schema': TERMS_SCHEMA, 'terms_id': tid, 'touchpoint': c['touchpoint'], 'target': dict(target),
@@ -473,6 +543,10 @@ class Settlement:
         touchpoint = terms.get('touchpoint')
         if touchpoint not in JOURNEY or JOURNEY[touchpoint]['assignment_kind'] != data.get('kind'):
             raise Refused('unsupported_touchpoint', 'the request is not a touchpoint of this journey')
+        if touchpoint == 'space_disposition':
+            expected = space_presentation(terms.get('proposal'))
+            if any(data.get(key) != value for key, value in expected.items()):
+                raise Refused('invalid_input', 'space request choices and brief must match its signed terms')
         return touchpoint, terms, found['version']
 
     # answers from the authenticated API

@@ -16612,6 +16612,35 @@ def cases():
         "        if completed(record):\n            break\n", "        completed(record)\n",
         ['space317/fix3/brief-ends'])
 
+    # VELDO-0327: the four specification falsifiers and the request's safety binding.
+    disposition327 = '150_veldo_0327_disposition.py'
+    add(327, 'space327-bare-choices', disposition327, 'control_request_settlement.py',
+        "SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')",
+        "SPACE_CHOICES = ('save', 'keep', 'discard')", ['space327/ac1/presented'])
+    add(327, 'space327-empty-file-list', disposition327, 'control_request_settlement.py',
+        "if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):",
+        "if not isinstance(files, list) or not all(_is_str(path) for path in files):",
+        ['space327/ac2/empty-files'])
+    add(327, 'space327-ruling-instead-of-choice', disposition327, 'control_request_settlement.py',
+        "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,",
+        "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': ruling, 'ruling': ruling,",
+        ['space327/ac3/choice'])
+    add(327, 'space327-expand-rulings', disposition327, 'authority_contract.py',
+        'RULINGS = ("approve", "reject", "return_for_elaboration")',
+        'RULINGS = ("approve", "reject", "return_for_elaboration", "save", "keep", "discard")',
+        ['space327/ac4/rulings'])
+    add(327, 'space327-hide-request-list', disposition327, 'control_request_settlement.py',
+        "                    self._terms(data)", "                    pass",
+        ['space327/ac2/request-binding'])
+    add(327, 'space327-no-detached-branch', disposition327, 'control_request_settlement.py',
+        "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
+        "if False:", ['space327/ac2/missing-kept-branch'])
+    add(327, 'space327-no-save-explanation', disposition327, 'control_request_settlement.py',
+        "or proposal.get('discard') != SPACE_DISCARD", "or False",
+        ['space327/ac2/missing-save'])
+    add(327, 'space327-wrong-restore', disposition327, 'control_request_settlement.py',
+        "if tree['restore'] != restore:", "if False:", ['space327/ac2/wrong-restore'])
+
     return result
 
 
