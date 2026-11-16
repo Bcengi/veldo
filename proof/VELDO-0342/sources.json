@@ -1,0 +1,21 @@
+{
+ ".veldo/control_request_settlement.py": "3784aa6a0e1392f505b7f0da8b386f1e2e7567c382dd0d17bace0c9c6e71d35f",
+ ".veldo/control_service.py": "a9360a30153eed3576f9f050b45d62d8e9b11d245a22d8d511ec88994d2040d4",
+ ".veldo/control_space.py": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+ ".veldo/control_space_remove.py": "5cef280b130fd12a84f9267702ad61c3ec2c0ceffc1c4dcd8457255c439191b0",
+ ".veldo/control_space_signal.py": "e766441bfa6716feeb5dd9673a474d41791b93d2372f42b42fd040d45b83130a",
+ "engine/.veldo/control_channel_presentation.py": "5969088bf07f78f93042aa2ee9243bdccf16c6ecb889b1dcd5fe455747d1ea15",
+ "engine/.veldo/control_request_settlement.py": "3784aa6a0e1392f505b7f0da8b386f1e2e7567c382dd0d17bace0c9c6e71d35f",
+ "engine/.veldo/control_service.py": "a9360a30153eed3576f9f050b45d62d8e9b11d245a22d8d511ec88994d2040d4",
+ "engine/.veldo/control_space.py": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+ "engine/.veldo/control_space_remove.py": "5cef280b130fd12a84f9267702ad61c3ec2c0ceffc1c4dcd8457255c439191b0",
+ "engine/.veldo/control_space_signal.py": "e766441bfa6716feeb5dd9673a474d41791b93d2372f42b42fd040d45b83130a",
+ "note": "control_service.py, control_channel_presentation.py and the VELDO-0327 and VELDO-0318 suites are listed because they did not change: their digests equal those at 73c7b832.",
+ "scripts/check_teeth_mutations.py": "2298902e2a6d31a286b8a176912e5a87247408a65d79b641444bf423a0f07e65",
+ "scripts/suites/150_veldo_0318_unique_work.py": "5463c967e7391c03762868ac3f39c40662043d9fe48299fae6569d4c0dc19a02",
+ "scripts/suites/150_veldo_0327_disposition.py": "b31005de99abd840194d88657d7527f2e565c6c1ed1fc3aac122c3b4d6756a55",
+ "scripts/suites/150_veldo_0340_review_groups.py": "288bb84954991c0cadaa33e1888fdbcefcc5754615e46d279522abc3475c2e7e",
+ "scripts/suites/150_veldo_0342_member_picks.py": "472942569cb616c70d83df2aa1f7c7c2101b3358d46468998149f7e4a6fb8342",
+ "scripts/suites/manifest.json": "bcf2351d22f2a60cdc24cefc95b70777fa012a469ec35b51c4a4b36f9f9d1902",
+ "scripts/suites/requires.json": "caf8021c27a97179f281ae984301ad1ed9739d08df83fd1c406ab3c7d1b4e580"
+}

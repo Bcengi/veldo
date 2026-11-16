@@ -1,0 +1,29 @@
+{
+ "command": [
+  "nice",
+  "-n",
+  "10",
+  "python3",
+  "scripts/check_teeth_mutations.py",
+  "--finding",
+  "342",
+  "--jobs",
+  "2",
+  "--worker-log-dir",
+  "/tmp/v342/teeth/logs",
+  "--diff-dir",
+  "/tmp/v342/teeth/diffs"
+ ],
+ "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+ "earlier_runs": [],
+ "elapsed": 358.463763252832,
+ "exit_code": 0,
+ "note": "The only run. Nothing was written in the worktree while it ran; the tree was clean before and after.",
+ "ran_last": true,
+ "status_after": "",
+ "status_before": "",
+ "summary": "mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=23 elapsed=358.464s",
+ "supervisors_after": [],
+ "supervisors_before": [],
+ "tree": "97893df609527f45581ce9875aa5805d59b1463e"
+}

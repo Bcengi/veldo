@@ -1,0 +1,96 @@
+{
+ "artifacts": {
+  "README.md": "sha256:b6aa462242bc6913cc4f8ebb21deaa4bd470613a501aec197500c1c35882e101",
+  "checks.json": "sha256:ce5ff68a049adae94be10c5de06f91ec8c4b61f97833e8067a87c61942c95d42",
+  "falsifiers.json": "sha256:9b91b1881d27ca7ca4931f09e2238c8a37bf48348fdc792ebe887a4920077a74",
+  "rows.json": "sha256:f484d4bfc170618b2e81f2b507f10e3e59e850375a99127ba9e122d4103cf502",
+  "sources.json": "sha256:5edf8d3caf9e4c03bacad3fd853f2f284276387be1dbf14363ee0e1f147ce738",
+  "teeth-receipt.json": "sha256:5ec0ae3ae792ed6c2e9b46cc2bf4ad53f66bb2f38e58c1ca3f06ce182a9c3745",
+  "teeth-run.json": "sha256:d4270fd50a1ea1bb61bd4656e8d51ebf5e290524d5d57a00c558dfbd2cbfcb27"
+ },
+ "assumptions": [
+  "The owner-signed Keep packet is required in addition to the settled request, as for one worktree (VELDO-0318 AC4); for a member pick it names that member. No client signs it yet.",
+  "The one message part is measured by the Ledger with the presenter limit, its room for the part line and its counting; the row ac2/fit binds the two at the boundary.",
+  "Still in the group means deferred with the requested disposition naming the group, with no member pick answer and not found gone.",
+  "A group whose request is canceled or declined is not handled (lead decision): its members stay deferred on disk.",
+  "Fixture process table, pool space, clock and Telegram transport do not establish host readiness.",
+  "All criteria remain pending aggregate verification and independent review."
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "reason": "Partial selftests only; no aggregate unit evidence.",
+   "status": "not_run"
+  },
+  {
+   "name": "integration",
+   "reason": "The lead owns aggregate integration and gate.",
+   "status": "not_run"
+  },
+  {
+   "detail": "At df1d2c6a: 0064 18, 0068 8, 0297 31, 0300 39, 0301 17, 0312 41, 0317 23, 0318 45, 0327 27, 0336 21, 0340 16, 0342 18, 0345 31 rows green by suite; 0301 with ac4/no-clock red, red on the base 73c7b832 too.",
+   "name": "targeted regressions",
+   "status": "diagnostic_only"
+  },
+  {
+   "detail": "Validation, docs, template sync, lint and the two boundary checks.",
+   "name": "fast checks",
+   "status": "passed"
+  },
+  {
+   "detail": "15 of 15 rejected in the final run at df1d2c6a: the 3 declared falsifiers and 12 for what the build added; no reuse, no invalid result, no surviving worker.",
+   "name": "falsifiers",
+   "status": "passed"
+  },
+  {
+   "name": "gate",
+   "reason": "Lead gate lock required.",
+   "status": "not_run"
+  }
+ ],
+ "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+ "criteria": [
+  {
+   "evidence": [
+    {
+     "detail": "AC1 rows green and the specification falsifier red (a member pick applied to the whole group); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0342/teeth-receipt.json",
+     "sha256": "5ec0ae3ae792ed6c2e9b46cc2bf4ad53f66bb2f38e58c1ca3f06ce182a9c3745",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC1",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC2 rows green and the specification falsifier red (every member pick whatever the size: the presenter refuses to render); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0342/teeth-receipt.json",
+     "sha256": "5ec0ae3ae792ed6c2e9b46cc2bf4ad53f66bb2f38e58c1ca3f06ce182a9c3745",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC2",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC3 rows green and the specification falsifier red (the day key reused: the worktree has no request); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0342/teeth-receipt.json",
+     "sha256": "5ec0ae3ae792ed6c2e9b46cc2bf4ad53f66bb2f38e58c1ca3f06ce182a9c3745",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC3",
+   "status": "pending"
+  }
+ ],
+ "produced_at": "2026-11-16T17:34:06.122856+00:00",
+ "producer": "Claude builder for VELDO-0342; not an independent reviewer.",
+ "rollback": "Revert the change. A group request offers the three group picks only; group records, kept refs, snapshots and work remain.",
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0342",
+ "tree": "97893df609527f45581ce9875aa5805d59b1463e"
+}

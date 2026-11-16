@@ -1,0 +1,61 @@
+{
+ "all_green": true,
+ "count": 18,
+ "criteria": {
+  "AC1": [
+   "ac1/changed-member",
+   "ac1/last-member",
+   "ac1/member-discard",
+   "ac1/member-keep",
+   "ac1/offer",
+   "ac1/request-closed"
+  ],
+  "AC2": [
+   "ac2/fit",
+   "ac2/next"
+  ],
+  "AC3": [
+   "ac3/next-sequence",
+   "ac3/one-open",
+   "ac3/pending-join"
+  ],
+  "a member pick is an answer for no other member": [
+   "pick/ledger",
+   "pick/remover",
+   "pick/signal",
+   "pick/single"
+  ],
+  "the terms, a named member that is gone, the unchanged service task": [
+   "next/gone",
+   "terms/indexes",
+   "worker/member-pick"
+  ]
+ },
+ "falsifier_rows": {
+  "AC1": "space342/ac1/member-discard",
+  "AC2": "space342/ac2/fit",
+  "AC3": "space342/ac3/next-sequence"
+ },
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
+ "rows": [
+  "space342/ac1/changed-member",
+  "space342/ac1/last-member",
+  "space342/ac1/member-discard",
+  "space342/ac1/member-keep",
+  "space342/ac1/offer",
+  "space342/ac1/request-closed",
+  "space342/ac2/fit",
+  "space342/ac2/next",
+  "space342/ac3/next-sequence",
+  "space342/ac3/one-open",
+  "space342/ac3/pending-join",
+  "space342/next/gone",
+  "space342/pick/ledger",
+  "space342/pick/remover",
+  "space342/pick/signal",
+  "space342/pick/single",
+  "space342/terms/indexes",
+  "space342/worker/member-pick"
+ ],
+ "source": "scripts/suites/150_veldo_0342_member_picks.py at df1d2c6a937290571ac2d97315ac5cbf9ad15cb4"
+}
