@@ -16899,6 +16899,27 @@ def cases():
         "        if group['state'] == 'open' and self._awaited(group) is not None:\n            # A settled member pick leaves",
         "        if False:\n            # A settled member pick leaves",
         ['space342/ac3/pending-join'])
+    # Review fixes: Keep settlement must not wait for its owner packet; departed members can rejoin.
+    add(342, 'space342-keep-waits-for-application', picks342, 'control_space.py',
+        "        keep = self._settled_choice(group) == ('keep', index)",
+        "        keep = False",
+        ['space342/next/settled-keep', 'space342/next/keep-join'])
+    add(342, 'space342-pending-keep-loses-its-original-request', picks342, 'control_space.py',
+        "        if pending and pending.get('request') == request and effect['choice'] == pending['choice']:",
+        "        if False:",
+        ['space342/next/settled-keep'])
+    add(342, 'space342-keep-text-omits-settlement', picks342, 'control_request_settlement.py',
+        "For Keep, the others get their new request after settlement",
+        "For Keep, the others wait for application",
+        ['space342/next/keep-text'])
+    add(342, 'space342-departed-member-not-marked-gone', picks342, 'control_space.py',
+        "                                dict(member, gone=True) if member['index'] in left else member",
+        "                                member if member['index'] in left else member",
+        ['space342/next/left-member'])
+    add(342, 'space342-departed-member-replays-old-request', picks342, 'control_space.py',
+        "            member['index'] == prior.get('index') and member.get('gone')",
+        "            False",
+        ['space342/next/left-member'])
     # The terms: a worktree is named by its member index, and the members without a pick are named.
     add(342, 'space342-worktrees-numbered-by-their-place', picks342, 'control_request_settlement.py',
         "    for index, tree in zip(indexes, trees):",

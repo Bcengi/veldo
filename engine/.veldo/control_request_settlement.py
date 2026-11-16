@@ -265,6 +265,9 @@ def space_presentation(proposal):
     if picks:
         lines.append('An answer for one worktree adds w and its number, as in accept discard w%d: it applies '
                      'to that worktree alone, and the others get a new request.' % picks[0])
+        lines.append('For Keep, the others get their new request after settlement; '
+                     'the picked worktree stays pending the owner signed packet. '
+                     'For Save and Discard, the others get their new request when the pick is applied.')
     without = indexes[len(picks):]
     if without:
         lines.append('Worktrees with no answer of their own in this request: %s. They get one after an '

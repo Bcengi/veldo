@@ -225,8 +225,10 @@ and the members still in the group get a new request: the record's request field
 alias (the group's alias and the request's number) and version 1, and the settled one is added to the
 record's requests with its answer. It is a new request and not a version of the settled one: the
 settlement refuses any answer to a settled request (request_closed). When the last member leaves, the
-group closes. Save and Discard of the member are authorized and carried as a group pick's are; Keep is
-the owner's signed packet naming that member.
+group closes. Save and Discard of the member are authorized and carried as a group pick's are. A
+settled Keep raises the next request at the next publication without waiting for application. Its
+member stays deferred under the original alias until the owner's signed packet applies that Keep,
+even after the group closes. No filesystem work runs on the service loop.
 
 The picks must fit one message part of the channel, with the answer instruction, or the presenter
 refuses to render. The Ledger measures that with the presenter's own limit and counting
@@ -237,7 +239,8 @@ request reaches the members after.
 A deferral that comes after a member pick was settled and before it is applied joins the same group:
 the group stays open, so it is the scope's one open group of the day. It is added to the record and to
 no request yet, since the settled one cannot be revised; the request raised when the pick is applied
-lists it. When the member a settled pick names is no longer in the group (it was removed or judged
+lists it. Keep instead advances at the next publication after settlement. When the member a settled
+pick names is no longer in the group (it was removed or judged
 again meanwhile), the pick can never be applied, and the next publish of any member raises the new
 request for the members left (space_review_group_next).
 
@@ -1439,20 +1442,23 @@ class Ledger:
         return group['state'] == 'open' and not self._group_answered(group)
 
     def _settled_pick(self, group):
-        """The index a settled member pick of the group's current request names, or None: the
-        request is not settled, or its answer is a group pick. Two rows read by their keys."""
+        """The index of the settled member pick, or None."""
+        picked = self._settled_choice(group)
+        return picked[1] if picked else None
+
+    def _settled_choice(self, group):
+        """The settled action and index of the current request. Two rows read by their keys."""
         current = group.get('request') or {}
         rid = current.get('id')
         asked = self._row(rid, 'assignment')[1] if _is_str(rid) else None
         if asked is None or asked.get('alias') != current.get('alias') or asked.get('state') != 'SATISFIED':
             return None
         _, settled = self._row((asked.get('settlement') or {}).get('settlement_id'), 'request_settlement')
-        picked = _settlement().space_pick((settled or {}).get('choice'))
-        return picked[1] if picked else None
+        return _settlement().space_pick((settled or {}).get('choice'))
 
     def _awaited(self, group):
-        """The index of the member a settled member pick names, when applying it will leave the
-        group open with a new request: another member is still in the group. None otherwise."""
+        """A settled member pick awaiting the group's next request, with another member left.
+        Keep advances on publication; Save and Discard wait for application. None otherwise."""
         index = self._settled_pick(group)
         if index is None or not any(in_group(member) and member['index'] != index for member in group['members']):
             return None
@@ -1499,12 +1505,29 @@ class Ledger:
                 return identity, version
             sequence += 1
 
+    def _pending_keep(self, prior, group=None):
+        """A member answered Keep, awaiting its own packet under its original request alias."""
+        if prior.get('state') != 'requested' or not prior.get('group'):
+            return None
+        group = self.group(prior['group']) if group is None else group
+        for member in (group or {}).get('members', []):
+            answer = member.get('answer') or {}
+            if (member['index'] == prior.get('index') and answer.get('pending_application')
+                    and answer.get('choice') == 'accept keep w%d' % member['index']):
+                return answer
+        return None
+
     def _rejoins(self, prior):
-        """Whether a requested disposition no longer has a group to be answered in: its group was
-        closed by a pick that did not reach this member."""
+        """Whether an unanswered member left its old request, including a member marked gone.
+        An answered Keep retains its original request until the owner packet applies it."""
         if prior.get('state') != 'requested' or not prior.get('group'):
             return False
-        return ((self.group(prior['group']) or {}).get('state')) != 'open'
+        group = self.group(prior['group']) or {}
+        if self._pending_keep(prior, group):
+            return False
+        return (group.get('state') != 'open' or any(
+            member['index'] == prior.get('index') and member.get('gone')
+            for member in group.get('members', [])))
 
     def request_group(self, item, entry, head, at=None):
         """Put a deferred review worktree into its scope's review group of the day, before the
@@ -1795,6 +1818,14 @@ class Ledger:
         if gid not in before or before[gid]['kind'] != GROUP_KIND:
             raise Refused('space_disposition_state', 'the group is read in the write of its pick')
         group = dict(before[gid]['data'])
+        pending = self._pending_keep((before[identity]['data'].get('disposition') or {}), group)
+        if pending and pending.get('request') == request and effect['choice'] == pending['choice']:
+            group['members'] = [dict(member, answer=dict(pending, pending_application=False))
+                                if member['index'] == before[identity]['data']['disposition']['index']
+                                else member for member in group['members']]
+            return {identity: {'kind': ITEM_KIND, 'data': self._decided(
+                        dict(before[identity]['data']), effect, owner, request)},
+                    gid: {'kind': GROUP_KIND, 'data': group}}
         if group['state'] != 'open':
             raise Refused('space_disposition_state', 'the group is closed')
         shown = effect['proposal']['worktrees']
@@ -1865,9 +1896,9 @@ class Ledger:
 
     def _t_group_next(self, conn, params, before):
         """The authority's own write: the group's request was settled by a member pick, and the
-        member it names is no longer in the group, so the pick can never be applied. The member is
-        recorded as gone and the members left get their new request. Everything is read in this
-        write; a pick that can still be applied is refused."""
+        member it names is gone or answered Keep. Keep has no filesystem effect, so its settlement
+        advances the others while its member retains the old alias awaiting the owner's packet.
+        Everything is read in this write; a live Save or Discard still waits for application."""
         gid, group = self._stored(params, before, key='group', kind=GROUP_KIND, missing='space_no_group')
         outer = self._outer
         if outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer:
@@ -1875,7 +1906,8 @@ class Ledger:
         index = self._settled_pick(group) if group['state'] == 'open' else None
         if index is None:
             raise Refused('space_group_closed', 'an open group whose request a member pick settled')
-        waiting, gone = [], []
+        waiting, gone, pending = [], [], None
+        keep = self._settled_choice(group) == ('keep', index)
         for member in group['members']:
             if not in_group(member):
                 continue
@@ -1886,13 +1918,19 @@ class Ledger:
             decision = data.get('disposition') or {}
             if (data['state'] == 'deferred' and decision.get('state') == 'requested'
                     and decision.get('group') == gid):
+                if member['index'] == index and keep:
+                    effect, owner = self.disposition_effect(member['item'], group['request']['id'])
+                    pending = {'choice': effect['choice'], 'request': group['request']['id'],
+                               'by': owner, 'pending_application': True}
+                    continue
                 if member['index'] == index:
                     raise Refused('space_disposition_state', 'the member the pick names is in the group: '
                                   'the pick is applied by its disposition')
                 waiting.append((member, data))
             else:
                 gone.append(member['index'])
-        group['members'] = [dict(member, gone=True) if in_group(member) and member['index'] in gone else member
+        group['members'] = [dict(member, answer=pending) if pending and member['index'] == index else
+                            dict(member, gone=True) if in_group(member) and member['index'] in gone else member
                             for member in group['members']]
         # Nothing was applied: the answer is recorded with the member it named and no member reached.
         changes = self._next_request(gid, group, waiting, {
@@ -1924,6 +1962,10 @@ class Ledger:
         request = record.get('disposition') or {}
         if record.get('state') != 'deferred' or request.get('state') != 'requested':
             return {'ok': False, 'reason': 'space_disposition_state'}
+        pending = self._pending_keep(request)
+        if pending:
+            return {'ok': False, 'reason': 'space_group_answered', 'request': pending['request'],
+                    'group': request['group']}
         if self._rejoins(request):
             member = next((one for one in reversed((self.group(request['group']) or {}).get('members') or ())
                            if one['item'] == identity), None)
@@ -1956,8 +1998,8 @@ class Ledger:
         if assignment is not None and assignment.get('state') not in GROUP_REQUEST_OPEN:
             # Answered at an earlier version. The pick is applied to the members it showed; the
             # others join a new group after that (above). A member pick leaves the others in this
-            # group, under the request its application raises; when the member it names has gone
-            # it cannot be applied, and that request is raised here.
+            # group. Keep advances here at settlement, retaining its own pending alias. Save and
+            # Discard advance at application, or here when the named member has gone.
             raised = self._group_next(gid)
             if not raised.get('ok'):
                 return {'ok': False, 'reason': 'space_group_answered', 'request': rid, 'group': gid}
@@ -1995,7 +2037,7 @@ class Ledger:
 
     def _group_next(self, gid):
         """Raise the next request of a group whose settled member pick names a member that is no
-        longer in it. Refused, with nothing written, in every other case."""
+        longer in it, or has answered Keep. Refused, with nothing written, in every other case."""
         version, group = self._row(gid, GROUP_KIND)
         index = self._settled_pick(group) if group is not None and group['state'] == 'open' else None
         if index is None:

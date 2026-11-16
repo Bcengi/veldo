@@ -189,3 +189,15 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - The falsifier of AC1 as built: with the member pick applied to the whole group, member 1 is made due
     for Discard and the group closes, and the row fails on that. Member 1 is not removed from disk under
     that one change, because Signal and the remover refuse a pick that names another member.
+
+- 2026-11-16: FIX round after review at bf962cfc. A settled member Keep now advances the others
+  on the next publication, without waiting for the owner's packet. The answered member stays
+  deferred on disk with its original request alias and pending_application recorded on its answer;
+  its owner packet can apply that answer even after the remaining group closes. The brief states
+  this timing. The existing disposition worker carries publication, with no polling or blocking
+  filesystem work added to the service loop. The missing Keep signer belongs to VELDO-0319.
+  A member judged again during another member's pick is marked gone on the group record and its
+  next deferral can join the still open group under a new index. Previously its requested disposition
+  replayed its old alias despite the gone mark. New rows next/settled-keep, next/keep-join,
+  next/keep-text and next/left-member cover these findings; worker/member-pick also carries Keep.
+  Five new teeth cases cover the stall, pending packet, text, gone mark and stale request replay.

@@ -25,8 +25,10 @@ when the pick is applied).
 More rows: pick/ledger, pick/signal, pick/remover (a member pick is an answer for no other member,
 for the Ledger, for Signal and for the remover, each on its own), pick/single (a request for one
 worktree offers and takes no member pick), terms/indexes (the terms carry each worktree's index and
-the indexes offered a pick), next/gone (the member a settled pick names is gone: the next publish
-raises the request for the members left), worker/member-pick (the service's own disposition task,
+the indexes offered a pick), next/settled-keep, next/keep-join, next/keep-text (Keep settlement
+advances the others and later deferrals while its own packet stays pending), next/left-member
+(a member being judged again leaves and can rejoin under a new index), next/gone (the member a
+settled pick names is gone: the next publish raises the request for the members left), worker/member-pick (the service's own disposition task,
 unchanged, carries a member pick and raises the next request).
 """
 
@@ -827,6 +829,85 @@ def _v342_suite():
 
             try:
                 ledger.disposition_publish = publish
+                next_day()
+                made = [review('keep-next-a'), review('keep-next-b'), review('keep-next-c')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                (a, a_path, _), (b, b_path, _), (c, c_path, _) = made
+                gid, _ = group_of(a)
+                rid = settle(a, 'keep w2')
+                old = dict(ledger.item(b)['disposition'])
+                said = publish(a)
+                rid2 = request(a)
+                group = ledger.group(gid)
+                check('next/settled-keep', 'settled Keep raises request 2 for members 1 and 3 without an owner packet',
+                      said.get('ok') and rid2 != rid and request(c) == rid2
+                      and group['request']['number'] == 2 and asked(rid2).get('choices') == picks(1, 3)
+                      and ledger.item(b)['disposition'] == old and state_of(b) == 'deferred'
+                      and not ledger.item(b).get('owner_keep')
+                      and all(contents(path / 'base.txt') == 'edited by ' + label + '\n'
+                              for path, label in ((a_path, 'keep-next-a'), (b_path, 'keep-next-b'),
+                                                  (c_path, 'keep-next-c'))))
+                check('next/keep-text', 'the brief explains settlement advances others while Keep awaits its packet',
+                      'For Keep, the others get their new request after settlement' in asked(rid)['brief']
+                      and 'the picked worktree stays pending the owner signed packet' in asked(rid)['brief']
+                      and rid2 != rid and state_of(b) == 'deferred')
+                d, d_path, d_owner = review('keep-next-d')
+                finish(d, d_owner)
+                check('next/keep-join', 'a later same-day deferral joins request 2, with one group and no duplicate',
+                      group_of(d)[0] == gid and len(day_groups()) == 1 and request(d) == rid2
+                      and asked(rid2).get('choices') == picks(1, 3, 4)
+                      and len(assignments(SP.group_alias(gid))) == 2 and d_path.exists())
+                # Close the remaining group before the original Keep packet arrives.
+                current = settle(a, 'discard')
+                authorized = ledger.authorize_disposition(a, current)
+                for item in (a, c, d):
+                    act(item)
+                publish(b)
+                late = authorize(b, rid)
+                check('next/settled-keep', 'the old alias accepts only the original member packet after group closure',
+                      authorized.get('ok') and late.get('ok') and state_of(b) == 'kept'
+                      and ledger.item(b).get('owner_keep') == {'by': 'owner'}
+                      and request(b) == rid and group_of(b)[0] == gid and len(day_groups()) == 1
+                      and contents(b_path / 'base.txt') == 'edited by keep-next-b\n')
+            except Exception:
+                broke(('next/settled-keep', 'next/keep-join', 'next/keep-text'))
+
+            try:
+                ledger.disposition_publish = publish
+                next_day()
+                made = [review('left-a'), review('left-b'), review('left-c')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                (a, a_path, _), (b, b_path, _), (c, c_path, c_owner) = made
+                gid, _ = group_of(a)
+                rid = settle(a, 'discard w2')
+                # An event starts judging member 3 again before member 2 is authorized.
+                subject = dict(c_owner, run=c_owner['run']['id'])
+                judging = ledger.signal('run_finished', subject)
+                applied = ledger.authorize_disposition(b, rid)
+                act(b)
+                group = ledger.group(gid)
+                check('next/left-member', 'member 3 left during the pick write and is marked gone',
+                      judging.get('ok') and applied.get('ok') and state_of(c) == 'due'
+                      and group['members'][2].get('gone') is True
+                      and group['request']['proposal']['indexes'] == [1])
+                rejudged = SIG._carry(ledger, PR, K, RM, 'run_finished', [c],
+                    **{key: value for key, value in given.items() if key not in ('probe', 'kinds', 'remover')})
+                publish(a)
+                group = ledger.group(gid)
+                check('next/left-member', 'survivor 1 cannot block member 3 from rejoining under index 4 '
+                      + repr((rejudged, ledger.item(c)['disposition'], group['request'])),
+                      state_of(c) == 'deferred' and group_of(c)[0] == gid
+                      and ledger.item(c)['disposition']['index'] == 4
+                      and group['request']['proposal']['indexes'] == [1, 4]
+                      and asked(request(c)).get('choices') == picks(1, 4)
+                      and contents(c_path / 'base.txt') == 'edited by left-c\n' and a_path.exists())
+            except Exception:
+                broke(('next/left-member',))
+
+            try:
+                ledger.disposition_publish = publish
                 # The member a settled pick names has gone before the pick is applied.
                 next_day()
                 made = [review('gone-a'), review('gone-b'), review('gone-c')]
@@ -909,6 +990,14 @@ def _v342_suite():
                     check('worker/member-pick', 'the write of the pick names the members left as deferred with a '
                           'requested disposition, which is what the service wakes on', len(wake) >= 2
                           and all((value['data'].get('disposition') or {}).get('state') == 'requested' for value in wake))
+                    kept_rid = settle(a, 'keep w1')
+                    result = service.space_consumer.run(service._space_dispositions)
+                    check('worker/member-pick', 'the worker advances a settled Keep without an owner packet',
+                          result.get('ok') and result.get('worker') != os.getpid()
+                          and state_of(a) == 'deferred' and request(a) == kept_rid
+                          and not ledger.item(a).get('owner_keep') and a_path.exists()
+                          and ledger.group(gid)['request']['number'] == 3
+                          and asked(request(c)).get('choices') == picks(3))
                 finally:
                     service.space_consumer.stop()
             except Exception:
