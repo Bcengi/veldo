@@ -199,7 +199,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     by row on the base (7e457e85) and after: the same number of keep step calls, of calls that answered
     ok and of snapshots written in every row, and as many kept refs written or more (a clone keeps
     every ref it has); proof/VELDO-0347/keep-step-0345.json.
-  - Still red and inherited, the same on the base: 0301 ac4/no-clock. Suites 151 and up were not run.
+  - Two defects of this ticket's own build, found by running the teeth of the suites whose rows changed,
+    and fixed. The second last look this ticket added to the remover repeats a line that the teeth case
+    space300-tips-not-read-again used as its anchor, so the anchor matched twice and none of the 26 cases
+    of finding 300 could run; the case now names the line before it too
+    (scripts/check_teeth_mutations.py). And with AC1 the case space300-probe-reads-outside-the-boundary
+    was no longer rejected: rule 5 refuses a file a personal rule ignores as well, so
+    work/probes-through-the-boundary in suite 138 stayed green; the row gains one statement, that no
+    ignore rule is named for the file. Teeth after both: finding 300, 26 of 26 rejected; finding 345, 22
+    of 22; finding 298, 6 of 6.
+  - Still red and inherited, the same on the base: 0301 ac4/no-clock. The teeth of finding 301 cannot
+    start: the anchor of space301-returns-after-marking-due is not in control_space_signal.py, and was
+    not on the base (7e457e85) either; not changed here. Suites 151 and up were not run.
 
 - 2026-11-16: built, on the lead's three decisions for the blocker below. All five criteria are built and
   the ticket suite has 27 green rows. The build is NOT green as a whole: accepted rows the decisions do not
