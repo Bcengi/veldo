@@ -1,0 +1,95 @@
+{
+  "scope": "Requested partial suites, not a full gate or landing claim.",
+  "suites": [
+    {
+      "suite": "109_veldo_0161_adoption",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 109_veldo_0161_adoption",
+      "suite_rows_passed": 55,
+      "total_checks_passed": 81,
+      "failed": 0,
+      "seconds": 26.82
+    },
+    {
+      "suite": "155_veldo_0304_space_boundary",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 155_veldo_0304_space_boundary",
+      "suite_rows_passed": 51,
+      "total_checks_passed": 77,
+      "failed": 0,
+      "seconds": 5.7
+    },
+    {
+      "suite": "142_veldo_0303_space_paths",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 142_veldo_0303_space_paths",
+      "suite_rows_passed": 38,
+      "total_checks_passed": 64,
+      "failed": 0,
+      "seconds": 6.3
+    },
+    {
+      "suite": "66_veldo_0042_clones",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 66_veldo_0042_clones",
+      "suite_rows_passed": 20,
+      "total_checks_passed": 46,
+      "failed": 0,
+      "seconds": 1.89
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 67_veldo_0056_candidates",
+      "suite_rows_passed": 11,
+      "total_checks_passed": 37,
+      "failed": 0,
+      "seconds": 55.5
+    },
+    {
+      "suite": "146_veldo_0308_run_finished",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 146_veldo_0308_run_finished",
+      "suite_rows_passed": 38,
+      "total_checks_passed": 64,
+      "failed": 0,
+      "seconds": 4.77
+    },
+    {
+      "suite": "129_veldo_0239_batch_landing",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 129_veldo_0239_batch_landing",
+      "suite_rows_passed": 23,
+      "total_checks_passed": 49,
+      "failed": 0,
+      "seconds": 22.78
+    },
+    {
+      "suite": "138_veldo_0300_space_remove",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 138_veldo_0300_space_remove",
+      "suite_rows_passed": 39,
+      "total_checks_passed": 65,
+      "failed": 0,
+      "seconds": 2.52
+    },
+    {
+      "suite": "139_veldo_0301_space_signal",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 139_veldo_0301_space_signal",
+      "suite_rows_passed": 18,
+      "total_checks_passed": 44,
+      "failed": 0,
+      "seconds": 1.47
+    },
+    {
+      "suite": "140_veldo_0345_space_keep",
+      "command": "nice -n 10 python3 scripts/selftest.py --suite 140_veldo_0345_space_keep",
+      "suite_rows_passed": 31,
+      "total_checks_passed": 57,
+      "failed": 0,
+      "seconds": 5.13
+    }
+  ],
+  "boundary": "passed; suite 155 also checks the repository boundary",
+  "integrity": "No protected paths changed; paired modules match; eight accepted suites unchanged.",
+  "new_teeth_cases": [
+    "space304-ref-reachability-unchecked",
+    "space304-kept-concatenation-unchecked",
+    "space304-kept-fetch-force-unchecked",
+    "space304-kept-fetch-f-unchecked",
+    "space304-kept-send-unchecked",
+    "space304-adoption-commit-lost"
+  ]
+}

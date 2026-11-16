@@ -47,6 +47,7 @@ def _v161_suite():
 
     # Literal anchors: the registered mutation driver substitutes one production copy here.
     PRODUCTION = {
+        'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
         'control_repository.py': ROOT / ".veldo" / "control_repository.py",
         'control_repository_provisioner.py': ROOT / ".veldo" / "control_repository_provisioner.py",
         'control_effect_executor_adoption.py': ROOT / ".veldo" / "control_effect_executor_adoption.py",
@@ -397,6 +398,12 @@ def _v161_suite():
 
             def refs(path, prefix='refs/veldo/'):
                 return git(path, 'for-each-ref', '--format=%(refname)', prefix).splitlines()
+
+            def scaffold_kept(path, commit):
+                held = refs(path)
+                return (bool(commit) and bool(held)
+                        and all(ref.startswith('refs/veldo/kept/') for ref in held)
+                        and any(tip(path, ref) == commit for ref in held))
 
             # The host's trust as factory setup writes it: the owner and the adoption signer as enrollment signers.
             state_root = base / 'st'
@@ -974,7 +981,7 @@ def _v161_suite():
                          and CE.read_binding(legacy['path']) is None),
                         ('it refuses before the branch moves or the scaffold is pushed, and removes the ref it was '
                          'recorded under', tip(legacy['path']) == legacy['base'] and tip(legacy['bare']) == legacy['base']
-                         and all(ref.startswith('refs/veldo/kept/') for ref in refs(legacy['path'])))])
+                         and scaffold_kept(legacy['path'], legacy_proposal.get('scaffold_commit')))])
 
                 # A push the remote refuses, named, with nothing signed or bound.
                 with region('adoption/push-refused'):
@@ -1373,7 +1380,7 @@ def _v161_suite():
                          monitored_result.get('reason') == 'invalid_input:repository_command:core.fsmonitor'
                          and (record(monitored['uuid']) or {}).get('state') == 'failed'
                          and tip(monitored['path']) == monitored['base'] and tip(monitored['bare']) == monitored['base']
-                         and nothing_adopted(monitored) and all(ref.startswith('refs/veldo/kept/') for ref in refs(monitored['path']))),
+                         and nothing_adopted(monitored) and scaffold_kept(monitored['path'], monitored_commit)),
                         ('prepare refuses a repository whose configuration names core.alternateRefsCommand, a key '
                          'outside the local steps\' allowlist, laying nothing',
                          commanded_prepare == 'invalid_input:repository_command:core.alternaterefscommand'
@@ -1389,7 +1396,7 @@ def _v161_suite():
                          'branch moves', borrowing_result.get('reason') == 'invalid_input:repository_alternates'
                          and (record(borrowing['uuid']) or {}).get('state') == 'failed'
                          and tip(borrowing['path']) == borrowing['base'] and tip(borrowing['bare']) == borrowing['base']
-                         and nothing_adopted(borrowing) and all(ref.startswith('refs/veldo/kept/') for ref in refs(borrowing['path']))),
+                         and nothing_adopted(borrowing) and scaffold_kept(borrowing['path'], borrowing_commit)),
                         ('no command of the repository ran', not marker.exists()),
                         ('N1: a repository with push.followTags set and an annotated tag only it holds is adopted',
                          tagged_set and tagged_result.get('ok') is True
@@ -1429,7 +1436,7 @@ def _v161_suite():
                          and (record(routed['uuid']) or {}).get('reason') == routed_code),
                         ('before the branch moved: the working branch and the remote are at the base, the ref removed',
                          tip(routed['path']) == routed['base'] and tip(routed['bare']) == routed['base']
-                         and all(ref.startswith('refs/veldo/kept/') for ref in refs(routed['path']))),
+                         and scaffold_kept(routed['path'], routed_commit)),
                         ('nothing is signed, enrolled or bound', nothing_adopted(routed))])
 
                 with region('adoption/scaffold-problems'):
@@ -1802,7 +1809,7 @@ def _v161_suite():
                          and cut_record.get('reason') == 'unknown_outcome:interrupted'
                          and (cut_record.get('history') or [{}])[-1].get('step') == 'scaffold'),
                         ('the scaffold ref is removed, nothing more is pushed, signed, enrolled or bound',
-                         all(ref.startswith('refs/veldo/kept/') for ref in refs(cut['path'])) and tip(cut['path']) == cut['base'] and tip(cut['bare']) == cut['base']
+                         scaffold_kept(cut['path'], cut_proposal.get('scaffold_commit')) and tip(cut['path']) == cut['base'] and tip(cut['bare']) == cut['base']
                          and nothing_adopted(cut)),
                         ('a failed record is final: a further run refuses stale_subject:already_adopted',
                          once_more.get('reason') == 'stale_subject:already_adopted')])
@@ -1879,7 +1886,7 @@ def _v161_suite():
                         for label, (repo, repo_proposal, outcome, expected) in store_cases.items()] + [
                         ('%s: a scaffold commit was named, and the branch never moved, nothing was pushed and the ref '
                          'is removed' % label, repo_proposal.get('scaffold_commit') is not None
-                         and tip(repo['path']) == repo['base'] and tip(repo['bare']) == repo['base'] and all(ref.startswith('refs/veldo/kept/') for ref in refs(repo['path'])))
+                         and tip(repo['path']) == repo['base'] and tip(repo['bare']) == repo['base'] and scaffold_kept(repo['path'], repo_proposal.get('scaffold_commit')))
                         for label, (repo, repo_proposal, outcome, expected) in store_cases.items()] + [
                         ('%s: nothing is signed, enrolled or bound' % label, nothing_adopted(repo))
                         for label, (repo, repo_proposal, outcome, expected) in store_cases.items()

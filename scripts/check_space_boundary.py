@@ -168,6 +168,14 @@ def resolved_name(node, values, seen=()):
     return name(node)
 
 
+def sequence(node, values, seen=()):
+    if isinstance(node, ast.Name) and node.id in values and node.id not in seen:
+        return sequence(values[node.id], values, (*seen, node.id))
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        return sequence(node.left, values, seen) or sequence(node.right, values, seen)
+    return isinstance(node, (ast.List, ast.Tuple))
+
+
 def words(node, values, seen=()):
     if isinstance(node, ast.Constant) and isinstance(node.value, (str, bytes)):
         return [node.value.decode('ascii', errors='replace') if isinstance(node.value, bytes) else node.value]
@@ -182,7 +190,8 @@ def words(node, values, seen=()):
     if isinstance(node, (ast.List, ast.Tuple)):
         return [word for value in node.elts for word in words(value, values, seen)]
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
-        return words(node.left, values, seen) + words(node.right, values, seen)
+        parts = words(node.left, values, seen) + words(node.right, values, seen)
+        return parts if sequence(node, values, seen) else [''.join(parts)]
     return []
 
 
@@ -224,7 +233,11 @@ def primitives(node, values):
             # Unknown input can contain a delete too; no caller may hide the operation in a pipe.
             if not feed or '<dynamic>' in feed or any(re.search(r'(?:^|[\n\0])delete[ \0]', word) for word in feed):
                 result.add('history:git ref delete')
-        if 'fetch' in vector and any(word.startswith('+') and ':refs/' in word for word in vector):
+        transfer = any(command in vector for command in ('fetch', 'push', 'send-pack'))
+        forced_refspec = transfer and any(word.startswith('+') and ':refs/' in word for word in vector)
+        forced_fetch = ('fetch' in vector and any(flag in vector for flag in ('--force', '-f'))
+                        and any(':refs/' in word for word in vector))
+        if forced_refspec or forced_fetch:
             result.add('history:forced ref overwrite')
         if 'update-ref' in vector and any('refs/veldo/kept/' in word for word in vector):
             operands = [word for word in vector[vector.index('update-ref') + 1:] if not word.startswith('-')]

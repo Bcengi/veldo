@@ -1,22 +1,23 @@
 {
-  "status": "awaiting_lead_decision",
+  "status": "resolved",
   "suite": "109_veldo_0161_adoption",
-  "remaining_rows": [
-    "  SELFTEST FAIL: VELDO-0161 adoption/signer-enrolled",
-    "  SELFTEST FAIL: VELDO-0161 adoption/repository-commands",
-    "  SELFTEST FAIL: VELDO-0161 adoption/transport-config",
-    "  SELFTEST FAIL: VELDO-0161 adoption/interrupted",
-    "  SELFTEST FAIL: VELDO-0161 adoption/store-checks-before-push"
-  ],
-  "reason": "Failed-adoption rows require no refs under refs/veldo while their scaffold commit has never reached a branch. Design 0.2 requires its preservation before releasing that ref.",
-  "current_behavior": "The central ref remover keeps the unheld scaffold ref; no work is lost.",
-  "proposed_alternative": "A verified durable Git bundle in the repository Git directory before releasing the scaffold ref. Not authorized or implemented.",
+  "remaining_rows": [],
+  "current_behavior": "Failed adoption preserves its scaffold commit on a kept ref before releasing the adoption ref.",
+  "suite_changes": "All six cleanup assertions require a nonempty set of kept refs and the expected scaffold commit at one of them.",
+  "validation": {
+    "suite_rows_passed": 55,
+    "failed": 0,
+    "scope": "requested partial suite only"
+  },
+  "loss_falsifier": "space304-adoption-commit-lost: skip keep_unheld and ignore unreachable commits; registered for finding 304 against suite 109.",
   "accepted_suites_unchanged": [
     "scripts/suites/142_veldo_0303_space_paths.py",
+    "scripts/suites/66_veldo_0042_clones.py",
+    "scripts/suites/67_veldo_0056_candidates.py",
+    "scripts/suites/146_veldo_0308_run_finished.py",
+    "scripts/suites/129_veldo_0239_batch_landing.py",
     "scripts/suites/138_veldo_0300_space_remove.py",
     "scripts/suites/139_veldo_0301_space_signal.py",
-    "scripts/suites/140_veldo_0345_space_keep.py",
-    "scripts/suites/109_veldo_0161_adoption.py",
-    "scripts/suites/146_veldo_0308_run_finished.py"
+    "scripts/suites/140_veldo_0345_space_keep.py"
   ]
 }

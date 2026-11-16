@@ -142,6 +142,42 @@ def _v304_suite():
 
     row('ref/keep-before-delete', ref_keep)
 
+    def unheld_pin(with_ledger=False):
+        from types import SimpleNamespace
+        remove = load('remove', source_path('.veldo/control_space_remove.py'))
+        with tempfile.TemporaryDirectory(prefix='v304-unheld-pin-') as temporary:
+            main = Path(temporary)
+            git(main, 'init', '-q', '-b', 'main')
+            (main / 'work').write_text('base\n')
+            git(main, 'add', '.')
+            git(main, 'commit', '-q', '-m', 'base')
+            base = git(main, 'rev-parse', 'HEAD')
+            (main / 'work').write_text('only the pin holds this commit\n')
+            git(main, 'add', '.')
+            tip = git(main, 'commit-tree', git(main, 'write-tree'), '-p', base, '-m', 'unique pin')
+            ref = 'refs/veldo/pins/fixture/unique'
+            git(main, 'update-ref', ref, tip)
+            arguments = {'main': str(main), 'standalone': {'state': 'clear'}}
+            if with_ledger:
+                kept = 'refs/veldo/kept/none/fixture/1/head'
+                git(main, 'update-ref', kept, base)
+                record = {'kind': 'agent_repository', 'owner': {'ticket': 'VELDO-0304'},
+                          'state': 'removed', 'due': {'event': 'run_finished'},
+                          'kept': {'repository': str(main), 'refs': {kept: base}, 'snapshots': [],
+                                   'attempt': {'number': 1, 'head': base}}}
+                arguments = {'ledger': SimpleNamespace(item=lambda identity: record,
+                                                       main_repository=lambda identity: str(main)),
+                             'identity': 'fixture'}
+            assert git(main, 'for-each-ref', '--contains=' + tip, '--format=%(refname)') == ref
+            answer = remove.remove_ref(main, ref, **arguments)
+            assert not answer['ok'] and answer['deferral'] == 'keep_failed', answer
+            assert 'no main repository branch or kept ref reaches' in answer['said'], answer
+            assert git(main, 'rev-parse', ref) == tip
+            assert git(main, 'show', ref + ':work') == 'only the pin holds this commit'
+
+    row('ref/standalone-unheld', unheld_pin)
+    row('ref/ledger-unheld', lambda: unheld_pin(with_ledger=True))
+
     def clone_work():
         clones = load('clones', source_path('.veldo/control_clone.py'))
         with tempfile.TemporaryDirectory(prefix='v304-clone-') as temporary:
@@ -606,6 +642,26 @@ def _v304_suite():
     row('ac2/recursive-walk', recursive_forms)
     row('ac2/ref-stdin', stdin_forms)
     row('ac2/kept-overwrite', overwrite_forms)
+
+    def concatenated_overwrite():
+        source = "def overwrite(t, tip):\n    ref = 'refs/veldo/kept/' + t\n"
+        for call in ("git('update-ref', ref, tip)",
+                     "subprocess.run(['git', 'update-ref', 'refs/veldo/kept/' + t, tip])",
+                     "subprocess.run(['git'] + ['update-ref'] + [ref, tip])"):
+            errors = boundary.problems(source + '    ' + call + '\n', 'scripts/new.py')
+            assert any('history:unchecked kept ref overwrite' in error for error in errors), call
+        assert not boundary.problems(source + "    git('update-ref', ref, tip, '')\n", 'scripts/new.py')
+
+    def forced_transfer(command):
+        errors = boundary.problems('def overwrite(source):\n    ' + command + '\n', 'scripts/new.py')
+        assert any('history:forced ref overwrite' in error for error in errors), command
+        assert not boundary.problems(
+            "def configure():\n    git('config', 'remote.origin.fetch', '+HEAD:refs/veldo/kept/x')\n", 'scripts/new.py')
+
+    row('ac2/kept-concatenated', concatenated_overwrite)
+    row('ac2/kept-fetch-force', lambda: forced_transfer("git('fetch', '--force', source, 'HEAD:refs/veldo/kept/x')"))
+    row('ac2/kept-fetch-f', lambda: forced_transfer("git('fetch', '-f', source, 'HEAD:refs/veldo/kept/x')"))
+    row('ac2/kept-forced-send', lambda: forced_transfer("git('push', source, '+HEAD:refs/veldo/kept/x')"))
 
     def stale_entries():
         path = 'scripts/example.py'

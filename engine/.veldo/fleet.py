@@ -271,10 +271,7 @@ class WorktreeProvisioner:
                 path, "worktree", main=self.repo_root, event="worktree_abandoned", worktree=_git_worktree),
                          path=path)
             if entry["state"] == "kept":
-                try:
-                    entry["state"] = "removed"
-                except WorktreeError as error:
-                    entry.update(state=None, deferral="remove_refused", said=str(error))
+                entry["state"] = "removed"
             elif entry["state"] != "gone":
                 entry.update(state=None, deferral=entry.get("deferral") or "remove_refused")
         if entry["state"] not in SPACE_ENDED:

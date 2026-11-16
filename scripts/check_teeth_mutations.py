@@ -15571,7 +15571,7 @@ def cases():
         '        if False:', ['ac2/ref-stdin'])
     result[-1]['dir'] = 'scripts'
     add(304, 'space304-forced-ref-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
-        "        if 'fetch' in vector and any(word.startswith('+') and ':refs/' in word for word in vector):",
+        '        if forced_refspec or forced_fetch:',
         '        if False:', ['ac2/kept-overwrite'])
     result[-1]['dir'] = 'scripts'
     add(304, 'space304-kept-value-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
@@ -15593,6 +15593,36 @@ def cases():
         "                     options=('-c', 'core.hooksPath=' + os.devnull))\n",
         "        pass  # defect: report kept without writing the scaffold's kept refs\n",
         ['scaffold/unique-work'])
+    result[-1]['siblings'] = True
+
+    add(304, 'space304-ref-reachability-unchecked', '155_veldo_0304_space_boundary.py', 'control_space_remove.py',
+        "        if code != 0 or beyond.strip():\n"
+        "            raise ValueError('the temporary ref has work no main repository branch or kept ref reaches')\n",
+        '', ['ref/standalone-unheld', 'ref/ledger-unheld'])
+    result[-1]['siblings'] = True
+
+    add(304, 'space304-kept-concatenation-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        "        return parts if sequence(node, values, seen) else [''.join(parts)]",
+        '        return parts', ['ac2/kept-concatenated'])
+    result[-1]['dir'] = 'scripts'
+    for flag, row in (('--force', 'ac2/kept-fetch-force'), ('-f', 'ac2/kept-fetch-f')):
+        add(304, 'space304-kept-fetch-' + flag.lstrip('-') + '-unchecked',
+            '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+            "any(flag in vector for flag in ('--force', '-f'))",
+            "any(flag in vector for flag in " + repr(tuple(value for value in ('--force', '-f') if value != flag)) + ")",
+            [row])
+        result[-1]['dir'] = 'scripts'
+    add(304, 'space304-kept-send-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        "        forced_refspec = transfer and any(word.startswith('+') and ':refs/' in word for word in vector)",
+        "        forced_refspec = 'fetch' in vector and any(word.startswith('+') and ':refs/' in word for word in vector)",
+        ['ac2/kept-forced-send'])
+    result[-1]['dir'] = 'scripts'
+
+    add(304, 'space304-adoption-commit-lost', '109_veldo_0161_adoption.py', 'control_space_remove.py',
+        "        if beyond.strip() and ledger is None and (standalone or {}).get('keep_unheld') is True:",
+        '        if False:', ['adoption/signer-enrolled', 'adoption/repository-commands',
+                             'adoption/transport-config', 'adoption/interrupted'],
+        also=[("        if code != 0 or beyond.strip():", "        if code != 0:")])
     result[-1]['siblings'] = True
 
     return result
