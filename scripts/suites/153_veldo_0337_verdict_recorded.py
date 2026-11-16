@@ -28,6 +28,7 @@ def _v337_verdict_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
         'control_space.py': ROOT / ".veldo" / "control_space.py",
+        'control_space_kinds.py': ROOT / ".veldo" / "control_space_kinds.py",
     }
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
