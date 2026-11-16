@@ -123,7 +123,13 @@ def _v334_suite():
 
             def read_free(self, pool):
                 self.reads.append((os.getpid(), pool['name']))
+                with open(self.root / 'free-reads', 'a') as log:  # also counts reads made in a worker child
+                    log.write(pool['name'] + '\n')
                 return self.free[pool['name']]
+
+            def read_count(self):
+                path = self.root / 'free-reads'
+                return len(path.read_text().splitlines()) if path.exists() else 0
 
             def decision(self, station, unit, context=None):
                 return dict(decision_id='decision', station=station, unit=unit, domain_uuid='domain',
@@ -480,6 +486,36 @@ def _v334_suite():
             A.accepted(f.ledger.release('partly', used={'host': 100, 'image': 40}))
             check('fix2/release-marks-per-pool', 'only the pool it still held bytes on is marked: ' + repr(marks()),
                   marks() == (False, True))
+
+            # Fix round 1, finding 3: the same three unrelated passes, through the wired Requests the
+            # factory uses. A waiting answer costs no worker job, no free read and no ledger write.
+            f = fixture('requests-passes')
+            first = f.request()
+            svc, loop, requests = wired(f)
+            requests.answers[tuple(given[k] for k in ('repository', 'unit', 'station', 'attempt'))] = first
+            submits, real_submit = [], svc.space_consumer.submit
+            def counting_submit(key, *args, **kwargs):
+                submits.append(key)
+                return real_submit(key, *args, **kwargs)
+            svc.space_consumer.submit = counting_submit
+            nreads, journal = f.read_count(), f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+            offered = []
+            def one_pass(report, ended):
+                offered.append(requests.prepare(**given))
+                requests.passed()
+            loop.lines['repository'].run = one_pass
+            for source in ('journal', 'account_reset', 'run_end'):
+                if source == 'account_reset':
+                    loop.timer = 0
+                loop.wake(source)
+                report = loop.run()
+                check('fix3/requests-unrelated-passes', source + ' pass returns the recorded answer',
+                      len(offered) and offered[-1] == first and source in report['sources'])
+            check('fix3/requests-unrelated-passes', 'three passes: ' + repr((len(offered), submits, f.read_count() - nreads)),
+                  len(offered) == 3 and submits == [] and not svc.space_consumer.active
+                  and f.read_count() == nreads
+                  and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
+            svc.space_stop()
 
             f = fixture('completion-race')
             svc, loop, requests = wired(f)

@@ -16563,6 +16563,11 @@ def cases():
         "                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}",
         "                 if True}  # defect: any release counts as freed space",
         ['space334/fix2/waiting-release-no-mark', 'space334/fix2/release-marks-per-pool'])
+    # The reviewer's M4: Requests drops every waiting answer and submits a worker job on every pass.
+    add(334, 'space334-requests-resubmit-every-pass', wait334, 'control_space_admission.py',
+        "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
+        "            elif hold['state'] not in ('released', 'waiting'):",
+        ['space334/fix3/requests-unrelated-passes'])
     add(334, 'space334-retry-loses-ending', wait334, 'control_space_signal.py',
         "            ending = ledger.item(identity)['due']['event']",
         "            ending = event  # defect: retry forgets why the item ended",
