@@ -1220,12 +1220,16 @@ def _v313_space_run_suite():
                 '    return [] if got is None else got\n'
                 'V._space_environment = environment\n'
                 'V._space_usable = lambda *given: ({"stand-in": True}, None)\n'
+                'def ended(pid):\n'
+                '    try:\n'
+                '        return open("/proc/%d/stat" % pid).read().rsplit(")", 1)[1].split()[0] == "Z"\n'
+                '    except OSError:\n'
+                '        return True\n'
                 'def finish(space, given, environ=None):\n'
                 '    with open(marker + ".part", "w") as out:\n'
                 '        json.dump({"status": given.get("status"), "run": given.get("run"),\n'
                 '                   "supervisor": (given.get("supervisor") or {}).get("pid"),\n'
-                '                   "supervisor_there": os.path.exists("/proc/%d/stat" % os.getppid())\n'
-                '                   and os.getppid() == (given.get("supervisor") or {}).get("pid"),\n'
+                '                   "supervisor_ended": ended((given.get("supervisor") or {}).get("pid")),\n'
                 '                   "by": os.getpid()}, out)\n'
                 '    os.rename(marker + ".part", marker)\n'
                 'V._space_finish = finish\n'
@@ -1261,7 +1265,7 @@ def _v313_space_run_suite():
                        'supervisor had ended [%s]' % (made,),
                   isinstance(made, dict) and made.get('run') == gone_run and made.get('status') == 0
                   and made.get('supervisor') == gone.pid and made.get('by') not in (None, gone.pid)
-                  and made.get('supervisor_there') is False)
+                  and made.get('supervisor_ended') is True)
         except Exception as error:
             stopped(row, error)
 
