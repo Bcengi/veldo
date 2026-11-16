@@ -1,4 +1,56 @@
-# VELDO-0315 review fixes
+# VELDO-0315 small round after 3b13a979
+
+The failing row was `VELDO-0337 safety/review-scratch-in-use`: both the on-demand
+lost-verdict recovery fixture and the borrowed-login safety fixture used `planted('22')`.
+The second call raised `FileExistsError` for `scratch/22`, before its safety assertions
+and the later wiring/canon row could run. The reproduced result was 45 passed, 1 failed.
+The fix gives the on-demand fixture ID `23`. Every assertion remains intact, including
+Runtime leaving verdict recovery to the start reconcile and the longer engine-canon list.
+Production code is unchanged. Both recovery and scratch safety now execute successfully.
+
+On 2026-11-15, all requested suites ran through
+`nice -n 10 python3 -B scripts/selftest.py --suite NAME`, with bytecode writes disabled.
+The suite driver also ran at niceness 10, so these suite processes inherited niceness 19.
+Counts include the shared preamble; these are partial regression results, not aggregate
+unit evidence or a landing decision. Green selected runs return 2 by design.
+
+| Suite NAME | Passed | Failed | Exit |
+| --- | ---: | ---: | ---: |
+| 156_veldo_0315_reconcile | 51 | 0 | 2 |
+| 153_veldo_0323_hook_events | 66 | 0 | 2 |
+| 153_veldo_0337_verdict_recorded | 47 | 0 | 2 |
+| 153_veldo_0314_session_hooks | 54 | 0 | 2 |
+| 154_veldo_0335_released | 58 | 0 | 2 |
+| 151_veldo_0313_space_run | 37 | 17 | 1 |
+
+The 0313 failure names exactly match all 17 known host-bound rows in
+`review-fix/151_veldo_0313_space_run-final.txt`, with no new failing row. Its shared-host
+process/lifecycle limits remain unchanged; the run took 382.14 seconds.
+
+Teeth ran LAST, sequentially for findings 314, 315, 323, 335 and 337, using
+`nice -n 10 python3 -B scripts/check_teeth_mutations.py --finding N --jobs 4`, plus
+`--worker-log-dir /tmp/v315-small/wN --diff-dir /tmp/v315-small/dN`.
+No worktree file was written while any teeth stage ran. Tracked-file SHA-256 values,
+sizes and modification times were identical before and after the entire sequence;
+the worktree status still contained only the one-line suite edit. This README was
+updated after all five stages finished. No test was run after teeth.
+
+| Finding | Executed | Rejected | Reused | Surviving workers | Exit |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 314 | 20 | 20 | 0 | 0 | 0 |
+| 315 | 22 | 22 | 0 | 0 | 0 |
+| 323 | 16 | 16 | 0 | 0 | 0 |
+| 335 | 14 | 14 | 0 | 0 | 0 |
+| 337 | 22 | 22 | 0 | 0 | 0 |
+
+All five receipts report `passed`, no invalid results, and input digest
+`9b3d64f25aa7ddcef08d3369e4a07a1f6fa8489d5fe27bf2eb6769631cf041df`.
+Full diagnostic logs, receipts and mutation diffs remain outside the worktree at
+`/tmp/v315-small/`; these are local artifacts, not durable aggregate gate evidence.
+Only this README and the unprotected 0337 suite changed. No protected path changed.
+Policy checking and the full verification gate were not run; both remain with the lead.
+
+# Earlier VELDO-0315 review fixes
 
 The implementation is committed at 361211d50f448a5d83bc3fe5a6cd1e4a1761cb7a, after carry-over commits d412260f and ba390ad9
 on integration base 9b5ca496. All six requested fixes are implemented. This bundle records

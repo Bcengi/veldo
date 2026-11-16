@@ -805,7 +805,7 @@ def _v337_verdict_suite():
               not floor.record(other.unit)['reviews'] and all(state_of(i) == 'present' for i in other.items.values())
               and all(p.is_dir() for p in other.paths.values()))
 
-        late = planted('22', 'pass')
+        late = planted('23', 'pass')
         inside_signal[0] = killed
         try:
             record(late)
