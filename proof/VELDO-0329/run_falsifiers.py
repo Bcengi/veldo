@@ -18,8 +18,8 @@ catalog = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(catalog)
 cases = [case for case in catalog.cases() if case['finding'] == 329]
 SUITE = ROOT / 'scripts/suites/150_veldo_0329_hook_install.py'
-ANCHOR = 'ROOT / ".veldo" / "control_space_reconcile.py"'
-PRODUCTION = ROOT / '.veldo/control_space_reconcile.py'
+ANCHOR = 'ROOT / ".veldo" / "control_space_install.py"'
+PRODUCTION = ROOT / '.veldo/control_space_install.py'
 suite, text = SUITE.read_text(), PRODUCTION.read_text()
 assert suite.count(ANCHOR) == 1
 
@@ -50,7 +50,7 @@ for case in cases:
     print(case['name'] + ': ' + ('target red' if rejected else 'FAILED') + ' ' + str(red), flush=True)
 (ROOT / 'proof/VELDO-0329/falsifiers.json').write_text(json.dumps({
     'scope': 'Every mutation registered for finding 329, applied once by hand to a copy of '
-             '.veldo/control_space_reconcile.py. The teeth driver run is recorded in teeth.json. No full gate.',
+             '.veldo/control_space_install.py. The teeth driver run is recorded in teeth.json. No full gate.',
     'baseline': {'rows': [label for label, _good in baseline], 'all_green': True},
     'results': results}, indent=2) + '\n')
-assert len(results) == 16 and all(result['rejected'] for result in results)
+assert len(results) == 18 and all(result['rejected'] for result in results)

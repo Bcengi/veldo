@@ -12,6 +12,12 @@ depends_on: [VELDO-0301, VELDO-0311, VELDO-0314, VELDO-0315, VELDO-0323]
 placement: [engine, loop, distribution]
 protected_paths: []
 footprint:
+  - ".veldo/control_space_install.py"
+  - "engine/.veldo/control_space_install.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/installation.py"
+  - "engine/.veldo/installation.py"
   - "engine/hooks/post-checkout"
   - "engine/hooks/reference-transaction"
   - "packs/claude/hooks/hooks.json"
@@ -120,3 +126,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   run under timeout(1) with a deadline of 10 seconds; without timeout(1) the bound is the CLI's own
   wait for the authority. The install record lists the veldo.space.* keys, and the observability
   section names them. Acceptance criteria are unchanged.
+
+- 2026-11-16: gate fix, per the lead's ruling. The footprint widening is accepted:
+  the installer and both missing-hook reports move to control_space_install.py, with its engine
+  copy and scaffold registration. The reconciler delegates startup installation and reports;
+  its unchanged VELDO-0307 invariant again removes nothing, runs no process and reads no clock.
+  The installation reader supplies child environments. The 0329 suite and mutation anchors
+  follow the installer. Acceptance criteria are unchanged.

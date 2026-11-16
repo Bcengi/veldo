@@ -231,6 +231,7 @@ _FILES = [
     ".veldo/control_space_config.py",
     # VELDO-0315: the startup comparison and its read-only discovery dependencies.
     ".veldo/control_space_reconcile.py",
+    ".veldo/control_space_install.py",
     ".veldo/control_git_identity.py",
     ".veldo/control_git_identity_transport.py",
     ".veldo/env_provision.py",

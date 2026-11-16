@@ -24,6 +24,7 @@ def _v329_suite():
     import types
 
     PRODUCTION = {
+        'control_space_install.py': ROOT / ".veldo" / "control_space_install.py",
         'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
     }
     HOOK_SOURCE = ROOT / 'engine' / 'hooks'
@@ -53,12 +54,14 @@ def _v329_suite():
     try:
         mods = temp / '.veldo'
         shutil.copytree(ROOT / '.veldo', mods, ignore=shutil.ignore_patterns('__pycache__'))
-        shutil.copyfile(PRODUCTION['control_space_reconcile.py'], mods / 'control_space_reconcile.py')
+        for name, path in PRODUCTION.items():
+            shutil.copyfile(path, mods / name)
         # Laid out as an engine is: the hooks beside .veldo, and the pack's script where the engine looks.
         shutil.copytree(HOOK_SOURCE, temp / 'hooks')
         (temp / 'packs' / 'claude' / 'scripts').mkdir(parents=True)
         shutil.copyfile(SESSION_SOURCE, temp / 'packs' / 'claude' / 'scripts' / 'space-session.py')
-        R = load('reconcile', mods / 'control_space_reconcile.py')
+        R = load('install', mods / 'control_space_install.py')
+        reconcile = load('reconcile', mods / 'control_space_reconcile.py')
         spool = load('spool', mods / 'control_space_spool.py')
         SP = spool._sibling('control_space')
         S = spool._sibling('control_store')
@@ -399,7 +402,7 @@ def _v329_suite():
 
         # ---- AC3 -------------------------------------------------------------------------------
         def findings(why):
-            result = R.Reconciler({'ledger': ledger}).run('cli')
+            result = reconcile.Reconciler({'ledger': ledger}).run('cli')
             return result, [one for one in result['findings'] if one['why'] == why]
 
         row = 'ac3/missing-hook-reported'
@@ -1070,7 +1073,7 @@ time.sleep(60)
                     'store_path': str(boot / 'state' / 'store.sqlite3'), 'host_identity': 'fixture'},
             repositories={'repository': [str(newly)]}, conn=boot_conn, principal='authority',
             sign=lambda data: 'fixture', generation=1, domain='d329', _log=logged.append)
-        space = R.bootstrap(service)
+        space = reconcile.bootstrap(service)
         done = {one.get('repository') or one.get('account'): one for one in getattr(service, 'space_hooks', [])}
         check(row, 'the start installs for the bound repository, the named plain repository and the named account: '
               + str(done),

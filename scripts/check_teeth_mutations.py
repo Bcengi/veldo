@@ -16400,7 +16400,7 @@ def cases():
     space329 = '150_veldo_0329_hook_install.py'
 
     def hook329(name, old, new, rows):
-        add(329, name, space329, 'control_space_reconcile.py', old, new, rows)
+        add(329, name, space329, 'control_space_install.py', old, new, rows)
 
     hook329('space329-overwrite-existing-hook',
             "    _put(path, b'\\n'.join(lines[:1] + [line] + lines[1:]) + (b'' if len(lines) > 1 else b'\\n'),\n",
@@ -16412,14 +16412,14 @@ def cases():
             "        one('account', account,",
             ['space329/ac2/session-under-second'])
     hook329('space329-missing-hook-unreported',
-            "                if missing:\n                    self.note('hooks_missing',",
-            "                if False:  # defect: nothing is reported for a missing hook\n"
-            "                    self.note('hooks_missing',",
+            "    if missing:\n        note('hooks_missing',",
+            "    if False:  # defect: nothing is reported for a missing hook\n"
+            "        note('hooks_missing',",
             ['space329/ac3/missing-hook-reported'])
     hook329('space329-missing-session-unreported',
-            "            if missing:\n                self.note('session_hooks_missing',",
-            "            if False:  # defect: nothing is reported for an account folder\n"
-            "                self.note('session_hooks_missing',",
+            "        if missing:\n            note('session_hooks_missing',",
+            "        if False:  # defect: nothing is reported for an account folder\n"
+            "            note('session_hooks_missing',",
             ['space329/ac3/missing-session-reported'])
     hook329('space329-program-hook-edited',
             "            if not _shell(data):\n",
