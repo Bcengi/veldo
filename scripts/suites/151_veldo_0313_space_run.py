@@ -117,7 +117,11 @@ Fix round 5 of VELDO-0315 (its third re-review). supervise/wait-reads-again-at-a
 (finding 1: the wait is given a process of the run that ends after a second and a process nobody
 could read that lives on, and a second read that names neither: it returns at the first one's exit,
 not at the second's; and the exit of an unread process, while a process of the run lives, costs no
-read).
+read). supervise/wrapper-gone-the-follower-makes-the-end (finding 2: the wrapper goes while the
+command runs and the command leaves nothing; the real space_supervise, in a process of its own, makes
+the run's end through its follower, after it has itself ended. The row is about that branch alone, so
+it has no ledger: the end it makes is a stand-in that records what it was given, and a process this
+account cannot read is no holder there, as with the process reader).
 
 WHAT A FIXTURE LEAVES. Every row ends what its command left before the row ends, by its latch. On a
 host shared with other accounts' containers a supervisor also stays on their processes, which this
@@ -222,6 +226,7 @@ def _v313_space_run_suite():
             'supervise/report-loss-keeps-supervising', 'supervise/report-loss-end-is-made',
             'supervise/stop-after-the-command-ends-nothing', 'supervise/stop-after-the-command-end-is-made',
             'supervise/staying-is-idle', 'supervise/wait-reads-again-at-a-read-holders-exit',
+            'supervise/wrapper-gone-the-follower-makes-the-end',
             'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/environment-not-whole-holds',
             'fix3/same-program-holds', 'fix3/rewritten-environment-cwd-in-scratch',
             'fix3/rewritten-environment-open-file-in-worktree', 'fix3/rule-3-reads-the-kernel',
@@ -1188,6 +1193,74 @@ def _v313_space_run_suite():
                     made.wait(timeout=30)
                 except Exception:  # noqa: BLE001
                     pass
+
+        try:
+            row = 'supervise/wrapper-gone-the-follower-makes-the-end'
+            marker, stand_in = temp / 'follower-end.json', temp / 'follower_end.py'
+            # The real space_supervise of the production file, in a process of its own, with two
+            # stand-ins and nothing else changed: a process this account cannot read is no holder
+            # (as with the process reader), and the run's end records what it was given in a file
+            # instead of asking a ledger.
+            stand_in.write_text(
+                'import importlib.machinery, importlib.util, json, os, sys\n'
+                'path, marker = sys.argv[1], sys.argv[2]\n'
+                'loader = importlib.machinery.SourceFileLoader("veldo_cli", path)\n'
+                'spec = importlib.util.spec_from_loader("veldo_cli", loader)\n'
+                'V = importlib.util.module_from_spec(spec)\n'
+                'loader.exec_module(V)\n'
+                'real = V._space_environment\n'
+                'def environment(pid):\n'
+                '    try:\n'
+                '        got = real(pid)\n'
+                '    except PermissionError:\n'
+                '        return []\n'
+                '    return [] if got is None else got\n'
+                'V._space_environment = environment\n'
+                'V._space_usable = lambda *given: ({"stand-in": True}, None)\n'
+                'def finish(space, given, environ=None):\n'
+                '    with open(marker + ".part", "w") as out:\n'
+                '        json.dump({"status": given.get("status"), "run": given.get("run"),\n'
+                '                   "supervisor": (given.get("supervisor") or {}).get("pid"),\n'
+                '                   "supervisor_there": os.path.exists("/proc/%d/stat" % os.getppid())\n'
+                '                   and os.getppid() == (given.get("supervisor") or {}).get("pid"),\n'
+                '                   "by": os.getpid()}, out)\n'
+                '    os.rename(marker + ".part", marker)\n'
+                'V._space_finish = finish\n'
+                'sys.exit(V.space_supervise(sys.argv[3:]))\n')
+            reading, writing = os.pipe()
+            heard, told = os.pipe()
+            gone = subprocess.Popen(
+                [sys.executable, '-B', str(stand_in), str(PRODUCTION['veldo']), str(marker), '--report', str(writing),
+                 '--control', str(heard), '--', 'sleep', '1'],
+                pass_fds=(writing, heard), env=dict(BASE), cwd=str(temp), stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            os.close(writing)
+            os.close(heard)
+            gone_run = 'row:gone-' + os.urandom(4).hex()
+            supervisors.append({'pid': gone.pid, 'started': (CLI._space_process(gone.pid) or {}).get('started'),
+                                'run': gone_run})
+            os.write(told, (json.dumps({'run': gone_run, 'environment': {}, 'scope': None,
+                                        'given': {'run': gone_run}}) + '\n').encode())
+            os.close(told)
+            lines = os.fdopen(reading, 'rb')
+            started = json.loads(lines.readline().decode() or 'null')
+            lines.close()  # the wrapper is gone while the command runs: nobody hears that nothing is left
+            code = gone.wait(timeout=60)
+            until = time.monotonic() + 15
+            while not marker.exists() and time.monotonic() < until:
+                time.sleep(0.05)
+            made = json.loads(text_of(marker) or 'null')
+            check(row, 'the command was started, its report lost its reader while it ran, it left nothing, and the '
+                       'supervisor ended with its status [%s %s]' % (started, code),
+                  isinstance(started, dict) and 'group' in started and code == 0)
+            check(row, 'the run\'s end was then made from the supervisor\'s side, by the process that follows it, '
+                       'for that run, with the command\'s status and the supervisor it records, after the '
+                       'supervisor had ended [%s]' % (made,),
+                  isinstance(made, dict) and made.get('run') == gone_run and made.get('status') == 0
+                  and made.get('supervisor') == gone.pid and made.get('by') not in (None, gone.pid)
+                  and made.get('supervisor_there') is False)
+        except Exception as error:
+            stopped(row, error)
 
         try:
             row = 'fix3/handed-outside-the-tree'

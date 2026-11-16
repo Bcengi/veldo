@@ -2165,7 +2165,7 @@
    "requires": [
     "156_veldo_0315_reconcile"
    ],
-   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, service startup and shutdown, received-event reconciliation, Docker failure recovery, shared removal locks, signed CLI and API project selection, and ending-event retries. Fix round 4: a record received while a worker task ran is consumed after the task failed or its worker was lost; the owner's reconcile request is kept on its task's ticket and answered when the task ends, while the one serve loop answers a hook packet and a client that stalls.",
+   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, service startup and shutdown, received-event reconciliation, Docker failure recovery, shared removal locks, signed CLI and API project selection, and ending-event retries. Fix round 4: a record received while a worker task ran is consumed after the task failed or its worker was lost; the owner's reconcile request is kept on its task's ticket and answered when the task ends, while the one serve loop answers a hook packet and a client that stalls. Fix round 5: the first owner reconcile is answered while a second one, for another project, still runs.",
    "requires_note": "Only ROOT and expect. Temporary Git and SQLite, real child processes, removal locks and owner signatures. Fixture process table, Docker reader, API edge records and act prerequisite checks; the CLI transport is a stand-in that calls the real Service.apply."
   }
  ],

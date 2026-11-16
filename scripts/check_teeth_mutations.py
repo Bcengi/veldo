@@ -15303,7 +15303,8 @@ def cases():
            ['fix2/returns-at-the-commands-exit'])
     # VELDO-0315 fix round 5 (the third re-review). Finding 1: the wait reads again only when every
     # named holder has exited, so a process that stopped being a holder pins the run's end; and its
-    # converse, a read at the exit of every unread process.
+    # converse, a read at the exit of every unread process. Finding 2: with the wrapper gone and
+    # nothing left, the supervisor returns and nobody makes the run's end.
     run313('space313-wait-sleeps-on-what-holds-nothing',
            "                while left and not again:\n", "                while left:\n",
            ['supervise/wait-reads-again-at-a-read-holders-exit'])
@@ -15311,6 +15312,9 @@ def cases():
            "                        again = again or kinds[descriptor] != \"unread\"\n",
            "                        again = True\n",
            ['supervise/wait-reads-again-at-a-read-holders-exit'])
+    run313('space313-wrapper-gone-nobody-makes-the-end',
+           "    if not seen[\"holders\"] and heard[\"reader\"]:\n", "    if not seen[\"holders\"]:\n",
+           ['supervise/wrapper-gone-the-follower-makes-the-end'])
     run313('space313-rule-three-answered-without-a-read',
            "            {\"conclusive\": True, \"group_empty\": held() is None}\n",
            "            {\"conclusive\": True, \"group_empty\": True}\n",
@@ -16362,6 +16366,26 @@ def cases():
         "            if request is not None and request.conn is not None and request.request is not None and not ticket['done']:\n",
         "            if False:\n",
         ['space315/ac3/reconcile-responsive', 'space315/cli/slow-client'])
+
+    # Fix round 5 (the third re-review, finding 2): the shape before round 4, a wait for the task
+    # inside the request that serves the authority socket from there. A second reconcile request,
+    # for another project, is then judged inside the first one's wait, and the first's answer waits
+    # under the second's task.
+    add(315, 'space315-reconcile-wait-nested-in-the-request', '156_veldo_0315_reconcile.py', 'control_service.py',
+        "            if request is not None and request.conn is not None and request.request is not None and not ticket['done']:\n",
+        "            if False:\n",
+        ['space315/f3/first-not-behind-second'],
+        also=[("            while not ticket['done']:\n                self.space_wait()\n            return ticket['answer']\n",
+               "            while not ticket['done']:\n"
+               "                pipes = self.space_pipes()\n"
+               "                nested = [request.listener] if request is not None else []\n"
+               "                for fd in select.select(nested + sorted(pipes), [], [], ACCEPT_SECONDS)[0]:\n"
+               "                    if nested and fd == request.listener:\n"
+               "                        with contextlib.suppress(OSError):\n"
+               "                            self.serve_request(request.listener, request.authority)\n"
+               "                    else:\n"
+               "                        self.space_readable(fd)\n"
+               "            return ticket['answer']\n")])
 
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])

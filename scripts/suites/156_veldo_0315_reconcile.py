@@ -782,6 +782,19 @@ def _v315_suite():
             open_store, opened = SV.S.open_store, []
             real_serve_one = SV.CC.serve_one
             live, asked, slowed, answered, quiet, threads, descriptors = [], [], [], [], [], [], []
+            first_early, second_answer = [], []
+            b_read, b_write = os.pipe()
+            real_task = service._space_reconcile
+
+            def slow_task(started_by='console', project=None, snapshots=None):
+                if project == 'slowproj':
+                    # In the worker child: the second request's task blocks until the client has
+                    # judged the first answer, then does the work of a reconcile of every project
+                    # (the fixture has no project of that name, and this row is about the order).
+                    os.read(b_read, 1)
+                    project = None
+                return real_task(started_by, project, snapshots)
+            service._space_reconcile = slow_task
 
             def open_service(path):
                 opened.append(path)
@@ -861,6 +874,7 @@ def _v315_suite():
                                'command_id': 'reconcile:fixture', 'expires_at': time.time() + 60,
                                'parameters': {'project': None}}
                     asking = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    second = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                     try:
                         try:
                             asking.settimeout(60)
@@ -868,6 +882,12 @@ def _v315_suite():
                             asking.sendall(json.dumps({'command': {
                                 'command': command, 'signature': sign(S.canonical_bytes(command))}}).encode())
                             asking.shutdown(socket.SHUT_WR)
+                            second_cmd = dict(command, command_id='reconcile:fixture-b', parameters={'project': 'slowproj'})
+                            second.settimeout(60)
+                            second.connect(service.config['socket'])
+                            second.sendall(json.dumps({'command': {
+                                'command': second_cmd, 'signature': sign(S.canonical_bytes(second_cmd))}}).encode())
+                            second.shutdown(socket.SHUT_WR)
                             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as slow:
                                 slow.settimeout(20)
                                 slow.connect(service.config['socket'])
@@ -878,6 +898,21 @@ def _v315_suite():
                         finally:
                             os.write(release_write, b'x')
                         data = b''
+                        asking.settimeout(15)
+                        try:
+                            first_early.append(bool(asking.recv(65536, socket.MSG_PEEK)))
+                        except socket.timeout:
+                            first_early.append(False)
+                        os.write(b_write, b'x')
+                        asking.settimeout(60)
+                        bdata = b''
+                        second.settimeout(60)
+                        while True:
+                            chunk = second.recv(65536)
+                            if not chunk:
+                                break
+                            bdata += chunk
+                        second_answer.append(bdata[:200])
                         while True:
                             chunk = asking.recv(65536)
                             if not chunk:
@@ -888,6 +923,7 @@ def _v315_suite():
                         asked.append({'error': repr(error)})
                     finally:
                         asking.close()
+                        second.close()
                         handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
                 service.space_refusal = 'fixture retry'
                 for _ in range(20):
@@ -918,7 +954,11 @@ def _v315_suite():
                     stack.enter_context(patch.object(obj, name, value))
                 SV.serve('fixture')
             for thread in threads:
-                thread.join(90)
+                thread.join(120)
+            check('f3/first-not-behind-second', 'the first owner reconcile is answered while a second one, for '
+                  'another project, still runs, and the second is answered when its own task ends [%s %s]'
+                  % (first_early, second_answer[:1]),
+                  first_early == [True] and b'"ok": true' in (second_answer or [b''])[0])
             for fd in descriptors:
                 os.close(fd)
             answer = (asked[0].get('result') if asked else None) or {}
