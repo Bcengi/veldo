@@ -1,0 +1,119 @@
+{
+ "all_green": true,
+ "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+ "count": 27,
+ "criteria": {
+  "AC1": [
+   "ac1/loose-ignored-file",
+   "ac1/personal-rule",
+   "ac1/untraced-rule",
+   "ac1/build-output-is-not-work"
+  ],
+  "AC2": [
+   "ac2/clean-clone-goes",
+   "ac2/unpushed-commit",
+   "ac2/log-only-commit",
+   "ac2/hand-written-ref",
+   "ac2/work-tree-and-stash",
+   "ac2/unreadable-holds",
+   "ac2/build-output",
+   "ac2/last-look"
+  ],
+  "AC3": [
+   "ac3/creators-declare-the-form",
+   "ac3/keep-first",
+   "ac3/clone-request",
+   "ac3/worker-clone-saved",
+   "ac3/changed-after-snapshot",
+   "ac3/renamed-back",
+   "ac3/not-shown"
+  ],
+  "AC4": [
+   "ac4/held-files-go",
+   "ac4/changed-after-measure",
+   "ac4/unreadable-is-no-copy",
+   "ac4/trunk-never-guessed"
+  ],
+  "AC5": [
+   "ac5/own-folder-holds",
+   "ac5/registry-row",
+   "ac5/no-form"
+  ]
+ },
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate. The build is not green as a whole: see checks.json, still_pinned.",
+ "other_suite": {
+  "scripts/suites/135_veldo_0298_space_kinds.py": {
+   "ac1/table-2": "new: table 2 is current, the fourteen rows of table 1 unchanged and the clone row; green",
+   "ac1/whole-table": "updated, superseded by AC5: reads table 1 by its number; green"
+  },
+  "scripts/suites/136_veldo_0299_space_probe.py": {
+   "ac2/case-3-untracked": "updated, superseded by AC1: a loose ignored file is unique work, case 3; green"
+  },
+  "scripts/suites/138_veldo_0300_space_remove.py": {
+   "work/ignored-files": "updated, superseded by AC1: rule 5 refuses first; the remover asked directly refuses as before; green"
+  },
+  "scripts/suites/142_veldo_0303_space_paths.py": {
+   "ac2/uncommitted-stays": "updated, superseded by AC3: saved and removed, no request; green",
+   "ac4/candidate-with-work-stays": "updated, superseded by AC3: unique work and one request naming the clone; green"
+  }
+ },
+ "rows": [
+  "ac1/loose-ignored-file",
+  "ac1/personal-rule",
+  "ac1/untraced-rule",
+  "ac1/build-output-is-not-work",
+  "ac2/clean-clone-goes",
+  "ac2/unpushed-commit",
+  "ac2/log-only-commit",
+  "ac2/hand-written-ref",
+  "ac2/work-tree-and-stash",
+  "ac2/unreadable-holds",
+  "ac2/build-output",
+  "ac2/last-look",
+  "ac3/creators-declare-the-form",
+  "ac3/keep-first",
+  "ac3/clone-request",
+  "ac3/worker-clone-saved",
+  "ac3/changed-after-snapshot",
+  "ac3/renamed-back",
+  "ac3/not-shown",
+  "ac4/held-files-go",
+  "ac4/changed-after-measure",
+  "ac4/unreadable-is-no-copy",
+  "ac4/trunk-never-guessed",
+  "ac5/own-folder-holds",
+  "ac5/registry-row",
+  "ac5/no-form",
+  "unseen/canon"
+ ],
+ "suite": "scripts/suites/150_veldo_0347_unseen_work.py",
+ "what_each_row_holds": {
+  "ac1/build-output-is-not-work": "A folder a committed rule covers, or a declared pattern, is build output and the worktree goes; a folder only a personal rule covers is work; an empty one holds none; in an adopted worktree only the declared pattern counts.",
+  "ac1/loose-ignored-file": "A worktree whose only work is a local settings file a committed rule ignores: rule 5 refuses it as unique work, the deferral names the path and the rule, no remover is handed it, the file is in place. Plain git, asked to remove such a worktree without force, deletes the file.",
+  "ac1/personal-rule": "A file and a folder only info/exclude covers: rule 5 refuses, both are named with that rule, the build output folder is not named, both are in place.",
+  "ac1/untraced-rule": "With a git that cannot name the rule, an ignored folder is counted as work with no rule named, and rule 5 refuses; with the rule traced to the committed ignore file the same folder is build output.",
+  "ac2/build-output": "The same beneath a build output item: a repository with an unheld commit holds it.",
+  "ac2/clean-clone-goes": "A fresh clone of a remote on this host beneath a session scratch is read as a clean clone and goes with the scratch.",
+  "ac2/hand-written-ref": "A remote-tracking ref written by hand for a commit the local remote does not hold: held, and the deferral says the local remote does not hold it.",
+  "ac2/last-look": "A commit made in the clone after rule 6 looked is found by the remover under the marked name: in_use, the folder back at its path with the commit.",
+  "ac2/log-only-commit": "A clone whose only unheld commit a reset left in its HEAD log: clean by status and by refs, and held, with that commit named.",
+  "ac2/unpushed-commit": "A clone with a commit its remote does not have, in a session scratch: rule 6 holds the scratch as in_use by children, the repository is named unrecorded with the commit, the clone is whole. Once the remote holds the commit the next event removes the scratch.",
+  "ac2/unreadable-holds": "A repository git cannot read, a clone whose local remote is gone, and a folder that cannot be listed each hold the scratch, as unread.",
+  "ac2/work-tree-and-stash": "An untracked file, an uncommitted edit and a stash entry each make a clone not clean; a branch and a tag at a held commit do not; a remote address that names no one place is not read.",
+  "ac3/changed-after-snapshot": "A file rewritten between the last look and the delete: the comparison stops the delete, keep_failed, the new content is in place at the clone's own path and the first snapshot holds the old.",
+  "ac3/clone-request": "A batch clone with an untracked file and a candidate workspace with an edit: deferred as unique work by rule 5, one request raised, its terms naming the clone as a clone with form and file, shown with Keep alone; the next event raises no second one; a worktree's terms for a clone are refused by the Ledger.",
+  "ac3/creators-declare-the-form": "The clone provisioner, the batch, the landing line and the worker runtime declare their repository as an agent repository with its form; such an item ends at run finished; the Ledger refuses a form on scratch.",
+  "ac3/keep-first": "For each of the three forms: a commit made in the clone and never brought across is on a kept ref of the main repository, its file readable there, after the clone is removed.",
+  "ac3/not-shown": "A worker clone no manifest shows to be one waits, as unique work, with no snapshot written.",
+  "ac3/renamed-back": "After that stop the folder is at its locator, a repository git reads, nothing is at the marked name, the item is deferred with its id and locator, reconcile's reading of the two names is (there, nothing marked), and the next attempt saves what is left as snapshot 2 and removes the clone.",
+  "ac3/worker-clone-saved": "An ended worker clone with a tracked edit, an untracked file, two ignored files that are work, a file in an untracked folder and a link: removed with no request, each of them in the snapshot store byte for byte, build output not saved, its commit on a kept ref.",
+  "ac4/changed-after-measure": "A file measured while no copy was held, then changed, while the store came to hold the measured content: it stays. With the held content read now it goes. A file written between the read of its digest and its delete stays.",
+  "ac4/held-files-go": "An evidence folder: the files whose digest, read now, is a blob of the store, a file in a trunk commit or a file in a commit of a kept ref are removed; a file with no copy and a link stay; the item is kept; the answer counts them.",
+  "ac4/trunk-never-guessed": "With no trunk named only kept refs are read: the file only the trunk holds stays.",
+  "ac4/unreadable-is-no-copy": "With a store that cannot be read and a trunk that cannot be read both files stay and the answer says what was not read; read again, each goes.",
+  "ac5/no-form": "An agent repository item with no form ends on the agent repository's own events; run finished does not make it due with its worktree in place; the form agent reads the same events and a clone form those of its row.",
+  "ac5/own-folder-holds": "A scratch item and a build output item whose own folder is a repository hold themselves, as unrecorded, a clean clone too; the probe reads a .git entry and a bare git folder as repositories.",
+  "ac5/registry-row": "Table 1 has the digest it was issued with; table 2 is current and has the clone row; an item with a clone form reads it, the same item under table 1 reads the agent repository row, and an item with no form reads the agent repository row under table 2.",
+  "unseen/canon": "Each of the six engine modules the suite loads equals its synced copy."
+ }
+}

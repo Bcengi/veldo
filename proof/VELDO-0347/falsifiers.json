@@ -1,0 +1,614 @@
+[
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space_probe.py",
+  "mutant_failed": [
+   "space347/ac1/build-output-is-not-work",
+   "space347/ac1/loose-ignored-file",
+   "space347/ac1/personal-rule",
+   "space347/ac1/untraced-rule"
+  ],
+  "name": "space347-ignored-paths-left-out-of-case-3",
+  "new": "    untracked = list(untracked)  # defect: ignored paths are left out of case 3\n",
+  "new_digest": "b398ec7ce65b4e336eb8e2ce7e3069a4eba8fa770a0b964599466a849975d748",
+  "noop_failed": [],
+  "old": "    untracked = untracked + [name for name in work['work'] if name not in untracked]\n",
+  "old_digest": "84b1899a0a169c98121e6713eecc36e2bec9fd8285dfaab5d17c337f20054f16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac1/loose-ignored-file": [
+    false
+   ],
+   "space347/ac1/personal-rule": [
+    false
+   ],
+   "space347/ac1/untraced-rule": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac1/loose-ignored-file",
+   "space347/ac1/personal-rule",
+   "space347/ac1/untraced-rule"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_probe.py",
+  "mutant_failed": [
+   "space347/ac2/build-output",
+   "space347/ac2/hand-written-ref",
+   "space347/ac2/last-look",
+   "space347/ac2/log-only-commit",
+   "space347/ac2/unreadable-holds",
+   "space347/ac2/work-tree-and-stash",
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/clone-request",
+   "space347/ac3/creators-declare-the-form",
+   "space347/ac3/keep-first",
+   "space347/ac3/not-shown",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved",
+   "space347/ac4/changed-after-measure",
+   "space347/ac4/held-files-go",
+   "space347/ac4/trunk-never-guessed",
+   "space347/ac4/unreadable-is-no-copy",
+   "space347/ac5/no-form",
+   "space347/ac5/own-folder-holds",
+   "space347/ac5/registry-row",
+   "space347/unseen/canon"
+  ],
+  "name": "space347-logs-left-out",
+  "new": "            pass  # defect: the logs are left out\n",
+  "new_digest": "832caf81f728086f900d3ad73f5c3c96c45a197beacf4d01e7419da68ebc4382",
+  "noop_failed": [],
+  "old": "            tips.update(git('rev-list', '--walk-reflogs', 'HEAD', '--exclude=refs/remotes/*', '--all').split())\n",
+  "old_digest": "84b1899a0a169c98121e6713eecc36e2bec9fd8285dfaab5d17c337f20054f16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac2/log-only-commit": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac2/log-only-commit"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space347/ac2/build-output",
+   "space347/ac2/hand-written-ref",
+   "space347/ac2/last-look",
+   "space347/ac2/log-only-commit",
+   "space347/ac2/unpushed-commit",
+   "space347/ac2/unreadable-holds",
+   "space347/ac2/work-tree-and-stash",
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/clone-request",
+   "space347/ac3/creators-declare-the-form",
+   "space347/ac3/keep-first",
+   "space347/ac3/not-shown",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved",
+   "space347/ac4/changed-after-measure",
+   "space347/ac4/held-files-go",
+   "space347/ac4/trunk-never-guessed",
+   "space347/ac4/unreadable-is-no-copy",
+   "space347/ac5/no-form",
+   "space347/ac5/own-folder-holds",
+   "space347/ac5/registry-row",
+   "space347/unseen/canon"
+  ],
+  "name": "space347-look-beneath-worktrees-and-agent-repositories-only",
+  "new": "    if False and path and ('path:' + path) not in found:  # defect: scratch and build output are not looked in\n",
+  "new_digest": "56a559b7be33d97e279d439d88e3d6b0f0338e59c9eb91d82a7a16e5503ecd96",
+  "noop_failed": [],
+  "old": "    if record.get('kind') in HOLDS_UNPUSHED and path and ('path:' + path) not in found:\n",
+  "old_digest": "630a436665e520216e2b4e188e793cc62f5522a6b849c68ceba5145b044c94e7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac2/build-output": [
+    false
+   ],
+   "space347/ac2/unpushed-commit": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac2/unpushed-commit",
+   "space347/ac2/build-output"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_probe.py",
+  "mutant_failed": [
+   "space347/ac2/build-output",
+   "space347/ac2/hand-written-ref",
+   "space347/ac2/last-look",
+   "space347/ac2/unreadable-holds",
+   "space347/ac2/work-tree-and-stash",
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/clone-request",
+   "space347/ac3/creators-declare-the-form",
+   "space347/ac3/keep-first",
+   "space347/ac3/not-shown",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved",
+   "space347/ac4/changed-after-measure",
+   "space347/ac4/held-files-go",
+   "space347/ac4/trunk-never-guessed",
+   "space347/ac4/unreadable-is-no-copy",
+   "space347/ac5/no-form",
+   "space347/ac5/own-folder-holds",
+   "space347/ac5/registry-row",
+   "space347/unseen/canon"
+  ],
+  "name": "space347-remote-tracking-ref-taken-at-its-word",
+  "new": "        elif False:  # defect: a remote-tracking ref is taken at its word\n",
+  "new_digest": "02c4527a05c63a4bc7110865deb90215858a84281b72dc221da087546ed84693",
+  "noop_failed": [],
+  "old": "        elif local:\n            # What only a local remote's ref holds must be in that remote now.\n",
+  "old_digest": "84b1899a0a169c98121e6713eecc36e2bec9fd8285dfaab5d17c337f20054f16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac2/hand-written-ref": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac2/hand-written-ref"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/keep-first",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved"
+  ],
+  "name": "space347-clone-removed-by-the-folder-remover-alone",
+  "new": "    kept = {'ok': True, 'tips': tips(path, record.get('kind'), ctx['commands'])}  # defect: no keep step\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+  "new_digest": "5c06f5ec2e3d0dd3069238129c4ef8ec6b2dbc5734a55c02dc48c48e3ea58ba6",
+  "noop_failed": [],
+  "old": "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/keep-first": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/keep-first"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/renamed-back"
+  ],
+  "name": "space347-folder-left-under-its-marked-name",
+  "new": "        stuck = _put_back(parent, tail, base) if before_file is None else None  # defect\n        if stuck is not None:\n",
+  "new_digest": "11c77da107439d8319a36ad3fc16313c6f45212e86c52791e6dcbc3e3b31ad4a",
+  "noop_failed": [],
+  "old": "        stuck = _put_back(parent, tail, base)\n        if stuck is not None:\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/renamed-back": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/renamed-back"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/renamed-back"
+  ],
+  "name": "space347-worker-clone-deleted-without-the-comparison",
+  "new": "            before_file=None,  # defect: no file is compared with the manifest before it is deleted\n",
+  "new_digest": "3076972efcbe72f5808897de587b5a6723573d74097b49138e8900c46a65b5c4",
+  "noop_failed": [],
+  "old": "            before_file=lambda relative, descriptor, name: _clone_compare(state, relative, descriptor, name),\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/changed-after-snapshot": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/changed-after-snapshot"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved"
+  ],
+  "name": "space347-worker-clone-removed-without-the-snapshot",
+  "new": "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=False)  # defect\n",
+  "new_digest": "562b33ad03714ee380e6ebd68ddb93b63a77de3cb49ac19b5e1b67f0fcd8930c",
+  "noop_failed": [],
+  "old": "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=True)\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/worker-clone-saved": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/worker-clone-saved"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac4/changed-after-measure",
+   "space347/ac4/unreadable-is-no-copy"
+  ],
+  "name": "space347-evidence-digest-of-the-last-measurement",
+  "new": "        held = copies.find([hashed.hexdigest() for hashed in blobs], globals().setdefault(\n            '_MEASURED', {}).setdefault(relative, digest.hexdigest()))  # defect: the digest first measured\n",
+  "new_digest": "b13dcd7242483c3ee88839d839dbebbec08be2081a5597c2f247140f57ba66d1",
+  "noop_failed": [],
+  "old": "        held = copies.find([hashed.hexdigest() for hashed in blobs], digest.hexdigest())\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac4/changed-after-measure": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac4/changed-after-measure"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC5",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space347/ac5/own-folder-holds"
+  ],
+  "name": "space347-look-beneath-the-item-only",
+  "new": "    if False and path:  # defect: the look starts beneath the item\n        own = probe.is_repository(path)\n",
+  "new_digest": "0d68e054c861819a568f141206fe5cde699f525c4bf60d15001952af2b0494c2",
+  "noop_failed": [],
+  "old": "    if record.get('kind') in DISK_KINDS and record.get('kind') not in HOLDS_REPOSITORIES and path:\n        own = probe.is_repository(path)\n",
+  "old_digest": "630a436665e520216e2b4e188e793cc62f5522a6b849c68ceba5145b044c94e7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac5/own-folder-holds": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac5/own-folder-holds"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC5",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space347/ac5/no-form"
+  ],
+  "name": "space347-no-form-given-the-clone-row",
+  "new": "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form or 'worker_clone'),  # defect\n                                               self.lifecycle['ends_on'][kind])\n",
+  "new_digest": "a3fe610e100c91ebec4ef9022ea4db3282d630a18b051f8691b3454ea1b9daf8",
+  "noop_failed": [],
+  "old": "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form), self.lifecycle['ends_on'][kind])\n",
+  "old_digest": "ca0b2825b636a748b60a03f5dbf8a271bf04e41d944191bad43809fff422c90a",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac5/no-form": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac5/no-form"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space_probe.py",
+  "mutant_failed": [
+   "space347/ac1/build-output-is-not-work",
+   "space347/ac1/personal-rule"
+  ],
+  "name": "space347-any-traced-rule-makes-build-output",
+  "new": "        if declared or own or source is not None:  # defect: a personal rule makes build output\n            build.append(name)\n",
+  "new_digest": "e66c0db60807a6ec5368029e5849795b5dafc13aa194c28eadbb72aa76ebb5c7",
+  "noop_failed": [],
+  "old": "        if declared or own:\n            build.append(name)\n",
+  "old_digest": "84b1899a0a169c98121e6713eecc36e2bec9fd8285dfaab5d17c337f20054f16",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac1/personal-rule": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac1/personal-rule"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac2/last-look",
+   "space347/ac3/changed-after-snapshot",
+   "space347/ac3/clone-request",
+   "space347/ac3/creators-declare-the-form",
+   "space347/ac3/keep-first",
+   "space347/ac3/not-shown",
+   "space347/ac3/renamed-back",
+   "space347/ac3/worker-clone-saved",
+   "space347/ac4/changed-after-measure",
+   "space347/ac4/held-files-go",
+   "space347/ac4/trunk-never-guessed",
+   "space347/ac4/unreadable-is-no-copy",
+   "space347/ac5/no-form",
+   "space347/ac5/own-folder-holds",
+   "space347/ac5/registry-row",
+   "space347/unseen/canon"
+  ],
+  "name": "space347-remover-takes-any-repository-in-the-folder",
+  "new": "        ctx, identity, record, record['locator']['path'], look=lambda name: set(  # defect: no last look\n            os.path.relpath(found, name) for found in ctx['probe'].nested(name)['repositories']),\n",
+  "new_digest": "db46e96e1a1c6c46ab9c3aa0fa4fa8fc27d27a1f720bb2976c0500cea0eaabd3",
+  "noop_failed": [],
+  "old": "        ctx, identity, record, record['locator']['path'], look=lambda name: _clean_clones(ctx, name),\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac2/last-look": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac2/last-look"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space347/ac3/not-shown"
+  ],
+  "name": "space347-any-item-with-the-form-is-a-worker-clone",
+  "new": "            return None  # defect: the manifest is not asked\n",
+  "new_digest": "36f41106578740880038ce715997c64beae2a6b0d8d3f752f8b33b5f01f3a7c8",
+  "noop_failed": [],
+  "old": "            if shown['clone'] is True:\n                return None\n            return dict(found, not_shown_a_worker_clone=shown['said'])\n",
+  "old_digest": "630a436665e520216e2b4e188e793cc62f5522a6b849c68ceba5145b044c94e7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/not-shown": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/not-shown"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space347/ac3/clone-request"
+  ],
+  "name": "space347-clone-with-files-raises-no-request",
+  "new": "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n            and False):  # defect: a clone is deferred and nobody is asked\n",
+  "new_digest": "f80e16a63f376ae5a7dc8d2870a0c57deda586fcfd5b10be44c0c61fbb6f5a4a",
+  "noop_failed": [],
+  "old": "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n            and found.get('work_tree') is True):\n",
+  "old_digest": "630a436665e520216e2b4e188e793cc62f5522a6b849c68ceba5145b044c94e7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/clone-request": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/clone-request"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space347/ac3/clone-request"
+  ],
+  "name": "space347-ledger-takes-a-worktree-request-for-a-clone",
+  "new": "                or False):  # defect: a clone may be asked about as a worktree\n",
+  "new_digest": "d920ae448be222f2710c87ced2554f568b9aafd9595e620d4273f4b718162673",
+  "noop_failed": [],
+  "old": "                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):\n",
+  "old_digest": "ca0b2825b636a748b60a03f5dbf8a271bf04e41d944191bad43809fff422c90a",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac3/clone-request": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac3/clone-request"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac4/changed-after-measure"
+  ],
+  "name": "space347-evidence-file-written-while-read-is-deleted",
+  "new": "        if held is None:  # defect: the file is not looked at again before its delete\n",
+  "new_digest": "58b5f65108a3b2b269ff07691d006af2ae5e421153a4d42d2e155e877eb233b2",
+  "noop_failed": [],
+  "old": "        if held is None or _signature(os.lstat(name, dir_fd=dir_fd)) != _signature(found):\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac4/changed-after-measure": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac4/changed-after-measure"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space347/ac4/trunk-never-guessed"
+  ],
+  "name": "space347-trunk-guessed",
+  "new": "            named = trunk(main) if callable(trunk) else 'main'  # defect: the trunk is guessed\n",
+  "new_digest": "b5198f32208ed51000154f38024c984654011dc8178a02a17f310b191eb35125",
+  "noop_failed": [],
+  "old": "            named = trunk(main) if callable(trunk) else None\n",
+  "old_digest": "5f0425aca268e1f9ca528aab9fc324c5621bc3f8202a148acc3aaf493af114d7",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac4/trunk-never-guessed": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac4/trunk-never-guessed"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC5",
+  "final_run_executions": 1,
+  "module": "control_space_kinds.py",
+  "mutant_failed": [
+   "space347/ac5/registry-row"
+  ],
+  "name": "space347-registry-gives-no-form-the-clone-row",
+  "new": "        row = FORM_ROWS.get((record['kind'], record.get('form') or 'worker_clone'))  # defect\n",
+  "new_digest": "0c2fb97a42da4fadc9c7996cb013aa4975c5810cf0d3c6a0c7d5ce9f1416dcbb",
+  "noop_failed": [],
+  "old": "        row = FORM_ROWS.get((record['kind'], record.get('form')))\n",
+  "old_digest": "035f8f410793f2c007e03ade3947c053570cdabb0c6b8e8361c1955c193cb906",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0347_unseen_work.py",
+  "target_results": {
+   "space347/ac5/registry-row": [
+    false
+   ]
+  },
+  "targets": [
+   "space347/ac5/registry-row"
+  ]
+ }
+]
