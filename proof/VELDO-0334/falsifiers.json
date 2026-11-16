@@ -1,0 +1,277 @@
+[
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-read-every-pass",
+      "module": "control_space_admission.py",
+      "name": "space334-read-every-pass",
+      "new": "        if hold['state'] != 'waiting':",
+      "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+      "rows": [
+        "space334/ac2/manual-free-timer"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac2/manual-free-timer",
+      "space334/ac2/no-read-or-write",
+      "space334/ac2/public-admit"
+    ],
+    "new_digest": "7ebbfc279f13b159fae65312515c48db8e179af67084836cd1352db6b667d466",
+    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac2/manual-free-timer": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "also": [
+        [
+          "        if given is not None and reason is not None and not hold.get('retry_asked'):",
+          "        if given is not None and reason is not None:"
+        ]
+      ],
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-request-every-pass",
+      "module": "control_space_admission.py",
+      "name": "space334-request-every-pass",
+      "new": "        if hold['state'] != 'waiting':",
+      "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+      "rows": [
+        "space334/ac1/one-signal"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac1/one-signal",
+      "space334/ac2/manual-free-timer",
+      "space334/ac2/no-read-or-write",
+      "space334/ac2/public-admit",
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/release"
+    ],
+    "new_digest": "29a330458f16ac1291324b13fcb42b7f5b117934abf24d8ffb6ffa3229026ea1",
+    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac1/one-signal": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-mark-without-wake",
+      "module": "control_service.py",
+      "name": "space334-mark-without-wake",
+      "new": "                pass  # defect: the freeing write never wakes the factory",
+      "old": "                self.loop.wake('space', marked)",
+      "rows": [
+        "space334/ac3/stopped-clock"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/release",
+      "space334/ac3/stopped-clock"
+    ],
+    "new_digest": "616f1c8c624ca6f2f5a4d0cbfc20c953b7ca3921bd062ea181e0d18a7c41c8bf",
+    "old_digest": "bb625e4c042e4cf1276430e26444bc664994bb9f8cb12b807e3906efb4cba784",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac3/stopped-clock": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-no-freed-marks",
+      "module": "control_space.py",
+      "name": "space334-no-freed-marks",
+      "new": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=False)}",
+      "old": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=True)}",
+      "rows": [
+        "space334/ac3/outcome",
+        "space334/ac3/release",
+        "space334/ac3/reconcile"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac1/signal-can-admit",
+      "space334/ac3/backing-pool",
+      "space334/ac3/completion-race",
+      "space334/ac3/free-during-judgment",
+      "space334/ac3/outcome",
+      "space334/ac3/pool-isolation",
+      "space334/ac3/reconcile",
+      "space334/ac3/release",
+      "space334/ac3/stopped-clock",
+      "space334/ac3/waiting-set-race"
+    ],
+    "new_digest": "57d7662a47fff7b3742856a432581d5932eb8b396975846d481a87fc8a73dc2e",
+    "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac3/outcome": [
+        false
+      ],
+      "space334/ac3/reconcile": [
+        false
+      ],
+      "space334/ac3/release": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-mark-never-cleared",
+      "module": "control_space.py",
+      "name": "space334-mark-never-cleared",
+      "new": "        pass  # defect: every later offer can read space",
+      "old": "        record['freed'] = False",
+      "rows": [
+        "space334/ac3/release"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac3/free-during-judgment",
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/refusal-atomic",
+      "space334/ac3/release"
+    ],
+    "new_digest": "02a055fd37634cec920a8f0839f200231b7271c828733854f1096118c8cea3b9",
+    "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac3/release": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-freeing-race-lost",
+      "module": "control_space_admission.py",
+      "name": "space334-freeing-race-lost",
+      "new": "        options = {}  # defect: use the version after reading free space",
+      "old": "        options = {'expected_version': version} if versioned and version is not None else {}",
+      "rows": [
+        "space334/ac3/free-during-judgment"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac3/free-during-judgment"
+    ],
+    "new_digest": "4f185fc3b698a44eb988af649fedc29251361b3522cc513b2c95e46b35b106ec",
+    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac3/free-during-judgment": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-cache-hides-freed",
+      "module": "control_space_admission.py",
+      "name": "space334-cache-hides-freed",
+      "new": "            if not hold or hold['state'] != 'released':",
+      "old": "            if not hold or (hold['state'] != 'released' and not (\n                    hold['state'] == 'waiting' and hold.get('freed'))):",
+      "rows": [
+        "space334/ac3/completion-race",
+        "space334/ac3/stopped-clock"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac3/completion-race",
+      "space334/ac3/stopped-clock"
+    ],
+    "new_digest": "b2c1cd01c7df41d18e41ea6164aeeff965e5d1c80c7568cc6eae9fcaf7e18938",
+    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac3/completion-race": [
+        false
+      ],
+      "space334/ac3/stopped-clock": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-retry-loses-ending",
+      "module": "control_space_signal.py",
+      "name": "space334-retry-loses-ending",
+      "new": "            ending = event  # defect: retry forgets why the item ended",
+      "old": "            ending = ledger.item(identity)['due']['event']",
+      "rows": [
+        "space334/ac1/signal-can-admit"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/ac1/signal-can-admit"
+    ],
+    "new_digest": "429e16adfd82d6f7fec7eb5111ef34dacc62f797e6700fca0c51d3e3dac4dd7d",
+    "old_digest": "4ab4d0c35fa92ab453d560943a8b2f73fc13de55e131acea91faae1c3a95e442",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/ac1/signal-can-admit": [
+        false
+      ]
+    }
+  }
+]

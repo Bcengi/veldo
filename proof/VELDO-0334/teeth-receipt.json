@@ -1,0 +1,6309 @@
+{
+  "budget_seconds": 28896.0,
+  "case_deadlines": {
+    "check_teeth_mutations.py:space334-cache-hides-freed": 120,
+    "check_teeth_mutations.py:space334-freeing-race-lost": 120,
+    "check_teeth_mutations.py:space334-mark-never-cleared": 120,
+    "check_teeth_mutations.py:space334-mark-without-wake": 120,
+    "check_teeth_mutations.py:space334-no-freed-marks": 120,
+    "check_teeth_mutations.py:space334-read-every-pass": 120,
+    "check_teeth_mutations.py:space334-request-every-pass": 120,
+    "check_teeth_mutations.py:space334-retry-loses-ending": 120
+  },
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:space334-request-every-pass",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-read-every-pass",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-mark-without-wake",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-no-freed-marks",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-mark-never-cleared",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-freeing-race-lost",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-cache-hides-freed",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space334-retry-loses-ending",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "drivers": {
+    "check_review_mutations.py": {
+      "executed": 0,
+      "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "registered": 0,
+      "reused": 0,
+      "wall_seconds": 0,
+      "worker_seconds": 0
+    },
+    "check_teeth_mutations.py": {
+      "executed": 8,
+      "inventory_digest": "1c872f7d9372a4723b7275b8f763d950c44ea4cf9533fb7918858d8aceb19440",
+      "registered": 8,
+      "reused": 0,
+      "wall_seconds": 41.99412929080427,
+      "worker_seconds": 83.448435774073
+    }
+  },
+  "elapsed": 44.53311109589413,
+  "executed": 8,
+  "force_fresh": false,
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "94dc62a320dfa72a0aa7fe0e6ec4df3f3d1fa4fca210e8843ea17bfd689597cf",
+  "invalid_results": [],
+  "parallel_workers": 2,
+  "peak_workers": 2,
+  "registered": 8,
+  "rejected": 8,
+  "resources": {
+    "capacities": {
+      "new_project_fixture": 2,
+      "systemd_user_manager": 16,
+      "ui_browser": 4
+    },
+    "peak_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    },
+    "remaining_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    }
+  },
+  "results": [
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-read-every-pass",
+        "module": "control_space_admission.py",
+        "name": "space334-read-every-pass",
+        "new": "        if hold['state'] != 'waiting':",
+        "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+        "rows": [
+          "space334/ac2/manual-free-timer"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 5.181136479135603,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            false
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            false
+          ],
+          [
+            "space334/ac2/public-admit",
+            false
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac2/manual-free-timer": [
+            false
+          ]
+        }
+      },
+      "new_digest": "7ebbfc279f13b159fae65312515c48db8e179af67084836cd1352db6b667d466",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "also": [
+          [
+            "        if given is not None and reason is not None and not hold.get('retry_asked'):",
+            "        if given is not None and reason is not None:"
+          ]
+        ],
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-request-every-pass",
+        "module": "control_space_admission.py",
+        "name": "space334-request-every-pass",
+        "new": "        if hold['state'] != 'waiting':",
+        "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+        "rows": [
+          "space334/ac1/one-signal"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 5.2468430190347135,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac1/one-signal",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/outcome",
+          "space334/ac3/reconcile",
+          "space334/ac3/release"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            false
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            false
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            false
+          ],
+          [
+            "space334/ac2/public-admit",
+            false
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            false
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            false
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            false
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            false
+          ]
+        }
+      },
+      "new_digest": "29a330458f16ac1291324b13fcb42b7f5b117934abf24d8ffb6ffa3229026ea1",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/stopped-clock": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-mark-without-wake",
+        "module": "control_service.py",
+        "name": "space334-mark-without-wake",
+        "new": "                pass  # defect: the freeing write never wakes the factory",
+        "old": "                self.loop.wake('space', marked)",
+        "rows": [
+          "space334/ac3/stopped-clock"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 4.94873574282974,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac3/outcome",
+          "space334/ac3/reconcile",
+          "space334/ac3/release",
+          "space334/ac3/stopped-clock"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            false
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            false
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            false
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            false
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/stopped-clock": [
+            false
+          ]
+        }
+      },
+      "new_digest": "616f1c8c624ca6f2f5a4d0cbfc20c953b7ca3921bd062ea181e0d18a7c41c8bf",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/stopped-clock": [
+            true
+          ]
+        }
+      },
+      "old_digest": "bb625e4c042e4cf1276430e26444bc664994bb9f8cb12b807e3906efb4cba784",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/outcome": [
+            true
+          ],
+          "space334/ac3/reconcile": [
+            true
+          ],
+          "space334/ac3/release": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-no-freed-marks",
+        "module": "control_space.py",
+        "name": "space334-no-freed-marks",
+        "new": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=False)}",
+        "old": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=True)}",
+        "rows": [
+          "space334/ac3/outcome",
+          "space334/ac3/release",
+          "space334/ac3/reconcile"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 4.90839699562639,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac1/signal-can-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/release",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            false
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            false
+          ],
+          [
+            "space334/ac3/completion-race",
+            false
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            false
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            false
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            false
+          ],
+          [
+            "space334/ac3/reconcile",
+            false
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            false
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            false
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            false
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/outcome": [
+            false
+          ],
+          "space334/ac3/reconcile": [
+            false
+          ],
+          "space334/ac3/release": [
+            false
+          ]
+        }
+      },
+      "new_digest": "57d7662a47fff7b3742856a432581d5932eb8b396975846d481a87fc8a73dc2e",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/outcome": [
+            true
+          ],
+          "space334/ac3/reconcile": [
+            true
+          ],
+          "space334/ac3/release": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/outcome": [
+            true
+          ],
+          "space334/ac3/reconcile": [
+            true
+          ],
+          "space334/ac3/release": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-mark-never-cleared",
+        "module": "control_space.py",
+        "name": "space334-mark-never-cleared",
+        "new": "        pass  # defect: every later offer can read space",
+        "old": "        record['freed'] = False",
+        "rows": [
+          "space334/ac3/release"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 5.028706289827824,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/outcome",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            false
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            false
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            false
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            false
+          ],
+          [
+            "space334/ac3/release",
+            false
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/release": [
+            false
+          ]
+        }
+      },
+      "new_digest": "02a055fd37634cec920a8f0839f200231b7271c828733854f1096118c8cea3b9",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/outcome": [
+            true
+          ],
+          "space334/ac3/reconcile": [
+            true
+          ],
+          "space334/ac3/release": [
+            true
+          ]
+        }
+      },
+      "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-freeing-race-lost",
+        "module": "control_space_admission.py",
+        "name": "space334-freeing-race-lost",
+        "new": "        options = {}  # defect: use the version after reading free space",
+        "old": "        options = {'expected_version': version} if versioned and version is not None else {}",
+        "rows": [
+          "space334/ac3/free-during-judgment"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 5.088374705053866,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac3/free-during-judgment"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            false
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/free-during-judgment": [
+            false
+          ]
+        }
+      },
+      "new_digest": "4f185fc3b698a44eb988af649fedc29251361b3522cc513b2c95e46b35b106ec",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-cache-hides-freed",
+        "module": "control_space_admission.py",
+        "name": "space334-cache-hides-freed",
+        "new": "            if not hold or hold['state'] != 'released':",
+        "old": "            if not hold or (hold['state'] != 'released' and not (\n                    hold['state'] == 'waiting' and hold.get('freed'))):",
+        "rows": [
+          "space334/ac3/completion-race",
+          "space334/ac3/stopped-clock"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 4.85119594912976,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac3/completion-race",
+          "space334/ac3/stopped-clock"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            false
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            false
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac3/completion-race": [
+            false
+          ],
+          "space334/ac3/stopped-clock": [
+            false
+          ]
+        }
+      },
+      "new_digest": "b2c1cd01c7df41d18e41ea6164aeeff965e5d1c80c7568cc6eae9fcaf7e18938",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/one-signal": [
+            true
+          ]
+        }
+      },
+      "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/signal-can-admit": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 334,
+        "identity": "check_teeth_mutations.py:space334-retry-loses-ending",
+        "module": "control_space_signal.py",
+        "name": "space334-retry-loses-ending",
+        "new": "            ending = event  # defect: retry forgets why the item ended",
+        "old": "            ending = ledger.item(identity)['due']['event']",
+        "rows": [
+          "space334/ac1/signal-can-admit"
+        ],
+        "suite": "150_veldo_0334_space_wait.py"
+      },
+      "elapsed": 4.870792546309531,
+      "fixture_version": 1,
+      "input_digest": "c48abe978c3b9ff090626bc773851e78728626973f81e884d9944924ef013cb7",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space334/ac1/signal-can-admit"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            false
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/signal-can-admit": [
+            false
+          ]
+        }
+      },
+      "new_digest": "429e16adfd82d6f7fec7eb5111ef34dacc62f797e6700fca0c51d3e3dac4dd7d",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space334/ac1/one-signal",
+            true
+          ],
+          [
+            "space334/ac1/signal-can-admit",
+            true
+          ],
+          [
+            "space334/ac2/manual-free-timer",
+            true
+          ],
+          [
+            "space334/ac2/no-read-or-write",
+            true
+          ],
+          [
+            "space334/ac2/public-admit",
+            true
+          ],
+          [
+            "space334/ac3/backing-pool",
+            true
+          ],
+          [
+            "space334/ac3/completion-race",
+            true
+          ],
+          [
+            "space334/ac3/free-during-judgment",
+            true
+          ],
+          [
+            "space334/ac3/nonfreeing",
+            true
+          ],
+          [
+            "space334/ac3/outcome",
+            true
+          ],
+          [
+            "space334/ac3/pool-isolation",
+            true
+          ],
+          [
+            "space334/ac3/reconcile",
+            true
+          ],
+          [
+            "space334/ac3/refusal-atomic",
+            true
+          ],
+          [
+            "space334/ac3/release",
+            true
+          ],
+          [
+            "space334/ac3/release-replay",
+            true
+          ],
+          [
+            "space334/ac3/stopped-clock",
+            true
+          ],
+          [
+            "space334/ac3/waiting-set-race",
+            true
+          ],
+          [
+            "space334/compat/one-shot-adapter",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space334/ac1/one-signal",
+          "space334/ac1/signal-can-admit",
+          "space334/ac2/manual-free-timer",
+          "space334/ac2/no-read-or-write",
+          "space334/ac2/public-admit",
+          "space334/ac3/backing-pool",
+          "space334/ac3/completion-race",
+          "space334/ac3/free-during-judgment",
+          "space334/ac3/nonfreeing",
+          "space334/ac3/outcome",
+          "space334/ac3/pool-isolation",
+          "space334/ac3/reconcile",
+          "space334/ac3/refusal-atomic",
+          "space334/ac3/release",
+          "space334/ac3/release-replay",
+          "space334/ac3/stopped-clock",
+          "space334/ac3/waiting-set-race",
+          "space334/compat/one-shot-adapter"
+        ],
+        "targets": {
+          "space334/ac1/signal-can-admit": [
+            true
+          ]
+        }
+      },
+      "old_digest": "4ab4d0c35fa92ab453d560943a8b2f73fc13de55e131acea91faae1c3a95e442",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    }
+  ],
+  "reuse_integrity_errors": [],
+  "reuse_qualified": 0,
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "surviving_workers": 0,
+  "unmeasured_cases": [
+    "check_teeth_mutations.py:space334-cache-hides-freed",
+    "check_teeth_mutations.py:space334-freeing-race-lost",
+    "check_teeth_mutations.py:space334-mark-never-cleared",
+    "check_teeth_mutations.py:space334-mark-without-wake",
+    "check_teeth_mutations.py:space334-no-freed-marks",
+    "check_teeth_mutations.py:space334-read-every-pass",
+    "check_teeth_mutations.py:space334-request-every-pass",
+    "check_teeth_mutations.py:space334-retry-loses-ending"
+  ],
+  "worker_invocations": 16,
+  "worker_outcomes": [
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.815595001913607,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0334_space_wait.py:control_space_admission.py:False:baseline",
+      "output_directory": "/tmp/veldo0334-results/workers/0",
+      "pid": 1162841,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3499
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.839737924747169,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0334_space_wait.py:control_space_admission.py:False:noop",
+      "output_directory": "/tmp/veldo0334-results/workers/1",
+      "pid": 1162842,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3499
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.2516449321992695,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0334_space_wait.py:control_service.py:False:baseline",
+      "output_directory": "/tmp/veldo0334-results/workers/2",
+      "pid": 1164861,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3502
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.332706801127642,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0334_space_wait.py:control_service.py:False:noop",
+      "output_directory": "/tmp/veldo0334-results/workers/3",
+      "pid": 1164883,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3502
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.114044188987464,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0334_space_wait.py:control_space.py:False:baseline",
+      "output_directory": "/tmp/veldo0334-results/workers/4",
+      "pid": 1167723,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3562
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.153332924004644,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0334_space_wait.py:control_space.py:False:noop",
+      "output_directory": "/tmp/veldo0334-results/workers/5",
+      "pid": 1167758,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3562
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.374221311882138,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0334_space_wait.py:control_space_signal.py:False:baseline",
+      "output_directory": "/tmp/veldo0334-results/workers/6",
+      "pid": 1169615,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3505
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.414186384994537,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0334_space_wait.py:control_space_signal.py:False:noop",
+      "output_directory": "/tmp/veldo0334-results/workers/7",
+      "pid": 1169655,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3505
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.185264406260103,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-read-every-pass",
+      "output_directory": "/tmp/veldo0334-results/workers/9",
+      "pid": 1172836,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3604
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.2507293238304555,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-request-every-pass",
+      "output_directory": "/tmp/veldo0334-results/workers/8",
+      "pid": 1172835,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3702
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 4.9525557812303305,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-mark-without-wake",
+      "output_directory": "/tmp/veldo0334-results/workers/10",
+      "pid": 1175803,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3609
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 4.912274356000125,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-no-freed-marks",
+      "output_directory": "/tmp/veldo0334-results/workers/11",
+      "pid": 1175849,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3872
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.032083312049508,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-mark-never-cleared",
+      "output_directory": "/tmp/veldo0334-results/workers/12",
+      "pid": 1177799,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3642
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.091615061741322,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-freeing-race-lost",
+      "output_directory": "/tmp/veldo0334-results/workers/13",
+      "pid": 1177814,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3546
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 4.854437522124499,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-cache-hides-freed",
+      "output_directory": "/tmp/veldo0334-results/workers/14",
+      "pid": 1180888,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3606
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 4.87400654098019,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space334-retry-loses-ending",
+      "output_directory": "/tmp/veldo0334-results/workers/15",
+      "pid": 1180961,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3538
+    }
+  ]
+}

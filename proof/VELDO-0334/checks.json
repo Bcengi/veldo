@@ -1,0 +1,149 @@
+{
+  "boundary": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "python3",
+      "-B",
+      "scripts/check_space_boundary.py"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 5.65,
+    "stdout_sha256": "c765f4cb582622d9410266a9eea2b02d14ac01fcb2b8085aeb7d789909a2d119",
+    "supervisors": [],
+    "tree_note": "Before the last defensive host-facts type check; no later change to registration or removal paths"
+  },
+  "dependency": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "python3",
+      "-B",
+      "scripts/selftest.py",
+      "--suite",
+      "150_veldo_0316_admission"
+    ],
+    "exit": 2,
+    "scope": "selected diagnostic run",
+    "seconds": 10.97,
+    "stdout_sha256": "99bc34deba9255c4ec37d4314fbdab4b42bafdac80e7a3ab1875b75fd100e9d7",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  },
+  "docs": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "bash",
+      "scripts/check_docs.sh"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 0.58,
+    "stdout_sha256": "eaf932f74c6a45653f007ca942ca41342e80e86d0a992ccee97495aaed9ada12",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  },
+  "generated": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "bash",
+      "scripts/check_generated.sh"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 0.59,
+    "stdout_sha256": "f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
+    "supervisors": [],
+    "tree_note": "Before the last defensive host-facts type check; no later change to registration or removal paths"
+  },
+  "ledger": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "python3",
+      "-B",
+      "scripts/selftest.py",
+      "--suite",
+      "132_veldo_0297_space_ledger"
+    ],
+    "exit": 2,
+    "scope": "selected diagnostic run",
+    "seconds": 4.1,
+    "stdout_sha256": "62c8c6c65f8189b2d9164dc407dc8333fdf5553553e46d4ba43f7e95179deaf9",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  },
+  "lint": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "bash",
+      "scripts/check_lint.sh"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 2.9,
+    "stdout_sha256": "2a97e4dcdc9437d6db25b303218ab2bfd570396c20b934914428d2562fd18649",
+    "supervisors": [],
+    "tree_note": "Before the last defensive host-facts type check; no later change to registration or removal paths"
+  },
+  "suite": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "python3",
+      "-B",
+      "scripts/selftest.py",
+      "--suite",
+      "150_veldo_0334_space_wait"
+    ],
+    "exit": 2,
+    "scope": "selected diagnostic run",
+    "seconds": 5.75,
+    "stdout_sha256": "dd1db918467a80876f729a9f7a53ed03450e14955a56505f51457a2e8413515e",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  },
+  "template": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "bash",
+      "scripts/check_template_sync.sh"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 0.28,
+    "stdout_sha256": "31f485c4f6c848349ff684a8e8bc7d641c0de5fb6cc39102447b161ef398f1a7",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  },
+  "validate": {
+    "command": [
+      "nice",
+      "-n",
+      "10",
+      "python3",
+      "-B",
+      ".veldo/validate.py",
+      "all"
+    ],
+    "exit": 0,
+    "scope": "fast check",
+    "seconds": 9.65,
+    "stdout_sha256": "f0fd7479b8edf25a7bb6e6ee20603f19f1ff49ae0dcee2f41924c73a1dda0873",
+    "supervisors": [],
+    "tree_note": "Final implementation bytes"
+  }
+}

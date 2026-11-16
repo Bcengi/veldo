@@ -1,0 +1,20 @@
+{
+  "base": "b8fb73f7",
+  "commit": "e1513571efd49290eef98d94091594d50d6b8356",
+  "sha256": {
+    ".veldo/control_service.py": "bb625e4c042e4cf1276430e26444bc664994bb9f8cb12b807e3906efb4cba784",
+    ".veldo/control_space.py": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    ".veldo/control_space_admission.py": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    ".veldo/control_space_signal.py": "4ab4d0c35fa92ab453d560943a8b2f73fc13de55e131acea91faae1c3a95e442",
+    "engine/.veldo/control_service.py": "bb625e4c042e4cf1276430e26444bc664994bb9f8cb12b807e3906efb4cba784",
+    "engine/.veldo/control_space.py": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    "engine/.veldo/control_space_admission.py": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "engine/.veldo/control_space_signal.py": "4ab4d0c35fa92ab453d560943a8b2f73fc13de55e131acea91faae1c3a95e442",
+    "scripts/check_teeth_mutations.py": "174538479dd5bf53b5338acedd2758c766ca52c9da2e8df478014e926430edca",
+    "scripts/suites/150_veldo_0334_space_wait.py": "2541a48a7675bbd5ceb6e35d98f08e2156ff11c029b2df310d0d9a65a457f003",
+    "scripts/suites/manifest.json": "715b4efeeb363e75446c269786336e6aa96177b5a52f73855b1f5f867048f26b",
+    "scripts/suites/requires.json": "b93d8778161d6748a3bb2bd3c235d592a463cdd5b41abcfc2c626e8c39c31f5a",
+    "specs/VELDO-0334-a-unit-waiting-for-space-is-judged-again-only-after-space-was-freed.md": "3c83c40bc116135e6c404328a3fb25fb19153596ccf063a26dafb6d358fd52e4"
+  },
+  "tree": "36288faeefcb827f12c891c2ca09d6eba018f1ea"
+}

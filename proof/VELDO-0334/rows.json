@@ -1,0 +1,85 @@
+{
+  "basis": "The targeted suite and the final teeth baseline agree. Each teeth no-change control also passed.",
+  "own_rows": 18,
+  "rows": [
+    {
+      "passed": true,
+      "row": "space334/ac1/one-signal"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac1/signal-can-admit"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac2/manual-free-timer"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac2/no-read-or-write"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac2/public-admit"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/backing-pool"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/completion-race"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/free-during-judgment"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/nonfreeing"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/outcome"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/pool-isolation"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/reconcile"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/refusal-atomic"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/release"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/release-replay"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/stopped-clock"
+    },
+    {
+      "passed": true,
+      "row": "space334/ac3/waiting-set-race"
+    },
+    {
+      "passed": true,
+      "row": "space334/compat/one-shot-adapter"
+    }
+  ],
+  "scope": "diagnostic only; aggregate verification pending",
+  "selected_run": {
+    "exit": 2,
+    "failed": 0,
+    "passed": 44
+  },
+  "shared_preamble": 26
+}
