@@ -1012,10 +1012,12 @@ def hook_line(folder, name):
     copy, git's input is left untouched for the owner's lines and Veldo's hook is not started; the
     next reconcile finds what that landing changed.
 
-    The line has a deadline of its own, HOOK_SECONDS: Veldo's hook is started under timeout(1), which
-    ends it and everything it started, so a CLI that blocks cannot hold one run of a hook longer than
-    that (a git command that runs both hooks waits that long for each at most). What timeout(1)
-    started is killed HOOK_KILL_SECONDS later if it ignored the request to end (timeout -k). On a host with no timeout(1) the hook is started plainly, and the bound is then the
+    The line starts Veldo's hook under timeout(1), which sends TERM to its process group after
+    HOOK_SECONDS and KILL after HOOK_KILL_SECONDS more if it has not ended (timeout -k).
+    Both hook shells catch TERM while waiting for their foreground CLI, so timeout stays alive
+    through that grace period and kills the process group even when only the CLI ignores TERM.
+    A git command that runs both hooks can wait for each deadline and grace period.
+    On a host with no timeout(1) the hook is started plainly, and the bound is then the
     CLI's own: it waits control_space_spool.REACH_SECONDS for each answer of the authority and no
     longer. Either way the line ends with success and git goes on."""
     ours = shlex.quote(os.path.join(folder, HOOK_OURS + name))

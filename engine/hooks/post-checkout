@@ -20,6 +20,10 @@ common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || e
 branch=$(git symbolic-ref -q --short HEAD 2>/dev/null) || branch=
 # The CLI starts with git's own variables cleared, so nothing it does is aimed at this repository.
 unset $(git rev-parse --local-env-vars 2>/dev/null)
+# Stay with the foreground CLI on TERM. timeout signals this whole process group;
+# if the CLI ignores TERM, keeping its parent alive lets timeout reach its KILL step.
+# A caught signal (unlike an ignored one) resets to default in the CLI on exec.
+trap : TERM
 if [ -n "$installation" ]; then
   "$cli" space record --state-root "$root" --installation "$installation" --worktree "$worktree" \
     --git-dir "$gitdir" --common-dir "$common" --branch "$branch" "$1" "$2" "$3" </dev/null >/dev/null 2>&1

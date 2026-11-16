@@ -836,6 +836,125 @@ def _v329_suite():
                 except OSError:
                     pass
 
+        row = 'followup/cli-ignores-term'
+        deadline = repository('deadline')
+        first = git(deadline, 'rev-parse', 'HEAD')
+        git(deadline, 'commit', '-q', '--allow-empty', '-m', 'before installing')
+        tip = git(deadline, 'rev-parse', 'HEAD')
+        deadline_state = temp / 'deadline-state'
+        deadline_state.mkdir(mode=0o700)
+        deadline_pids, terms, inputs, owner_input, snapshot = (
+            temp / ('deadline-' + name) for name in ('pids', 'terms', 'inputs', 'owner-input', 'snapshot'))
+        owner_hook = deadline / '.git/hooks/reference-transaction'
+        owner_hook.write_text('#!/bin/sh\n[ "$1" != committed ] || cat >>' + str(owner_input) + '\n')
+        owner_hook.chmod(0o755)
+        deaf_cli = temp / 'bin/veldo-deaf-cli'
+        # Real spool submission, with only the authority replaced by a blocked call. A second
+        # TERM-catching process proves the kill reaches descendants as well as the CLI itself.
+        deaf_cli.write_text('''#!/usr/bin/env python3
+import json, os, signal, subprocess, sys, time
+from pathlib import Path
+sys.path.insert(0, %r)
+import control_space_spool as spool
+def note(path, value):
+    with open(path, 'a') as stream:
+        stream.write(json.dumps(value) + '\\n')
+signal.signal(signal.SIGTERM, lambda *_: note(%r, os.getpid()))
+note(%r, os.getpid())
+if '--child' in sys.argv:
+    time.sleep(60)
+    sys.exit(0)
+subprocess.Popen([sys.executable, __file__, '--child'])
+args = sys.argv[1:]
+def arg(name):
+    return args[args.index(name) + 1]
+if args[:2] == ['space', 'event']:
+    lines = sys.stdin.read()
+    note(%r, lines)
+    class Blocked:
+        def about(self, *args):
+            folder = spool.spool_folder(arg('--state-root'))
+            Path(%r).write_text(json.dumps({name: (Path(folder) / name).read_text()
+                                          for name in spool.pending(folder)}))
+            time.sleep(60)
+            raise spool.Unreachable('stub authority never answered')
+    for one in spool.ref_changes(lines.splitlines(), arg('--common-dir'), 'fixture', arg('--trunk')):
+        spool.submit(one, arg('--state-root'), installation=%r, authority=Blocked(), sign=lambda _: 'stub')
+time.sleep(60)
+''' % (str(mods), str(terms), str(deadline_pids), str(inputs), str(snapshot), str(installation)))
+        deaf_cli.chmod(0o755)
+        kept_seconds, R.HOOK_SECONDS, R.HOOK_KILL_SECONDS = (R.HOOK_SECONDS, R.HOOK_KILL_SECONDS), 1, 1
+        try:
+            installed = R.install_git_hooks(str(deadline), str(deadline_state), str(deaf_cli),
+                                             str(installation), 'main', str(HOOK_SOURCE), G)
+        finally:
+            R.HOOK_SECONDS, R.HOOK_KILL_SECONDS = kept_seconds
+
+        def running(pid):
+            # A zombie has ended; PID 1 may not have reaped an orphan yet in a container.
+            try:
+                return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] not in ('Z', 'X')
+            except (FileNotFoundError, ProcessLookupError):
+                return False
+
+        def recorded_pids():
+            return [int(line) for line in deadline_pids.read_text().splitlines()] if deadline_pids.exists() else []
+
+        def ended(pids):
+            # KILL reaches the group together, but the kernel can finish its exits after timeout
+            # itself is reaped. Wait briefly for that; an orphan sleeping 60 seconds still fails.
+            until = time.monotonic() + 1
+            while any(running(pid) for pid in pids) and time.monotonic() < until:
+                time.sleep(0.01)
+            return not any(running(pid) for pid in pids)
+
+        try:
+            began = time.monotonic()
+            changed = subprocess.run(['git', '-C', str(deadline), 'update-ref', '--stdin'],
+                                     input='update refs/heads/main %s %s\ncreate refs/heads/side %s\n'
+                                           % (first, tip, first), env=git_env, capture_output=True,
+                                     text=True, timeout=15)
+            ref_took = time.monotonic() - began
+            expected_input = '%s %s refs/heads/main\n%s %s refs/heads/side\n' % (tip, first, '0' * 40, first)
+            ref_inputs = [json.loads(line) for line in inputs.read_text().splitlines()] if inputs.exists() else []
+            owner_lines = owner_input.read_text() if owner_input.exists() else None
+            check(row, 'the timed out ref hook succeeds and both the CLI and owner get the whole transaction: '
+                  + repr((changed.returncode, ref_took, ref_inputs, owner_lines)),
+                  installed.get('ok') is True and changed.returncode == 0 and 0.5 < ref_took < 12
+                  and ref_inputs == [expected_input]
+                  and owner_lines == expected_input + '%s %s HEAD\n' % (tip, first))
+            check(row, 'after the ref hook returns its CLI and descendant have ended',
+                  len(recorded_pids()) == 2 and ended(recorded_pids()))
+            # Exercise the other invocation arm too: no installation configured, then a checkout.
+            git(deadline, 'config', '--unset', 'veldo.space.installation')
+            began = time.monotonic()
+            git(deadline, 'checkout', '-q', '-b', 'after-deadline')
+            checkout_took = time.monotonic() - began
+            started = recorded_pids()
+            caught = [int(line) for line in terms.read_text().splitlines()] if terms.exists() else []
+            check(row, 'git goes on after TERM and the grace; all three CLIs and their descendants ended: '
+                  + str((ref_took, checkout_took, started, caught)),
+                  1.5 < ref_took and 3 < checkout_took < 20 and len(started) == 6 and set(caught) == set(started)
+                  and ended(started)
+                  and git(deadline, 'symbolic-ref', '--short', 'HEAD') == 'after-deadline')
+            folder = spool.spool_folder(str(deadline_state))
+            pending = {name: (Path(folder) / name).read_text() for name in spool.pending(folder)}
+            spooled_entries = [json.loads(value) for value in pending.values()]
+            check(row, 'the undelivered ref event stays byte-for-byte in the spool after the CLI is killed',
+                  snapshot.exists() and pending == json.loads(snapshot.read_text()) and len(spooled_entries) == 1
+                  and spooled_entries[0]['type'] == 'ref_changed'
+                  and spooled_entries[0]['subject'] == {'repository': str(deadline), 'ref': 'refs/heads/main',
+                                               'old': tip, 'new': first}
+                  and not spool.refused(folder))
+        finally:
+            # Falsifiers deliberately leave these processes alive; clean only this fixture's PIDs.
+            for pid in recorded_pids():
+                if running(pid):
+                    try:
+                        os.kill(pid, 9)
+                    except ProcessLookupError:
+                        pass
+
         # ---- The re-review's finding and its note (second fix round) ------------------------------
         row = 'fix7/worktree-configuration'
         several = repository('several')
