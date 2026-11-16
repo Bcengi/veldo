@@ -680,6 +680,25 @@ def _v315_suite():
         def serve_order(f, row):
             path = f.tree('serve-start', 'ticket/VELDO-9315')
             service = f.service
+            spool = SV.SPACE_CONSUMER.WORKER.SPOOL
+            f.put(SP.OBSERVER, 'membership', dict(principal_type='service', roles=[], scope='*',
+                  revoked_at=None, expires_at=None))
+            f.put('key:' + SP.OBSERVER, 'verification_key', dict(principal=SP.OBSERVER,
+                  public_key=public, effective_at=0))
+            observer_key = Path(SP.key_path(SP.OBSERVER, str(f.installation)))
+            observer_key.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(key, observer_key)
+            observer_key.chmod(0o600)
+            work = f.state / 'work.json'
+            work.write_text(json.dumps({'schema': SV.WORK_SCHEMA, 'repositories': {
+                'orchard': {'land': {'remote': 'origin', 'trunk': 'main'}}}}))
+            work.chmod(0o600)
+            service.config['work'] = str(work)
+            folder = spool.spool_folder(str(f.state))
+            tip = git(f.repo, 'rev-parse', 'HEAD')
+            spool.put(folder, spool.entry('ref_changed', dict(repository=str(f.repo),
+                ref='refs/heads/main', old=tip, new=tip), 'reference-transaction', 'fixture'))
+            real_select = select.select
             queued = f.L.event('session_ended', {'session': 'serve', 'cwd': str(f.root), 'pid': 12345, 'started': 77},
                                {'hook': 'session-end', 'host': 'fixture'})
             assert queued['ok'], queued
@@ -706,6 +725,13 @@ def _v315_suite():
             def dispatch(*args):
                 order.append('dispatch')
                 check(row, 'first dispatch sees the reconciled worktree', f.at(path)[0] is not None)
+                deadline = time.monotonic() + 60
+                while service.space_consumer.active and time.monotonic() < deadline:
+                    for fd in real_select(list(service.space_pipes()), [], [], 0.1)[0]:
+                        service.space_readable(fd)
+                changed = [record for _, record in f.L.events() if record['type'] == 'ref_changed']
+                check('ac3/serve-trunk-replay', 'real serve reads land before open_loop, records and consumes trunk',
+                      not spool.pending(folder) and len(changed) == 1 and changed[0]['state'] == 'consumed')
                 handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
                 return None
 

@@ -1574,9 +1574,18 @@ class Service:
         self._space = wired
         self.space_consumer = None if wired is None else SPACE_CONSUMER.Consumer(
             wired['ledger'], {key: value for key, value in wired.items() if key != 'ledger'},
-            landing=lambda: landing_names(self.loop) if self.loop is not None else self.config.get('space_landing'),
+            landing=self.space_landing,
             observe=lambda answer: self._log(dict(answer, kind='space', operation='space_worker')),
             held=self.space_held)
+
+    def space_landing(self):
+        if self.loop is not None:
+            return landing_names(self.loop)
+        if self.config.get('work'):
+            roles = load_work(self.config['work'])['repositories']
+            return {repository: role['land'] for repository, role in roles.items()
+                    if isinstance((role or {}).get('land'), dict)}
+        return self.config.get('space_landing')
 
     def space_held(self):
         """What this instance holds and a space worker must not keep: the lock and the listeners that
@@ -1672,11 +1681,13 @@ class Service:
             else:
                 spool = _organ('control_space_spool')
                 folder = spool.spool_folder(self.space['ledger'].state_root)
+                landing = self.space_landing()
                 if spool.pending(folder):
                     installation = self.config.get('installation')
                     if not installation:
                         raise ValueError('space spool needs the installation signing keys')
-                    spool.replay(folder, spool.Local(self.space['ledger'], CM), spool.signer(installation), seconds=None)
+                    spool.replay(folder, spool.Local(self.space['ledger'], CM, landing=landing),
+                                 spool.signer(installation), seconds=None)
                     if spool.pending(folder):
                         raise ValueError('space spool still has undelivered records')
             if reconcile is not None:
