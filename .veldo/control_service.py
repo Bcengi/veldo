@@ -376,6 +376,7 @@ ASK_SECONDS = 7 * 86400
 GRANT_KIND = 'land_approval'
 GRANT_CHOICES = ('grant', 'stop')
 ACCEPT_SECONDS = 0.25
+REPLY_SECONDS = 1.0  # the longest a kept request's answer is offered to its client, as CC.serve_one's
 # VELDO-0161: how long a repository record whose taking on faulted unexpectedly waits before it is judged again.
 ADOPTION_RETRY_SECONDS = 5.0
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
@@ -440,6 +441,52 @@ class Refused(Exception):
     def __init__(self, code, detail='', guidance=None):
         super().__init__('%s: %s' % (code, detail))
         self.code, self.detail, self.guidance = code, detail, guidance
+
+
+class SpacePending(BaseException):
+    """VELDO-0315: a request whose answer is a space worker task's. It is raised where the task was
+    submitted and passes every layer that judged the request, up to Service.serve_request. By then
+    the request's connection is kept on the task's ticket, and the request is answered when the
+    task completes (Service.space_answer). It is no Exception, so no layer's handler for a fault
+    takes it for one and answers in its place."""
+
+    def __init__(self, ticket):
+        super().__init__('the answer is a space worker task\'s')
+        self.ticket = ticket
+
+
+class SpaceRequests:
+    """VELDO-0315: the authority socket and its judge as CC.serve_one reads them, for one request.
+    It remembers the connection and the request that is being judged, so a request whose answer is
+    a worker task's can be kept on the task's ticket. serve_one's own close leaves a kept
+    connection open; nothing else of serve_one changes."""
+
+    class Connection:
+        def __init__(self, conn):
+            self.conn, self.kept = conn, False
+
+        def __getattr__(self, name):
+            return getattr(self.conn, name)
+
+        def close(self):
+            if not self.kept:
+                self.conn.close()
+
+    def __init__(self, listener, authority):
+        self.listener, self.authority = listener, authority
+        self.conn, self.request, self.uid = None, None, None
+
+    def accept(self):
+        conn, address = self.listener.accept()
+        self.conn = self.Connection(conn)
+        return self.conn, address
+
+    def _no(self, reason, message):
+        return self.authority._no(reason, message)
+
+    def judge(self, request, uid):
+        self.request, self.uid = request, uid
+        return self.authority.judge(request, uid)
 
 
 def taxonomy(code):
@@ -1548,6 +1595,9 @@ class Service:
         self.space_consumer = None
         self.space_owned = []
         self.space_refusal = None
+        # VELDO-0315: the request the serve loop is judging now, and, while a kept request is judged
+        # again with its task's answer, that answer and the moment the request was first judged.
+        self.space_request, self.space_settled = None, None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1618,7 +1668,10 @@ class Service:
 
     def space_stop(self):
         if self.space_consumer is not None:
+            waiting = list(self.space_consumer.tasks.values())
             self.space_consumer.stop()
+            for ticket in waiting:
+                self.space_answer(ticket, None)
         if self.space_docker is not None:
             self.space_docker.stop()
 
@@ -1719,13 +1772,29 @@ class Service:
         return {'ok': False, 'reason': self.space_refusal, 'detail': str(error)[:400]}
 
     def space_reconcile(self, started_by='console', project=None):
-        """Wait for the coalesced worker result while the service keeps answering packets."""
+        """The coalesced worker task's answer. Nothing waits for it inside a request: when the serve
+        loop is judging a request (serve_request), the request's connection is kept on the task's
+        ticket, SpacePending is raised through the layers that judged it, and the one serve loop
+        goes on; the request is answered when the task completes (space_answer). With no request
+        being judged (the service's start, before the loop exists) this waits on the worker's pipe
+        and on nothing else."""
         if self.space is None:
             return {'ok': False, 'reason': 'space_not_configured'}
         if project is not None and (not isinstance(project, str) or not project):
             return {'ok': False, 'reason': 'invalid_input:project'}
+        # getattr: an instance built without __init__ (a fixture's) judges no request.
+        settled = getattr(self, 'space_settled', None)
+        if settled is not None:
+            return settled['answer']  # a kept request, judged again with its task's answer
         try:
             ticket = self.space_reconcile_task(started_by, project)
+            request = getattr(self, 'space_request', None)
+            if request is not None and request.conn is not None and request.request is not None and not ticket['done']:
+                request.conn.kept = True
+                ticket.setdefault('replies', []).append({
+                    'conn': request.conn.conn, 'authority': request.authority, 'request': request.request,
+                    'uid': request.uid, 'at': time.time()})
+                raise SpacePending(ticket)
             while not ticket['done']:
                 self.space_wait()
             return ticket['answer']
@@ -1733,15 +1802,63 @@ class Service:
             return self._space_reconcile_failed(error)
 
     def space_wait(self):
-        pump = getattr(self, 'space_poll', None)
-        if pump is not None:
-            pump()
-        else:
-            poller = select.poll()
-            for fd in self.space_pipes():
-                poller.register(fd, select.POLLIN | select.POLLHUP)
-            for fd, _event in poller.poll():
-                self.space_readable(fd)
+        """One wait on the space worker's pipes, with no time limit. Never called inside a request."""
+        poller = select.poll()
+        for fd in self.space_pipes():
+            poller.register(fd, select.POLLIN | select.POLLHUP)
+        for fd, _event in poller.poll():
+            self.space_readable(fd)
+
+    def serve_request(self, listener, authority):
+        """One request on the authority socket: CC.serve_one, unchanged, for every request it can
+        answer at once. A request whose answer is a space worker task's is kept on the task's
+        ticket (space_reconcile) and answered when the task completes; nothing is sent for it
+        here and its connection stays open. Returns the response, or None for a kept request."""
+        requests = SpaceRequests(listener, authority)
+        self.space_request = requests
+        try:
+            return CC.serve_one(requests, requests)
+        except SpacePending:
+            request = requests.request if isinstance(requests.request, dict) else {}
+            if self.api is not None and SA.AS.is_call(request.get('command')):
+                self.api.counts['calls'] -= 1  # one call, counted when it is judged with its answer
+            return None
+        finally:
+            self.space_request = None
+
+    def space_answer(self, ticket, answer):
+        """Answer every request kept on a finished task's ticket. Each is judged again by the same
+        judge, as of the moment it was first judged, with the task's answer as its reconcile's:
+        so every layer observes, counts and wraps the one answer exactly as for a request answered
+        at once. With no answer (the service is stopping) the request is refused as
+        authority_unavailable and nothing is judged. A client that has gone, or a fault here,
+        never reaches the serve loop."""
+        for reply in ticket.pop('replies', ()):
+            conn, judge = reply['conn'], getattr(getattr(self, 'api', None), 'authority', None)
+            clock = getattr(judge, 'clock', None)
+            try:
+                if answer is None:
+                    response = reply['authority']._no('authority_unavailable',
+                                                      'the service stopped before the reconcile ended')
+                else:
+                    self.space_settled = {'answer': answer, 'at': reply['at']}
+                    if clock is not None:
+                        judge.clock = lambda at=reply['at']: at
+                    response = reply['authority'].judge(reply['request'], reply['uid'])
+                    self.observe_response(response)
+                conn.settimeout(REPLY_SECONDS)
+                conn.sendall(json.dumps(response).encode('utf-8'))
+            except Exception as error:  # noqa: BLE001 - one kept request never ends the service
+                with contextlib.suppress(Exception):
+                    self._log({'kind': 'space', 'operation': 'reconcile_reply', 'at': time.time(),
+                               'domain_uuid': self.domain, 'refusal': 'space_reply_failed:' + type(error).__name__,
+                               'detail': str(error)[:400]})
+            finally:
+                self.space_settled = None
+                if clock is not None:
+                    judge.clock = clock
+                with contextlib.suppress(OSError):
+                    conn.close()
 
     def space_reconcile_task(self, started_by='service_start', project=None, retry=False):
         consumer = self.space_consumer
@@ -1751,6 +1868,7 @@ class Service:
         adapter = self.space_docker
         # Subscriptions belong to the service. The child only reads snapshots and disk.
         snapshots = adapter.start() if adapter is not None else {}
+        made = []
 
         def task():
             self.conn = self.space['ledger'].conn
@@ -1763,7 +1881,9 @@ class Service:
                 self.space_refusal = None
             else:
                 self._space_reconcile_failed(RuntimeError(answer.get('detail') or answer.get('reason')))
-        return consumer.submit(key, task, complete)
+            self.space_answer(made[0], answer)
+        made.append(consumer.submit(key, task, complete))
+        return made[0]
 
     def _space_reconcile(self, started_by='console', project=None, snapshots=None):
         """Worker task: use its reopened store and never create event subscriptions."""
@@ -1813,7 +1933,10 @@ class Service:
         expected = {'domain_uuid': self.domain, 'store_uuid': self.store, 'repository_uuid': repository}
         if any(command.get(key) != value for key, value in expected.items()):
             raise Refused('invalid_input:coordinates')
-        now, principal = time.time(), command.get('principal')
+        # A kept request is judged again as of the moment it was first judged (space_answer).
+        settled = getattr(self, 'space_settled', None)
+        now = settled['at'] if settled is not None else time.time()
+        principal = command.get('principal')
         state = CM.authority_state(S, self.conn)
         member = AC.membership_entry(state['membership'], principal)
         key = AC.active_key(state['keyring'], principal, now) if AC.active_member(member, now)[0] else None
@@ -4360,32 +4483,6 @@ def serve(config_path):
             listener.settimeout(ACCEPT_SECONDS)
             space_listener = service.space_listen()
             service.space_owned.append(space_listener)
-            def space_poll():
-                if stopping:
-                    service.space_stop()
-                    return
-                spaces = service.space_pipes()
-                dockers = service.docker_pipes()
-                provisioners = service.provisioner_pipes()
-                launches = service.loop.pipes() if service.loop is not None else {}
-                readers = [listener] + ([space_listener] if space_listener is not None else [])
-                readers += sorted({**spaces, **dockers, **provisioners, **launches})
-                for fd in select.select(readers, [], [], ACCEPT_SECONDS)[0]:
-                    if fd == listener:
-                        response = CC.serve_one(listener, authority)
-                        if response is not None:
-                            service.observe_response(response)
-                    elif fd == space_listener:
-                        service.space_packet(space_listener)
-                    elif fd in spaces:
-                        service.space_readable(fd)
-                    elif fd in dockers:
-                        service.docker_readable(fd)
-                    elif fd in provisioners:
-                        service.provisioner_readable(fd)
-                    elif fd in launches:
-                        service.loop.readable(launches[fd])
-            service.space_poll = space_poll
             service.space_worker_start(reconcile=service.space_received_reconcile)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
@@ -4414,7 +4511,9 @@ def serve(config_path):
                     response = None
                     if listener in ready:
                         try:
-                            response = CC.serve_one(listener, authority)
+                            # VELDO-0315: a reconcile's request is kept on its task's ticket and
+                            # answered when the task completes; this loop is the only one that waits.
+                            response = service.serve_request(listener, authority)
                         except socket.timeout:
                             response = None
                         except OSError:

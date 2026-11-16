@@ -780,6 +780,8 @@ def _v315_suite():
             adapter = service.space_docker = Docker(f.L)
             order, handlers = [], {}
             open_store, opened = SV.S.open_store, []
+            real_serve_one = SV.CC.serve_one
+            live, asked, slowed, answered, quiet, threads, descriptors = [], [], [], [], [], [], []
 
             def open_service(path):
                 opened.append(path)
@@ -806,7 +808,15 @@ def _v315_suite():
                 order.append('worker')
                 return worker(*args, **kwargs)
 
+            def judged(authority, request, uid):
+                # The service's own apply behind the real serve_one: the fixture stands in for the
+                # enrollment and the routing a request passes before it, and for nothing after.
+                return {'accepted': True, 'result': authority.apply(
+                    request['command'], {'repository_uuid': 'repository', 'workspace': None})}
+
             def dispatch(*args):
+                if 'dispatch' in order:
+                    return real_serve_one(*args)  # every request after the first: the real serve_one
                 order.append('dispatch')
                 check(row, 'first dispatch sees the reconciled worktree', f.at(path)[0] is not None)
                 deadline = time.monotonic() + 60
@@ -831,34 +841,62 @@ def _v315_suite():
                         os.read(release_read, 1)
                 service.space_consumer._spawn(latched)
                 os.read(held_read, 4)
-                answered = []
+                descriptors.extend((held_read, held_write, release_read, release_write))
 
                 def packet():
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+                        client.settimeout(10)
+                        client.connect(str(Path(folder) / spool.SOCKET))
+                        client.sendall(json.dumps({'call': 'about', 'repository': str(f.repo),
+                                                   'path': None}).encode())
+                        client.shutdown(socket.SHUT_WR)
+                        answered.append(json.loads(client.recv(65536)))
+
+                def clients():
+                    # The owner's signed reconcile request first, on the authority socket. Then a
+                    # client that sends half a request and stalls. Then a hook's packet, whose
+                    # answer lets the active worker go. Only then is the owner's answer read.
+                    command = {'domain_uuid': 'domain', 'store_uuid': 'store', 'repository_uuid': 'repository',
+                               'operation': 'reconcile_space', 'principal': 'owner',
+                               'command_id': 'reconcile:fixture', 'expires_at': time.time() + 60,
+                               'parameters': {'project': None}}
+                    asking = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                     try:
-                        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-                            client.settimeout(10)
-                            client.connect(str(Path(folder) / spool.SOCKET))
-                            client.sendall(json.dumps({'call': 'about', 'repository': str(f.repo),
-                                                       'path': None}).encode())
-                            client.shutdown(socket.SHUT_WR)
-                            answered.append(json.loads(client.recv(65536)))
+                        try:
+                            asking.settimeout(60)
+                            asking.connect(service.config['socket'])
+                            asking.sendall(json.dumps({'command': {
+                                'command': command, 'signature': sign(S.canonical_bytes(command))}}).encode())
+                            asking.shutdown(socket.SHUT_WR)
+                            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as slow:
+                                slow.settimeout(20)
+                                slow.connect(service.config['socket'])
+                                slow.sendall(b'{"command": ')
+                                slowed.append(slow.recv(65536))
+                            packet()
+                            quiet.append(not real_select([asking], [], [], 0)[0])
+                        finally:
+                            os.write(release_write, b'x')
+                        data = b''
+                        while True:
+                            chunk = asking.recv(65536)
+                            if not chunk:
+                                break
+                            data += chunk
+                        asked.append(json.loads(data))
+                    except Exception as error:  # noqa: BLE001 - the rows say what was not answered
+                        asked.append({'error': repr(error)})
                     finally:
-                        os.write(release_write, b'x')
-                sender = threading.Thread(target=packet)
-                sender.start()
+                        asking.close()
+                        handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
                 service.space_refusal = 'fixture retry'
                 for _ in range(20):
                     service.docker_readable(1)
                 check('ac3/retry-coalesced', 'twenty engine events queue at most one retry behind the active worker',
                       list(service.space_consumer.tasks) == [('retry',)])
-                with patch.object(SV.select, 'select', real_select):
-                    answer = service.space_reconcile('cli')
-                sender.join(12)
-                check('ac3/reconcile-responsive', 'a packet is answered while reconcile waits for the worker latch',
-                      bool(answered) and answered[0].get('served') and answer['ok'])
-                for fd in (held_read, held_write, release_read, release_write):
-                    os.close(fd)
-                handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
+                threads.append(threading.Thread(target=clients))
+                threads[-1].start()
+                live.append(True)  # from here the loop waits on its real poll set
                 return None
 
             with contextlib.ExitStack() as stack:
@@ -874,9 +912,25 @@ def _v315_suite():
                     (SV.SA, 'open_api', lambda *args: (None, None)), (SV, 'open_loop', lambda *args: (None, None)),
                     (SV.signal, 'signal', lambda sig, handler: handlers.update({sig: handler})),
                     (SV, 'notify', lambda *args: None), (SV.CC, 'serve_one', dispatch),
-                    (SV.select, 'select', lambda reads, *args: ([reads[0]], [], []))):
+                    (SV.CC.Authority, 'judge', judged),
+                    (SV.select, 'select', lambda reads, *args: (
+                        real_select(reads, *args) if live else ([reads[0]], [], [])))):
                     stack.enter_context(patch.object(obj, name, value))
                 SV.serve('fixture')
+            for thread in threads:
+                thread.join(90)
+            for fd in descriptors:
+                os.close(fd)
+            answer = (asked[0].get('result') if asked else None) or {}
+            check('ac3/reconcile-responsive', 'a hook packet is answered while the owner\'s reconcile request is kept, '
+                  'unanswered, on its task\'s ticket; the request is answered when the task ends [%s %s %s]'
+                  % (answered[:1], quiet, asked[:1]),
+                  bool(answered) and answered[0].get('served') and quiet == [True] and answer.get('ok') is True)
+            check('cli/slow-client', 'a client that sent half a request and stalled during the reconcile is refused '
+                  'by name; the reconcile is not failed and no refusal is set [%s %s %s]'
+                  % (slowed[:1], answer.get('reason'), service.space_refusal),
+                  bool(slowed) and isinstance(slowed[0], bytes) and b'malformed_request' in slowed[0]
+                  and answer.get('ok') is True and service.space_refusal is None)
             check(row, 'real serve starts once before worker and dispatch, then stops the worker and engines',
                   order == ['reconcile', 'worker', 'dispatch'] and service.space_consumer.active is None
                   and service.space_pipes() == {} and adapter.stopped)

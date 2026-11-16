@@ -199,6 +199,15 @@ or null for all. Both entry points require the space owner.
   services receive reconcile and its existing spool, kind registry and Docker adapter dependencies.
   No acceptance criterion changed.
 
+- 2026-11-16: fix round 4, from the second re-review. No acceptance criterion changed. The run's
+  supervisor in bin/veldo (VELDO-0313's, which fix round 3 of this ticket had changed) stays again
+  when its report loses its reader and when it is sent a stop after the command ended, and it
+  reads the process table again only when every holder the last read named has exited. The hook
+  consumer goes on after a worker task that failed or whose worker was lost; stopping is the rule
+  of a failed event dispatch alone. The owner's reconcile request, from the CLI and from the API,
+  is kept on its worker task's ticket and answered when the task ends: the serve loop is the one
+  loop that waits, and nothing waits inside a request.
+
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
 - 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.

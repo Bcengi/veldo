@@ -16348,6 +16348,10 @@ def cases():
         "        if advance and (self.tasked or self.tasks or (status == 0 and answer.get('ok') and finished)):\n",
         "        if advance and (self.tasks or (status == 0 and answer.get('ok') and finished)):\n",
         ['space315/ac3/failed-task-advances'])
+    add(315, 'space315-reconcile-waited-inside-the-request', '156_veldo_0315_reconcile.py', 'control_service.py',
+        "            if request is not None and request.conn is not None and request.request is not None and not ticket['done']:\n",
+        "            if False:\n",
+        ['space315/ac3/reconcile-responsive', 'space315/cli/slow-client'])
 
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
