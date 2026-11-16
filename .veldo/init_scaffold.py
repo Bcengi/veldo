@@ -220,6 +220,7 @@ _FILES = [
     ".veldo/control_space_signal.py",
     ".veldo/control_space_standalone.py",
     ".veldo/control_space_probe.py",
+    ".veldo/control_space_docker.py",  # the probe's relationship read loads it (VELDO-0341)
     ".veldo/control_space_keep.py",
     ".veldo/control_space_remove.py",
     ".veldo/control_space.py",
