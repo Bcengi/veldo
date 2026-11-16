@@ -99,3 +99,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   reached today. Follow-up: when VELDO-0323 wires the gate, and VELDO-0325 at the latest, those
   callers send the pool's one admission_requested the first time their hold would wait (design 6.7).
   No acceptance criterion changed.
+
+- 2026-11-16: fix round 1, review finding 6. The lead accepted the footprint widening recorded above
+  (Signal and its synced copy) on 2026-11-16. The owner approves it at landing with the rest of the
+  ticket.
