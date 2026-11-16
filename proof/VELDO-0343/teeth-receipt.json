@@ -1,0 +1,5635 @@
+{
+ "budget_seconds": 29368.0,
+ "case_deadlines": {
+  "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree": 120,
+  "check_teeth_mutations.py:space343-branch-for-a-held-commit": 120,
+  "check_teeth_mutations.py:space343-branch-made-and-not-recorded": 120,
+  "check_teeth_mutations.py:space343-discard-commits-as-save-does": 120,
+  "check_teeth_mutations.py:space343-discard-without-the-branch": 120,
+  "check_teeth_mutations.py:space343-ledger-trusts-the-branch": 120,
+  "check_teeth_mutations.py:space343-ledger-trusts-the-commit": 120,
+  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write": 120
+ },
+ "case_receipts": [
+  {
+   "identity": "check_teeth_mutations.py:space343-discard-without-the-branch",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  }
+ ],
+ "drivers": {
+  "check_review_mutations.py": {
+   "executed": 0,
+   "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "registered": 0,
+   "reused": 0,
+   "wall_seconds": 0,
+   "worker_seconds": 0
+  },
+  "check_teeth_mutations.py": {
+   "executed": 8,
+   "inventory_digest": "139470738866303e75b417612c53595749b795043f4f6bd529d310d360232b0e",
+   "registered": 8,
+   "reused": 0,
+   "wall_seconds": 35.5234411531128,
+   "worker_seconds": 70.10602708393708
+  }
+ },
+ "elapsed": 37.99994569364935,
+ "executed": 8,
+ "force_fresh": false,
+ "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+ "input_digest": "c7b5879e5d6d39843bce17fbb07511e89dbd0b4fdd66febd0fae59391b3a1b2c",
+ "invalid_results": [],
+ "parallel_workers": 2,
+ "peak_workers": 2,
+ "registered": 8,
+ "rejected": 8,
+ "resources": {
+  "capacities": {
+   "new_project_fixture": 2,
+   "systemd_user_manager": 16,
+   "ui_browser": 4
+  },
+  "peak_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 0
+  },
+  "remaining_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 0
+  }
+ },
+ "results": [
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-discard-without-the-branch",
+    "module": "control_space_remove.py",
+    "name": "space343-discard-without-the-branch",
+    "new": "        pass  # defect: no kept branch before the Discard",
+    "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+    "rows": [
+     "space343/ac1/kept-branch",
+     "space343/ac1/branch-item"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.60830858303234,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac2/git-refuses",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      false
+     ],
+     [
+      "space343/ac1/kept-branch",
+      false
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      false
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      false
+     ],
+     [
+      "space343/ac2/next-name",
+      false
+     ],
+     [
+      "space343/ac2/not-recorded",
+      false
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      false
+     ],
+     [
+      "space343/ac4/no-event",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      false
+     ],
+     "space343/ac1/kept-branch": [
+      false
+     ]
+    }
+   },
+   "new_digest": "8b8c2077e86ef9bfffc81637defee4b83c6aa64a45c7a848fbba43fa296e3baa",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
+    "module": "control_space_remove.py",
+    "name": "space343-remove-after-the-failed-branch-write",
+    "new": "        try:\n            _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])\n        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
+    "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+    "rows": [
+     "space343/ac2/name-taken",
+     "space343/ac2/git-refuses"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.614856387022883,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/git-refuses",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      false
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      false
+     ],
+     [
+      "space343/ac2/next-name",
+      false
+     ],
+     [
+      "space343/ac2/not-recorded",
+      false
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/git-refuses": [
+      false
+     ],
+     "space343/ac2/name-taken": [
+      false
+     ]
+    }
+   },
+   "new_digest": "ccf6b2374f56bce1d08cc5a10e09d4bd5c84af1baf3b6e7054870847d3dfc492",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
+    "module": "control_space_remove.py",
+    "name": "space343-agent-repository-goes-with-the-worktree",
+    "new": "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n            import shutil\n            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+    "old": "        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+    "rows": [
+     "space343/ac3/agent"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.790427803993225,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac3/agent"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      false
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac3/agent": [
+      false
+     ]
+    }
+   },
+   "new_digest": "35ebb941fa505d8d7dc37504ba69c0f4378707d508b8a4c4104b2e14e4601185",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
+    "module": "control_space_remove.py",
+    "name": "space343-discard-commits-as-save-does",
+    "new": "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
+    "old": "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
+    "rows": [
+     "space343/ac4/no-commit"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 6.44017077004537,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/next-name",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      false
+     ],
+     [
+      "space343/ac1/kept-branch",
+      false
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      false
+     ],
+     [
+      "space343/ac1/snapshot",
+      false
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      false
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      false
+     ],
+     [
+      "space343/ac4/no-commit",
+      false
+     ],
+     [
+      "space343/ac4/no-event",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac4/no-commit": [
+      false
+     ]
+    }
+   },
+   "new_digest": "529d7e0b3e1bad0c3059f6ce4f3a086d5d256568f6727cb78a6035146e5bc3df",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
+    "module": "control_space_remove.py",
+    "name": "space343-branch-made-and-not-recorded",
+    "new": "    if False:",
+    "old": "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
+    "rows": [
+     "space343/ac2/not-recorded"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.554268823936582,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/not-recorded"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      false
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/not-recorded": [
+      false
+     ]
+    }
+   },
+   "new_digest": "acb729ac3647a46f49789571048efbceb9e9baa5e1e94b6dbb38ffbab0e947a3",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
+    "module": "control_space_remove.py",
+    "name": "space343-branch-for-a-held-commit",
+    "new": "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
+    "old": "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
+    "rows": [
+     "space343/ac1/only-unheld"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.654963691253215,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/only-unheld"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      false
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/only-unheld": [
+      false
+     ]
+    }
+   },
+   "new_digest": "8a6272178926220f2b80405514db1343742a7179c42fe4a9abbe491259386fde",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
+    "module": "control_space.py",
+    "name": "space343-ledger-trusts-the-branch",
+    "new": "        if False:",
+    "old": "        if self._kept_refs(repository, name).get(name) != commit:",
+    "rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.612875860184431,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      false
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      false
+     ]
+    }
+   },
+   "new_digest": "00a9bbd245511ee2592a4ace44cb71bc38765428493c5afb06e4e5b9eaf6bd31",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+    "module": "control_space.py",
+    "name": "space343-ledger-trusts-the-commit",
+    "new": "        if False:",
+    "old": "        if self._item_head(path) != commit:",
+    "rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 5.592259533237666,
+   "fixture_version": 1,
+   "input_digest": "fa34360dc0f3e9eaa227f43f53bfd503f49d6b392153d44354bdce1131060857",
+   "mutant": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      false
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      false
+     ]
+    }
+   },
+   "new_digest": "2c41ad89c25fe638b0a83f318ad08f0ca2149380853efc1d87fc601230078d1b",
+   "noop": {
+    "count": 39,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-unheld",
+     "space343/ac1/snapshot",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  }
+ ],
+ "reuse_integrity_errors": [],
+ "reuse_qualified": 0,
+ "reused": 0,
+ "schema": "veldo.mutation-stage/v1",
+ "scope": "selected",
+ "status": "passed",
+ "surviving_workers": 0,
+ "unmeasured_cases": [
+  "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
+  "check_teeth_mutations.py:space343-branch-for-a-held-commit",
+  "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
+  "check_teeth_mutations.py:space343-discard-commits-as-save-does",
+  "check_teeth_mutations.py:space343-discard-without-the-branch",
+  "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
+  "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write"
+ ],
+ "worker_invocations": 12,
+ "worker_outcomes": [
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 6.020444929134101,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:baseline",
+   "output_directory": "/tmp/v343/teeth/logs/0",
+   "pid": 1686626,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3086
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 6.02714792592451,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:noop",
+   "output_directory": "/tmp/v343/teeth/logs/1",
+   "pid": 1686627,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3086
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 6.055889721959829,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v343/teeth/logs/2",
+   "pid": 1691476,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3051
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 6.0826139519922435,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:noop",
+   "output_directory": "/tmp/v343/teeth/logs/3",
+   "pid": 1691477,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3051
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 75,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.6151054268702865,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-discard-without-the-branch",
+   "output_directory": "/tmp/v343/teeth/logs/4",
+   "pid": 1696368,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3311
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 75,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.6213810332119465,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
+   "output_directory": "/tmp/v343/teeth/logs/5",
+   "pid": 1696369,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3199
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.795661674812436,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
+   "output_directory": "/tmp/v343/teeth/logs/6",
+   "pid": 1700752,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3066
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 6.4454739219509065,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
+   "output_directory": "/tmp/v343/teeth/logs/7",
+   "pid": 1700753,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3263
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.56121797580272,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
+   "output_directory": "/tmp/v343/teeth/logs/8",
+   "pid": 1705594,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3080
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.661925942171365,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
+   "output_directory": "/tmp/v343/teeth/logs/9",
+   "pid": 1705935,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3078
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.61993372021243,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
+   "output_directory": "/tmp/v343/teeth/logs/10",
+   "pid": 1710293,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3080
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 82,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.5992308598943055,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+   "output_directory": "/tmp/v343/teeth/logs/11",
+   "pid": 1710728,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3080
+  }
+ ]
+}

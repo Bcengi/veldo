@@ -1,0 +1,243 @@
+[
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/branch-item",
+   "space343/ac1/kept-branch",
+   "space343/ac2/git-refuses",
+   "space343/ac2/name-taken",
+   "space343/ac2/next-name",
+   "space343/ac2/not-recorded",
+   "space343/ac4/no-commit",
+   "space343/ac4/no-event"
+  ],
+  "name": "space343-discard-without-the-branch",
+  "new": "        pass  # defect: no kept branch before the Discard",
+  "new_digest": "8b8c2077e86ef9bfffc81637defee4b83c6aa64a45c7a848fbba43fa296e3baa",
+  "noop_failed": [],
+  "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/branch-item": [
+    false
+   ],
+   "space343/ac1/kept-branch": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/kept-branch",
+   "space343/ac1/branch-item"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac2/git-refuses",
+   "space343/ac2/name-taken",
+   "space343/ac2/next-name",
+   "space343/ac2/not-recorded"
+  ],
+  "name": "space343-remove-after-the-failed-branch-write",
+  "new": "        try:\n            _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])\n        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
+  "new_digest": "ccf6b2374f56bce1d08cc5a10e09d4bd5c84af1baf3b6e7054870847d3dfc492",
+  "noop_failed": [],
+  "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/git-refuses": [
+    false
+   ],
+   "space343/ac2/name-taken": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/name-taken",
+   "space343/ac2/git-refuses"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac3/agent"
+  ],
+  "name": "space343-agent-repository-goes-with-the-worktree",
+  "new": "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n            import shutil\n            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+  "new_digest": "35ebb941fa505d8d7dc37504ba69c0f4378707d508b8a4c4104b2e14e4601185",
+  "noop_failed": [],
+  "old": "        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac3/agent": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac3/agent"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/branch-item",
+   "space343/ac1/kept-branch",
+   "space343/ac1/only-unheld",
+   "space343/ac1/snapshot",
+   "space343/ac2/next-name",
+   "space343/ac3/agent",
+   "space343/ac4/no-commit",
+   "space343/ac4/no-event"
+  ],
+  "name": "space343-discard-commits-as-save-does",
+  "new": "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
+  "new_digest": "529d7e0b3e1bad0c3059f6ce4f3a086d5d256568f6727cb78a6035146e5bc3df",
+  "noop_failed": [],
+  "old": "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac4/no-commit": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac4/no-commit"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac2/not-recorded"
+  ],
+  "name": "space343-branch-made-and-not-recorded",
+  "new": "    if False:",
+  "new_digest": "acb729ac3647a46f49789571048efbceb9e9baa5e1e94b6dbb38ffbab0e947a3",
+  "noop_failed": [],
+  "old": "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/not-recorded": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/not-recorded"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/only-unheld"
+  ],
+  "name": "space343-branch-for-a-held-commit",
+  "new": "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
+  "new_digest": "8a6272178926220f2b80405514db1343742a7179c42fe4a9abbe491259386fde",
+  "noop_failed": [],
+  "old": "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
+  "old_digest": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/only-unheld": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/only-unheld"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space343/ac2/ledger-reads"
+  ],
+  "name": "space343-ledger-trusts-the-branch",
+  "new": "        if False:",
+  "new_digest": "00a9bbd245511ee2592a4ace44cb71bc38765428493c5afb06e4e5b9eaf6bd31",
+  "noop_failed": [],
+  "old": "        if self._kept_refs(repository, name).get(name) != commit:",
+  "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/ledger-reads": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/ledger-reads"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space343/ac2/ledger-reads"
+  ],
+  "name": "space343-ledger-trusts-the-commit",
+  "new": "        if False:",
+  "new_digest": "2c41ad89c25fe638b0a83f318ad08f0ca2149380853efc1d87fc601230078d1b",
+  "noop_failed": [],
+  "old": "        if self._item_head(path) != commit:",
+  "old_digest": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/ledger-reads": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/ledger-reads"
+  ]
+ }
+]

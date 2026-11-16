@@ -1,0 +1,257 @@
+[
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0343_discard_keeps_commits"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0343_discard_keeps_commits",
+  "note": "The ticket suite. Run again on the final bytes immediately before the commit: 13 rows green.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 13
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0318_unique_work"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0318_unique_work",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "140_veldo_0345_space_keep"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 140_veldo_0345_space_keep",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "138_veldo_0300_space_remove"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 138_veldo_0300_space_remove",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 39
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0327_disposition"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0327_disposition",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 27
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "149_veldo_0312_ticket_ended"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 149_veldo_0312_ticket_ended",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 41
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "132_veldo_0297_space_ledger"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 132_veldo_0297_space_ledger",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0317_full_pool"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0317_full_pool",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 23
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "139_veldo_0301_space_signal"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [
+   "SELFTEST FAIL: VELDO-0301 ac4/no-clock: Signal imports nothing and names no clock [[]]"
+  ],
+  "name": "targeted 139_veldo_0301_space_signal",
+  "note": "ac4/no-clock is red on the base too: inherited, left.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 17
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "133_veldo_0326_space_principals"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "failed_rows": [
+   "SELFTEST FAIL: VELDO-0326 ac2/observer-refused-by-name: the row sends every ledger command the observer may not sign"
+  ],
+  "name": "targeted 133_veldo_0326_space_principals",
+  "note": "ac2/observer-refused-by-name is red on the base d0e2461a too (run there from an exported copy, same row red, 29 green): the row lists the ledger commands by hand and lacks space_disposition_request; space_keep_branch is one more. The suite is outside the footprint.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 29
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "validate",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_docs.sh"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "docs",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "template-sync",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "lint",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_space_boundary.py"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "space-boundary",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "name": "git-boundary",
+  "status": "passed"
+ },
+ {
+  "name": "when",
+  "note": "The neighbour suites ran on the working tree before the commit; the two engine modules, their synced copies and the ticket suite had the bytes of the commit (sources.json). The ticket suite, validation, template sync and lint were run again on the final bytes before the commit, and docs and the two boundary checks on the committed tree. Nothing but the teeth run came after.",
+  "status": "note"
+ }
+]

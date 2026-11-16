@@ -1,0 +1,11 @@
+{
+ ".veldo/control_space.py": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+ ".veldo/control_space_remove.py": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+ "engine/.veldo/control_space.py": "636a8a2fb1a83117e6c20db450525a0ae30ebd3092a374c7b705c20be16b5d6e",
+ "engine/.veldo/control_space_remove.py": "b3467fbe918243001fd43f52651c9aef45f9b1310b1cbdeac765625e20e12644",
+ "scripts/check_teeth_mutations.py": "97996f9420a53cbbb1b791e6c3f7e2305ee8a1c0f2dc3b286e6a5b1f59b9e547",
+ "scripts/suites/150_veldo_0343_discard_keeps_commits.py": "4233edb11c43e351a625f7a5f5d4f25edfad0fb8ece66b1932242e25989c95c6",
+ "scripts/suites/manifest.json": "e7595acad83360def3a0695fb913595e691a8acf66d9929343beef5ddf82f9d9",
+ "scripts/suites/requires.json": "06fcea8a4bed33c193f303a9e58c74894acdc590f934999083eda0e8434a5e9f",
+ "specs/VELDO-0343-discard-keeps-every-commit.md": "e2ec3194130670b5a14eba3820eeef48bce3f0a7d04839282769b36ff223f3dd"
+}

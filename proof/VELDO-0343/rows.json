@@ -1,0 +1,58 @@
+{
+ "all_green": true,
+ "count": 13,
+ "criteria": {
+  "AC1": [
+   "ac1/name",
+   "ac1/kept-branch",
+   "ac1/branch-item",
+   "ac1/snapshot",
+   "ac1/only-unheld"
+  ],
+  "AC2": [
+   "ac2/name-taken",
+   "ac2/git-refuses",
+   "ac2/not-recorded",
+   "ac2/ledger-reads",
+   "ac2/next-name"
+  ],
+  "AC3": [
+   "ac3/agent"
+  ],
+  "AC4": [
+   "ac4/no-commit",
+   "ac4/no-event"
+  ]
+ },
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
+ "rows": [
+  "space343/ac1/branch-item",
+  "space343/ac1/kept-branch",
+  "space343/ac1/name",
+  "space343/ac1/only-unheld",
+  "space343/ac1/snapshot",
+  "space343/ac2/git-refuses",
+  "space343/ac2/ledger-reads",
+  "space343/ac2/name-taken",
+  "space343/ac2/next-name",
+  "space343/ac2/not-recorded",
+  "space343/ac3/agent",
+  "space343/ac4/no-commit",
+  "space343/ac4/no-event"
+ ],
+ "what_each_row_holds": {
+  "ac1/branch-item": "One branch item at the repository and that name, in state kept, with the commit and the worktree it was made for; the Ledger accepted it before the outcome removed.",
+  "ac1/kept-branch": "Before the Discard no branch, tag or remote-tracking ref holds the commit made on the detached HEAD. After it the worktree is gone by the forced remove, the kept branch is at that commit, it is the one holding ref, and the committed file is on it.",
+  "ac1/name": "The terms name space-saved-<ticket> for a ticket worktree and space-saved-<run label> for a run worktree, the name Save would write.",
+  "ac1/only-unheld": "A detached worktree at a commit the trunk holds, and a worktree on its own branch, are discarded with no new branch and no new branch item.",
+  "ac1/snapshot": "The uncommitted file is gone from disk and is in the saved snapshot with its content.",
+  "ac2/git-refuses": "A ref below the name makes git refuse the write: the same as above, and git made no such branch.",
+  "ac2/ledger-reads": "The Ledger refuses a kept branch for a worktree no Discard is authorized for, a branch that is not there, a branch at another commit, a commit that is not the HEAD of the worktree, and a full ref name; it writes no item.",
+  "ac2/name-taken": "The name is taken, after the request was shown, by a branch that does not hold the commit: the worktree, its uncommitted file, its committed file and its HEAD are as they were, the item is deferred as remove_refused, the other branch did not move, no branch item was written.",
+  "ac2/next-name": "After the refusal the next request names space-saved-<run>-2, and its Discard puts the commit there; the first name is where it was.",
+  "ac2/not-recorded": "The branch is written and the Ledger does not record it: nothing is discarded, deferred as remove_refused.",
+  "ac3/agent": "Discard of an agent worktree on its branch: the worktree is gone, the agent repository and its branch are in place with both commits, the agent repository item is in the state it was, no branch was made, the uncommitted file is in the snapshot.",
+  "ac4/no-commit": "The set of commit objects in the repository is the same before and after the Discard, and every commit on a branch was there before.",
+  "ac4/no-event": "A reference-transaction hook in the fixture repository saw exactly one line for the kept branch; the spool turns the lines of the Discard into no event for the declared trunk, and the Ledger holds the same event records before and after."
+ }
+}
