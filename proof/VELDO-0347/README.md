@@ -1,8 +1,9 @@
 # VELDO-0347 proof
 
-Implementation e76e97b493b481705fb575e5242a6645a6e25fc0, on base 7e457e85 (the blocker commit of the first run).
-Builder evidence, not independent review. All five criteria remain pending the lead gate and independent
-review. THE BUILD IS NOT GREEN AS A WHOLE: see "Still pinned and red" below.
+Implementation 1f8aaebb059e759d982f4eb50e727d7c6ab02940 (the fix round; the build was f347196e), on base
+7e457e85 (the blocker commit of the first run). Builder evidence, not independent review. All five
+criteria remain pending the lead gate and independent review. The accepted rows that were pinned and red
+after the build are green: see "Fix round" below. One inherited row is red; suites 151 and up were not run.
 
 ## What was built
 
@@ -34,14 +35,16 @@ review. THE BUILD IS NOT GREEN AS A WHOLE: see "Still pinned and red" below.
 ## Rows
 
 27 green in the ticket suite, scripts/suites/150_veldo_0347_unseen_work.py (rows.json): AC1 4, AC2 8, AC3
-7, AC4 4, AC5 3, and the canon row. Six rows of four accepted suites were updated as the lead decided
-and one was added, all green (rows.json, other_suite; the spec History names each and why).
+7, AC4 4, AC5 3, and the canon row. Rows of six accepted suites were updated as the lead decided, in the
+build and in the fix round, and one was added, all green (rows.json, other_suite; the spec History and
+each suite's own History name each row and the criterion that supersedes it).
 
 ## Falsifiers and teeth
 
 Finding 347: 19 registered, 19 executed, 19 rejected, no reuse, no invalid result, no surviving worker,
-83 s. One run, last, on the clean committed tree; no mutant was applied by hand before it, so each
-was applied once (teeth-run.json, teeth-receipt.json, falsifiers.json).
+75 s. The run of the fix round, last, on the clean committed tree of 1f8aaebb; no mutant was applied by
+hand (teeth-run.json, teeth-receipt.json, falsifiers.json). The run of the build, at e76e97b4, gave the
+same 19 of 19, with the same rows red under each mutant.
 
 The eleven declared falsifiers, each red on a row of its own:
 
@@ -73,24 +76,46 @@ finds it gone. Four mutants make a row raise, and the rows after it are red with
 store keeps no digest at a measurement, so the AC4 mutant stands in for one: it remembers the digest of
 the first time the remover read the file.
 
-## Still pinned and red
+## Fix round
 
-Accepted rows outside the ones the lead named pin what AC1, AC5 and table 2 replace. They were not
-changed (the decision says only those rows) and they are red. The spec History lists them for the lead:
+After the build 118 accepted rows were red. The lead's triage found every one a pin of behaviour AC1 or
+AC5 replaces and none a regression, and the lead widened the footprint row by row. No production file
+changed in the fix round. Rows fixed, per suite (checks.json, rows.json):
 
-- 135_veldo_0298: 95 rows. 92 cell rows assert version 1; two AC4 rows build a fixture table under the
-  number 2; kinds/ledger-accepts asserts version 1 and the kinds only. All from issuing table 2.
-- 138_veldo_0300: work/worktree-second-probe, work/adopted-build-output (AC1), work/repository-in-a-folder
-  (AC5).
-- 139_veldo_0301: ac5/keep-failed-passed-through (AC1). Not in the footprint.
-- 140_veldo_0345: 19 rows, two causes (ac4/outside-git, ac5/failed-save-removes-nothing; AC1), the rest
-  empty after a raise. Not in the footprint.
+- 135_veldo_0298: 95 rows (92 cell rows, two AC4 rows, kinds/ledger-accepts). The fixture items are
+  declared under table 1 by its number; the AC4 fixture's own table takes the next unused number;
+  ledger-accepts expects the current version and the form names. 143 green.
+- 138_veldo_0300: work/worktree-second-probe, work/repository-in-a-folder, work/adopted-build-output; and
+  one statement added to work/probes-through-the-boundary. 39 green.
+- 139_veldo_0301: ac5/keep-failed-passed-through, its cause now a kept ref that cannot be written. 17
+  green, and ac4/no-clock red as on the base.
+- 140_veldo_0345: 19 rows were red, two causes and a raise that emptied the rows after it. Seven rows
+  now drive the keep step's snapshot with a worker clone of a run that has ended; ac6/removing-put-back
+  writes its file after the keep step answered; ac5/kill-points reds its own row on a missing folder.
+  31 green.
+
+The table ruling stands: table 2 is kept. The reason is in the spec History.
+
+The keep step of VELDO-0345 still runs in every row it ran in (keep-step-0345.json). Counted on an
+exported copy of the base and of the changed suite, row by row: the same number of keep step calls, of
+calls that answered ok and of snapshots written, in all 31 rows; kept refs written are as many or more.
+Of the 19 rows that were red, 13 call the keep step and 6 never did. The teeth of finding 345 on the
+changed suite: 22 of 22 rejected.
+
+Two defects of this ticket's build were found by running the teeth of the changed suites, and fixed:
+the second last look added to the remover repeated the anchor line of the teeth case
+space300-tips-not-read-again, so no case of finding 300 could run (the case now names the line before
+it too); and under AC1 the case space300-probe-reads-outside-the-boundary was no longer rejected (the
+row gains one statement). Finding 300 after both: 26 of 26. Finding 298: 6 of 6. The teeth of finding
+301 cannot start: an anchor is missing from control_space_signal.py, on the base too; not changed.
 
 Red and inherited, the same on an exported copy of the base: 0330 rules/write-nothing, 0301 ac4/no-clock,
-0305 review/scratch-apart-from-run-directory, three rows of 0308, 0310 keep/kept-item-not-named.
+0305 review/scratch-apart-from-run-directory, three rows of 0308, 0310 keep/kept-item-not-named. Of
+these only 0301 was run again in the fix round.
 
-Green neighbours: 0299 (suite 136), 0303 (142), 0343, 0318, 0327, 0297 (132), 0326 (133), 0312 (149),
-0317. Fast checks passed: validation, docs, template sync, lint, space boundary, git boundary.
+Green in the fix round: the ticket suite, 0298 (135), 0299 (136), 0300 (138), 0303 (142), 0345 (140),
+0343, 0318. Fast checks passed: validation, docs, template sync, lint, space boundary, git boundary.
+Green neighbours of the build, not run again: 0327, 0297 (132), 0326 (133), 0312 (149), 0317.
 
 ## Not built, not run
 

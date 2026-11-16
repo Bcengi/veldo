@@ -10,28 +10,38 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v347/teeth/logs",
+  "/tmp/v347fix/teeth347/logs",
   "--diff-dir",
-  "/tmp/v347/teeth/diffs"
+  "/tmp/v347fix/teeth347/diffs"
  ],
- "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
- "earlier_runs": [],
- "elapsed": 83.40531420800835,
+ "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+ "earlier_runs": [
+  {
+   "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+   "executed": 19,
+   "note": "the run of the build, before the fix round",
+   "registered": 19,
+   "rejected": 19,
+   "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=83.405s",
+   "tree": "8080540c63fb6046b3b34dba7e376d331a2830e8"
+  }
+ ],
+ "elapsed": 75.0832778820768,
  "executed": 19,
  "exit_code": 0,
  "hand_checks": [],
  "invalid_results": [],
- "note": "The first and only teeth run of finding 347, last, on the clean committed tree. Nothing was written in the worktree while it ran, and no mutant was applied by hand before it: each of the 19 was applied once. Four mutants make a row raise, and the rows after it in the suite are then red with it and never absent (falsifiers.json, mutant_failed): the look beneath scratch, the logs, the remote-tracking ref and the remover with no last look.",
+ "note": "The teeth run of finding 347 of the fix round, last, on the clean committed tree. Nothing was written in the worktree while it ran and no mutant was applied by hand. Before it, at the same commit or one commit earlier, the teeth of the findings whose suites changed were run as a check (checks.json): 345, 300 and 298.",
  "ran_last": true,
  "registered": 19,
  "rejected": 19,
  "reused": 0,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=83.405s",
+ "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=75.083s",
  "supervisors_after": [],
  "supervisors_before": [],
  "surviving_workers": 0,
- "tree": "8080540c63fb6046b3b34dba7e376d331a2830e8",
- "wall_seconds": 83
+ "tree": "987e5e643a892245f93cdccfaaf5fe8e7b79842c",
+ "wall_seconds": 75
 }

@@ -13,6 +13,7 @@
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 132_veldo_0297_space_ledger",
+  "note": "Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 31
@@ -31,6 +32,7 @@
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 133_veldo_0326_space_principals",
+  "note": "Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 30
@@ -45,27 +47,13 @@
    "--suite",
    "135_veldo_0298_space_kinds"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
-  "failed_count": 95,
-  "failed_rows": [
-   "VELDO-0298 ac1/scratch/run_finished: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/verdict_recorded: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/landed: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/contained: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/ticket_ended: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/project_ended: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/worktree_abandoned: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/released: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/scratch/session_ended: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'scratch', 'version': '2'}]]",
-   "VELDO-0298 ac1/build_output/run_finished: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'build_output', 'version': '2'}",
-   "VELDO-0298 ac1/build_output/verdict_recorded: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'build_output', 'version': ",
-   "VELDO-0298 ac1/build_output/landed: the cell is {'action': 'remove'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'build_output', 'version': '2'}]]"
-  ],
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+  "failed_count": 0,
+  "failed_rows": [],
   "name": "targeted 135_veldo_0298_space_kinds",
-  "note": "95 rows red, all from decision 2 (table 2 is current): 92 rows ac1/<row>/<event> assert version 1; ac4/keeps-its-version and ac4/action-of-its-version build a second table under the number 2; kinds/ledger-accepts asserts LIFECYCLE is version 1 and names the kinds only. The decision names ac1/whole-table alone, so these were not changed.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "suite_checks_passed": 48
+  "suite_checks_passed": 143
  },
  {
   "command": [
@@ -77,7 +65,7 @@
    "--suite",
    "136_veldo_0299_space_probe"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 136_veldo_0299_space_probe",
@@ -101,7 +89,7 @@
    "VELDO-0330 rules/write-nothing: Signal imports nothing: every fact it reads is a probe's or the ledger's"
   ],
   "name": "targeted 137_veldo_0330_space_rules",
-  "note": "rules/write-nothing: red on the base too (Signal has an import), inherited",
+  "note": "rules/write-nothing: red on the base too (Signal has an import), inherited Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 22
@@ -116,18 +104,13 @@
    "--suite",
    "138_veldo_0300_space_remove"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
-  "failed_count": 3,
-  "failed_rows": [
-   "VELDO-0300 work/worktree-second-probe: a process found in the worktree under its marked name: rules 1 to 6 pass, the remover defers in_use [(False, 'unique_work",
-   "VELDO-0300 work/repository-in-a-folder: a scratch folder that is a git repository: rules 1 to 6 pass and the remover refuses [(False, 'children', 5, None) None]",
-   "VELDO-0300 work/adopted-build-output: adopted: the remover refuses keep_failed and names the file in the committed-ignore folder, not the declared build output "
-  ],
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+  "failed_count": 0,
+  "failed_rows": [],
   "name": "targeted 138_veldo_0300_space_remove",
-  "note": "3 rows red, not named by the decision and not changed: work/worktree-second-probe and work/adopted-build-output (rule 5 now refuses first, AC1) and work/repository-in-a-folder (rule 6 now holds it, AC5).",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "suite_checks_passed": 36
+  "suite_checks_passed": 39
  },
  {
   "command": [
@@ -139,17 +122,16 @@
    "--suite",
    "139_veldo_0301_space_signal"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
-  "failed_count": 2,
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+  "failed_count": 1,
   "failed_rows": [
-   "VELDO-0301 ac4/no-clock: Signal imports nothing and names no clock [[]]",
-   "VELDO-0301 ac5/keep-failed-passed-through: the worktree is deferred as keep_failed, by the remover, not as remove_refused [('deferred', 'unique_work', 'unique_w"
+   "VELDO-0301 ac4/no-clock: Signal imports nothing and names no clock [[]]"
   ],
   "name": "targeted 139_veldo_0301_space_signal",
-  "note": "ac4/no-clock: red on the base too, inherited, left as the brief says ac5/keep-failed-passed-through red, suite not in the footprint: a file only info/exclude ignores is now refused by rule 5 (AC1), where the row expects the remover's keep_failed.",
+  "note": "ac4/no-clock: red on the base too (Signal has an import), inherited",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "suite_checks_passed": 16
+  "suite_checks_passed": 17
  },
  {
   "command": [
@@ -161,27 +143,13 @@
    "--suite",
    "140_veldo_0345_space_keep"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
-  "failed_count": 19,
-  "failed_rows": [
-   "VELDO-0345 ac1/kept-before-remove: raised FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-0345-4kif97qx/state/space-saved/VELDO-9216/0c5181f",
-   "VELDO-0345 ac4/outside-git: a worktree whose only work is that ignored file is removed once the file is saved [{'item': 'space:item:44b1eb0511c24e18869ed55526b8",
-   "VELDO-0345 ac4/store-protected: after the ending event of that owner the snapshot is whole",
-   "VELDO-0345 ac5/failed-save-removes-nothing: when the store cannot be written the item is deferred as keep_failed [('deferred', 'unique_work', 'unique_work')]",
-   "VELDO-0345 ac5/kill-points",
-   "VELDO-0345 ac5/retry-compares",
-   "VELDO-0345 ac5/never-replaced",
-   "VELDO-0345 ac5/every-attempt-listed",
-   "VELDO-0345 ac6/three-deferrals",
-   "VELDO-0345 ac6/removing-put-back",
-   "VELDO-0345 ac3/record-of-this-attempt",
-   "VELDO-0345 ac3/verify-reads-current-tips"
-  ],
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+  "failed_count": 0,
+  "failed_rows": [],
   "name": "targeted 140_veldo_0345_space_keep",
-  "note": "19 rows red, suite not in the footprint, two causes: ac4/outside-git expects a worktree whose only work is an ignored settings file to be removed at landed once saved, and ac5/failed-save-removes-nothing expects keep_failed for the same worktree; under AC1 rule 5 refuses both first. The second raises in its fixture and the 17 rows after it are empty and red with it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "suite_checks_passed": 12
+  "suite_checks_passed": 31
  },
  {
   "command": [
@@ -193,7 +161,7 @@
    "--suite",
    "142_veldo_0303_space_paths"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 142_veldo_0303_space_paths",
@@ -217,7 +185,7 @@
    "VELDO-0305 review/scratch-apart-from-run-directory: raised SpaceCreationError: unavailable_service:space_ledger: {'ok': False, 'reason': 'invalid_input:owner.sc"
   ],
   "name": "targeted 143_veldo_0305_space_census",
-  "note": "review/scratch-apart-from-run-directory: red on the base too, inherited",
+  "note": "review/scratch-apart-from-run-directory: red on the base too, inherited Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 25
@@ -240,7 +208,7 @@
    "VELDO-0308 n2/observations-bounded"
   ],
   "name": "targeted 146_veldo_0308_run_finished",
-  "note": "3 rows red, the same 3 on the base (the fixture cannot mark Keep: not_authorized), inherited",
+  "note": "3 rows red, the same 3 on the base (the fixture cannot mark Keep: not_authorized), inherited Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 35
@@ -261,7 +229,7 @@
    "VELDO-0310 keep/kept-item-not-named: the owner marked the worktree Keep: its item is kept with the owner's mark, a state the event reaches, ending on contained,"
   ],
   "name": "targeted 147_veldo_0310_landed_contained",
-  "note": "keep/kept-item-not-named: red on the base too, inherited",
+  "note": "keep/kept-item-not-named: red on the base too, inherited Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 32
@@ -280,6 +248,7 @@
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 149_veldo_0312_ticket_ended",
+  "note": "Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 41
@@ -298,6 +267,7 @@
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 150_veldo_0317_full_pool",
+  "note": "Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 23
@@ -312,7 +282,7 @@
    "--suite",
    "150_veldo_0318_unique_work"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 150_veldo_0318_unique_work",
@@ -334,6 +304,7 @@
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 150_veldo_0327_disposition",
+  "note": "Not run again in the fix round: no module changed in it.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "suite_checks_passed": 27
@@ -348,7 +319,7 @@
    "--suite",
    "150_veldo_0343_discard_keeps_commits"
   ],
-  "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 150_veldo_0343_discard_keeps_commits",
@@ -366,15 +337,13 @@
    "--suite",
    "150_veldo_0347_unseen_work"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "failed_count": 0,
   "failed_rows": [],
   "name": "targeted 150_veldo_0347_unseen_work",
-  "note": "The ticket suite. 27 rows green.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "suite_checks_passed": 27,
-  "ticket_rows_passed": 27
+  "suite_checks_passed": 27
  },
  {
   "command": [
@@ -385,8 +354,9 @@
    ".veldo/validate.py",
    "all"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "validation",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -397,8 +367,9 @@
    "bash",
    "scripts/check_docs.sh"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "docs",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -409,8 +380,9 @@
    "bash",
    "scripts/check_template_sync.sh"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "template-sync",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -421,8 +393,9 @@
    "bash",
    "scripts/check_lint.sh"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "lint",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -433,8 +406,9 @@
    "python3",
    "scripts/check_space_boundary.py"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "space-boundary",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -445,24 +419,91 @@
    "python3",
    "scripts/check_git_boundary.py"
   ],
-  "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+  "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
   "name": "git-boundary",
+  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
-  "name": "still_pinned",
-  "note": "Accepted rows that pin what AC1, AC5 and table 2 replace, outside the rows the lead named. Left as they are and red. Recorded in the spec History for the lead to decide.",
-  "status": "note",
-  "suites": {
-   "135_veldo_0298_space_kinds": "95 rows red, all from decision 2 (table 2 is current): 92 rows ac1/<row>/<event> assert version 1; ac4/keeps-its-version and ac4/action-of-its-version build a second table under the number 2; kinds/ledger-accepts asserts LIFECYCLE is version 1 and names the kinds only. The decision names ac1/whole-table alone, so these were not changed.",
-   "138_veldo_0300_space_remove": "3 rows red, not named by the decision and not changed: work/worktree-second-probe and work/adopted-build-output (rule 5 now refuses first, AC1) and work/repository-in-a-folder (rule 6 now holds it, AC5).",
-   "139_veldo_0301_space_signal": "ac5/keep-failed-passed-through red, suite not in the footprint: a file only info/exclude ignores is now refused by rule 5 (AC1), where the row expects the remover's keep_failed.",
-   "140_veldo_0345_space_keep": "19 rows red, suite not in the footprint, two causes: ac4/outside-git expects a worktree whose only work is an ignored settings file to be removed at landed once saved, and ac5/failed-save-removes-nothing expects keep_failed for the same worktree; under AC1 rule 5 refuses both first. The second raises in its fixture and the 17 rows after it are empty and red with it."
-  }
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_teeth_mutations.py",
+   "--finding",
+   "345",
+   "--jobs",
+   "2"
+  ],
+  "commit": "a304c838",
+  "executed": 22,
+  "name": "teeth of finding 345",
+  "note": "the keep step, on the changed suite 140",
+  "registered": 22,
+  "rejected": 22,
+  "status": "diagnostic_only",
+  "summary": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=30 elapsed=143.134s",
+  "surviving_workers": 0
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_teeth_mutations.py",
+   "--finding",
+   "298",
+   "--jobs",
+   "2"
+  ],
+  "commit": "a304c838",
+  "executed": 6,
+  "name": "teeth of finding 298",
+  "note": "the kind registry, on the changed suite 135",
+  "registered": 6,
+  "rejected": 6,
+  "status": "diagnostic_only",
+  "summary": "mutations: passed registered=6 executed=6 reused=0 rejected=6 workers=8 elapsed=4.653s",
+  "surviving_workers": 0
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_teeth_mutations.py",
+   "--finding",
+   "300",
+   "--jobs",
+   "2"
+  ],
+  "commit": "32a4895e",
+  "executed": 26,
+  "name": "teeth of finding 300",
+  "note": "the removers, on the changed suite 138, after the anchor of space300-tips-not-read-again was made to match once again and work/probes-through-the-boundary gained its statement. Before those two: none of the 26 could run (anchor matched twice), then 25 of 26 rejected",
+  "registered": 26,
+  "rejected": 26,
+  "status": "diagnostic_only",
+  "summary": "mutations: passed registered=26 executed=26 reused=0 rejected=26 workers=28 elapsed=53.519s",
+  "surviving_workers": 0
+ },
+ {
+  "commit": "a304c838",
+  "name": "teeth of finding 301",
+  "note": "driver error before any case ran: the anchor of space301-returns-after-marking-due is not in control_space_signal.py. It is not in that file on the base 7e457e85 either: inherited, not changed here.",
+  "status": "not_runnable"
+ },
+ {
+  "name": "fix_round",
+  "note": "The rows that were pinned and red at f347196e (95 of 0298, 3 of 0300, 1 of 0301, 19 of 0345) were changed on the lead's decision, row by row, and are green. The spec History and each suite's own History name the row and the criterion that supersedes it. Left red: 0301 ac4/no-clock, inherited.",
+  "status": "note"
  },
  {
   "name": "when",
-  "note": "The neighbour suites ran on 78483684; the two commits after it change the ticket suite (two more checks in one row) and the spec only, and no module. The ticket suite ran again on e76e97b4, then the teeth run, last, on the clean committed tree of e76e97b4. The fast checks ran on the working tree that became 78483684 (docs, template sync, lint, the two boundaries) and validation ran on the finished bundle. Base for the comparison: an exported copy of 7e457e85. No space supervisor survived any run. Not run: scripts/verify.sh and suites 151 and up, among them 153_veldo_0302, 154_veldo_0324 and 156_veldo_0315, though the brief also asks for the 0302 and 0324 rows: the prohibition was followed.",
+  "note": "The nine named suites and the six fast checks ran on 1f8aaebb, then the teeth of finding 347, last, on the clean committed tree of that commit. Validation ran again on the finished bundle. After each run no process with the arguments space and supervise was found. Base for the comparison of the keep step: an exported copy of 7e457e85. Not run: scripts/verify.sh and suites 151 and up.",
   "status": "note"
  }
 ]

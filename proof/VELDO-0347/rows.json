@@ -1,6 +1,6 @@
 {
  "all_green": true,
- "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
+ "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
  "count": 27,
  "criteria": {
   "AC1": [
@@ -40,17 +40,38 @@
    "ac5/no-form"
   ]
  },
- "limitation": "A partial selftest is diagnostic only. The lead runs the gate. The build is not green as a whole: see checks.json, still_pinned.",
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate. Suites 151 and up were not run; one inherited row is red (0301 ac4/no-clock).",
  "other_suite": {
   "scripts/suites/135_veldo_0298_space_kinds.py": {
+   "ac1/<row>/<event> (92 rows)": "fix round, superseded by AC5: the fixture item is declared under table 1 by its number; green",
    "ac1/table-2": "new: table 2 is current, the fourteen rows of table 1 unchanged and the clone row; green",
-   "ac1/whole-table": "updated, superseded by AC5: reads table 1 by its number; green"
+   "ac1/whole-table": "updated, superseded by AC5: reads table 1 by its number; green",
+   "ac4/action-of-its-version": "fix round, superseded by AC5: the same fixture; green",
+   "ac4/keeps-its-version": "fix round, superseded by AC5: the fixture table takes the next unused number; green",
+   "kinds/ledger-accepts": "fix round, superseded by AC5: the current version and the names <kind>:<form>; green"
   },
   "scripts/suites/136_veldo_0299_space_probe.py": {
    "ac2/case-3-untracked": "updated, superseded by AC1: a loose ignored file is unique work, case 3; green"
   },
   "scripts/suites/138_veldo_0300_space_remove.py": {
-   "work/ignored-files": "updated, superseded by AC1: rule 5 refuses first; the remover asked directly refuses as before; green"
+   "work/adopted-build-output": "fix round, superseded by AC1: rule 5 refuses and names build/ with its rule; the snapshot step by the rules of a settled answer; green",
+   "work/ignored-files": "updated, superseded by AC1: rule 5 refuses first; the remover asked directly refuses as before; green",
+   "work/probes-through-the-boundary": "fix round, one statement added (no ignore rule is named): with AC1 its registered falsifier no longer turned it red; green",
+   "work/repository-in-a-folder": "fix round, superseded by AC5 (rule 6 holds the folder that is a repository) and, for a repository deep inside, by AC2 (the remover defers in_use, not remove_refused); green",
+   "work/worktree-second-probe": "fix round, superseded by AC1: plants build output rule 5 lets through; in_use as before; green"
+  },
+  "scripts/suites/139_veldo_0301_space_signal.py": {
+   "ac5/keep-failed-passed-through": "fix round, superseded by AC1: the cause is a kept ref that cannot be written; green"
+  },
+  "scripts/suites/140_veldo_0345_space_keep.py": {
+   "ac4/modes-kept": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac4/outside-git": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac4/store-protected": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac5/failed-save-removes-nothing": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac5/folders-synced": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac5/kill-points": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green; reds its own row when a folder of the store is not there",
+   "ac5/retry-compares": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
+   "ac6/removing-put-back": "fix round, superseded by AC1: its file is written after the keep step answered; green"
   },
   "scripts/suites/142_veldo_0303_space_paths.py": {
    "ac2/uncommitted-stays": "updated, superseded by AC3: saved and removed, no request; green",

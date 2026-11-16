@@ -1,5 +1,5 @@
 {
- "budget_seconds": 29652.945453378838,
+ "budget_seconds": 29644.342888717074,
  "case_deadlines": {
   "check_teeth_mutations.py:space347-any-item-with-the-form-is-a-worker-clone": 120,
   "check_teeth_mutations.py:space347-any-traced-rule-makes-build-output": 120,
@@ -170,15 +170,15 @@
    "inventory_digest": "77c62d472e699a7564f2aa66797644a7e1d423776316a03176add3d6ae3c144d",
    "registered": 19,
    "reused": 0,
-   "wall_seconds": 75.34679998503998,
-   "worker_seconds": 149.3579658837989
+   "wall_seconds": 72.46695180982351,
+   "worker_seconds": 143.00502680521458
   }
  },
- "elapsed": 83.40531420800835,
+ "elapsed": 75.0832778820768,
  "executed": 19,
  "force_fresh": false,
  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "input_digest": "f8370300a28e0245683f6f47f2fef1c658c49669bcd0be4e9d7459f2d5e70d5d",
+ "input_digest": "e9227e852b2aba7982ba0e6429d4b5bd543e353dcc5ccca2497a90a56c31c69f",
  "invalid_results": [],
  "parallel_workers": 2,
  "peak_workers": 2,
@@ -499,9 +499,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 3.657595809083432,
+   "elapsed": 2.552636357024312,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -1396,9 +1396,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 1.9082327322103083,
+   "elapsed": 1.9291229480877519,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -2294,9 +2294,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 6.278814333956689,
+   "elapsed": 5.677181831095368,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -3179,9 +3179,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 1.8559499541297555,
+   "elapsed": 1.7741439491510391,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -4068,9 +4068,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 4.486433154903352,
+   "elapsed": 4.405044863000512,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -4935,9 +4935,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 4.727915942668915,
+   "elapsed": 4.84666962409392,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -5801,9 +5801,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 4.788044234737754,
+   "elapsed": 4.8900430500507355,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -6666,9 +6666,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.050377289764583,
+   "elapsed": 5.030449924059212,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -7531,9 +7531,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.2333474340848625,
+   "elapsed": 5.250780113041401,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -8399,9 +8399,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.413130364846438,
+   "elapsed": 5.210123809054494,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -9266,9 +9266,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.0079761813394725,
+   "elapsed": 5.051484341267496,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -10136,9 +10136,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.270553861744702,
+   "elapsed": 5.1326924408786,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -11007,9 +11007,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 2.557454700116068,
+   "elapsed": 2.4579009748995304,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -11889,9 +11889,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.129825077019632,
+   "elapsed": 5.799810857977718,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -12756,9 +12756,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.33067813469097,
+   "elapsed": 5.999826366081834,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -13623,9 +13623,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.310418618842959,
+   "elapsed": 5.976068363059312,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -14490,9 +14490,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.596935673151165,
+   "elapsed": 5.98196408431977,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -15354,9 +15354,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.778304150793701,
+   "elapsed": 6.316726622637361,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -16218,9 +16218,9 @@
     ],
     "suite": "150_veldo_0347_unseen_work.py"
    },
-   "elapsed": 5.534901178907603,
+   "elapsed": 6.1948463171720505,
    "fixture_version": 1,
-   "input_digest": "f3f1aeafe8123cb5f98715e05fb0386f886090581fea9e8ab171f867fd7423a3",
+   "input_digest": "6ab7ab4796ea3b891094e9f8a973a6cd113af9d7ec7a774e9b072261cf2bc337",
    "mutant": {
     "count": 53,
     "failed_details": [],
@@ -16827,12 +16827,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.402735074982047,
+   "elapsed": 5.471184330992401,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0347_unseen_work.py:control_space_probe.py:False:noop",
-   "output_directory": "/tmp/v347/teeth/logs/1",
-   "pid": 770326,
+   "output_directory": "/tmp/v347fix/teeth347/logs/1",
+   "pid": 1966213,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4303
@@ -16844,46 +16844,46 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.42877303622663,
+   "elapsed": 5.517327198758721,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0347_unseen_work.py:control_space_probe.py:False:baseline",
-   "output_directory": "/tmp/v347/teeth/logs/0",
-   "pid": 770325,
+   "output_directory": "/tmp/v347fix/teeth347/logs/0",
+   "pid": 1966211,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4303
   },
   {
-   "budget_seconds": 120,
-   "cleanup": {
-    "directories": 6,
-    "units": []
-   },
-   "driver": "check_teeth_mutations.py",
-   "elapsed": 6.9193714847788215,
-   "leg": "confined",
-   "mode": "noop",
-   "name": "150_veldo_0347_unseen_work.py:control_space_signal.py:False:noop",
-   "output_directory": "/tmp/v347/teeth/logs/3",
-   "pid": 779395,
-   "returncode": 0,
-   "stderr_bytes": 0,
-   "stdout_bytes": 4261
-  },
-  {
    "budget_seconds": 1800,
    "cleanup": {
     "directories": 6,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 7.090454295743257,
+   "elapsed": 5.878889374900609,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0347_unseen_work.py:control_space_signal.py:False:baseline",
-   "output_directory": "/tmp/v347/teeth/logs/2",
-   "pid": 779364,
+   "output_directory": "/tmp/v347fix/teeth347/logs/2",
+   "pid": 1971016,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4261
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 6,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 5.836886072065681,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0347_unseen_work.py:control_space_signal.py:False:noop",
+   "output_directory": "/tmp/v347fix/teeth347/logs/3",
+   "pid": 1971025,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4261
@@ -16895,12 +16895,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.475285402964801,
+   "elapsed": 5.110941006336361,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0347_unseen_work.py:control_space_remove.py:False:baseline",
-   "output_directory": "/tmp/v347/teeth/logs/4",
-   "pid": 786117,
+   "output_directory": "/tmp/v347fix/teeth347/logs/4",
+   "pid": 1976649,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4219
@@ -16912,46 +16912,29 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.515842038206756,
+   "elapsed": 5.114347765222192,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0347_unseen_work.py:control_space_remove.py:False:noop",
-   "output_directory": "/tmp/v347/teeth/logs/5",
-   "pid": 786228,
+   "output_directory": "/tmp/v347fix/teeth347/logs/5",
+   "pid": 1976650,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4219
   },
   {
-   "budget_seconds": 1800,
-   "cleanup": {
-    "directories": 6,
-    "units": []
-   },
-   "driver": "check_teeth_mutations.py",
-   "elapsed": 5.6596224517561495,
-   "leg": "confined",
-   "mode": "baseline",
-   "name": "150_veldo_0347_unseen_work.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v347/teeth/logs/6",
-   "pid": 791620,
-   "returncode": 0,
-   "stderr_bytes": 0,
-   "stdout_bytes": 4216
-  },
-  {
    "budget_seconds": 120,
    "cleanup": {
     "directories": 6,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.700476050842553,
+   "elapsed": 4.765193437226117,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0347_unseen_work.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v347/teeth/logs/7",
-   "pid": 791670,
+   "output_directory": "/tmp/v347fix/teeth347/logs/7",
+   "pid": 1981408,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4216
@@ -16963,12 +16946,29 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.636830479837954,
+   "elapsed": 4.790036310907453,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0347_unseen_work.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v347fix/teeth347/logs/6",
+   "pid": 1981407,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4216
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 6,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 4.951030937954783,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0347_unseen_work.py:control_space_kinds.py:False:baseline",
-   "output_directory": "/tmp/v347/teeth/logs/8",
-   "pid": 797553,
+   "output_directory": "/tmp/v347fix/teeth347/logs/8",
+   "pid": 1985718,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4221
@@ -16980,12 +16980,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.533871300984174,
+   "elapsed": 5.0111618200317025,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0347_unseen_work.py:control_space_kinds.py:False:noop",
-   "output_directory": "/tmp/v347/teeth/logs/9",
-   "pid": 797718,
+   "output_directory": "/tmp/v347fix/teeth347/logs/9",
+   "pid": 1985719,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4221
@@ -16997,12 +16997,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 3.6617332492023706,
+   "elapsed": 2.5560195702128112,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-look-beneath-worktrees-and-agent-repositories-only",
-   "output_directory": "/tmp/v347/teeth/logs/11",
-   "pid": 804604,
+   "output_directory": "/tmp/v347fix/teeth347/logs/11",
+   "pid": 1990332,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4985
@@ -17014,12 +17014,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 1.9122590250335634,
+   "elapsed": 1.9327575103379786,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-logs-left-out",
-   "output_directory": "/tmp/v347/teeth/logs/12",
-   "pid": 808183,
+   "output_directory": "/tmp/v347fix/teeth347/logs/12",
+   "pid": 1993065,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4914
@@ -17031,12 +17031,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 6.282990299165249,
+   "elapsed": 5.680652398150414,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-ignored-paths-left-out-of-case-3",
-   "output_directory": "/tmp/v347/teeth/logs/10",
-   "pid": 804603,
+   "output_directory": "/tmp/v347fix/teeth347/logs/10",
+   "pid": 1990331,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4444
@@ -17048,12 +17048,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 1.8593100737780333,
+   "elapsed": 1.7776077301241457,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-remote-tracking-ref-taken-at-its-word",
-   "output_directory": "/tmp/v347/teeth/logs/13",
-   "pid": 810260,
+   "output_directory": "/tmp/v347fix/teeth347/logs/13",
+   "pid": 1995023,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4882
@@ -17065,12 +17065,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 4.48986839922145,
+   "elapsed": 4.40918590221554,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-clone-removed-by-the-folder-remover-alone",
-   "output_directory": "/tmp/v347/teeth/logs/14",
-   "pid": 810919,
+   "output_directory": "/tmp/v347fix/teeth347/logs/14",
+   "pid": 1995994,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4352
@@ -17082,12 +17082,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 4.732053631916642,
+   "elapsed": 4.851091668009758,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-worker-clone-removed-without-the-snapshot",
-   "output_directory": "/tmp/v347/teeth/logs/15",
-   "pid": 812152,
+   "output_directory": "/tmp/v347fix/teeth347/logs/15",
+   "pid": 1996509,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4332
@@ -17099,12 +17099,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 4.791636541020125,
+   "elapsed": 4.893616472370923,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-worker-clone-deleted-without-the-comparison",
-   "output_directory": "/tmp/v347/teeth/logs/16",
-   "pid": 816088,
+   "output_directory": "/tmp/v347fix/teeth347/logs/16",
+   "pid": 2000424,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4300
@@ -17116,12 +17116,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.053687154781073,
+   "elapsed": 5.0344623839482665,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-folder-left-under-its-marked-name",
-   "output_directory": "/tmp/v347/teeth/logs/17",
-   "pid": 817452,
+   "output_directory": "/tmp/v347fix/teeth347/logs/17",
+   "pid": 2001291,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4290
@@ -17133,12 +17133,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.237408693879843,
+   "elapsed": 5.254162329249084,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-evidence-digest-of-the-last-measurement",
-   "output_directory": "/tmp/v347/teeth/logs/18",
-   "pid": 821158,
+   "output_directory": "/tmp/v347fix/teeth347/logs/18",
+   "pid": 2005551,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4307
@@ -17150,12 +17150,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.417097237892449,
+   "elapsed": 5.214394790120423,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-look-beneath-the-item-only",
-   "output_directory": "/tmp/v347/teeth/logs/19",
-   "pid": 822690,
+   "output_directory": "/tmp/v347fix/teeth347/logs/19",
+   "pid": 2006476,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4258
@@ -17167,12 +17167,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.013040118385106,
+   "elapsed": 5.05528639536351,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-no-form-given-the-clone-row",
-   "output_directory": "/tmp/v347/teeth/logs/20",
-   "pid": 825965,
+   "output_directory": "/tmp/v347fix/teeth347/logs/20",
+   "pid": 2010579,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4240
@@ -17184,12 +17184,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.274535255040973,
+   "elapsed": 5.136197165120393,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-any-traced-rule-makes-build-output",
-   "output_directory": "/tmp/v347/teeth/logs/21",
-   "pid": 827479,
+   "output_directory": "/tmp/v347fix/teeth347/logs/21",
+   "pid": 2011383,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4294
@@ -17201,12 +17201,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 2.561586230993271,
+   "elapsed": 2.462150481995195,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-remover-takes-any-repository-in-the-folder",
-   "output_directory": "/tmp/v347/teeth/logs/22",
-   "pid": 830513,
+   "output_directory": "/tmp/v347fix/teeth347/logs/22",
+   "pid": 2015103,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4740
@@ -17218,12 +17218,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.133436693344265,
+   "elapsed": 5.80383722577244,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-clone-with-files-raises-no-request",
-   "output_directory": "/tmp/v347/teeth/logs/23",
-   "pid": 832477,
+   "output_directory": "/tmp/v347fix/teeth347/logs/23",
+   "pid": 2016054,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4252
@@ -17235,12 +17235,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.33412009710446,
+   "elapsed": 6.003817611839622,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-ledger-takes-a-worktree-request-for-a-clone",
-   "output_directory": "/tmp/v347/teeth/logs/24",
-   "pid": 832725,
+   "output_directory": "/tmp/v347fix/teeth347/logs/24",
+   "pid": 2016986,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4252
@@ -17252,12 +17252,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.318728556856513,
+   "elapsed": 5.984729692805558,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-any-item-with-the-form-is-a-worker-clone",
-   "output_directory": "/tmp/v347/teeth/logs/25",
-   "pid": 837188,
+   "output_directory": "/tmp/v347fix/teeth347/logs/25",
+   "pid": 2021210,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4244
@@ -17269,12 +17269,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.601204013917595,
+   "elapsed": 5.986039254348725,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-evidence-file-written-while-read-is-deleted",
-   "output_directory": "/tmp/v347/teeth/logs/26",
-   "pid": 837829,
+   "output_directory": "/tmp/v347fix/teeth347/logs/26",
+   "pid": 2022300,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4268
@@ -17286,12 +17286,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.781734747812152,
+   "elapsed": 6.3213213216513395,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-trunk-guessed",
-   "output_directory": "/tmp/v347/teeth/logs/27",
-   "pid": 844262,
+   "output_directory": "/tmp/v347fix/teeth347/logs/27",
+   "pid": 2027051,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4264
@@ -17303,12 +17303,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 5.5382742481306195,
+   "elapsed": 6.200698647182435,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space347-registry-gives-no-form-the-clone-row",
-   "output_directory": "/tmp/v347/teeth/logs/28",
-   "pid": 845873,
+   "output_directory": "/tmp/v347fix/teeth347/logs/28",
+   "pid": 2028296,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4250
