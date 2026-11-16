@@ -3699,6 +3699,9 @@ class Line:
                 report['refused'].append(dict(entry, refusals=[code]))
             return None
         contract = launch.contract
+        requests = getattr(self, 'space_admission', None)
+        if requests is not None:
+            requests.taken(contract)
         report['offered'].append(dict(entry, dispatch_id=launch.dispatch_id, attempt=contract['attempt'],
                                       account=contract['reservation']['account'], host=self.hosts.get(adapter),
                                       adapter=adapter, commit=contract['source']['commit'], result=launch.result))

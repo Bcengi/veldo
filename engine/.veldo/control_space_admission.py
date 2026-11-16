@@ -292,6 +292,13 @@ def identity_of(repository, unit, station, attempt):
     return 'dispatch/' + hashlib.sha256(key).hexdigest()
 
 
+def carried(ledger, identity):
+    """Whether a dispatch record names this hold. The store writes entity data as JSON with its
+    strings quoted, and an identity is a digest, so the quoted identity is found in no other field."""
+    return ledger.conn.execute("SELECT 1 FROM entities WHERE kind='dispatch' AND instr(data, ?) LIMIT 1",
+                               ('"' + identity + '"',)).fetchone() is not None
+
+
 def prepare(space, *, repository, project, unit, station, attempt):
     """Place and judge before reserving anything, on the caller or space worker."""
     if not enabled(space):
@@ -304,7 +311,10 @@ def prepare(space, *, repository, project, unit, station, attempt):
             hold = ledger.hold(identity)
             # A preparation that failed after admission released its promise. A fresh preparation
             # gets a fresh hold, while a waiting preparation keeps its identity and its answer.
-            while hold and hold['state'] == 'released':
+            # VELDO-0317: a refunded attempt asks again under the number of the run that ended. The
+            # hold a dispatch record carries is that dispatch's own, live until its receiver releases
+            # it, so it is passed over here as reconcile passes over it, and this run is judged anew.
+            while hold and (hold['state'] == 'released' or carried(ledger, identity)):
                 retry += 1
                 identity = base + '/' + str(retry)
                 hold = ledger.hold(identity)
@@ -387,6 +397,11 @@ class Requests:
             self.leavings += 1
             consumer.submit(('admission_left', id(self), self.leavings), lambda: reconcile(space, left))
         return left
+
+    def taken(self, contract):
+        """A dispatch record now carries this offer's hold: its answer is spent. A refunded attempt
+        (VELDO-0317) asks under the same number, and must be judged again, never answered from here."""
+        self.answers.pop(tuple(contract[name] for name in ('repository', 'unit', 'station', 'attempt')), None)
 
     def prepare(self, **given):
         space = self.service.space

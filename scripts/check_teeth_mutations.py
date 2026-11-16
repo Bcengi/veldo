@@ -16593,6 +16593,15 @@ def cases():
     add(317, 'space317-brief-omits-work', full317, 'control_launch.py',
         "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)",
         "payload = payload", ['space317/ac3/next-brief'])
+    # Fix round 1, F1 (the reviewer's P1): a refunded rerun takes the hold its ended run still carries.
+    add(317, 'space317-rerun-takes-carried-hold', full317, 'control_space_admission.py',
+        "            while hold and (hold['state'] == 'released' or carried(ledger, identity)):",
+        "            while hold and hold['state'] == 'released':",
+        ['space317/fix1/rerun-before-release'])
+    add(317, 'space317-spent-answer-kept', full317, 'control_service.py',
+        "            requests.taken(contract)",
+        "            pass  # defect: the kept answer outlives the dispatch that carries its hold",
+        ['space317/fix1/spent-answer'])
 
     return result
 

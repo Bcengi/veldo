@@ -431,6 +431,64 @@ def _v317_suite():
             third, _, _, _ = run(f)
             check('ac4/reset', 'ordinary end breaks consecutive failures', (third.get('space_end') or {}).get('consecutive') == 1
                   and not (third.get('space_end') or {}).get('andon'))
+
+            # Fix round 1, F1: the exit is committed and the attempt refunded, and the receiver has not
+            # released the run's hold yet. The rerun asks under the same attempt number.
+            f = fixture('rerun-window')
+            wire(f)
+            contract = f.offer()
+            old_hold = contract['space']['hold']
+            identity = dict(platform='linux', host='fixture', boot_id='fixture', pid=os.getpid(), start='1')
+            digest, did = D.digest(contract), contract['dispatch_id']
+            f.dispatches.accept(did, digest, dict(identity, principal='runner'), now=time.time())
+            f.dispatches.run(did, digest, identity, now=time.time())
+            f.free['host'] = 19
+            termination = {'returncode': 1, 'signal': None, 'deadline_stop': False,
+                           'output_digest': 'sha256:' + 'd' * 64, 'output_bytes': 0}
+            f.dispatches.exit(did, digest, identity, termination, now=time.time(),
+                              space_end=A.classify_end(f.space, termination, True))
+            reads = len(f.reads)
+            again, error = refused(f.offer)
+            waiting = [key for key, hold in f.ledger.holds().items() if hold['state'] == 'waiting']
+            check('fix1/rerun-before-release', 'refunded rerun waits and is never admitted on the old hold',
+                  f.dispatches.attempts('unit', 'review') == 0 and again is None
+                  and getattr(error, 'code', '') == 'space_wait:host'
+                  and f.ledger.hold(old_hold)['state'] == 'admitted'
+                  and len(waiting) == 1 and waiting[0] != old_hold)
+            check('fix1/rerun-before-release', 'the rerun is judged with a free read', len(f.reads) > reads)
+            check('fix1/rerun-before-release', 'no second dispatch record', len(line(f)._rows('dispatch')) == 1)
+            L.space_release(f.space, old_hold, run=did)
+            f.free['host'] = 10000
+            A.accepted(f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS}))
+            again = f.offer()
+            check('fix1/rerun-before-release', 'after the release the rerun holds its own admitted hold',
+                  again['attempt'] == 1 and again['space']['hold'] == waiting[0]
+                  and f.ledger.hold(waiting[0])['state'] == 'admitted'
+                  and f.ledger.hold(old_hold)['state'] == 'released')
+            # The service's kept answer for that attempt is spent once a dispatch record carries its hold.
+            submitted = []
+            service = types.SimpleNamespace(space=f.space, space_consumer=types.SimpleNamespace(
+                submit=lambda key, task, complete=None: submitted.append(key)))
+            requests = A.Requests(service, types.SimpleNamespace(wake=lambda *args: None))
+            key = ('repository', 'unit', 'review', 1)
+            asked = dict(repository='repository', project='project', unit='unit', station='review', attempt=1)
+            requests.answers[key] = {'ok': True, 'space': again['space'], 'answer': 'admitted'}
+            kept = requests.prepare(**asked)
+            requests.taken(again)
+            spent = requests.prepare(**asked)
+            check('fix1/spent-answer', 'a carried hold is not answered from the kept answer',
+                  kept.get('answer') == 'admitted' and not submitted[:-1]
+                  and spent == {'ok': False, 'code': 'space_pending'} and submitted == [('admission',) + key])
+            one = line(f)
+            one.space_admission, one.hosts = requests, {}
+            requests.answers[key] = {'ok': True, 'space': again['space'], 'answer': 'admitted'}
+            launch = types.SimpleNamespace(contract=again, dispatch_id=again['dispatch_id'], result='refused',
+                                           record=None)
+            one.runner = types.SimpleNamespace(submit=lambda *args, **kwargs: launch, wait=lambda *args, **kwargs: None)
+            one.workspace = str(f.repo)
+            one.offer(report(), 'unit', 'review', {'identity': 'builder', 'adapter': 'fixture', 'payload': {},
+                'configuration': {}, 'seconds': 60}, revision='HEAD')
+            check('fix1/spent-answer', 'the factory line spends the answer when it offers', key not in requests.answers)
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:
