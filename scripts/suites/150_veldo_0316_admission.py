@@ -193,7 +193,7 @@ def _v316_suite():
                                      used={'host': 30, 'image': 99}))
             f.free.update(host=169, image=50)
             result = f.request()
-            check('ac1/other-holds', 'advised counted and used subtracted', result.get('reason', {}).get('held') == 50)
+            check('ac1/other-holds', 'advised counted and used subtracted', (result.get('reason') or {}).get('held') == 50)
             f.free['host'] = 170
             result = f.request('second')
             check('ac1/other-holds', 'exact boundary and usage clamped', result['ok'])
@@ -235,6 +235,9 @@ def _v316_suite():
             check('ac3/report-starts', 'advised with numbers', len(holds) == 1 and holds[0]['state'] == 'advised'
                   and holds[0]['reason'] == dict(pool='host', need=100, free=119, held=0, floor=20))
             check('ac3/report-starts', 'reservation exists', len(f.slots()) == 1)
+            f = fixture('contract-digest')
+            f.free['host'] = 1000
+            launch = f.offer(submit=True)
             if launch:
                 original = f.dispatches.record(launch.dispatch_id)
                 changed = copy.deepcopy(launch.contract)
