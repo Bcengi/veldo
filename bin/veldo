@@ -420,7 +420,10 @@ def _fleet_args(rest):
 # the hold stays held (design 0.6).
 # ---------------------------------------------------------------------------------------------
 SPACE_STATIONS = ("build", "review", "gate")
-SPACE_EVENT_TYPES = ("ref_changed", "session_started", "session_ended", "released")
+# The one type the event verb takes (design 6.9). The hooks' own types are spooled by the hooks
+# themselves (control_space_spool) and never come from this verb: it refuses each by name.
+SPACE_EVENT_TYPES = ("released",)
+SPACE_HOOK_EVENT_TYPES = ("ref_changed", "session_started", "session_ended")
 # What a host script records: a worktree or an agent repository it is about to make. Scratch is
 # recorded only by what creates it (the wrapper for a run, the session hook for a session).
 SPACE_RECORD_KINDS = ("worktree", "agent_repository")
@@ -1666,13 +1669,14 @@ def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=N
 
 
 def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=None):
-    """veldo space event --type T [--path P ...] [--session S] [--repository R --ref N --new C]: a
-    host script reports what happened or what it gave up. The types are ref_changed, session_started,
-    session_ended and released. The event is handed to the Ledger's event command as space-observer:
-    it leaves one event record and returns, and removes nothing (design 6.9). The subject is exactly
-    the Ledger's (VELDO-0323, as VELDO-0335 extended it), and the verb's emitter is {verb, host}.
-    The Ledger records that emitter for released only: session events and ref_changed reach it from
-    the spool, through VELDO-0323's consumer, and the verb's own are refused there by name. Refused by name, with
+    """veldo space event --type released --path P [--path P ...]: a host script reports what it gave
+    up. Released is the one type the verb takes (design 6.9). The event is handed to the Ledger's event
+    command as space-observer: it leaves one event record and returns, and removes nothing. The
+    subject is exactly the Ledger's (VELDO-0323, as VELDO-0335 extended it), and the verb's emitter is
+    {verb, host}. The hooks' types (session_started, session_ended, ref_changed) are refused by name
+    (space_event_hook_only:<type>) before anything is spooled or sent, with a ledger and without one:
+    the client hooks and the git hooks spool them themselves and never call this verb (the lead's
+    decision at assembly, 2026-11-16). Refused by name, with
     nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
     outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
     Released additionally refuses unrecorded paths and creations of a Veldo seam. Its force
@@ -1681,13 +1685,11 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     retained in the spool, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer
     on standard output, 1 for a refusal. With no ledger the notification is spooled and the verb exits
     0. The state root is the option, VELDO_SPACE_STATE_ROOT, the wired ledger's root, or the user's
-    XDG state folder under veldo. Session fields include working-folder (the subject's cwd), pid and
-    started (kernel ticks); defaults describe the caller. A released subject holds the paths alone: who
+    XDG state folder under veldo. A released subject holds the paths alone: who
     released is the emitter's, never the subject's.
     A released entry holds the paths in the form the Ledger compares them in; with no ledger each is
-    resolved (a relative path against the working folder, every link followed). A session's working
-    folder is resolved the same way. A session entry holds no path: one given with --path is checked
-    like any other, and the verb says it is not recorded."""
+    resolved (a relative path against the working folder, every link followed). The options of the
+    hooks' types are still read, so that such a call is refused by its type and never by its form."""
     import json
     import socket
     stdout, stderr = stdout or sys.stdout, stderr or sys.stderr
@@ -1707,32 +1709,22 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     args = parser.parse_args(list(rest))
     if args.force:
         return _space_refused("event", stderr, "invalid_input:force")
+    if args.kind in SPACE_HOOK_EVENT_TYPES:
+        return _space_refused("event", stderr, "space_event_hook_only:" + args.kind)
     env = os.environ if environ is None else environ
     spool = _space_module("control_space_spool")
 
     def notification(subject=None):
-        if args.kind in spool.SESSION_TYPES:
-            process = _space_process(args.pid or os.getppid())
-            if args.started is None and process is None:
-                raise ValueError("the session process could not be read")
-            where = spool.resolved(os.path.abspath(args.working_folder or os.getcwd()))
-            one = spool.session_entry(args.kind, args.session, where,
-                                      args.pid or os.getppid(), args.started or process["started"],
-                                      socket.gethostname() or "unknown")
-        elif args.kind == "released":
-            # The paths the Ledger's own checks gave, when there is a ledger: never the raw arguments.
-            paths = (subject or {}).get("paths")
-            if paths is None:
-                if not all(args.path):
-                    raise ValueError("a released path is empty")
-                paths = [spool.resolved(os.path.abspath(path)) for path in args.path]
-            one = spool.entry(args.kind, {"paths": list(paths)},
-                              "event", socket.gethostname() or "unknown")
-        else:
-            one = spool.entry(args.kind, subject or {"repository": args.repository, "ref": args.ref,
-                                                    "old": None, "new": args.new},
-                              "reference-transaction", socket.gethostname() or "unknown")
-        return one
+        if args.kind != "released":
+            raise ValueError("space_unknown_event:" + str(args.kind))
+        # The paths the Ledger's own checks gave, when there is a ledger: never the raw arguments.
+        paths = (subject or {}).get("paths")
+        if paths is None:
+            if not all(args.path):
+                raise ValueError("a released path is empty")
+            paths = [spool.resolved(os.path.abspath(path)) for path in args.path]
+        return spool.entry(args.kind, {"paths": list(paths)},
+                           "event", socket.gethostname() or "unknown")
 
     def pending_event(subject=None):
         """Preserve the notification now (the socket and its consumer are separate tickets). The
@@ -1770,12 +1762,8 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
             kept = "one line is left in " + spool.unspooled(roots, dict(seen, reason=reason))
         raise ValueError("%s: %s" % (invalid or last, kept))
 
-    def unrecorded_paths():
-        if args.kind in spool.SESSION_TYPES and args.path:
-            stderr.write("veldo space event: a session event records no path: --path is not recorded\n")
     space, why = _space_usable(space, why, environ)
     if space is None:
-        unrecorded_paths()
         try:
             pending_event()
             stderr.write("veldo space event: %s: event spooled\n" % why)
@@ -1789,38 +1777,14 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
         refusal = _space_path_refusal(ledger, sp, path)
         if refusal is not None:
             return _space_refused("event", stderr, refusal)
-    subject = {}
-    if args.kind == "ref_changed":
-        if not (args.repository and args.ref and args.new) or args.path or args.session:
-            return _space_refused("event", stderr, "invalid_input:ref_changed names a repository, a ref and "
-                                                   "the new commit")
-        try:
-            repository = sp.canonical_locator("branch", {"repository": args.repository, "ref": args.ref})
-        except sp.Refused as refusal:
-            return _space_refused("event", stderr, refusal.code)
-        resolved = dict(repository, repository=sp.resolved_path(repository["repository"]))
-        entry = (sp.protected_by("branch", repository, ledger.protect)
-                 or sp.protected_by("branch", resolved, ledger.protect, sp.resolved_path))
-        if entry is not None:
-            return _space_refused("event", stderr, "space_protected:" + entry)
-        if not sp.inside_roots("branch", resolved, ledger.resolved_roots, ledger.engines):
-            return _space_refused("event", stderr, "space_outside_roots")
-        subject = {"repository": repository["repository"], "ref": args.ref, "old": None, "new": args.new}
-    elif args.kind == "released":
-        if not args.path or args.session or args.repository or args.ref or args.new:
-            return _space_refused("event", stderr, "invalid_input:released names the paths given up")
-        subject = {"paths": [sp.canonical_path(path) for path in args.path]}
-    else:
-        if not args.session or args.repository or args.ref or args.new:
-            return _space_refused("event", stderr, "invalid_input:a session event names its session")
-        subject = {"session": args.session, "paths": [sp.canonical_path(path) for path in args.path]}
-        unrecorded_paths()
+    if not args.path or args.session or args.repository or args.ref or args.new:
+        return _space_refused("event", stderr, "invalid_input:released names the paths given up")
+    subject = {"paths": [sp.canonical_path(path) for path in args.path]}
     try:
         subject = notification(subject)["subject"]
     except (spool.Malformed, ValueError) as error:
         return _space_refused("event", stderr, "invalid_input:" + str(error))
-    emitter = ({"verb": "event", "host": ledger.host} if args.kind == "released"
-               else {"verb": "event", "host": socket.gethostname() or "unknown"})
+    emitter = {"verb": "event", "host": ledger.host}
     try:
         answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(args.kind, subject, emitter)
     except Exception as error:

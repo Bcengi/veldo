@@ -14816,17 +14816,19 @@ def cases():
         add(314, name, space314, 'veldo', old, new, rows)
         result[-1]['dir'] = 'bin'
 
-    cli314('space314-cli-raw-paths', '            paths = (subject or {}).get("paths")\n',
-           '            paths = list(args.path)\n', ['fix5/cli-wired-canonical', 'fix5/cli-resolves'])
+    cli314('space314-cli-raw-paths', '        paths = (subject or {}).get("paths")\n',
+           '        paths = list(args.path)\n', ['fix5/cli-wired-canonical', 'fix5/cli-resolves'])
     cli314('space314-cli-unresolved',
-           '                paths = [spool.resolved(os.path.abspath(path)) for path in args.path]\n',
-           '                paths = list(args.path)\n', ['fix5/cli-resolves'])
-    cli314('space314-cli-folder-unresolved',
-           '            where = spool.resolved(os.path.abspath(args.working_folder or os.getcwd()))\n',
-           '            where = args.working_folder or os.getcwd()\n', ['fix5/cli-resolves'])
-    cli314('space314-cli-session-path-silent',
-           '        if args.kind in spool.SESSION_TYPES and args.path:\n', '        if False:\n',
-           ['fix5/cli-session-path-said'])
+           '            paths = [spool.resolved(os.path.abspath(path)) for path in args.path]\n',
+           '            paths = list(args.path)\n', ['fix5/cli-resolves'])
+    # The lead's decision at assembly (design 6.9), finished in the fix round after the assembly's
+    # review: the verb takes released alone, so the two cases of its session branch (the working folder
+    # left unresolved, the session's path not said) have no code left to break. In their place: the
+    # verb no longer refuses a hook's type by name, so a session event is taken again.
+    cli314('space314-cli-hook-type-taken',
+           '    if args.kind in SPACE_HOOK_EVENT_TYPES:\n'
+           '        return _space_refused("event", stderr, "space_event_hook_only:" + args.kind)\n', '',
+           ['ac4/cli-spools', 'fix5/cli-session-path-said'])
     # Fix round 2 (the re-review): the CLI's own failure goes through the hook's chain, so each cause
     # leaves a record on disk. Each case removes one link: the refused/ entry of what is no entry; the
     # note beside a refused spool folder; the fallback root; the last line when no root takes it.
@@ -16091,8 +16093,8 @@ def cases():
         '    # defect: force is silently accepted\n', ['cli/force-refused'])
     result[-1]['dir'] = 'bin'
     add(335, 'space335-cli-forges-hook', released335, 'veldo',
-        '    emitter = ({"verb": "event", "host": ledger.host} if args.kind == "released"\n',
-        '    emitter = ({"hook": "event", "host": ledger.host} if args.kind == "released"\n',
+        '    emitter = {"verb": "event", "host": ledger.host}\n',
+        '    emitter = {"hook": "event", "host": ledger.host}\n',
         ['cli/verb-emitter'])
     result[-1]['dir'] = 'bin'
     add(335, 'space335-ledger-protect-skipped', released335, 'control_space.py',
@@ -16103,6 +16105,12 @@ def cases():
         "                        or (kind == 'released' and emitter.get('verb') == 'event'))):\n",
         "                        or emitter.get('verb') == 'event')):  # defect: the CLI emitter for every kind\n",
         ['safety/cli-emitter-released-only'])
+    # The assembly's review, finding 1: the hook name the verb's spooled entries carry stands for
+    # released alone too, or a spooled entry of another kind is recorded at replay.
+    add(335, 'space335-spool-emitter-any-kind', released335, 'control_space.py',
+        "                         and (kind == 'released' or emitter['hook'] != 'event'))\n",
+        "                         )  # defect: the verb's hook name for every kind\n",
+        ['safety/spool-emitter-released-only'])
     add(335, 'space335-repository-releases-child', released335, 'control_space_worker.py',
         "    elif kind in ('session_started', 'session_ended'):\n",
         "        chosen.update(child for child, item in items.items() if item.get('parent') in chosen)\n"

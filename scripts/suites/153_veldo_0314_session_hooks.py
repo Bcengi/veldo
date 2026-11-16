@@ -435,11 +435,16 @@ def _v314_suite():
                               env=cli_env, capture_output=True, timeout=15)
         entries = [spool.read(spool.spool_folder(str(cli_state)), name)
                    for name in spool.pending(spool.spool_folder(str(cli_state)))]
-        check('ac4/cli-spools', 'session retained with process identity', done.returncode == 0 and len(entries) == 2
-              and entries[-1]['subject'] == one('session_ended', 'cli-session', temp / 'outside')['subject'])
+        # The verb takes released alone (design 6.9, the lead's decision at assembly): a session event
+        # is the client hook's, which spools it itself, and the verb refuses it by name and spools nothing.
+        check('ac4/cli-spools', 'a session event is refused by name and nothing more is spooled: '
+              + str((done.returncode, done.stderr.decode())),
+              done.returncode == 1 and len(entries) == 1 and entries[0]['type'] == 'released'
+              and done.stderr.decode().strip() == 'veldo space event: refused space_event_hook_only:session_ended'
+              and not spool.refused(spool.spool_folder(str(cli_state))))
 
-        # Fix round, finding 5: the CLI resolves what it is given. With no ledger: a relative path, a path
-        # through a link and a working folder through a link. A session's --path is said, not dropped.
+        # Fix round, finding 5: the CLI resolves what it is given. With no ledger: a relative path and a
+        # path through a link. A hook's type is refused by name, never recorded in part.
         loose = temp / 'cli-state-loose'
         loose_folder = spool.spool_folder(str(loose))
         done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'released',
@@ -456,15 +461,25 @@ def _v314_suite():
                                '--pid', str(pid), '--started', str(started), '--path', str(planted),
                                '--state-root', str(loose)], env=env, capture_output=True, timeout=15)
         entries = [spool.read(loose_folder, name) for name in spool.pending(loose_folder)]
-        check('fix5/cli-resolves', 'a session working folder through a link is resolved: '
+        check('fix5/cli-session-path-said', 'with no ledger a session event with a path is refused by name, and '
+              'neither the session nor the path is spooled or set aside: '
               + str((done.returncode, done.stderr.decode())),
-              done.returncode == 0 and len(entries) == 2
-              and entries[-1]['subject'] == one('session_started', 'cli-linked', temp / 'outside')['subject'])
-        check('fix5/cli-session-path-said', 'with no ledger the verb says the path is not recorded',
-              'a session event records no path' in done.stderr.decode())
+              done.returncode == 1 and len(entries) == 1 and entries[0]['type'] == 'released'
+              and done.stderr.decode().strip() == 'veldo space event: refused space_event_hook_only:session_started'
+              and not spool.refused(loose_folder))
+        done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'ref_changed',
+                               '--repository', str(temp / 'outside'), '--ref', 'refs/heads/main',
+                               '--new', 'a' * 40, '--state-root', str(loose)],
+                              env=env, capture_output=True, timeout=15)
+        check('fix5/cli-session-path-said', 'with no ledger a ref changed event is refused by name and not spooled: '
+              + str((done.returncode, done.stderr.decode())),
+              done.returncode == 1
+              and [spool.read(loose_folder, name)['type'] for name in spool.pending(loose_folder)] == ['released']
+              and done.stderr.decode().strip() == 'veldo space event: refused space_event_hook_only:ref_changed'
+              and not spool.refused(loose_folder))
         # Fix round 2: the CLI's own failure leaves a record on disk, by the hook's chain. A line on
         # standard error is no record. Three causes, each with no ledger: a state root that cannot be
-        # written, a session that is no entry, and a spool folder that is refused.
+        # written, a release that is no entry, and a spool folder that is refused.
         def event(*argv, **environ):
             return subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event'] + list(argv),
                                   env=without('VELDO_SPACE_STATE_ROOT', **environ), capture_output=True, timeout=15)
@@ -473,8 +488,6 @@ def _v314_suite():
             where = spool.spool_folder(str(root))
             return [spool.read(where, name)['subject'] for name in spool.pending(where)]
 
-        session = ['--type', 'session_started', '--working-folder', str(temp / 'outside'),
-                   '--pid', str(pid), '--started', str(started)]
         closed = temp / 'cli-closed-state'
         closed.mkdir(mode=0o700)
         closed.chmod(0o500)
@@ -503,20 +516,20 @@ def _v314_suite():
             closed.chmod(0o700)
             (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).chmod(0o700)
         evil = temp / 'cli-state-evil'
-        done = event('--session', '../evil', '--state-root', str(evil), *session)
+        done = event('--type', 'released', '--path', '', '--state-root', str(evil))
         kept = spool.refused(spool.spool_folder(str(evil)))
         kept = [json.loads((Path(spool.spool_folder(str(evil))) / spool.REFUSED / name).read_text()) for name in kept]
-        check('round2/cli-invalid-refused', 'a session that is no entry is under refused/ with why: '
+        check('round2/cli-invalid-refused', 'a release that is no entry is under refused/ with why: '
               + str((done.returncode, done.stderr.decode(), kept)),
-              done.returncode == 0 and len(kept) == 1 and kept[0]['notification']['type'] == 'session_started'
-              and '../evil' in kept[0]['notification']['argv']
+              done.returncode == 0 and len(kept) == 1 and kept[0]['notification']['type'] == 'released'
+              and '' in kept[0]['notification']['argv']
               and kept[0]['refused']['reason'].startswith('space_event_invalid:')
               and not spool.pending(spool.spool_folder(str(evil))) and 'could not spool' in done.stderr.decode())
         open_state = temp / 'cli-open-state'
         (open_state / spool.SPOOL).mkdir(parents=True, mode=0o700)
         (open_state / spool.SPOOL).chmod(0o777)
-        done = event('--session', 'cli-unsafe', '--state-root', str(open_state),
-                     XDG_STATE_HOME=str(temp / 'xdg-cli-open'), *session)
+        done = event('--type', 'released', '--path', str(planted) + '-unsafe', '--state-root', str(open_state),
+                     XDG_STATE_HOME=str(temp / 'xdg-cli-open'))
         noted = open_state / spool.FOLDER_REFUSED
         check('round2/cli-unsafe-folder', 'the refused folder is noted beside it and nothing is written into it: '
               + str((done.returncode, done.stderr.decode(), noted.exists(), os.listdir(open_state / spool.SPOOL))),
@@ -524,13 +537,15 @@ def _v314_suite():
               and 'writable by group or others' in json.loads(noted.read_text())['refused']
               and os.listdir(open_state / spool.SPOOL) == [])
         check('round2/cli-unsafe-folder', 'the entry is spooled under the fallback: '
-              + str(spooled(temp / 'xdg-cli-open/veldo')),
-              spooled(temp / 'xdg-cli-open/veldo') == ['cli-unsafe'] and not lines(open_state))
+              + str(released(temp / 'xdg-cli-open/veldo')),
+              released(temp / 'xdg-cli-open/veldo') == [{'paths': [str(planted) + '-unsafe']}]
+              and not lines(open_state))
         (open_state / spool.SPOOL).chmod(0o700)
         # With a ledger (this fixture's, handed to the verb in this process): released goes to the Ledger
-        # with the paths its own checks gave, and the Ledger answers by that form. A session event from
-        # the verb is refused by the Ledger's emitter rule (VELDO-0335): session events reach the Ledger
-        # only from the spool, through the consumer (lead decision at assembly, 2026-11-16).
+        # with the paths its own checks gave, and the Ledger answers by that form. A session event is
+        # refused by the verb itself, by name, before anything is sent or spooled: session events reach
+        # the Ledger only from the hooks' spool, through the consumer (lead decision at assembly,
+        # 2026-11-16, finished in the fix round after the assembly's review).
         loader = importlib.machinery.SourceFileLoader('v314_veldo_cli', str(temp / 'bin/veldo'))
         CLI = importlib.util.module_from_spec(importlib.util.spec_from_loader('v314_veldo_cli', loader))
         was, sys.dont_write_bytecode = sys.dont_write_bytecode, True
@@ -560,10 +575,11 @@ def _v314_suite():
         status, out, said = verb(['--type', 'session_ended', '--session', 'wired-session', '--path',
                                   str(scratch / 'given-up'), '--pid', str(pid), '--started', str(started),
                                   '--working-folder', str(temp / 'outside')])
-        check('fix5/cli-session-path-said', 'with a ledger the verb says the path is not recorded: '
-              + str((status, said)),
-              status == 1 and 'a session event records no path' in said
-              and 'refused invalid_input:emitter' in said and not spool.pending(wired_folder))
+        check('fix5/cli-session-path-said', 'with a ledger a session event with a path is refused by name, '
+              'nothing is sent and nothing is spooled: ' + str((status, out, said)),
+              status == 1 and out == ''
+              and said.strip() == 'veldo space event: refused space_event_hook_only:session_ended'
+              and not spool.pending(wired_folder) and not spool.refused(wired_folder))
         event_enabled[0] = True
 
         # Fix round, finding 4: the hook's timer raises TimeoutError. Raised where the entry is read (read
