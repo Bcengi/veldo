@@ -68,10 +68,11 @@ too; with a snapshot that holds both as they are the worktree goes, and its buil
 work/commit-in-the-gap (a commit made in a worktree after the keep step answered, and one written into an
 agent repository the same way: the tips read again under the marked name differ, keep_failed, the commit
 is still checked out or still on its ref), work/worktree-second-probe (a process found in the worktree
-under its marked name: in_use, the worktree moved back whole), work/agent-repository-files (an agent repository with a work
+under its marked name: in_use, the worktree moved back whole, its build output with it), work/agent-repository-files (an agent repository with a work
 tree, every branch across, holding an untracked draft and an edited tracked file, and then a loose
 ignored file: keep_failed, every file byte for byte; clean, it goes), work/repository-in-a-folder (a
-scratch folder that is a git repository with an only commit, one that holds a repository deep inside,
+scratch folder that is a git repository with an only commit: rule 6 holds it, as unrecorded, and the
+remover asked past the rules refuses too; one that holds a repository deep inside,
 an agent repository with a second repository inside and a worktree with one in its ignored build
 folder: refused, the commits still there), work/link-and-dotdot (the remover, called by itself on a
 path whose parent is a link, on one with .. and on a relative one, for a folder and for a worktree:
@@ -79,6 +80,15 @@ refused, the target untouched, the keep step not asked), work/marked-name (two i
 character have two marked names, the id is read back from the name, and left finds a folder a killed
 removal left under it), work/probes-through-the-boundary (the probes' git reads that the remover's own
 runner is handed go through the Git boundary: a personal global excludes file hides nothing).
+
+History, VELDO-0347 (fix round, the lead's decision of 2026-11-16). work/worktree-second-probe: superseded
+by VELDO-0347 AC1 (its loose ignored file is now refused by rule 5; it plants build output rule 5 lets
+through). work/repository-in-a-folder, its first statement: superseded by VELDO-0347 AC5 (rule 6 holds a
+scratch folder that is a repository before the remover), and its two statements on a repository deep
+inside a scratch folder: superseded by VELDO-0347 AC2 (the remover reads the repository and one that is
+not a clean clone holds the folder, in_use, where it was remove_refused). work/adopted-build-output: superseded by
+VELDO-0347 AC1 (rule 5 refuses the file in an adopted worktree's committed-ignore folder first; its
+snapshot step goes by the rules of a settled answer).
 
 THE RE-REVIEW (review2-veldo-0300.md, findings A to D), the same way: work/hidden-edits (a tracked file
 with the assume-unchanged bit and one with the skip-worktree bit, edited, in a worktree and in an agent
@@ -91,9 +101,10 @@ refuses keep_failed, so the line does not rest on rule 6 alone; the outside work
 staged file and its HEAD; the same when the linked worktree's folder is gone and git would clear its
 record away, and for a bare repository; with no linked worktree it goes), work/adopted-build-output
 (a worktree reconcile adopted, with a hand-written file in a folder a committed ignore file covers:
+rule 5 refuses, unique work, naming the file and its rule, and the remover asked past the rules refuses
 keep_failed, the file byte for byte; the same file in a worktree recorded when it was made is build
-output; a folder a declared pattern covers is build output in both; with a snapshot the adopted one
-goes), work/docker-object-made-again (a volume recorded with its CreatedAt and the run's label, removed
+output; a folder a declared pattern covers is build output in both; a snapshot alone does not pass
+rule 5, and by the rules of a settled answer, with the snapshot, the adopted one goes), work/docker-object-made-again (a volume recorded with its CreatedAt and the run's label, removed
 and made again under the item's name at another time, with no run label or with another run's, and one
 the engine cannot show: remove_refused, the engine is not asked to remove anything and the volume is
 still there; the volume the item recorded goes).
@@ -390,9 +401,10 @@ def _v300_space_remove_suite():
                                      'sha256': hashlib.sha256((Path(where) / name).read_bytes()).hexdigest()}
                               for name in names}}
 
-        def through(identity, keep=None):
-            """The removal through the whole rule chain, this remover as rule 7."""
-            return SIG.rules(L, P, identity, L.item(identity),
+        def through(identity, keep=None, purpose=None):
+            """The removal through the whole rule chain, this remover as rule 7. `purpose` is what the
+            removal is for when it is not a plain remove: the rules of an answered disposition."""
+            return SIG.rules(L, P, identity, L.item(identity), **({'purpose': purpose} if purpose else {}),
                              tool=RM.tool(L, P, free=free, keep=keep, run=client, proc=str(PROC)),
                              owner_live=lambda owner: ENDED, run=client, proc=str(PROC),
                              borrow_root=str(temp / 'borrowed'))
@@ -807,15 +819,20 @@ def _v300_space_remove_suite():
         (PROC / '4343' / 'comm').write_text('holder\n')
         (PROC / '4343' / 'maps').write_text('')
         (PROC / '4343' / 'cwd').symlink_to(mark)
-        (path / 'settings.local').write_text('ignored work in a worktree someone is in\n')
-        answer, said = refused_by_tool(through(item, keeper([], snapshot=saved(path, 'settings.local'))))
+        # VELDO-0347 AC1 supersedes the loose ignored settings file this row planted: rule 5 now refuses
+        # it first, as unique work. The worktree holds build output a committed ignore file covers,
+        # which rule 5 lets through, so the remover and its second probe are reached as before.
+        (path / 'build').mkdir()
+        (path / 'build' / 'output.bin').write_bytes(b'built in a worktree someone is in\n')
+        answer, said = refused_by_tool(through(item, keeper([])))
         shutil.rmtree(PROC / '4343')
         check(ROW, 'a process found in the worktree under its marked name: rules 1 to 6 pass, the remover defers in_use [%s]'
               % (answer,), answer == (False, 'tool', 6, 'in_use')
               and [user.get('pid') for user in (said.get('found') or {}).get('processes') or ()] == [4343])
         check(ROW, 'the worktree is back at its path, whole, and git lists it',
               listed(path) and not os.path.lexists(mark)
-              and text_of(path / 'settings.local') == 'ignored work in a worktree someone is in\n')
+              and (path / 'build' / 'output.bin').read_bytes() == b'built in a worktree someone is in\n'
+              and (path / 'tracked.txt').is_file())
 
         ROW = 'work/agent-repository-files'
         files_agent = WORKTREES / 'agents' / 'with-files'
@@ -851,10 +868,22 @@ def _v300_space_remove_suite():
         item, path = scratch('is-a-repository')
         git(path, 'init', '-q', '-b', 'main')
         only = commit(path, 'only.txt', 'the only copy of this commit\n', 'held nowhere else')
-        answer, said = refused_by_tool(through(item))
-        check(ROW, 'a scratch folder that is a git repository: rules 1 to 6 pass and the remover refuses [%s %s]'
-              % (answer, said.get('said')), answer == (False, 'tool', 6, 'remove_refused')
-              and 'git repository' in str(said.get('said')))
+        # VELDO-0347 AC5 supersedes what this row said, that rules 1 to 6 pass: the look of rule 6 now
+        # starts at the item's own folder, so the folder holds itself, as unrecorded, and the remover is
+        # not reached. The remover's own refusal is asked of the remover itself, past the rules.
+        judged = through(item)
+        answer = refused_by_tool(judged)[0]
+        found = judged.get('found') or {}
+        check(ROW, 'a scratch folder that is a git repository: rule 6 holds it and the remover is not reached [%s]'
+              % (answer,), answer == (False, 'children', 5, None) and judged.get('deferral') == 'in_use')
+        check(ROW, 'rule 6 names the folder itself, as unrecorded, and says it is a repository [%s %s]'
+              % (found.get('states'), (found.get('repositories') or {}).get(str(path))),
+              found.get('items') == ['path:' + str(path)]
+              and found.get('states') == {'path:' + str(path): 'unrecorded'}
+              and ((found.get('repositories') or {}).get(str(path)) or {}).get('why') == ['the_item_is_a_repository'])
+        said = drive(item)
+        check(ROW, 'the remover, asked past the rules, refuses too [%s %s]' % (named(said)[:2], said.get('said')),
+              named(said)[:2] == (False, 'remove_refused') and 'git repository' in str(said.get('said')))
         check(ROW, 'the folder is back at its path and its only commit is still there',
               git(path, 'rev-parse', 'HEAD') == only and text_of(path / 'only.txt') == 'the only copy of this commit\n'
               and not os.path.lexists(RM.marked(str(path), item)))
@@ -865,14 +894,22 @@ def _v300_space_remove_suite():
         only = commit(inner, 'only.txt', 'deep inside\n', 'held nowhere else')
         subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(path / 'deep' / 'bare.git')],
                        env=ENVIRONMENT, check=True, capture_output=True, timeout=120)
+        # VELDO-0347 AC2 supersedes the name of this refusal and the next: the folder remover now reads
+        # each repository beneath a scratch folder under its marked name, and one that is not a clean
+        # clone holds the folder, in_use, where any repository was remove_refused. Nothing else changed:
+        # the folder is back at its path, whole.
         answer = drive(item)
-        check(ROW, 'a scratch folder with a repository deep inside is refused and whole [%s]' % (answer.get('said'),),
-              named(answer)[:2] == (False, 'remove_refused') and git(inner, 'rev-parse', 'HEAD') == only
-              and (path / 'leftover.bin').is_file())
+        check(ROW, 'a scratch folder with a repository deep inside is refused and whole [%s %s]'
+              % (named(answer)[:2], answer.get('said')),
+              named(answer)[:2] == (False, 'in_use') and 'not a clean clone' in str(answer.get('said'))
+              and git(inner, 'rev-parse', 'HEAD') == only and (path / 'leftover.bin').is_file()
+              and not os.path.lexists(RM.marked(str(path), item)))
         shutil.rmtree(inner)
         answer = drive(item)
-        check(ROW, 'a bare repository inside is one too [%s]' % (answer.get('said'),),
-              named(answer)[:2] == (False, 'remove_refused') and (path / 'deep' / 'bare.git' / 'HEAD').is_file())
+        check(ROW, 'a bare repository inside is one too [%s %s]' % (named(answer)[:2], answer.get('said')),
+              named(answer)[:2] == (False, 'in_use') and 'deep/bare.git' in str(answer.get('said'))
+              and (path / 'deep' / 'bare.git' / 'HEAD').is_file()
+              and not os.path.lexists(RM.marked(str(path), item)))
         nesting = WORKTREES / 'agents' / 'nesting'
         subprocess.run(['git', 'clone', '-q', str(REPOSITORY), str(nesting)], env=ENVIRONMENT,
                        check=True, capture_output=True, timeout=120)
@@ -1081,17 +1118,37 @@ def _v300_space_remove_suite():
         planted(path)
         check(ROW, 'the worktree is an item reconcile adopted, and git sees it as clean [%s]' % (made.get('reason'),),
               made.get('ok') is True and L.item(item)['adopted'] is True and git(path, 'status', '--porcelain') == '')
+        # VELDO-0347 AC1 supersedes what this row said, that the rules pass and the remover refuses: in
+        # an adopted worktree a committed ignore file is not trusted, so rule 5 now refuses first, as
+        # unique work, and names the file with the rule that covers it. The remover's own refusal is
+        # asked of the remover itself, past the rules, and is as it was.
         result = through(item, keeper([]))
-        answer, said = refused_by_tool(result)
-        check(ROW, 'adopted: the remover refuses keep_failed and names the file in the committed-ignore folder, '
-              'not the declared build output [%s %s %s]' % (result.get('rule'), answer, said.get('unsaved')),
-              answer == (False, 'tool', 6, 'keep_failed') and said.get('unsaved') == ['build/NOTES.md'])
+        answer = refused_by_tool(result)[0]
+        found = result.get('found') or {}
+        check(ROW, 'adopted: rule 5 refuses, as unique work, and names the file in the committed-ignore folder '
+              'with its rule, not the declared build output [%s %s %s]'
+              % (answer, found.get('ignored'), found.get('ignored_rules')),
+              answer == (False, 'unique_work', 4, None) and found.get('ignored') == ['build/']
+              and found.get('ignored_rules') == {'build/': '.gitignore:1:build/'})
+        said = drive(item, keep=keeper([]))
+        check(ROW, 'the remover, asked past the rules, refuses keep_failed and names the same file [%s %s]'
+              % (named(said)[:2], said.get('unsaved')),
+              named(said)[:2] == (False, 'keep_failed') and said.get('unsaved') == ['build/NOTES.md'])
         check(ROW, 'the file is still there, byte for byte, in the worktree at its own path',
               text_of(path / 'build' / 'NOTES.md') == NOTES and listed(path)
               and not os.path.lexists(RM.marked(str(path), item)))
+        # Rule 5 does not read the keep snapshot, so a snapshot alone no longer lets a plain removal
+        # through. The owner's settled Save does: its rules are the chain without rule 5, and the
+        # remover then removes only what the snapshot holds (the Save itself is VELDO-0345's suite).
         answer = through(item, keeper([], snapshot=saved(path, 'build/NOTES.md')))
-        check(ROW, 'with a snapshot that holds the file the adopted worktree goes, its declared build output with it [%s]'
-              % (answer.get('passed'),), answer.get('ok') is True and not path.exists() and not listed(path))
+        check(ROW, 'a snapshot alone does not pass rule 5, and the file is still there [%s]' % (answer.get('rule'),),
+              answer.get('ok') is False and answer.get('rule') == 'unique_work'
+              and text_of(path / 'build' / 'NOTES.md') == NOTES and listed(path))
+        answer = through(item, keeper([], snapshot=saved(path, 'build/NOTES.md')), purpose=SIG.DISCARD)
+        check(ROW, 'by the rules of a settled answer, with a snapshot that holds the file, the adopted worktree '
+              'goes, its declared build output with it [%s]' % (answer.get('passed'),),
+              answer.get('ok') is True and 'unique_work' not in answer.get('passed')
+              and not path.exists() and not listed(path))
         item, path = worktree('recorded-tree')
         planted(path)
         answer = through(item, keeper([]))
