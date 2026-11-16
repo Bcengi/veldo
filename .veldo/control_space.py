@@ -416,6 +416,8 @@ KEEP = 'space_keep'
 REQUEST = 'space_disposition_request'
 # VELDO-0340: a review worktree joins its scope's review group of the day.
 GROUP = 'space_review_group_join'
+# The identity of a group's one request, written on the group record before the request is opened.
+GROUP_REQUEST = 'space_review_group_request'
 ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP,
                    REQUEST, 'space_disposition')
 # The join is the authority's own write, as the request is, and no command a principal is sent by name.
@@ -940,24 +942,24 @@ class Ledger:
                        RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
                        PACKET: self._t_packet, KEEP: self._t_keep,
                        REQUEST: self._t_disposition_request, DISPOSITION: self._t_disposition,
-                       GROUP: self._t_group_join,
+                       GROUP: self._t_group_join, GROUP_REQUEST: self._t_group_request,
                        EVENT: self._t_event, CONSUMED: self._t_consumed}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
             transitions[operation] = self._with_packet(transitions[operation])
         # The mode switch is the owner's action and not one of OPERATIONS, the commands the authority sends.
-        for operation in OPERATIONS + (MODE, PACKET, EVENT, CONSUMED, GROUP):
+        for operation in OPERATIONS + (MODE, PACKET, EVENT, CONSUMED, GROUP, GROUP_REQUEST):
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
                              kinds={ITEM_KIND: ITEM_WRITERS, POOL_KIND: (POOL,),
                                     HOLD_KIND: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_KIND: (RECONCILE,),
                                     MODE_KIND: (MODE,), RUN_KIND: (ISSUE,), EVENT_KIND: (EVENT, CONSUMED),
-                                    GROUP_KIND: (GROUP, DISPOSITION),
+                                    GROUP_KIND: (GROUP, GROUP_REQUEST, DISPOSITION),
                                     PACKET_KIND: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              prefixes={ITEM_PREFIX: ITEM_WRITERS, POOL_PREFIX: (POOL,),
                                        HOLD_PREFIX: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_PREFIX: (RECONCILE,),
                                        MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,), EVENT_PREFIX: (EVENT, CONSUMED),
-                                       GROUP_PREFIX: (GROUP, DISPOSITION),
+                                       GROUP_PREFIX: (GROUP, GROUP_REQUEST, DISPOSITION),
                                        PACKET_PREFIX: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              module=__file__)
 
@@ -1383,14 +1385,13 @@ class Ledger:
 
     def _group_answered(self, group):
         """Whether the group's request takes no answer any more: it was answered, declined or
-        canceled. A group whose request was never opened is not answered."""
-        alias = (group.get('request') or {}).get('alias')
-        for (raw,) in self.conn.execute(
-                "SELECT data FROM entities WHERE kind='assignment' AND instr(data, ?) > 0", (json.dumps(alias),)):
-            request = json.loads(raw)
-            if request.get('alias') == alias:
-                return request.get('state') not in GROUP_REQUEST_OPEN
-        return False
+        canceled. A group whose request was never opened is not answered. The request is read by
+        the identity the group record holds, one row by its key: the record gets that identity
+        before the request is opened (_t_group_request), so no request is open without it."""
+        alias, rid = (group.get('request') or {}).get('alias'), (group.get('request') or {}).get('id')
+        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None
+        return (request is not None and request.get('alias') == alias
+                and request.get('state') not in GROUP_REQUEST_OPEN)
 
     def _joinable(self, group):
         return group['state'] == 'open' and not self._group_answered(group)
@@ -1489,14 +1490,32 @@ class Ledger:
         except settlement.Refused as error:
             raise Refused(error.code, error.detail) from error
         alias = group_alias(gid)
-        group.update(members=members, request={
-            'alias': alias, 'version': (group.get('request') or {}).get('version', 0) + 1, 'proposal': proposal})
+        group.update(members=members, request=dict(
+            group.get('request') or {}, alias=alias, version=(group.get('request') or {}).get('version', 0) + 1,
+            proposal=proposal))
         number = prior.get('number', 0) + 1
         record['disposition_history'] = list(record.get('disposition_history') or []) + ([prior] if prior else [])
         record['disposition'] = {'number': number, 'alias': alias, 'group': gid, 'proposal': own, 'head': head,
                                  'state': 'requested'}
         record['deferral'] = dict(record.get('deferral') or {}, decision_request=alias, review_group=gid)
         return {identity: {'kind': ITEM_KIND, 'data': record}, gid: {'kind': GROUP_KIND, 'data': group}}
+
+    def _t_group_request(self, conn, params, before):
+        """Write the identity of the group's one request on the group record. The authority's own
+        write, made before the request is opened; the identity is written once and never changed."""
+        gid, group = self._stored(params, before, key='group', kind=GROUP_KIND, missing='space_no_group')
+        outer, rid = self._outer, params.get('request')
+        if outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer:
+            raise Refused('not_authorized', 'only the authority names the request of a group')
+        request = group.get('request') or {}
+        if group['state'] != 'open' or not _is_str(request.get('alias')):
+            raise Refused('space_group_closed', 'an open group with its request')
+        if not _is_str(rid) or not rid.startswith('assignment:') or not rid.endswith(':' + request['alias']):
+            raise _invalid('request', 'the identity of the request with the alias of this group')
+        if request.get('id') is not None:
+            raise Refused('space_group_request', 'the group record already names its request')
+        group['request'] = dict(request, id=rid)
+        return {gid: {'kind': GROUP_KIND, 'data': group}}
 
     def _t_disposition_request(self, conn, params, before):
         identity, record = self._stored(params, before)
@@ -1711,7 +1730,8 @@ class Ledger:
                 return joined
             request = self.item(identity)['disposition']
         gid = request['group']
-        current = self.group(gid)['request']
+        stored, group = self._row(gid, GROUP_KIND)
+        current = group['request']
         alias, version, proposal = current['alias'], current['version'], current['proposal']
         st = _sibling('control_request_settlement')
         principal, sign = requester
@@ -1722,6 +1742,12 @@ class Ledger:
                            nonce=name + ':' + operation, **fields)
             return {'command': command, 'signature': sign(self.store.canonical_bytes(command))}
         rid = presenter.inbox_request(alias)
+        if current.get('id') != rid:
+            # Before the request is opened: a join reads whether it was answered by this identity.
+            named = self._send(GROUP_REQUEST, {'group': gid, 'request': rid}, {gid: stored}, None, None,
+                               {'group': gid})
+            if not named.get('ok'):
+                return {'ok': False, 'reason': named.get('reason'), 'group': gid}
         _, assignment = self._row(rid, 'assignment')
         if assignment is not None and assignment.get('state') not in GROUP_REQUEST_OPEN:
             # Answered at an earlier version. The pick is applied to the members it showed; the

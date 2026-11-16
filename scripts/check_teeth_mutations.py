@@ -16829,6 +16829,20 @@ def cases():
         "            or target.get('members') != items):",
         "            or False):",
         ['space340/terms/group'])
+    # Fix round (review findings 1 to 3).
+    add(340, 'space340-join-without-the-read-in-the-write', groups340, 'control_space.py',
+        "        if gid != self._group_to_join(scope, day)[0]:\n            raise Refused('space_group_closed', 'not the",
+        "        if False:\n            raise Refused('space_group_closed', 'not the",
+        ['space340/ac2/join-races-answer'])
+    add(340, 'space340-ledger-takes-a-target-short-of-the-listed-items', groups340, 'control_space.py',
+        "                and target.get('members') == [tree.get('item') for tree in listed])",
+        "                and True)",
+        ['space340/terms/ledger-target'])
+    add(340, 'space340-answered-read-scans-every-request', groups340, 'control_space.py',
+        "        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None",
+        "        request = next((one for one in (json.loads(raw) for (raw,) in self.conn.execute(\n"
+        "            \"SELECT data FROM entities WHERE kind='assignment'\")) if one.get('alias') == alias), None)",
+        ['space340/cost/answered-by-id'])
 
     return result
 

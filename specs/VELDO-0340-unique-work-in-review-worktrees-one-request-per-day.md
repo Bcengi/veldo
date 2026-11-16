@@ -21,6 +21,7 @@ footprint:
   - "engine/.veldo/control_request_settlement.py"
   - ".veldo/control_request_settlement.py"
   - "scripts/suites/*_veldo_0340_*.py"
+  - "scripts/suites/153_veldo_0336_run_worktree.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -166,3 +167,33 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     signs the owner's Keep packet (none exists in the repository, as VELDO-0318 found); a group
     whose request was canceled or declined keeps its members without a live request until their
     next deferral, which no criterion here names.
+- 2026-11-16: fix round 1, after the independent review (verdict FIX, three low findings, no lost work).
+  - Finding 1: row ac2/join-races-answer. The owner's answer settles between a deferral's read of the
+    group it joins and its write; the write reads again, and the deferral opens the next sequence
+    number. Falsifier space340-join-without-the-read-in-the-write.
+  - Finding 2: row terms/ledger-target. A settled effect whose group target names fewer items than
+    its terms list, written past the Settlement, is no settled answer for the Ledger. Falsifier
+    space340-ledger-takes-a-target-short-of-the-listed-items.
+  - Finding 3: whether a group's request was answered is no longer found by reading every request in
+    the store. The group record's request holds the identity of the one request (`id`), written by
+    the Ledger's own transition space_review_group_request before the request is opened and never
+    changed after; a join reads that one row by its key. The Ledger is not given the repository
+    identity, so it cannot derive the request's identity from the alias: the publisher, which holds
+    it, hands it over. A group whose request was never opened holds no identity and is read as not
+    answered, with no read at all. Row cost/answered-by-id: the read costs the same number of
+    database steps with 400 more requests in the store, for a request not opened yet and for an open
+    one. Falsifier space340-answered-read-scans-every-request.
+  - LEAD DECISION on the review's answer (c): the VELDO-0336 rows loss/owner-keep and loss/kept-child
+    were left stale by VELDO-0318 (first build a9628b86), which made Ledger.outcome refuse an
+    owner_keep fact: the owner's Keep is the signed space_disposition command alone (VELDO-0318 AC4).
+    The rows still marked Keep through the outcome. No work was lost (the file stayed on disk). The
+    footprint is widened by scripts/suites/153_veldo_0336_run_worktree.py, above, and the two rows
+    now drive the Keep through VELDO-0318's path: the review worktree with a tracked edit is
+    deferred as unique work, the owner answers Keep to its request, and the owner's signed packet
+    writes the mark. Each row still proves what it did: the owner's Keep keeps the worktree and its
+    files (loss/owner-keep), and a child of the kept worktree that run finished reaches stays with
+    it (loss/kept-child). Each also asserts that the outcome which claims the mark is refused and
+    that the settled answer alone marks nothing. Before VELDO-0318 the mark could be put on the
+    child itself; a request is raised only for a worktree, so the row's mark is on the worktree.
+  - The review's answers (a) and (b) need nothing here: the AC4 row stands, and a group whose request
+    was canceled or declined belongs to VELDO-0342.

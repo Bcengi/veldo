@@ -500,22 +500,114 @@ def _v336_suite():
                   (real / 'inner' / 'leaf').read_bytes() == b'behind a link')
         one('paths/parent-link-refused', linked_parent)
 
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318): a
+        # request for the deferred worktree, the owner's settled answer to it, and the owner's packet.
+        # The inbox, the presenter and the settlement are the production ones on this store; only the
+        # channel's send is a fixture.
+        desk = {}
+
+        def owner_desk():
+            if desk:
+                return desk
+            I = load('v336_assignment', mods / 'control_assignment.py')
+            V = load('v336_presentation', mods / 'control_channel_presentation.py')
+            PJ = load('v336_projection', mods / 'control_channel_projection.py')
+            ST = load('v336_settlement', mods / 'control_request_settlement.py')
+            claims = load('v336_claim', mods / 'control_claim.py')
+            # One store module and one membership module for the whole fixture: the ones the store was opened with.
+            claims.S, claims.CM, claims.AC = S, CM, AC
+            contract = load('v336_contract', mods / 'entity_contract.py')
+            signers = {'owner': owner_sign}
+            for who in ('requester', 'api-edge'):
+                public = keygen(owner_keys / who)
+                signers[who] = signer_of(owner_keys / who)
+                admin('enroll_principal', {'principal': who, 'principal_type': 'service', 'roles': [],
+                                           'public_key': public, 'independence_group': who, 'scope': '*'},
+                      enrollee=signers[who])
+            eid = 'channel-enrollment:telegram_chat:owner'
+            S.execute(conn, dict(command_id='setup-channel-owner', nonce='setup-channel-owner', principal='authority',
+                                 operation='upsert_entity',
+                                 parameters=dict(entity_id=eid, kind='channel_enrollment',
+                                     data=dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat',
+                                               principal='owner', chat_id=33601, revoked_at=None)),
+                                 expected_versions={eid: 0}, artifact_digests=[]), 'authority', journal_sign, 1)
+
+            class Transport:
+                sent = []
+
+                def send(self, chat, text, reply_to):
+                    self.sent.append(text)
+                    return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                                reply_to_message_id=reply_to)
+
+            inbox = I.Inbox(S, CM, claims, contract, conn, IDS, 'authority', journal_sign)
+            presenter = V.Presenter(S, CM, PJ, inbox, Transport(), conn, 'authority', journal_sign, assignment=I)
+            settlement = ST.Settlement(S, CM, inbox, presenter, conn, 'authority', journal_sign,
+                                       assignment=I, presentation=V, api_edge='api-edge')
+            L.disposition_publish = lambda item: L.publish_disposition(
+                item, settlement, inbox, presenter, ('requester', signers['requester']), 'owner')
+            desk.update(I=I, ST=ST, presenter=presenter, settlement=settlement, signers=signers)
+            return desk
+
+        def owner_keeps(identity):
+            """The owner answers Keep to the worktree's request and signs the disposition."""
+            made = owner_desk()
+            alias = (L.item(identity).get('disposition') or {}).get('alias')
+            rid = made['I'].assignment_id(IDS['repository_uuid'], alias)
+            made['presenter'].present(rid)
+            receipt = made['presenter'].current(rid)
+            serial[0] += 1
+            body = dict(IDS, schema=made['ST'].API_SCHEMA, edge='api-edge', answer_id='answer-%d' % serial[0],
+                        principal='owner', request_id=rid, request_version=receipt['request_version'],
+                        presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
+                        presentation_version=receipt['presentation_version'], choice='accept keep',
+                        rationale='Owner answer')
+            settled = made['settlement'].api_answer(
+                dict(answer=body, signature=made['signers']['api-edge'](S.canonical_bytes(body))))
+            command = dict(operation='space_disposition', principal='owner', command_id='keep-%d' % serial[0],
+                           nonce='keep-nonce-%d' % serial[0],
+                           parameters=dict(item=identity, version=L._row(identity, SP.ITEM_KIND)[0], request=rid))
+            edge_alone = L.authorize_disposition(identity, rid)
+            signed = L.disposition({'command': command, 'signature': owner_sign(S.canonical_bytes(command))}, CM, NOW)
+            return settled, edge_alone, signed
+
         def kept(row, child=False):
+            owner_desk()
             given, path, identity = begin('kept-child' if child else 'kept')
-            (path / 'notes').write_bytes(b'owner keeps this')
-            picked = identity
-            if child:
-                picked = L.declare('evidence', {'path': str(path / 'notes')}, L.item(identity)['owner'],
-                                   'seam', parent=identity)['item']
-                L.confirm(picked)
-            version = conn.execute('SELECT version FROM entities WHERE id=?', (picked,)).fetchone()[0]
-            L.signal('run_finished', {'items': [{'item': picked, 'version': version}]})
-            marked = L.outcome(picked, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
-            check(row, 'owner mark accepted', marked['ok'])
+            (path / 'tracked.txt').write_bytes(b'owner keeps this')
+            (path / 'notes').write_bytes(b'owner keeps this too')
             finish(given)
-            check(row, 'owner work and mark survive', (path / 'notes').read_bytes() == b'owner keeps this'
-                  and L.item(picked)['owner_keep']['by'] == 'owner'
-                  and status(identity)[0] == ('deferred' if child else 'kept'))
+            check(row, 'run finished leaves the tracked edit for the owner to decide',
+                  status(identity) == ('deferred', 'unique_work') and bool(L.item(identity).get('disposition'))
+                  and (path / 'tracked.txt').read_bytes() == b'owner keeps this')
+            refused = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            check(row, 'an outcome that claims the owner mark is refused', not refused['ok']
+                  and not L.item(identity).get('owner_keep') and status(identity)[0] == 'deferred')
+            settled, edge_alone, marked = owner_keeps(identity)
+            check(row, 'the settled answer alone marks nothing', settled.get('outcome') == 'settled'
+                  and not edge_alone['ok'])
+            check(row, 'owner mark accepted', marked['ok'])
+            inside = None
+            if child:
+                # A child of the kept worktree that the run's end reaches by itself.
+                inside = L.declare('evidence', {'path': str(path / 'notes')}, L.item(identity)['owner'],
+                                   'seam', parent=identity)['item']
+                L.confirm(inside)
+                (path / 'build').mkdir()
+                (path / 'build' / 'output').write_bytes(b'built in the kept worktree')
+            end = finish(given)
+            check(row, 'owner work and mark survive', (path / 'tracked.txt').read_bytes() == b'owner keeps this'
+                  and (path / 'notes').read_bytes() == b'owner keeps this too'
+                  and L.item(identity)['owner_keep'] == {'by': 'owner'} and status(identity)[0] == 'kept')
+            reached = [one['item'] for one in end['signal']['outcomes']]
+            if child:
+                check(row, 'run finished reached the child and not the kept worktree',
+                      end['signal']['ok'] and reached == [inside])
+                check(row, 'the child of the kept worktree stays with it',
+                      status(inside)[0] == 'kept' and L.item(inside)['parent'] == identity
+                      and (path / 'build' / 'output').read_bytes() == b'built in the kept worktree')
+            else:
+                check(row, 'run finished does not reach the kept worktree', end['signal']['ok'] and reached == [])
         one('loss/owner-keep', kept)
         one('loss/kept-child', lambda row: kept(row, True))
 

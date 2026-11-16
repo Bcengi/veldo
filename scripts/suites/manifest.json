@@ -2129,7 +2129,7 @@
    "requires": [
     "153_veldo_0336_run_worktree"
    ],
-   "regions": "VELDO-0336: detached worktree ownership from a wrapped run, branch ownership retained, saved review scratch with per-file comparison, process use and links. Loss rows cover failed saves, changed and added files, retry, owner Keep, kept children, tracked edits, personal ignores and protected paths.",
+   "regions": "VELDO-0336: detached worktree ownership from a wrapped run, branch ownership retained, saved review scratch with per-file comparison, process use and links. Loss rows cover failed saves, changed and added files, retry, the owner's signed Keep (VELDO-0318) and a child of the kept worktree, tracked edits, personal ignores and protected paths.",
    "requires_note": "Only ROOT and expect. Real hooks, signed packets, Ledger, git, keep step and removers in a temporary installed copy. Wrapper begin/end called in process, empty group and process census stand-ins. No Docker engine contacted."
   },
   {
@@ -2228,7 +2228,7 @@
    "requires": [
     "150_veldo_0340_review_groups"
    ],
-   "regions": "VELDO-0340 AC1 to AC4: one review group request per scope and day, a new version per later deferral, group Save, Keep and Discard with the comparison per worktree, a builder's worktree asks for itself.",
+   "regions": "VELDO-0340 AC1 to AC4: one review group request per scope and day, a new version per later deferral, group Save, Keep and Discard with the comparison per worktree, a builder's worktree asks for itself. Fix round: a join that races the answer, the Ledger's own check of a group target, the answered read by identity at a bounded cost.",
    "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers, child worker. Fixture clock, process table, pool space and Telegram transport."
   }
  ],

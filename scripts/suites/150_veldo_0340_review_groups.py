@@ -22,6 +22,12 @@ and raises a request of its own, in no group).
 Terms rows: terms/group (the widened terms: a group target that names every member; one worktree
 without a group as before), worker/group (the service's own disposition task publishes a group's
 request and carries its pick in the worker child, unchanged).
+Fix round rows: ac2/join-races-answer (the owner's answer settles between a deferral's read of the
+group it joins and its write: the write reads again, and the deferral opens the next group),
+terms/ledger-target (a settled effect whose group target names fewer items than its terms list is no
+settled answer for the Ledger, whatever the Settlement let through), cost/answered-by-id (whether a
+group's request was answered is read as one row by its identity: for a request not opened yet and
+for an open one, the read costs the same with 400 more requests in the store).
 """
 
 
@@ -666,6 +672,161 @@ def _v340_suite():
                       and ST.space_presentation(single)['brief'].split('\n')[2] == 'Worktree: "/fixture/terms-1"')
             except Exception:
                 broke(('terms/group',))
+
+            try:
+                ledger.disposition_publish = publish
+                # The answer settles after a deferral read which group it joins and before its write.
+                next_day()
+                shown, shown_path, shown_owner = review('race-a')
+                finish(shown, shown_owner)
+                gid, group = group_of(shown)
+                rid = request(shown)
+                late, late_path, late_owner = review('race-b')
+                read = ledger._group_to_join
+                answered = []
+
+                def answered_after_the_read(scope_, day_):
+                    found = read(scope_, day_)
+                    if not answered:
+                        answered.append(found)
+                        settle(shown, 'save')
+                    return found
+
+                with patch.object(ledger, '_group_to_join', answered_after_the_read):
+                    finish(late, late_owner)
+                first_group = ledger.group(gid)
+                check('ac2/join-races-answer', 'the deferral read group 1 as the one to join, and the answer settled '
+                      'before its write ' + repr(answered), answered == [(gid, ledger._row(gid, SP.GROUP_KIND)[0])]
+                      and ledger._row(rid, 'assignment')[1]['state'] == 'SATISFIED')
+                check('ac2/join-races-answer', 'the answered group did not take the join: its members and version are '
+                      'what the owner was shown ' + repr(first_group.get('request', {}).get('version')),
+                      [one['item'] for one in first_group['members']] == [shown]
+                      and first_group['request']['version'] == 1 and first_group['state'] == 'open')
+                check('ac2/join-races-answer', 'the deferral opened the next group of the day, with a request of its own '
+                      + repr(group_of(late)[0]), group_of(late)[0] == SP.group_id(scope, today(), 2)
+                      and [one['item'] for one in group_of(late)[1].get('members') or []] == [late]
+                      and request(late) != rid and ledger._row(request(late), 'assignment')[1] is not None)
+                applied = ledger.authorize_disposition(shown, rid)
+                carried = act(shown)
+                try:
+                    kept = git(repo, 'show', 'space-saved-race-a:base.txt')
+                except subprocess.CalledProcessError:
+                    kept = None
+                check('ac2/join-races-answer', 'the pick reaches the one member it showed, saved on its kept branch; '
+                      'the other is deferred on disk with its edit ' + repr((applied, carried)),
+                      applied.get('ok') and state_of(shown) == 'removed' and kept == 'edited by race-a'
+                      and ledger.group(gid)['answer']['applied'] == [1] and ledger.group(gid)['answer']['unseen'] == []
+                      and state_of(late) == 'deferred' and contents(late_path / 'base.txt') == 'edited by race-b\n')
+            except Exception:
+                broke(('ac2/join-races-answer',))
+
+            try:
+                ledger.disposition_publish = publish
+                # The Ledger's own check of a settled group target: every listed item is named.
+                next_day()
+                made = [review('target-a'), review('target-b')]
+                for item, path, owner in made:
+                    finish(item, owner)
+                gid, group = group_of(made[0][0])
+                rid = settle(made[0][0], 'discard')
+                eid = ledger._row(rid, 'assignment')[1]['settlement']['effect_id']
+                true = conn.execute('SELECT data FROM entities WHERE id=?', (eid,)).fetchone()[0]
+                effect = json.loads(true)
+                check('terms/ledger-target', 'the settled effect lists both worktrees and its target names both items '
+                      + repr(effect.get('target')), effect['target'].get('members') == [made[0][0], made[1][0]]
+                      and [one['item'] for one in effect['proposal']['worktrees']] == [made[0][0], made[1][0]])
+                # Written directly, past the Settlement: a target that names one item for terms that list two.
+                short = dict(effect, target=dict(effect['target'], members=[made[0][0]]))
+                conn.execute('UPDATE entities SET data=? WHERE id=?', (json.dumps(short), eid))
+                conn.commit()
+                reached = []
+                for item, _, _ in made:
+                    try:
+                        ledger.disposition_effect(item, rid)
+                        reached.append(item)
+                    except SP.Refused as error:
+                        check('terms/ledger-target', 'the refusal is that no settled answer names the item ' + error.code,
+                              error.code == 'space_disposition_unsettled')
+                refused = ledger.authorize_disposition(made[0][0], rid)
+                check('terms/ledger-target', 'a target that names fewer items than the terms list is no settled answer, '
+                      'for the member it names and for the one it leaves out ' + repr(reached), reached == [])
+                check('terms/ledger-target', 'and no pick is applied: both are deferred on disk, the group open '
+                      + repr(refused), not refused.get('ok') and refused.get('reason') == 'space_disposition_unsettled'
+                      and all(state_of(item) == 'deferred' and path.exists()
+                              and contents(path / 'base.txt') == 'edited by ' + owner['run']['id'] + '\n'
+                              for item, path, owner in made) and ledger.group(gid)['state'] == 'open')
+                conn.execute('UPDATE entities SET data=? WHERE id=?', (true, eid))
+                conn.commit()
+                applied = ledger.authorize_disposition(made[0][0], rid)
+                results = [act(item) for item, _, _ in made]
+                check('terms/ledger-target', 'with the effect as it was settled, the same pick is applied to both, each '
+                      'saved in the snapshot store first ' + repr((applied, results)), applied.get('ok')
+                      and all(state_of(item) == 'removed' and not path.exists()
+                              and contents(snapshot(item) / 'work' / 'base.txt')
+                              == 'edited by ' + owner['run']['id'] + '\n' for item, path, owner in made))
+            except Exception:
+                broke(('terms/ledger-target',))
+
+            try:
+                ledger.disposition_publish = publish
+                # Whether a group's request was answered is one row read by its identity.
+                next_day()
+
+                def cost():
+                    steps = [0]
+
+                    def step():
+                        steps[0] += 1
+                        return 0
+                    conn.set_progress_handler(step, 1)
+                    try:
+                        found = ledger._group_to_join(scope, today())
+                    finally:
+                        conn.set_progress_handler(None, 1)
+                    return steps[0], found
+
+                ledger.disposition_publish = None
+                item, path, owner = review('cost-a')
+                finish(item, owner)
+                ledger.disposition_publish = publish
+                gid, group = group_of(item)
+                check('cost/answered-by-id', 'a group whose request is not opened yet names no request '
+                      + repr(group.get('request')), bool(gid) and 'id' not in (group.get('request') or {'id': 0}))
+                unopened_few, found = cost()
+                # Fixture rows only, on the fixture store, deleted below: 400 requests of other work.
+                template = next(iter(assignments().values()))[1]
+                for n in range(400):
+                    data = json.dumps(dict(template, alias='cost-fixture-%d' % n))
+                    conn.execute('INSERT INTO entities(id,kind,version,digest,data) VALUES(?,?,?,?,?)',
+                                 ('assignment:cost-fixture:%d' % n, 'assignment', 1, S.digest_of(data), data))
+                conn.commit()
+                try:
+                    unopened_many, found_many = cost()
+                    publish(item)
+                    rid = request(item)
+                    group = ledger.group(gid)
+                    opened_many, found_opened = cost()
+                finally:
+                    conn.execute("DELETE FROM entities WHERE substr(id, 1, 24) = 'assignment:cost-fixture:'")
+                    conn.commit()
+                opened_few, found_after = cost()
+                check('cost/answered-by-id', 'once published the group record names its request, and the request '
+                      'exists ' + repr((group.get('request') or {}).get('id')),
+                      (group.get('request') or {}).get('id') == rid and ledger._row(rid, 'assignment')[1] is not None)
+                check('cost/answered-by-id', 'the read finds the open group every time '
+                      + repr((found, found_many, found_opened, found_after)),
+                      found[0] == found_many[0] == found_opened[0] == found_after[0] == gid)
+                check('cost/answered-by-id', 'for a request not opened yet the read costs the same with 400 more '
+                      'requests in the store: %d steps, then %d' % (unopened_few, unopened_many),
+                      unopened_few > 0 and unopened_many <= unopened_few + 20)
+                check('cost/answered-by-id', 'and for an open request: %d steps with them, %d without'
+                      % (opened_many, opened_few), opened_few > 0 and opened_many <= opened_few + 20)
+                check('cost/answered-by-id', 'the fixture rows are gone', not assignments('cost-fixture'))
+                settle(item, 'keep')
+                check('cost/answered-by-id', 'and the same read sees the answer: the next deferral gets group 2',
+                      ledger._group_to_join(scope, today()) == (SP.group_id(scope, today(), 2), 0))
+            except Exception:
+                broke(('cost/answered-by-id',))
 
             try:
                 ledger.disposition_publish = publish
