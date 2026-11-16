@@ -183,7 +183,9 @@ def _v334_suite():
             if why == 'reconcile':
                 return f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})
             if why == 'release':
+                # A promise that was counted: only its release frees anything.
                 A.accepted(f.ledger.place_hold('released/' + pool, {pool: 1}, {pool: 'default'}))
+                A.accepted(f.ledger.admit('released/' + pool, 'admitted'))
                 return f.ledger.release('released/' + pool)
             item = scratch(f, 'outcome/' + pool + '/' + str(len(f.ledger.items())), pool=pool)
             A.accepted(f.ledger.signal('run_finished', {'run': item[1]}))
@@ -452,6 +454,32 @@ def _v334_suite():
             check('fix1/act-refused-signal', 'a refused Signal still answers waiting, by numbers: ' + repr(first),
                   first.get('code') == 'space_wait:host' and hold.get('state') == 'waiting'
                   and hold.get('retry_asked') and hold['reason']['pool'] == 'host')
+
+            # Fix round 1, finding 2: a release marks only where a counted promise still held bytes.
+            f = fixture('release-frees-nothing')
+            A.accepted(f.ledger.place_hold('host-only', {'host': 5000}, {'host': 'default'}))
+            A.accepted(f.ledger.admit('host-only', 'waiting', dict(pool='host', need=5000, free=0, held=0, floor=20)))
+            A.accepted(f.ledger.place_hold('image-only', {'image': 5000}, {'image': 'default'}))
+            A.accepted(f.ledger.admit('image-only', 'waiting', dict(pool='image', need=5000, free=0, held=0, floor=10)))
+            marks = lambda: (f.ledger.hold('host-only')['freed'], f.ledger.hold('image-only')['freed'])
+            A.accepted(f.ledger.place_hold('other', {'host': 100, 'image': 40}, {'host': 'default', 'image': 'default'}))
+            A.accepted(f.ledger.admit('other', 'waiting', dict(pool='host', need=100, free=0, held=0, floor=20)))
+            journal = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+            A.accepted(f.ledger.release('other'))
+            transition = json.loads(f.conn.execute('SELECT transition FROM journal ORDER BY seq DESC LIMIT 1').fetchone()[0])
+            check('fix2/waiting-release-no-mark', 'a waiting hold released marks no hold: ' + repr(marks()),
+                  marks() == (False, False) and list(transition) == [SP.hold_id('other')]
+                  and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == journal + 1)
+            A.accepted(f.ledger.place_hold('spent', {'host': 100}, {'host': 'default'}))
+            A.accepted(f.ledger.admit('spent', 'admitted', used={'host': 100}))
+            A.accepted(f.ledger.release('spent'))
+            check('fix2/waiting-release-no-mark', 'an admitted hold that held no bytes marks no hold: '
+                  + repr(marks()), marks() == (False, False))
+            A.accepted(f.ledger.place_hold('partly', {'host': 100, 'image': 40}, {'host': 'default', 'image': 'default'}))
+            A.accepted(f.ledger.admit('partly', 'admitted', used={'host': 100, 'image': 10}))
+            A.accepted(f.ledger.release('partly', used={'host': 100, 'image': 40}))
+            check('fix2/release-marks-per-pool', 'only the pool it still held bytes on is marked: ' + repr(marks()),
+                  marks() == (False, True))
 
             f = fixture('completion-race')
             svc, loop, requests = wired(f)

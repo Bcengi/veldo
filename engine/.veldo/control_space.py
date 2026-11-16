@@ -2395,10 +2395,16 @@ class Ledger:
         identity, record = self._stored(params, before, 'hold', HOLD_KIND, 'space_no_hold')
         if record['state'] == 'released':
             raise Refused('space_hold_state:released', 'the hold is released already')
+        # Only a promise that was counted frees anything: an admitted or advised hold, on the pools
+        # where it still held bytes (its need above what its own items used at the last measurement).
+        # A waiting hold held nothing, so its release marks no other hold (design 6.7).
+        held = record.get('used') or {}
+        pools = {pool for pool, need in record['needs'].items()
+                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}
         if params.get('used') is not None:
             record['used'] = self._per_pool(params['used'], 'used')
         record['state'] = 'released'
-        return dict(self._freed(before, record['needs'], exclude=identity),
+        return dict(self._freed(before, pools, exclude=identity),
                     **{identity: {'kind': HOLD_KIND, 'data': record}})
 
     def _t_reconcile(self, conn, params, before):

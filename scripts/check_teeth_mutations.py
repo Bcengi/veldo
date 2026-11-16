@@ -16558,6 +16558,11 @@ def cases():
         "                    hold['state'] == 'waiting' and hold.get('freed'))):",
         "            if not hold or hold['state'] != 'released':",
         ['space334/ac3/completion-race', 'space334/ac3/stopped-clock'])
+    # The reviewer's P2: a release that frees nothing marks every waiting hold of its pools.
+    add(334, 'space334-waiting-release-marks', wait334, 'control_space.py',
+        "                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}",
+        "                 if True}  # defect: any release counts as freed space",
+        ['space334/fix2/waiting-release-no-mark', 'space334/fix2/release-marks-per-pool'])
     add(334, 'space334-retry-loses-ending', wait334, 'control_space_signal.py',
         "            ending = ledger.item(identity)['due']['event']",
         "            ending = event  # defect: retry forgets why the item ended",
