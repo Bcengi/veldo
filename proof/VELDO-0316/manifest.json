@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0316",
-  "commit": "42ea5a5a0de00f0158f74e9d1c84a09c88db6ae2",
-  "tree": "22d8821e9a1e268a1ce62296d4c4bebe7b742d22",
-  "producer": "Codex implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-16T13:19:22.370655+00:00",
+  "commit": "e0f1a105e662268017ae107f3aa7bc9278d55162",
+  "tree": "6807bd4068a0541866c661233f884b5dbeb6d256",
+  "producer": "Codex implementation agent; not an independent reviewer; fix round 1 by Claude, a different builder, not an independent reviewer",
+  "produced_at": "2026-11-16T13:39:08.678228+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -13,13 +13,13 @@
         {
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0316_admission.py",
-          "sha256": "bf562c2301dad1bacf99cec7fea768aa5b0347af09866ec9d3ed2530d1058403",
+          "sha256": "bf976737895c5b1f956538783f8ed00a0e139ee9b814abc1c80f0c7b2414d23c",
           "detail": "Diagnostic row definitions: space316/ac1/concurrent, space316/ac1/floor-boundaries, space316/ac1/metrics, space316/ac1/other-holds, space316/ac1/second-pool, space316/ac1/unread-pool"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0316/rows.json",
-          "sha256": "446f0f5738700f2fbae0d38db023bd4f49fea5739a4e2563c41ba16c4d616746",
+          "sha256": "5b80bb2c8706d657ea67be0e2c80b07fec467c6925a37607cebefca2f4720398",
           "detail": "Selected rows passed with the fixture boundaries in README; aggregate verification pending."
         },
         {
@@ -37,13 +37,13 @@
         {
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0316_admission.py",
-          "sha256": "bf562c2301dad1bacf99cec7fea768aa5b0347af09866ec9d3ed2530d1058403",
+          "sha256": "bf976737895c5b1f956538783f8ed00a0e139ee9b814abc1c80f0c7b2414d23c",
           "detail": "Diagnostic row definitions: space316/ac2/acceptance-rechecks, space316/ac2/before-reservation, space316/ac2/cancel-releases, space316/ac2/completion-wakes, space316/ac2/factory-waiting, space316/ac2/racing-prepare, space316/ac2/recorded-wait, space316/ac2/reservation-failure, space316/ac2/service-wiring, space316/ac2/worker-responsive"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0316/rows.json",
-          "sha256": "446f0f5738700f2fbae0d38db023bd4f49fea5739a4e2563c41ba16c4d616746",
+          "sha256": "5b80bb2c8706d657ea67be0e2c80b07fec467c6925a37607cebefca2f4720398",
           "detail": "Selected rows passed with the fixture boundaries in README; aggregate verification pending."
         },
         {
@@ -61,13 +61,13 @@
         {
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0316_admission.py",
-          "sha256": "bf562c2301dad1bacf99cec7fea768aa5b0347af09866ec9d3ed2530d1058403",
+          "sha256": "bf976737895c5b1f956538783f8ed00a0e139ee9b814abc1c80f0c7b2414d23c",
           "detail": "Diagnostic row definitions: space316/ac3/report-starts"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0316/rows.json",
-          "sha256": "446f0f5738700f2fbae0d38db023bd4f49fea5739a4e2563c41ba16c4d616746",
+          "sha256": "5b80bb2c8706d657ea67be0e2c80b07fec467c6925a37607cebefca2f4720398",
           "detail": "Selected rows passed with the fixture boundaries in README; aggregate verification pending."
         },
         {
@@ -85,13 +85,13 @@
         {
           "type": "unit",
           "ref": "scripts/suites/150_veldo_0316_admission.py",
-          "sha256": "bf562c2301dad1bacf99cec7fea768aa5b0347af09866ec9d3ed2530d1058403",
+          "sha256": "bf976737895c5b1f956538783f8ed00a0e139ee9b814abc1c80f0c7b2414d23c",
           "detail": "Diagnostic row definitions: space316/ac4/contract-digest, space316/ac4/finished-measurement, space316/ac4/last-five, space316/ac4/off-and-legacy, space316/ac4/one-run-default, space316/ac4/project-file, space316/ac4/unmeasured-default, space316/ac4/unread-declaration"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0316/rows.json",
-          "sha256": "446f0f5738700f2fbae0d38db023bd4f49fea5739a4e2563c41ba16c4d616746",
+          "sha256": "5b80bb2c8706d657ea67be0e2c80b07fec467c6925a37607cebefca2f4720398",
           "detail": "Selected rows passed with the fixture boundaries in README; aggregate verification pending."
         },
         {
@@ -117,12 +117,12 @@
     {
       "name": "targeted rows",
       "status": "passed",
-      "detail": "25 rows plus 26 preamble checks; partial exit 2."
+      "detail": "29 rows plus 26 preamble checks; partial exit 2; fix-round-1.json."
     },
     {
       "name": "falsifiers",
       "status": "passed",
-      "detail": "8 executed, 8 rejected, 0 reused, 0 surviving workers."
+      "detail": "9 executed, 9 rejected, 0 reused, 0 surviving workers; fix-round-1.json."
     },
     {
       "name": "fast checks",
@@ -143,18 +143,20 @@
   "assumptions": [
     "All acceptance criteria remain pending the lead gate and independent review.",
     "Fixture boundaries, the first invalid teeth stage and the unchanged baseline failures are documented in README.",
-    "No worktree writes occurred while either teeth stage ran. Only proof files were written after the final stage."
+    "No worktree writes occurred while either teeth stage ran. Only proof files were written after the final stage.",
+    "Fix round 1 ran the targeted suite, the fast checks and the teeth stage only; fix-round-1.json."
   ],
   "rollback": "Revert implementation commits. Stored contracts keep their original digest.",
   "artifacts": {
-    "README.md": "sha256:e128c8bd44725d449727626abb3508cb0de90005e0c8517325672f4551108190",
+    "README.md": "sha256:6f61da0b23eebae65baa9b2a16ccb93c10e0842c6d48b6ae993905f42c27cd9e",
     "checks.json": "sha256:151ada331450894722bd1c2f39617fed4d13c7db1c2d4e2964138acea8dcf167",
     "earlier-teeth.json": "sha256:cc335141364c92a8003ca1a90bda48aee632934326260999dda62606c8bf77fd",
     "falsifiers.json": "sha256:036b580c54fd40c4996f797331cfa641aa906482da8231f2da1c8af1ac53fa8d",
     "mode-baseline.json": "sha256:3e0313812db5734cf9f70aed702f347e35f7fc76a1c87f2b4ad6865ab9cb04d8",
-    "rows.json": "sha256:446f0f5738700f2fbae0d38db023bd4f49fea5739a4e2563c41ba16c4d616746",
+    "rows.json": "sha256:5b80bb2c8706d657ea67be0e2c80b07fec467c6925a37607cebefca2f4720398",
     "sources.json": "sha256:f884a71918919ea9f743fbb49f6a7ecad3a033eff1f724341da9c63f1362e135",
-    "targeted-run.txt": "sha256:f3d46ac1baa72053a057969e9543df485d964f4b58ed00c0dec4de106f672eca",
-    "teeth-receipt.json": "sha256:2213442adc3bdce14b695bc81f082b0bf710d8017ad698a518426a8dca09f572"
+    "targeted-run.txt": "sha256:bc02378f7f3806a4f842b7c1d090601e3b73275071bf9f57e4dbf379ce867adb",
+    "teeth-receipt.json": "sha256:2213442adc3bdce14b695bc81f082b0bf710d8017ad698a518426a8dca09f572",
+    "fix-round-1.json": "sha256:31d92e6f69843103ce4c8e3b74ee574ca8ece6d1e176feaf1b995f294fc2c424"
   }
 }

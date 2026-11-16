@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "42ea5a5a0de00f0158f74e9d1c84a09c88db6ae2",
+  "implementation_commit": "e0f1a105e662268017ae107f3aa7bc9278d55162",
   "suite": "150_veldo_0316_admission",
   "meaning": "Selected diagnostic rows, not aggregate gate evidence.",
   "rows": [
@@ -101,6 +101,22 @@
     },
     {
       "id": "space316/ac4/unread-declaration",
+      "passed": true
+    },
+    {
+      "id": "space316/fix1/failed-judgment",
+      "passed": true
+    },
+    {
+      "id": "space316/fix2/left-backlog",
+      "passed": true
+    },
+    {
+      "id": "space316/fix2/withdrawn-restart",
+      "passed": true
+    },
+    {
+      "id": "space316/fix4/no-account-keeps-hold",
       "passed": true
     }
   ]

@@ -50,3 +50,26 @@ The lead owns ./scripts/verify.sh through the gate lock, independent review and 
 No removal primitive was added. The existing keep steps and removers remain the removal path.
 No real-data database volume, protected data, engine image or minio image was touched. The spec stays
 ready. Rollback reverts this implementation; persisted contracts and their digests are not rewritten.
+
+## Fix round 1 (after the independent review, verdict FIX)
+
+A different builder made this round. fix-round-1.json is its record; rows.json and targeted-run.txt
+are its final run: 29 rows passed, 0 failed.
+
+F1: Requests.prepare keeps only an answer that carries a hold. An answer with no hold is returned
+once and dropped, and the next pass submits the judgment again, in act and in report mode.
+F2: the space worker releases dispatch holds that are admitted or advised, that no dispatch record
+carries and that have no live offer: one task at service start, and one when an answered offer is
+not asked again in a line pass. The service loop only takes the snapshot and queues the task.
+F3: ac1/concurrent holds each preparation inside judge until the other arrives or two seconds pass.
+Under the lock the second never arrives; without it both are admitted and the row is red. The
+lock-less mutant is the ninth teeth case.
+F4: a no_account refusal keeps the admitted hold, so repeated passes use one hold and write nothing.
+The ac2/reservation-failure row now uses another reservation failure for the release.
+
+Teeth, run last on a clean tree: 9 registered, 9 executed, 9 rejected, 0 reused, one worker at a
+time. An earlier stage of this round was invalid (0 rejected, every baseline failed at setup) because
+the first barrier needed a shared semaphore that the confined teeth worker cannot create; it is
+recorded in fix-round-1.json and is not a passing result. The files that describe the tree at
+42ea5a5a (teeth-receipt.json, falsifiers.json, checks.json, sources.json) are kept unchanged.
+Not run in this round: the full gate, suites 151 and up, suite 86_veldo_0127, the policy checker.
