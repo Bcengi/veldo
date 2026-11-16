@@ -46,6 +46,7 @@ class Consumer:
         self.active, self.buffer = None, b''
         self.reconcile = None
         self.last_answer = None
+        self.tasks, self.task = {}, None
         self.startup_received = False
         self.head, self.dispatched = 0, None
         self.watched = {}
@@ -58,7 +59,7 @@ class Consumer:
 
     def start(self, replay=None, reconcile=None):
         self.reconcile = reconcile
-        self.startup_received = replay is not None
+        self.startup_received = self.startup_received or replay is not None
         self._rearm()
         if replay is not None:
             self._spawn(replay)
@@ -68,6 +69,10 @@ class Consumer:
     def stop(self):
         """Stop and reap the child, then close every process watch owned by this consumer."""
         self.reconcile = None
+        for ticket in self.tasks.values():
+            ticket.update(done=True, answer={'ok': False, 'reason': 'space_worker_stopped'})
+        self.tasks.clear()
+        self.task = None
         if self.active is not None:
             descriptor, pid = self.active
             self.active = None
@@ -85,6 +90,11 @@ class Consumer:
     def advance(self):
         if self.active or self.ledger.conn.in_transaction:
             return
+        if self.tasks:
+            key, ticket = next(iter(self.tasks.items()))
+            self.task = key
+            self._spawn(ticket['task'])
+            return
         pending = [identity for identity, record in self.ledger.events() if record['state'] == 'received']
         if pending:
             self.startup_received = True
@@ -93,6 +103,14 @@ class Consumer:
             reconcile, self.reconcile = self.reconcile, None
             if self.startup_received:
                 self._spawn(reconcile)
+
+    def submit(self, key, task, complete=None):
+        """One active or queued task per key; callers share its eventual answer."""
+        if key not in self.tasks:
+            self.tasks[key] = dict(task=task, complete=complete, done=False, answer=None)
+        ticket = self.tasks[key]
+        self.advance()
+        return ticket
 
     def run(self, task):
         """Startup waits on the worker pipe before dispatch is admitted."""
@@ -161,7 +179,9 @@ class Consumer:
         except BaseException as error:
             answer = {'ok': False, 'reason': type(error).__name__, 'detail': str(error)[:500]}
         try:
-            os.write(write, json.dumps(answer).encode()[:4096])
+            payload = json.dumps(answer).encode()
+            while payload:
+                payload = payload[os.write(write, payload):]
         except OSError:
             pass
         os._exit(0 if answer.get('ok') else 1)
@@ -240,6 +260,12 @@ class Consumer:
         except ValueError:
             answer = {'ok': False, 'reason': 'space_worker_lost'}
         self.last_answer = answer
+        if self.task is not None:
+            ticket = self.tasks.pop(self.task)
+            self.task = None
+            ticket.update(done=True, answer=answer)
+            if ticket['complete'] is not None:
+                ticket['complete'](answer)
         self.observe(dict(answer, worker=pid, status=status))
         record = self.ledger.event_record(self.dispatched) if self.dispatched is not None else None
         finished = record is None or record['state'] == 'consumed'
@@ -247,5 +273,5 @@ class Consumer:
             for one in (record['result'] or {}).get('held') or ():
                 if one.get('why') == 'client_alive':
                     self._watch(self.dispatched, record, one.get('item'))
-        if advance and status == 0 and answer.get('ok') and finished:
+        if advance and (self.tasks or (status == 0 and answer.get('ok') and finished)):
             self.advance()

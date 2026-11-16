@@ -294,6 +294,8 @@ def _v337_verdict_suite():
         floor.space = dict(ledger=L, probe=P, kinds=K, remover=RM, keep=keep, free=free,
                            owner_live=lambda owner: ENDED, run=client, proc=str(PROC))
         inside_signal = [None]
+        signal_trace = temp / 'worker-signals.jsonl'
+        service_pid = os.getpid()
 
         def traced_signal(ledger, event, subject, **given):
             # A second connection must see the verdict before a verdict signal.
@@ -304,6 +306,9 @@ def _v337_verdict_suite():
             committed = bool(stored and any(r['assignment'] == emitter.get('assignment')
                                            for r in stored['data']['reviews']))
             signals.append((event, subject, emitter, committed))
+            if os.getpid() != service_pid:
+                with signal_trace.open('a') as stream:
+                    stream.write(json.dumps(signals[-1]) + '\n')
             if inside_signal[0]:
                 callback, inside_signal[0] = inside_signal[0], None
                 callback()
@@ -778,14 +783,27 @@ def _v337_verdict_suite():
         before = len(signals)
         SV = load('v337_service', VELDO / 'control_service.py')
         service = object.__new__(SV.Service)
-        service._space, service.space_docker = restarted.space, None
+        service.space_docker = None
         service.config, service.domain = {}, DOMAIN
+        service.conn, service.space_seen = conn, None
+        service.loop, service.api, service.channel = None, None, None
+        service.projects_due = False
+        service.space = restarted.space
         service._log = lambda event: None
         # The floor is real; this fixture supplies its provider instead of a Materializer.
-        service.space_floors = lambda conn, space=None: contextlib.nullcontext([restarted])
+        def floors(connection, space=None):
+            restarted.conn = connection
+            return contextlib.nullcontext([restarted])
+        service.space_floors = floors
+
+        def collected(result):
+            if signal_trace.exists():
+                signals.extend(json.loads(line) for line in signal_trace.read_text().splitlines())
+                signal_trace.unlink()
+            return [tuple(pair) for pair in result.get('verdicts', [])]
         SV.SPACE_RECONCILE.Reconciler.discover = lambda reconcile: None
         started = service.space_start(replay=lambda: None)
-        sent = started.get('verdicts', [])
+        sent = collected(started)
         named = [one for one in signals[before:] if one[2].get('dispatch') == f.dispatch]
         check(row, 'the reconcile at start releases them once, from the committed verdict',
               sent.count((f.unit, f.assignment['assignment'])) == 1 and len(named) == 1
@@ -797,7 +815,7 @@ def _v337_verdict_suite():
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n'
               and not (f.paths['evidence'] / 'cache').exists() and state_of(f.items['evidence']) == 'kept')
         before, at = len(signals), journal_length()
-        again = service.space_reconcile('cli').get('verdicts', [])
+        again = collected(service.space_reconcile('cli'))
         check(row, 'once: a second reconcile sends no verdict again',
               again == [] and len(signals) == before
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n')
@@ -812,15 +830,15 @@ def _v337_verdict_suite():
         except Killed:
             pass
         before = len(signals)
-        sent = service.space_reconcile('cli').get('verdicts', [])
+        sent = collected(service.space_reconcile('cli'))
         named = [one for one in signals[before:] if one[2].get('dispatch') == late.dispatch]
         check(row, 'on demand also recovers a verdict lost after startup',
               sent.count((late.unit, late.assignment['assignment'])) == 1 and len(named) == 1
               and not late.paths['scratch'].exists() and not late.paths['build'].exists())
         before = len(signals)
-        again = service.space_reconcile('cli').get('verdicts', [])
+        again = collected(service.space_reconcile('cli'))
         check(row, 'the on-demand recovery is sent once', again == [] and len(signals) == before)
-        service.space_docker.stop()
+        service.space_stop()
 
         row = 'ac1/reconcile-domain-and-repository'
         for suffix, coordinate in (('20', 'domain'), ('21', 'repository')):

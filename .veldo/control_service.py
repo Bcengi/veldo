@@ -1719,7 +1719,54 @@ class Service:
         return {'ok': False, 'reason': self.space_refusal, 'detail': str(error)[:400]}
 
     def space_reconcile(self, started_by='console', project=None):
-        """The explicit API/CLI entry; no service pass or timer calls it."""
+        """Wait for the coalesced worker result while the service keeps answering packets."""
+        if self.space is None:
+            return {'ok': False, 'reason': 'space_not_configured'}
+        if project is not None and (not isinstance(project, str) or not project):
+            return {'ok': False, 'reason': 'invalid_input:project'}
+        try:
+            ticket = self.space_reconcile_task(started_by, project)
+            while not ticket['done']:
+                self.space_wait()
+            return ticket['answer']
+        except Exception as error:
+            return self._space_reconcile_failed(error)
+
+    def space_wait(self):
+        pump = getattr(self, 'space_poll', None)
+        if pump is not None:
+            pump()
+        else:
+            poller = select.poll()
+            for fd in self.space_pipes():
+                poller.register(fd, select.POLLIN | select.POLLHUP)
+            for fd, _event in poller.poll():
+                self.space_readable(fd)
+
+    def space_reconcile_task(self, started_by='service_start', project=None, retry=False):
+        consumer = self.space_consumer
+        key = ('retry',) if retry else ('reconcile', started_by, project)
+        if key in consumer.tasks:
+            return consumer.tasks[key]
+        adapter = self.space_docker
+        # Subscriptions belong to the service. The child only reads snapshots and disk.
+        snapshots = adapter.start() if adapter is not None else {}
+
+        def task():
+            self.conn = self.space['ledger'].conn
+            if retry:
+                self.space_replay()
+            return self._space_reconcile(started_by, project, snapshots)
+
+        def complete(answer):
+            if answer.get('ok'):
+                self.space_refusal = None
+            else:
+                self._space_reconcile_failed(RuntimeError(answer.get('detail') or answer.get('reason')))
+        return consumer.submit(key, task, complete)
+
+    def _space_reconcile(self, started_by='console', project=None, snapshots=None):
+        """Worker task: use its reopened store and never create event subscriptions."""
         try:
             if self.space is None:
                 return {'ok': False, 'reason': 'space_not_configured'}
@@ -1742,7 +1789,14 @@ class Service:
                 if adapter is not None:
                     adapter.ledger = space['ledger']
                 with self.space_floors(space['ledger'].conn, space) as floors:
-                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter, floors=floors)
+                    class Snapshots:
+                        def start(self):
+                            return snapshots or {}
+
+                        def snapshot(self, engine):
+                            return adapter.snapshot(engine)
+                    reconciler = SPACE_RECONCILE.Reconciler(
+                        space, docker=Snapshots() if adapter is not None else None, floors=floors)
                     result = reconciler.run(started_by)
             finally:
                 if adapter is not None:
@@ -2398,7 +2452,7 @@ class Service:
         try:
             answer = self.space_docker.readable(fd)
             if getattr(self, 'space_refusal', None) is not None:
-                self.space_start(replay=None)
+                self.space_reconcile_task(retry=True)
             if isinstance(answer, dict) and answer.get('down'):
                 # The review of VELDO-0306, finding 4: an engine that is not read any more is said in
                 # the observation log, never silent: its objects are not being recorded.
@@ -4306,6 +4360,32 @@ def serve(config_path):
             listener.settimeout(ACCEPT_SECONDS)
             space_listener = service.space_listen()
             service.space_owned.append(space_listener)
+            def space_poll():
+                if stopping:
+                    service.space_stop()
+                    return
+                spaces = service.space_pipes()
+                dockers = service.docker_pipes()
+                provisioners = service.provisioner_pipes()
+                launches = service.loop.pipes() if service.loop is not None else {}
+                readers = [listener] + ([space_listener] if space_listener is not None else [])
+                readers += sorted({**spaces, **dockers, **provisioners, **launches})
+                for fd in select.select(readers, [], [], ACCEPT_SECONDS)[0]:
+                    if fd == listener:
+                        response = CC.serve_one(listener, authority)
+                        if response is not None:
+                            service.observe_response(response)
+                    elif fd == space_listener:
+                        service.space_packet(space_listener)
+                    elif fd in spaces:
+                        service.space_readable(fd)
+                    elif fd in dockers:
+                        service.docker_readable(fd)
+                    elif fd in provisioners:
+                        service.provisioner_readable(fd)
+                    elif fd in launches:
+                        service.loop.readable(launches[fd])
+            service.space_poll = space_poll
             service.space_worker_start(reconcile=service.space_received_reconcile)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()

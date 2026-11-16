@@ -658,11 +658,12 @@ def _v315_suite():
         def docker_retry(f, row):
             adapter = f.service.space_docker = Docker(f.L)
             original = SV.SPACE_RECONCILE.Reconciler.discover
-            calls = []
+            calls = f.state / 'discover-calls'
 
             def fail_once(reconciler):
-                calls.append(True)
-                if len(calls) == 1:
+                with calls.open('a') as stream:
+                    stream.write('called\n')
+                if len(calls.read_text().splitlines()) == 1:
                     raise OSError('disk unread on first start')
                 return original(reconciler)
 
@@ -671,12 +672,14 @@ def _v315_suite():
                 check(row, 'a failed disk comparison still leaves Docker subscribed with one snapshot',
                       not answer['ok'] and adapter.streams and adapter.snapshots == 1)
                 f.service.docker_readable(1)
+                while f.service.space_consumer.active:
+                    f.service.space_wait()
             check(row, 'next engine event retries and clears the refusal',
-                  len(calls) == 2 and f.service.space_refusal is None and adapter.streams)
+                  len(calls.read_text().splitlines()) == 2 and f.service.space_refusal is None and adapter.streams)
             adapter.streams.clear()
             f.service.space_reconcile()
             check(row, 'on demand starts a missing stream and consumes its snapshot once',
-                  bool(adapter.streams) and adapter.snapshots == 3)
+                  bool(adapter.streams) and adapter.snapshots == 2)
 
         case('ac3/docker-retry', docker_retry)
 
@@ -719,7 +722,7 @@ def _v315_suite():
             popen = subprocess.Popen
 
             def observed_popen(argv, *args, **kwargs):
-                if argv and os.path.basename(str(argv[0])) == 'git' and spool.pending(folder):
+                if argv and os.path.basename(str(argv[0])) == 'git':
                     with launches.open('a') as stream:
                         stream.write(str(os.getpid()) + '\n')
                 return popen(argv, *args, **kwargs)
@@ -748,6 +751,45 @@ def _v315_suite():
                 changed = [record for _, record in f.L.events() if record['type'] == 'ref_changed']
                 check('ac3/serve-trunk-replay', 'real serve reads land before open_loop, records and consumes trunk',
                       not spool.pending(folder) and len(changed) == 1 and changed[0]['state'] == 'consumed')
+                import threading
+                import socket
+                held_read, held_write = os.pipe()
+                release_read, release_write = os.pipe()
+                item = f.at(path)[0]
+
+                def latched():
+                    with f.L.item_lock(item):
+                        os.write(held_write, b'held')
+                        os.read(release_read, 1)
+                service.space_consumer._spawn(latched)
+                os.read(held_read, 4)
+                answered = []
+
+                def packet():
+                    try:
+                        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+                            client.settimeout(10)
+                            client.connect(str(Path(folder) / spool.SOCKET))
+                            client.sendall(json.dumps({'call': 'about', 'repository': str(f.repo),
+                                                       'path': None}).encode())
+                            client.shutdown(socket.SHUT_WR)
+                            answered.append(json.loads(client.recv(65536)))
+                    finally:
+                        os.write(release_write, b'x')
+                sender = threading.Thread(target=packet)
+                sender.start()
+                service.space_refusal = 'fixture retry'
+                for _ in range(20):
+                    service.docker_readable(1)
+                check('ac3/retry-coalesced', 'twenty engine events queue at most one retry behind the active worker',
+                      list(service.space_consumer.tasks) == [('retry',)])
+                with patch.object(SV.select, 'select', real_select):
+                    answer = service.space_reconcile('cli')
+                sender.join(12)
+                check('ac3/reconcile-responsive', 'a packet is answered while reconcile waits for the worker latch',
+                      bool(answered) and answered[0].get('served') and answer['ok'])
+                for fd in (held_read, held_write, release_read, release_write):
+                    os.close(fd)
                 handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
                 return None
 
