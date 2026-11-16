@@ -487,6 +487,101 @@ def _v329_suite():
         check(row, 'with the global folder gone the same repository gets its hooks: ' + str(record),
               record.get('ok') is True and record.get('hooks_folder') == str(husky / '.git' / 'hooks'))
 
+        row = 'fix2/shared-linked-folder'
+        shared = temp / 'shared-hooks'
+        shared.mkdir()
+        linked, unbound = repository('linked'), repository('unbound')
+        for path in (linked, unbound):
+            shutil.rmtree(path / '.git' / 'hooks')
+            (path / '.git' / 'hooks').symlink_to(shared)
+        record = direct(linked)
+        check(row, 'a hooks folder that is a link is refused, with where it leads: ' + str(record),
+              record.get('ok') is False and record.get('hooks') == {}
+              and record.get('refused') == 'hooks_folder_is_a_link:' + str(shared))
+        check(row, 'no write reaches the folder the other repository shares: '
+              + str((entries(shared), entries(unbound / '.git' / 'hooks'))),
+              entries(shared) == [] and entries(unbound / '.git' / 'hooks') == []
+              and told_to(linked, 'veldo.space.stateroot') is None)
+        check(row, 'and it is reported, never "in place"',
+              R.hooks_missing(str(linked), str(state), G)
+              == (str(linked / '.git' / 'hooks'), {'hooks_folder': record.get('refused')}))
+        # The same folder named by its absolute path, but through a link on the way to it.
+        (temp / 'alias').symlink_to(temp / 'shared-parent')
+        (temp / 'shared-parent' / 'hooks').mkdir(parents=True)
+        through = repository('through')
+        git(through, 'config', 'core.hooksPath', str(temp / 'alias' / 'hooks'))
+        record = direct(through)
+        check(row, 'a folder reached through a link is refused and gains nothing: ' + str(record),
+              record.get('refused') == 'hooks_folder_reached_through_a_link:' + str(temp / 'shared-parent' / 'hooks')
+              and entries(temp / 'shared-parent' / 'hooks') == []
+              and 'hooks_folder' in R.hooks_missing(str(through), str(state), G)[1])
+
+        row = 'fix2/relative-committed-folder'
+        OWNER_HOOK = '#!/bin/sh\necho "the owner committed this hook"\n'
+
+        def committed(name):
+            path = repository(name)
+            (path / '.githooks').mkdir()
+            (path / '.githooks' / 'post-checkout').write_text(OWNER_HOOK)
+            (path / '.githooks' / 'post-checkout').chmod(0o755)
+            git(path, 'add', '.githooks')
+            git(path, 'commit', '-q', '-m', 'the hooks are committed')
+            return path
+
+        relative = committed('relative')
+        git(relative, 'config', 'core.hooksPath', '.githooks')
+        record = direct(relative)
+        check(row, 'a relative hooks path is refused: ' + str(record),
+              record.get('ok') is False and record.get('refused') == 'hooks_path_is_relative'
+              and record.get('hooks_folder') == str(relative / '.githooks'))
+        check(row, 'git status stays clean and the committed hook is byte for byte the owner\'s: '
+              + repr(git(relative, 'status', '--porcelain')),
+              git(relative, 'status', '--porcelain') == '' and entries(relative / '.githooks') == ['post-checkout']
+              and (relative / '.githooks' / 'post-checkout').read_text() == OWNER_HOOK)
+        absolute = committed('absolute')
+        git(absolute, 'config', 'core.hooksPath', str(absolute / '.githooks'))
+        record = direct(absolute)
+        check(row, 'the same folder named by its absolute path is inside the work tree, and refused: ' + str(record),
+              record.get('ok') is False
+              and record.get('refused') == 'hooks_folder_inside_a_repository:' + str(absolute)
+              and git(absolute, 'status', '--porcelain') == '' and entries(absolute / '.githooks') == ['post-checkout']
+              and (absolute / '.githooks' / 'post-checkout').read_text() == OWNER_HOOK)
+        other = repository('other')
+        inside = repository('inside-other')
+        git(inside, 'config', 'core.hooksPath', str(other / '.git' / 'hooks'))
+        other_before = entries(other / '.git' / 'hooks')
+        record = direct(inside)
+        check(row, 'another repository\'s hooks folder is refused, and that repository gains nothing: ' + str(record),
+              record.get('refused') == 'hooks_folder_inside_a_repository:' + str(other / '.git')
+              and entries(other / '.git' / 'hooks') == other_before)
+
+        row = 'fix2/linked-worktree'
+        tree = temp / 'relative-trees' / 'one'
+        git(relative, 'worktree', 'add', '-q', '-b', 'one', str(tree))
+        check(row, 'git gives a linked worktree its own copy of a relative hooks folder',
+              os.path.realpath(os.path.join(str(tree), git(tree, 'rev-parse', '--git-path', 'hooks')))
+              == str(tree / '.githooks'))
+        for where in (relative, tree):
+            folder, missing = R.hooks_missing(str(where), str(state), G)
+            check(row, 'asked through %s the report says why no hook starts there: %s' % (where.name, missing),
+                  missing == {'hooks_folder': 'hooks_path_is_relative'} and folder == str(where / '.githooks'))
+        check(row, 'and the worktree\'s committed copy is untouched',
+              git(tree, 'status', '--porcelain') == '' and entries(tree / '.githooks') == ['post-checkout'])
+        # A repository named by one of its linked worktrees gets its hooks in the one shared folder.
+        main = repository('main-side')
+        tree = temp / 'main-side-trees' / 'one'
+        git(main, 'worktree', 'add', '-q', '-b', 'one', str(tree))
+        before = len(told())
+        record = direct(tree)
+        check(row, 'named by a linked worktree, the hooks go to the common directory\'s folder: ' + str(record),
+              record.get('ok') is True and record.get('hooks_folder') == str(main / '.git' / 'hooks')
+              and all(executable(main / '.git' / 'hooks' / name) for name in R.HOOKS)
+              and git(tree, 'status', '--porcelain') == '')
+        git(tree, 'checkout', '-q', '-b', 'two')
+        check(row, 'and a branch switch in that worktree starts the hook',
+              any(words.startswith('space record ') and '--worktree ' + str(tree) in words and '--branch two' in words
+                  for words, _lines in told()[before:]))
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'

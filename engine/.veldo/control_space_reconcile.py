@@ -62,7 +62,11 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   repository's own local configuration. core.hooksPath is read as the owner's git
                   reads it, with the global and the system file: set there (a global hook manager), or
                   in one worktree's own file, it names a folder that is not this repository's alone,
-                  so the install is REFUSED whole and reconcile reports hooks_folder with why. Veldo's
+                  so the install is REFUSED whole and reconcile reports hooks_folder with why. So is
+                  a relative core.hooksPath (a different, committed folder in every worktree), a
+                  folder that is a link or is reached through one (it may be shared with repositories
+                  nobody bound), and a folder inside a work tree or another repository: Veldo never
+                  writes to a file that is or may become a tracked one. Veldo's
                   own hook goes there under its own name, veldo-post-checkout and
                   veldo-reference-transaction. Where no hook file exists, a two line file is written:
                   the shell line and one marked line that starts Veldo's hook. Where a hook file
@@ -1031,15 +1035,6 @@ def hook_state(folder, name, whole=None):
     return None
 
 
-def hooks_folder(repository, git):
-    """The folder git runs this repository's hooks from: the shared one, or the configured one."""
-    code, text = git([], '-C', repository, 'rev-parse', '--git-path', 'hooks')
-    if code:
-        raise ValueError('git could not read ' + repository + ': ' + str(text)[:200])
-    folder = text.rstrip('\n')
-    return os.path.normpath(folder if os.path.isabs(folder) else os.path.join(repository, folder))
-
-
 def _owner_git(*argv, environ=None):
     """One git command read as the repository's owner's own git reads it: (exit code, output). The
     remover's git leaves out the owner's global and system configuration, and git itself does not when
@@ -1060,22 +1055,68 @@ def _owner_git(*argv, environ=None):
     return 0, done.stdout.decode('utf-8', 'surrogateescape')
 
 
+def _repository_over(path):
+    """The nearest folder at or above `path` that is a work tree or a git directory, or None."""
+    current = path
+    while True:
+        if os.path.lexists(os.path.join(current, '.git')) or all(
+                os.path.exists(os.path.join(current, part)) for part in ('HEAD', 'objects', 'refs')):
+            return current
+        parent = os.path.dirname(current)
+        if parent == current:
+            return None
+        current = parent
+
+
 def hooks_place(repository, git, environ=None):
     """(hooks folder, None), or (the folder git runs hooks from, why Veldo installs nothing there).
-    core.hooksPath is read with the owner's global and system configuration. Set anywhere but in the
-    repository's own local configuration (a global hook manager, the system file, one worktree's own
-    file) it names a folder that is not this repository's alone, so the install is refused."""
+
+    The folder must be this repository's alone, and nothing in it may be a tracked file:
+      - core.hooksPath is read with the owner's global and system configuration. Set anywhere but in
+        the repository's own local configuration (a global hook manager, the system file, one
+        worktree's own file) it names a folder other repositories use too.
+      - A relative core.hooksPath is a different folder in every worktree, and a committed one.
+      - A folder that is a link, or is reached through one, may be shared with other repositories.
+      - With no core.hooksPath the folder is hooks in the repository's common directory, the one every
+        linked worktree uses. A folder outside the common directory is taken only where the local
+        configuration names it by its absolute path, and never inside a work tree or another
+        repository, where its files are or may become tracked ones."""
     code, text = _owner_git('-C', repository, 'config', '--show-scope', '--show-origin', '--type=path',
                             '-z', '--get-all', HOOKS_PATH, environ=environ)
     if code not in (0, 1):  # 1: the key is set nowhere
         raise ValueError('git could not read the configuration of ' + repository + ': ' + str(text)[:200])
+    configured = None
     if code == 0:
         fields = text.split('\0')
-        scope, origin, value = fields[-4:-1] if len(fields) >= 4 else ('unread', '', '')
+        scope, origin, configured = fields[-4:-1] if len(fields) >= 4 else ('unread', '', '')
         if scope != 'local':
-            return (os.path.normpath(os.path.join(repository, value)),
+            return (os.path.normpath(os.path.join(repository, configured)),
                     'hooks_path_set_in_%s_configuration:%s' % (scope, origin[:200]))
-    return hooks_folder(repository, git), None
+    code, text = git([], '-C', repository, 'rev-parse', '--path-format=absolute', '--git-common-dir')
+    if code:
+        raise ValueError('git could not read ' + repository + ': ' + str(text)[:200])
+    common = os.path.realpath(text.rstrip('\n'))
+    if configured is None:
+        folder = os.path.join(common, 'hooks')
+    elif not os.path.isabs(configured):
+        return os.path.normpath(os.path.join(repository, configured)), 'hooks_path_is_relative'
+    else:
+        folder = os.path.normpath(configured)
+    real = os.path.realpath(folder)
+    if os.path.islink(folder):
+        return folder, 'hooks_folder_is_a_link:' + real[:200]
+    if real != folder:
+        return folder, 'hooks_folder_reached_through_a_link:' + real[:200]
+    if real != common and not real.startswith(common.rstrip('/') + '/'):
+        over = _repository_over(real)
+        if over:
+            return folder, 'hooks_folder_inside_a_repository:' + over[:200]
+    return folder, None
+
+
+def hooks_folder(repository, git, environ=None):
+    """The folder git runs this repository's hooks from, whether or not Veldo installs there."""
+    return hooks_place(repository, git, environ)[0]
 
 
 def hooks_missing(repository, state_root, git, source=None, environ=None):

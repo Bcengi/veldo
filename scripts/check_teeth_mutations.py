@@ -16425,8 +16425,8 @@ def cases():
             "            if False:  # defect: a hook that is no shell script gets the line too\n",
             ['space329/ac1/refused-and-said'])
     hook329('space329-shared-folder-always',
-            "    folder = text.rstrip('\\n')\n",
-            "    folder = os.path.join('.git', 'hooks')  # defect: the configured hooks folder is not asked for\n",
+            "        folder = os.path.normpath(configured)\n",
+            "        folder = os.path.join(common, 'hooks')  # defect: the configured hooks folder is not used\n",
             ['space329/ac1/configured-folder'])
     hook329('space329-settings-rewritten',
             "        settings = json.loads(before) if before is not None else {}\n",
@@ -16436,6 +16436,25 @@ def cases():
             "            installed = install(ledger, installation=service.config.get('installation'))\n",
             "            installed = []  # defect: a repository bound at this start gets no hook\n",
             ['space329/wiring/bootstrap-installs'])
+    # The independent review's findings 1 to 4 (fix round), one defect for each refusal.
+    hook329('space329-global-hooks-path-unseen',
+            "        if scope != 'local':\n",
+            "        if False:  # defect: a hooks path from the global configuration is used as the repository's\n",
+            ['space329/fix1/global-hooks-path'])
+    hook329('space329-linked-folder-written',
+            "    if os.path.islink(folder):\n        return folder, 'hooks_folder_is_a_link:' + real[:200]\n"
+            "    if real != folder:\n",
+            "    if False:  # defect: a hooks folder that is a link is followed\n"
+            "        return folder, 'hooks_folder_is_a_link:' + real[:200]\n    if False:\n",
+            ['space329/fix2/shared-linked-folder'])
+    hook329('space329-tracked-folder-written',
+            "        if over:\n",
+            "        if False:  # defect: a hooks folder inside a work tree is written to\n",
+            ['space329/fix2/relative-committed-folder'])
+    hook329('space329-relative-folder-used',
+            "        return os.path.normpath(os.path.join(repository, configured)), 'hooks_path_is_relative'\n",
+            "        folder = os.path.normpath(os.path.join(repository, configured))  # defect: one worktree's copy\n",
+            ['space329/fix2/linked-worktree'])
 
     return result
 
