@@ -20,6 +20,7 @@ footprint:
   - ".veldo/control_space_reconcile.py"
   - "scripts/suites/*_veldo_0343_*.py"
   - "scripts/suites/133_veldo_0326_space_principals.py"
+  - "scripts/suites/156_veldo_0315_reconcile.py"
   - "docs/design/VELDO-0295-design.md"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -179,3 +180,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   one call, three lines. Left as it is, the lead's call: an existing branch at the same commit
   under the kept name is recorded as this Discard's kept branch (the review's R6).
   Design 6.5 says all three. Six more teeth cases under finding 343, twenty in all.
+- 2026-11-16: fix round 3, two rows of VELDO-0315's suite 156 that were red on this branch. Neither
+  is caused by this ticket and no product code changed; both were left stale by VELDO-0318 (commit
+  a9628b86). No acceptance criterion changed. The footprint is widened by the lead to
+  scripts/suites/156_veldo_0315_reconcile.py.
+  Row loss/owner-keep wrote the owner's Keep with Ledger.outcome and facts.owner_keep. Since
+  VELDO-0318 that outcome is refused not_authorized: the Keep is the owner's signed
+  space_disposition command and nothing else. The row now asserts that refusal, lets reconcile defer
+  the due worktree as unique_work with its request, and drives the Keep as VELDO-0340's fix round
+  did for VELDO-0336's rows: the settled answer, which alone marks nothing, then the owner's signed
+  packet. It proves what it proved: the owner's Keep and the work survive discovery and recovery.
+  Row ac3/startup required that no worker child is active after the worker start. Since VELDO-0318
+  space_worker_start also queues the dispositions task (control_service.py, space_worker_start:
+  self.space_dispositions()), so a child is active there whatever was received. Reconcile's
+  recording of a left branch (fix round 2, finding 6) is not on this path: it is called only from
+  the Reconciler's defer of a removing worktree, and this row has none. The row now reads every
+  start the consumer makes: the dispositions task and nothing else, the reconcile hook taken and
+  never started, and still exactly one reconcile record.
