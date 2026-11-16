@@ -168,7 +168,9 @@ def _v331_space_mode_suite():
         LIFECYCLE = {'version': KINDS.LIFECYCLE['version'], 'events': EVENTS, 'ends_on': {
             'worktree': ['landed', 'ticket_ended'], 'branch': ['landed'], 'agent_repository': ['landed'],
             'build_output': EVENTS, 'scratch': EVENTS, 'evidence': ['run_finished'], 'container': EVENTS,
-            'volume': EVENTS, 'network': EVENTS, 'image_tag': ['landed']}}
+            'volume': EVENTS, 'network': EVENTS, 'image_tag': ['landed'],
+            # VELDO-0337's review run kinds (assembly): every kind of the Ledger has its end list.
+            **{kind: EVENTS for kind in SP.REVIEW_RUN_KINDS}}}
 
         def journal_sign(message):
             return 'stub:' + S.digest_of(message.decode('utf-8'))

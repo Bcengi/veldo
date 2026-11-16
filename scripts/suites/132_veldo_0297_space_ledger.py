@@ -139,7 +139,9 @@ def _v297_space_ledger_suite():
         LIFECYCLE = {'version': 'fixture-1', 'events': EVENTS, 'ends_on': {
             'worktree': ['landed', 'ticket_ended'], 'branch': ['landed'], 'agent_repository': ['landed'],
             'build_output': EVENTS, 'scratch': EVENTS, 'evidence': ['run_finished'], 'container': EVENTS,
-            'volume': EVENTS, 'network': EVENTS, 'image_tag': ['landed']}}
+            'volume': EVENTS, 'network': EVENTS, 'image_tag': ['landed'],
+            # VELDO-0337's review run kinds (assembly): every kind of the Ledger has its end list.
+            **{kind: EVENTS for kind in SP.REVIEW_RUN_KINDS}}}
 
         def device(path):
             return 'dev-second' if path.startswith(str(temp / 'build') + '/') else 'dev-host'

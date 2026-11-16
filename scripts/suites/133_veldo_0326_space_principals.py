@@ -187,7 +187,9 @@ def _v326_space_principals_suite():
             'worktree': ['landed', 'ticket_ended', 'worktree_abandoned'], 'branch': ['landed'],
             'agent_repository': ['landed'], 'build_output': EVENTS, 'scratch': EVENTS,
             'evidence': ['run_finished'], 'container': EVENTS, 'volume': EVENTS, 'network': EVENTS,
-            'image_tag': ['landed']}}
+            'image_tag': ['landed'],
+            # VELDO-0337's review run kinds (assembly): every kind of the Ledger has its end list.
+            **{kind: EVENTS for kind in SP.REVIEW_RUN_KINDS}}}
 
         def journal_sign(message):
             return 'stub:' + S.digest_of(message.decode('utf-8'))
