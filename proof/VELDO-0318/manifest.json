@@ -1,20 +1,20 @@
 {
  "artifacts": {
-  "README.md": "sha256:e77df5cc676b87f43878c4768c6423f8378fa42c3327605af3ad7a54d271a264",
-  "checks.json": "sha256:ccc06faaf9d2b40cf4ecd1813e370af70d6d30c7f4acacbaf38819a6b8e1bf19",
-  "falsifiers.json": "sha256:43ffdc09de2d98a7d6e5891c44b27dacacc1cd23ac5c3fab70bd96ee85dce3a4",
+  "README.md": "sha256:dae09926e9df31ef70a3dbc28464592df032a4b387e7f1824b24e0e9c5b0c3c5",
+  "checks.json": "sha256:3eb6f9348c9e1e45bc8e96468e7875dbd31f6049678f0fafc8e48942902b9078",
+  "falsifiers.json": "sha256:af2bcbfcee36b873b5ad73284a452a8da394002119ac235c4c646242dd1f86fc",
   "initial-teeth-summary.json": "sha256:edd523fd8915dd3872e89f9f31a0c9a2bc5a48e1f642d3b28ed8ef848a8cc8e1",
-  "rows.json": "sha256:caf752836604f3452f2e4f7e8c37a920208414b135e0576abbe4602935a782ff",
-  "sources.json": "sha256:621e4cadbdd004b4cef925174b43b59e4a814a744e65d4653861148a75b5e711",
-  "teeth-receipt.json": "sha256:fa1602924781a41b2b881f0fa7e6343599212c77bb1956e305357393b147bfa6",
-  "teeth-run.json": "sha256:dec9a66813fd1cf71fefd5154df8ce545918e3d2fd41a414b16209dd564fee8d",
+  "rows.json": "sha256:222fc668e412e784f580b7677700a6882d88b178a0c97f91a2aa353fcead5b31",
+  "sources.json": "sha256:21cb35555de5a071e9172a10b39782f2dfbb7ec4cacdfffb20439b360447119d",
+  "teeth-receipt.json": "sha256:fb87aa250bfa75c3db0da87c16337989ecbd1399a9eb911664327a2b7cc9526d",
+  "teeth-run.json": "sha256:d17ba6b6569102c37f0d96fe5a6d5db9b37dbf83764c8a576a03c787db78d0e0",
   "teeth312-summary.json": "sha256:fed79f2cfdbd446e738a52007cf2e9bff5a1c2746a4627daa146d62af8dc9fa1"
  },
  "assumptions": [
   "Owner-signed Keep packet is required in addition to its settled request.",
   "Fixture process table and Docker reads do not establish host-reader readiness.",
   "All criteria remain pending aggregate verification and independent review.",
-  "Releasing the kept worktree pin after a no-space end is not assigned by this specification and is not built."
+  "Releasing the kept worktree pin after a no-space end is unassigned (lead decision) and is not built; a clean pinned worktree raises no request (known gap, row pin/clean-stays)."
  ],
  "checks": [
   {
@@ -28,7 +28,7 @@
    "status": "not_run"
   },
   {
-   "detail": "38 ticket, 41 previous Keep (0312), 27 touchpoint (0327), 23 full pool (0317) and 31 keep (0345) rows green. Signal 17 green with the no-imports row red on the 0327 base too. Remover 38 green and ac3/commands red: the force option string of the Discard remover, reported to the lead.",
+   "detail": "45 ticket, 32 released (0335), 41 previous Keep (0312), 27 touchpoint (0327), 23 full pool (0317), 31 keep (0345) and 39 remover (0300) rows green. Signal 17 green with ac4/no-clock red on the 0327 base too.",
    "name": "targeted regressions",
    "status": "diagnostic_only"
   },
@@ -38,7 +38,7 @@
    "status": "passed"
   },
   {
-   "detail": "15 of 15 rejected in the final run after the rebase: the 10 declared falsifiers, the lost wakeup and 4 for the commit-only worktree; no reuse, no invalid result, no surviving worker.",
+   "detail": "22 of 22 rejected in the final run of fix round 1: the 10 declared falsifiers, the lost wakeup, 4 for the commit-only worktree and 7 for the fix round; no reuse, no invalid result, no surviving worker.",
    "name": "falsifiers",
    "status": "passed"
   },
@@ -48,14 +48,14 @@
    "status": "not_run"
   }
  ],
- "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+ "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
  "criteria": [
   {
    "evidence": [
     {
      "detail": "AC1 rows green and specification falsifiers red; pending aggregate verification and review.",
      "ref": "proof/VELDO-0318/teeth-receipt.json",
-     "sha256": "fa1602924781a41b2b881f0fa7e6343599212c77bb1956e305357393b147bfa6",
+     "sha256": "fb87aa250bfa75c3db0da87c16337989ecbd1399a9eb911664327a2b7cc9526d",
      "type": "falsifier"
     }
    ],
@@ -67,7 +67,7 @@
     {
      "detail": "AC2 rows green and specification falsifiers red; pending aggregate verification and review.",
      "ref": "proof/VELDO-0318/teeth-receipt.json",
-     "sha256": "fa1602924781a41b2b881f0fa7e6343599212c77bb1956e305357393b147bfa6",
+     "sha256": "fb87aa250bfa75c3db0da87c16337989ecbd1399a9eb911664327a2b7cc9526d",
      "type": "falsifier"
     }
    ],
@@ -79,7 +79,7 @@
     {
      "detail": "AC3 rows green and specification falsifiers red; pending aggregate verification and review.",
      "ref": "proof/VELDO-0318/teeth-receipt.json",
-     "sha256": "fa1602924781a41b2b881f0fa7e6343599212c77bb1956e305357393b147bfa6",
+     "sha256": "fb87aa250bfa75c3db0da87c16337989ecbd1399a9eb911664327a2b7cc9526d",
      "type": "falsifier"
     }
    ],
@@ -91,7 +91,7 @@
     {
      "detail": "AC4 rows green and specification falsifiers red; pending aggregate verification and review.",
      "ref": "proof/VELDO-0318/teeth-receipt.json",
-     "sha256": "fa1602924781a41b2b881f0fa7e6343599212c77bb1956e305357393b147bfa6",
+     "sha256": "fb87aa250bfa75c3db0da87c16337989ecbd1399a9eb911664327a2b7cc9526d",
      "type": "falsifier"
     }
    ],
@@ -99,10 +99,10 @@
    "status": "pending"
   }
  ],
- "produced_at": "2026-11-16T15:16:16.718336+00:00",
- "producer": "Codex implementation agent, then the rebase and adaptation by a Claude builder; not an independent reviewer",
+ "produced_at": "2026-11-16T15:50:10.986970+00:00",
+ "producer": "Codex implementation agent, then the rebase and adaptation by a Claude builder; not an independent reviewer; fix round 1 by a Claude builder",
  "rollback": "Revert the implementation; branches, kept refs, snapshots and work remain.",
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0318",
- "tree": "eaa60658a7b0f2d55e513ae4531cbce90d3bb513"
+ "tree": "4c89c991346c3da04f999e648483fb006609bb27"
 }

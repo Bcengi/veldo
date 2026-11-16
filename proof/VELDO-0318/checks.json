@@ -9,13 +9,30 @@
    "--suite",
    "150_veldo_0318_unique_work"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [],
   "name": "targeted 150_veldo_0318_unique_work",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 38
+  "ticket_rows_passed": 45
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "154_veldo_0335_released"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 154_veldo_0335_released",
+  "note": "Crashed at 2fe5fd25 (review F1), 32 rows green on the base and here.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 32
  },
  {
   "command": [
@@ -27,8 +44,7 @@
    "--suite",
    "150_veldo_0327_disposition"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [],
   "name": "targeted 150_veldo_0327_disposition",
   "processes": "space supervisors: []",
@@ -45,8 +61,7 @@
    "--suite",
    "149_veldo_0312_ticket_ended"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [],
   "name": "targeted 149_veldo_0312_ticket_ended",
   "processes": "space supervisors: []",
@@ -63,8 +78,7 @@
    "--suite",
    "150_veldo_0317_full_pool"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [],
   "name": "targeted 150_veldo_0317_full_pool",
   "processes": "space supervisors: []",
@@ -81,11 +95,9 @@
    "--suite",
    "140_veldo_0345_space_keep"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [],
   "name": "targeted 140_veldo_0345_space_keep",
-  "note": "ac3/main-repository-gone was red on the three rebased Codex commits and green on the 0327 base: a request that could not be built ended the whole signal. Fixed in e3e986ef.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 31
@@ -100,16 +112,13 @@
    "--suite",
    "138_veldo_0300_space_remove"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
-  "failed_rows": [
-   "VELDO-0300 ac3/commands"
-  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
   "name": "targeted 138_veldo_0300_space_remove",
-  "note": "Red on the rebased Codex commits before this adaptation and green on the 0327 base 4a705a98: the row forbids a force option as a string in the remover source, and the settled Discard remover of this ticket names git's force option. The suite is outside this footprint. Reported to the lead, not changed.",
+  "note": "ac3/commands was red since the first build; the row is amended by lead decision (a).",
   "processes": "space supervisors: []",
-  "status": "failed_reported",
-  "ticket_rows_passed": 38
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 39
  },
  {
   "command": [
@@ -121,15 +130,14 @@
    "--suite",
    "139_veldo_0301_space_signal"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
-  "exit_code": "not recorded; a partial selftest never exits 0",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "failed_rows": [
    "VELDO-0301 ac4/no-clock"
   ],
   "name": "targeted 139_veldo_0301_space_signal",
-  "note": "Red on the 0327 base 4a705a98 too, rerun there on an exported copy: baseline, not this ticket.",
+  "note": "ac4/no-clock is red on the 0327 base 4a705a98 too; left by the lead's decision.",
   "processes": "space supervisors: []",
-  "status": "failed_reported",
+  "status": "failed_inherited",
   "ticket_rows_passed": 17
  },
  {
@@ -141,10 +149,9 @@
    ".veldo/validate.py",
    "all"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "exit_code": 0,
   "name": "validate",
-  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -155,10 +162,9 @@
    "bash",
    "scripts/check_docs.sh"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "exit_code": 0,
   "name": "docs",
-  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -169,10 +175,9 @@
    "bash",
    "scripts/check_template_sync.sh"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "exit_code": 0,
   "name": "template-sync",
-  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -183,10 +188,9 @@
    "bash",
    "scripts/check_lint.sh"
   ],
-  "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "exit_code": 0,
   "name": "lint",
-  "processes": "space supervisors: []",
   "status": "passed"
  },
  {
@@ -197,10 +201,22 @@
    "python3",
    "scripts/check_space_boundary.py"
   ],
-  "commit": "e3e986ef (the working tree of that commit, before it was made); not rerun after the suite-only commit 1960cc21",
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
   "exit_code": 0,
   "name": "space-boundary",
-  "processes": "space supervisors: []",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "git-boundary",
   "status": "passed"
  }
 ]

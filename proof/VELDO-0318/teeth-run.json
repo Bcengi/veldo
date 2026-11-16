@@ -10,30 +10,34 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v318-adapt/logs",
+  "/tmp/v318-fix/logs",
   "--diff-dir",
-  "/tmp/v318-adapt/diffs"
+  "/tmp/v318-fix/diffs"
  ],
- "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
- "earlier_run": {
-  "commit": "e3e986ef",
-  "exit_code": 1,
-  "invalid": [
-   {
-    "name": "space318-terms-without-commits",
-    "reason": "missing_target: baseline rows removed"
-   }
-  ],
-  "registered": 15,
-  "rejected": 14,
-  "resolution": "With no request raised the fixture stopped at the next row that reads the request. Two rows now record a red check and go on (1960cc21); the case then rejected alone and in the full final run."
- },
- "elapsed": 251.049,
+ "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+ "earlier_runs": "The runs at 1960cc21 (15 of 15) and e3e986ef (14 of 15, one invalid) are in the history of this file.",
+ "elapsed": 499.322,
  "exit_code": 0,
+ "other_case": {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_teeth_mutations.py",
+   "--case",
+   "space345-refs-after-the-remove",
+   "--jobs",
+   "2"
+  ],
+  "note": "The first build of this ticket moved this VELDO-0345 case's second anchor; restored in fix round 1 and run once before the 318 run.",
+  "summary": "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=11.728s"
+ },
+ "ran_last": true,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=23",
+ "summary": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=32 elapsed=499.322s",
  "supervisors_after": [],
  "supervisors_before": [],
- "tree": "eaa60658a7b0f2d55e513ae4531cbce90d3bb513"
+ "tree": "4c89c991346c3da04f999e648483fb006609bb27"
 }

@@ -1,190 +1,122 @@
 {
- "criteria": {
-  "AC1": [
-   "space318/ac1/events",
-   "space318/ac1/files",
-   "space318/ac1/one-request",
-   "space318/ac1/released-agent",
-   "space318/commits/request",
-   "space318/safety/marked-difference",
-   "space318/safety/rules",
-   "space318/safety/unsettled",
-   "space318/worker/no-inline",
-   "space318/worker/no-lost-wakeup",
-   "space318/worker/reconnect-request",
-   "space318/worker/settled-effect"
+ "added_in_fix_round_1": {
+  "F1": [
+   "space318/worker/no-channel"
   ],
-  "AC2": [
-   "space318/ac2/identity",
-   "space318/ac2/ignored-outside-git",
-   "space318/ac2/marked-path",
-   "space318/ac2/no-empty-commit",
-   "space318/ac2/no-unsettled-commit",
-   "space318/ac2/nonforce",
-   "space318/ac2/save",
-   "space318/ac2/snapshot-comparison",
-   "space318/commits/late-commit",
-   "space318/commits/save",
-   "space318/safety/marked-difference",
-   "space318/safety/rules",
-   "space318/safety/unsettled",
-   "space318/worker/no-inline",
-   "space318/worker/no-lost-wakeup",
-   "space318/worker/reconnect-request",
-   "space318/worker/settled-effect"
+  "F2": [
+   "space318/terms/head-recorded",
+   "space318/terms/unshown-commit"
   ],
-  "AC3": [
-   "space318/ac3/append-attempt",
-   "space318/ac3/keeps-commits",
-   "space318/ac3/list-comparison",
-   "space318/ac3/marked-path",
-   "space318/ac3/snapshot-comparison",
-   "space318/ac3/snapshot-failures",
-   "space318/commits/discard-keeps",
-   "space318/commits/late-commit",
-   "space318/safety/marked-difference",
-   "space318/safety/rules",
-   "space318/safety/unsettled",
-   "space318/worker/no-inline",
-   "space318/worker/no-lost-wakeup",
-   "space318/worker/reconnect-request",
-   "space318/worker/settled-effect"
+  "F3": [
+   "space318/terms/snapshot-race"
   ],
-  "AC4": [
-   "space318/ac4/abandon",
-   "space318/ac4/atomic",
-   "space318/ac4/by",
-   "space318/ac4/mark",
-   "space318/ac4/no-retry",
-   "space318/ac4/signature",
-   "space318/ac4/state",
-   "space318/ac4/transaction-owner",
-   "space318/ac4/unsigned-outcome",
-   "space318/safety/marked-difference",
-   "space318/safety/rules",
-   "space318/safety/unsettled",
-   "space318/worker/no-inline",
-   "space318/worker/no-lost-wakeup",
-   "space318/worker/reconnect-request",
-   "space318/worker/settled-effect"
+  "F4": [
+   "space318/ac2/second-worktree",
+   "space318/ac2/kept-name-taken"
+  ],
+  "F5 (known gap, not fixed)": [
+   "space318/pin/clean-stays"
+  ],
+  "lead decision (a)": [
+   "VELDO-0300 ac3/commands (suite 138, amended)"
   ]
  },
- "limitation": "Diagnostic rows only; aggregate verification belongs to the lead.",
- "rows": {
-  "space318/ac1/events": {
-   "passed": true
-  },
-  "space318/ac1/files": {
-   "passed": true
-  },
-  "space318/ac1/one-request": {
-   "passed": true
-  },
-  "space318/ac1/released-agent": {
-   "passed": true
-  },
-  "space318/ac2/identity": {
-   "passed": true
-  },
-  "space318/ac2/ignored-outside-git": {
-   "passed": true
-  },
-  "space318/ac2/marked-path": {
-   "passed": true
-  },
-  "space318/ac2/no-empty-commit": {
-   "passed": true
-  },
-  "space318/ac2/no-unsettled-commit": {
-   "passed": true
-  },
-  "space318/ac2/nonforce": {
-   "passed": true
-  },
-  "space318/ac2/save": {
-   "passed": true
-  },
-  "space318/ac2/snapshot-comparison": {
-   "passed": true
-  },
-  "space318/ac3/append-attempt": {
-   "passed": true
-  },
-  "space318/ac3/keeps-commits": {
-   "passed": true
-  },
-  "space318/ac3/list-comparison": {
-   "passed": true
-  },
-  "space318/ac3/marked-path": {
-   "passed": true
-  },
-  "space318/ac3/snapshot-comparison": {
-   "passed": true
-  },
-  "space318/ac3/snapshot-failures": {
-   "passed": true
-  },
-  "space318/ac4/abandon": {
-   "passed": true
-  },
-  "space318/ac4/atomic": {
-   "passed": true
-  },
-  "space318/ac4/by": {
-   "passed": true
-  },
-  "space318/ac4/mark": {
-   "passed": true
-  },
-  "space318/ac4/no-retry": {
-   "passed": true
-  },
-  "space318/ac4/signature": {
-   "passed": true
-  },
-  "space318/ac4/state": {
-   "passed": true
-  },
-  "space318/ac4/transaction-owner": {
-   "passed": true
-  },
-  "space318/ac4/unsigned-outcome": {
-   "passed": true
-  },
-  "space318/commits/discard-keeps": {
-   "passed": true
-  },
-  "space318/commits/late-commit": {
-   "passed": true
-  },
-  "space318/commits/request": {
-   "passed": true
-  },
-  "space318/commits/save": {
-   "passed": true
-  },
-  "space318/safety/marked-difference": {
-   "passed": true
-  },
-  "space318/safety/rules": {
-   "passed": true
-  },
-  "space318/safety/unsettled": {
-   "passed": true
-  },
-  "space318/worker/no-inline": {
-   "passed": true
-  },
-  "space318/worker/no-lost-wakeup": {
-   "passed": true
-  },
-  "space318/worker/reconnect-request": {
-   "passed": true
-  },
-  "space318/worker/settled-effect": {
-   "passed": true
-  }
+ "all_green": true,
+ "count": 45,
+ "criteria": {
+  "AC1": [
+   "ac1/events",
+   "ac1/files",
+   "ac1/one-request",
+   "ac1/released-agent"
+  ],
+  "AC2": [
+   "ac2/identity",
+   "ac2/ignored-outside-git",
+   "ac2/kept-name-taken",
+   "ac2/marked-path",
+   "ac2/no-empty-commit",
+   "ac2/no-unsettled-commit",
+   "ac2/nonforce",
+   "ac2/save",
+   "ac2/second-worktree",
+   "ac2/snapshot-comparison",
+   "commits/save"
+  ],
+  "AC3": [
+   "ac3/append-attempt",
+   "ac3/keeps-commits",
+   "ac3/list-comparison",
+   "ac3/marked-path",
+   "ac3/snapshot-comparison",
+   "ac3/snapshot-failures",
+   "commits/discard-keeps",
+   "commits/late-commit",
+   "commits/request",
+   "commits/save",
+   "terms/head-recorded",
+   "terms/snapshot-race",
+   "terms/unshown-commit"
+  ],
+  "AC4": [
+   "ac4/abandon",
+   "ac4/atomic",
+   "ac4/by",
+   "ac4/mark",
+   "ac4/no-retry",
+   "ac4/signature",
+   "ac4/state",
+   "ac4/transaction-owner",
+   "ac4/unsigned-outcome"
+  ]
  },
- "source": "final finding 318 baseline observations, 38 rows"
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
+ "rows": [
+  "space318/ac1/events",
+  "space318/ac1/files",
+  "space318/ac1/one-request",
+  "space318/ac1/released-agent",
+  "space318/ac2/identity",
+  "space318/ac2/ignored-outside-git",
+  "space318/ac2/kept-name-taken",
+  "space318/ac2/marked-path",
+  "space318/ac2/no-empty-commit",
+  "space318/ac2/no-unsettled-commit",
+  "space318/ac2/nonforce",
+  "space318/ac2/save",
+  "space318/ac2/second-worktree",
+  "space318/ac2/snapshot-comparison",
+  "space318/ac3/append-attempt",
+  "space318/ac3/keeps-commits",
+  "space318/ac3/list-comparison",
+  "space318/ac3/marked-path",
+  "space318/ac3/snapshot-comparison",
+  "space318/ac3/snapshot-failures",
+  "space318/ac4/abandon",
+  "space318/ac4/atomic",
+  "space318/ac4/by",
+  "space318/ac4/mark",
+  "space318/ac4/no-retry",
+  "space318/ac4/signature",
+  "space318/ac4/state",
+  "space318/ac4/transaction-owner",
+  "space318/ac4/unsigned-outcome",
+  "space318/commits/discard-keeps",
+  "space318/commits/late-commit",
+  "space318/commits/request",
+  "space318/commits/save",
+  "space318/pin/clean-stays",
+  "space318/safety/marked-difference",
+  "space318/safety/rules",
+  "space318/safety/unsettled",
+  "space318/terms/head-recorded",
+  "space318/terms/snapshot-race",
+  "space318/terms/unshown-commit",
+  "space318/worker/no-channel",
+  "space318/worker/no-inline",
+  "space318/worker/no-lost-wakeup",
+  "space318/worker/reconnect-request",
+  "space318/worker/settled-effect"
+ ],
+ "source": "scripts/suites/150_veldo_0318_unique_work.py at 385ae4ae72018ea5afaa23a4a36801adaf02e8fe"
 }

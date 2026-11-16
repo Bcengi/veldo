@@ -1,7 +1,46 @@
 # VELDO-0318 proof
 
-Implementation 1960cc219e97ca7874e3a58bdaa371cccde8b163. Builder evidence, not independent review. All four
+Implementation 385ae4ae72018ea5afaa23a4a36801adaf02e8fe. Builder evidence, not independent review. All four
 criteria remain pending the lead gate and independent review.
+
+## Fix round 1, 2026-11-16
+
+Independent review of 2fe5fd25, verdict FIX. Where this section gives counts they replace the
+ones below.
+
+- F1, fixed. With no channel the service's disposition task says, per item, that a reserved request
+  waits, and still carries a settled and authorized Save or Discard. Suite 154 (VELDO-0335), which
+  crashed, is green again with a fixture that has no channel and signs the owner's Keep.
+  Row worker/no-channel; falsifier space318-no-channel-stops-the-task.
+- F2, fixed. The request records the commit it was shown at, and it is compared always. Rows
+  terms/head-recorded and terms/unshown-commit; falsifier
+  space318-commit-compared-only-when-commits-were-shown.
+- F3, fixed. The file list and the commit are compared with what the keep step saved, after the
+  snapshot. Row terms/snapshot-race (a file, and a commit, made just before the snapshot, for Save
+  and for Discard); falsifier space318-terms-compared-before-the-snapshot.
+- F4, fixed. A second worktree of one ticket or run is saved on the next free kept branch name; a
+  kept branch that holds other work is never written onto. Rows ac2/second-worktree and
+  ac2/kept-name-taken; falsifiers space318-second-worktree-takes-the-first-name and
+  space318-save-onto-a-held-branch (the reviewer's surviving mutation, now rejected).
+- F5, not fixed, a known gap. A clean worktree pinned by a no-space end has no file and no commit
+  to name, and VELDO-0327 AC2 says "The Ledger raises no request that offers the discard pick with
+  neither list". Row pin/clean-stays holds only that it stays deferred and that the result says the
+  request was refused. The pin release is unassigned (lead decision b; specification History).
+- Lead decision (a). VELDO-0300 ac3/commands allows exactly the force option the worktree remover
+  passes for a settled Discard. Falsifiers space318-force-beyond-the-discard and
+  space318-a-second-force-option, both against suite 138.
+- Found in this round: the first build had moved the second anchor of the VELDO-0345 teeth case
+  space345-refs-after-the-remove. Restored; the case ran once and rejected its mutant.
+
+Figures at 385ae4ae: 45 ticket rows green; 0335 32, 0327 27, 0312 41, 0317 23, 0345 31 and
+0300 39 rows green; 0301 17 green with ac4/no-clock red as on the base. Finding 318 ran last on the
+clean committed tree: 22 registered, 22 executed, 22 rejected, no reuse, no invalid result, no
+surviving worker, each mutant applied once (teeth-run.json, falsifiers.json). Validation, docs,
+template sync, lint and the two boundary checks passed. No space supervisor survived any run. The
+gate and suites 151 and up other than 154 were not run.
+
+A fixture note: two commits with one tree, parent, author and second are one commit, held by two
+branches and unique to neither. Each row's committed file carries its row's name.
 
 ## Rebase and adaptation, 2026-11-16
 

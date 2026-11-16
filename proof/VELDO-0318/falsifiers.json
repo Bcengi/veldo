@@ -3,24 +3,30 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_signal.py",
   "mutant_failed": [
    "space318/ac1/released-agent",
+   "space318/ac2/kept-name-taken",
    "space318/ac2/no-empty-commit",
    "space318/ac2/no-unsettled-commit",
-   "space318/ac3/append-attempt",
+   "space318/ac2/second-worktree",
    "space318/ac3/keeps-commits",
    "space318/commits/discard-keeps",
    "space318/commits/request",
-   "space318/commits/save"
+   "space318/commits/save",
+   "space318/pin/clean-stays",
+   "space318/terms/head-recorded",
+   "space318/terms/unshown-commit"
   ],
   "name": "space318-commit-at-deferral",
-  "new_digest": "4225aa473ce10edce94f68275b7ee8a935dfc8be707f7e6ffa6b68469dc98ba5",
+  "new_digest": "6ba1d9b353d58a1b6badaf09e0b81114a29e2c1f123ec7ceaee255e87f1e5af6",
   "noop_failed": [],
-  "old_digest": "99857c27582e830df69fd8f992e3bf5c851b308c39ab92580d8a4d4200bd1584",
+  "old_digest": "985e5aa857e47fc6f5642968084d8bd9228e38cf66548104bd2a9ad08f273607",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac2/no-unsettled-commit": [
     false
@@ -34,18 +40,20 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space.py",
   "mutant_failed": [
    "space318/ac1/one-request",
    "space318/ac1/released-agent"
   ],
   "name": "space318-request-every-event",
-  "new_digest": "5157f79a12874001cc7fc499347b5f9eec39c9fa2eddb68817fc6a788616ef2d",
+  "new_digest": "b742f7ac620edb84fc9be4ef39c3dc9a3b167016d94665f02e457dfe3a41d58f",
   "noop_failed": [],
-  "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "old_digest": "9fc9339be2a9394ff7a37e0b58c41f195ed27ea13924a514cce6377d02188b35",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac1/one-request": [
     false
@@ -63,18 +71,20 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac2/snapshot-comparison",
    "space318/safety/marked-difference"
   ],
   "name": "space318-save-without-comparison",
-  "new_digest": "db193ef25206b0a20dde3fad97532427dd399fe26acf7d3c6159875ff9378ad9",
+  "new_digest": "f1c63ae4d5ada0b0153a2467a6b52da36983f978140719ed9dc36e5defc0bcd1",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac2/snapshot-comparison": [
     false
@@ -88,18 +98,20 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac2/marked-path",
    "space318/ac2/snapshot-comparison"
   ],
   "name": "space318-save-at-original-path",
-  "new_digest": "7842265a83ee4f45636fdc292d774eb54f4818c5c8dffed67d53faa5103681ab",
+  "new_digest": "243a13b3c9392a8d34b3f0c6db183de47ce00ed4549c7aee47d17b692db72854",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac2/marked-path": [
     false
@@ -113,17 +125,19 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac3/marked-path"
   ],
   "name": "space318-discard-at-original-path",
-  "new_digest": "421c281f39bc54e43c006057b4ed087b2dd50a65464a367b8031b80c9af7a508",
+  "new_digest": "8184e2dad92077340e2bcebcad23dcb27337035e4af4ff5ad6a12e10042a2c6b",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac3/marked-path": [
     false
@@ -137,17 +151,20 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
-   "space318/ac3/list-comparison"
+   "space318/ac3/list-comparison",
+   "space318/terms/snapshot-race"
   ],
   "name": "space318-discard-without-list",
-  "new_digest": "cafc03f6b5b5fd0cafa3a0e011ab4124b8491d8dac6c3ad37504cf40041cab2a",
+  "new_digest": "cbf959aed5d577e8832d7dcf6f896776b6da4cbc4ebafb207940ff06e1633a1d",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac3/list-comparison": [
     false
@@ -161,6 +178,7 @@
   "baseline_failed": [],
   "commit_only_worktree": true,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac1/events",
@@ -169,15 +187,17 @@
    "space318/commits/discard-keeps",
    "space318/commits/late-commit",
    "space318/commits/request",
-   "space318/commits/save"
+   "space318/commits/save",
+   "space318/terms/unshown-commit"
   ],
   "name": "space318-terms-without-commits",
-  "new_digest": "326e4e658e8655dea7c6e818f960615bbf696dbe23619c9da13f8a4a543774f4",
+  "new_digest": "7fd5f58735587c510af083da6a47aec02c4a8379119d0eeacdaa8bef81a102d9",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/commits/request": [
     false
@@ -191,6 +211,7 @@
   "baseline_failed": [],
   "commit_only_worktree": true,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac2/no-empty-commit",
@@ -198,12 +219,13 @@
    "space318/commits/save"
   ],
   "name": "space318-clean-tree-is-a-failed-snapshot",
-  "new_digest": "6473d5d998053c24201e71e25a700cd844066e09ff39a2678cd98212b1357325",
+  "new_digest": "b201b1c222439fce8618a912a2dac89f5fd89d89b1c8a18150444e6e96f0157d",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/commits/discard-keeps": [
     false
@@ -217,18 +239,20 @@
   "baseline_failed": [],
   "commit_only_worktree": true,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
    "space318/ac2/no-empty-commit",
    "space318/commits/save"
   ],
   "name": "space318-save-invents-a-commit",
-  "new_digest": "44d7117d49db3de8c49327ac724a2e1d86df0973c44f246e36fed0aaabe7ffd2",
+  "new_digest": "342f6c677f0a6210294b60cf8e3c65ecfcd61c284e49486c7bccf4adb85aaaa6",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/commits/save": [
     false
@@ -242,17 +266,21 @@
   "baseline_failed": [],
   "commit_only_worktree": true,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space_remove.py",
   "mutant_failed": [
-   "space318/commits/late-commit"
+   "space318/commits/late-commit",
+   "space318/terms/snapshot-race",
+   "space318/terms/unshown-commit"
   ],
   "name": "space318-discard-without-commit-comparison",
-  "new_digest": "b2beae4a5fe9dc4ce7f554b7ed6117f1b7f0292ca0220c53e99e75a3393bbd9f",
+  "new_digest": "d3f789e6ae995eb71596de2709d652453d8c80f70d937838c7f392456bc57a2a",
   "noop_failed": [],
-  "old_digest": "6f144c75a63a980842e716a6b292d5ceaab3b902f9d34d074be1a55c0b5f8e77",
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/commits/late-commit": [
     false
@@ -266,6 +294,7 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space.py",
   "mutant_failed": [
    "space318/ac4/atomic",
@@ -273,12 +302,13 @@
    "space318/ac4/state"
   ],
   "name": "space318-keep-left-deferred",
-  "new_digest": "a97d8167bbdc7cb43902eadf963387e2f79da0e2f22fb707e3323ecaedc5aebf",
+  "new_digest": "f59ae06f75b1fb78345a201850f9507c0cd7914cb364430cfa46346da9202dae",
   "noop_failed": [],
-  "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "old_digest": "9fc9339be2a9394ff7a37e0b58c41f195ed27ea13924a514cce6377d02188b35",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac4/state": [
     false
@@ -292,6 +322,7 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space.py",
   "mutant_failed": [
    "space318/ac4/abandon",
@@ -300,12 +331,13 @@
    "space318/ac4/no-retry"
   ],
   "name": "space318-keep-without-mark",
-  "new_digest": "b9ed37f4192f7a5845316e071373db3bfc5dca7826f27d68efece51369bc691d",
+  "new_digest": "fc2070c2c2e746f6dc9f83b0c89b62c1c05be3bf22e7afba875c392cbc304e0d",
   "noop_failed": [],
-  "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "old_digest": "9fc9339be2a9394ff7a37e0b58c41f195ed27ea13924a514cce6377d02188b35",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac4/mark": [
     false
@@ -323,6 +355,7 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space.py",
   "mutant_failed": [
    "space318/ac4/abandon",
@@ -334,12 +367,13 @@
    "space318/ac4/transaction-owner"
   ],
   "name": "space318-keep-two-commands",
-  "new_digest": "d200e15114b415f124edbf70b51a39b2735b599a3635c178b887668cb2bee91c",
+  "new_digest": "d4c77533e523ca82761d0c7f822c05132e2a4e826c47d1a76ac110e7a149fbcb",
   "noop_failed": [],
-  "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "old_digest": "9fc9339be2a9394ff7a37e0b58c41f195ed27ea13924a514cce6377d02188b35",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac4/atomic": [
     false
@@ -353,18 +387,20 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_space.py",
   "mutant_failed": [
    "space318/ac4/signature",
    "space318/ac4/transaction-owner"
   ],
   "name": "space318-keep-without-owner-signature",
-  "new_digest": "0b951c45db58fe27d9053acbf77ea35cf23cf2df81b2066067d3d800064095e9",
+  "new_digest": "fe6442b826856842b76029f87e5316f6cc00ca8851c61b3c4571f98b28ffb2b4",
   "noop_failed": [],
-  "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "old_digest": "9fc9339be2a9394ff7a37e0b58c41f195ed27ea13924a514cce6377d02188b35",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/ac4/signature": [
     false
@@ -378,17 +414,19 @@
   "baseline_failed": [],
   "commit_only_worktree": false,
   "final_run_executions": 1,
+  "fix_round_1": null,
   "module": "control_service.py",
   "mutant_failed": [
    "space318/worker/no-lost-wakeup"
   ],
   "name": "space318-lost-worker-wakeup",
-  "new_digest": "03e5cd2f5dcab261af3a5a04f39cb6353b9d557b803cc4c74fc96fe555254fce",
+  "new_digest": "0fcf3e6f804af4254c609f927563e93bffdd1979ea1999a41a32a8ff1f794192",
   "noop_failed": [],
-  "old_digest": "876c5ddc5fff736ff2d9842d6eb8a0bb5357f5c82a9e18329ebc31ee988c7dc1",
+  "old_digest": "a9360a30153eed3576f9f050b45d62d8e9b11d245a22d8d511ec88994d2040d4",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
   "target_results": {
    "space318/worker/no-lost-wakeup": [
     false
@@ -396,6 +434,191 @@
   },
   "targets": [
    "space318/worker/no-lost-wakeup"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "F1",
+  "module": "control_service.py",
+  "mutant_failed": [
+   "space318/worker/no-channel"
+  ],
+  "name": "space318-no-channel-stops-the-task",
+  "new_digest": "5bc8a1d2eff2b3bd0597c5d3a935a7e1d230110d2182d0b9371cebb3aae31047",
+  "noop_failed": [],
+  "old_digest": "a9360a30153eed3576f9f050b45d62d8e9b11d245a22d8d511ec88994d2040d4",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
+  "target_results": {
+   "space318/worker/no-channel": [
+    false
+   ]
+  },
+  "targets": [
+   "space318/worker/no-channel"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "F2",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space318/terms/snapshot-race",
+   "space318/terms/unshown-commit"
+  ],
+  "name": "space318-commit-compared-only-when-commits-were-shown",
+  "new_digest": "0a9d4ddd801e549e9d55d9f8bd0387f41b25ef272f1563196b7945cb96892f17",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
+  "target_results": {
+   "space318/terms/unshown-commit": [
+    false
+   ]
+  },
+  "targets": [
+   "space318/terms/unshown-commit"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "F3",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space318/terms/snapshot-race"
+  ],
+  "name": "space318-terms-compared-before-the-snapshot",
+  "new_digest": "3e12fe8563f4959fe49bf070c416601be6b329614e52b94b3475b1ff8f988806",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
+  "target_results": {
+   "space318/terms/snapshot-race": [
+    false
+   ]
+  },
+  "targets": [
+   "space318/terms/snapshot-race"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "F4",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space318/ac2/kept-name-taken"
+  ],
+  "name": "space318-save-onto-a-held-branch",
+  "new_digest": "b55495f9c930de305bc4b9468a42d59fba5905ac1a758a1b6ed6bc5ff477b524",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
+  "target_results": {
+   "space318/ac2/kept-name-taken": [
+    false
+   ]
+  },
+  "targets": [
+   "space318/ac2/kept-name-taken"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "lead decision (a)",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "VELDO-0300 ac3/commands"
+  ],
+  "name": "space318-force-beyond-the-discard",
+  "new_digest": "5a35b898f3b8a1023fa837d431b52e2620448603a0d5dc861429d05c1c096c0c",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "138_veldo_0300_space_remove.py",
+  "target_results": {
+   "ac3/commands": [
+    false
+   ]
+  },
+  "targets": [
+   "ac3/commands"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "F4",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space318/ac2/kept-name-taken",
+   "space318/ac2/second-worktree"
+  ],
+  "name": "space318-second-worktree-takes-the-first-name",
+  "new_digest": "494e82941c26c2622406eefe7c7e13d1c13e7666e15ff2247cda7ee7c4a1c643",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0318_unique_work.py",
+  "target_results": {
+   "space318/ac2/second-worktree": [
+    false
+   ]
+  },
+  "targets": [
+   "space318/ac2/second-worktree"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "commit_only_worktree": false,
+  "final_run_executions": 1,
+  "fix_round_1": "lead decision (a)",
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "VELDO-0300 ac2/non-forced",
+   "VELDO-0300 ac3/commands"
+  ],
+  "name": "space318-a-second-force-option",
+  "new_digest": "f9108904f7829f61d602f4c7227923743f2a99071150a796c08baacdc49b5a0f",
+  "noop_failed": [],
+  "old_digest": "df45db49e3f9298112dab4aa768638d606facbe61f0224f7661f77b651173249",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "138_veldo_0300_space_remove.py",
+  "target_results": {
+   "ac3/commands": [
+    false
+   ]
+  },
+  "targets": [
+   "ac3/commands"
   ]
  }
 ]
