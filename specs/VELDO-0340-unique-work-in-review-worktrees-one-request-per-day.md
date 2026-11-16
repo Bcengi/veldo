@@ -106,3 +106,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   store under the state root, and never in a repository's object store, so a secret in an ignored file
   does not enter git; commits stay on kept refs (design 0.3). AC3: a group's Discard saves each member's
   uncommitted state in the snapshot store, where it said on a kept ref. The falsifier is unchanged.
+- 2026-11-16: BLOCKER, recorded by the builder before any code was written. Status stays ready; nothing
+  is built. A group's request must name every member with its file list (design 7, VELDO-0327 AC2), and
+  the only path to a space disposition request refuses that outside this ticket's footprint. In
+  engine/.veldo/control_request_settlement.py, space_presentation refuses terms whose worktrees list
+  does not hold exactly one entry (read on the base d0e2461a: two entries give invalid_input, "space
+  terms name one worktree"), the terms command requires the target to be a space_item equal to that one
+  entry's item, and request_problem binds the request's brief and choices to space_presentation of the
+  signed proposal at every open and revise. So no request for two worktrees can be signed, opened or
+  settled, and AC1, AC2 and AC3 cannot be met by the Ledger, Signal and the Removers alone. The one
+  way inside the footprint is to write a group as one worktree entry, with the group's identity as its
+  item and the members' files joined in its list: the owner would then be shown one path for several
+  worktrees and a restore command that names no item, which is terms that differ from what is acted
+  on, so it was not built. Needed from the lead: the footprint widened by
+  engine/.veldo/control_request_settlement.py and its synced copy (space_presentation for one or more
+  worktrees, and a target kind for a review group), with the VELDO-0327 suite if a row of it holds the
+  one-entry refusal. engine/.veldo/control_service.py does not need to change: its disposition task
+  can reach a group through the members' own records.
