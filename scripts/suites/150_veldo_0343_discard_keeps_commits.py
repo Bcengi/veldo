@@ -21,6 +21,7 @@ def _v343_suite():
     production = {
         'control_space.py': ROOT / ".veldo" / "control_space.py",
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
+        'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
     }
     rows = {}
 
