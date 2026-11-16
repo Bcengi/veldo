@@ -2086,6 +2086,15 @@
    ],
    "regions": "VELDO-0304 boundary and no-loss rows, real temporary repositories.",
    "requires_note": "Only ROOT and expect. No host engines or real data."
+  },
+  {
+   "name": "156_veldo_0315_reconcile",
+   "file": "156_veldo_0315_reconcile.py",
+   "requires": [
+    "156_veldo_0315_reconcile"
+   ],
+   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, startup and ending-event retries.",
+   "requires_note": "Only ROOT and expect. Temporary Git, SQLite and real owner signatures; fixture process table, Docker reader and act prerequisite checks."
   }
  ],
  "resource_capacities": {

@@ -1,0 +1,140 @@
+[
+ {
+  "finding": 315,
+  "name": "space315-adopt-unowned",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "                    self.report(path)",
+  "new": "                    if os.path.isdir(path):\n                        self.adopt(path, 'scratch', {'scope': {'type': 'project', 'id': self.ledger.projects[0]['project']}}, 'guessed')\n                    else:\n                        self.report(path)",
+  "rows": [
+   "space315/ac1/no-owner"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-batch-as-scratch",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "[('clone', 'agent_repository', 'batch_clone'), ('observation_dir', 'scratch', None)]",
+  "new": "[('clone', 'scratch', None), ('observation_dir', 'scratch', None)]",
+  "rows": [
+   "space315/ac1/private-forms"
+  ],
+  "also": [
+   [
+    "if kind in ('scratch', 'build_output') and self.repository(path):",
+    "if kind in ('scratch', 'build_output') and not rule.startswith('record:') and self.repository(path):"
+   ]
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-remove-reports",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "            if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):",
+  "new": "            if record.get('owner') is None and os.path.isdir(record['locator'].get('path', '')):\n                __import__('shutil').rmtree(record['locator']['path'])\n            if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):",
+  "rows": [
+   "space315/ac2/keep-failure"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-locator-alone",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "remover._there(os.path.basename(remover.marked(path, identity)), parent)",
+  "new": "False",
+  "rows": [
+   "space315/ac2/marked-not-gone"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-background-start",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_service.py",
+  "old": "            result = self.space_reconcile('service_start')",
+  "new": "            result = {'ok': True}",
+  "rows": [
+   "space315/ac3/startup"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-periodic-call",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_service.py",
+  "old": "        sent = []\n        try:\n            if self.conn is None:",
+  "new": "        sent = []\n        self.space_reconcile()\n        try:\n            if self.conn is None:",
+  "rows": [
+   "space315/ac4/no-schedule"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-ignore-carrier",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "if record['state'] == 'removing' and carrier_live(record, self.probe, self.space.get('proc')):",
+  "new": "if False:",
+  "rows": [
+   "space315/ac5/live-carrier"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-unread-is-missing",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "        return (remover._there(os.path.basename(path), parent),\n                remover._there(os.path.basename(remover.marked(path, identity)), parent))",
+  "new": "        try:\n            return (remover._there(os.path.basename(path), parent),\n                    remover._there(os.path.basename(remover.marked(path, identity)), parent))\n        except OSError:\n            return False, False",
+  "rows": [
+   "space315/ac5/unread-path"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-ignore-due",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "    def carry(self, identity, record):\n",
+  "new": "    def carry(self, identity, record):\n        return []\n",
+  "rows": [
+   "space315/ac6/due"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-no-bootstrap",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_service.py",
+  "old": "                self.space = SPACE_RECONCILE.bootstrap(self)",
+  "new": "                pass",
+  "rows": [
+   "space315/ac7/bootstrap"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-drop-ending",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_service.py",
+  "old": "                self._space_endings().record({'method': 'send', 'found': found}, out['raised'])",
+  "new": "                pass",
+  "rows": [
+   "space315/ac8/retry-events"
+  ]
+ },
+ {
+  "finding": 315,
+  "name": "space315-stop-retries",
+  "suite": "156_veldo_0315_reconcile.py",
+  "module": "control_space_reconcile.py",
+  "old": "                record.update(state='pending', error=str(error)[:400])",
+  "new": "                record.update(state='pending', error=str(error)[:400])\n                break",
+  "rows": [
+   "space315/ac8/retry-events"
+  ]
+ }
+]
