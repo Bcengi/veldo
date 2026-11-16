@@ -1,0 +1,39 @@
+{
+ "command": [
+  "nice",
+  "-n",
+  "10",
+  "python3",
+  "scripts/check_teeth_mutations.py",
+  "--finding",
+  "318",
+  "--jobs",
+  "2",
+  "--worker-log-dir",
+  "/tmp/v318-adapt/logs",
+  "--diff-dir",
+  "/tmp/v318-adapt/diffs"
+ ],
+ "commit": "1960cc219e97ca7874e3a58bdaa371cccde8b163",
+ "earlier_run": {
+  "commit": "e3e986ef",
+  "exit_code": 1,
+  "invalid": [
+   {
+    "name": "space318-terms-without-commits",
+    "reason": "missing_target: baseline rows removed"
+   }
+  ],
+  "registered": 15,
+  "rejected": 14,
+  "resolution": "With no request raised the fixture stopped at the next row that reads the request. Two rows now record a red check and go on (1960cc21); the case then rejected alone and in the full final run."
+ },
+ "elapsed": 251.049,
+ "exit_code": 0,
+ "status_after": "",
+ "status_before": "",
+ "summary": "mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=23",
+ "supervisors_after": [],
+ "supervisors_before": [],
+ "tree": "eaa60658a7b0f2d55e513ae4531cbce90d3bb513"
+}

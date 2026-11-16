@@ -1,173 +1,190 @@
 {
-  "criteria": {
-    "AC1": [
-      "space318/ac1/events",
-      "space318/ac1/files",
-      "space318/ac1/one-request",
-      "space318/ac1/released-agent",
-      "space318/safety/marked-difference",
-      "space318/safety/rules",
-      "space318/safety/unsettled",
-      "space318/worker/no-inline",
-      "space318/worker/no-lost-wakeup",
-      "space318/worker/reconnect-request",
-      "space318/worker/settled-effect"
-    ],
-    "AC2": [
-      "space318/ac2/identity",
-      "space318/ac2/ignored-outside-git",
-      "space318/ac2/marked-path",
-      "space318/ac2/no-empty-commit",
-      "space318/ac2/no-unsettled-commit",
-      "space318/ac2/nonforce",
-      "space318/ac2/save",
-      "space318/ac2/snapshot-comparison",
-      "space318/safety/marked-difference",
-      "space318/safety/rules",
-      "space318/safety/unsettled",
-      "space318/worker/no-inline",
-      "space318/worker/no-lost-wakeup",
-      "space318/worker/reconnect-request",
-      "space318/worker/settled-effect"
-    ],
-    "AC3": [
-      "space318/ac3/append-attempt",
-      "space318/ac3/keeps-commits",
-      "space318/ac3/list-comparison",
-      "space318/ac3/marked-path",
-      "space318/ac3/snapshot-comparison",
-      "space318/ac3/snapshot-failures",
-      "space318/safety/marked-difference",
-      "space318/safety/rules",
-      "space318/safety/unsettled",
-      "space318/worker/no-inline",
-      "space318/worker/no-lost-wakeup",
-      "space318/worker/reconnect-request",
-      "space318/worker/settled-effect"
-    ],
-    "AC4": [
-      "space318/ac4/abandon",
-      "space318/ac4/atomic",
-      "space318/ac4/by",
-      "space318/ac4/mark",
-      "space318/ac4/no-retry",
-      "space318/ac4/signature",
-      "space318/ac4/state",
-      "space318/ac4/transaction-owner",
-      "space318/ac4/unsigned-outcome",
-      "space318/safety/marked-difference",
-      "space318/safety/rules",
-      "space318/safety/unsettled",
-      "space318/worker/no-inline",
-      "space318/worker/no-lost-wakeup",
-      "space318/worker/reconnect-request",
-      "space318/worker/settled-effect"
-    ]
+ "criteria": {
+  "AC1": [
+   "space318/ac1/events",
+   "space318/ac1/files",
+   "space318/ac1/one-request",
+   "space318/ac1/released-agent",
+   "space318/commits/request",
+   "space318/safety/marked-difference",
+   "space318/safety/rules",
+   "space318/safety/unsettled",
+   "space318/worker/no-inline",
+   "space318/worker/no-lost-wakeup",
+   "space318/worker/reconnect-request",
+   "space318/worker/settled-effect"
+  ],
+  "AC2": [
+   "space318/ac2/identity",
+   "space318/ac2/ignored-outside-git",
+   "space318/ac2/marked-path",
+   "space318/ac2/no-empty-commit",
+   "space318/ac2/no-unsettled-commit",
+   "space318/ac2/nonforce",
+   "space318/ac2/save",
+   "space318/ac2/snapshot-comparison",
+   "space318/commits/late-commit",
+   "space318/commits/save",
+   "space318/safety/marked-difference",
+   "space318/safety/rules",
+   "space318/safety/unsettled",
+   "space318/worker/no-inline",
+   "space318/worker/no-lost-wakeup",
+   "space318/worker/reconnect-request",
+   "space318/worker/settled-effect"
+  ],
+  "AC3": [
+   "space318/ac3/append-attempt",
+   "space318/ac3/keeps-commits",
+   "space318/ac3/list-comparison",
+   "space318/ac3/marked-path",
+   "space318/ac3/snapshot-comparison",
+   "space318/ac3/snapshot-failures",
+   "space318/commits/discard-keeps",
+   "space318/commits/late-commit",
+   "space318/safety/marked-difference",
+   "space318/safety/rules",
+   "space318/safety/unsettled",
+   "space318/worker/no-inline",
+   "space318/worker/no-lost-wakeup",
+   "space318/worker/reconnect-request",
+   "space318/worker/settled-effect"
+  ],
+  "AC4": [
+   "space318/ac4/abandon",
+   "space318/ac4/atomic",
+   "space318/ac4/by",
+   "space318/ac4/mark",
+   "space318/ac4/no-retry",
+   "space318/ac4/signature",
+   "space318/ac4/state",
+   "space318/ac4/transaction-owner",
+   "space318/ac4/unsigned-outcome",
+   "space318/safety/marked-difference",
+   "space318/safety/rules",
+   "space318/safety/unsettled",
+   "space318/worker/no-inline",
+   "space318/worker/no-lost-wakeup",
+   "space318/worker/reconnect-request",
+   "space318/worker/settled-effect"
+  ]
+ },
+ "limitation": "Diagnostic rows only; aggregate verification belongs to the lead.",
+ "rows": {
+  "space318/ac1/events": {
+   "passed": true
   },
-  "limitation": "Diagnostic rows only; aggregate verification belongs to the lead.",
-  "rows": {
-    "space318/ac1/events": {
-      "passed": true
-    },
-    "space318/ac1/files": {
-      "passed": true
-    },
-    "space318/ac1/one-request": {
-      "passed": true
-    },
-    "space318/ac1/released-agent": {
-      "passed": true
-    },
-    "space318/ac2/identity": {
-      "passed": true
-    },
-    "space318/ac2/ignored-outside-git": {
-      "passed": true
-    },
-    "space318/ac2/marked-path": {
-      "passed": true
-    },
-    "space318/ac2/no-empty-commit": {
-      "passed": true
-    },
-    "space318/ac2/no-unsettled-commit": {
-      "passed": true
-    },
-    "space318/ac2/nonforce": {
-      "passed": true
-    },
-    "space318/ac2/save": {
-      "passed": true
-    },
-    "space318/ac2/snapshot-comparison": {
-      "passed": true
-    },
-    "space318/ac3/append-attempt": {
-      "passed": true
-    },
-    "space318/ac3/keeps-commits": {
-      "passed": true
-    },
-    "space318/ac3/list-comparison": {
-      "passed": true
-    },
-    "space318/ac3/marked-path": {
-      "passed": true
-    },
-    "space318/ac3/snapshot-comparison": {
-      "passed": true
-    },
-    "space318/ac3/snapshot-failures": {
-      "passed": true
-    },
-    "space318/ac4/abandon": {
-      "passed": true
-    },
-    "space318/ac4/atomic": {
-      "passed": true
-    },
-    "space318/ac4/by": {
-      "passed": true
-    },
-    "space318/ac4/mark": {
-      "passed": true
-    },
-    "space318/ac4/no-retry": {
-      "passed": true
-    },
-    "space318/ac4/signature": {
-      "passed": true
-    },
-    "space318/ac4/state": {
-      "passed": true
-    },
-    "space318/ac4/transaction-owner": {
-      "passed": true
-    },
-    "space318/ac4/unsigned-outcome": {
-      "passed": true
-    },
-    "space318/safety/marked-difference": {
-      "passed": true
-    },
-    "space318/safety/rules": {
-      "passed": true
-    },
-    "space318/safety/unsettled": {
-      "passed": true
-    },
-    "space318/worker/no-inline": {
-      "passed": true
-    },
-    "space318/worker/no-lost-wakeup": {
-      "passed": true
-    },
-    "space318/worker/reconnect-request": {
-      "passed": true
-    },
-    "space318/worker/settled-effect": {
-      "passed": true
-    }
+  "space318/ac1/files": {
+   "passed": true
   },
-  "source": "final finding 318 baseline observations"
+  "space318/ac1/one-request": {
+   "passed": true
+  },
+  "space318/ac1/released-agent": {
+   "passed": true
+  },
+  "space318/ac2/identity": {
+   "passed": true
+  },
+  "space318/ac2/ignored-outside-git": {
+   "passed": true
+  },
+  "space318/ac2/marked-path": {
+   "passed": true
+  },
+  "space318/ac2/no-empty-commit": {
+   "passed": true
+  },
+  "space318/ac2/no-unsettled-commit": {
+   "passed": true
+  },
+  "space318/ac2/nonforce": {
+   "passed": true
+  },
+  "space318/ac2/save": {
+   "passed": true
+  },
+  "space318/ac2/snapshot-comparison": {
+   "passed": true
+  },
+  "space318/ac3/append-attempt": {
+   "passed": true
+  },
+  "space318/ac3/keeps-commits": {
+   "passed": true
+  },
+  "space318/ac3/list-comparison": {
+   "passed": true
+  },
+  "space318/ac3/marked-path": {
+   "passed": true
+  },
+  "space318/ac3/snapshot-comparison": {
+   "passed": true
+  },
+  "space318/ac3/snapshot-failures": {
+   "passed": true
+  },
+  "space318/ac4/abandon": {
+   "passed": true
+  },
+  "space318/ac4/atomic": {
+   "passed": true
+  },
+  "space318/ac4/by": {
+   "passed": true
+  },
+  "space318/ac4/mark": {
+   "passed": true
+  },
+  "space318/ac4/no-retry": {
+   "passed": true
+  },
+  "space318/ac4/signature": {
+   "passed": true
+  },
+  "space318/ac4/state": {
+   "passed": true
+  },
+  "space318/ac4/transaction-owner": {
+   "passed": true
+  },
+  "space318/ac4/unsigned-outcome": {
+   "passed": true
+  },
+  "space318/commits/discard-keeps": {
+   "passed": true
+  },
+  "space318/commits/late-commit": {
+   "passed": true
+  },
+  "space318/commits/request": {
+   "passed": true
+  },
+  "space318/commits/save": {
+   "passed": true
+  },
+  "space318/safety/marked-difference": {
+   "passed": true
+  },
+  "space318/safety/rules": {
+   "passed": true
+  },
+  "space318/safety/unsettled": {
+   "passed": true
+  },
+  "space318/worker/no-inline": {
+   "passed": true
+  },
+  "space318/worker/no-lost-wakeup": {
+   "passed": true
+  },
+  "space318/worker/reconnect-request": {
+   "passed": true
+  },
+  "space318/worker/settled-effect": {
+   "passed": true
+  }
+ },
+ "source": "final finding 318 baseline observations, 38 rows"
 }

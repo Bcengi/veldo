@@ -1,7 +1,45 @@
 # VELDO-0318 proof
 
-Implementation c95ab31f78fbd708fb1c10aa9228bbfb6280ffbb. Builder evidence, not independent review. All four
+Implementation 1960cc219e97ca7874e3a58bdaa371cccde8b163. Builder evidence, not independent review. All four
 criteria remain pending the lead gate and independent review.
+
+## Rebase and adaptation, 2026-11-16
+
+The three build commits were rebased onto the accepted VELDO-0327 (4a705a98) with no conflict
+(a9628b86, bf487675, 6afcbc5b), then adapted to its fix round 1, F2, in e3e986ef and 1960cc21.
+
+The terms carry the member commits: the unlanded tips rule 5 reads. The file list is the
+uncommitted state Discard removes, what the snapshot saves, and no longer every tracked file. A
+clean tree with only unlanded commits is asked about with an empty file list; its brief says
+Discard removes no uncommitted file and the commits stay on their branch. Save and Discard run
+only while the commits shown are still the tip: a commit made after the request was shown refuses
+the removal, the worktree stays, and the next request names the new tip. A request that cannot be
+built leaves the deferral written and is said in the result.
+
+Rows added, each with a teeth case seen red in the final run (falsifiers.json, commit_only_worktree):
+commits/request (terms without the commits), commits/discard-keeps (a clean tree treated as a
+failed snapshot), commits/save (Save invents a commit), commits/late-commit (no commit comparison).
+
+Final figures: 38 ticket rows green; 0327 27, 0312 41, 0317 23 and 0345 31 rows green. Finding 318
+ran last on a clean tree at 1960cc21: 15 registered, 15 executed, 15 rejected, no reuse, no invalid
+result, no surviving worker (teeth-run.json). An earlier run at e3e986ef rejected 14 and declared
+the first new case invalid because the fixture stopped where no request existed; teeth-run.json
+keeps that result. teeth312-summary.json and initial-teeth-summary.json are from the first build
+and were not rerun.
+
+Reported, not built or changed:
+- The kept worktree's pin release after a no-space end. VELDO-0327's History (fix round 1, F4)
+  names it as this ticket's, and no criterion or earlier History line of this specification
+  assigns it. It waits for the lead's decision.
+- VELDO-0300 ac3/commands is red since the first build of this ticket and green on the 0327 base:
+  the row forbids a force option as a string in the remover source, and the settled Discard
+  remover names git's force option (AC3). The suite is outside this footprint.
+- VELDO-0301 ac4/no-clock is red on the 0327 base too.
+
+The sections below are the first build's account; where they give counts, the figures above
+replace them.
+
+## First build
 
 Signal reserves an immutable request on the deferred worktree. Repeated ending events use
 that request. A refused settled removal retires its authorization and reserves a new request.
