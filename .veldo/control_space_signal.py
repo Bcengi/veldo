@@ -186,7 +186,7 @@ and by reconcile (VELDO-0315 AC6), which reads the carrier first.
 
 WHAT IS NOT HERE. The modules are given, not imported: the probes, the kind registry and the removers
 (with the keep step the removers are given, VELDO-0345). The owner's Confirm, which writes an item's
-confirmation, is VELDO-0320. The decision request an item with unique work raises is VELDO-0318. Review scratch uses the
+confirmation, is VELDO-0320. Unique work reserves one VELDO-0318 request; its settled Save and Discard run in the space worker. Review scratch uses the
 remover with a fresh rules reader (VELDO-0336). Evidence files a copy holds are VELDO-0347 (their
 action has no remover yet and is deferred as remove_refused), and the measuring of a measure cell and the
 mark of a contained branch are their own tickets: here each of those items is kept, with the action
@@ -359,6 +359,11 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     done = {'item': identity, 'action': action, 'outcome': None}
     if record is None or record.get('state') != 'due':
         return dict(done, reason='not_due')
+    if (record.get('disposition') or {}).get('state') == 'authorized':
+        result = disposition(ledger, probe, remover, identity, **given)
+        current = ledger.item(identity) or {}
+        return dict(done, outcome=current.get('state'), result=result,
+                    deferral=(current.get('deferral') or {}).get('rule'))
     facts = {'event': event, 'emitter': _plain(given['emitter']), 'action': action, 'carrier': given['carrier']}
     retry = list((record.get('ends_on') or {}).get('events') or ())
 
@@ -442,7 +447,65 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                      rule=judged['rule'])
     if judged['rule'] == 'ledger' and found.get('missing') is True and _missing(probe, record, given['run']):
         return write('gone', {})
-    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
+    result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
+    if (result.get('outcome') == 'deferred' and judged['deferral'] == 'unique_work'
+            and record['kind'] == 'worktree' and not _is_review_worktree(record)
+            and (event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released')
+                 or event == 'run_finished' and not _is_review_worktree(record))):
+        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))
+        result['decision_request'] = asked
+        publish = getattr(ledger, 'disposition_publish', None)
+        if asked.get('ok') and publish is not None:
+            result['presentation'] = publish(identity)
+    return result
+
+
+def disposition(ledger, probe, remover, identity, free=None, owner_live=None, run=None, proc=None, **unused):
+    """Carry a signed, settled disposition in the space worker, under the item lock.
+
+    A refusal spends this authorization. A later event can raise a fresh request;
+    it can never silently retry the old Discard against a new file list.
+    """
+    if ledger.config.get('enabled') is not True:
+        return {'ok': False, 'reason': 'space_disabled'}
+    with ledger.item_lock(identity):
+        record = ledger.item(identity) or {}
+        decision = record.get('disposition') or {}
+        if record.get('state') != 'due' or decision.get('state') != 'authorized':
+            return {'ok': False, 'reason': 'space_disposition_state'}
+        choice = decision.get('choice')
+        if choice not in ('save', 'discard'):
+            return {'ok': False, 'reason': 'space_disposition_choice'}
+        effect, owner = ledger.disposition_effect(identity, decision['request'])
+        if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+            return {'ok': False, 'reason': 'space_disposition_unsettled'}
+        facts = {'event': (record.get('due') or {}).get('event'), 'action': choice, 'carrier': _carrier(probe, None)}
+        said = {}
+        def tool(item, current):
+            began = ledger.outcome(item, 'removing', facts)
+            if not began.get('ok'):
+                return {'ok': False, 'deferral': 'remove_refused', 'said': began}
+            said.update(remover.remove(ledger, probe, item, current, action=choice, free=free,
+                                       run=run, proc=proc))
+            return said
+        judged = rules(ledger, probe, identity, record, purpose=DISCARD, tool=tool,
+                       owner_live=owner_live, run=run, proc=proc)
+        if judged['ok']:
+            return ledger.outcome(identity, 'removed', dict(facts, **said))
+        found = judged.get('found') or {}
+        said = found.get('said') if isinstance(found.get('said'), dict) else {}
+        if said.get('left_at'):
+            return ledger.outcome(identity, 'removing', dict(facts, left_at=said['left_at']))
+        result = ledger.outcome(identity, 'deferred', dict(facts, rule=judged['deferral'],
+                                found=_plain(found), retry=[]))
+        if result.get('ok'):
+            current = ledger.item(identity)
+            try:
+                result['decision_request'] = ledger.request_disposition(
+                    identity, remover.disposition_proposal(ledger, identity, current))
+            except Exception as error:
+                result['request_refusal'] = _raised(error)
+        return result
 
 
 # ---------------------------------------------------------------------------------------------

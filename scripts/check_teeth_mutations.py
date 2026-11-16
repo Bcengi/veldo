@@ -14999,8 +14999,8 @@ def cases():
     # the worktree it abandons; a host principal signs a signal that names items. F4: space_abandon
     # defaults its cause to the owner's Abandon.
     ledger312('space312-keep-written-on-the-callers-word',
-              "            by = self._owner(params, mark['at'], 'the owner\\'s Keep')\n",
-              "            by = self._outer['principal']  # defect: the caller is taken at its word\n",
+              "            raise Refused('not_authorized', 'owner Keep requires the signed space_disposition command')\n",
+              "            record['owner_keep'] = dict(mark, by=self._outer['principal'])\n",
               ['r2/ledger-checks-the-owner'])
     ledger312('space312-keep-ended-on-the-callers-word',
               "            by = self._owner(params, abandon['at'], 'the owner\\'s Abandon') if abandon is not None else None\n",
@@ -15010,8 +15010,8 @@ def cases():
               "            if outcome != 'kept' or not isinstance(mark, dict) or 'by' in mark or not _is_time(mark.get('at')):\n",
               "            if outcome != 'kept' or not isinstance(mark, dict) or not _is_time(mark.get('at')):\n",
               ['r2/by-is-the-verified-principal'],
-              also=[("            record['owner_keep'] = dict(mark, by=by)\n",
-                     "            record['owner_keep'] = dict({'by': by}, **mark)  # defect: the request's by wins\n")])
+              also=[("            raise Refused('not_authorized', 'owner Keep requires the signed space_disposition command')\n",
+                     "            record['owner_keep'] = dict({'by': self._outer['principal']}, **mark)\n")])
     ledger312('space312-abandon-by-read-from-the-request',
               "        if not isinstance(abandon, dict) or set(abandon) != {'item', 'at'} or not _is_time(abandon['at']) \\\n",
               "        if not isinstance(abandon, dict) or not {'item', 'at'} <= set(abandon) or not _is_time(abandon['at']) \\\n",
@@ -16669,6 +16669,52 @@ def cases():
         ['space327/ac2/missing-save'])
     add(327, 'space327-wrong-restore', disposition327, 'control_request_settlement.py',
         "if tree['restore'] != restore:", "if False:", ['space327/ac2/wrong-restore'])
+
+    disposition318 = '150_veldo_0318_unique_work.py'
+    add(318, 'space318-request-every-event', disposition318, 'control_space.py',
+        "        if prior and prior.get('state') != 'refused':\n            return {'ok': True, 'request': prior, 'replayed': True}",
+        "        if False:\n            return {'ok': True, 'request': prior, 'replayed': True}",
+        ['space318/ac1/one-request', 'space318/ac1/released-agent'], also=[(
+            "        if prior and prior.get('state') != 'refused':\n            raise Refused('space_disposition_exists', 'the item already has its request')",
+            "        if False:\n            raise Refused('space_disposition_exists', 'the item already has its request')")])
+    add(318, 'space318-commit-at-deferral', disposition318, 'control_space_signal.py',
+        "        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))",
+        "        remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n        asked = ledger.request_disposition(identity, remover.disposition_proposal(ledger, identity, record))",
+        ['space318/ac2/no-unsettled-commit'])
+    add(318, 'space318-save-without-comparison', disposition318, 'control_space_remove.py',
+        "        else:\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
+        "        elif ctx.get('disposition') != 'save':\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
+        ['space318/ac2/snapshot-comparison'])
+    for choice, ac in (('save', 'ac2'), ('discard', 'ac3')):
+        add(318, 'space318-' + choice + '-at-original-path', disposition318, 'control_space_remove.py',
+            "    name = marked(path, identity)\n    if os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+            "    name = path if ctx.get('disposition') == '" + choice + "' else marked(path, identity)\n    if name != path and os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+            ['space318/' + ac + '/marked-path'], also=[(
+                "    refused = _worktree_move(ctx, repository, path, name)",
+                "    refused = None if name == path else _worktree_move(ctx, repository, path, name)")])
+    add(318, 'space318-discard-without-list', disposition318, 'control_space_remove.py',
+        "    if disposition_files(ledger, record, path) != decision['proposal']['worktrees'][0]['files']:",
+        "    if False:", ['space318/ac3/list-comparison'])
+    add(318, 'space318-keep-left-deferred', disposition318, 'control_space.py',
+        "            record['state'] = 'kept'\n            record['disposition']['state'] = 'kept'",
+        "            record['state'] = 'deferred'\n            record['disposition']['state'] = 'kept'",
+        ['space318/ac4/state'])
+    add(318, 'space318-keep-without-mark', disposition318, 'control_space.py',
+        "            record['owner_keep'] = {'by': owner}",
+        "            record['owner_keep'] = None", ['space318/ac4/mark', 'space318/ac4/no-retry'])
+    add(318, 'space318-keep-two-commands', disposition318, 'control_space.py',
+        "            return self._send(DISPOSITION, {'item': identity, 'packet': packet, 'at': now},",
+        "            self.signal(record['due']['event'], record['owner'])\n            return self._send(DISPOSITION, {'item': identity, 'packet': packet, 'at': now},",
+        ['space318/ac4/atomic'])
+    add(318, 'space318-keep-without-owner-signature', disposition318, 'control_space.py',
+        "            self._mode_signer(command, packet.get('signature'), now, self._membership())",
+        "            pass  # defect: no owner signature", ['space318/ac4/signature'], also=[
+            ("        self._mode_signer(command, packet.get('signature'), at, self._membership())",
+             "        pass  # defect: no transaction recheck"),
+            ("        if owner != command['principal']:", "        if False:")])
+    add(318, 'space318-lost-worker-wakeup', disposition318, 'control_service.py',
+        "            self.space_disposition_again = True", "            self.space_disposition_again = False",
+        ['space318/worker/no-lost-wakeup'])
 
     return result
 

@@ -20,12 +20,14 @@ THE REMOVERS, by the table's action and the item's kind (REMOVERS):
   remove_tag        image_tag               the engine's image remove, on the tag
   drop_caches       evidence                the folder remover on each sub-folder the project declares as
                                             a cache, and on nothing else
+  save              worktree                settled Save, snapshot, owner commit, non-forced removal
+  discard           worktree                settled Discard, snapshot, forced removal of this worktree
 
 Any other pair has no remover and is refused. A branch is marked, never removed, and that is a ledger
 write. Review scratch is saved by the keep step, compared file by file and removed before the
-non-forced worktree remove (VELDO-0336). Discard and copied evidence removal are VELDO-0318 and 0347.
+non-forced worktree remove (VELDO-0336). Copied evidence removal belongs to VELDO-0347.
 
-NO REMOVER HERE PASSES A FORCE OPTION, AND NONE RUNS A PRUNE COMMAND. Each names the one thing it
+Only the settled Discard passes a force option. No remover runs a prune command. Each names the one thing it
 removes to the owning tool and lets the tool refuse. Every command a call ran, the probes' reads
 included, is returned under commands, in order.
 
@@ -764,7 +766,9 @@ def _r_agent_repository(ctx, identity, record, answer):
 
 
 def _worktree_remove(ctx, repository, path):
-    """git's own worktree remove, with no force option: (exit code, output)."""
+    """git's worktree remove; only the authenticated Discard context permits force."""
+    if ctx.get('disposition') == 'discard':
+        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)
     return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', path)
 
 
@@ -806,7 +810,16 @@ def _r_worktree(ctx, identity, record, answer):
         use = _second_probe(ctx, name)
         if use is not None:
             raise _Refusal(IN_USE, 'the worktree is in use under its marked name', found=use)
-        _last_look(ctx, record, kept, name)
+        if ctx.get('disposition'):
+            nested = ctx['probe'].nested(name)
+            if not nested.get('read') or nested.get('repositories'):
+                raise _Refusal(IN_USE, 'the worktree now holds a repository', found=nested)
+        if ctx.get('disposition') == 'discard':
+            _snapshot_equal(ctx, record, kept, name)
+        else:
+            _last_look(ctx, record, kept, name)
+            if ctx.get('disposition') == 'save':
+                _save_equal(ctx, record, kept, name)
         code, out = _worktree_remove(ctx, repository, name)
         if code != 0:
             raise _Refusal(REFUSED, 'git refused the remove: ' + str(out)[:300], code=code)
@@ -818,6 +831,152 @@ def _r_worktree(ctx, identity, record, answer):
             stopped.more.update(left_at=name, not_put_back=stuck)
         raise
     _after(ctx, pools, answer)
+
+
+def disposition_files(ledger, record, path):
+    """The complete file names shown to the owner, including clean tracked files.
+
+    Clean files matter for an unlanded-only worktree. Include deleted names too:
+    the index and the deletion are part of the state the snapshot saves.
+    """
+    keeper = _sibling('control_space_keep')
+    listing = keeper.listing(ledger, record, path)
+    code, tracked = _git([], '-C', path, 'ls-files', '-z')
+    if code != 0:
+        raise _Refusal(KEEP_FAILED, 'git could not list the files')
+    return sorted(set(tracked.split('\0')[:-1]) | set(listing['files'])
+                  | set(listing['deleted_worktree']) | set(listing['deleted_index']))
+
+
+def disposition_branch(record):
+    space = _sibling('control_space')
+    owner = record.get('owner') or {}
+    return 'space-saved-' + space.kept_part(owner.get('ticket') or (owner.get('run') or {}).get('id') or 'none')
+
+
+def disposition_proposal(ledger, identity, record):
+    import shlex
+    settlement = _sibling('control_request_settlement')
+    path = record['locator']['path']
+    code, branch = _git([], '-C', path, 'symbolic-ref', '-q', '--short', 'HEAD')
+    if code not in (0, 1):
+        raise _Refusal(KEEP_FAILED, 'git could not read the branch')
+    branch = branch.strip() if code == 0 else None
+    return {'discard': settlement.SPACE_DISCARD, 'worktrees': [{
+        'item': identity, 'path': path, 'branch': branch, 'unheld_commits': branch is None,
+        'kept_branch': disposition_branch(record) if branch is None else None,
+        'files': disposition_files(ledger, record, path), 'restore': 'veldo space restore ' + shlex.quote(identity)}]}
+
+
+def _snapshot_equal(ctx, record, kept, path):
+    keeper = _sibling('control_space_keep')
+    try:
+        now = keeper.listing(ctx['ledger'], record, path)
+        if keeper._comparable(now) != keeper._comparable(kept.get('snapshot') or {}):
+            raise _Refusal(KEEP_FAILED, 'the worktree differs from the saved snapshot')
+        if tips(path, 'worktree', ctx['commands']) != kept['tips']:
+            raise _Refusal(KEEP_FAILED, 'the commits differ from the keep record')
+    except keeper._Failed as error:
+        raise _Refusal(KEEP_FAILED, str(error)) from error
+
+
+def _save_equal(ctx, record, kept, path):
+    changed, work = _looked(ctx, record, path)
+    saved = {name: row for name, row in (kept.get('snapshot') or {}).get('files', {}).items()
+             if row.get('what') == 'ignored_work'}
+    if changed or set(work) != set(saved) or _unsaved(path, work, {'files': saved}):
+        raise _Refusal(KEEP_FAILED, 'the ignored work differs from the saved snapshot')
+    # Rule 5 is read again under the marked name. The saved branch holds this HEAD.
+    facts = ctx['probe'].unique_work(path, (), None, ctx['run'])
+    cases = set(facts.get('cases') or [])
+    if not facts.get('read') or facts.get('operation') or cases - {3}:
+        raise _Refusal(KEEP_FAILED, 'rule 5 refused the saved worktree', found=facts)
+
+
+def _r_disposition(ctx, identity, record, answer):
+    ledger = ctx['ledger']
+    current = ledger.item(identity) or {}
+    decision = current.get('disposition') or {}
+    choice = ctx['action']
+    if (current.get('state') != 'removing' or decision.get('state') != 'authorized'
+            or decision.get('choice') != choice):
+        raise _Refusal(REFUSED, 'no signed disposition authorizes this removal')
+    try:
+        effect, owner = ledger.disposition_effect(identity, decision['request'])
+    except Exception as error:
+        raise _Refusal(REFUSED, 'the disposition is not settled: ' + _said(error)) from error
+    if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+        raise _Refusal(REFUSED, 'the settled choice is not this removal')
+    path = _plain(record['locator']['path'])
+    if disposition_files(ledger, record, path) != decision['proposal']['worktrees'][0]['files']:
+        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')
+    keeper = _sibling('control_space_keep')
+    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)
+    before = _kept(ctx, identity, record)
+    saved = before.get('snapshot') or {}
+    attempts = (ledger.item(identity).get('kept') or {}).get('snapshots') or []
+    if saved.get('path'):
+        attempt = next((one for one in attempts if one['path'] == saved['path']), None)
+        manifest = keeper._manifest(attempt) if attempt else None
+        if manifest is None:
+            raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')
+    else:
+        manifest = {'files': {}, 'deleted_worktree': [], 'deleted_index': []}
+    before = dict(before, snapshot=manifest)
+    _snapshot_equal(ctx, record, before, path)
+    if choice == 'save':
+        _save_commit(ctx, record, path, answer)
+        ctx['keep'] = keeper.keeper(ledger, event='space_disposition')
+        after = _kept(ctx, identity, record)
+        before = dict(after, snapshot=before['snapshot'])
+    ctx['keep'] = lambda item, current: before
+    ctx['disposition'] = choice
+    _r_worktree(ctx, identity, record, answer)
+
+
+def _save_commit(ctx, record, path, answer):
+    """Only the settled Save path calls this. Ignored files are never added."""
+    def git(*args):
+        code, out = _git(ctx['commands'], '-C', path, *args)
+        if code != 0:
+            raise _Refusal(REFUSED, 'Save refused: ' + str(out)[:300])
+        return out.strip()
+    branch = disposition_branch(record)
+    git('check-ref-format', '--branch', branch)
+    ledger = ctx['ledger']
+    identity = _sibling('control_git_identity')
+    bound = []
+    if identity.exists(ledger.conn, 'git_identity_repositories'):
+        bound = ledger.conn.execute('SELECT domain, repository FROM git_identity_repositories WHERE path=?',
+                                    (ledger._main_of(record),)).fetchall()
+    if len(bound) == 1:
+        configured = identity.resolve(ledger.conn, *bound[0], path=ledger._main_of(record))
+        name, email = identity.author(configured)
+    elif record['owner']['scope']['type'] == 'plain_repository' and not bound:
+        name, email = git('config', 'user.name'), git('config', 'user.email')
+    else:
+        raise _Refusal(REFUSED, 'the owner git identity is not configured for this repository')
+    if not name or not email:
+        raise _Refusal(REFUSED, 'the owner git identity is not configured')
+    changed, _work = _looked(ctx, record, path)
+    if ctx['probe'].unique_work(path, (), None, ctx['run']).get('operation'):
+        raise _Refusal(REFUSED, 'Save does not finish a git operation in progress')
+    code, held = _git(ctx['commands'], '-C', path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
+    if code not in (0, 1) or code == 0 and held.strip() != git('rev-parse', 'HEAD'):
+        raise _Refusal(REFUSED, 'the kept branch already holds other work')
+    exists = code == 0
+    if changed:
+        git('switch', *([branch] if exists else ['-c', branch]))
+        git('add', '-A')
+        git('-c', 'user.name=' + name, '-c', 'user.email=' + email,
+            'commit', '-m', 'Save work for ' + branch)
+        answer['commit'] = git('rev-parse', 'HEAD')
+        git('switch', '--detach')
+    else:
+        # No invented commit for a worktree whose unique work is already committed.
+        if not exists:
+            git('branch', branch, 'HEAD')
+    answer['kept_branch'] = branch
 
 
 def _review_scratch(ctx, identity, record, kept, answer):
@@ -1094,13 +1253,14 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         commands.append([str(word) for word in argv])
         return given(argv, cwd)
 
-    ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc,
+    ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc, 'action': action,
            'commands': commands, 'review_check': review_check}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}
     try:
-        remover = REMOVERS.get((action, record.get('kind')))
+        remover = (_r_disposition if action in ('save', 'discard') and record.get('kind') == 'worktree'
+                   else REMOVERS.get((action, record.get('kind'))))
         if remover is None:
             raise _Refusal(REFUSED, 'no remover for the action %s on the kind %s' % (action, record.get('kind')))
         if free is None:

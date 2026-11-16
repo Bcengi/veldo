@@ -12,6 +12,9 @@ depends_on: [VELDO-0327, VELDO-0345]
 placement: [engine, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "scripts/suites/149_veldo_0312_ticket_ended.py"
   - "engine/.veldo/control_space_signal.py"
   - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_space_remove.py"
@@ -184,3 +187,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   owner's Abandon, from anyone its own membership does not name as the owner, and writes who kept or
   abandoned from that principal (VELDO-0312 fix round 2); what this criterion adds to that is the owner's
   signature and the single command. Still four criteria.
+
+- 2026-11-16: implementation adds the service subscriber and worker task to the footprint so
+  reserved requests and settled effects are reachable at start and on journal notifications.
+  The owner signs space_disposition for Keep; an edge-signed answer alone writes no owner_keep.
+  Save and Discard consume the settled choice in the existing space worker. The older 0312
+  fixtures now use signed Keep commands, with their existing settlement fixture boundary.
+  Its static due-writer check includes the settled disposition transition and the accepted
+  admission retry transition. No acceptance criterion or protected path changed.

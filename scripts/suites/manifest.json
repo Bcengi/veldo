@@ -2212,6 +2212,15 @@
    ],
    "regions": "VELDO-0327 AC1 to AC4: signed owner choices, complete Discard terms and presentation, one atomic settlement, stale and unoffered answer refusals, unchanged existing touchpoints.",
    "requires_note": "Only ROOT and expect. Real temporary SQLite, signed membership and API answers, inbox, presentation and settlement. Fixture Telegram transport; no engine or filesystem removal."
+  },
+  {
+   "name": "150_veldo_0318_unique_work",
+   "file": "150_veldo_0318_unique_work.py",
+   "requires": [
+    "150_veldo_0318_unique_work"
+   ],
+   "regions": "VELDO-0318 AC1 to AC4: one request, signed disposition, safe Save and Discard, atomic owner Keep.",
+   "requires_note": "ROOT and expect only. Temporary Git, SQLite, signed owner and edge answers. Fixture process table and pool space."
   }
  ],
  "resource_capacities": {

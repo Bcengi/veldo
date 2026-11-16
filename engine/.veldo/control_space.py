@@ -374,7 +374,9 @@ DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH = (
 POOL, HOLD, ADMIT, RELEASE, RECONCILE = ('space_pool', 'space_hold', 'space_admit', 'space_release',
                                          'space_reconcile')
 KEEP = 'space_keep'
-ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP)
+REQUEST = 'space_disposition_request'
+ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP,
+                   REQUEST, 'space_disposition')
 # Issue is the authority's: the run or gate identity a principal may then hold, declare for and signal.
 ISSUE = 'space_issue'
 OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE, ISSUE)
@@ -874,6 +876,7 @@ class Ledger:
                        POOL: self._t_pool, HOLD: self._t_hold, ADMIT: self._t_admit, RELEASE: self._t_release,
                        RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
                        PACKET: self._t_packet, KEEP: self._t_keep,
+                       REQUEST: self._t_disposition_request, DISPOSITION: self._t_disposition,
                        EVENT: self._t_event, CONSUMED: self._t_consumed}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
@@ -1275,6 +1278,183 @@ class Ledger:
         """What every kept ref of the item begins with, or None when there is no such item."""
         record = self.item(item)
         return kept_prefix(item, record) if record else None
+
+    def request_disposition(self, item, proposal):
+        """Reserve one immutable request on the deferred item, before publishing it.
+
+        A retry uses the same request until a settled removal has refused. That refusal
+        retires its authorization; the next request has its own number and file list.
+        """
+        record = self.item(item) or {}
+        prior = record.get('disposition') or {}
+        if prior and prior.get('state') != 'refused':
+            return {'ok': True, 'request': prior, 'replayed': True}
+        result = self._item_command(REQUEST, item, {'proposal': proposal}, None, None)
+        if result.get('ok'):
+            result['request'] = self.item(item)['disposition']
+        return result
+
+    def _t_disposition_request(self, conn, params, before):
+        identity, record = self._stored(params, before)
+        prior = record.get('disposition') or {}
+        if record['state'] != 'deferred' or record['kind'] != 'worktree' or record.get('owner_keep'):
+            raise Refused('space_disposition_state', 'a deferred worktree without an owner Keep')
+        if prior and prior.get('state') != 'refused':
+            raise Refused('space_disposition_exists', 'the item already has its request')
+        proposal = params.get('proposal')
+        settlement = _sibling('control_request_settlement')
+        try:
+            settlement.space_presentation(proposal)
+        except settlement.Refused as error:
+            raise Refused(error.code, error.detail) from error
+        tree = proposal['worktrees'][0]
+        if tree['item'] != identity or tree['path'] != record['locator']['path']:
+            raise Refused('space_disposition_item', 'the request names this worktree')
+        number = prior.get('number', 0) + 1
+        request = {'number': number, 'alias': 'space-disposition-' + hashlib.sha256(identity.encode()).hexdigest()[:32] + '-' + str(number),
+                   'proposal': proposal, 'state': 'requested'}
+        record['disposition_history'] = list(record.get('disposition_history') or []) + ([prior] if prior else [])
+        record['disposition'] = request
+        record['deferral'] = dict(record.get('deferral') or {}, decision_request=request['alias'])
+        return {identity: {'kind': ITEM_KIND, 'data': record}}
+
+    def disposition(self, packet, membership, now):
+        """One owner-signed command: deferred to kept, or due for a settled Save/Discard.
+
+        Neither a caller's principal string nor the authority's journal signature is
+        the owner's signature. The transition verifies the packet again in the store.
+        """
+        command = packet.get('command') if isinstance(packet, dict) else None
+        try:
+            self._disposition_command(command)
+            if not _is_time(now):
+                raise _invalid('now', 'the time the caller read')
+            self._mode_signer(command, packet.get('signature'), now, self._membership())
+            params = command['parameters']
+            identity = params['item']
+            version, record = self._row(identity, ITEM_KIND)
+            if record is None:
+                raise Refused('space_no_item', identity)
+            if version != params['version']:
+                raise Refused('stale_version', identity)
+            return self._send(DISPOSITION, {'item': identity, 'packet': packet, 'at': now},
+                              {identity: version}, command['principal'], command['command_id'],
+                              {'item': identity}, command['nonce'])
+        except Refused as error:
+            return self._refuse(DISPOSITION, error, {}, (command or {}).get('principal'))
+
+    def _disposition_command(self, command):
+        parameters = command.get('parameters') if isinstance(command, dict) else None
+        if (not isinstance(parameters, dict) or command.get('operation') != DISPOSITION
+                or set(parameters) != {'item', 'version', 'request'}
+                or not all(_is_str(command.get(key)) for key in ('principal', 'command_id', 'nonce'))
+                or not _is_str(parameters['item']) or not _is_str(parameters['request'])
+                or type(parameters['version']) is not int):
+            raise _invalid('command', 'a signed disposition naming item, version and settled request')
+
+    def disposition_effect(self, identity, request_id):
+        """Read the settled choice from this store, never from command parameters."""
+        record = self.item(identity) or {}
+        request = record.get('disposition') or {}
+        _, assignment = self._row(request_id, 'assignment')
+        reference = (assignment or {}).get('settlement') or {}
+        _, settled = self._row(reference.get('settlement_id'), 'request_settlement')
+        _, effect = self._row(reference.get('effect_id'), 'settlement_effect')
+        if (not assignment or assignment.get('state') != 'SATISFIED' or not settled or not effect
+                or settled.get('request_id') != request_id or effect.get('request_id') != request_id
+                or effect.get('settlement_id') != settled.get('settlement_id')
+                or effect.get('touchpoint') != 'space_disposition' or effect.get('ruling') != 'approve'
+                or effect.get('choice') not in ('accept save', 'accept keep', 'accept discard')
+                or effect.get('choice') != settled.get('choice')
+                or effect.get('proposal') != request.get('proposal')
+                or (effect.get('target') or {}).get('ref') != identity
+                or assignment.get('alias') != request.get('alias')
+                or settled.get('principals') != [assignment.get('owner')]):
+            raise Refused('space_disposition_unsettled', 'a settled answer to this item request is required')
+        return effect, assignment['owner']
+
+    def _t_disposition(self, conn, params, before):
+        identity, record = self._stored(params, before)
+        packet, at = params.get('packet'), params.get('at')
+        if packet is None:
+            outer = self._outer
+            if (outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer):
+                raise Refused('not_authorized', 'only the authority applies settled filesystem effects')
+            effect, owner = self.disposition_effect(identity, params.get('request'))
+            if effect['choice'] == 'accept keep':
+                raise Refused('not_authorized', 'Keep requires the owner signed packet')
+            return self._disposition_change(identity, record, effect, owner, params['request'])
+        command = packet.get('command') if isinstance(packet, dict) else None
+        self._disposition_command(command)
+        outer = self._outer
+        if (outer is None or outer['parameters'] is not params
+                or any(outer[key] != command[key] for key in ('principal', 'command_id', 'nonce'))
+                or command['parameters']['item'] != identity
+                or command['parameters']['version'] != before[identity]['version']):
+            raise Refused('not_authorized', 'the disposition is the owner signed packet')
+        self._mode_signer(command, packet.get('signature'), at, self._membership())
+        effect, owner = self.disposition_effect(identity, command['parameters']['request'])
+        if owner != command['principal']:
+            raise Refused('not_authorized', 'the answering owner signs the disposition')
+        return self._disposition_change(identity, record, effect, owner, command['parameters']['request'])
+
+    def authorize_disposition(self, identity, request):
+        return self._item_command(DISPOSITION, identity, {'request': request}, None, None)
+
+    def _disposition_change(self, identity, record, effect, owner, request):
+        if record['state'] != 'deferred' or (record.get('disposition') or {}).get('state') != 'requested':
+            raise Refused('space_disposition_state', 'the request has already been applied')
+        choice = effect['choice'].split(' ')[1]
+        record['disposition'] = dict(record['disposition'], state='authorized', choice=choice,
+                                     request=request, by=owner)
+        if choice == 'keep':
+            record['owner_keep'] = {'by': owner}
+            record['state'] = 'kept'
+            record['disposition']['state'] = 'kept'
+        else:
+            record['state'] = 'due'
+            _new_removal(record)
+        return {identity: {'kind': ITEM_KIND, 'data': record}}
+
+    def publish_disposition(self, identity, settlement, inbox, presenter, requester, owner):
+        """Publish the reserved request with the ordinary signed terms and inbox path.
+
+        Each durable boundary has a deterministic identity. A worker lost between
+        terms, opening and framing resumes the same request on reconnect.
+        """
+        request = (self.item(identity) or {}).get('disposition') or {}
+        alias, proposal = request.get('alias'), request.get('proposal')
+        if not alias or request.get('state') != 'requested':
+            return {'ok': False, 'reason': 'space_disposition_state'}
+        st = _sibling('control_request_settlement')
+        principal, sign = requester
+        ids = inbox.ids
+        def packet(operation, **fields):
+            command = dict(ids, operation=operation, principal=principal, command_id=alias + ':' + operation,
+                           nonce=alias + ':' + operation, **fields)
+            return {'command': command, 'signature': sign(self.store.canonical_bytes(command))}
+        tid = st.terms_id(ids['repository_uuid'], alias)
+        _, terms = self._row(tid, st.TERMS_KIND)
+        if terms is None:
+            result = settlement.terms(packet('terms', terms=alias, touchpoint='space_disposition',
+                target={'kind': 'space_item', 'ref': identity, 'digest': st.digest(proposal)},
+                proposal=proposal, required_roles=[], quorum=None))
+            if result.get('outcome') != 'recorded':
+                return {'ok': False, 'reason': result.get('reason')}
+            _, terms = self._row(tid, st.TERMS_KIND)
+        rid = presenter.inbox_request(alias)
+        _, assignment = self._row(rid, 'assignment')
+        if assignment is None:
+            content = st.space_presentation(proposal)
+            content.update(owner=owner, scope=['space'], deadline='2099-01-01T00:00:00Z',
+                           budget={'owner_minutes': 1},
+                           subject={'kind': st.SUBJECT_KIND, 'ref': tid, 'digest': st.digest(terms)})
+            result = inbox.apply(packet('open', alias=alias, assignment=content))
+            if not result.get('ok'):
+                return result
+        result = presenter.frame(packet('frame', alias=alias, request_version=1,
+                                        risk_statement=st.SPACE_DISCARD))
+        return {'ok': result.get('outcome') == 'accepted', 'request': rid, 'framing': result}
 
     def snapshot_folder(self, item):
         """The item's own folder in the snapshot store, <state root>/space-saved/<ticket>/<item>, or None
@@ -2158,6 +2338,8 @@ class Ledger:
                     record['abandoned'] = {'by': by, 'at': abandon['at'],
                                            'ended_keep': record.get('owner_keep') or None}
                     record['owner_keep'] = None
+                    if record.get('disposition'):
+                        record['disposition'] = dict(record['disposition'], state='refused')
                 _new_removal(record)
                 changes[identity] = {'kind': ITEM_KIND, 'data': record}
             return changes
@@ -2205,6 +2387,8 @@ class Ledger:
                 raise _invalid('facts.rule', 'the rule that refused')
             attempts = (record.get('deferral') or {}).get('attempts', 0) + 1
             record['deferral'] = dict(facts, attempts=attempts)
+            if record.get('disposition'):
+                record['deferral']['decision_request'] = record['disposition']['alias']
         elif outcome == 'removed':
             record['removal'] = dict(facts)
             record['confirmed'] = None
@@ -2213,14 +2397,12 @@ class Ledger:
         if outcome == 'kept' and record['kind'] == 'branch' and facts.get('action') == 'mark_contained':
             record['contained'] = dict(facts)
         if 'owner_keep' in facts:
-            # The owner's Keep (design 0.4): its own mark, which no signal that names an owner passes.
             mark = facts['owner_keep']
             if outcome != 'kept' or not isinstance(mark, dict) or 'by' in mark or not _is_time(mark.get('at')):
-                raise _invalid('facts.owner_keep', 'the time read, written with the outcome kept; who answered '
-                               'Keep is the command\'s principal')
-            # Who keeps is the owner this store's membership names, whoever the caller is.
-            by = self._owner(params, mark['at'], 'the owner\'s Keep')
-            record['owner_keep'] = dict(mark, by=by)
+                raise _invalid('facts.owner_keep', 'use the owner signed space_disposition command')
+            raise Refused('not_authorized', 'owner Keep requires the signed space_disposition command')
+        if outcome == 'deferred' and (record.get('disposition') or {}).get('state') == 'authorized':
+            record['disposition'] = dict(record['disposition'], state='refused')
         record['state'] = outcome
         pools = set()
         if outcome == 'removed':

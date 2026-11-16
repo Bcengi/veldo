@@ -1661,6 +1661,71 @@ class Service:
         """
         if self.space_consumer is not None:
             self.space_consumer.start(replay, reconcile)
+            self.space_dispositions()
+
+    def space_dispositions(self):
+        """Coalesce disposition work on journal notifications and the start snapshot.
+
+        All signing, git, snapshots and removals run in the existing worker child.
+        The serving loop only queues this task. A lost child leaves durable requests
+        and authorizations for the next notification or reconnect.
+        """
+        consumer = self.space_consumer
+        if consumer is None:
+            return None
+        key = ('dispositions',)
+        if key in consumer.tasks:
+            self.space_disposition_again = True
+            return consumer.tasks[key]
+        self.space_disposition_again = False
+        def complete(answer):
+            if self.space_disposition_again:
+                self.space_dispositions()
+        return consumer.submit(key, self._space_dispositions, complete)
+
+    def _space_dispositions(self):
+        ledger = self.space['ledger']
+        self.conn = ledger.conn
+        st = _organ('control_request_settlement')
+        presentation = _organ('control_channel_presentation')
+        projection = _organ('control_channel_projection')
+        channel = self.channel
+        if channel is None:
+            return {'ok': False, 'reason': 'space_disposition_channel_unavailable'}
+        ids = channel.ingress.activations.ids
+        inbox = self.inbox(ids['repository_uuid'])
+        presenter = presentation.Presenter(S, CM, projection, inbox, None, ledger.conn,
+                                            self.principal, self.sign, assignment=I)
+        settlement = st.Settlement(S, CM, inbox, presenter, ledger.conn, self.principal, self.sign,
+                                   assignment=I, presentation=presentation)
+        requester = (self.principal, lambda data: SIG.sign_bytes(self.config['journal_key'], data, 'veldo-command'))
+        outcomes = []
+        for identity, record in ledger.items().items():
+            decision = record.get('disposition') or {}
+            if decision.get('state') == 'requested' and record['state'] == 'deferred':
+                scope = record['owner']['scope']
+                project = ledger._row('project:' + scope.get('id', ''), 'project')[1] or {}
+                owner = (project.get('owner') if scope['type'] == 'project'
+                         else (channel.record() or {}).get('owner'))
+                if not owner:
+                    outcomes.append({'item': identity, 'ok': False, 'reason': 'space_disposition_owner_unknown'})
+                    continue
+                published = ledger.publish_disposition(identity, settlement, inbox, presenter, requester, owner)
+                outcomes.append(dict(published, item=identity))
+                request = presenter.inbox_request(decision['alias'])
+                try:
+                    effect, _owner = ledger.disposition_effect(identity, request)
+                except Exception:
+                    continue  # an open request has no effect yet
+                if effect['choice'] != 'accept keep':
+                    outcomes.append(ledger.authorize_disposition(identity, request))
+            record = ledger.item(identity)
+            if record['state'] == 'due' and (record.get('disposition') or {}).get('state') == 'authorized':
+                given = {key: value for key, value in self.space.items()
+                         if key not in ('ledger', 'probe', 'remover')}
+                outcomes.append(SPACE_SIGNAL.disposition(ledger, self.space['probe'], self.space['remover'],
+                                                        identity, **given))
+        return {'ok': True, 'outcomes': outcomes, 'worker': os.getpid()}
 
     def space_holds_start(self):
         """VELDO-0316: at service start no offer is live, so the worker releases every dispatch hold
@@ -2051,6 +2116,10 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') == 'reconcile_space':
                 result = self.space_reconcile_command(packet, repository)
+            elif command.get('operation') == 'space_disposition':
+                if self.space is None:
+                    raise Refused('space_not_configured')
+                result = self.space['ledger'].disposition(packet, CM, time.time())
             elif command.get('operation') == 'save_memory_store':
                 memory = _organ('control_memory')
                 ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
@@ -2263,6 +2332,11 @@ class Service:
         for (raw,) in self.conn.execute('SELECT transition FROM journal WHERE seq > ? AND seq <= ? ORDER BY seq',
                                         (seen, head)):
             changed = json.loads(raw)
+            if any(value.get('kind') == 'settlement_effect' and value['data'].get('touchpoint') == 'space_disposition'
+                   or value.get('kind') == 'space_item' and value['data'].get('state') in ('deferred', 'due')
+                   and (value['data'].get('disposition') or {}).get('state')
+                   in ('requested', 'authorized') for value in changed.values()):
+                self.space_dispositions()
             marked = [key for key, value in changed.items() if value.get('kind') == 'space_hold'
                       and value['data'].get('freed') and value['data']['state'] == 'waiting']
             if marked and self.loop is not None:

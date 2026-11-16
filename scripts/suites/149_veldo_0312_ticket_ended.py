@@ -106,8 +106,8 @@ process table, an empty folder shaped as the kernel's. The service is given its 
 an installation will give it; the provisioner's call of space_provisioned is VELDO-0302's and is called
 here directly. The console's route is driven at the API authority with assertions signed by a fixture
 edge key (the API process, its sessions and the protected signer are suite 71's); the edge's key record,
-the credentials and the authority's lock are fixture records. The owner's Keep is written by the
-authority's outcome with the owner_keep mark (the owner's settled answer is VELDO-0318's).
+the credentials and the authority's lock are fixture records. The owner's Keep uses VELDO-0318's signed command. Its settled request is a fixture here;
+suite 150_0318 exercises real requests and settlement.
 """
 
 
@@ -470,12 +470,29 @@ def _v312_suite():
                 owner['run'] = {'id': run, 'station': 'build'}
             return {'path': path, 'item': declared('scratch', {'path': str(path)}, owner)}
 
+        def signed_keep(identity):
+            """0318 signs Keep as the owner. The settled request is this older
+            suite's fixture; the signature, membership and atomic transition are real.
+            The complete request and settlement path is exercised by suite 150_0318.
+            """
+            from unittest.mock import patch
+            L.outcome(identity, 'deferred', {'rule': 'unique_work'})
+            record = L.item(identity)
+            record['disposition'] = {'state': 'requested', 'alias': 'fixture-keep'}
+            conn.execute('UPDATE entities SET data=?,digest=? WHERE id=?',
+                         (json.dumps(record), S.digest_of(record), identity))
+            conn.commit()
+            serial[0] += 1
+            body = dict(operation='space_disposition', principal='olga', command_id='signed-keep-' + str(serial[0]),
+                        nonce='signed-keep-' + str(serial[0]),
+                        parameters=dict(item=identity, version=version(identity), request='fixture-keep'))
+            packet = dict(command=body, signature=sign_as('olga', S.canonical_bytes(body)))
+            with patch.object(L, 'disposition_effect', return_value=({'choice': 'accept keep'}, 'olga')):
+                return L.disposition(packet, CM, time.time())
+
         def owner_kept(identity):
-            """The owner marked the item Keep: it is made due by a signal that names it and written kept with
-            the owner's mark, as the owner: the ledger reads who the owner is from the command's principal (the
-            owner's settled answer, in one command, is VELDO-0318's). Returns its version afterwards."""
             due = L.signal('ticket_ended', {'items': [{'item': identity, 'version': version(identity)}]})
-            marked = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
+            marked = signed_keep(identity)
             if not (due.get('ok') and marked.get('ok')):
                 raise RuntimeError('the fixture could not mark Keep: %s %s' % (due.get('reason'), marked.get('reason')))
             return version(identity)
@@ -1152,10 +1169,11 @@ def _v312_suite():
         L.outcome(plain['item'], 'kept', {})
         ledger_text = (mods / 'control_space.py').read_text()
         begin = ledger_text.index('    def _t_signal(self')
-        check(R, 'a sweep and a reconcile have no other way to an item: in the ledger only signal\'s transition writes '
-                 'the state due [%d]' % ledger_text.count("record['state'] = 'due'"),
-              ledger_text.count("record['state'] = 'due'") == 2 and "'due'" not in OUTCOMES_OF(SP)
-              and ledger_text[begin:ledger_text.index('    def _t_outcome(self')].count("record['state'] = 'due'") == 2)
+        check(R, 'only Signal and the settled disposition transition write due; outcomes cannot',
+              ledger_text.count("record['state'] = 'due'") == 4 and "'due'" not in OUTCOMES_OF(SP)
+              and ledger_text[begin:ledger_text.index('    def _t_outcome(self')].count("record['state'] = 'due'") == 3
+              and ledger_text[ledger_text.index('    def _disposition_change('):
+                              ledger_text.index('    def publish_disposition(')].count("record['state'] = 'due'") == 1)
 
         R = 'f2/only-the-owners-abandon-ends-keep'
         guarded = planted('orchard', 'kept-guarded', T_KEPT, build_output=False)
@@ -1449,11 +1467,11 @@ def _v312_suite():
               % (state_of(tree_item), (L.item(tree_item) or {}).get('owner_keep')),
               journal_head() == head and state_of(tree_item) == 'due' and version(tree_item) == due_at
               and (L.item(tree_item) or {}).get('owner_keep') is None)
-        as_owner = keep_as('olga', answer='keep')
+        as_owner = signed_keep(tree_item)
         mark = (L.item(tree_item) or {}).get('owner_keep') or {}
         check(R, 'the owner writes it: the item is kept and the mark names the owner [%s %s]' % (as_owner.get('reason'), mark),
               as_owner.get('ok') is True and state_of(tree_item) == 'kept' and mark.get('by') == 'olga'
-              and mark.get('answer') == 'keep')
+              and mark == {'by': 'olga'})
         kept_version, head = version(tree_item), journal_head()
         named_tree = {'item': tree_item, 'version': kept_version}
 
@@ -1495,7 +1513,7 @@ def _v312_suite():
               str(with_by.get('reason')).startswith('invalid_input') and str(no_time.get('reason')).startswith('invalid_input')
               and journal_head() == head and state_of(claimed_item) == 'due' and version(claimed_item) == due_at
               and (L.item(claimed_item) or {}).get('owner_keep') is None)
-        plain_keep = L.outcome(claimed_item, 'kept', {'owner_keep': {'at': time.time()}}, principal='olga')
+        plain_keep = signed_keep(claimed_item)
         check(R, 'the mark the ledger writes names the command\'s principal [%s %s]'
               % (plain_keep.get('reason'), (L.item(claimed_item) or {}).get('owner_keep')),
               plain_keep.get('ok') is True and ((L.item(claimed_item) or {}).get('owner_keep') or {}).get('by') == 'olga')
