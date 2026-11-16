@@ -10,7 +10,6 @@ def _v316_suite():
     import copy
     import importlib.util
     import json
-    import multiprocessing
     import os
     from pathlib import Path
     import select
@@ -18,7 +17,6 @@ def _v316_suite():
     import subprocess
     import sys
     import tempfile
-    import threading
     import time
     import traceback
     import types
@@ -403,12 +401,21 @@ def _v316_suite():
             # barrier breaks; without the lock both arrive, both read 120 and both are admitted.
             f = fixture('concurrent')
             f.free['host'] = 120
-            barrier = multiprocessing.get_context('fork').Barrier(2)
+            # The barrier is files, so it works where a worker has no shared semaphore: each child
+            # counts its reads, and waits for the other child to reach the same read.
+            arrived, broken = f.root / 'arrived', f.root / 'barrier-broken'
+            arrived.mkdir()
             def raced_free(pool):
-                try:
-                    barrier.wait(2)
-                except threading.BrokenBarrierError:
-                    pass
+                mine = arrived / str(os.getpid())
+                with open(mine, 'a') as out:
+                    out.write('x')
+                count, deadline = mine.stat().st_size, time.monotonic() + 2
+                while not broken.exists():
+                    if any(one != mine and one.stat().st_size >= count for one in arrived.iterdir()):
+                        break
+                    if time.monotonic() >= deadline:
+                        broken.write_text(pool['name'])
+                    time.sleep(0.01)
                 return f.free[pool['name']]
             f.space['free'] = raced_free
             children = []
@@ -445,7 +452,7 @@ def _v316_suite():
                     check('ac1/concurrent', 'child completed', status == 0)
                 check('ac1/concurrent', 'one promise at exact capacity',
                       sorted(a.get('answer') for a in answers) == ['admitted', 'waiting'])
-                check('ac1/concurrent', 'never two children inside judge', barrier.broken)
+                check('ac1/concurrent', 'never two children inside judge', broken.exists())
             finally:
                 os.close(ready_read)
                 os.close(ready_write)
