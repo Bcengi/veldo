@@ -15317,7 +15317,7 @@ def cases():
         'space304-fleet-direct-remove',
         '155_veldo_0304_space_boundary.py',
         'fleet.py',
-        '            # Without an item and its owner no ending event can authorize a removal.\n',
+        '            # No ledger: nothing judges this removal but the look made here, and nothing is removed\n',
         '            _git_worktree(["remove", "--force", path], cwd=self.repo_root)\n',
         ['fleet/boundary'])
     result[-1]['siblings'] = True
@@ -15341,16 +15341,16 @@ def cases():
         'space304-clone-direct-tree',
         '155_veldo_0304_space_boundary.py',
         'control_clone.py',
-        '        return looked, []\n',
-        '        shutil.rmtree(work)\n        return looked, []\n',
+        '        return looked, released\n',
+        '        shutil.rmtree(work)\n        return looked, released\n',
         ['clone/boundary'])
     result[-1]['siblings'] = True
     add(304,
         'space304-batch-direct-ref',
         '155_veldo_0304_space_boundary.py',
         'control_batch.py',
-        "                ledger = (self.space or {}).get('ledger')\n",
-        "                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n                ledger = (self.space or {}).get('ledger')\n",
+        "            r['staging_ref'] = staging\n",
+        "            self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n            r['staging_ref'] = staging\n",
         ['batch/boundary'])
     result[-1]['siblings'] = True
     add(304,
@@ -15365,8 +15365,8 @@ def cases():
         'space304-launch-direct-sweep',
         '155_veldo_0304_space_boundary.py',
         'control_launch.py',
-        "                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
-        "                shutil.rmtree(place)\n                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        "                found = _organ('control_space_remove').remove_standalone(place, 'folder')\n",
+        "                shutil.rmtree(place)\n                found = _organ('control_space_remove').remove_standalone(place, 'folder')\n",
         ['launch/boundary'])
     result[-1]['siblings'] = True
     add(304,
@@ -15381,16 +15381,16 @@ def cases():
         'space304-runtime-direct-tree',
         '155_veldo_0304_space_boundary.py',
         'control_launch_work.py',
-        "                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
-        "                shutil.rmtree(directory)\n                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        "                found = organ('control_space_remove').remove_standalone(directory, 'agent_repository', main=self.root)\n",
+        "                shutil.rmtree(directory)\n                found = organ('control_space_remove').remove_standalone(directory, 'agent_repository', main=self.root)\n",
         ['runtime/boundary'])
     result[-1]['siblings'] = True
     add(304,
         'space304-lander-direct-tree',
         '155_veldo_0304_space_boundary.py',
         'lander.py',
-        '            for path in paths:\n                if not space_absent(path):\n',
-        '            for path in paths:\n                shutil.rmtree(path)\n                if not space_absent(path):\n',
+        '        c = self.candidate\n        if c and self.space is not None:',
+        '        c = self.candidate\n        shutil.rmtree(c["workspace"])\n        if c and self.space is not None:',
         ['lander/boundary'])
     result[-1]['siblings'] = True
     add(304,
@@ -15429,7 +15429,7 @@ def cases():
         'space304-spool-time-delete',
         '155_veldo_0304_space_boundary.py',
         'control_space_spool.py',
-        '                    retain_delivered(folder, name)  # durable input stays outside the pending queue\n',
+        '                    remove_delivered(folder, name)  # delivery acknowledgement, never age, authorizes cleanup\n',
         '                    os.unlink(os.path.join(folder, name))\n',
         ['spool/boundary'])
     result[-1]['siblings'] = True
@@ -15437,7 +15437,7 @@ def cases():
         'space304-service-time-delete',
         '155_veldo_0304_space_boundary.py',
         'control_service.py',
-        '                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.\n',
+        "                close_socket(config['socket'], socket_identity)\n",
         "                os.unlink(config['socket'])\n",
         ['service/boundary'])
     result[-1]['siblings'] = True
@@ -15561,6 +15561,32 @@ def cases():
         'tempfile.TemporaryDirectory()',
         ['integration/boundary'])
     result[-1]['dir'] = 'scripts'
+
+    add(304, 'space304-walk-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        "                if traverses and any('delete:single path' in primitives(call, values) for call in ast.walk(loop)):",
+        '                if False:', ['ac2/recursive-walk'])
+    result[-1]['dir'] = 'scripts'
+    add(304, 'space304-stdin-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        "        if 'update-ref' in vector and '--stdin' in vector:",
+        '        if False:', ['ac2/ref-stdin'])
+    result[-1]['dir'] = 'scripts'
+    add(304, 'space304-forced-ref-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        "        if 'fetch' in vector and any(word.startswith('+') and ':refs/' in word for word in vector):",
+        '        if False:', ['ac2/kept-overwrite'])
+    result[-1]['dir'] = 'scripts'
+    add(304, 'space304-kept-value-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        '            if kept_at is not None and len(operands[kept_at:]) < 3:',
+        '            if False:', ['ac2/kept-overwrite'])
+    result[-1]['dir'] = 'scripts'
+    add(304, 'space304-getattr-unchecked', '155_veldo_0304_space_boundary.py', 'check_space_boundary.py',
+        '            and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)):',
+        '            and False):', ['ac2/recursive-walk'])
+    result[-1]['dir'] = 'scripts'
+
+    add(304, 'space304-scaffold-overwrite', '155_veldo_0304_space_boundary.py', 'control_repository_provisioner.py',
+        "        git(path, 'update-ref', '--no-deref', ref, commit, '')",
+        "        git(path, 'update-ref', '--no-deref', ref, commit)", ['scaffold/no-overwrite'])
+    result[-1]['siblings'] = True
 
     return result
 

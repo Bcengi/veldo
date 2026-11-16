@@ -63,6 +63,8 @@ CREATORS = {
     ('scripts/suite_equiv.py', 'main'): 'Creates a private temporary tree for this call.',
 }
 REVIEWED = {
+    ('engine/scripts/gate_schedule.py', 'Meter.finish'): 'Ends its own empty kernel cgroup directories; rmdir cannot remove ordinary files.',
+    ('engine/scripts/mutation_ownership.py', 'WorkerMeter.close'): 'Ends its own empty kernel cgroup directories after worker exit; rmdir cannot remove ordinary files.',
     ('engine/.veldo/action_executor.py', '_cli'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('engine/.veldo/authority_contract.py', 'ssh_keygen_verify'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('engine/.veldo/control_agent_config_handoff.py', 'codex_observe'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
@@ -156,18 +158,27 @@ def name(node):
 def resolved_name(node, values, seen=()):
     if isinstance(node, ast.Name) and node.id in values and node.id not in seen:
         value = values[node.id]
-        if isinstance(value, (ast.Name, ast.Attribute)):
+        if isinstance(value, (ast.Name, ast.Attribute, ast.Call)):
             return resolved_name(value, values, (*seen, node.id))
+    if (isinstance(node, ast.Call) and name(node.func) == 'getattr' and len(node.args) == 2
+            and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)):
+        return resolved_name(node.args[0], values, seen) + '.' + node.args[1].value
     if isinstance(node, ast.Attribute):
         return resolved_name(node.value, values, seen) + '.' + node.attr
     return name(node)
 
 
 def words(node, values, seen=()):
-    if isinstance(node, ast.Constant) and isinstance(node.value, str):
-        return [node.value]
+    if isinstance(node, ast.Constant) and isinstance(node.value, (str, bytes)):
+        return [node.value.decode('ascii', errors='replace') if isinstance(node.value, bytes) else node.value]
+    if isinstance(node, ast.JoinedStr):
+        return [''.join(word for value in node.values for word in words(value, values, seen))]
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'encode':
+        return words(node.func.value, values, seen)
     if isinstance(node, ast.Name) and node.id in values and node.id not in seen:
         return words(values[node.id], values, (*seen, node.id))
+    if isinstance(node, ast.Name):
+        return ['<dynamic>']
     if isinstance(node, (ast.List, ast.Tuple)):
         return [word for value in node.elts for word in words(value, values, seen)]
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
@@ -194,7 +205,7 @@ def primitives(node, values):
         result.add('remove:recursive folder')
     if tail in ('unlink', 'rmdir') or called in ('os.remove', 'os.removedirs'):
         result.add('delete:single path')
-    if (tail in ('remove_tree', '_remove_tree', '_rmtree', 'space_signal', 'remove_ref', 'remove_path')
+    if (tail in ('remove_tree', '_remove_tree', '_rmtree', 'space_signal', 'remove_ref', 'remove_path', 'remove_standalone')
             or tail == 'remove' and any(part in called.lower() for part in ('remover', 'space_remove', 'rm.'))):
         result.add('delete:remover call')
     vector = [word for arg in node.args for word in words(arg, values)]
@@ -207,6 +218,19 @@ def primitives(node, values):
             result.add('create:git worktree add')
         if ('worktree' in vector or 'worktree' in called) and 'remove' in vector:
             result.add('remove:git worktree remove')
+        feed = [word for keyword in node.keywords if keyword.arg in ('input', 'feed', 'stdin')
+                for word in words(keyword.value, values)]
+        if 'update-ref' in vector and '--stdin' in vector:
+            # Unknown input can contain a delete too; no caller may hide the operation in a pipe.
+            if not feed or '<dynamic>' in feed or any(re.search(r'(?:^|[\n\0])delete[ \0]', word) for word in feed):
+                result.add('history:git ref delete')
+        if 'fetch' in vector and any(word.startswith('+') and ':refs/' in word for word in vector):
+            result.add('history:forced ref overwrite')
+        if 'update-ref' in vector and any('refs/veldo/kept/' in word for word in vector):
+            operands = [word for word in vector[vector.index('update-ref') + 1:] if not word.startswith('-')]
+            kept_at = next((i for i, word in enumerate(operands) if word.startswith('refs/veldo/kept/')), None)
+            if kept_at is not None and len(operands[kept_at:]) < 3:
+                result.add('history:unchecked kept ref overwrite')
         if 'update-ref' in vector and any(x in vector for x in ('-d', '--delete')):
             result.add('history:git ref delete')
         if any(x in vector for x in ('branch', 'tag', 'symbolic-ref')) and any(
@@ -273,6 +297,12 @@ def functions(source):
 def inventory(source):
     for function, nodes, values in functions(source):
         hits = [(node.lineno, primitive) for node in nodes for primitive in primitives(node, values)]
+        for loop in nodes:
+            if isinstance(loop, (ast.For, ast.AsyncFor, ast.comprehension)):
+                traverses = any(isinstance(call, ast.Call) and resolved_name(call.func, values).rsplit('.', 1)[-1]
+                                in ('walk', 'rglob', 'iterdir') for call in ast.walk(loop.iter))
+                if traverses and any('delete:single path' in primitives(call, values) for call in ast.walk(loop)):
+                    hits.append((getattr(loop, 'lineno', 1), 'remove:recursive folder'))
         times = [node for node in nodes if isinstance(node, ast.Attribute)
                  and node.attr in ('st_mtime', 'st_ctime', 'st_atime', 'st_mtime_ns', 'st_ctime_ns', 'st_atime_ns')]
         times += [node for node in nodes if isinstance(node, ast.Call)

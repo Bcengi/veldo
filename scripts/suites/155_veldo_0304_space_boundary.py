@@ -38,19 +38,19 @@ def _v304_suite():
     def source_path(relative):
         return PRODUCTION.get(relative, ROOT / relative)
 
-    installation = None
-    changed = {relative: path for relative, path in PRODUCTION.items()
-               if relative.startswith('.veldo/') and path != ROOT / relative}
-    if changed:
-        installation = tempfile.TemporaryDirectory(prefix='v304-installed-')
-        modules = Path(installation.name) / '.veldo'
-        shutil.copytree(ROOT / '.veldo', modules, ignore=shutil.ignore_patterns('__pycache__'))
-        for relative, source in changed.items():
-            shutil.copyfile(source, Path(installation.name) / relative)
+    installation = tempfile.TemporaryDirectory(prefix='v304-installed-')
+    installed = Path(installation.name)
+    shutil.copytree(ROOT / '.veldo', installed / '.veldo', ignore=shutil.ignore_patterns('__pycache__'))
+    shutil.copytree(ROOT / 'scripts', installed / 'scripts', ignore=shutil.ignore_patterns('__pycache__', 'suites', 'runners'))
+    for relative, source in PRODUCTION.items():
+        shutil.copyfile(source, installed / relative)
 
     def load(label, path):
-        if installation is not None and (ROOT / '.veldo' / path.name).is_file():
-            path = Path(installation.name) / '.veldo' / path.name
+        relative = next((relative for relative, source in PRODUCTION.items() if source == path), None)
+        if relative is not None:
+            path = installed / relative
+        elif (installed / '.veldo' / path.name).is_file():
+            path = installed / '.veldo' / path.name
         spec = importlib.util.spec_from_file_location('v304_' + label, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -88,7 +88,7 @@ def _v304_suite():
             tip = git(path, 'rev-parse', 'HEAD')
             (path / 'draft').write_bytes(b'not in git\n')
             answer = worker.remove(str(path))
-            assert answer['deferral'] == 'not_in_ledger', answer
+            assert answer['deferral'] == 'unique_work', answer
             assert (path / 'draft').read_bytes() == b'not in git\n'
             assert git(path, 'rev-parse', 'HEAD') == tip
             assert worker.deferred[-1] == answer
@@ -128,7 +128,12 @@ def _v304_suite():
             record['owner_keep'] = {'by': 'owner'}
             assert not remove.remove_ref(main, ref, ledger, 'fixture')['ok']
             record.pop('owner_keep')
+            hook = main / '.git' / 'hooks' / 'reference-transaction'
+            marker = main / 'hook-ran'
+            hook.write_text('#!/bin/sh\nprintf called > "' + str(marker) + '"\n')
+            hook.chmod(0o700)
             answer = remove.remove_ref(main, ref, ledger, 'fixture')
+            assert not marker.exists(), 'ref cleanup ran a repository hook'
             assert answer['ok'], answer
             assert git(main, 'for-each-ref', '--format=%(refname)', ref) == ''
             assert git(main, 'rev-parse', kept) == tip
@@ -154,7 +159,7 @@ def _v304_suite():
             assert not answer['ok'] and git(work, 'rev-parse', ref) == tip, answer
             (work / 'draft').write_bytes(b'only copy of clone draft\n')
             looked, released = obj._standalone(root, work, [{'cache': str(work), 'ref': ref}], work, None)
-            assert not released and all(entry['deferral'] == 'not_in_ledger' for entry in looked)
+            assert not released and looked[0]['state'] is None
             assert (work / 'draft').read_bytes() == b'only copy of clone draft\n'
             assert git(work, 'show', ref + ':unique') == 'unique clone commit'
 
@@ -189,7 +194,7 @@ def _v304_suite():
                 obj._swap()
             except batch.Refused:
                 pass
-            assert not obj.record['ref_outcomes'][ref]['ok']
+            assert ref not in obj.record.get('ref_outcomes', {})
             assert git(main, 'rev-parse', ref) == tip
             assert git(main, 'show', ref + ':unique') == 'unique staged commit'
 
@@ -210,6 +215,37 @@ def _v304_suite():
             assert not provisioner.remove_scaffold_ref(str(main), repository)
             assert git(main, 'rev-parse', ref) == tip
             assert git(main, 'show', ref + ':unique') == 'unique scaffold commit'
+            git(main, 'update-ref', 'refs/heads/main', tip)
+            assert provisioner.remove_scaffold_ref(str(main), repository)
+            assert git(main, 'for-each-ref', '--format=%(refname)', ref) == ''
+            assert git(main, 'show', 'main:unique') == 'unique scaffold commit'
+
+    def scaffold_overwrite():
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        provisioner = load('provisioner_overwrite', source_path('.veldo/control_repository_provisioner.py'))
+        with tempfile.TemporaryDirectory(prefix='v304-scaffold-existing-') as temporary:
+            main = Path(temporary)
+            git(main, 'init', '-q', '-b', 'main')
+            (main / 'base').write_text('source\n')
+            git(main, 'add', '.')
+            git(main, 'commit', '-q', '-m', 'base')
+            base = git(main, 'rev-parse', 'HEAD')
+            ref = provisioner.SCAFFOLD_REF + 'fixture'
+            git(main, 'update-ref', ref, base)
+            def scaffold(where, templates=None):
+                (Path(where) / 'generated').write_text('generated scaffold\n')
+            with patch.object(provisioner, '_scaffold_module', return_value=SimpleNamespace(scaffold=scaffold)), patch.object(
+                    provisioner.GI, 'author', return_value=('Fixture', 'fixture@example.invalid')):
+                try:
+                    provisioner.lay_scaffold(main, base, {'id': 'fixture'}, None, ref)
+                except provisioner.Refused:
+                    pass
+                else:
+                    raise AssertionError('the existing scaffold ref was overwritten')
+            assert git(main, 'rev-parse', ref) == base
+
+    row('scaffold/no-overwrite', scaffold_overwrite)
 
     row('scaffold/unique-work', scaffold_work)
     row('scaffold/boundary', lambda: module_boundary('control_repository_provisioner', ('remove_scaffold_ref',)))
@@ -221,12 +257,13 @@ def _v304_suite():
             receiver = object.__new__(launch.Receiver)
             path = Path(temporary) / 'receiver'
             path.mkdir()
+            git(path, 'init', '-q', '-b', 'main')
             draft = path / 'draft'
             draft.write_bytes(b'only receiver copy\n')
             receiver.run, receiver.space, receiver.supervision = str(path), None, {'empty': True}
             receiver._unstage_skills = lambda: None
             receiver._remove_run()
-            assert receiver.run_removal['deferral'] == 'not_in_ledger'
+            assert receiver.run_removal['deferral'] == 'in_use'
             assert draft.read_bytes() == b'only receiver copy\n'
             runner = object.__new__(launch.Runner)
             runner.runs, runner.space, runner.profile = temporary, None, None
@@ -234,10 +271,11 @@ def _v304_suite():
             runner.observations = []
             place = Path(launch.run_directory(runner.runs, 'fixture'))
             place.mkdir(parents=True)
+            git(place, 'init', '-q', '-b', 'main')
             (place / 'draft').write_bytes(b'only sweep copy\n')
             with patch.object(launch.C, 'retirement', return_value={'terminated': True, 'cleaned': True}):
                 assert runner.clear_runs() == []
-            assert runner.observations[-1]['space']['deferral'] == 'not_in_ledger'
+            assert runner.observations[-1]['space']['deferral'] == 'in_use'
             assert (place / 'draft').read_bytes() == b'only sweep copy\n'
 
     row('launch/unique-work', launch_work)
@@ -256,9 +294,10 @@ def _v304_suite():
             tip = git(path, 'rev-parse', 'HEAD')
             obj = object.__new__(runtime.Runtime)
             obj.candidates, obj.space, obj.kept = [str(path)], None, []
+            obj.root = None
             obj.floor = obj.conn = SimpleNamespace(close=lambda: None)
             obj.close()
-            assert obj.kept[-1]['deferral'] == 'not_in_ledger'
+            assert obj.kept[-1]['deferral'] == 'keep_failed'
             assert git(path, 'rev-parse', 'HEAD') == tip
             assert (path / 'unique').read_text() == 'only candidate work\n'
 
@@ -280,10 +319,12 @@ def _v304_suite():
             (observations / 'proof').write_bytes(b'only proof\n')
             obj = object.__new__(lander.GitLandOps)
             obj.space, obj.observations = None, None
+            obj.repo_root = None
+            git(observations, 'init', '-q', '-b', 'main')
             obj.candidate = {'workspace': str(path), 'observation_dir': str(observations)}
             obj.discard()
             assert not obj.candidate['discarded']
-            assert all(value['deferral'] == 'not_in_ledger' for value in obj.candidate['space'].values())
+            assert {value['deferral'] for value in obj.candidate['space'].values()} == {'keep_failed', 'in_use'}
             assert git(path, 'rev-parse', 'HEAD') == tip
             assert (observations / 'proof').read_bytes() == b'only proof\n'
 
@@ -345,13 +386,14 @@ def _v304_suite():
         with tempfile.TemporaryDirectory(prefix='v304-spool-') as temporary:
             folder = Path(temporary)
             name = 'fixture.json'
-            kept = []
-            for value in (b'first unique event\n', b'second unique event\n'):
+            pending = folder / 'unacknowledged.json'
+            pending.write_bytes(b'undelivered event\n')
+            for value in (b'first delivered event\n', b'second delivered event\n'):
                 (folder / name).write_bytes(value)
-                saved = spool.retain_delivered(str(folder), name)
-                kept.append((Path(saved), value))
-            assert all(path.read_bytes() == value for path, value in kept)
-            assert kept[0][0] != kept[1][0] and not (folder / name).exists()
+                spool.remove_delivered(str(folder), name)
+                assert not (folder / name).exists()
+            assert pending.read_bytes() == b'undelivered event\n'
+            assert sorted(path.name for path in folder.iterdir()) == ['unacknowledged.json']
 
     row('spool/unique-work', spool_work)
     row('spool/boundary', lambda: module_boundary('control_space_spool', ('replay',)))
@@ -360,8 +402,13 @@ def _v304_suite():
         import ast
         import contextlib
         import os
+        import stat
+        import socket
         from types import SimpleNamespace
         source = (source_path('.veldo/control_service.py')).read_text()
+        namespace = {'os': os, 'stat': stat, 'contextlib': contextlib}
+        helper = next(node for node in ast.parse(source).body if isinstance(node, ast.FunctionDef) and node.name == 'close_socket')
+        exec(compile(ast.Module(body=[helper], type_ignores=[]), '<socket cleanup>', 'exec'), namespace)
         serve = next(node for node in ast.parse(source).body if isinstance(node, ast.FunctionDef) and node.name == 'serve')
         block = next(node.finalbody for node in ast.walk(serve) if isinstance(node, ast.Try) and any(
             isinstance(call, ast.Call) and ast.unparse(call.func) == 'listener.close'
@@ -374,8 +421,17 @@ def _v304_suite():
             exec(compile(ast.Module(body=block, type_ignores=[]), '<service shutdown>', 'exec'),
                  {'notify': lambda message: None, 'listener': SimpleNamespace(close=lambda: closed.append(True)),
                   'service': SimpleNamespace(channel=None), 'contextlib': contextlib, 'os': os,
-                  'config': {'socket': str(path)}, 'inode': path.stat().st_ino})
+                  'config': {'socket': str(path)}, 'socket_identity': (path.stat().st_dev, path.stat().st_ino),
+                  'close_socket': namespace['close_socket']})
             assert closed == [True] and path.read_bytes() == b'work now at the socket path\n'
+            own = Path(temporary) / 'own-socket'
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                listener.bind(str(own))
+                identity = (own.stat().st_dev, own.stat().st_ino)
+            namespace['close_socket'](str(own), (identity[0], identity[1] + 1))
+            assert own.exists()
+            namespace['close_socket'](str(own), identity)
+            assert not own.exists()
 
     row('service/unique-work', service_work)
     row('service/boundary', lambda: module_boundary('control_service', ('serve',)))
@@ -478,6 +534,29 @@ def _v304_suite():
         for command in ("git('stash', 'drop')", "git('reflog', 'expire', ref)", "git('prune')"):
             assert boundary.problems('def remove_ref():\n    ' + command + '\n',
                                      'engine/.veldo/control_space_remove.py')
+
+    def recursive_forms():
+        for traversal in ('os.walk(path)', "path.rglob('*')", 'path.iterdir()'):
+            for operation in ('os.unlink(child)', 'child.rmdir()'):
+                source = 'def wipe(path):\n    for child in ' + traversal + ':\n        ' + operation + '\n'
+                assert any('remove:recursive folder' in error for error in boundary.problems(source, 'scripts/new.py')), source
+        assert boundary.problems("def wipe(path):\n    getattr(shutil, 'rmtree')(path)\n", 'scripts/new.py')
+
+    def stdin_forms():
+        for feed in ("input=b'delete refs/veldo/pins/x\\n'", "feed=('delete ' + ref + '\\n').encode()", 'stdin=stream'):
+            source = "def wipe(ref):\n    subprocess.run(['git', 'update-ref', '--stdin'], " + feed + ")\n"
+            assert any('history:git ref delete' in error for error in boundary.problems(source, 'scripts/new.py')), source
+
+    def overwrite_forms():
+        forms = ["git('fetch', source, '+HEAD:refs/veldo/kept/x')",
+                 "git('update-ref', 'refs/veldo/kept/x', tip)"]
+        for command in forms:
+            assert boundary.problems('def overwrite():\n    ' + command + '\n', 'scripts/new.py'), command
+        assert not boundary.problems("def create():\n    git('update-ref', 'refs/veldo/kept/x', tip, '')\n", 'scripts/new.py')
+
+    row('ac2/recursive-walk', recursive_forms)
+    row('ac2/ref-stdin', stdin_forms)
+    row('ac2/kept-overwrite', overwrite_forms)
 
     def stale_entries():
         path = 'scripts/example.py'

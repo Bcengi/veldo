@@ -1521,9 +1521,11 @@ reflog expire and a prune of objects. The check refuses each one anywhere but in
 command, so no later change can quietly delete a kept ref or the commits behind it.
 
 2026-11-15 lead decision (VELDO-0304): the pin, staging and scaffold ref releases call the
-central ref remover. It requires the owner's ended ledger item and event, verifies its keep record,
+central ref remover. With a ledger it requires the owner's ended item and event and verifies its keep record;
 and proves that a kept ref or branch in the main repository reaches the commit before a non-forced,
-value-checked deletion of the temporary ref. Without that proof the ref stays. This grants no direct
+value-checked deletion of the temporary ref. Without a ledger, the standalone look and keep result
+provides authority instead. A missing ledger alone never refuses removal. Without the keep and
+reachability proof the ref stays. This grants no direct
 ref deletion to the three callers, and no stash, reflog or object pruning to the ref remover.
 
 The check has one more rule, for removal by age. It refuses any function that deletes something (a folder,
@@ -1969,6 +1971,11 @@ with that reason; engine entries also name their installed copies.
 | scripts/propose_case_inputs.py | trace_case | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
 | scripts/render_pdfs.py | main | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
 | scripts/suite_equiv.py | main | Lead decision class: only each mkdtemp result this call created with its own prefix. |
+
+The list also names engine/scripts/gate_schedule.py:Meter.finish and
+engine/scripts/mutation_ownership.py:WorkerMeter.close, with their installed copies. Each removes
+only its ended worker's empty kernel cgroup directories with rmdir, which cannot remove ordinary files.
+The hand-rolled traversal check counts these as folder removal, so their reasons are explicit.
 
 The list names each function and its reason. A removal primitive anywhere else fails the gate.
 

@@ -131,6 +131,23 @@ approval, bound to the commit and the proof, is required.
 
 ## History
 
+- 2026-11-15: FIX ROUND restores standalone look/keep/removal through the central
+  entry and keeps suite 142 unchanged. Retirement supplies the item identity and
+  records only successful pin releases. Batch staging release follows clone
+  discard; scaffold ref creation is compare-and-create and release proves branch
+  reachability. The boundary now checks recursive walks, stdin ref deletion,
+  indirect rmtree and unchecked kept-ref overwrites, with named falsifiers.
+  Suite 155 installs its script dependencies beside .veldo in every mutation
+  fixture. Delivery acknowledgement and owned-socket shutdown reclaim their inputs
+  through helpers with no clocks. The protected verify.sh line is unchanged.
+
+- 2026-11-15: remaining contract question sent to the lead: failed adoptions in
+  accepted suite 109 require no refs under refs/veldo even when the scaffold
+  commit never reached a branch. Design 0.2 requires keeping that commit before
+  releasing its ref. A verified durable Git bundle was proposed as an alternative
+  preservation format; it has not been authorized or implemented. Those refs stay
+  until this conflict is resolved. The accepted suite is unchanged.
+
 - 2026-11-15: FIX ROUND lead decision clarifying RESUME 2: "through the removers"
   includes the removers' STANDALONE entry. Without the space service or ledger,
   removal still follows the look and keep step through that entry, never outside
