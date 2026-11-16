@@ -551,46 +551,54 @@ def _v343_suite():
                     between(shown(item))
                 return act(item)
 
-            item, path, owner, tip = agent_detached('agent-detached')
-            before, unheld = branches(agent), holders(agent, tip) == []
-            result = agent_discard(item, owner)
-            record, name = ledger.item(item), shown(item).get('kept_branch')
-            at = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
-                                 'refs/heads/' + str(name)], capture_output=True).stdout.decode().strip()
-            check('ac3/detached', '%r %r, branch %r in the shared repository at %r' % (
-                      result, record.get('deferral'), name, at),
-                  result is not None and unheld and name == 'space-saved-agent-detached'
-                  and record['state'] == 'removed' and not path.exists() and at == tip
-                  and holders(repo, tip) == ['refs/heads/' + name]
-                  and git(repo, 'show', name + ':made.txt') == 'committed in agent-detached')
-            found = branch_items(name)
-            kept = list(found.values())[0] if len(found) == 1 else {}
-            check('ac3/detached', 'recorded there, as one kept branch item: ' + repr(found),
-                  len(found) == 1 and kept.get('state') == 'kept'
-                  and kept.get('locator') == {'repository': str(repo), 'ref': name}
-                  and kept.get('start') == tip and (kept.get('kept_branch') or {}).get('worktree') == item
-                  and order(item, found))
-            check('ac3/detached', 'nothing was written in the agent repository: ' + repr(branches(agent)),
-                  agent.exists() and branches(agent) == before and holders(agent, tip) == []
-                  and not any(one['locator'].get('repository') == str(agent) and one.get('kept_branch')
-                              for one in branch_items().values()))
-            saved = snapshot(item)
-            check('ac3/detached', 'the uncommitted file is in the snapshot ' + repr(saved),
-                  saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft agent-detached')
+            def agent_rows():
+                item, path, owner, tip = agent_detached('agent-detached')
+                before, unheld = branches(agent), holders(agent, tip) == []
+                result = agent_discard(item, owner)
+                record, name = ledger.item(item), shown(item).get('kept_branch')
+                at = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
+                                     'refs/heads/' + str(name)], capture_output=True).stdout.decode().strip()
+                check('ac3/detached', '%r %r, branch %r in the shared repository at %r' % (
+                          result, record.get('deferral'), name, at),
+                      result is not None and unheld and name == 'space-saved-agent-detached'
+                      and record['state'] == 'removed' and not path.exists() and at == tip
+                      and holders(repo, tip) == ['refs/heads/' + name]
+                      and git(repo, 'show', name + ':made.txt') == 'committed in agent-detached')
+                found = branch_items(name)
+                kept = list(found.values())[0] if len(found) == 1 else {}
+                check('ac3/detached', 'recorded there, as one kept branch item: ' + repr(found),
+                      len(found) == 1 and kept.get('state') == 'kept'
+                      and kept.get('locator') == {'repository': str(repo), 'ref': name}
+                      and kept.get('start') == tip and (kept.get('kept_branch') or {}).get('worktree') == item
+                      and order(item, found))
+                check('ac3/detached', 'nothing was written in the agent repository: ' + repr(branches(agent)),
+                      agent.exists() and branches(agent) == before and holders(agent, tip) == []
+                      and not any(one['locator'].get('repository') == str(agent) and one.get('kept_branch')
+                                  for one in branch_items().values()))
+                saved = snapshot(item)
+                check('ac3/detached', 'the uncommitted file is in the snapshot ' + repr(saved),
+                      saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft agent-detached')
 
-            # The shared repository cannot take the branch: the name is taken there by other work.
-            # The Discard does not run, and no branch is made in the agent repository instead.
-            item, path, owner, tip = agent_detached('agent-taken')
-            before, taken = branches(agent), {}
-            result = agent_discard(item, owner, lambda terms: (taken.update(name=terms['kept_branch']),
-                                                               git(repo, 'branch', terms['kept_branch'], head)))
-            stays('ac3/detached-refused', 'agent-taken', item, path, tip, result, taken.get('name'))
-            check('ac3/detached-refused', 'the branch that had the name is where it was, and the agent repository '
-                  'has no new branch', bool(taken) and git(repo, 'rev-parse', 'refs/heads/' + taken['name']) == head
-                  and branches(agent) == before)
-            check('ac3/detached-refused', 'the next request names the next free name: '
-                  + repr(shown(item).get('kept_branch')),
-                  bool(taken) and shown(item).get('kept_branch') == taken['name'] + '-2')
+                # The shared repository cannot take the branch: the name is taken there by other work.
+                # The Discard does not run, and no branch is made in the agent repository instead.
+                item, path, owner, tip = agent_detached('agent-taken')
+                before, taken = branches(agent), {}
+                result = agent_discard(item, owner, lambda terms: (taken.update(name=terms['kept_branch']),
+                                                                   git(repo, 'branch', terms['kept_branch'], head)))
+                stays('ac3/detached-refused', 'agent-taken', item, path, tip, result, taken.get('name'))
+                check('ac3/detached-refused', 'the branch that had the name is where it was, and the agent repository '
+                      'has no new branch', bool(taken) and git(repo, 'rev-parse', 'refs/heads/' + taken['name']) == head
+                      and branches(agent) == before)
+                check('ac3/detached-refused', 'the next request names the next free name: '
+                      + repr(shown(item).get('kept_branch')),
+                      bool(taken) and shown(item).get('kept_branch') == taken['name'] + '-2')
+
+            # With no agent repository there is no worktree to make: both rows are red, never absent.
+            if (agent / '.git').is_dir():
+                agent_rows()
+            else:
+                for row in ('ac3/detached', 'ac3/detached-refused'):
+                    check(row, 'the agent repository is gone', False)
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:
