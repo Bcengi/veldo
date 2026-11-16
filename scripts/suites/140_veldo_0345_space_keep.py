@@ -75,6 +75,13 @@ ac6/removing-put-back (its file is written after the keep step answered, where r
 the worktree is removing and is put back as before). ac5/kill-points also reads the store's folders so
 that a folder that is not there reds its own row and the rows after it still run.
 
+History, VELDO-0347 (fix round 2, the independent review of 25f56001, finding 1). The remover saves
+and compares a worker clone only when its caller names the row the kind registry answered for the
+item from the item's own table (agent_repository_clone, table 2), and no longer by the form alone.
+The fixture's attempt, which stands in for the next event or reconcile and calls the remover itself
+(ac5/kill-points, ac5/retry-compares), names that row as Signal does, read from the registry by the
+item's version. Nothing a row asserts changed.
+
 AC5 rows: ac5/failed-save-removes-nothing (the declared falsifier row for a short write: an unwritable
 store, a pool that fills in the middle of a file, a short write, a read back that differs, a failing
 sync and a failing rename each defer the item keep_failed with the clone and its file in place and
@@ -529,8 +536,11 @@ def _v345_space_keep_suite():
         def attempt(item, snapshot=False, event='retry'):
             """One attempt at an item that is due or removing, as the next event or reconcile makes it:
             the remover with the keeper, and the outcome written when it removed."""
-            answer = RM.remove(L, P, item, L.item(item), free=free, keep=KP.keeper(L, event=event, snapshot=snapshot),
-                               run=client, proc=str(PROC))
+            record = L.item(item) or {}
+            table = K.REGISTRY['tables'].get((record.get('ends_on') or {}).get('version')) or {'rows': {}}
+            row = K.FORM_ROWS.get((record.get('kind'), record.get('form')))
+            answer = RM.remove(L, P, item, record, free=free, keep=KP.keeper(L, event=event, snapshot=snapshot),
+                               run=client, proc=str(PROC), row=row if row in table['rows'] else None)
             if answer.get('ok'):
                 answer['wrote'] = L.outcome(item, 'removed', {'event': event, 'method': answer.get('method')})
             return answer
