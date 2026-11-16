@@ -1,0 +1,4 @@
+--- a/.veldo/control_batch.py
++++ b/.veldo/control_batch.py
+@@ -926,0 +927 @@
++            self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)

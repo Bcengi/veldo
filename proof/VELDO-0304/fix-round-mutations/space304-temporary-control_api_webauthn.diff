@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_webauthn.py
++++ b/.veldo/control_api_webauthn.py
+@@ -226 +226 @@
+-    with tempfile.TemporaryDirectory(prefix='v-') as directory:
++    with tempfile.TemporaryDirectory(prefix='v-', dir=base) as directory:

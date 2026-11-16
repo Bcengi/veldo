@@ -1,0 +1,5 @@
+--- a/scripts/check_space_boundary.py
++++ b/scripts/check_space_boundary.py
+@@ -232 +232 @@
+-            if kept_at is not None and len(operands[kept_at:]) < 3:
++            if False:

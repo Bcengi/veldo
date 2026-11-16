@@ -1,0 +1,5 @@
+--- a/scripts/migrate_to_veldo.py
++++ b/scripts/migrate_to_veldo.py
+@@ -128 +128 @@
+-        raise SystemExit("migration: destination exists; a recorded owner item is required for removal: %s" % dest)
++        shutil.rmtree(dest)

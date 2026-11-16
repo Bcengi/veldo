@@ -1,0 +1,5 @@
+--- a/.veldo/control_memory_check.py
++++ b/.veldo/control_memory_check.py
+@@ -64 +64 @@
+-        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.
++        target.unlink()

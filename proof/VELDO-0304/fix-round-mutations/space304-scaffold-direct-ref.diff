@@ -1,0 +1,4 @@
+--- a/.veldo/control_repository_provisioner.py
++++ b/.veldo/control_repository_provisioner.py
+@@ -199,0 +200 @@
++        git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False)

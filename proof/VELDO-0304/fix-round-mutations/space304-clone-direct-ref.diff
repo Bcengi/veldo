@@ -1,0 +1,4 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -752,0 +753 @@
++        _git('-C', cache, 'update-ref', '-d', ref)

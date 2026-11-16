@@ -1,25 +1,22 @@
 {
- "status": "unresolved",
- "suite": "142_veldo_0303_space_paths",
- "failed_rows": [
-  "  SELFTEST FAIL: VELDO-0303 ac1/fleet-no-ledger: with no ledger an untracked file stays: the look refuses as unique_work and no git remove is run [{'path': '/tmp/veldo-0303-2itm7_3e/plain-worktrees/dirty', 'item': None, 'state': None, 'deferral': 'not_in_ledger', 'said': 'removal requires a recorded owner and item'}]",
-  "  SELFTEST FAIL: VELDO-0303 ac2/no-ledger-clean-clone: with no ledger a clean clone is retired: its root is gone and its pin released [space_deferred:not_in_ledger]",
-  "  SELFTEST FAIL: VELDO-0303 loss/fleet-ignored-file: the answer is the deferral unique_work and names the file, and the deferred list has it",
-  "  SELFTEST FAIL: VELDO-0303 loss/fleet-nested-repository: the answer is the deferral in_use and names the repository",
-  "  SELFTEST FAIL: VELDO-0303 loss/fleet-reset-commit: the worktree is removed, and the commit a reset left behind is on a kept ref of the repository [None []]",
-  "  SELFTEST FAIL: VELDO-0303 loss/clone-refused-build: the clone is retired: its root is gone and its pin released [space_deferred:not_in_ledger]",
-  "  SELFTEST FAIL: VELDO-0303 loss/run-directory-repository: with no ledger a run directory that holds a repository stays at the receiver's end, with its only commit [{'path': '/tmp/veldo-0303-2itm7_3e/state/runs/f2be06c9a6199d11b134712ea672a1ba', 'item': None, 'state': None, 'deferral': 'not_in_ledger', 'refusal': 'space_deferred:not_in_ledger'}]",
-  "  SELFTEST FAIL: VELDO-0303 loss/candidate-commits: with no ledger the landing line's close removes a candidate folder only after its commits are on kept refs of the repository [[]]",
-  "  SELFTEST FAIL: VELDO-0303 fix/candidate-rebuildable: a built candidate, its two merges and its projection commit named by the lander's record and in no other repository [[False, False, False, False]], is removed, and no ref of the repository is written or moved [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]",
-  "  SELFTEST FAIL: VELDO-0303 fix/candidate-fail-closed: a built candidate with one more commit on its head, which the record does not name, goes only after that commit is on a kept ref of the repository, its file read there alone [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]",
-  "  SELFTEST FAIL: VELDO-0303 fix2/unrecorded-commit-kept: a commit on the head with exactly the parents the record's next step has, which the record does not name, is not taken for the lander's by its parents: it is on a kept ref of the repository before the workspace goes [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]",
-  "  SELFTEST FAIL: VELDO-0303 fix2/step-in-progress-exact: the review's case B: a candidate stopped at the conflict, as its record says, with a hand edit to a tracked file the step does not touch [.gitignore]: the workspace stays, the edit byte for byte, and the candidate names the refusal [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]",
-  "  SELFTEST FAIL: VELDO-0303 fix2/trunk-from-record: the review's case C: a built and recorded candidate, a work commit on its head, and the workspace's own trunk ref moved onto that commit: the trunk is the commit the record stored, so the work is on a kept ref of the repository, read there alone, before the workspace goes [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]",
-  "  SELFTEST FAIL: VELDO-0303 fix2/remote-holds-trunk: the review's stale trunk: the remote's trunk was rewound after the fetch, so the workspace holds the last copy of the trunk commit here: the remote was asked [False], and the trunk's file is read from a kept ref of the repository alone after the workspace went [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]",
-  "  SELFTEST FAIL: VELDO-0303 fix3/generator-commit-kept: the review's case E: the generator of the build's own tree commits its output and a file of work, so the lander commits nothing and the record's commit is the generator's commit, named nowhere as the lander's [None]: the land is refused, and the generator's file is read from a kept ref of the repository alone after the workspace went [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]",
-  "  SELFTEST FAIL: VELDO-0303 paths/no-delete-with-a-ledger: the drives without a ledger did delete by themselves, so the watch sees a delete [[]]"
- ],
- "reason": "These existing assertions require standalone removal, standalone keep side effects, or diagnostic probes before refusal. The lead now requires every removal to have a ledger item, its owner and item-naming ending event. Without these inputs the revised paths refuse and retain their work.",
- "action": "No existing assertion or earlier ticket was edited. Lead must reconcile the prior standalone contract before landing.",
- "loss_observed": false
+  "status": "awaiting_lead_decision",
+  "suite": "109_veldo_0161_adoption",
+  "remaining_rows": [
+    "  SELFTEST FAIL: VELDO-0161 adoption/signer-enrolled",
+    "  SELFTEST FAIL: VELDO-0161 adoption/repository-commands",
+    "  SELFTEST FAIL: VELDO-0161 adoption/transport-config",
+    "  SELFTEST FAIL: VELDO-0161 adoption/interrupted",
+    "  SELFTEST FAIL: VELDO-0161 adoption/store-checks-before-push"
+  ],
+  "reason": "Failed-adoption rows require no refs under refs/veldo while their scaffold commit has never reached a branch. Design 0.2 requires its preservation before releasing that ref.",
+  "current_behavior": "The central ref remover keeps the unheld scaffold ref; no work is lost.",
+  "proposed_alternative": "A verified durable Git bundle in the repository Git directory before releasing the scaffold ref. Not authorized or implemented.",
+  "accepted_suites_unchanged": [
+    "scripts/suites/142_veldo_0303_space_paths.py",
+    "scripts/suites/138_veldo_0300_space_remove.py",
+    "scripts/suites/139_veldo_0301_space_signal.py",
+    "scripts/suites/140_veldo_0345_space_keep.py",
+    "scripts/suites/109_veldo_0161_adoption.py",
+    "scripts/suites/146_veldo_0308_run_finished.py"
+  ]
 }

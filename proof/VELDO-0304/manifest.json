@@ -1,158 +1,167 @@
 {
- "schema": "veldo.proof/v1",
- "spec_id": "VELDO-0304",
- "commit": "1df935ea488dfca2c4ac8034dda899d17a563834",
- "tree": "e1904cae9d30308f3a696329573d54f97611c47d",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-15T23:57:23.027305+00:00",
- "criteria": [
-  {
-   "id": "AC1",
-   "status": "pending",
-   "evidence": [
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0304",
+  "commit": "6e9738497df777f86dad54f56ecf37a0b12e06dc",
+  "tree": "df0ebbcc81b6e2ca0df078ccf67dc14829f08def",
+  "producer": "Codex fix-round implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-16T00:30:28.868100+00:00",
+  "status": "incomplete_pending_lead_decision",
+  "summary": "Nine requested suites have zero failed rows; accepted suite 109 has five remaining failures. The boundary passes and every one of 37 teeth cases is rejected with a valid baseline.",
+  "criteria": [
     {
-     "type": "unit",
-     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
-     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
-     "detail": "ac1/forms, ac1/repository; targeted baseline green, not a gate result."
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0304/teeth-receipt.json",
+          "sha256": "3694ca40995e3c9bc9539256727ecb4d9b15e52d38002af6f78a29ce9bc65113",
+          "detail": "Finding 304 teeth stage passed; this is not an aggregate gate or independent review result."
+        }
+      ]
     },
     {
-     "type": "integration",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0304/teeth-receipt.json",
+          "sha256": "3694ca40995e3c9bc9539256727ecb4d9b15e52d38002af6f78a29ce9bc65113",
+          "detail": "Finding 304 teeth stage passed; this is not an aggregate gate or independent review result."
+        }
+      ]
     },
     {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "boundary-new-creator applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0304/teeth-receipt.json",
+          "sha256": "3694ca40995e3c9bc9539256727ecb4d9b15e52d38002af6f78a29ce9bc65113",
+          "detail": "Finding 304 teeth stage passed; this is not an aggregate gate or independent review result."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0304/teeth-receipt.json",
+          "sha256": "3694ca40995e3c9bc9539256727ecb4d9b15e52d38002af6f78a29ce9bc65113",
+          "detail": "Finding 304 teeth stage passed; this is not an aggregate gate or independent review result."
+        }
+      ]
     }
-   ]
-  },
-  {
-   "id": "AC2",
-   "status": "pending",
-   "evidence": [
+  ],
+  "diagnostic_suites": [
     {
-     "type": "unit",
-     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
-     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
-     "detail": "ac2/forms, ac2/repository and each module boundary row; targeted baseline green, not a gate result."
+      "suite": "155_veldo_0304_space_boundary",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 70 passed, 0 failed in 7.80s",
+      "log": "proof/VELDO-0304/155_veldo_0304_space_boundary.log",
+      "failures": [],
+      "sha256": "cdfcf43fefb54d16d79fb724bdee5dbf0cce6abe7f54c8e65903956885fbda50"
     },
     {
-     "type": "integration",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+      "suite": "142_veldo_0303_space_paths",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 64 passed, 0 failed in 9.76s",
+      "log": "proof/VELDO-0304/142_veldo_0303_space_paths.log",
+      "failures": [],
+      "sha256": "92d878df435bd5cec1aabaea5ba0c8de12532c722e6be4acdee1eef75d4b66a5"
     },
     {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "fleet-direct-remove applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+      "suite": "66_veldo_0042_clones",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 46 passed, 0 failed in 2.09s",
+      "log": "proof/VELDO-0304/66_veldo_0042_clones.log",
+      "failures": [],
+      "sha256": "5da082e82869e5f067dd86563c83af9a3316b052b0938ee59b15cb38b3e49bcd"
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 37 passed, 0 failed in 59.02s",
+      "log": "proof/VELDO-0304/67_veldo_0056_candidates.log",
+      "failures": [],
+      "sha256": "0329b6e679a000bc0684150431b82adccecebd5a4ff8d29e35380d01500ccdee"
+    },
+    {
+      "suite": "146_veldo_0308_run_finished",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 64 passed, 0 failed in 4.02s",
+      "log": "proof/VELDO-0304/146_veldo_0308_run_finished.log",
+      "failures": [],
+      "sha256": "e696fde79e12548fc0a1aca0b4ea821a2921fa242c6526ab6140a0bfad315f07"
+    },
+    {
+      "suite": "129_veldo_0239_batch_landing",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 49 passed, 0 failed in 23.60s",
+      "log": "proof/VELDO-0304/129_veldo_0239_batch_landing.log",
+      "failures": [],
+      "sha256": "7f1bbb05bf209fac08e890de5ca3049d26ad0a97c20f56804ff207a80866d4fd"
+    },
+    {
+      "suite": "109_veldo_0161_adoption",
+      "exit_code": 1,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 76 passed, 5 failed in 27.81s",
+      "log": "proof/VELDO-0304/109_veldo_0161_adoption.log",
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0161 adoption/signer-enrolled",
+        "  SELFTEST FAIL: VELDO-0161 adoption/repository-commands",
+        "  SELFTEST FAIL: VELDO-0161 adoption/transport-config",
+        "  SELFTEST FAIL: VELDO-0161 adoption/interrupted",
+        "  SELFTEST FAIL: VELDO-0161 adoption/store-checks-before-push"
+      ],
+      "sha256": "e2790b07a57480fe6ea8edf7afb61bd026d6fec4e0d86bc37476e018d374568d"
+    },
+    {
+      "suite": "138_veldo_0300_space_remove",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 65 passed, 0 failed in 2.47s",
+      "log": "proof/VELDO-0304/138_veldo_0300_space_remove.log",
+      "failures": [],
+      "sha256": "874bd79fdd15188b164d54e26cb5f6527d30656a13c4fb8b7db6097e72ec9a11"
+    },
+    {
+      "suite": "139_veldo_0301_space_signal",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 44 passed, 0 failed in 1.26s",
+      "log": "proof/VELDO-0304/139_veldo_0301_space_signal.log",
+      "failures": [],
+      "sha256": "135482ff92519e1793f9b296d73564354bbeb6ecd83ed5181b6ea7f1b0e344b4"
+    },
+    {
+      "suite": "140_veldo_0345_space_keep",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 57 passed, 0 failed in 4.38s",
+      "log": "proof/VELDO-0304/140_veldo_0345_space_keep.log",
+      "failures": [],
+      "sha256": "ef2c7a310c3f01c8ad3f7e684a34236f5099ca37bb04df8b154849c88110836d"
     }
-   ]
+  ],
+  "boundary": "Space boundary: pass",
+  "teeth": {
+    "status": "passed",
+    "registered": 37,
+    "executed": 37,
+    "reused": 0,
+    "rejected": 37,
+    "worker_invocations": 85,
+    "elapsed": 89.79806409077719
   },
-  {
-   "id": "AC3",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
-     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
-     "detail": "ac3/stale-entries; targeted baseline green, not a gate result."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "boundary-stale-accepted applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
-    }
-   ]
-  },
-  {
-   "id": "AC4",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
-     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
-     "detail": "ac4/forms, ac4/repository; targeted baseline green, not a gate result."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0304/registered-falsifiers.json",
-     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-     "detail": "boundary-age-restored applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
-    }
-   ]
-  }
- ],
- "checks": [
-  {
-   "name": "unit",
-   "status": "passed",
-   "command": "python3 proof/VELDO-0304/run_registered_falsifiers.py",
-   "detail": "40 green baseline rows, then 31 designated mutation rows red."
-  },
-  {
-   "name": "integration",
-   "status": "failed",
-   "detail": "Suite 142 has 16 remaining assertions for the prior standalone contract; see integration-conflict.json. No earlier tests were changed. Targeted suites 155, 138, 139, 140, both 153 selections and 154 pass their selected rows; all selftest selections are partial."
-  },
-  {
-   "name": "falsifiers",
-   "status": "passed",
-   "command": "python3 proof/VELDO-0304/run_registered_falsifiers.py",
-   "detail": "31 of 31 detected. This is not a teeth stage."
-  },
-  {
-   "name": "fast checks",
-   "status": "passed",
-   "detail": "validate.py all, docs, template sync, generated files, lint, Git boundary and space boundary. Commands and results in final-fast-checks.json."
-  },
-  {
-   "name": "gate",
-   "status": "not_run",
-   "reason": "The lead runs ./scripts/verify.sh through the gate lock. Full verification, heavy suites, teeth and policy checking were not run."
-  }
- ],
- "unresolved": "proof/VELDO-0304/integration-conflict.json",
- "assumptions": [
-  "No green gate, approval or completed criterion is claimed. The implementation is pending the lead gate and independent review, with the prior standalone test contract unresolved.",
-  "A missing ledger or item owner now refuses removal. No owner is inferred from a path. Existing standalone callers may retain clean folders and internal refs.",
-  "The ref-remover unit row uses a stand-in ledger record with real Git and real keep verification. Caller rows prove retention of unique commits. They do not prove a new journal authorization flow.",
-  "Temporary constructor tests, extracted service shutdown syntax and the batch swap failure use the limited stand-ins named in README.md. No live service, Chrome, real engine or protected data was used.",
-  "The act prerequisites remain unchanged; no new act authority is introduced.",
-  "The accepted gate_legs.py pair, check_first_use.py, suite 86 and its live captures remain unchanged. scripts/verify.sh is the only changed protected path.",
-  "Earlier blocked-build artifacts are retained as history. This manifest supersedes their implementation-pending descriptions."
- ],
- "rollback": "Revert the implementation commits. Saved refs, snapshots and retained work stay in place; no data cleanup is part of rollback.",
- "artifacts": {
-  "README.md": "sha256:b1fcd4c25c6574534b461495cbd605fe00fc18682ac81549131750fb9cc377a9",
-  "sources.json": "sha256:ac9d3c838bd516457f81b60af0ce61b5774a8e6f9c3c75fe3d72c0a0f2b210e2",
-  "dependency-tests.json": "sha256:c4b323f5c9c376181b10273e49c87d845976a3f8dfe0e430daf55aa1f1f55fa0",
-  "integration-conflict.json": "sha256:0c6722fa56bad74e41959b73586b0ea7cb8fe6c09c86dfb7f3ee7a4442d8cea7",
-  "final-fast-checks.json": "sha256:ed2fb432ec12130edd4056b94ac2454de355ede0d83ff244af3b106d7cde8463",
-  "scope-check.json": "sha256:3cb25aec834e5dc4c6e52e3908f7e7ca2a90c9ad98d9f7f388e3f8cf6f36ce98",
-  "registered-falsifiers.json": "sha256:9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
-  "registry-definitions.json": "sha256:5599545abf99880d6f7982bc95111cf5fd0b534e6766f0cea36f307483138382",
-  "falsifier-cases.json": "sha256:8ab09166faf8ec90ce58625fe979bd13febebe4722993753bd81061d93e73e20",
-  "run_registered_falsifiers.py": "sha256:70bf114e5f88dae06fdbf175f26c2eb932055e7d23af7411d2f7f24d02266ce4"
- }
+  "remaining_conflict": "proof/VELDO-0304/integration-conflict.json",
+  "ordering": "All source edits, suite runs and static checks completed before the teeth command. No edits occurred while teeth ran. Only this proof was written afterwards, followed by its commit.",
+  "not_run": [
+    "policy_check.py",
+    "scripts/verify.sh",
+    "independent review"
+  ],
+  "protected_line": "scripts/verify.sh is byte-for-byte unchanged from c1b3792c.",
+  "scope": "Only space-0304 was changed. No agents were delegated. All commits use the requested author and have no trailers."
 }

@@ -1,0 +1,5 @@
+--- a/.veldo/pack_conformance.py
++++ b/.veldo/pack_conformance.py
+@@ -177 +177 @@
+-    with tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-') as td:
++    with tempfile.TemporaryDirectory() as td:

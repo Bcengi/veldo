@@ -1,0 +1,4 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -1056,0 +1057 @@
++        shutil.rmtree(work)

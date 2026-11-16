@@ -1,0 +1,5 @@
+--- a/.veldo/control_memory_check.py
++++ b/.veldo/control_memory_check.py
+@@ -186 +186 @@
+-    with tempfile.TemporaryDirectory(prefix='probe-') as private:
++    with tempfile.TemporaryDirectory(prefix='probe-', dir=scratch) as private:

@@ -1,0 +1,5 @@
+--- a/scripts/check_space_boundary.py
++++ b/scripts/check_space_boundary.py
+@@ -164 +164 @@
+-            and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)):
++            and False):

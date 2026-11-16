@@ -1,0 +1,5 @@
+--- a/.veldo/action_executor.py
++++ b/.veldo/action_executor.py
+@@ -853 +853 @@
+-    with tempfile.TemporaryDirectory(prefix='veldo-action-executor-') as td:
++    with tempfile.TemporaryDirectory() as td:

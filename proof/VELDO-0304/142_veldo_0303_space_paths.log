@@ -12,47 +12,31 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpk7jeuquj: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpk7jeuquj/nocrit.md: no acceptance criteria
-  /tmp/tmpk7jeuquj/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpk7jeuquj/status.md: bad status: donezo
-  /tmp/tmpk7jeuquj/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpk7jeuquj/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpk7jeuquj/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpk7jeuquj/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpk7jeuquj/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpk7jeuquj/verdict.json: bad verdict: looks_fine
-  /tmp/tmpvd5z32w3/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpvd5z32w3/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpvd5z32w3/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpvd5z32w3/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpvd5z32w3/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpvd5z32w3/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpvd5z32w3/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpvd5z32w3/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpvd5z32w3/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpvd5z32w3/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpvd5z32w3/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpvd5z32w3/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmphuzobu3z: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmphuzobu3z/nocrit.md: no acceptance criteria
+  /tmp/tmphuzobu3z/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmphuzobu3z/status.md: bad status: donezo
+  /tmp/tmphuzobu3z/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmphuzobu3z/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmphuzobu3z/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmphuzobu3z/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmphuzobu3z/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmphuzobu3z/verdict.json: bad verdict: looks_fine
+  /tmp/tmpik41j4d3/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpik41j4d3/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpik41j4d3/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpik41j4d3/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpik41j4d3/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpik41j4d3/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpik41j4d3/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpik41j4d3/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpik41j4d3/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpik41j4d3/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpik41j4d3/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpik41j4d3/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  SELFTEST FAIL: VELDO-0303 ac1/fleet-no-ledger: with no ledger an untracked file stays: the look refuses as unique_work and no git remove is run [{'path': '/tmp/veldo-0303-2itm7_3e/plain-worktrees/dirty', 'item': None, 'state': None, 'deferral': 'not_in_ledger', 'said': 'removal requires a recorded owner and item'}]
-  SELFTEST FAIL: VELDO-0303 ac2/no-ledger-clean-clone: with no ledger a clean clone is retired: its root is gone and its pin released [space_deferred:not_in_ledger]
-  SELFTEST FAIL: VELDO-0303 loss/fleet-ignored-file: the answer is the deferral unique_work and names the file, and the deferred list has it
-  SELFTEST FAIL: VELDO-0303 loss/fleet-nested-repository: the answer is the deferral in_use and names the repository
-  SELFTEST FAIL: VELDO-0303 loss/fleet-reset-commit: the worktree is removed, and the commit a reset left behind is on a kept ref of the repository [None []]
-  SELFTEST FAIL: VELDO-0303 loss/clone-refused-build: the clone is retired: its root is gone and its pin released [space_deferred:not_in_ledger]
-  SELFTEST FAIL: VELDO-0303 loss/run-directory-repository: with no ledger a run directory that holds a repository stays at the receiver's end, with its only commit [{'path': '/tmp/veldo-0303-2itm7_3e/state/runs/f2be06c9a6199d11b134712ea672a1ba', 'item': None, 'state': None, 'deferral': 'not_in_ledger', 'refusal': 'space_deferred:not_in_ledger'}]
-  SELFTEST FAIL: VELDO-0303 loss/candidate-commits: with no ledger the landing line's close removes a candidate folder only after its commits are on kept refs of the repository [[]]
-  SELFTEST FAIL: VELDO-0303 fix/candidate-rebuildable: a built candidate, its two merges and its projection commit named by the lander's record and in no other repository [[False, False, False, False]], is removed, and no ref of the repository is written or moved [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]
-  SELFTEST FAIL: VELDO-0303 fix/candidate-fail-closed: a built candidate with one more commit on its head, which the record does not name, goes only after that commit is on a kept ref of the repository, its file read there alone [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]
-  SELFTEST FAIL: VELDO-0303 fix2/unrecorded-commit-kept: a commit on the head with exactly the parents the record's next step has, which the record does not name, is not taken for the lander's by its parents: it is on a kept ref of the repository before the workspace goes [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]
-  SELFTEST FAIL: VELDO-0303 fix2/step-in-progress-exact: the review's case B: a candidate stopped at the conflict, as its record says, with a hand edit to a tracked file the step does not touch [.gitignore]: the workspace stays, the edit byte for byte, and the candidate names the refusal [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]
-  SELFTEST FAIL: VELDO-0303 fix2/trunk-from-record: the review's case C: a built and recorded candidate, a work commit on its head, and the workspace's own trunk ref moved onto that commit: the trunk is the commit the record stored, so the work is on a kept ref of the repository, read there alone, before the workspace goes [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]
-  SELFTEST FAIL: VELDO-0303 fix2/remote-holds-trunk: the review's stale trunk: the remote's trunk was rewound after the fetch, so the workspace holds the last copy of the trunk commit here: the remote was asked [False], and the trunk's file is read from a kept ref of the repository alone after the workspace went [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'}]
-  SELFTEST FAIL: VELDO-0303 fix3/generator-commit-kept: the review's case E: the generator of the build's own tree commits its output and a file of work, so the lander commits nothing and the record's commit is the generator's commit, named nowhere as the lander's [None]: the land is refused, and the generator's file is read from a kept ref of the repository alone after the workspace went [{'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:not_in_ledger'} []]
-  SELFTEST FAIL: VELDO-0303 paths/no-delete-with-a-ledger: the drives without a ledger did delete by themselves, so the watch sees a delete [[]]
-  142_veldo_0303_space_paths                      22 passed    3.57s
-selftest (PARTIAL, 1 of 226 suites): 48 passed, 16 failed in 3.57s
+  142_veldo_0303_space_paths                      38 passed    9.76s
+selftest (PARTIAL, 1 of 226 suites): 64 passed, 0 failed in 9.76s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
