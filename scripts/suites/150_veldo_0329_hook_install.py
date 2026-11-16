@@ -610,6 +610,57 @@ def _v329_suite():
               record.get('ok') is False and str(record.get('refused')).startswith('git_failed:')
               and under(nogit) == before)
 
+        row = 'fix4/two-installations'
+        both, both_account = repository('both'), temp / 'account-both'
+        both_account.mkdir(mode=0o700)
+        (both_account / 'settings.json').write_text(json.dumps(
+            {'hooks': {'SessionStart': [{'hooks': [{'type': 'command', 'command': 'echo the owner greets'}]}]}}))
+        first_root, second_root = str(temp / 'state-first'), str(temp / 'state-second')
+
+        def start(root, cli_path):
+            """What one installation's start does in the shared repository and the shared account folder."""
+            return (R.install_git_hooks(str(both), root, cli_path, None, 'main', str(HOOK_SOURCE), G),
+                    R.install_session_hooks(str(both_account), root, cli_path, None, str(SESSION_SOURCE)))
+
+        of_first = start(first_root, str(cli))
+        kept = ((both_account / 'settings.json').read_bytes(), git(both, 'config', '--local', '--list'),
+                {name: (both / '.git' / 'hooks' / name).read_bytes() for name in entries(both / '.git' / 'hooks')})
+
+        def now():
+            return ((both_account / 'settings.json').read_bytes(), git(both, 'config', '--local', '--list'),
+                    {name: (both / '.git' / 'hooks' / name).read_bytes() for name in entries(both / '.git' / 'hooks')})
+
+        check(row, 'the first installation installs in both: ' + str(of_first),
+              of_first[0].get('ok') is True and of_first[1].get('ok') is True)
+        for turn in range(3):
+            of_second = start(second_root, str(temp / 'bin' / 'another-veldo'))
+            check(row, 'start %d of the second: both conflicts are in its records: %s' % (turn, of_second),
+                  of_second[0].get('ok') is False and of_second[1].get('ok') is False
+                  and of_second[0].get('refused') == 'state_root_of_another_installation:' + first_root
+                  and of_second[1].get('refused') == 'session_hooks_of_another_installation:' + first_root)
+            check(row, 'start %d of the second: the first one\'s entries, keys and hooks are byte for byte kept' % turn,
+                  now() == kept)
+            again_first = start(first_root, str(cli))
+            check(row, 'start %d of the first again: all present, nothing rewritten: %s' % (turn, again_first),
+                  again_first[0].get('ok') is True and again_first[1].get('ok') is True
+                  and again_first[1].get('hooks') == {'SessionStart': 'present', 'SessionEnd': 'present'}
+                  and now() == kept)
+        check(row, 'reconcile of the second reports both conflicts, and of the first reports nothing',
+              R.session_hooks_missing(str(both_account), second_root)
+              == ['SessionStart', 'SessionEnd', 'another_installation:' + first_root]
+              and R.session_hooks_missing(str(both_account), first_root) == []
+              and R.hooks_missing(str(both), second_root, G)[1]
+              == {'configuration': 'state_root_of_another_installation:' + first_root}
+              and R.hooks_missing(str(both), first_root, G)[1] == {})
+        moved = start(first_root, str(temp / 'bin' / 'veldo-moved'))
+        settings = json.loads((both_account / 'settings.json').read_text())
+        check(row, 'an installation still rewrites its own entries, and only those: ' + str(moved[1]),
+              moved[1].get('hooks') == {'SessionStart': 'updated', 'SessionEnd': 'updated'}
+              and settings['hooks']['SessionStart'][0] == {'hooks': [{'type': 'command', 'command': 'echo the owner greets'}]}
+              and all(len(ours_in(both_account, event)) == 1 and 'veldo-moved' in ours_in(both_account, event)[0]['command']
+                      for event in R.SESSION_EVENTS)
+              and told_to(both, 'veldo.space.cli') == str(temp / 'bin' / 'veldo-moved'))
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'

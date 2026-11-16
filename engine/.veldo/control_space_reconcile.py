@@ -81,6 +81,15 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   settings.json; every other key and every other hook in it is kept. The script goes
                   beside it as veldo-space-session.py. A settings file that cannot be read as the
                   mapping it must be is REFUSED and left as it is.
+  one installation  A git hook reads one state root (veldo.space.stateroot) and a session belongs to
+                  one ledger. So this installation touches only what carries its own state root: its
+                  own session entries and its own configuration keys. Where a repository or an
+                  account folder already carries ANOTHER installation's state root, that
+                  installation's entries are kept as they are, nothing is added beside them, the
+                  install is REFUSED with state_root_of_another_installation or
+                  session_hooks_of_another_installation, and reconcile reports it at every start
+                  until the owner takes the other installation's entries out. Two installations
+                  that name the same folder therefore never rewrite each other's entries.
   Veldo's files   A file under one of Veldo's own names that differs from the current one is replaced
                   only when it is an earlier copy of Veldo's, and that copy is kept beside it with
                   its digest in its name. A file there that is not Veldo's is refused.
@@ -579,7 +588,7 @@ class Reconciler:
 
     def accounts(self):
         for account in self.ledger.config.get('client_accounts') or ():
-            missing = session_hooks_missing(account)
+            missing = session_hooks_missing(account, self.ledger.state_root)
             if missing:
                 self.note('session_hooks_missing', account=account, missing=missing)
 
@@ -904,6 +913,7 @@ SESSION_EVENTS = ('SessionStart', 'SessionEnd')
 SESSION_SCRIPT = 'veldo-space-session.py'
 SESSION_SIGN = b'Record a client session notification'
 SESSION_SECONDS = 15
+SESSION_ROOT = 'VELDO_SPACE_STATE_ROOT='
 SETTINGS = 'settings.json'
 
 
@@ -1134,7 +1144,10 @@ def hooks_missing(repository, state_root, git, source=None, environ=None):
         if why:
             missing[name] = why
     code, text = git([], '-C', repository, 'config', '--get', HOOK_CONFIG['stateroot'])
-    if not missing and (code != 0 or text.rstrip('\n') != str(state_root)):
+    told = text.rstrip('\n') if code == 0 else ''
+    if told and told != str(state_root):
+        missing['configuration'] = 'state_root_of_another_installation:' + told[:200]
+    elif not missing and told != str(state_root):
         missing['configuration'] = 'state_root_not_this_installation'
     return folder, missing
 
@@ -1158,6 +1171,12 @@ def install_git_hooks(repository, state_root, cli, installation=None, trunk=None
         return record
     if os.path.lexists(folder) and not os.path.isdir(folder):
         record['refused'] = 'hooks_folder_is_no_folder'
+        return record
+    # The hook reads one state root. A repository that already carries another installation's is that
+    # installation's: its keys and its hooks are left as they are, and the conflict is the record.
+    code, text = git([], '-C', repository, 'config', '--get', HOOK_CONFIG['stateroot'])
+    if code == 0 and text.rstrip('\n') not in ('', str(state_root)):
+        record['refused'] = 'state_root_of_another_installation:' + text.rstrip('\n')[:200]
         return record
     values = {'stateroot': str(state_root), 'cli': str(cli), 'installation': installation, 'trunk': trunk}
     for key, value in values.items():
@@ -1216,7 +1235,7 @@ def _install_hook(folder, name, source):
 
 def session_command(account, event, state_root, cli, installation=None):
     """What the client runs for `event`. exec keeps the client as the parent of the script."""
-    words = ['exec', 'env', 'VELDO_SPACE_STATE_ROOT=' + str(state_root), 'VELDO_SPACE_CLI=' + str(cli)]
+    words = ['exec', 'env', SESSION_ROOT + str(state_root), 'VELDO_SPACE_CLI=' + str(cli)]
     if installation:
         words.append('VELDO_INSTALLATION=' + str(installation))
     return ' '.join(shlex.quote(word) for word in
@@ -1236,15 +1255,39 @@ def _session_entries(settings, event):
     return found
 
 
-def session_hooks_missing(account):
-    """What of the session hooks is missing in one client account folder; an empty list is in place."""
+def _entry_root(entry):
+    """The state root a session hook entry of Veldo's reports to, or 'unread' when it names none."""
+    try:
+        words = shlex.split(str(entry.get('command')))
+    except ValueError:
+        words = []
+    roots = [word[len(SESSION_ROOT):] for word in words if word.startswith(SESSION_ROOT)]
+    return roots[0] if roots else 'unread'
+
+
+def _session_split(settings, event, state_root):
+    """(this installation's entries of `event`, the state roots other entries of Veldo's report to)."""
+    found = _session_entries(settings, event)
+    mine = [(group, entry) for group, entry in found if _entry_root(entry) == str(state_root)]
+    return mine, sorted({_entry_root(entry) for _group, entry in found} - {str(state_root)})
+
+
+def session_hooks_missing(account, state_root=None):
+    """What of the session hooks is missing in one client account folder; an empty list is in place.
+    With `state_root` only that installation's entries count, and another installation's are named."""
     try:
         settings = json.loads((Path(account) / SETTINGS).read_bytes())
     except FileNotFoundError:
         return ['settings_absent']
     except (OSError, ValueError) as error:
         return ['settings_unread:' + type(error).__name__]
-    missing = [event for event in SESSION_EVENTS if not _session_entries(settings, event)]
+    if state_root is None:
+        missing = [event for event in SESSION_EVENTS if not _session_entries(settings, event)]
+    else:
+        split = {event: _session_split(settings, event, state_root) for event in SESSION_EVENTS}
+        missing = [event for event in SESSION_EVENTS if not split[event][0]]
+        missing += ['another_installation:' + root[:200]
+                    for root in sorted({root for _mine, others in split.values() for root in others})]
     if not (Path(account) / SESSION_SCRIPT).is_file():
         missing.append(SESSION_SCRIPT)
     return missing
@@ -1276,13 +1319,20 @@ def install_session_hooks(account, state_root, cli, installation=None, script=No
     except ValueError as error:
         record['refused'] = 'settings_unread:' + str(error)[:120]
         return record
+    # Only entries that carry this installation's state root are this installation's to touch. An
+    # entry of another installation is kept as it is, and nothing is added beside it: a session
+    # reported to two ledgers would have two owners. The conflict is the record, and reconcile's report.
+    others = sorted({root for event in SESSION_EVENTS for root in _session_split(settings, event, state_root)[1]})
+    if others:
+        record['refused'] = 'session_hooks_of_another_installation:' + ','.join(others)[:200]
+        return record
     own = _own(os.path.join(account, SESSION_SCRIPT), source, 0o700, SESSION_SIGN)
     if own.startswith('refused'):
         record['refused'] = own[len('refused:'):]
         return record
     for event in SESSION_EVENTS:
         command = session_command(account, event, state_root, cli, installation)
-        found = _session_entries(settings, event)
+        found = _session_split(settings, event, state_root)[0]
         if not found:
             hooks.setdefault(event, []).append(
                 {'hooks': [{'type': 'command', 'command': command, 'timeout': SESSION_SECONDS}]})
