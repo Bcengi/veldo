@@ -174,8 +174,11 @@ def _canonical(value):
 def space_presentation(proposal):
     """The signed request content for one worktree, derived only from its signed terms.
 
-    Callers supply the probe's file list, branch (null for detached), whether commits are
-    unheld, and the kept branch when detached commits need one. The Ledger's request producer
+    Callers supply the probe's file list, the tips of the unlanded commits that make the work
+    unique, branch (null for detached), whether commits are unheld, and the kept branch when
+    detached commits need one. One of the two lists is non-empty: a clean tree whose only unique
+    work is unlanded commits is asked about too (design 7, Save; 13, answer 2), and its brief says
+    Discard removes no uncommitted file and the commits stay. The Ledger's request producer
     uses this before signing its ordinary inbox open command. Group picks belong to VELDO-0342.
     This is a description and an obligation; filesystem effects belong to VELDO-0318.
     """
@@ -184,26 +187,35 @@ def space_presentation(proposal):
             or not isinstance(proposal.get('worktrees'), list) or len(proposal['worktrees']) != 1):
         raise Refused('invalid_input', 'space terms name one worktree and say Discard saves before removal')
     tree = proposal['worktrees'][0]
-    fields = {'item', 'path', 'branch', 'unheld_commits', 'kept_branch', 'files', 'restore'}
+    fields = {'item', 'path', 'branch', 'unheld_commits', 'kept_branch', 'files', 'commits', 'restore'}
     if (not isinstance(tree, dict) or set(tree) != fields
             or not all(_is_str(tree.get(k)) for k in ('item', 'path'))
             or tree['branch'] is not None and not _is_str(tree['branch'])
             or type(tree['unheld_commits']) is not bool
             or tree['kept_branch'] is not None and not _is_str(tree['kept_branch'])):
         raise Refused('invalid_input', 'space terms name the worktree and its branch state')
-    files = tree['files']
-    if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):
-        raise Refused('invalid_input', 'Discard requires the list of files it would remove')
-    if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):
-        raise Refused('invalid_input', 'detached unheld commits require their kept branch name')
+    files, commits = tree['files'], tree['commits']
+    if (not isinstance(files, list) or not all(_is_str(path) for path in files)
+            or not isinstance(commits, list) or not all(_is_str(tip) for tip in commits)):
+        raise Refused('invalid_input', 'space terms list the files Discard would remove and the unlanded commits')
+    if not files and not commits:
+        raise Refused('invalid_input', 'Discard requires the files it would remove or the commits that are unique')
+    if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):
+        raise Refused('invalid_input', 'detached commits require their kept branch name')
+    held = tree['kept_branch'] if tree['branch'] is None else tree['branch']
     restore = 'veldo space restore ' + shlex.quote(tree['item'])
     if tree['restore'] != restore:
         raise Refused('invalid_input', 'space terms carry the restore command for this item')
     # JSON quoting keeps a newline in a filename distinct from a second file or an instruction.
     quoted = lambda value: json.dumps(value, ensure_ascii=True)
     lines = ['Space disposition', proposal['discard'], 'Worktree: ' + quoted(tree['path']),
-             'Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch']),
-             'Files Discard would remove:'] + ['  ' + quoted(path) for path in files]
+             'Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch'])]
+    if files:
+        lines += ['Files Discard would remove:'] + ['  ' + quoted(path) for path in files]
+    else:
+        lines.append('Discard removes no uncommitted file; the commits stay on ' + quoted(held))
+    if commits:
+        lines += ['Unlanded commits on ' + quoted(held) + ':'] + ['  ' + quoted(tip) for tip in commits]
     if tree['branch'] is None and tree['unheld_commits']:
         lines.append('Kept branch for detached commits: ' + quoted(tree['kept_branch']))
     lines.append('Restore: ' + tree['restore'])

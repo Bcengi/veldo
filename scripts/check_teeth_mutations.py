@@ -16618,8 +16618,7 @@ def cases():
         "SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')",
         "SPACE_CHOICES = ('save', 'keep', 'discard')", ['space327/ac1/presented'])
     add(327, 'space327-empty-file-list', disposition327, 'control_request_settlement.py',
-        "if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):",
-        "if not isinstance(files, list) or not all(_is_str(path) for path in files):",
+        "    if not files and not commits:\n", "    if False:\n",
         ['space327/ac2/empty-files'])
     add(327, 'space327-ruling-instead-of-choice', disposition327, 'control_request_settlement.py',
         "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,",
@@ -16647,8 +16646,20 @@ def cases():
         "            return 'presentation_mismatch', None, {}\n",
         "", ['space327/fix1/presenter'])
     add(327, 'space327-no-detached-branch', disposition327, 'control_request_settlement.py',
-        "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
+        "if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):",
         "if False:", ['space327/ac2/missing-kept-branch'])
+    # Fix round 1, F2: a clean tree whose only unique work is unlanded commits is asked about.
+    add(327, 'space327-files-only', disposition327, 'control_request_settlement.py',
+        "    if not files and not commits:\n", "    if not files:\n", ['space327/fix2/commits-only'])
+    add(327, 'space327-commits-not-said-to-stay', disposition327, 'control_request_settlement.py',
+        "        lines.append('Discard removes no uncommitted file; the commits stay on ' + quoted(held))\n",
+        "        lines.append('Files Discard would remove:')\n", ['space327/fix2/commits-only'])
+    add(327, 'space327-commit-tips-unlisted', disposition327, 'control_request_settlement.py',
+        "    if commits:\n        lines +=", "    if False:\n        lines +=", ['space327/fix2/commits-only'])
+    add(327, 'space327-detached-commits-no-branch', disposition327, 'control_request_settlement.py',
+        "if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):",
+        "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
+        ['space327/fix2/commits-only'])
     add(327, 'space327-no-save-explanation', disposition327, 'control_request_settlement.py',
         "or proposal.get('discard') != SPACE_DISCARD", "or False",
         ['space327/ac2/missing-save'])

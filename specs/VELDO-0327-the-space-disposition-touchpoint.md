@@ -47,13 +47,16 @@ acceptance_criteria:
   - id: AC2
     text: >
       The request's terms state what Discard removes from disk, that it is saved first, and the command
-      that brings it back. They hold, for each worktree, the list of files Discard would remove and, for a
-      detached worktree with commits no ref holds, the name of the kept branch those commits go to. The
-      presentation shows both, and the Ledger raises no request that offers the discard pick without that
-      list. The control path has no tier field and none is added
+      that brings it back. They hold, for each worktree, the list of files Discard would remove, the
+      unlanded commits (their branch and tips) that make its work unique, at least one of the two lists
+      non-empty, and, for a detached worktree with commits no ref holds, the name of the kept branch those
+      commits go to. The presentation shows them; for a clean tree whose only unique work is unlanded
+      commits it says that Discard removes no uncommitted file and that the commits stay on their branch.
+      The Ledger raises no request that offers the discard pick with neither list. The control path has no
+      tier field and none is added
     falsified_by: >
-      Raise the request with an empty list; the row that reads the presentation finds discard offered with
-      nothing listed and fails
+      Raise the request with an empty file list and no commit named; the row that reads the presentation
+      finds discard offered with nothing listed and fails
   - id: AC3
     text: >
       The effect is applied once, in the settlement's own transaction, from the recorded choice; an answer
@@ -129,3 +132,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   pass. The footprint is widened by control_assignment.py and control_channel_presentation.py with
   their synced copies; the lead accepted the widening on 2026-11-16. The presentation's choice map is
   unchanged. No acceptance criterion changed.
+
+- 2026-11-16: fix round 1, F2, a lead decision: the design governs. Design section 7's Save row ("When
+  the tree is clean and only unlanded commits made the work unique") and section 13's answer 2
+  ("Unlanded commits still raise a request") say such a worktree is asked about, and AC2 as written
+  refused its terms for the empty file list. AC2 and its falsifier are amended: the terms also name the
+  unlanded commits (their branch and tips), one of the file list and the commit list is non-empty, and
+  for a clean tree the brief says Discard removes no uncommitted file and the commits stay on their
+  branch. The falsifier now empties both lists. Each worktree's terms gain the member commits.

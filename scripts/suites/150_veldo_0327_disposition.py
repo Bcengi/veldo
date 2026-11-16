@@ -124,7 +124,7 @@ def _v327_suite():
             return {'discard': ST.SPACE_DISCARD, 'worktrees': [dict(
                 item='space-item:fixture', path=str(base / 'worktree'), branch=None if detached else 'work',
                 unheld_commits=detached, kept_branch='space-saved-fixture' if detached else None,
-                files=['modified.py', 'staged.py', 'notes.txt', '.local-settings', 'line\nbreak'],
+                files=['modified.py', 'staged.py', 'notes.txt', '.local-settings', 'line\nbreak'], commits=[],
                 restore="veldo space restore space-item:fixture")]}
 
         def terms(alias, offered, touchpoint='space_disposition'):
@@ -323,6 +323,45 @@ def _v327_suite():
                       and shown.get('reason') == 'presentation_mismatch' and presenter.current(rid) is None
                       and len(transport.sent) == sent)
 
+            def commits_only():
+                # Fix round 1, F2: a clean tree whose only unique work is an unlanded commit.
+                tip = '3f9c2e1d' * 5
+                offered = proposal()
+                offered['worktrees'][0].update(files=[], commits=[tip])
+                rid, result = open_request('commits-only', offered)
+                receipt = presenter.current(rid) if rid else None
+                shown = '\n'.join(receipt['rendered']) if receipt else ''
+                check('fix2/commits-only', 'the request is raised ' + repr(result), receipt is not None
+                      and receipt['outcome'] == 'published' and receipt['choices'] == list(ST.SPACE_CHOICES))
+                check('fix2/commits-only', 'the brief says the commits stay and names them',
+                      'Discard removes no uncommitted file; the commits stay on "work"' in shown
+                      and json.dumps(tip) in shown and 'Files Discard would remove' not in shown
+                      and 'veldo space restore space-item:fixture' in shown)
+                result = answer(rid, 'accept discard') if receipt else {}
+                effect = entity(ST.effect_id(rid, 1)) or {} if rid else {}
+                kept = ((effect.get('proposal') or {}).get('worktrees') or [{}])[0]
+                check('fix2/commits-only', 'discard settles and its effect keeps the commits on the branch '
+                      + repr(result), result.get('outcome') == 'settled' and effect.get('choice') == 'accept discard'
+                      and kept.get('commits') == [tip] and kept.get('branch') == 'work' and kept.get('files') == [])
+                for name, alter in (('detached with no kept branch', dict(branch=None, kept_branch=None)),
+                                    ('a tip that is not text', dict(commits=[None])),
+                                    ('no commit list', None)):
+                    offered = proposal()
+                    offered['worktrees'][0].update(files=[], commits=[tip])
+                    offered['worktrees'][0].update(alter) if alter else offered['worktrees'][0].pop('commits')
+                    before = snapshot()
+                    result = terms('commits-bad-' + name.split()[0] + name.split()[-1], offered)
+                    check('fix2/commits-only', name + ' refused ' + repr(result),
+                          result.get('reason') == 'invalid_input' and snapshot() == before)
+                offered = proposal(detached=True)
+                offered['worktrees'][0].update(files=[], commits=[tip], unheld_commits=False)
+                rid, result = open_request('commits-detached', offered)
+                receipt = presenter.current(rid) if rid else None
+                check('fix2/commits-only', 'detached commits stay on the kept branch ' + repr(result),
+                      receipt is not None and 'the commits stay on "space-saved-fixture"'
+                      in '\n'.join(receipt['rendered']))
+
+            fix1('fix2/commits-only', commits_only)
             fix1('fix1/late-inbox', late_inbox)
             fix1('fix1/no-settlement', no_settlement)
             fix1('fix1/presenter', unmatched_presentation)
