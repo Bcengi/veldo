@@ -673,8 +673,9 @@ class Reconciler:
                     self.counts['matched'] += 1
                     if path and record['state'] not in ('due', 'removing'):
                         with contextlib.suppress(OSError, self.remove._Stop, ValueError):
-                            self.ledger.measure(identity, self.remove.measure(path, own=record['kind'] in self.sp.KEEP_KINDS),
-                                                'reconcile')
+                            size = self.remove.measure(path, own=record['kind'] in self.sp.KEEP_KINDS)
+                            if record.get('size') != {'bytes': size, 'event': 'reconcile'}:
+                                self.ledger.measure(identity, size, 'reconcile')
                     if record['state'] == 'removing':
                         if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:
                             self.defer(identity, record, 'keep verification failed')

@@ -629,6 +629,35 @@ def _v315_suite():
 
         case('ac3/startup', startup)
 
+        def before_reconciler(f, row):
+            adapter = f.service.space_docker = Docker(f.L)
+            with patch.object(SV.SPACE_RECONCILE.Reconciler, 'run', side_effect=AssertionError('must not run')) as run:
+                answer = f.service.space_start(replay=lambda: (_ for _ in ()).throw(ValueError('missing keys')))
+            check(row, 'failure before Reconciler.run still starts Docker and subscribes every engine',
+                  not answer['ok'] and run.call_count == 0 and adapter.starts == 1
+                  and set(adapter.streams) == set(f.L.engines))
+
+        def stop_reaps(f, row):
+            reading, writing = os.pipe()
+            try:
+                f.service.space_consumer._spawn(lambda: os.read(reading, 1))
+                pid = f.service.space_consumer.active[1]
+                f.service.space_stop()
+                try:
+                    waited = os.waitpid(pid, os.WNOHANG)
+                    reaped = False
+                    if waited == (0, 0):
+                        os.waitpid(pid, 0)
+                except ChildProcessError:
+                    reaped = True
+                check(row, 'space_stop has reaped its active child, with no zombie in proc',
+                      reaped and not Path('/proc/%d' % pid).exists())
+            finally:
+                os.close(reading)
+                os.close(writing)
+
+        case('ac7/stop-reaps', stop_reaps)
+
         class Docker:
             def __init__(self, ledger):
                 self.ledger, self.streams, self.starts, self.snapshots = ledger, {}, 0, 0
@@ -654,6 +683,8 @@ def _v315_suite():
             def stop(self):
                 self.stopped = True
                 self.streams.clear()
+
+        case('ac3/failure-before-reconciler', before_reconciler)
 
         def docker_retry(f, row):
             adapter = f.service.space_docker = Docker(f.L)
@@ -874,6 +905,7 @@ def _v315_suite():
             check(row, 'CLI signs an owner request through service; only the selected project is reconciled',
                   code == 0 and len(request) == 1 and f.L.item(one)['state'] == 'removed'
                   and f.L.item(other) == held and (f.scratch / 'project-other' / 'planted').is_file())
+            check('cli/non-owner', 'CLI transport reaches the service for authorization checks', bool(request))
             if not request:
                 return
             packet = request[0]
@@ -887,6 +919,18 @@ def _v315_suite():
             check(row, 'omitting project reaches the service for all projects',
                   code == 0 and len(request) == 2 and request[-1]['command']['parameters']['project'] is None
                   and f.L.item(other)['state'] == 'removed')
+            f.put('visitor', 'membership', dict(principal_type='person', roles=[], scope='*',
+                  revoked_at=None, expires_at=None))
+            f.put('key:visitor', 'verification_key', dict(principal='visitor', public_key=public, effective_at=0))
+            before = f.service.watermark()
+            output = io.StringIO()
+            with patch.object(SV, '_organ', organ), patch.object(CLI, '_mod', return_value=SV), \
+                    contextlib.redirect_stdout(output):
+                code = CLI.main(['space', 'reconcile', '--workspace', str(f.repo), '--principal', 'visitor',
+                                 '--key', str(key)])
+            check('cli/non-owner', 'a valid signature by an active non-owner cannot reconcile',
+                  code != 0 and 'unauthorized:space_reconcile' in output.getvalue()
+                  and f.service.watermark() == before)
             f.service.space_stop()
 
         case('cli/service-project', cli)

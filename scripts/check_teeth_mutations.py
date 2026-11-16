@@ -14469,8 +14469,8 @@ def cases():
     verdict337('space337-reconcile-not-at-start', 'control_space_reconcile.py',
                '            verdicts.extend(floor.reconcile_verdicts())\n', '            pass\n', ['ac1/lost-send-reconciled'])
     verdict337('space337-service-omits-verdicts', 'control_service.py',
-               '                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter, floors=floors)\n',
-               '                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter)\n',
+               '                        space, docker=Snapshots() if adapter is not None else None, floors=floors)\n',
+               '                        space, docker=Snapshots() if adapter is not None else None)\n',
                ['ac1/lost-send-reconciled'])
     verdict337('space337-reconcile-sends-again', 'dispatch.py',
                "            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))\n",
@@ -16311,11 +16311,12 @@ def cases():
         '            service.space_worker_start(reconcile=service.space_received_reconcile)\n', '',
         ['space315/ac7/serve-order'])
     add(315, 'space315-no-worker-stop', '156_veldo_0315_reconcile.py', 'control_service.py',
-        '                service.space_stop()\n', '', ['space315/ac7/serve-order'])
+        "                notify('STOPPING=1')\n                service.space_stop()\n",
+        "                notify('STOPPING=1')\n", ['space315/ac7/serve-order'])
     add(315, 'space315-no-received-hook', '156_veldo_0315_reconcile.py', 'control_space_consumer.py',
         '        self.reconcile = reconcile\n', '        self.reconcile = None\n', ['space315/ac7/received-hook'])
     add(315, 'space315-docker-no-event-retry', '156_veldo_0315_reconcile.py', 'control_service.py',
-        "            if getattr(self, 'space_refusal', None) is not None:\n                self.space_start(replay=None)\n", '',
+        "            if getattr(self, 'space_refusal', None) is not None:\n                self.space_reconcile_task(retry=True)\n", '',
         ['space315/ac3/docker-retry'])
     add(315, 'space315-cli-no-service', '156_veldo_0315_reconcile.py', 'veldo',
         '                return _mod("veldo_cli_reconcile", ".veldo/control_service.py").reconcile_cli(rest[1:])\n',

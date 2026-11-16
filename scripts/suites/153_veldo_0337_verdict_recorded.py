@@ -814,10 +814,16 @@ def _v337_verdict_suite():
               and not f.paths['build'].exists() and not f.paths['scratch'].exists()
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n'
               and not (f.paths['evidence'] / 'cache').exists() and state_of(f.items['evidence']) == 'kept')
+        def only_reconcile_since(at):
+            transitions = [json.loads(row[0]) for row in conn.execute(
+                'SELECT transition FROM journal WHERE seq > ? ORDER BY seq', (at,))]
+            return bool(transitions) and all(record.get('kind') == 'space_reconcile'
+                for transition in transitions for record in transition.values())
+
         before, at = len(signals), journal_length()
         again = collected(service.space_reconcile('cli'))
         check(row, 'once: a second reconcile sends no verdict again',
-              again == [] and len(signals) == before
+              again == [] and len(signals) == before and only_reconcile_since(at)
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n')
         check(row, 'a review with no committed verdict is sent nothing',
               not floor.record(other.unit)['reviews'] and all(state_of(i) == 'present' for i in other.items.values())
@@ -835,9 +841,10 @@ def _v337_verdict_suite():
         check(row, 'on demand also recovers a verdict lost after startup',
               sent.count((late.unit, late.assignment['assignment'])) == 1 and len(named) == 1
               and not late.paths['scratch'].exists() and not late.paths['build'].exists())
-        before = len(signals)
+        before, at = len(signals), journal_length()
         again = collected(service.space_reconcile('cli'))
-        check(row, 'the on-demand recovery is sent once', again == [] and len(signals) == before)
+        check(row, 'the on-demand recovery is sent once',
+              again == [] and len(signals) == before and only_reconcile_since(at))
         service.space_stop()
 
         row = 'ac1/reconcile-domain-and-repository'
