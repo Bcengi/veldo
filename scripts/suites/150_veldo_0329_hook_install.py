@@ -582,6 +582,34 @@ def _v329_suite():
               any(words.startswith('space record ') and '--worktree ' + str(tree) in words and '--branch two' in words
                   for words, _lines in told()[before:]))
 
+        row = 'fix3/git-not-runnable'
+        nogit = repository('nogit')
+
+        def under(path):
+            return sorted(os.path.relpath(os.path.join(folder, name), path)
+                          for folder, folders, files in os.walk(path) for name in folders + files
+                          if os.sep + 'objects' not in folder)
+
+        before = under(nogit)
+        SAID = "FileNotFoundError: [Errno 2] No such file or directory: 'git'"
+        record = direct(nogit, git=lambda commands, *argv, **more: (None, SAID))
+        check(row, 'a git that does not run gives a record that is not ok, with no folder made of its words: '
+              + str(record),
+              record.get('ok') is False and record.get('hooks_folder') is None and record.get('hooks') == {}
+              and str(record.get('refused')).startswith('git_failed:'))
+        check(row, 'nothing is written in the work tree', under(nogit) == before)
+        try:
+            said = R.hooks_missing(str(nogit), str(state), lambda commands, *argv, **more: (None, SAID))
+        except ValueError as error:
+            said = error
+        check(row, 'reconcile is told the repository could not be read, not that its hooks are in place: ' + repr(said),
+              isinstance(said, ValueError))
+        record = direct(nogit, git=lambda commands, *argv, **more:
+                        (None, SAID) if '--local' in argv else G(commands, *argv, **more))
+        check(row, 'a configuration that could not be written stops the install before any hook: ' + str(record),
+              record.get('ok') is False and str(record.get('refused')).startswith('git_failed:')
+              and under(nogit) == before)
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'

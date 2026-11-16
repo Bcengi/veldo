@@ -16455,6 +16455,15 @@ def cases():
             "        return os.path.normpath(os.path.join(repository, configured)), 'hooks_path_is_relative'\n",
             "        folder = os.path.normpath(os.path.join(repository, configured))  # defect: one worktree's copy\n",
             ['space329/fix2/linked-worktree'])
+    hook329('space329-git-failure-read-as-folder',
+            "    if code != 0:  # a git that did not run answers None, and its text is no folder\n",
+            "    if code:  # defect: a git that did not run is read as one that answered\n",
+            ['space329/fix3/git-not-runnable'])
+    hook329('space329-config-failure-unseen',
+            "            if code != 0:\n                record['refused'] = 'git_failed:could not configure '",
+            "            if code:  # defect: a configuration that was not written counts as written\n"
+            "                record['refused'] = 'git_failed:could not configure '",
+            ['space329/fix3/git-not-runnable'])
 
     return result
 

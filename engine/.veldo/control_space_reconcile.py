@@ -1083,7 +1083,7 @@ def hooks_place(repository, git, environ=None):
         repository, where its files are or may become tracked ones."""
     code, text = _owner_git('-C', repository, 'config', '--show-scope', '--show-origin', '--type=path',
                             '-z', '--get-all', HOOKS_PATH, environ=environ)
-    if code not in (0, 1):  # 1: the key is set nowhere
+    if code != 0 and code != 1:  # 1: the key is set nowhere. None: git did not run
         raise ValueError('git could not read the configuration of ' + repository + ': ' + str(text)[:200])
     configured = None
     if code == 0:
@@ -1093,7 +1093,7 @@ def hooks_place(repository, git, environ=None):
             return (os.path.normpath(os.path.join(repository, configured)),
                     'hooks_path_set_in_%s_configuration:%s' % (scope, origin[:200]))
     code, text = git([], '-C', repository, 'rev-parse', '--path-format=absolute', '--git-common-dir')
-    if code:
+    if code != 0:  # a git that did not run answers None, and its text is no folder
         raise ValueError('git could not read ' + repository + ': ' + str(text)[:200])
     common = os.path.realpath(text.rstrip('\n'))
     if configured is None:
@@ -1134,7 +1134,7 @@ def hooks_missing(repository, state_root, git, source=None, environ=None):
         if why:
             missing[name] = why
     code, text = git([], '-C', repository, 'config', '--get', HOOK_CONFIG['stateroot'])
-    if not missing and (code or text.rstrip('\n') != str(state_root)):
+    if not missing and (code != 0 or text.rstrip('\n') != str(state_root)):
         missing['configuration'] = 'state_root_not_this_installation'
     return folder, missing
 
@@ -1146,24 +1146,30 @@ def install_git_hooks(repository, state_root, cli, installation=None, trunk=None
     A hooks folder Veldo must not write to is refused whole, before anything is written."""
     git = git or _organ('control_space_remove')._git
     sources = _sources(source, HOOKS)
-    folder, refusal = hooks_place(repository, git, environ)
-    record = {'repository': repository, 'hooks_folder': folder, 'hooks': {}, 'ok': False}
+    record = {'repository': repository, 'hooks_folder': None, 'hooks': {}, 'ok': False}
+    try:
+        folder, refusal = hooks_place(repository, git, environ)
+    except ValueError as error:
+        record['refused'] = 'git_failed:' + str(error)[:200]
+        return record
+    record['hooks_folder'] = folder
     if refusal:
         record['refused'] = refusal
         return record
     if os.path.lexists(folder) and not os.path.isdir(folder):
         record['refused'] = 'hooks_folder_is_no_folder'
         return record
-    os.makedirs(folder, exist_ok=True)
     values = {'stateroot': str(state_root), 'cli': str(cli), 'installation': installation, 'trunk': trunk}
     for key, value in values.items():
         if not value:
             continue
         code, text = git([], '-C', repository, 'config', '--get', HOOK_CONFIG[key])
-        if code or text.rstrip('\n') != str(value):
+        if code != 0 or text.rstrip('\n') != str(value):
             code, text = git([], '-C', repository, 'config', '--local', HOOK_CONFIG[key], str(value))
-            if code:
-                raise ValueError('git could not configure ' + repository + ': ' + str(text)[:200])
+            if code != 0:
+                record['refused'] = 'git_failed:could not configure ' + repository + ': ' + str(text)[:200]
+                return record
+    os.makedirs(folder, exist_ok=True)
     for name in HOOKS:
         record['hooks'][name] = _install_hook(folder, name, sources[name])
     record['ok'] = not any(outcome.startswith('refused') for outcome in record['hooks'].values())
