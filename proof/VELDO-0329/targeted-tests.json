@@ -1,56 +1,77 @@
 [
- {
-  "name": "unit and integration",
-  "command": "nice -n 10 python3 -B scripts/selftest.py --suite 150_veldo_0329_hook_install",
-  "scope": "partial",
-  "exit_code": 2,
-  "summary": [
-   "selftest (PARTIAL, 1 of 236 suites): 35 passed, 0 failed in 2.53s",
-   "9 rows of this suite and the 26 checks of the shared preamble. A green selected run returns 2 by design."
-  ],
-  "rows": [
-   "space329/ac1/bound-and-plain",
-   "space329/ac1/configured-folder",
-   "space329/ac1/keeps-own-lines",
-   "space329/ac1/refused-and-said",
-   "space329/ac2/every-account",
-   "space329/ac2/session-under-second",
-   "space329/ac3/missing-hook-reported",
-   "space329/ac3/missing-session-reported",
-   "space329/wiring/bootstrap-installs"
-  ]
- },
- {
-  "name": "git hooks regression",
-  "command": "nice -n 10 python3 -B scripts/selftest.py --suite 148_veldo_0311_git_hooks",
-  "scope": "partial",
-  "exit_code": 2,
-  "at_commit": "3cc596c0 (before the hook line fix; the hook files are unchanged by both commits)",
-  "summary": [
-   "selftest (PARTIAL, 1 of 236 suites): 57 passed, 0 failed in 10.19s"
-  ]
- },
- {
-  "name": "service regression",
-  "command": "nice -n 10 python3 -B scripts/selftest.py --suite 149_veldo_0312_ticket_ended",
-  "scope": "partial",
-  "exit_code": 2,
-  "at_commit": "3cc596c0",
-  "summary": [
-   "selftest (PARTIAL, 1 of 236 suites): 67 passed, 0 failed in 4.15s"
-  ]
- },
- {
-  "name": "teeth anchors of other findings",
-  "command": "every registered case whose module is control_space_reconcile.py: each old text counted in the changed module",
-  "summary": [
-   "34 cases, each anchor found exactly once; none moved"
-  ]
- },
- {
-  "name": "not run",
-  "summary": [
-   "Suite 156_veldo_0315_reconcile was NOT run: suites numbered 151 and up are the lead's through the gate lock. It exercises the two places this change touches (Reconciler.repositories and bootstrap), so it is the first suite to run at the gate. Suites 151, 153, 154 and 155 were not run either. No full gate, no policy check."
-  ]
- }
+  {
+    "name": "unit and integration",
+    "command": "nice -n 10 python3 -B scripts/selftest.py --suite 150_veldo_0329_hook_install",
+    "scope": "partial",
+    "exit_code": 2,
+    "summary": [
+      "selftest (PARTIAL, 1 of 236 suites): 44 passed, 0 failed in 10.20s",
+      "18 rows of this suite and the 26 checks of the shared preamble. A green selected run returns 2 by design. The row fix6/blocked-cli-bounded waits about six seconds on purpose."
+    ],
+    "rows": [
+      "space329/ac1/bound-and-plain",
+      "space329/ac1/configured-folder",
+      "space329/ac1/keeps-own-lines",
+      "space329/ac1/refused-and-said",
+      "space329/ac2/every-account",
+      "space329/ac2/session-under-second",
+      "space329/ac3/missing-hook-reported",
+      "space329/ac3/missing-session-reported",
+      "space329/fix1/global-hooks-path",
+      "space329/fix2/shared-linked-folder",
+      "space329/fix2/relative-committed-folder",
+      "space329/fix2/linked-worktree",
+      "space329/fix3/git-not-runnable",
+      "space329/fix4/two-installations",
+      "space329/fix5/duplicate-keys",
+      "space329/fix5/concurrent-write",
+      "space329/fix6/blocked-cli-bounded",
+      "space329/wiring/bootstrap-installs"
+    ],
+    "at_commit": "e3abb1e7"
+  },
+  {
+    "name": "git hooks regression",
+    "command": "nice -n 10 python3 -B scripts/selftest.py --suite 148_veldo_0311_git_hooks",
+    "scope": "partial",
+    "exit_code": 2,
+    "at_commit": "3cc596c0 (before the hook line fix; the hook files are unchanged by both commits); NOT run again in the fix round",
+    "summary": [
+      "selftest (PARTIAL, 1 of 236 suites): 57 passed, 0 failed in 10.19s"
+    ]
+  },
+  {
+    "name": "service regression",
+    "command": "nice -n 10 python3 -B scripts/selftest.py --suite 149_veldo_0312_ticket_ended",
+    "scope": "partial",
+    "exit_code": 2,
+    "at_commit": "3cc596c0; NOT run again in the fix round",
+    "summary": [
+      "selftest (PARTIAL, 1 of 236 suites): 67 passed, 0 failed in 4.15s"
+    ]
+  },
+  {
+    "name": "teeth anchors of other findings",
+    "command": "every registered case whose module is control_space_reconcile.py: each old text counted in the changed module",
+    "summary": [
+      "42 cases at commit e3abb1e7, each anchor found exactly once. Two anchors of finding 329 were moved with the code they name: space329-shared-folder-always and space329-settings-rewritten."
+    ]
+  },
+  {
+    "name": "reconcile regression (shared file)",
+    "command": "nice -n 10 python3 -B scripts/selftest.py --suite 156_veldo_0315_reconcile",
+    "scope": "partial",
+    "exit_code": 2,
+    "at_commit": "e3abb1e7",
+    "summary": [
+      "selftest (PARTIAL, 1 of 236 suites): 51 passed, 0 failed in 24.89s",
+      "No process named space supervise was left by the run."
+    ]
+  },
+  {
+    "name": "not run",
+    "summary": [
+      "The full gate (./scripts/verify.sh), the policy check, and suites 151, 153, 154 and 155 were not run. Suites 148 and 149 were not run again in the fix round."
+    ]
+  }
 ]

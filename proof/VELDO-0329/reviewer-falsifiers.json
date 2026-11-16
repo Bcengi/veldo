@@ -1,0 +1,48 @@
+{
+  "scope": "The independent review's seven falsifier cases (harness.py with six cases and link.py), copied from /tmp/r329 to /tmp/v329fix/h with only two paths changed: the module under test is this worktree's engine/.veldo/control_space_reconcile.py at commit e3abb1e7, and every write goes to /tmp/v329fix/f. Run with nice -n 10 python3 -B. Each case that the review saw succeed wrongly is now refused or bounded.",
+  "results": [
+    {
+      "finding": 1,
+      "case": "global",
+      "review_saw": "record ok, missing {}, no Veldo hook started",
+      "now": "refused: hooks_path_set_in_global_configuration:file:<the global file>; reconcile's missing names hooks_folder with the same reason; nothing written"
+    },
+    {
+      "finding": 2,
+      "case": "link",
+      "review_saw": "four files written into the shared folder of an unbound repository",
+      "now": "refused: hooks_folder_is_a_link:<the shared folder>; the shared folder and the unbound repository hold nothing"
+    },
+    {
+      "finding": 2,
+      "case": "relative",
+      "review_saw": "tracked hook modified, three untracked files, worktree runs its own copy",
+      "now": "refused: hooks_path_is_relative; git status empty; the committed hook still prints owner"
+    },
+    {
+      "finding": 3,
+      "case": "nogit",
+      "review_saw": "a folder named after the error text in the work tree, record ok",
+      "now": "refused: git_failed, hooks_folder None; repository entries before and after ['.git']"
+    },
+    {
+      "finding": 4,
+      "case": "twoinst",
+      "review_saw": "the second installation replaced the first one's commands",
+      "now": "the second is refused: session_hooks_of_another_installation:/stateA; the first one's SessionStart entry is unchanged"
+    },
+    {
+      "finding": 5,
+      "case": "dupkeys",
+      "review_saw": "env {\"A\"} dropped, non-ASCII escaped",
+      "now": "refused: settings_unread:a key is written twice: \"env\"; the file is byte for byte as written"
+    },
+    {
+      "finding": 6,
+      "case": "hang",
+      "review_saw": "one commit took 20.0 s",
+      "now": "the commit took 10.0 s, the line's deadline, against a CLI that sleeps 20 s; git succeeded, the owner's hook got git's input, no input copy left; the record lists the veldo.space.* keys"
+    }
+  ],
+  "surviving_processes": "none named space supervise after the run"
+}

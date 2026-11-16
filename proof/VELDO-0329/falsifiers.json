@@ -1,5 +1,5 @@
 {
-  "scope": "Every mutation registered for finding 329, applied once by hand to a copy of .veldo/control_space_reconcile.py. The teeth driver run is recorded in teeth.json. No full gate.",
+  "scope": "Every mutation registered for finding 329 (sixteen), applied once by hand to a copy of .veldo/control_space_reconcile.py at commit e3abb1e7, from a scratch folder outside the worktree. The teeth driver run is recorded in teeth.json. No full gate.",
   "baseline": {
     "rows": [
       "space329/ac1/bound-and-plain",
@@ -10,6 +10,15 @@
       "space329/ac2/session-under-second",
       "space329/ac3/missing-hook-reported",
       "space329/ac3/missing-session-reported",
+      "space329/fix1/global-hooks-path",
+      "space329/fix2/shared-linked-folder",
+      "space329/fix2/relative-committed-folder",
+      "space329/fix2/linked-worktree",
+      "space329/fix3/git-not-runnable",
+      "space329/fix4/two-installations",
+      "space329/fix5/duplicate-keys",
+      "space329/fix5/concurrent-write",
+      "space329/fix6/blocked-cli-bounded",
       "space329/wiring/bootstrap-installs"
     ],
     "all_green": true
@@ -23,9 +32,10 @@
         "space329/ac1/keeps-own-lines"
       ],
       "red_rows": [
-        "space329/ac1/keeps-own-lines"
+        "space329/ac1/keeps-own-lines",
+        "space329/fix6/blocked-cli-bounded"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -40,7 +50,7 @@
         "space329/ac2/session-under-second",
         "space329/ac3/missing-session-reported"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -51,9 +61,10 @@
         "space329/ac3/missing-hook-reported"
       ],
       "red_rows": [
-        "space329/ac3/missing-hook-reported"
+        "space329/ac3/missing-hook-reported",
+        "space329/fix1/global-hooks-path"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -66,7 +77,7 @@
       "red_rows": [
         "space329/ac3/missing-session-reported"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -80,7 +91,7 @@
         "space329/ac1/refused-and-said",
         "space329/ac3/missing-hook-reported"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -93,9 +104,12 @@
       "red_rows": [
         "space329/ac1/configured-folder",
         "space329/ac1/refused-and-said",
-        "space329/ac3/missing-hook-reported"
+        "space329/ac3/missing-hook-reported",
+        "space329/fix1/global-hooks-path",
+        "space329/fix2/relative-committed-folder",
+        "space329/fix2/shared-linked-folder"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -106,9 +120,12 @@
         "space329/ac2/every-account"
       ],
       "red_rows": [
-        "space329/ac2/every-account"
+        "space329/ac2/every-account",
+        "space329/fix4/two-installations",
+        "space329/fix5/concurrent-write",
+        "space329/fix5/duplicate-keys"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
       "rejected": true
     },
     {
@@ -121,7 +138,112 @@
       "red_rows": [
         "space329/wiring/bootstrap-installs"
       ],
-      "rows_run": 9,
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-global-hooks-path-unseen",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix1/global-hooks-path"
+      ],
+      "red_rows": [
+        "space329/fix1/global-hooks-path"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-linked-folder-written",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix2/shared-linked-folder"
+      ],
+      "red_rows": [
+        "space329/fix2/shared-linked-folder"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-tracked-folder-written",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix2/relative-committed-folder"
+      ],
+      "red_rows": [
+        "space329/fix2/relative-committed-folder"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-relative-folder-used",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix2/linked-worktree"
+      ],
+      "red_rows": [
+        "space329/fix2/linked-worktree",
+        "space329/fix2/relative-committed-folder"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-git-failure-read-as-folder",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "red_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-config-failure-unseen",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "red_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-other-installation-sessions-taken",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "red_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "rows_run": 18,
+      "rejected": true
+    },
+    {
+      "case": "space329-other-installation-state-root-taken",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "red_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "rows_run": 18,
       "rejected": true
     }
   ]

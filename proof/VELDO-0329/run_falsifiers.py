@@ -53,4 +53,4 @@ for case in cases:
              '.veldo/control_space_reconcile.py. The teeth driver run is recorded in teeth.json. No full gate.',
     'baseline': {'rows': [label for label, _good in baseline], 'all_green': True},
     'results': results}, indent=2) + '\n')
-assert len(results) == 8 and all(result['rejected'] for result in results)
+assert len(results) == 16 and all(result['rejected'] for result in results)

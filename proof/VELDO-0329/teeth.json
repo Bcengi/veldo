@@ -1,227 +1,456 @@
 {
- "command": "nice -n 10 python3 -B scripts/check_teeth_mutations.py --finding 329 --jobs 4 --worker-log-dir /tmp/v329-teeth/w --diff-dir /tmp/v329-teeth/d",
- "commit": "6c98a90727679590f4448c814092ec2295c95da7",
- "exit_code": 0,
- "last_line": "mutations: passed registered=8 executed=8 reused=0 rejected=8 workers=10 elapsed=17.061s",
- "status": "passed",
- "registered": 8,
- "executed": 8,
- "rejected": 8,
- "reused": 0,
- "surviving_workers": 0,
- "leg": "confined",
- "input_digest": "1bc65c37525ec62b2717fbdd46bff69d4df8bef6d56ae65831cfe989f424ab6e",
- "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "note": "Run last, after the commit it names. Nothing was written in the worktree while it ran; git status before and after showed only this untracked proof folder. A first run, on commit 3cc596c0, gave invalid_baseline: in the confined leg the temporary folder cannot be written, so the chained reference-transaction line did not start the hook. That was a defect of the line, fixed in 6c98a907; no case was changed between the two runs.",
- "cases": [
-  {
-   "case": "space329-first-account-only",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac2/session-under-second"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "2739f2964e10432da77a872e1d1ce86adfcc35a1e9517765b223b0b67e4dcc28",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac2/every-account",
-    "space329/ac2/session-under-second",
-    "space329/ac3/missing-session-reported"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac2/every-account",
-     "account b: the record names the settings file and both hooks: {}"
-    ],
-    [
-     "space329/ac2/session-under-second",
-     "a session started under account b leaves its item: (None, [])"
-    ],
-    [
-     "space329/ac3/missing-session-reported",
-     "with the session hooks in place only the refused account is reported: [{'account': '/tmp/v329-teeth/w/3/veldo-0329-wnqm145c/account-b', 'missing': ['SessionStar"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-missing-hook-unreported",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac3/missing-hook-reported"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "9e57f51efd20e0710e891993a8036711b7872c1134a2fcd9d35e2005d90dd332",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac3/missing-hook-reported"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac3/missing-hook-reported",
-     "with the hooks in place only the refused ones are reported, with why: []"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-missing-session-unreported",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac3/missing-session-reported"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "afd9bdbe36eb78ec0e0f7225a86388aa952b7cf0ef2a51e3a2e8ce8d2da65adb",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac3/missing-session-reported"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac3/missing-session-reported",
-     "with the session hooks in place only the refused account is reported: []"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-overwrite-existing-hook",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac1/keeps-own-lines"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "a1a67e8c5d61f88944356d968ebeb3c20e0f71700a98f0f8e762dd61c85bad45",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac1/keeps-own-lines"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac1/keeps-own-lines",
-     "post-checkout: every line the owner wrote is still there, in order, and one marked line was added: '#!/bin/sh\\n/tmp/v329-teeth/w/2/veldo-0329-pg8x6p4r/plain/.gi"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-program-hook-edited",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac1/refused-and-said"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "4cf01d10884b84cdad414a1a16d695129b75453488608224deb134d05e2046de",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac1/refused-and-said",
-    "space329/ac3/missing-hook-reported"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac1/refused-and-said",
-     "a program and a link are refused by name, with why: {'repository': '/tmp/v329-teeth/w/6/veldo-0329-wir4tp7l/refuse', 'hooks_folder': '/tmp/v329-teeth/w/6/veldo-"
-    ],
-    [
-     "space329/ac3/missing-hook-reported",
-     "with the hooks in place only the refused ones are reported, with why: [{'repository': '/tmp/v329-teeth/w/6/veldo-0329-wir4tp7l/refuse', 'hooks_folder': '/tmp/v3"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-settings-rewritten",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac2/every-account"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "5a2c6c8189e8141f6c2551134d911e18941691c79aaaae0bc3c0db2759e36896",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac2/every-account"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac2/every-account",
-     "every key and hook the owner had in the second account is kept: {'hooks': {}}"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-shared-folder-always",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/ac1/configured-folder"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "e323e9cdf93219f7eef1bb466d95e15f51142e86158e68596f0cbf8f1473513c",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/ac1/configured-folder",
-    "space329/ac1/refused-and-said",
-    "space329/ac3/missing-hook-reported"
-   ],
-   "mutant_said": [
-    [
-     "space329/ac1/configured-folder",
-     "the hooks go to the folder the repository configures: {'repository': '/tmp/v329-teeth/w/7/veldo-0329-cw9bz_dq/custom', 'hooks_folder': '/tmp/v329-teeth/w/7/veld"
-    ],
-    [
-     "space329/ac1/refused-and-said",
-     "a file of the owner's under Veldo's name is refused and kept: {'repository': '/tmp/v329-teeth/w/7/veldo-0329-cw9bz_dq/custom', 'hooks_folder': '/tmp/v329-teeth/"
-    ],
-    [
-     "space329/ac3/missing-hook-reported",
-     "a hook whose marked line starts nothing is reported: None"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  },
-  {
-   "case": "space329-start-installs-nothing",
-   "module": "control_space_reconcile.py",
-   "target_rows": [
-    "space329/wiring/bootstrap-installs"
-   ],
-   "replacement_count": 1,
-   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
-   "new_digest": "427246c1aa84f9f934b0c258f673aa1d6574caef445d8be52c4163aaf16f74f0",
-   "baseline_failed_rows": [],
-   "noop_failed_rows": [],
-   "mutant_failed_rows": [
-    "space329/wiring/bootstrap-installs"
-   ],
-   "mutant_said": [
-    [
-     "space329/wiring/bootstrap-installs",
-     "the start installs for the bound repository, the named plain repository and the named account: {}"
-    ]
-   ],
-   "rows_run": 35,
-   "source": "fresh"
-  }
- ]
+  "command": "nice -n 10 python3 -B scripts/check_teeth_mutations.py --finding 329 --jobs 4 --worker-log-dir /tmp/v329fix/teeth/w --diff-dir /tmp/v329fix/teeth/d",
+  "commit": "e3abb1e78b751cb011ff058f15924e992c974e3c",
+  "exit_code": 0,
+  "last_line": "mutations: passed registered=16 executed=16 reused=0 rejected=16 workers=18 elapsed=74.562s",
+  "status": "passed",
+  "registered": 16,
+  "executed": 16,
+  "rejected": 16,
+  "reused": 0,
+  "surviving_workers": 0,
+  "leg": "confined",
+  "input_digest": "2c6251a3ab7cda0407f737df87ef639b9c956c9716781083d78cdb972d772551",
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "note": "Fix round. Run last, after the commit it names, on a clean worktree. Nothing was written in the worktree while it ran: git status was empty before and after. Sixteen cases: the eight of the build and eight for the review findings 1 to 4 (one for finding 1, three for finding 2, two for finding 3, two for finding 4). No process named space supervise was left by the run.",
+  "cases": [
+    {
+      "case": "space329-config-failure-unseen",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "77757a264e2949b50d21c43bfe31b1a18733b319efcbd7f95d2f8a12839cce81",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix3/git-not-runnable",
+          "a configuration that could not be written stops the install before any hook: {'repository': '/tmp/v329fix/teeth/w/15/veldo-0329-okubq8id/nogit', 'hooks_folder':"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-first-account-only",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac2/session-under-second"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "5d8fdbcb1265cff9b0405bf834af773b1db0a59df1ee9ff218992ebaaea72a06",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac2/every-account",
+        "space329/ac2/session-under-second",
+        "space329/ac3/missing-session-reported"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac2/every-account",
+          "account b: the record names the settings file and both hooks: {}"
+        ],
+        [
+          "space329/ac2/session-under-second",
+          "a session started under account b leaves its item: (None, [])"
+        ],
+        [
+          "space329/ac3/missing-session-reported",
+          "with the session hooks in place only the refused account is reported: [{'account': '/tmp/v329fix/teeth/w/3/veldo-0329-otdq6rlp/account-b', 'missing': ['SessionS"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-git-failure-read-as-folder",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "f1159284f79ff0d7bca57f3424ff2a369b843cd1e60a2dd29d97837d34f381d1",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix3/git-not-runnable"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix3/git-not-runnable",
+          "a git that does not run gives a record that is not ok, with no folder made of its words: {'repository': '/tmp/v329fix/teeth/w/14/veldo-0329-1ajfknr5/nogit', 'ho"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-global-hooks-path-unseen",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix1/global-hooks-path"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "29d65aec22f5342ec7a2d24228683a16e8c59beebdccc4a1c7b1c7db823b9846",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix1/global-hooks-path"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix1/global-hooks-path",
+          "the install is refused and says why, with the folder git uses: {'repository': '/tmp/v329fix/teeth/w/10/veldo-0329-r1m0lhfg/husky', 'hooks_folder': '/tmp/v329fix"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-linked-folder-written",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix2/shared-linked-folder"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "2b28af980c26dcbf6ba9298029f496a4a277c7fb7dcb428759a16f72acfe7be1",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix2/shared-linked-folder"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix2/shared-linked-folder",
+          "a hooks folder that is a link is refused, with where it leads: {'repository': '/tmp/v329fix/teeth/w/11/veldo-0329-z0pmmqcw/linked', 'hooks_folder': '/tmp/v329fi"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-missing-hook-unreported",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac3/missing-hook-reported"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "6293d810418865c000d03e8d7ccf14131c2087e14becd440aa92c544b24e0a13",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac3/missing-hook-reported",
+        "space329/fix1/global-hooks-path"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac3/missing-hook-reported",
+          "with the hooks in place only the refused ones are reported, with why: []"
+        ],
+        [
+          "space329/fix1/global-hooks-path",
+          "reconcile reports every repository the global folder takes over, with the reason: None"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-missing-session-unreported",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac3/missing-session-reported"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "2aa4ffad9a98040de17227f12b9bfa26726d4581264ae3dc6103193b9bc40ddc",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac3/missing-session-reported"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac3/missing-session-reported",
+          "with the session hooks in place only the refused account is reported: []"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-other-installation-sessions-taken",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "fe4088dd3b2eb8a6613ff3187c2e975474c148a175e082d1337cf1afd0598a94",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix4/two-installations",
+          "start 0 of the second: both conflicts are in its records: ({'repository': '/tmp/v329fix/teeth/w/16/veldo-0329-d_x9uqt3/both', 'hooks_folder': '/tmp/v329fix/teet"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-other-installation-state-root-taken",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "b0168fde010fafec734203906badbb5105dbd1a79fcdff0fe7a411b93a1f9886",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix4/two-installations"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix4/two-installations",
+          "start 0 of the second: both conflicts are in its records: ({'repository': '/tmp/v329fix/teeth/w/17/veldo-0329-kswf_pph/both', 'hooks_folder': '/tmp/v329fix/teet"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-overwrite-existing-hook",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac1/keeps-own-lines"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "60763a8305deac784b8e08386d62f007df43967edcfe618485a7c17af34ae735",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac1/keeps-own-lines",
+        "space329/fix6/blocked-cli-bounded"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac1/keeps-own-lines",
+          "post-checkout: every line the owner wrote is still there, in order, and one marked line was added: '#!/bin/sh\\nif command -v timeout >/dev/null 2>&1; then timeo"
+        ],
+        [
+          "space329/fix6/blocked-cli-bounded",
+          "the owner's own lines still got git's input after the deadline: None"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-program-hook-edited",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac1/refused-and-said"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "2f534580d5153b5e348520ec33dc6cd1cf750623c523609fee5cde279925f3a2",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac1/refused-and-said",
+        "space329/ac3/missing-hook-reported"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac1/refused-and-said",
+          "a program and a link are refused by name, with why: {'repository': '/tmp/v329fix/teeth/w/6/veldo-0329-3zmhrqa7/refuse', 'hooks_folder': '/tmp/v329fix/teeth/w/6/"
+        ],
+        [
+          "space329/ac3/missing-hook-reported",
+          "with the hooks in place only the refused ones are reported, with why: [{'repository': '/tmp/v329fix/teeth/w/6/veldo-0329-3zmhrqa7/refuse', 'hooks_folder': '/tmp"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-relative-folder-used",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix2/linked-worktree"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "bbf53e091233594a85a578be000637412759e1402b85b971ab22b719f55587e6",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix2/relative-committed-folder",
+        "space329/fix2/linked-worktree"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix2/relative-committed-folder",
+          "a relative hooks path is refused: {'repository': '/tmp/v329fix/teeth/w/13/veldo-0329-543n2lhi/relative', 'hooks_folder': '/tmp/v329fix/teeth/w/13/veldo-0329-543"
+        ],
+        [
+          "space329/fix2/linked-worktree",
+          "asked through relative the report says why no hook starts there: {'hooks_folder': 'hooks_folder_inside_a_repository:/tmp/v329fix/teeth/w/13/veldo-0329-543n2lhi/"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-settings-rewritten",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac2/every-account"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "78d2b97932e4267b93f0793ae7d2c87a3cc57b9dd4fe194ed8162f6be3b90c01",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac2/every-account",
+        "space329/fix4/two-installations",
+        "space329/fix5/duplicate-keys",
+        "space329/fix5/concurrent-write"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac2/every-account",
+          "every key and hook the owner had in the second account is kept: {'hooks': {}}"
+        ],
+        [
+          "space329/fix4/two-installations",
+          "start 0 of the second: both conflicts are in its records: ({'repository': '/tmp/v329fix/teeth/w/8/veldo-0329-pwuv8wa_/both', 'hooks_folder': '/tmp/v329fix/teeth"
+        ],
+        [
+          "space329/fix5/duplicate-keys",
+          "text that is not ASCII is written back as the owner wrote it: {'account': '/tmp/v329fix/teeth/w/8/veldo-0329-pwuv8wa_/account-written', 'settings': '/tmp/v329fi"
+        ],
+        [
+          "space329/fix5/concurrent-write",
+          "the next install, alone, keeps the client's key and adds the hooks: {'account': '/tmp/v329fix/teeth/w/8/veldo-0329-pwuv8wa_/account-raced', 'settings': '/tmp/v3"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-shared-folder-always",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/ac1/configured-folder"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "e9accd29e3749ba360b7f6cf156527838dd118560a91dca3eb8dd332c18d69a9",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/ac1/configured-folder",
+        "space329/ac1/refused-and-said",
+        "space329/ac3/missing-hook-reported",
+        "space329/fix1/global-hooks-path",
+        "space329/fix2/shared-linked-folder",
+        "space329/fix2/relative-committed-folder"
+      ],
+      "mutant_said": [
+        [
+          "space329/ac1/configured-folder",
+          "the hooks go to the folder the repository configures: {'repository': '/tmp/v329fix/teeth/w/7/veldo-0329-ge7z8c9l/custom', 'hooks_folder': '/tmp/v329fix/teeth/w/"
+        ],
+        [
+          "space329/ac1/refused-and-said",
+          "a file of the owner's under Veldo's name is refused and kept: {'repository': '/tmp/v329fix/teeth/w/7/veldo-0329-ge7z8c9l/custom', 'hooks_folder': '/tmp/v329fix/"
+        ],
+        [
+          "space329/ac3/missing-hook-reported",
+          "a hook whose marked line starts nothing is reported: None"
+        ],
+        [
+          "space329/fix1/global-hooks-path",
+          "a repository whose own local configuration names its folder is not taken over: None"
+        ],
+        [
+          "space329/fix2/shared-linked-folder",
+          "a folder reached through a link is refused and gains nothing: {'repository': '/tmp/v329fix/teeth/w/7/veldo-0329-ge7z8c9l/through', 'hooks_folder': '/tmp/v329fix"
+        ],
+        [
+          "space329/fix2/relative-committed-folder",
+          "the same folder named by its absolute path is inside the work tree, and refused: {'repository': '/tmp/v329fix/teeth/w/7/veldo-0329-ge7z8c9l/absolute', 'hooks_fo"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-start-installs-nothing",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/wiring/bootstrap-installs"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "388459dbb94c8b30892fe2ee999cff7d4a1956400b4220f36e4b2327a201fa83",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/wiring/bootstrap-installs"
+      ],
+      "mutant_said": [
+        [
+          "space329/wiring/bootstrap-installs",
+          "the start installs for the bound repository, the named plain repository and the named account: {}"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    },
+    {
+      "case": "space329-tracked-folder-written",
+      "module": "control_space_reconcile.py",
+      "target_rows": [
+        "space329/fix2/relative-committed-folder"
+      ],
+      "replacement_count": 1,
+      "old_digest": "d981ea470dbfced8301fe42dad77addafe991bb4d46183f1a8ba2af8c4242052",
+      "new_digest": "c59502869978433e58468360499d0f899cd4e466ca2f32efd6ee1c069cddc2d5",
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "mutant_failed_rows": [
+        "space329/fix2/relative-committed-folder"
+      ],
+      "mutant_said": [
+        [
+          "space329/fix2/relative-committed-folder",
+          "the same folder named by its absolute path is inside the work tree, and refused: {'repository': '/tmp/v329fix/teeth/w/12/veldo-0329-ouv2caiy/absolute', 'hooks_f"
+        ]
+      ],
+      "rows_run": 44,
+      "source": "fresh"
+    }
+  ]
 }
