@@ -16,6 +16,12 @@
           "ref": "proof/VELDO-0304/teeth-receipt.json",
           "sha256": "7ea36e81dc3a56ae4204621f20e8ed7951bbce589a5eb412d06e6c8ad844c69f",
           "detail": "Finding 304 mutation stage only; aggregate validation and independent review remain with the lead."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0304/round4-checks.json",
+          "sha256": "c3185232c1425befeaba11cb7fdaaa24f5047c40c1ba351796d4032e1a001052",
+          "detail": "Round four suites recorded by the implementation: ten targeted suites, 155_veldo_0304_space_boundary among them, 0 failed rows each (partial runs, not a gate claim). Logs in proof/VELDO-0304/round4-suites."
         }
       ]
     },
@@ -28,6 +34,12 @@
           "ref": "proof/VELDO-0304/teeth-receipt.json",
           "sha256": "7ea36e81dc3a56ae4204621f20e8ed7951bbce589a5eb412d06e6c8ad844c69f",
           "detail": "Finding 304 mutation stage only; aggregate validation and independent review remain with the lead."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0304/round4-checks.json",
+          "sha256": "c3185232c1425befeaba11cb7fdaaa24f5047c40c1ba351796d4032e1a001052",
+          "detail": "Round four suites recorded by the implementation: ten targeted suites, 155_veldo_0304_space_boundary among them, 0 failed rows each (partial runs, not a gate claim). Logs in proof/VELDO-0304/round4-suites."
         }
       ]
     },
@@ -40,6 +52,12 @@
           "ref": "proof/VELDO-0304/teeth-receipt.json",
           "sha256": "7ea36e81dc3a56ae4204621f20e8ed7951bbce589a5eb412d06e6c8ad844c69f",
           "detail": "Finding 304 mutation stage only; aggregate validation and independent review remain with the lead."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0304/round4-checks.json",
+          "sha256": "c3185232c1425befeaba11cb7fdaaa24f5047c40c1ba351796d4032e1a001052",
+          "detail": "Round four suites recorded by the implementation: ten targeted suites, 155_veldo_0304_space_boundary among them, 0 failed rows each (partial runs, not a gate claim). Logs in proof/VELDO-0304/round4-suites."
         }
       ]
     },
@@ -52,6 +70,12 @@
           "ref": "proof/VELDO-0304/teeth-receipt.json",
           "sha256": "7ea36e81dc3a56ae4204621f20e8ed7951bbce589a5eb412d06e6c8ad844c69f",
           "detail": "Finding 304 mutation stage only; aggregate validation and independent review remain with the lead."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0304/round4-checks.json",
+          "sha256": "c3185232c1425befeaba11cb7fdaaa24f5047c40c1ba351796d4032e1a001052",
+          "detail": "Round four suites recorded by the implementation: ten targeted suites, 155_veldo_0304_space_boundary among them, 0 failed rows each (partial runs, not a gate claim). Logs in proof/VELDO-0304/round4-suites."
         }
       ]
     }
@@ -60,5 +84,23 @@
   "teeth_exit_code": 0,
   "stdout_sha256": "779474673cc1ea105c7ab8a65d15ad40ced8d644867197956cc21960dc1d70c9",
   "stderr_bytes": 0,
-  "edits_during_teeth": false
+  "edits_during_teeth": false,
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "Ten targeted selftest suites with nice -n 10 python3 scripts/selftest.py --suite NAME, 0 failed rows each; commands and counts in proof/VELDO-0304/round4-checks.json."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "Suite 155_veldo_0304_space_boundary, which also runs the repository boundary check (scripts/check_space_boundary.py); see round4-checks.json boundary."
+    },
+    {
+      "name": "falsifiers",
+      "status": "passed",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 304: 38 registered, 38 executed, 38 rejected; proof/VELDO-0304/teeth-receipt.json and round4-teeth.log."
+    }
+  ],
+  "rollback": "Revert the implementation commits. Existing ledger items, kept refs and every saved copy remain."
 }
