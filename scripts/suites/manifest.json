@@ -2165,8 +2165,8 @@
    "requires": [
     "156_veldo_0315_reconcile"
    ],
-   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, startup and ending-event retries.",
-   "requires_note": "Only ROOT and expect. Temporary Git, SQLite and real owner signatures; fixture process table, Docker reader and act prerequisite checks."
+   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, service startup and shutdown, received-event reconciliation, Docker failure recovery, shared removal locks, signed CLI and API project selection, and ending-event retries.",
+   "requires_note": "Only ROOT and expect. Temporary Git and SQLite, real child processes, removal locks and owner signatures. Fixture process table, Docker reader, API edge records and act prerequisite checks; the CLI transport is a stand-in that calls the real Service.apply."
   }
  ],
  "resource_capacities": {

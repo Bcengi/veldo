@@ -94,6 +94,8 @@ def worktree_inside(ledger, paths):
     that placed it, or (None, why, None). `paths` is [(how, path)], as an engine gave them. A path is
     read where it leads. Every path must lead inside the same recorded worktree: a split is a conflict.
     See the module's text for what gives no worktree."""
+    # A project filter narrows writes, never the ownership facts used to place paths.
+    ledger = getattr(ledger, 'removal_ledger', ledger)
     worktrees = None
     inside = {}
     outside = False
@@ -206,6 +208,40 @@ def put_back(ledger, identity, record, probe, remover, run=None):
         os.close(parent)
 
 
+class ProjectLedger:
+    """A project view for explicit reconciliation; all writes still use the real ledger."""
+    def __init__(self, ledger, project):
+        self.ledger, self.project = ledger, project
+        self.removal_ledger = ledger
+        self.projects = [one for one in ledger.projects if one['project'] == project]
+        if not self.projects:
+            raise ValueError('unknown space project: ' + str(project))
+
+    def __getattr__(self, name):
+        return getattr(self.ledger, name)
+
+    def owns(self, owner):
+        return (owner or {}).get('scope') == {'type': 'project', 'id': self.project}
+
+    def items(self):
+        return {identity: item for identity, item in self.ledger.items().items() if self.owns(item.get('owner'))}
+
+    def _create(self, operation, kind, locator, owner, *args, **kwargs):
+        if not self.owns(owner):
+            return {'ok': False, 'reason': 'space_outside_project'}
+        return self.ledger._create(operation, kind, locator, owner, *args, **kwargs)
+
+    def adopt(self, kind, locator, owner, *args, **kwargs):
+        if not self.owns(owner):
+            return {'ok': False, 'reason': 'space_outside_project'}
+        return self.ledger.adopt(kind, locator, owner, *args, **kwargs)
+
+    def report(self, kind, locator, found, proposed_owner=None, **kwargs):
+        if not self.owns(proposed_owner):
+            return {'ok': False, 'reason': 'space_outside_project'}
+        return self.ledger.report(kind, locator, found, proposed_owner=proposed_owner, **kwargs)
+
+
 class Reconciler:
     """One explicit comparison. No thread, clock, timer or alternate deletion implementation.
 
@@ -214,7 +250,7 @@ class Reconciler:
     an authority that stores those outside entities; it is never a list of paths to delete.
     """
 
-    def __init__(self, space, docker=None, records=None):
+    def __init__(self, space, docker=None, records=None, floors=()):
         self.space, self.ledger = dict(space), space['ledger']
         self.sp, probe, remove, self.keep, self.signal, kinds = organs()
         self.probe = space.get('probe') or probe
@@ -223,13 +259,15 @@ class Reconciler:
         self.space.setdefault('remover', self.remove)
         self.space.setdefault('kinds', kinds)
         self.space.setdefault('keep', self.keep.keeper(self.ledger, event={'process': 'reconcile'}))
-        self.docker, self.records = docker, records
+        self.docker, self.records, self.floors = docker, records, floors
         self.findings, self.counts, self.adopted = [], {}, []
 
     def note(self, why, **facts):
         self.findings.append(dict(facts, why=why))
 
     def allowed(self, path, container=False):
+        if self.sp.beneath(path, os.path.join(self.ledger.state_root, 'space-item-locks')):
+            return False
         try:
             self.remove._plain(path)
             parent = self.remove._parent(path)
@@ -579,78 +617,83 @@ class Reconciler:
                 for attempt in self.keep.attempts(self.ledger, identity):
                     if not attempt['listed']:
                         self.note('snapshot_unlisted', item=identity, attempt=attempt)
-            if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):
+            if record.get('owner') is None or record.get('owner_keep') or record['state'] in ENDED:
                 continue
-            if record['state'] == 'removing' and carrier_live(record, self.probe, self.space.get('proc')):
-                continue
-            path = record['locator'].get('path')
-            if path and not self.allowed(path):
-                continue
-            try:
-                there, under = places(path, identity, self.remove) if path else (None, False)
-                if not path:
-                    there = not self.signal._missing(self.probe, record, self.space.get('run'))
-                if under:
-                    verified = self.keep.verify(self.ledger, identity) if record['kind'] in self.sp.KEEP_KINDS else {'ok': True}
-                    back = put_back(self.ledger, identity, record, self.probe, self.remove, self.space.get('run'))
-                    if back:
-                        self.note('marked_name_retained', item=identity, path=path, detail=back)
-                        continue
-                    there = True
-                    # Changed or in-use work is put back before deferring, never completed blindly.
-                    if not verified['ok']:
-                        self.defer(identity, record, verified)
-                        continue
-                    if record['kind'] in self.sp.KEEP_KINDS:
-                        ctx = {'ledger': self.ledger, 'probe': self.probe, 'run': self.space.get('run') or self.remove._run,
-                               'proc': self.space.get('proc'), 'commands': []}
-                        snapshots = (record.get('kept') or {}).get('snapshots') or []
-                        try:
-                            same = True
-                            if snapshots:
-                                manifest = self.keep._manifest(snapshots[-1])
-                                current = self.keep.listing(self.ledger, record, path)
-                                same = manifest is not None and self.keep._comparable(manifest) == self.keep._comparable(current)
-                            if not same or self.remove._second_probe(ctx, path) is not None:
-                                self.defer(identity, record, 'marked item changed or is in use')
-                                continue
-                        except Exception as error:  # noqa: BLE001 - a failed comparison retains the restored item
-                            self.defer(identity, record, str(error))
+            with self.ledger.item_lock(identity):
+                # The diagnostic read may predate a live remover taking this item.
+                record = self.ledger.item(identity)
+                if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):
+                    continue
+                if record['state'] == 'removing' and carrier_live(record, self.probe, self.space.get('proc')):
+                    continue
+                path = record['locator'].get('path')
+                if path and not self.allowed(path):
+                    continue
+                try:
+                    there, under = places(path, identity, self.remove) if path else (None, False)
+                    if not path:
+                        there = not self.signal._missing(self.probe, record, self.space.get('run'))
+                    if under:
+                        verified = self.keep.verify(self.ledger, identity) if record['kind'] in self.sp.KEEP_KINDS else {'ok': True}
+                        back = put_back(self.ledger, identity, record, self.probe, self.remove, self.space.get('run'))
+                        if back:
+                            self.note('marked_name_retained', item=identity, path=path, detail=back)
                             continue
-                if not there and not under:
+                        there = True
+                        # Changed or in-use work is put back before deferring, never completed blindly.
+                        if not verified['ok']:
+                            self.defer(identity, record, verified)
+                            continue
+                        if record['kind'] in self.sp.KEEP_KINDS:
+                            ctx = {'ledger': self.ledger, 'probe': self.probe, 'run': self.space.get('run') or self.remove._run,
+                                   'proc': self.space.get('proc'), 'commands': []}
+                            snapshots = (record.get('kept') or {}).get('snapshots') or []
+                            try:
+                                same = True
+                                if snapshots:
+                                    manifest = self.keep._manifest(snapshots[-1])
+                                    current = self.keep.listing(self.ledger, record, path)
+                                    same = manifest is not None and self.keep._comparable(manifest) == self.keep._comparable(current)
+                                if not same or self.remove._second_probe(ctx, path) is not None:
+                                    self.defer(identity, record, 'marked item changed or is in use')
+                                    continue
+                            except Exception as error:  # noqa: BLE001 - a failed comparison retains the restored item
+                                self.defer(identity, record, str(error))
+                                continue
+                    if not there and not under:
+                        if record['state'] == 'removing':
+                            if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:
+                                self.defer(identity, record, 'keep verification failed')
+                                continue
+                            wrote = self.ledger.outcome(identity, 'removed', dict(record.get('removal') or {}, recovered=True))
+                            self.counts['completed'] += int(wrote.get('ok') is True)
+                        elif record['state'] in ('present', 'declared', 'due', 'deferred'):
+                            self.counts['gone'] += int(self.ledger.gone(identity).get('ok') is True)
+                        continue
+                    self.counts['matched'] += 1
+                    if path and record['state'] not in ('due', 'removing'):
+                        with contextlib.suppress(OSError, self.remove._Stop, ValueError):
+                            self.ledger.measure(identity, self.remove.measure(path, own=record['kind'] in self.sp.KEEP_KINDS),
+                                                'reconcile')
                     if record['state'] == 'removing':
                         if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:
                             self.defer(identity, record, 'keep verification failed')
                             continue
-                        wrote = self.ledger.outcome(identity, 'removed', dict(record.get('removal') or {}, recovered=True))
-                        self.counts['completed'] += int(wrote.get('ok') is True)
-                    elif record['state'] in ('present', 'declared', 'due', 'deferred'):
-                        self.counts['gone'] += int(self.ledger.gone(identity).get('ok') is True)
-                    continue
-                self.counts['matched'] += 1
-                if path and record['state'] not in ('due', 'removing'):
-                    with contextlib.suppress(OSError, self.remove._Stop, ValueError):
-                        self.ledger.measure(identity, self.remove.measure(path, own=record['kind'] in self.sp.KEEP_KINDS),
-                                            'reconcile')
-                if record['state'] == 'removing':
-                    if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:
-                        self.defer(identity, record, 'keep verification failed')
-                        continue
-                    event = (record.get('due') or {}).get('event') or (record.get('removal') or {}).get('event')
-                    if not self.defer(identity, record, 'retry from rule 1').get('ok'):
-                        continue
-                    version = self.ledger._row(identity, self.sp.ITEM_KIND)[0]
-                    wrote = self.ledger.signal(event, {'items': [{'item': identity, 'version': version}]})
-                    if not wrote.get('ok'):
-                        continue
-                    record = self.ledger.item(identity)
-                if record['state'] == 'due':
-                    outcomes = self.carry(identity, record)
-                    self.counts['completed'] += sum(one.get('outcome') == 'removed' for one in outcomes)
-            except (OSError, ValueError, self.remove._Refusal) as error:
-                self.note('item_unread', item=identity, detail=str(error))
-                if record['state'] in ('due', 'removing'):
-                    self.defer(identity, record, str(error))
+                        event = (record.get('due') or {}).get('event') or (record.get('removal') or {}).get('event')
+                        if not self.defer(identity, record, 'retry from rule 1').get('ok'):
+                            continue
+                        version = self.ledger._row(identity, self.sp.ITEM_KIND)[0]
+                        wrote = self.ledger.signal(event, {'items': [{'item': identity, 'version': version}]})
+                        if not wrote.get('ok'):
+                            continue
+                        record = self.ledger.item(identity)
+                    if record['state'] == 'due':
+                        outcomes = self.carry(identity, record)
+                        self.counts['completed'] += sum(one.get('outcome') == 'removed' for one in outcomes)
+                except (OSError, ValueError, self.remove._Refusal) as error:
+                    self.note('item_unread', item=identity, detail=str(error))
+                    if record['state'] in ('due', 'removing'):
+                        self.defer(identity, record, str(error))
 
     def past_events(self):
         rows = self.stored()
@@ -684,18 +727,25 @@ class Reconciler:
             raise ValueError('reconcile starts only at service start, console or CLI')
         self.counts = {key: 0 for key in self.sp.RECONCILE_COUNTS}
         self.findings, self.adopted = [], []
+        # Subscribe before any disk work that can fail. Use each start snapshot once.
+        snapshots = self.docker.start() if self.docker is not None else {}
         self.discover()
         if self.docker is not None:
             for engine in self.ledger.engines:
-                found = self.docker.snapshot(engine)
+                found = snapshots.get(engine)
+                if found is None:
+                    found = self.docker.snapshot(engine)
                 for key in self.counts:
                     self.counts[key] += found.get('counts', {}).get(key, 0)
                 if not found.get('read'):
                     self.note('engine_unread', engine=engine, detail=found.get('said'))
         self.past_events()
+        verdicts = []
+        for floor in self.floors:
+            verdicts.extend(floor.reconcile_verdicts())
         self.compare()
         result = self.ledger.reconcile(started_by, self.ledger.roots['roots'], self.ledger.engines, self.counts)
-        return dict(result, counts=dict(self.counts), findings=self.findings)
+        return dict(result, counts=dict(self.counts), findings=self.findings, verdicts=verdicts)
 
 
 class EndingEvents:
@@ -776,9 +826,11 @@ class EndingEvents:
             return [(name, self.read(fd, name)) for name in sorted(os.listdir(fd)) if name.endswith('.json')
                     and self.read(fd, name)['state'] == 'pending']
 
-    def retry(self, send):
+    def retry(self, send, selected=None):
         results = []
         for name, record in self.pending():
+            if selected is not None and not selected(record['event']):
+                continue
             try:
                 answer = send(record['event'])
                 if answer.get('raised'):

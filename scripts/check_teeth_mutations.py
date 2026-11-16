@@ -14450,8 +14450,12 @@ def cases():
     verdict337('space337-lost-send-not-reconciled', 'dispatch.py',
                '                if not isinstance(review, dict) or review.get("dispatch") not in waiting:\n',
                '                if True:\n', ['ac1/lost-send-reconciled'])
-    verdict337('space337-reconcile-not-at-start', 'control_launch_work.py',
-               '        self.floor.reconcile_verdicts()\n', '', ['paths/wiring-and-canon'])
+    verdict337('space337-reconcile-not-at-start', 'control_space_reconcile.py',
+               '            verdicts.extend(floor.reconcile_verdicts())\n', '            pass\n', ['ac1/lost-send-reconciled'])
+    verdict337('space337-service-omits-verdicts', 'control_service.py',
+               '                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter, floors=floors)\n',
+               '                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter)\n',
+               ['ac1/lost-send-reconciled'])
     verdict337('space337-reconcile-sends-again', 'dispatch.py',
                "            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))\n",
                "            )\n", ['ac1/lost-send-reconciled'])
@@ -16047,7 +16051,7 @@ def cases():
         '            if False:  # defect: wait for an interval instead of the journal\n                consumer.advance()\n',
         ['ac1/journal-advance'])
     add(323, 'space323-service-computes-containment', hook323, 'control_space_consumer.py',
-        '        if pending:\n            self._spawn()\n',
+        '        if pending:\n            self.startup_received = True\n            self._spawn()\n',
         '        if pending:\n            WORKER.selected(self.ledger, self.ledger.event_record(pending[0]), '
         'self.landing, self.given.get("proc") or "/proc")\n            self._spawn()\n',
         ['ac2/no-service-git'])
@@ -16138,7 +16142,7 @@ def cases():
         '            for one in [read] + list(self.watched):  # defect: the service\'s descriptors stay open\n',
         ['ac2/only-service-descriptors'])
     add(323, 'space323-service-git-by-another-path', hook323, 'control_space_consumer.py',
-        '        if pending:\n            self._spawn()\n',
+        '        if pending:\n            self.startup_received = True\n            self._spawn()\n',
         '        if pending:\n            for _item in self.ledger.items().values():\n'
         '                if _item["kind"] == "branch":\n'
         '                    WORKER.SPOOL._commit(_item["locator"]["repository"], _item["locator"]["ref"])\n'
@@ -16198,8 +16202,8 @@ def cases():
         'space315-remove-reports',
         '156_veldo_0315_reconcile.py',
         'control_space_reconcile.py',
-        "            if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):",
-        "            if record.get('owner') is None and os.path.isdir(record['locator'].get('path', '')):\n                __import__('shutil').rmtree(record['locator']['path'])\n            if record['state'] in ENDED or record.get('owner') is None or record.get('owner_keep'):",
+        "            if record.get('owner') is None or record.get('owner_keep') or record['state'] in ENDED:",
+        "            if record.get('owner') is None and os.path.isdir(record['locator'].get('path', '')):\n                __import__('shutil').rmtree(record['locator']['path'])\n            if record.get('owner') is None or record.get('owner_keep') or record['state'] in ENDED:",
         ['space315/ac2/keep-failure'])
     add(315,
         'space315-locator-alone',
@@ -16264,6 +16268,38 @@ def cases():
         "                record.update(state='pending', error=str(error)[:400])",
         "                record.update(state='pending', error=str(error)[:400])\n                break",
         ['space315/ac8/retry-events'])
+
+    add(315, 'space315-complete-without-keep', '156_veldo_0315_reconcile.py',
+        'control_space_reconcile.py',
+        "                            if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:\n"
+        "                                self.defer(identity, record, 'keep verification failed')\n"
+        "                                continue\n", '', ['space315/ac2/missing-keep'])
+    add(315, 'space315-stale-read', '156_veldo_0315_reconcile.py', 'control_space_reconcile.py',
+        "                # The diagnostic read may predate a live remover taking this item.\n"
+        "                record = self.ledger.item(identity)\n", '', ['space315/ac5/stale-read'])
+
+    add(315, 'space315-reconcile-unlocked', '156_veldo_0315_reconcile.py', 'control_space_reconcile.py',
+        '            with self.ledger.item_lock(identity):\n',
+        '            with contextlib.nullcontext():\n', ['space315/ac5/shared-lock'])
+    add(315, 'space315-signal-unlocked', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
+        '        with ledger.item_lock(identity):\n', '        if True:\n', ['space315/ac5/shared-lock'])
+    add(315, 'space315-no-worker-start', '156_veldo_0315_reconcile.py', 'control_service.py',
+        '            service.space_worker_start(reconcile=service.space_received_reconcile)\n', '',
+        ['space315/ac7/serve-order'])
+    add(315, 'space315-no-worker-stop', '156_veldo_0315_reconcile.py', 'control_service.py',
+        '                service.space_stop()\n', '', ['space315/ac7/serve-order'])
+    add(315, 'space315-no-received-hook', '156_veldo_0315_reconcile.py', 'control_space_consumer.py',
+        '        self.reconcile = reconcile\n', '        self.reconcile = None\n', ['space315/ac7/received-hook'])
+    add(315, 'space315-docker-no-event-retry', '156_veldo_0315_reconcile.py', 'control_service.py',
+        "            if getattr(self, 'space_refusal', None) is not None:\n                self.space_start(replay=None)\n", '',
+        ['space315/ac3/docker-retry'])
+    add(315, 'space315-cli-no-service', '156_veldo_0315_reconcile.py', 'veldo',
+        '                return _mod("veldo_cli_reconcile", ".veldo/control_service.py").reconcile_cli(rest[1:])\n',
+        '                return 0\n', ['space315/cli/service-project'])
+    result[-1]['dir'] = 'bin'
+
+    add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
+        "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
 
     return result
 

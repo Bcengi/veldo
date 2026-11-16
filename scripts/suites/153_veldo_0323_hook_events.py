@@ -406,7 +406,7 @@ def _v323_suite():
               and consumed_order.index(e1) < consumed_order.index(e2))
         signals = conn.execute('SELECT COUNT(*) FROM journal WHERE command_id=?', ('space-hook:' + e1,)).fetchone()[0]
         service.space = service.space
-        service.space_start()
+        service.space_worker_start()
         drain()
         check('ac3/restart', signals == 1 and conn.execute('SELECT COUNT(*) FROM journal WHERE command_id=?',
               ('space-hook:' + e1,)).fetchone()[0] == 1 and ledger.event_record(e1)['state'] == 'consumed')
@@ -476,7 +476,7 @@ def _v323_suite():
         ledger.consumed = saved_consumed
         ledger.acts = lambda scope: True
         service.space = service.space
-        service.space_start()
+        service.space_worker_start()
         drain()
         check('ac3/recover-after-signal', ledger.event_record(recovery_event)['state'] == 'consumed'
               and ledger.event_record(recovery_event)['result'].get('recovered')
@@ -498,7 +498,7 @@ def _v323_suite():
         def reconcile():
             reconciled.write_text(json.dumps({'exists': spooled_path.exists(), 'pending': [identity for identity,
                 record in ledger.events() if record['state'] == 'received']}))
-        service.space_start(replay=lambda: spool.replay(folder, local, packet_sign, seconds=None), reconcile=reconcile)
+        service.space_worker_start(replay=lambda: spool.replay(folder, local, packet_sign, seconds=None), reconcile=reconcile)
         drain()
         check('ac3/spool-before-reconcile', not spool.pending(folder) and reconciled.exists()
               and json.loads(reconciled.read_text()) == {'exists': False, 'pending': []})
@@ -600,7 +600,7 @@ def _v323_suite():
             for descriptor in list(service.space_consumer.watched):
                 os.close(descriptor)
             service.space = service.space
-            service.space_start()
+            service.space_worker_start()
             drain()
             check('ac4/held-across-restart', len(service.space_pipes()) == 1 and again_path.is_dir()
                   and ledger.item(again)['state'] == 'deferred', ledger.item(again))

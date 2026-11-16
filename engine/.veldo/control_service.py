@@ -1594,25 +1594,43 @@ class Service:
         return found
 
     def space_worker_start(self, replay=None, reconcile=None):
-        """Replay in a child, then consume received events before starting reconcile."""
-        consumer = self.space_consumer
-        if consumer is None:
-            return
-        if replay is None:
-            spool = SPACE_CONSUMER.WORKER.SPOOL
-            ledger = consumer.ledger
-            local = spool.Local(ledger, CM, landing=consumer.landing)
-            folder = spool.spool_folder(ledger.state_root)
-            # No signing or git in the service. The installation's observer signs in the child.
-            installation = self.config.get('installation')
-            if spool.pending(folder):
-                def replay():
-                    if not installation:
-                        raise ValueError('space spool needs the installation signing keys')
-                    spool.replay(folder, local, spool.signer(installation), seconds=None)
-                    if spool.pending(folder):
-                        raise ValueError('space spool still has undelivered records; reconcile waits')
-        consumer.start(replay, reconcile)
+        """Start consumption after the synchronous start reconcile.
+
+        The consumer's hook runs once after the received records drain. It builds a
+        fresh reconciler on the child's connection and never borrows service handles.
+        """
+        if self.space_consumer is not None:
+            self.space_consumer.start(replay, reconcile)
+
+    def space_received_reconcile(self):
+        ledger = self.space['ledger']
+        with self.space_floors(ledger.conn) as floors:
+            return SPACE_RECONCILE.Reconciler(self.space, floors=floors).run('service_start')
+
+    def space_stop(self):
+        if self.space_consumer is not None:
+            self.space_consumer.stop()
+        if self.space_docker is not None:
+            self.space_docker.stop()
+
+    @contextlib.contextmanager
+    def space_floors(self, conn, space=None):
+        space = space or self.space
+        floors = []
+        try:
+            floor_module = _organ('dispatch')
+            for repository, paths in self.repositories.items():
+                if not paths:
+                    continue
+                floors.append(floor_module.FloorAuthority(S, conn, domain=self.domain,
+                    repository=repository, repo=paths[0],
+                    projections=os.path.join(self.space['ledger'].state_root, 'floor-projections', repository),
+                    principal=self.principal, signer=self.principal, sign=self.sign,
+                    generation=self.generation, space=space))
+            yield floors
+        finally:
+            for floor in floors:
+                floor.close()
 
     def space_pipes(self):
         consumer = getattr(self, 'space_consumer', None)
@@ -1638,9 +1656,8 @@ class Service:
     def space_start(self, replay=None, reconcile=None):
         """VELDO-0315: finish replay and reconciliation before any first dispatch is served.
 
-        VELDO-0323 supplies a Consumer separately; its replay/received-event startup
-        hook can call space_reconcile after bootstrap has supplied this same mapping.
-        A named failure leaves the rest of the authority available.
+        The consumer starts only after this returns. A named failure leaves the rest
+        of the authority available, with Docker still subscribed for an event retry.
         """
         try:
             if self.space is None:
@@ -1665,10 +1682,12 @@ class Service:
             if reconcile is not None:
                 return reconcile()
             result = self.space_reconcile('service_start')
-            if result.get('ok'):
-                self.space_docker.start()
+            self.space_docker.start()
             return result
         except Exception as error:  # noqa: BLE001 - report startup failure and serve everything else
+            if self.space_docker is not None:
+                with contextlib.suppress(Exception):
+                    self.space_docker.start()
             return self._space_reconcile_failed(error)
 
     def _space_reconcile_failed(self, error):
@@ -1678,20 +1697,62 @@ class Service:
                        'domain_uuid': self.domain, 'refusal': self.space_refusal, 'detail': str(error)[:400]})
         return {'ok': False, 'reason': self.space_refusal, 'detail': str(error)[:400]}
 
-    def space_reconcile(self, started_by='console'):
+    def space_reconcile(self, started_by='console', project=None):
         """The explicit API/CLI entry; no service pass or timer calls it."""
         try:
             if self.space is None:
                 return {'ok': False, 'reason': 'space_not_configured'}
-            events = self._space_endings().retry(self._space_retry_event)
-            reconciler = SPACE_RECONCILE.Reconciler(self.space, docker=self.space_docker)
-            result = reconciler.run(started_by)
+            if project is not None and (not isinstance(project, str) or not project):
+                return {'ok': False, 'reason': 'invalid_input:project'}
+            space = self.space
+            if project is not None:
+                space = dict(space, ledger=SPACE_RECONCILE.ProjectLedger(space['ledger'], project))
+            def selected(event):
+                if project is None:
+                    return True
+                if event['method'] == 'send':
+                    return event['found'].get('project') == project
+                item = self.space['ledger'].item(event.get('item')) or {}
+                return (item.get('owner') or {}).get('scope') == {'type': 'project', 'id': project}
+            events = self._space_endings().retry(self._space_retry_event, selected)
+            adapter = self.space_docker
+            original = adapter.ledger if adapter is not None else None
+            try:
+                if adapter is not None:
+                    adapter.ledger = space['ledger']
+                with self.space_floors(space['ledger'].conn, space) as floors:
+                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter, floors=floors)
+                    result = reconciler.run(started_by)
+            finally:
+                if adapter is not None:
+                    adapter.ledger = original
             self.space_refusal = None
             self._log({'kind': 'space', 'operation': 'reconcile', 'at': time.time(),
                        'domain_uuid': self.domain, 'result': result, 'events': events})
             return dict(result, events=events)
         except Exception as error:  # noqa: BLE001 - an unread item never ends the service
             return self._space_reconcile_failed(error)
+
+    def space_reconcile_command(self, packet, repository):
+        command = packet['command']
+        expected = {'domain_uuid': self.domain, 'store_uuid': self.store, 'repository_uuid': repository}
+        if any(command.get(key) != value for key, value in expected.items()):
+            raise Refused('invalid_input:coordinates')
+        now, principal = time.time(), command.get('principal')
+        state = CM.authority_state(S, self.conn)
+        member = AC.membership_entry(state['membership'], principal)
+        key = AC.active_key(state['keyring'], principal, now) if AC.active_member(member, now)[0] else None
+        if (key is None or member.get('principal_type') != 'person'
+                or 'project_owner' not in member.get('roles', ()) or not CM.scope_covers(member.get('scope'), 'space')
+                or not AC.ssh_keygen_verify(S.canonical_bytes(command), packet.get('signature') or '',
+                    AC.allowed_signers_line(principal, key['public_key']), principal)[0]):
+            raise Refused('unauthorized:space_reconcile')
+        if type(command.get('expires_at')) not in (int, float) or not now < command['expires_at'] <= now + 300:
+            raise Refused('invalid_input:expired')
+        parameters = command.get('parameters')
+        if not isinstance(parameters, dict) or set(parameters) != {'project'}:
+            raise Refused('invalid_input:parameters')
+        return self.space_reconcile('cli', project=parameters['project'])
 
     def _space_endings(self):
         return SPACE_RECONCILE.EndingEvents(self.space['ledger'].state_root)
@@ -1780,6 +1841,8 @@ class Service:
                 result = self.commit_ownership()
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
+            elif command.get('operation') == 'reconcile_space':
+                result = self.space_reconcile_command(packet, repository)
             elif command.get('operation') == 'save_memory_store':
                 memory = _organ('control_memory')
                 ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
@@ -2313,6 +2376,8 @@ class Service:
             return None
         try:
             answer = self.space_docker.readable(fd)
+            if getattr(self, 'space_refusal', None) is not None:
+                self.space_start(replay=None)
             if isinstance(answer, dict) and answer.get('down'):
                 # The review of VELDO-0306, finding 4: an engine that is not read any more is said in
                 # the observation log, never silent: its objects are not being recorded.
@@ -4220,7 +4285,7 @@ def serve(config_path):
             listener.settimeout(ACCEPT_SECONDS)
             space_listener = service.space_listen()
             service.space_owned.append(space_listener)
-            service.space_start()
+            service.space_worker_start(reconcile=service.space_received_reconcile)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
             next_pass = time.monotonic()
@@ -4287,6 +4352,7 @@ def serve(config_path):
                         service.new_project_pass()
             finally:
                 notify('STOPPING=1')
+                service.space_stop()
                 listener.close()
                 if space_listener is not None:
                     space_listener.close()
@@ -4303,6 +4369,44 @@ def serve(config_path):
 # ---------------------------------------------------------------------------------------------
 # The command line
 # ---------------------------------------------------------------------------------------------
+
+def reconcile_cli(argv=None):
+    """The owner's CLI request, signed and sent to the running authority."""
+    import argparse
+    import time
+    import uuid
+    parser = argparse.ArgumentParser(prog='veldo space reconcile')
+    parser.add_argument('--workspace', default=os.getcwd())
+    parser.add_argument('--principal', required=True)
+    parser.add_argument('--key', required=True)
+    parser.add_argument('--host-trust')
+    parser.add_argument('--project')
+    args = parser.parse_args(argv)
+    client = _organ('control_client')
+    enrollment = _organ('control_enrollment')
+    eligibility = _organ('control_eligibility')
+    activation = _organ('control_channel_activation')
+    try:
+        workspace = os.path.realpath(args.workspace)
+        trust = eligibility.load_host_trust(args.host_trust)
+        binding = enrollment.read_binding(workspace)
+        if trust is None or not isinstance(binding, dict):
+            raise ValueError('unenrolled workspace')
+        sign = activation.ssh_signer(os.path.realpath(args.key))
+        command = {key: binding[key] for key in ('domain_uuid', 'repository_uuid', 'store_uuid')}
+        command.update(operation='reconcile_space', principal=args.principal,
+                       command_id='reconcile:' + uuid.uuid4().hex, expires_at=time.time() + 60,
+                       parameters={'project': args.project})
+        packet = {'command': command, 'signature': sign(_organ('control_store').canonical_bytes(command))}
+        response = client.send(workspace, packet, enrollment,
+            trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=300)
+        result = response.get('result') if response.get('accepted') else response
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result.get('ok') else 1
+    except Exception as error:  # noqa: BLE001 - report failure without attempting a local reconcile
+        print(json.dumps({'ok': False, 'reason': 'space_reconcile_unavailable', 'detail': str(error)[:400]}))
+        return 1
+
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)

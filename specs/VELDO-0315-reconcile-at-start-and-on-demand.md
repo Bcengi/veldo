@@ -12,6 +12,29 @@ depends_on: [VELDO-0304]
 placement: [engine, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
+  - "engine/.veldo/control_space_consumer.py"
+  - ".veldo/control_space_consumer.py"
+  - "engine/.veldo/control_launch_work.py"
+  - ".veldo/control_launch_work.py"
+  - "engine/.veldo/control_api.py"
+  - ".veldo/control_api.py"
+  - "engine/.veldo/control_api_assertion.py"
+  - ".veldo/control_api_assertion.py"
+  - "engine/.veldo/control_api_authority.py"
+  - ".veldo/control_api_authority.py"
+  - "engine/.veldo/control_api_models.py"
+  - ".veldo/control_api_models.py"
+  - "bin/veldo"
+  - "engine/bin/veldo"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "scripts/suites/153_veldo_0323_hook_events.py"
+  - "scripts/suites/153_veldo_0337_verdict_recorded.py"
+  - "specs/VELDO-0323-hook-events-the-event-record-the-consumer-and-the-space-worker.md"
+  - "specs/VELDO-0337-a-reviews-verdict-recorded.md"
   - "engine/.veldo/control_space_reconcile.py"
   - ".veldo/control_space_reconcile.py"
   - "engine/.veldo/control_service.py"
@@ -155,7 +178,22 @@ the step before it in the build order.
 Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
+The installed CLI is `veldo space reconcile --principal OWNER --key KEY [--workspace PATH]
+[--host-trust PATH] [--project PROJECT]`. It signs the request and sends it to the running
+service. Omitting project reconciles all projects. The authenticated API action is
+`POST /api/v1/domains/{domain}/space/reconcile`, with `project` set to the project name
+or null for all. Both entry points require the space owner.
+
 ## History
+
+- 2026-11-15: carried onto the assembled space base. Startup now reconciles once before
+  starting the hook consumer; shutdown stops and reaps it. The received-event hook reconciles
+  after the queued events drain. Verdict recovery moved here from the worker Runtime.
+  Reconcile and Signal share the ledger's item lock, with a fresh read before recovery.
+  Docker remains subscribed across a failed start and its next event retries the start.
+  The owner's signed CLI and authenticated API action reach the service, for all projects
+  or a named project. The footprint includes these existing entry points and their rows.
+  Acceptance criteria are unchanged.
 
 - 2026-11-16: implementation footprint includes the synced runtime scaffold list so installed
   services receive reconcile and its existing spool, kind registry and Docker adapter dependencies.

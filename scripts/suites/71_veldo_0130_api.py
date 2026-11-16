@@ -1237,6 +1237,8 @@ def _v130_checks(base):
                            'workers.cap': {'account': 'none', 'account_version': 1, 'concurrency': 2}})
         if 'abandon_worktree' in getattr(AS, 'OPERATIONS', {}):
             bodies.update({'space.abandon': {'item': 'space:item:none', 'version': 1}})
+        if any(r.name == 'space.reconcile' for r in write_routes):
+            bodies.update({'space.reconcile': {'project': None}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
@@ -3410,18 +3412,21 @@ def _v130_service_checks(base):
             watching = hasattr(stream3, 'next')
             check(SX, 'a third credential is enrolled and holds an open stream [%s]' % made.get('refused'),
                   (made.get('result') or {}).get('ok') is True and watching)
-            instance_before = service_status().get('instance')
+            before_status = service_status()
+            instance_before = before_status.get('instance')
             CS.stop(unit, manager)
             restarted = CS.start(unit, manager)
-            instance_after = service_status().get('instance')
+            after_status = service_status()
+            instance_after = after_status.get('instance')
             resubscribed = wait(lambda: opened is not None and getattr(opened.authority, 'instance', None) == instance_after, 5)
             # The reconcile after the new subscription is done before the revocation: the cursor at the head and
             # no delivery in hand, so the stream is closed by the revocation's own delivery.
             settled = wait(lambda: opened is not None and getattr(api, '_cursor', None) == head()
                            and not opened.authority._delivering.locked(), 5)
             check(SX, 'the service restarted as a new instance and the API subscribed to it by itself, with no request '
-                  'of its own [observed %s -> %s, API %s]' % (instance_before, instance_after,
-                                                              getattr(getattr(opened, 'authority', None), 'instance', None)),
+                  'of its own [before %s; after %s; API %s; active %s; subscribed %s; settled %s; cursor %s/%s]'
+                  % (before_status, after_status, getattr(getattr(opened, 'authority', None), 'instance', None),
+                     restarted.get('ActiveState'), bool(resubscribed), bool(settled), getattr(api, '_cursor', None), head()),
                   restarted.get('ActiveState') == 'active' and bool(instance_after) and instance_after != instance_before
                   and bool(resubscribed) and bool(settled))
             mark = head()

@@ -205,6 +205,8 @@ ROUTES = (
           ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
     # VELDO-0312 (design 6.6): the owner's Abandon of one worktree, by its ledger item at the version the screen
     # showed. It emits worktree abandoned for that worktree and removes nothing by itself.
+    Route('space.reconcile', 'POST', '/api/v1/domains/{domain}/space/reconcile', 'work', True,
+          ('project',), (), 'reconcile_space'),
     Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,
           ('item', 'version'), (), 'abandon_worktree'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
@@ -473,7 +475,7 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
-        self.handlers.update({'space.abandon': self._write})
+        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
@@ -786,7 +788,7 @@ class ControlApi:
                   'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
                   'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
                   'set_account_cap': 'account:' + str(parameters.get('account')),
-                  'abandon_worktree': str(parameters.get('item'))}[route.operation]
+                  'abandon_worktree': str(parameters.get('item')), 'reconcile_space': 'space'}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],

@@ -24,6 +24,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import signal
 
 
 def _organ(name):
@@ -43,6 +44,7 @@ class Consumer:
         self.held = held or (lambda: ())
         self.active, self.buffer = None, b''
         self.reconcile = None
+        self.startup_received = False
         self.head, self.dispatched = 0, None
         self.watched = {}
 
@@ -54,21 +56,41 @@ class Consumer:
 
     def start(self, replay=None, reconcile=None):
         self.reconcile = reconcile
+        self.startup_received = replay is not None
         self._rearm()
         if replay is not None:
             self._spawn(replay)
         else:
             self.advance()
 
+    def stop(self):
+        """Stop and reap the child, then close every process watch owned by this consumer."""
+        self.reconcile = None
+        if self.active is not None:
+            descriptor, pid = self.active
+            self.active = None
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            os.waitpid(pid, 0)
+            os.close(descriptor)
+        for descriptor in self.watched:
+            os.close(descriptor)
+        self.watched.clear()
+        self.buffer = b''
+
     def advance(self):
         if self.active or self.ledger.conn.in_transaction:
             return
         pending = [identity for identity, record in self.ledger.events() if record['state'] == 'received']
         if pending:
+            self.startup_received = True
             self._spawn()
         elif self.reconcile is not None:
             reconcile, self.reconcile = self.reconcile, None
-            self._spawn(reconcile)
+            if self.startup_received:
+                self._spawn(reconcile)
 
     def _spawn(self, task=None):
         if self.active:

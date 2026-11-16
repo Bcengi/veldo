@@ -107,6 +107,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: VELDO-0315 now owns the service bootstrap: synchronous replay and start reconcile, then the consumer and its received-event reconcile hook. Shutdown stops the consumer. Its standalone consumer rows use space_worker_start; the real serve order is exercised by 0315.
+
 - 2026-11-15, fix round 2, the lead's decisions on the two points the first fix round left open.
   (1) A client that has ended and that its parent has not collected (state Z) has exited. The worker
   reads the state from the client's stat together with the recorded start time, so a reused number

@@ -237,6 +237,7 @@ class ApiAuthority:
         # VELDO-0312: `space_abandon(item, version=, by=, cause=)`, the service's entry for the owner's Abandon
         # (control_service.Service.space_abandon), which the instance that serves the API sets.
         self.space_abandon = None
+        self.space_reconcile = None
 
     # the read the API's session checks use
 
@@ -535,6 +536,13 @@ class ApiAuthority:
             return self._save_workflow(a)
         if a['operation'] in WORK_OPERATIONS:
             return self._work(a, packet, provenance)
+        if a['operation'] == 'reconcile_space':
+            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):
+                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')
+            if self.space_reconcile is None:
+                raise Refused('unavailable_service:space_ledger')
+            done = self.space_reconcile('console', project=a['parameters']['project'])
+            return dict(done, outcome='reconciled' if done.get('ok') else 'refused')
         if a['operation'] == ABANDON:
             return self._abandon(a, person)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
@@ -685,7 +693,8 @@ class ApiAuthority:
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
-                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION, ABANDON: SPACE_SIGNAL}
+                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION, ABANDON: SPACE_SIGNAL,
+                'reconcile_space': 'space_reconcile'}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

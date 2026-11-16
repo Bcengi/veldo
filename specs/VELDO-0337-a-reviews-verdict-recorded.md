@@ -84,6 +84,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: VELDO-0315 moves FloorAuthority.reconcile_verdicts into Reconciler.run before compare. The worker Runtime no longer calls it. The lost-send row now drives the start reconcile and repeats on demand to prove the verdict is sent once.
+
 - 2026-11-16: lead decision at assembly, the review items' end list comes from their kind, not a declare parameter (design 4.1/6.1, as 0324 decided)
 
 - 2026-11-15: fix round after the review (review-veldo-0337.md, verdict FIX), by three lead decisions. No

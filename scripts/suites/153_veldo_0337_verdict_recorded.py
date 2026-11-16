@@ -23,6 +23,7 @@ def _v337_verdict_suite():
     from pathlib import Path
 
     PRODUCTION = {
+        'control_service.py': ROOT / ".veldo" / "control_service.py",        'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
         'dispatch.py': ROOT / ".veldo" / "dispatch.py",
         'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
@@ -742,7 +743,16 @@ def _v337_verdict_suite():
         restarted = object.__new__(F.FloorAuthority)
         restarted.__dict__.update(floor.__dict__)
         before = len(signals)
-        sent = restarted.reconcile_verdicts()
+        SV = load('v337_service', VELDO / 'control_service.py')
+        service = object.__new__(SV.Service)
+        service._space, service.space_docker = restarted.space, None
+        service.config, service.domain = {}, DOMAIN
+        service._log = lambda event: None
+        # The floor is real; this fixture supplies its provider instead of a Materializer.
+        service.space_floors = lambda conn, space=None: contextlib.nullcontext([restarted])
+        SV.SPACE_RECONCILE.Reconciler.discover = lambda reconcile: None
+        started = service.space_start(replay=lambda: None)
+        sent = started.get('verdicts', [])
         named = [one for one in signals[before:] if one[2].get('dispatch') == f.dispatch]
         check(row, 'the reconcile at start releases them once, from the committed verdict',
               sent.count((f.unit, f.assignment['assignment'])) == 1 and len(named) == 1
@@ -754,13 +764,30 @@ def _v337_verdict_suite():
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n'
               and not (f.paths['evidence'] / 'cache').exists() and state_of(f.items['evidence']) == 'kept')
         before, at = len(signals), journal_length()
-        again = restarted.reconcile_verdicts()
-        check(row, 'once: a second reconcile sends nothing and writes nothing',
-              again == [] and len(signals) == before and journal_length() == at
+        again = service.space_reconcile('cli').get('verdicts', [])
+        check(row, 'once: a second reconcile sends no verdict again',
+              again == [] and len(signals) == before
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n')
         check(row, 'a review with no committed verdict is sent nothing',
               not floor.record(other.unit)['reviews'] and all(state_of(i) == 'present' for i in other.items.values())
               and all(p.is_dir() for p in other.paths.values()))
+
+        late = planted('22', 'pass')
+        inside_signal[0] = killed
+        try:
+            record(late)
+        except Killed:
+            pass
+        before = len(signals)
+        sent = service.space_reconcile('cli').get('verdicts', [])
+        named = [one for one in signals[before:] if one[2].get('dispatch') == late.dispatch]
+        check(row, 'on demand also recovers a verdict lost after startup',
+              sent.count((late.unit, late.assignment['assignment'])) == 1 and len(named) == 1
+              and not late.paths['scratch'].exists() and not late.paths['build'].exists())
+        before = len(signals)
+        again = service.space_reconcile('cli').get('verdicts', [])
+        check(row, 'the on-demand recovery is sent once', again == [] and len(signals) == before)
+        service.space_docker.stop()
 
         row = 'ac1/reconcile-domain-and-repository'
         for suffix, coordinate in (('20', 'domain'), ('21', 'repository')):
@@ -801,7 +828,7 @@ def _v337_verdict_suite():
         starts = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == '__init__'
                   and any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
                           and c.func.attr == 'reconcile_verdicts' for c in ast.walk(n))]
-        check(row, 'Runtime reconciles lost verdict events at its start', len(starts) == 1)
+        check(row, 'Runtime leaves lost verdict recovery to the start reconcile', len(starts) == 0)
         for name in ('dispatch.py', 'control_launch_work.py', 'control_launch.py', 'control_space.py'):
             check(row, name + ' equals engine canon',
                   (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())

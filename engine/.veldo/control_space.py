@@ -285,6 +285,10 @@ time.
 Standard library only. The store is the control_store module the caller passes in, and accept is given the
 control_membership module the same way.
 """
+import contextlib
+import fcntl
+import stat
+import threading
 import fnmatch
 import hashlib
 import json
@@ -1193,6 +1197,47 @@ class Ledger:
     def measure(self, item, size, event, principal=None, command_id=None):
         """Write the item's size: bytes at this measurement and the event it was measured at."""
         return self._item_command(MEASURE, item, {'bytes': size, 'event': event}, principal, command_id)
+
+    @contextlib.contextmanager
+    def item_lock(self, identity):
+        """Serialize recovery and removal from their fresh read through the final outcome."""
+        held = getattr(self, '_removal_locks', None)
+        if held is None:
+            held = self._removal_locks = {}
+        key = (os.getpid(), threading.get_ident(), identity)
+        if key in held:
+            yield
+            return
+        root = os.open(self.state_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            try:
+                os.mkdir('space-item-locks', 0o700, dir_fd=root)
+            except FileExistsError:
+                pass
+            directory = os.open('space-item-locks', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
+            try:
+                info = os.fstat(directory)
+                if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
+                    raise ValueError('unsafe space item lock directory')
+                name = hashlib.sha256(identity.encode()).hexdigest() + '.lock'
+                fd = os.open(name, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+            finally:
+                os.close(directory)
+        finally:
+            os.close(root)
+        try:
+            info = os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
+                raise ValueError('unsafe space item lock')
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            held[key] = fd
+            try:
+                yield
+            finally:
+                del held[key]
+                fcntl.flock(fd, fcntl.LOCK_UN)
+        finally:
+            os.close(fd)
 
     def outcome(self, item, outcome, facts=None, principal=None, command_id=None):
         """Write what became of a due or removing item: removing, removed, deferred or kept, with the

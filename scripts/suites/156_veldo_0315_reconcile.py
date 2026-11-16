@@ -17,11 +17,18 @@ def _v315_suite():
     import subprocess
     import tempfile
     import traceback
+    import select
+    import time
+    import types
     from unittest.mock import patch
 
     PRODUCTION = {
         'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
+        'control_space_consumer.py': ROOT / ".veldo" / "control_space_consumer.py",
+        'veldo': ROOT / "bin" / "veldo",
     }
     rows = {}
 
@@ -423,6 +430,93 @@ def _v315_suite():
 
         case('ac5/live-carrier', carrier)
 
+        def stale_read(f, row):
+            path = f.scratch / 'racing'
+            identity = f.item(path)
+            f.due(identity)
+            read = f.L.item
+            taken = []
+            proc = f.proc / '12345'
+            proc.mkdir()
+            (proc / 'stat').write_text('12345 (remover) S ' + '0 ' * 18 + '77 0\n')
+
+            def race(item):
+                old = read(item)
+                if item == identity and not taken:
+                    taken.append(True)
+                    answer = f.L.outcome(item, 'removing', {'event': 'ticket_ended',
+                        'carrier': {'pid': 12345, 'started': 77, 'seq': 1}})
+                    assert answer['ok'], answer
+                    path.rename(RM.marked(str(path), item))
+                    taken.append(read(item))
+                return old
+
+            with patch.object(f.L, 'item', race):
+                f.run()
+            check(row, 'a remover taking the item after the first read keeps its marked folder and record',
+                  len(taken) == 2 and read(identity) == taken[1] and not path.exists()
+                  and Path(RM.marked(str(path), identity), 'planted').is_file())
+
+        case('ac5/stale-read', stale_read)
+
+        def shared_lock(f, row):
+            for operation in ('signal', 'reconcile'):
+                path = f.scratch / operation
+                identity = f.item(path)
+                if operation == 'reconcile':
+                    f.removing(identity)
+                    path.rename(RM.marked(str(path), identity))
+                else:
+                    f.due(identity)
+                read, write = os.pipe()
+                with f.L.item_lock(identity):
+                    child = os.fork()
+                    if child == 0:
+                        os.close(read)
+                        registry = dict(f.L.conn.command_registry)
+                        f.L.conn.close()
+                        f.L.conn = S.open_store(str(f.state / 'store.sqlite3'))
+                        f.L.conn.command_registry.update(registry)
+                        os.write(write, b'R')
+                        try:
+                            if operation == 'reconcile':
+                                f.run()
+                            else:
+                                given = {k: v for k, v in f.space.items()
+                                         if k not in ('ledger', 'probe', 'kinds', 'remover')}
+                                SIG._carry(f.L, P, K, RM, 'ticket_ended', [identity], **given)
+                            os.write(write, b'D')
+                        finally:
+                            os._exit(0)
+                    os.close(write)
+                    assert os.read(read, 1) == b'R'
+                    blocked = not select.select([read], [], [], 3)[0]
+                    whole = (Path(RM.marked(str(path), identity), 'planted').is_file() and not path.exists()
+                             if operation == 'reconcile' else (path / 'planted').is_file())
+                ready = select.select([read], [], [], 30)[0]
+                finished = bool(ready) and os.read(read, 1) == b'D'
+                if not ready:
+                    os.kill(child, 9)
+                os.waitpid(child, 0)
+                os.close(read)
+                check(row, operation + ' waits on the remover lock and rereads after release',
+                      blocked and whole and finished and f.L.item(identity)['state'] == 'removed')
+
+        case('ac5/shared-lock', shared_lock)
+
+        def missing_keep(f, row):
+            path = f.tree('missing-keep')
+            identity = f.item(path, 'worktree')
+            f.removing(identity)
+            git(f.repo, 'worktree', 'remove', str(path))
+            f.run()
+            record = f.L.item(identity)
+            check(row, 'a removing worktree absent at both names without keep is explicitly deferred',
+                  record['state'] == 'deferred' and record['deferral']['rule'] == 'keep_failed'
+                  and record['deferral']['refused_by'] == 'reconcile')
+
+        case('ac2/missing-keep', missing_keep)
+
         def unread(f, row):
             path = f.scratch / 'closed' / 'item'
             identity = f.item(path)
@@ -518,6 +612,8 @@ def _v315_suite():
             order.append('dispatch')
             check(row, 'immediate dispatch sees adopted item after synchronous replay', answer['ok'] and
                   f.at(path)[0] is not None and order == ['replay', 'dispatch'])
+            f.service.space_worker_start(reconcile=f.service.space_received_reconcile)
+            check(row, 'no received event needs no second startup reconcile', f.service.space_consumer.active is None)
             records = f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='space_reconcile'").fetchone()[0]
             with patch.object(SV.time, 'time', return_value=365 * 86400 + 1000):
                 for _ in range(3):
@@ -530,9 +626,243 @@ def _v315_suite():
 
         case('ac3/startup', startup)
 
+        class Docker:
+            def __init__(self, ledger):
+                self.ledger, self.streams, self.starts, self.snapshots = ledger, {}, 0, 0
+                self.stopped = False
+
+            def start(self):
+                self.starts += 1
+                if self.streams:
+                    return {}
+                self.streams['fixture'] = True
+                return {'fixture': self.snapshot('fixture')}
+
+            def snapshot(self, engine):
+                self.snapshots += 1
+                return {'read': True, 'counts': {}}
+
+            def readable(self, fd):
+                return {'events': 1}
+
+            def pipes(self):
+                return {}
+
+            def stop(self):
+                self.stopped = True
+                self.streams.clear()
+
+        def docker_retry(f, row):
+            adapter = f.service.space_docker = Docker(f.L)
+            original = SV.SPACE_RECONCILE.Reconciler.discover
+            calls = []
+
+            def fail_once(reconciler):
+                calls.append(True)
+                if len(calls) == 1:
+                    raise OSError('disk unread on first start')
+                return original(reconciler)
+
+            with patch.object(SV.SPACE_RECONCILE.Reconciler, 'discover', fail_once):
+                answer = f.service.space_start(replay=lambda: None)
+                check(row, 'a failed disk comparison still leaves Docker subscribed with one snapshot',
+                      not answer['ok'] and adapter.streams and adapter.snapshots == 1)
+                f.service.docker_readable(1)
+            check(row, 'next engine event retries and clears the refusal',
+                  len(calls) == 2 and f.service.space_refusal is None and adapter.streams)
+            adapter.streams.clear()
+            f.service.space_reconcile()
+            check(row, 'on demand starts a missing stream and consumes its snapshot once',
+                  bool(adapter.streams) and adapter.snapshots == 3)
+
+        case('ac3/docker-retry', docker_retry)
+
+        def serve_order(f, row):
+            path = f.tree('serve-start', 'ticket/VELDO-9315')
+            service = f.service
+            queued = f.L.event('session_ended', {'session': 'serve', 'cwd': str(f.root), 'pid': 12345, 'started': 77},
+                               {'hook': 'session-end', 'host': 'fixture'})
+            assert queued['ok'], queued
+            service.config.update(socket=str(f.state / 'authority.sock'), lock=str(f.state / 'authority.lock'), unit='fixture')
+            adapter = service.space_docker = Docker(f.L)
+            order, handlers = [], {}
+            open_store, opened = SV.S.open_store, []
+
+            def open_service(path):
+                opened.append(path)
+                return f.conn if len(opened) == 1 else open_store(path)
+
+            start, worker = service.space_start, service.space_worker_start
+
+            def start_once(*args, **kwargs):
+                result = start(*args, **kwargs)
+                order.append('reconcile')
+                return result
+
+            def start_worker(*args, **kwargs):
+                order.append('worker')
+                return worker(*args, **kwargs)
+
+            def dispatch(*args):
+                order.append('dispatch')
+                check(row, 'first dispatch sees the reconciled worktree', f.at(path)[0] is not None)
+                handlers[SV.signal.SIGTERM](SV.signal.SIGTERM, None)
+                return None
+
+            with contextlib.ExitStack() as stack:
+                for obj, name, value in (
+                    (SV, 'load_config', lambda path: service.config),
+                    (SV, 'acquire', lambda *args: os.open(service.config['lock'], os.O_CREAT | os.O_RDWR, 0o600)),
+                    (SV, 'previous_engine', lambda config: None), (SV, 'installed_engine', lambda config: str(mods)),
+                    (SV.S, 'open_store', open_service), (SV.S, 'rebind_owners', lambda *a, **k: None),
+                    (SV.S, 'drop_previous_owners', lambda *a, **k: None), (SV, 'Service', lambda *args: service),
+                    (service, 'take_on', lambda: None), (service, 'announce_api', lambda: None),
+                    (service, 'space_start', start_once), (service, 'space_worker_start', start_worker),
+                    (SV.CH, 'open_channel', lambda *args: (None, None)),
+                    (SV.SA, 'open_api', lambda *args: (None, None)), (SV, 'open_loop', lambda *args: (None, None)),
+                    (SV.signal, 'signal', lambda sig, handler: handlers.update({sig: handler})),
+                    (SV, 'notify', lambda *args: None), (SV.CC, 'serve_one', dispatch),
+                    (SV.select, 'select', lambda reads, *args: ([reads[0]], [], []))):
+                    stack.enter_context(patch.object(obj, name, value))
+                SV.serve('fixture')
+            check(row, 'real serve starts once before worker and dispatch, then stops the worker and engines',
+                  order == ['reconcile', 'worker', 'dispatch'] and service.space_consumer.active is None
+                  and service.space_pipes() == {} and adapter.stopped)
+
+        case('ac7/serve-order', serve_order)
+
+        def received(f, row):
+            service = f.service
+            marker = f.state / 'after-received'
+            subject = {'session': 'ended', 'cwd': str(f.root), 'pid': 12345, 'started': 77}
+            event = f.L.event('session_ended', subject, {'hook': 'session-end', 'host': 'fixture'})
+            assert event['ok'], event
+            identity = event['event']
+
+            def after():
+                assert f.L.event_record(identity)['state'] == 'consumed'
+                marker.write_text('after received')
+                service.space_received_reconcile()
+
+            service.space_worker_start(reconcile=after)
+            deadline = time.monotonic() + 60
+            while service.space_consumer.active and time.monotonic() < deadline:
+                for fd in select.select(list(service.space_pipes()), [], [], 0.1)[0]:
+                    service.space_readable(fd)
+            service.space_stop()
+            check(row, 'received hook record drains before the child reconciliation and all workers are reaped',
+                  f.L.event_record(identity)['state'] == 'consumed' and marker.is_file()
+                  and service.space_consumer.active is None)
+
+        case('ac7/received-hook', received)
+
+        def cli(f, row):
+            one = f.item(f.scratch / 'project-one')
+            other = f.item(f.scratch / 'project-other', owner={'scope': {'type': 'project', 'id': 'other'}})
+            f.due(one)
+            f.due(other)
+            held = f.L.item(other)
+            from importlib.machinery import SourceFileLoader
+            CLI = types.ModuleType('v315_cli')
+            CLI.__file__ = str(mods / 'veldo')
+            exec(SourceFileLoader('v315_cli', str(mods / 'veldo')).get_code('v315_cli'), CLI.__dict__)
+            real = SV._organ
+            request = []
+            binding = {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store', 'enrolled_by': 'owner'}
+
+            def send(workspace, packet, *args, **kwargs):
+                request.append(packet)
+                return {'accepted': True, 'result': f.service.apply(packet, binding)}
+
+            def organ(name):
+                if name == 'control_client':
+                    return types.SimpleNamespace(send=send)
+                if name == 'control_enrollment':
+                    return types.SimpleNamespace(read_binding=lambda path: binding)
+                if name == 'control_eligibility':
+                    return types.SimpleNamespace(load_host_trust=lambda path: types.SimpleNamespace(
+                        verifier=lambda *args: None, host_identity='fixture'))
+                return real(name)
+
+            with patch.object(SV, '_organ', organ), patch.object(CLI, '_mod', return_value=SV), contextlib.redirect_stdout(io.StringIO()):
+                code = CLI.main(['space', 'reconcile', '--workspace', str(f.repo), '--principal', 'owner',
+                                 '--key', str(key), '--project', 'orchard'])
+            check(row, 'CLI signs an owner request through service; only the selected project is reconciled',
+                  code == 0 and len(request) == 1 and f.L.item(one)['state'] == 'removed'
+                  and f.L.item(other) == held and (f.scratch / 'project-other' / 'planted').is_file())
+            if not request:
+                return
+            packet = request[0]
+            packet['command']['parameters']['project'] = None
+            refused = f.service.apply(packet, binding)
+            check(row, 'changing signed project selection is refused', not refused.get('ok') and f.L.item(other) == held)
+            with patch.object(f.L, 'acts', return_value=True), patch.object(SV, '_organ', organ), \
+                    patch.object(CLI, '_mod', return_value=SV), contextlib.redirect_stdout(io.StringIO()):
+                code = CLI.main(['space', 'reconcile', '--workspace', str(f.repo), '--principal', 'owner',
+                                 '--key', str(key)])
+            check(row, 'omitting project reaches the service for all projects',
+                  code == 0 and len(request) == 2 and request[-1]['command']['parameters']['project'] is None
+                  and f.L.item(other)['state'] == 'removed')
+            f.service.space_stop()
+
+        case('cli/service-project', cli)
+
+        def project_children(f, row):
+            parent = f.scratch / 'selected-parent'
+            identity = f.item(parent)
+            child = parent / 'other-project'
+            foreign = f.item(child, owner={'scope': {'type': 'project', 'id': 'other'}})
+            f.due(identity)
+            held = f.L.item(foreign)
+            answer = f.service.space_reconcile('cli', project='orchard')
+            check(row, 'project selection preserves a live child from another project inside its due parent',
+                  answer['ok'] and f.L.item(identity)['state'] == 'deferred'
+                  and f.L.item(foreign) == held and (child / 'planted').is_file())
+
+        case('cli/foreign-child', project_children)
+
+        def api_reconcile(f, row):
+            import fcntl
+            AUTH = load('api_authority', mods / 'control_api_authority.py')
+            API = load('api', mods / 'control_api.py')
+            AS, CRD, EN = AUTH.AS, AUTH.CR, AUTH.E
+            f.put('api-edge', 'membership', {'principal_type': 'service', 'roles': [],
+                'scope': ['repository'], 'revoked_at': None, 'expires_at': None})
+            f.put(AC.edge_channel(AS.CHANNEL)['edge_key_id'], 'verification_key', {
+                'schema': EN.SCHEMA, 'channel': AS.CHANNEL, 'principal': 'api-edge', 'public_key': public,
+                'effective_at': 0, 'retired_at': None, 'revoked_at': None})
+            f.put(CRD.entity_id('cred-owner'), CRD.KIND, {'credential_id': 'cred-owner', 'principal': 'owner',
+                'effective_at': 0, 'revoked_at': None})
+            item = f.item(f.scratch / 'api-item')
+            f.due(item)
+            descriptor = os.open(f.state / AUTH.LOCK_NAME, os.O_CREAT | os.O_RDWR, 0o600)
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                ids = {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store'}
+                authority = AUTH.ApiAuthority(S, CM, f.conn, ids=ids, domain='domain', edge='api-edge',
+                    intake=None, settlement=None, credentials=None, authority_lock=descriptor)
+                authority.space_reconcile = f.service.space_reconcile
+                now = time.time()
+                assertion = dict(ids, schema=AS.SCHEMA, domain='domain', channel=AS.CHANNEL, edge='api-edge',
+                    edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id='api-reconcile',
+                    principal='owner', credential_id='cred-owner', session='session-owner', operation='reconcile_space',
+                    target='space', parameters={'project': 'orchard'}, expected_versions={}, issued_at=now,
+                    expires_at=now + AS.LIFETIME)
+                packet = {'assertion': assertion, 'signature': sign(S.canonical_bytes(assertion)), 'domain_signature': None}
+                answer = authority.apply(packet)
+                route = next(route for route in API.ROUTES if route.name == 'space.reconcile')
+                check(row, 'the signed API action reaches the service and removes its due item',
+                      answer['ok'] and answer['result']['outcome'] == 'reconciled'
+                      and f.L.item(item)['state'] == 'removed' and route.operation == 'reconcile_space'
+                      and authority.commands()['reconcile_space'] == SP.RECONCILE)
+            finally:
+                os.close(descriptor)
+
+        case('api/service-project', api_reconcile)
+
         def bootstrap(f, row):
             f.service.space = None
-            f.service.space_docker = object()
+            f.service.space_docker = Docker(f.L)
             started = f.service.space_start(replay=lambda: None, reconcile=lambda: {'ok': True})
             wired = f.service.space
             if not started['ok'] or wired is None:
@@ -598,6 +928,7 @@ def _v315_suite():
 
         case('ac8/retry-events', retry)
         for fixture in fixtures:
+            fixture.service.space_stop()
             fixture.conn.close()
     for row, assertions in rows.items():
         detail = '; '.join(label for label, ok in assertions if not ok)

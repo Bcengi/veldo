@@ -1886,6 +1886,8 @@ def route(argv):
         if cmd == "memory":
             return _mod("veldo_cli_memory", ".veldo/control_factory_setup_memory.py").main(rest)
         if cmd == "space":
+            if rest and rest[0] == "reconcile":
+                return _mod("veldo_cli_reconcile", ".veldo/control_service.py").reconcile_cli(rest[1:])
             # record, event and replay are what the git hooks run (VELDO-0311): one entry for what git
             # just did, handed to the authority or left in the spool. They never fail the git command.
             # VELDO-0313: the run wrapper, and the record and event verbs of a host script (the forms

@@ -287,6 +287,8 @@ def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=Non
            landed=(), queued=None, run=None, proc=None, borrow_root=None, seq=None):
     """Carry out the due items `carried`, in the kind registry's order, and write the outcome of each.
     Returns one entry per item, whatever raised on the way."""
+    # A reconciliation view selects items; safety still sees every project and child.
+    ledger = getattr(ledger, 'removal_ledger', ledger)
     def look(identity, record):
         return inside(ledger, probe, identity, record, run)
 
@@ -302,10 +304,11 @@ def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=Non
     outcomes = []
     for identity in order:
         entry = entries.get(identity) or {'action': None}
-        try:
-            outcomes.append(_carry_one(ledger, probe, remover, event, identity, entry, given))
-        except Exception as error:  # noqa: BLE001 - an item that raises is deferred; the others are carried out
-            outcomes.append(_stopped(ledger, event, identity, entry.get('action'), given, error, 'error'))
+        with ledger.item_lock(identity):
+            try:
+                outcomes.append(_carry_one(ledger, probe, remover, event, identity, entry, given))
+            except Exception as error:  # noqa: BLE001 - an item that raises is deferred; the others are carried out
+                outcomes.append(_stopped(ledger, event, identity, entry.get('action'), given, error, 'error'))
     return outcomes
 
 

@@ -167,6 +167,7 @@ ACTIONS = (
            'control_agent_config', 'SAVE', 'VELDO-0162'),
     Action('default_team_edit', 'teams.default_save', 'save_default_team', 'control_team_routes', 'SAVE', 'VELDO-0162'),
     # VELDO-0312 (design 6.6): the owner's Abandon of one worktree, the space ledger's signal for that item.
+    Action('space_reconcile', 'space.reconcile', 'reconcile_space', 'control_space', 'RECONCILE', 'VELDO-0315'),
     Action('worktree_abandon', 'space.abandon', 'abandon_worktree', 'control_space', 'SIGNAL', 'VELDO-0312'),
 )
 
