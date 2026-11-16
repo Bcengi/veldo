@@ -1684,25 +1684,34 @@ class Service:
         return consumer.submit(key, self._space_dispositions, complete)
 
     def _space_dispositions(self):
+        """Publish the reserved requests, authorize the settled ones, and carry Save and Discard.
+
+        A request is published through the channel. With no channel its item is said to wait and
+        stays deferred. A Save or Discard that is settled and authorized needs no channel: it is
+        carried whether or not there is one, so an owner's answer is never held up by a channel
+        that is down or not configured.
+        """
         ledger = self.space['ledger']
         self.conn = ledger.conn
-        st = _organ('control_request_settlement')
-        presentation = _organ('control_channel_presentation')
-        projection = _organ('control_channel_projection')
         channel = self.channel
-        if channel is None:
-            return {'ok': False, 'reason': 'space_disposition_channel_unavailable'}
-        ids = channel.ingress.activations.ids
-        inbox = self.inbox(ids['repository_uuid'])
-        presenter = presentation.Presenter(S, CM, projection, inbox, None, ledger.conn,
-                                            self.principal, self.sign, assignment=I)
-        settlement = st.Settlement(S, CM, inbox, presenter, ledger.conn, self.principal, self.sign,
-                                   assignment=I, presentation=presentation)
-        requester = (self.principal, lambda data: SIG.sign_bytes(self.config['journal_key'], data, 'veldo-command'))
+        if channel is not None:
+            st = _organ('control_request_settlement')
+            presentation = _organ('control_channel_presentation')
+            projection = _organ('control_channel_projection')
+            ids = channel.ingress.activations.ids
+            inbox = self.inbox(ids['repository_uuid'])
+            presenter = presentation.Presenter(S, CM, projection, inbox, None, ledger.conn,
+                                                self.principal, self.sign, assignment=I)
+            settlement = st.Settlement(S, CM, inbox, presenter, ledger.conn, self.principal, self.sign,
+                                       assignment=I, presentation=presentation)
+            requester = (self.principal,
+                         lambda data: SIG.sign_bytes(self.config['journal_key'], data, 'veldo-command'))
         outcomes = []
         for identity, record in ledger.items().items():
             decision = record.get('disposition') or {}
-            if decision.get('state') == 'requested' and record['state'] == 'deferred':
+            if decision.get('state') == 'requested' and record['state'] == 'deferred' and channel is None:
+                outcomes.append({'item': identity, 'ok': True, 'waits': 'space_disposition_channel_unavailable'})
+            elif decision.get('state') == 'requested' and record['state'] == 'deferred':
                 scope = record['owner']['scope']
                 project = ledger._row('project:' + scope.get('id', ''), 'project')[1] or {}
                 owner = (project.get('owner') if scope['type'] == 'project'
@@ -1723,8 +1732,11 @@ class Service:
             if record['state'] == 'due' and (record.get('disposition') or {}).get('state') == 'authorized':
                 given = {key: value for key, value in self.space.items()
                          if key not in ('ledger', 'probe', 'remover')}
-                outcomes.append(SPACE_SIGNAL.disposition(ledger, self.space['probe'], self.space['remover'],
-                                                        identity, **given))
+                # As the worker's own signals do, an installation that wires no probe or remover
+                # gets the worker's.
+                outcomes.append(SPACE_SIGNAL.disposition(
+                    ledger, self.space.get('probe') or SPACE_CONSUMER.WORKER.PROBE,
+                    self.space.get('remover') or SPACE_CONSUMER.WORKER.REMOVE, identity, **given))
         return {'ok': True, 'outcomes': outcomes, 'worker': os.getpid()}
 
     def space_holds_start(self):

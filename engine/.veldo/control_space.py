@@ -1279,17 +1279,19 @@ class Ledger:
         record = self.item(item)
         return kept_prefix(item, record) if record else None
 
-    def request_disposition(self, item, proposal):
+    def request_disposition(self, item, proposal, head):
         """Reserve one immutable request on the deferred item, before publishing it.
 
         A retry uses the same request until a settled removal has refused. That refusal
         retires its authorization; the next request has its own number and file list.
+        `head` is the commit the worktree was at when the terms were read (None for a HEAD
+        with no commit). It is recorded beside the terms: Save and Discard run only there.
         """
         record = self.item(item) or {}
         prior = record.get('disposition') or {}
         if prior and prior.get('state') != 'refused':
             return {'ok': True, 'request': prior, 'replayed': True}
-        result = self._item_command(REQUEST, item, {'proposal': proposal}, None, None)
+        result = self._item_command(REQUEST, item, {'proposal': proposal, 'head': head}, None, None)
         if result.get('ok'):
             result['request'] = self.item(item)['disposition']
         return result
@@ -1310,9 +1312,13 @@ class Ledger:
         tree = proposal['worktrees'][0]
         if tree['item'] != identity or tree['path'] != record['locator']['path']:
             raise Refused('space_disposition_item', 'the request names this worktree')
+        head = params.get('head')
+        if 'head' not in params or head is not None and not (
+                _is_str(head) and len(head) in (40, 64) and not set(head) - set('0123456789abcdef')):
+            raise _invalid('head', 'the commit the worktree was at when the terms were read, or null')
         number = prior.get('number', 0) + 1
         request = {'number': number, 'alias': 'space-disposition-' + hashlib.sha256(identity.encode()).hexdigest()[:32] + '-' + str(number),
-                   'proposal': proposal, 'state': 'requested'}
+                   'proposal': proposal, 'head': head, 'state': 'requested'}
         record['disposition_history'] = list(record.get('disposition_history') or []) + ([prior] if prior else [])
         record['disposition'] = request
         record['deferral'] = dict(record.get('deferral') or {}, decision_request=request['alias'])

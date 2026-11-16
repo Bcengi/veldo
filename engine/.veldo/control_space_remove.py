@@ -855,10 +855,59 @@ def disposition_commits(probe, path, landed=(), shared=None, run=None):
     return [facts['unlanded']] if facts.get('unlanded') else []
 
 
-def disposition_branch(record):
+def disposition_branch(record, taken=None):
+    """The kept branch Save writes: named for the ticket, or for the owning run. With `taken`, the
+    first such name it does not refuse: the name itself, then the name with -2, -3 and so on, so a
+    second worktree of one ticket is saved beside the first and never onto it."""
     space = _sibling('control_space')
     owner = record.get('owner') or {}
-    return 'space-saved-' + space.kept_part(owner.get('ticket') or (owner.get('run') or {}).get('id') or 'none')
+    base = 'space-saved-' + space.kept_part(owner.get('ticket') or (owner.get('run') or {}).get('id') or 'none')
+    if taken is None:
+        return base
+    for number in range(1, BRANCH_NAMES + 1):
+        name = base if number == 1 else '%s-%d' % (base, number)
+        if not taken(name):
+            return name
+    raise _Refusal(REFUSED, 'no kept branch name is free for this ticket')
+
+
+BRANCH_NAMES = 1000
+
+
+def _branch_holds(commands, path, branch):
+    """What the kept branch `branch` is to the worktree at `path`: None when no such branch exists,
+    False when it holds exactly the worktree's HEAD, True when it holds other work."""
+    code, held = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
+    if code == 1 and not str(held).strip():
+        return None
+    if code != 0:
+        raise _Refusal(REFUSED, 'git could not read the kept branch: ' + str(held)[:200])
+    code, head = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    return not (code == 0 and held.strip() == head.strip())
+
+
+def _free_branch(ledger, identity, record, path, commands):
+    """The next kept branch name free for this worktree: one that no branch holding other work has,
+    and that no other item's open request has named for its detached commits."""
+    named = set()
+    for other, item in ledger.items().items():
+        decision = item.get('disposition') or {}
+        if other != identity and decision.get('state') in ('requested', 'authorized'):
+            for tree in (decision.get('proposal') or {}).get('worktrees') or ():
+                if tree.get('kept_branch'):
+                    named.add(tree['kept_branch'])
+    return disposition_branch(record, lambda name: name in named or _branch_holds(commands, path, name) is True)
+
+
+def disposition_head(path, commands=None):
+    """The commit the worktree's HEAD names as the request is built, or None for a HEAD with no
+    commit. The request records it beside its terms, and Save and Discard run only at that commit."""
+    code, head = _git(commands or [], '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    if code == 0:
+        return head.strip()
+    if code == 1 and not str(head).strip():
+        return None
+    raise _Refusal(KEEP_FAILED, 'git could not read the commit of the worktree')
 
 
 def disposition_proposal(ledger, identity, record, commits):
@@ -871,7 +920,7 @@ def disposition_proposal(ledger, identity, record, commits):
     branch = branch.strip() if code == 0 else None
     return {'discard': settlement.SPACE_DISCARD, 'worktrees': [{
         'item': identity, 'path': path, 'branch': branch, 'unheld_commits': branch is None,
-        'kept_branch': disposition_branch(record) if branch is None else None,
+        'kept_branch': _free_branch(ledger, identity, record, path, []) if branch is None else None,
         'files': disposition_files(ledger, record, path), 'commits': list(commits),
         'restore': 'veldo space restore ' + shlex.quote(identity)}]}
 
@@ -917,13 +966,8 @@ def _r_disposition(ctx, identity, record, answer):
         raise _Refusal(REFUSED, 'the settled choice is not this removal')
     path = _plain(record['locator']['path'])
     shown = decision['proposal']['worktrees'][0]
-    if disposition_files(ledger, record, path) != shown['files']:
-        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')
-    # The commits the owner was shown are the tip this removal leaves on its branch. A commit made
-    # after the request was shown is not in those terms: nothing runs, and the next request names it.
-    code, head = _git(ctx['commands'], '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
-    if shown['commits'] and (code != 0 or shown['commits'] != [head.strip()]):
-        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')
+    if 'head' not in decision:
+        raise _Refusal(KEEP_FAILED, 'the request does not record the commit it was shown at')
     keeper = _sibling('control_space_keep')
     ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)
     before = _kept(ctx, identity, record)
@@ -936,10 +980,20 @@ def _r_disposition(ctx, identity, record, answer):
             raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')
     else:
         manifest = {'files': {}, 'deleted_worktree': [], 'deleted_index': []}
+    # What the owner was shown is compared with what was saved, never with a look made before the
+    # save: a file written, or a commit made, at any moment up to the snapshot is in the manifest
+    # and the keep record, and is not in the terms. Nothing runs, the worktree stays with everything
+    # in it, and the next request names it. Below, the worktree is compared with this same snapshot,
+    # here and again under the marked name, so what is removed is exactly what was shown.
+    saved_names = sorted(set(manifest['files']) | set(manifest['deleted_worktree']) | set(manifest['deleted_index']))
+    if saved_names != shown['files']:
+        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')
+    if before['tips'].get('head') != decision['head']:
+        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')
     before = dict(before, snapshot=manifest)
     _snapshot_equal(ctx, record, before, path)
     if choice == 'save':
-        _save_commit(ctx, record, path, answer)
+        _save_commit(ctx, identity, record, path, answer, shown)
         ctx['keep'] = keeper.keeper(ledger, event='space_disposition')
         after = _kept(ctx, identity, record)
         before = dict(after, snapshot=before['snapshot'])
@@ -948,16 +1002,18 @@ def _r_disposition(ctx, identity, record, answer):
     _r_worktree(ctx, identity, record, answer)
 
 
-def _save_commit(ctx, record, path, answer):
+def _save_commit(ctx, identity, record, path, answer, shown):
     """Only the settled Save path calls this. Ignored files are never added."""
     def git(*args):
         code, out = _git(ctx['commands'], '-C', path, *args)
         if code != 0:
             raise _Refusal(REFUSED, 'Save refused: ' + str(out)[:300])
         return out.strip()
-    branch = disposition_branch(record)
-    git('check-ref-format', '--branch', branch)
     ledger = ctx['ledger']
+    # A detached worktree's terms name its kept branch, and Save writes that name or nothing. A
+    # worktree on a branch is shown no kept name: Save takes the next one free for the ticket.
+    branch = shown.get('kept_branch') or _free_branch(ledger, identity, record, path, ctx['commands'])
+    git('check-ref-format', '--branch', branch)
     identity = _sibling('control_git_identity')
     bound = []
     if identity.exists(ledger.conn, 'git_identity_repositories'):
@@ -975,10 +1031,10 @@ def _save_commit(ctx, record, path, answer):
     changed, _work = _looked(ctx, record, path)
     if ctx['probe'].unique_work(path, (), None, ctx['run']).get('operation'):
         raise _Refusal(REFUSED, 'Save does not finish a git operation in progress')
-    code, held = _git(ctx['commands'], '-C', path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
-    if code not in (0, 1) or code == 0 and held.strip() != git('rev-parse', 'HEAD'):
+    holds = _branch_holds(ctx['commands'], path, branch)
+    if holds:
         raise _Refusal(REFUSED, 'the kept branch already holds other work')
-    exists = code == 0
+    exists = holds is not None
     if changed:
         git('switch', *([branch] if exists else ['-c', branch]))
         git('add', '-A')

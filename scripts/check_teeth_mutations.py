@@ -13037,9 +13037,9 @@ def cases():
             "    kept = {'tips': tips(path, 'worktree', ctx['commands'])}\n"
             "    owner = record.get('owner') or {}\n",
             ['ac1/kept-before-remove'],
-            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef _review_scratch",
+            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef disposition_files",
                    "        raise\n    _kept(ctx, identity, record)\n    _after(ctx, pools, answer)\n\n\n"
-                   "def _review_scratch"),))
+                   "def disposition_files"),))
     keep345('space345-agent-worktree-kept-in-agent-repository', 'control_space_keep.py',
             "        main = ledger.main_repository(identity)\n",
             "        main = ledger.main_repository(identity)\n"
@@ -16678,8 +16678,8 @@ def cases():
             "        if prior and prior.get('state') != 'refused':\n            raise Refused('space_disposition_exists', 'the item already has its request')",
             "        if False:\n            raise Refused('space_disposition_exists', 'the item already has its request')")])
     add(318, 'space318-commit-at-deferral', disposition318, 'control_space_signal.py',
-        "            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])",
-        "            remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])",
+        "            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])",
+        "            remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])",
         ['space318/ac2/no-unsettled-commit'])
     add(318, 'space318-save-without-comparison', disposition318, 'control_space_remove.py',
         "        else:\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
@@ -16695,7 +16695,7 @@ def cases():
                 "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None",
                 "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) and name != path else None")])
     add(318, 'space318-discard-without-list', disposition318, 'control_space_remove.py',
-        "    if disposition_files(ledger, record, path) != shown['files']:",
+        "    if saved_names != shown['files']:",
         "    if False:", ['space318/ac3/list-comparison'])
     # VELDO-0327 fix round 1, F2, as VELDO-0318 carries it: the commit-only worktree.
     add(318, 'space318-terms-without-commits', disposition318, 'control_space_remove.py',
@@ -16707,10 +16707,10 @@ def cases():
         "    else:\n        raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')",
         ['space318/commits/discard-keeps'])
     add(318, 'space318-save-invents-a-commit', disposition318, 'control_space_remove.py',
-        "    exists = code == 0\n    if changed:", "    exists = code == 0\n    if True:",
+        "    exists = holds is not None\n    if changed:", "    exists = holds is not None\n    if True:",
         ['space318/commits/save'])
     add(318, 'space318-discard-without-commit-comparison', disposition318, 'control_space_remove.py',
-        "    if shown['commits'] and (code != 0 or shown['commits'] != [head.strip()]):",
+        "    if before['tips'].get('head') != decision['head']:",
         "    if False:", ['space318/commits/late-commit'])
     add(318, 'space318-keep-left-deferred', disposition318, 'control_space.py',
         "            record['state'] = 'kept'\n            record['disposition']['state'] = 'kept'",
@@ -16732,6 +16732,55 @@ def cases():
     add(318, 'space318-lost-worker-wakeup', disposition318, 'control_service.py',
         "            self.space_disposition_again = True", "            self.space_disposition_again = False",
         ['space318/worker/no-lost-wakeup'])
+    # Fix round 1 (review of 2fe5fd25, verdict FIX). F1: with no channel the task stopped before it
+    # carried a settled answer.
+    add(318, 'space318-no-channel-stops-the-task', disposition318, 'control_service.py',
+        "        channel = self.channel\n        if channel is not None:\n",
+        "        channel = self.channel\n        if channel is None:\n"
+        "            return {'ok': False, 'reason': 'space_disposition_channel_unavailable'}\n"
+        "        if channel is not None:\n",
+        ['space318/worker/no-channel'])
+    # F2: the commit was compared only when the request had shown commits.
+    add(318, 'space318-commit-compared-only-when-commits-were-shown', disposition318, 'control_space_remove.py',
+        "    if before['tips'].get('head') != decision['head']:",
+        "    if shown['commits'] and before['tips'].get('head') != decision['head']:",
+        ['space318/terms/unshown-commit'])
+    # F3: the file list and the commit were compared before the snapshot, with a look of their own.
+    add(318, 'space318-terms-compared-before-the-snapshot', disposition318, 'control_space_remove.py',
+        "    keeper = _sibling('control_space_keep')\n"
+        "    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)\n",
+        "    if disposition_files(ledger, record, path) != shown['files']:\n"
+        "        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')\n"
+        "    if disposition_head(path, ctx['commands']) != decision['head']:\n"
+        "        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')\n"
+        "    keeper = _sibling('control_space_keep')\n"
+        "    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)\n",
+        ['space318/terms/snapshot-race'], also=[
+            ("    if saved_names != shown['files']:", "    if False:"),
+            ("    if before['tips'].get('head') != decision['head']:", "    if False:")])
+    # F4: the reviewer's surviving mutation (the kept branch already holds other work), and the name
+    # a second worktree of one ticket takes.
+    add(318, 'space318-save-onto-a-held-branch', disposition318, 'control_space_remove.py',
+        "    if holds:\n        raise _Refusal(REFUSED, 'the kept branch already holds other work')",
+        "    if False:\n        raise _Refusal(REFUSED, 'the kept branch already holds other work')",
+        ['space318/ac2/kept-name-taken'])
+    add(318, 'space318-second-worktree-takes-the-first-name', disposition318, 'control_space_remove.py',
+        "    return disposition_branch(record, lambda name: name in named or _branch_holds(commands, path, name) is True)",
+        "    return disposition_branch(record)",
+        ['space318/ac2/second-worktree'])
+    # Lead decision (a): VELDO-0300 ac3/commands allows the discard remover's force option and no other.
+    add(318, 'space318-force-beyond-the-discard', '138_veldo_0300_space_remove.py', 'control_space_remove.py',
+        "    if ctx.get('disposition') == 'discard':\n"
+        "        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
+        "    if ctx.get('disposition'):\n"
+        "        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
+        ['ac3/commands'])
+    result[-1]['siblings'] = True
+    add(318, 'space318-a-second-force-option', '138_veldo_0300_space_remove.py', 'control_space_remove.py',
+        "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', path, to)",
+        "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', '--force', path, to)",
+        ['ac3/commands'])
+    result[-1]['siblings'] = True
 
     return result
 

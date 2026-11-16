@@ -41,7 +41,8 @@ ignored files with it, with no word).
 
 AC3 rows: ac3/commands (the declared falsifier row: every command every remover ran, read from the
 client runner's own record: no prune command and no force option; the volume remover takes the one
-volume it names and leaves the other; the source holds neither word as a string), ac3/engine-refusal (a
+volume it names and leaves the other; the source holds no prune word as a string, and no force option
+but the one the discard remover passes to git's worktree remove for a settled Discard, VELDO-0318), ac3/engine-refusal (a
 volume a container uses, an image a container uses, a network with an endpoint and a container that
 does not stop are refused remove_refused and are still there), ac3/drop-caches (only the sub-folders
 the project declares as caches go; the evidence beside them stays; a cache that is a link is refused),
@@ -1174,10 +1175,24 @@ def _v300_space_remove_suite():
                      and isinstance(node.body[0], ast.Expr) and isinstance(node.body[0].value, ast.Constant)}
         words = [node.value for node in ast.walk(tree) if isinstance(node, ast.Constant)
                  and isinstance(node.value, str) and id(node) not in documents]
-        check(ROW, 'the source holds no prune, no clean and no force option as a string',
-              words and not [word for word in words if ('prune' in word and word != '--no-prune')
-                             or word in ('clean', '-f', '--force', '-ff')
-                             or word.startswith('--force')])
+        # AC3: none but the discard remover passes a force option. The source names git's force
+        # option once, in the worktree remover's own call of git's worktree remove, in the branch
+        # taken only for a settled Discard (VELDO-0318 AC3), and nowhere else.
+        is_force = lambda word: word in ('-f', '--force', '-ff') or word.startswith('--force')
+        discard_only = []
+        for function in (node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)):
+            if function.name != '_worktree_remove':
+                continue
+            for branch in (node for node in ast.walk(function) if isinstance(node, ast.If)):
+                if ast.unparse(branch.test) == "ctx.get('disposition') == 'discard'":
+                    discard_only += [id(node) for part in branch.body for node in ast.walk(part)
+                                     if isinstance(node, ast.Constant) and node.value == '--force']
+        forcing = [node for node in ast.walk(tree) if isinstance(node, ast.Constant)
+                   and isinstance(node.value, str) and id(node) not in documents and is_force(node.value)]
+        check(ROW, 'the source holds no prune and no clean as a string, and no force option but the one the '
+                   'discard remover passes to git\'s worktree remove [%s]' % [node.lineno for node in forcing],
+              words and not [word for word in words if ('prune' in word and word != '--no-prune') or word == 'clean']
+              and len(forcing) == 1 and len(discard_only) == 1 and id(forcing[0]) in discard_only)
 
         boundary_check = load('v300_check_git_boundary', ROOT / 'scripts' / 'check_git_boundary.py')
         check(ROW, 'git is run through the one Git boundary and nowhere else in the removers',

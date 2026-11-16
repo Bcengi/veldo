@@ -165,16 +165,17 @@ def _v318_suite():
         ledger.disposition_publish = lambda item: ledger.publish_disposition(
             item, settlement, inbox, presenter, ('requester', lambda data: sign('requester', data)), 'owner')
 
-        def tree(label, dirty=True, ticket=True, station='build'):
+        def tree(label, dirty=True, ticket=True, station='build', shared=None, draft='draft.txt'):
+            # shared: the ticket, or the run, this worktree has in common with another one.
             path = trees / label
             git(repo, 'worktree', 'add', '-q', *(['-b', label] if ticket else ['--detach']), str(path), head)
             owner = {'scope': scope}
             if ticket:
-                owner['ticket'] = label
+                owner['ticket'] = shared or label
             else:
-                owner['run'] = {'id': label, 'station': station}
+                owner['run'] = {'id': shared or label, 'station': station}
             if dirty:
-                (path / 'draft.txt').write_text('draft ' + label)
+                (path / draft).write_text('draft ' + label)
             made = ledger.declare('worktree', {'path': str(path)}, owner, 'record', branch=label if ticket else None, start=head)
             assert made['ok'], made
             item = made['item']
@@ -244,6 +245,11 @@ def _v318_suite():
                 check('ac2/no-unsettled-commit', event, git(path, 'rev-parse', 'HEAD') == before and path.exists())
                 check('ac1/files', event, ledger.item(item)['disposition']['proposal']['worktrees'][0]['files']
                       == RM.disposition_files(ledger, ledger.item(item), str(path)))
+                check('terms/head-recorded', event, ledger.item(item)['disposition'].get('head') == before)
+            item, path, owner = tree('head-refused')
+            for wrong in ('HEAD', 'f' * 39, 7):
+                asked = ledger._item_command(SP.REQUEST, item, {'proposal': None, 'head': wrong}, None, None)
+                check('terms/head-recorded', 'not a commit: ' + repr(wrong), not asked.get('ok'))
 
             # VELDO-0327 fix round 1, F2: a clean tree whose only unique work is unlanded commits.
             def committed(label, ticket=True):
@@ -322,6 +328,122 @@ def _v318_suite():
                 check('commits/late-commit', choice + ' the next request names the new tip ' + repr(shown(item)),
                       shown(item).get('commits') == [late] and shown(item).get('files') == []
                       and request(item) != rid)
+
+            # Fix round 1, F2: the owner was shown files and no commit. A commit made after that is
+            # not in the terms, whatever the commit list was.
+            # (Two commits with one tree, parent, author and second are one commit, held by both
+            # branches and unique to neither: each row's file carries its row's name.)
+            for choice in ('save', 'discard'):
+                item, path, owner = tree('unshown-commit-' + choice)
+                signal(item, owner)
+                if shown(item).get('commits') != [] or shown(item).get('files') != ['draft.txt']:
+                    check('terms/unshown-commit', 'the request shows the draft and no commit ' + repr(shown(item)), False)
+                    continue
+                rid = settle(item, choice)
+                assert ledger.authorize_disposition(item, rid)['ok']
+                (path / 'later.txt').write_text('made and committed after the request was shown: ' + choice)
+                git(path, 'add', 'later.txt')
+                git(path, 'commit', '-q', '-m', 'not shown')
+                late = git(path, 'rev-parse', 'HEAD')
+                result = act(item)
+                check('terms/unshown-commit', choice + repr(result), path.exists()
+                      and ledger.item(item)['state'] == 'deferred' and git(path, 'rev-parse', 'HEAD') == late
+                      and git(repo, 'rev-parse', 'unshown-commit-' + choice) == late
+                      and contents(path / 'draft.txt') == 'draft unshown-commit-' + choice
+                      and contents(path / 'later.txt') == 'made and committed after the request was shown: ' + choice)
+                check('terms/unshown-commit', choice + ' the next request names the commit ' + repr(shown(item)),
+                      shown(item).get('commits') == [late] and shown(item).get('files') == ['draft.txt']
+                      and ledger.item(item)['disposition'].get('head') == late and request(item) != rid)
+
+            # Fix round 1, F3: what is written between the request and the snapshot is saved, and is
+            # not in the terms. The terms are compared with what was saved, so nothing runs.
+            for choice in ('save', 'discard'):
+                for what in ('file', 'commit'):
+                    item, path, owner = tree('raced-' + what + '-' + choice)
+                    signal(item, owner)
+                    rid = settle(item, choice)
+                    assert ledger.authorize_disposition(item, rid)['ok']
+                    original, raced = RM._kept, []
+                    def racing(ctx, identity, record):
+                        if not raced:
+                            raced.append(True)
+                            (path / 'raced.txt').write_text('written just before the snapshot: ' + what + choice)
+                            if what == 'commit':
+                                git(path, 'add', 'raced.txt')
+                                git(path, 'commit', '-q', '-m', 'made just before the snapshot')
+                        return original(ctx, identity, record)
+                    with patch.object(RM, '_kept', racing):
+                        result = act(item)
+                    check('terms/snapshot-race', choice + '/' + what + repr(result), raced == [True] and path.exists()
+                          and contents(path / 'raced.txt') == 'written just before the snapshot: ' + what + choice
+                          and contents(path / 'draft.txt') == 'draft raced-' + what + '-' + choice
+                          and ledger.item(item)['state'] == 'deferred'
+                          and not git(repo, 'branch', '--list', 'space-saved-raced-' + what + '-' + choice))
+
+            # Fix round 1, F4: two worktrees of one ticket are each saved, on a kept branch of its own.
+            for ticket in (True, False):
+                common = 'twin-' + str(ticket)
+                pair = [tree(common + '-' + side, ticket=ticket, shared=common, draft=side + '.txt')
+                        for side in ('first', 'second')]
+                signal(pair[0][0], pair[0][2], 'ticket_ended' if ticket else 'run_finished')
+                named = [shown(item).get('kept_branch') for item, _path, _owner in pair]
+                if not ticket:
+                    # Whichever request is reserved first has the plain name; the other one the next.
+                    check('ac2/second-worktree', 'the two detached requests name two kept branches ' + repr(named),
+                          sorted(named) == ['space-saved-' + common, 'space-saved-' + common + '-2'])
+                tips_saved = []
+                for (item, path, owner), side in zip(pair, ('first', 'second')):
+                    if not shown(item):
+                        check('ac2/second-worktree', 'no request was raised', False)
+                        continue
+                    branch = shown(item).get('kept_branch') or (
+                        'space-saved-' + common + ('' if side == 'first' else '-2'))
+                    rid = settle(item, 'save')
+                    assert ledger.authorize_disposition(item, rid)['ok']
+                    result = act(item)
+                    saved = git(repo, 'branch', '--list', branch) and git(repo, 'rev-parse', branch)
+                    tips_saved.append(saved)
+                    check('ac2/second-worktree', common + '/' + side + repr(result),
+                          ledger.item(item)['state'] == 'removed' and not path.exists() and bool(saved)
+                          and git(repo, 'ls-tree', '-r', '--name-only', branch).split()
+                          == sorted(['.gitignore', 'base.txt', side + '.txt'])
+                          and git(repo, 'rev-parse', branch + '~1') == head)
+                check('ac2/second-worktree', common + ' the two kept branches hold two commits ' + repr(tips_saved),
+                      len(tips_saved) == 2 and all(tips_saved) and tips_saved[0] != tips_saved[1]
+                      and sorted(git(repo, 'rev-parse', 'space-saved-' + common, 'space-saved-' + common + '-2').split())
+                      == sorted(tips_saved))
+
+            # The kept branch a detached worktree's terms name is taken by other work after the
+            # request was shown: Save writes nothing onto it, and the next request names the next one.
+            item, path, owner = tree('name-taken', ticket=False)
+            signal(item, owner, 'run_finished')
+            name = shown(item).get('kept_branch')
+            if name:
+                rid = settle(item, 'save')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                git(repo, 'commit', '-q', '--allow-empty', '-m', 'other work')
+                other = git(repo, 'rev-parse', 'HEAD')
+                git(repo, 'branch', name, other)
+                git(repo, 'reset', '-q', '--soft', head)
+                result = act(item)
+                check('ac2/kept-name-taken', 'refused ' + repr(result), path.exists()
+                      and ledger.item(item)['state'] == 'deferred' and git(repo, 'rev-parse', name) == other
+                      and contents(path / 'draft.txt') == 'draft name-taken'
+                      and git(path, 'rev-parse', 'HEAD') == head)
+                again = shown(item).get('kept_branch')
+                check('ac2/kept-name-taken', 'the next request names the next free branch ' + repr(again),
+                      again == name + '-2' and request(item) != rid)
+                if again == name + '-2':
+                    signal(item, owner, 'run_finished')
+                    rid = settle(item, 'save')
+                    assert ledger.authorize_disposition(item, rid)['ok']
+                    result = act(item)
+                    check('ac2/kept-name-taken', 'saved beside it ' + repr(result),
+                          ledger.item(item)['state'] == 'removed' and not path.exists()
+                          and git(repo, 'rev-parse', name) == other
+                          and git(repo, 'show', again + ':draft.txt') == 'draft name-taken')
+            else:
+                check('ac2/kept-name-taken', 'no request was raised', False)
 
             agent = trees / 'agent'
             git(trees, 'clone', '-q', str(repo), str(agent))
@@ -574,6 +696,32 @@ def _v318_suite():
                       and ledger.item(item)['state'] == 'removed' and not path.exists())
             finally:
                 service.space_consumer.stop()
+            # Fix round 1, F1: with no channel a reserved request waits, and a settled, authorized
+            # answer is carried all the same. The installation wires no probe and no remover here.
+            waiting, waiting_path, owner = tree('worker-no-channel-waits')
+            ledger.disposition_publish = None
+            signal(waiting, owner)
+            ledger.disposition_publish = publish
+            item, path, owner = tree('worker-no-channel-settled')
+            signal(item, owner)
+            rid = settle(item, 'discard')
+            assert ledger.authorize_disposition(item, rid)['ok']
+            bare = {key: value for key, value in given.items() if key not in ('probe', 'remover')}
+            service._space, service.channel = dict(bare, ledger=ledger), None
+            service.space_consumer = CON.Consumer(ledger, bare)
+            try:
+                result = service.space_consumer.run(service._space_dispositions)
+                said = [one for one in result.get('outcomes') or [] if one.get('item') == waiting]
+                check('worker/no-channel', 'the settled Discard is carried ' + repr(result), result.get('ok') is True
+                      and result.get('worker') != os.getpid()
+                      and ledger.item(item)['state'] == 'removed' and not path.exists()
+                      and contents(snapshot(item) / 'work' / 'draft.txt') == 'draft worker-no-channel-settled')
+                check('worker/no-channel', 'the reserved request waits ' + repr(said),
+                      said == [{'item': waiting, 'ok': True, 'waits': 'space_disposition_channel_unavailable'}]
+                      and ledger.item(waiting)['state'] == 'deferred' and waiting_path.exists()
+                      and ledger.item(waiting)['disposition']['state'] == 'requested')
+            finally:
+                service.space_consumer.stop()
             # A journal notification during the active task must cause one more task,
             # even when the first child failed. No timer, no inline filesystem work.
             tasks, submissions = {}, []
@@ -652,6 +800,21 @@ def _v318_suite():
                       and not ledger.item(item).get('owner_keep') and request(item) != rid)
             else:
                 check('ac4/abandon', 'Keep lost its worktree', False)
+
+            # Known gap, not built here (History, 2026-11-16, fix round 1): a clean worktree that a
+            # no-space end pins (VELDO-0317) has no file and no commit to name, and VELDO-0327 AC2
+            # raises no request with neither. What this row holds is that it stays, and says so.
+            item, path, owner = tree('pinned-clean', dirty=False)
+            end = {'space_end': {'worktree': str(path), 'classification': 'environment_failure:no_space'}}
+            conn.execute('INSERT INTO entities(id,kind,version,digest,data) VALUES(?,?,?,?,?)',
+                         ('dispatch:pinned-clean', 'dispatch', 1, S.digest_of(end), json.dumps(end)))
+            conn.commit()
+            result = signal(item, owner)
+            mine = [one for one in result.get('outcomes') or [] if one.get('item') == item]
+            check('pin/clean-stays', repr(result), path.exists() and ledger.item(item)['state'] == 'deferred'
+                  and ledger.item(item)['deferral']['rule'] == 'unique_work'
+                  and not ledger.item(item).get('disposition')
+                  and len(mine) == 1 and mine[0].get('decision_request', {}).get('ok') is False)
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:

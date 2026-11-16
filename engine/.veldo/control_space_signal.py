@@ -455,11 +455,7 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
         # The deferral is written. A request that cannot be built is said and leaves it deferred:
         # the next event asks again, and nothing is removed meanwhile.
         try:
-            commits = _unlanded(ledger, probe, remover, record, given['landed'], given['run'])
-            if commits is None:
-                raise ValueError('the worktree cannot be read for its unlanded commits')
-            asked = ledger.request_disposition(
-                identity, remover.disposition_proposal(ledger, identity, record, commits))
+            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])
         except Exception as error:
             result['request_refusal'] = _raised(error)
             return result
@@ -511,14 +507,23 @@ def disposition(ledger, probe, remover, identity, free=None, owner_live=None, ru
         if result.get('ok'):
             current = ledger.item(identity)
             try:
-                commits = _unlanded(ledger, probe, remover, current, unused.get('landed') or (), run)
-                if commits is None:
-                    raise ValueError('the worktree cannot be read for its unlanded commits')
-                result['decision_request'] = ledger.request_disposition(
-                    identity, remover.disposition_proposal(ledger, identity, current, commits))
+                result['decision_request'] = _request(ledger, probe, remover, identity, current,
+                                                      unused.get('landed') or (), run)
             except Exception as error:
                 result['request_refusal'] = _raised(error)
         return result
+
+
+def _request(ledger, probe, remover, identity, record, landed, run):
+    """Reserve the item's request: its terms, and the commit the worktree was at when they were read.
+    The commit is read first, so a commit made while the lists are read leaves a request whose
+    recorded commit is not the worktree's, and Save and Discard refuse it."""
+    head = remover.disposition_head(record['locator']['path'])
+    commits = _unlanded(ledger, probe, remover, record, landed, run)
+    if commits is None:
+        raise ValueError('the worktree cannot be read for its unlanded commits')
+    return ledger.request_disposition(
+        identity, remover.disposition_proposal(ledger, identity, record, commits), head)
 
 
 def _unlanded(ledger, probe, remover, record, landed, run):
