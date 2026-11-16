@@ -605,13 +605,16 @@ def _v315_suite():
             path = f.tree('on-start', 'ticket/VELDO-9315')
             order = []
 
+            replayed = f.state / 'replayed'
+
             def replay():
-                order.append('replay')
+                replayed.write_text(str(os.getpid()))
 
             answer = f.service.space_start(replay=replay)
             order.append('dispatch')
             check(row, 'immediate dispatch sees adopted item after synchronous replay', answer['ok'] and
-                  f.at(path)[0] is not None and order == ['replay', 'dispatch'])
+                  f.at(path)[0] is not None and order == ['dispatch']
+                  and replayed.is_file() and replayed.read_text() != str(os.getpid()))
             f.service.space_worker_start(reconcile=f.service.space_received_reconcile)
             check(row, 'no received event needs no second startup reconcile', f.service.space_consumer.active is None)
             records = f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='space_reconcile'").fetchone()[0]
@@ -712,9 +715,19 @@ def _v315_suite():
                 return f.conn if len(opened) == 1 else open_store(path)
 
             start, worker = service.space_start, service.space_worker_start
+            launches = f.state / 'replay-git-pids'
+            popen = subprocess.Popen
+
+            def observed_popen(argv, *args, **kwargs):
+                if argv and os.path.basename(str(argv[0])) == 'git' and spool.pending(folder):
+                    with launches.open('a') as stream:
+                        stream.write(str(os.getpid()) + '\n')
+                return popen(argv, *args, **kwargs)
+
 
             def start_once(*args, **kwargs):
-                result = start(*args, **kwargs)
+                with patch.object(subprocess, 'Popen', observed_popen):
+                    result = start(*args, **kwargs)
                 order.append('reconcile')
                 return result
 
@@ -729,6 +742,9 @@ def _v315_suite():
                 while service.space_consumer.active and time.monotonic() < deadline:
                     for fd in real_select(list(service.space_pipes()), [], [], 0.1)[0]:
                         service.space_readable(fd)
+                pids = launches.read_text().splitlines() if launches.exists() else []
+                check('ac3/replay-worker', 'pending spool git is started only by the worker across space_start',
+                      bool(pids) and str(os.getpid()) not in pids)
                 changed = [record for _, record in f.L.events() if record['type'] == 'ref_changed']
                 check('ac3/serve-trunk-replay', 'real serve reads land before open_loop, records and consumes trunk',
                       not spool.pending(folder) and len(changed) == 1 and changed[0]['state'] == 'consumed')

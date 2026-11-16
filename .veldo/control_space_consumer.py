@@ -25,6 +25,7 @@ import os
 from pathlib import Path
 import stat
 import signal
+import select
 
 
 def _organ(name):
@@ -44,6 +45,7 @@ class Consumer:
         self.held = held or (lambda: ())
         self.active, self.buffer = None, b''
         self.reconcile = None
+        self.last_answer = None
         self.startup_received = False
         self.head, self.dispatched = 0, None
         self.watched = {}
@@ -92,6 +94,19 @@ class Consumer:
             if self.startup_received:
                 self._spawn(reconcile)
 
+    def run(self, task):
+        """Startup waits on the worker pipe before dispatch is admitted."""
+        if self.active:
+            raise RuntimeError('space worker already active')
+        self._spawn(task)
+        while self.active:
+            descriptor = self.active[0]
+            poller = select.poll()
+            poller.register(descriptor, select.POLLIN | select.POLLHUP)
+            poller.poll()
+            self.readable(descriptor, advance=False)
+        return self.last_answer
+
     def _spawn(self, task=None):
         if self.active:
             return
@@ -135,8 +150,9 @@ class Consumer:
             ledger.conn = ledger.store.open_store(path)
             ledger.conn.command_registry.update(registry)
             if task is not None:
-                task()
-                answer = {'ok': True}
+                answer = task()
+                if not isinstance(answer, dict) or 'ok' not in answer:
+                    answer = {'ok': True}
             else:
                 # Read again under the lock: an older service's child may have just consumed it.
                 pending = [identity for identity, record in ledger.events() if record['state'] == 'received']
@@ -199,7 +215,7 @@ class Consumer:
                                    {'hook': 'client-exit', 'host': self.ledger.host, 'after': watch['origin']})
         self.observe(dict(answer, client_exit=watch['origin'], item=watch['item']))
 
-    def readable(self, descriptor):
+    def readable(self, descriptor, advance=True):
         if descriptor in self.watched:
             watch = self.watched.pop(descriptor)
             os.close(descriptor)
@@ -223,6 +239,7 @@ class Consumer:
             answer = json.loads(self.buffer)
         except ValueError:
             answer = {'ok': False, 'reason': 'space_worker_lost'}
+        self.last_answer = answer
         self.observe(dict(answer, worker=pid, status=status))
         record = self.ledger.event_record(self.dispatched) if self.dispatched is not None else None
         finished = record is None or record['state'] == 'consumed'
@@ -230,5 +247,5 @@ class Consumer:
             for one in (record['result'] or {}).get('held') or ():
                 if one.get('why') == 'client_alive':
                     self._watch(self.dispatched, record, one.get('item'))
-        if status == 0 and answer.get('ok') and finished:
+        if advance and status == 0 and answer.get('ok') and finished:
             self.advance()

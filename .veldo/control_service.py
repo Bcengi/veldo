@@ -1676,20 +1676,12 @@ class Service:
             if self.space_docker is None:
                 self.space_docker = _organ('control_space_docker').Adapter(
                     self.space['ledger'], run=self.space.get('run'), reconcile=SPACE_RECONCILE)
-            if replay is not None:
-                replay()
-            else:
-                spool = _organ('control_space_spool')
-                folder = spool.spool_folder(self.space['ledger'].state_root)
-                landing = self.space_landing()
-                if spool.pending(folder):
-                    installation = self.config.get('installation')
-                    if not installation:
-                        raise ValueError('space spool needs the installation signing keys')
-                    spool.replay(folder, spool.Local(self.space['ledger'], CM, landing=landing),
-                                 spool.signer(installation), seconds=None)
-                    if spool.pending(folder):
-                        raise ValueError('space spool still has undelivered records')
+            if replay is not None or self.space_spooled():
+                if getattr(self, 'space_consumer', None) is None:
+                    self.space = self.space
+                answer = self.space_consumer.run(replay or self.space_replay)
+                if not answer.get('ok'):
+                    raise RuntimeError(answer.get('detail') or answer.get('reason'))
             if reconcile is not None:
                 return reconcile()
             result = self.space_reconcile('service_start')
@@ -1700,6 +1692,24 @@ class Service:
                 with contextlib.suppress(Exception):
                     self.space_docker.start()
             return self._space_reconcile_failed(error)
+
+    def space_spooled(self):
+        spool = SPACE_CONSUMER.WORKER.SPOOL
+        return spool.pending(spool.spool_folder(self.space['ledger'].state_root))
+
+    def space_replay(self):
+        """Only a worker reads git and signs replayed hook records."""
+        spool = SPACE_CONSUMER.WORKER.SPOOL
+        folder = spool.spool_folder(self.space['ledger'].state_root)
+        landing = self.space_landing()
+        if spool.pending(folder):
+            installation = self.config.get('installation')
+            if not installation:
+                raise ValueError('space spool needs the installation signing keys')
+            spool.replay(folder, spool.Local(self.space['ledger'], CM, landing=landing),
+                         spool.signer(installation), seconds=spool.REPLAY_SECONDS)
+            if spool.pending(folder):
+                raise ValueError('space spool still has undelivered records')
 
     def _space_reconcile_failed(self, error):
         self.space_refusal = 'space_reconcile_failed:' + type(error).__name__
