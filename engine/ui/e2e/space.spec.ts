@@ -109,6 +109,32 @@ for (const viewport of [{ width: 1280, height: 860 }, { width: 390, height: 844 
   })
 }
 
+test('ac1/numeric-alignment-1440: usage figures end at their column headers in both themes', async ({ browser, factory }) => {
+  const page = await pageAs(browser, factory, 'owner', { width: 1440, height: 900 })
+  await openSpace(page, factory)
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((value) => {
+      document.documentElement.setAttribute('data-theme', value)
+      document.documentElement.classList.toggle('dark', value === 'dark')
+      document.documentElement.classList.toggle('light', value === 'light')
+    }, theme)
+    const offsets = await page.getByTestId('space-usage').locator('table').evaluate((table) => {
+      const right = (el: Element) => {
+        const range = document.createRange()
+        range.selectNodeContents(el)
+        return range.getBoundingClientRect().right
+      }
+      const headers = Array.from(table.querySelectorAll('thead th.space-num')).map(right)
+      return Array.from(table.querySelectorAll('tbody tr, tfoot tr')).flatMap((row) =>
+        Array.from(row.querySelectorAll('td.space-num')).map((cell, index) => Math.abs(right(cell) - headers[index]!)),
+      )
+    })
+    expect(offsets.length).toBeGreaterThan(0)
+    expect(Math.max(...offsets), theme + ' numeric text right edges').toBeLessThanOrEqual(1)
+  }
+  await page.context().close()
+})
+
 test('ac2/pending-removed: every due and deferred item with its reason, retry and request; every removal with its event, size and free space', async ({ browser, factory }) => {
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   await openSpace(page, factory)

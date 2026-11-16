@@ -52,6 +52,7 @@ def _v319_space_ui():
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
         'src/views/SpaceView.vue': ROOT / "engine/ui/src/views" / "SpaceView.vue",
+        'src/features/space/space.css': ROOT / "engine/ui/src/features/space" / "space.css",
         'src/features/space/space.ts': ROOT / "engine/ui/src/features/space" / "space.ts",
         'src/features/space/SpacePending.vue': ROOT / "engine/ui/src/features/space" / "SpacePending.vue",
         'src/features/run/runs.ts': ROOT / "engine/ui/src/features/run" / "runs.ts",
@@ -64,7 +65,7 @@ def _v319_space_ui():
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
         'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
     }
-    BROWSER = ('ac1/usage-table-1280', 'ac1/usage-table-390', 'ac2/pending-removed', 'ac3/owner-commands',
+    BROWSER = ('ac1/numeric-alignment-1440', 'ac1/usage-table-1280', 'ac1/usage-table-390', 'ac2/pending-removed', 'ac3/owner-commands',
                'ac3/answer-path', 'ac4/live-no-clock', 'ac4/runs-list', 'ui/states-360', 'ui/states-390',
                'ui/states-1280', 'ui/states-1440', 'ui/api-only')
     ROWS = ('unit/space',) + BROWSER

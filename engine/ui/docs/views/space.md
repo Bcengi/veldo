@@ -55,3 +55,6 @@ no plain repository and no "No project" row. Pools are the installation's and ar
 
 The API redacts what its secret scanner finds in a view. An item's identity is kept, and its path is judged
 part by part, so a long path is served and only a part that looks like a credential is replaced.
+
+Usage figures and their column headers share a right edge on desktop. The browser row
+`ac1/numeric-alignment-1440` checks text bounds in light and dark, including the totals row.

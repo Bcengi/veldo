@@ -1,7 +1,8 @@
 /* VELDO-0319: the Space screen. Tokens only (tokens.css); panels, cards, tables and tags are the factory
    screens' (styles/factory.css). */
 @layer components {
-  .space-num {
+  .space-num,
+  .factory-table td.space-num {
     text-align: end;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;

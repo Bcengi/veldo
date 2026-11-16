@@ -12,6 +12,9 @@ depends_on: [VELDO-0342]
 placement: [engine, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "scripts/suites/support/v174_journey.py"
   - "engine/.veldo/control_api.py"
   - ".veldo/control_api.py"
   - "engine/ui/src/api/routes.json"
@@ -227,3 +230,23 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   150_veldo_0319_space_ui to scripts/gate_unconfined.json. Suites 121 and 122 (VELDO-0131) are
   load-dependent on this host on this tree and on the base alike, and suite 123 (VELDO-0174) has 17 rows
   red on the base too; the proof's checks.json holds the runs.
+
+- 2026-11-16: FIX round authorized by the lead after the fresh review of 498c20c4.
+  Rebased onto the accepted VELDO-0342 fix at bab38780, preserving settlement advancing the
+  remaining group after Keep while its member awaits the owner packet. The console Keep signer
+  is for the next round. The unowned sections remain for the lead to assign.
+  Footprint widened to control_space.py and its synced copy, factory.spec.ts (already under
+  e2e), and scripts/suites/support/v174_journey.py. The protect list is unchanged.
+  F1: the table cell selector now outranks the shared table rule. A browser row compares the
+  numeric text and header right edges at 1440 px in both themes.
+  F2: the Ledger stamps removal sequence inside its outcome transaction. Reads obtain commit
+  time by publication primary key and find dispatches through their indexed hold link.
+  Indexes are installed when the Ledger opens, before serving reads, and maintained atomically
+  by SQLite. Older unstamped removals remain visible with unknown order and time; reads do no
+  backfill. Two rows count the same SQL steps after 4096 more journal entries and dispatches;
+  falsifiers restore the old scans. The screen removes nothing and still follows the stream.
+  F3, owner VELDO-0131 (Telegram 41209): repair factory screen tests to release held or dropped
+  routes on open failure, register cleanup before navigation, and await the screen's own data
+  request or response within its test budget. Failed tests are repaired, never retried to green.
+  F4, owner VELDO-0316 at aa1c5560: give the VELDO-0174 stand-in service space=None, matching
+  an installation without space admission; prove suite 123 twice alongside 121 and 122 twice.
