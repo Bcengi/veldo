@@ -88,7 +88,9 @@ scratch folder that is a repository before the remover), and its two statements 
 inside a scratch folder: superseded by VELDO-0347 AC2 (the remover reads the repository and one that is
 not a clean clone holds the folder, in_use, where it was remove_refused). work/adopted-build-output: superseded by
 VELDO-0347 AC1 (rule 5 refuses the file in an adopted worktree's committed-ignore folder first; its
-snapshot step goes by the rules of a settled answer).
+snapshot step goes by the rules of a settled answer). work/probes-through-the-boundary gains a statement
+(no ignore rule is named for the file): under VELDO-0347 AC1 rule 5 refuses a file a personal rule
+ignores too, so the row's registered falsifier no longer turned it red without it.
 
 THE RE-REVIEW (review2-veldo-0300.md, findings A to D), the same way: work/hidden-edits (a tracked file
 with the assume-unchanged bit and one with the skip-worktree bit, edited, in a worktree and in an agent
@@ -1000,6 +1002,13 @@ def _v300_space_remove_suite():
               answer.get('ok') is False and answer.get('rule') == 'unique_work'
               and (answer.get('found') or {}).get('untracked') == ['personal.txt']
               and text_of(path / 'personal.txt') == 'work a personal ignore rule hides\n')
+        # VELDO-0347 AC1 has rule 5 count a path a personal rule ignores too, so the refusal alone no
+        # longer shows which configuration the probe read. Through the boundary the file is plain
+        # untracked work and no ignore rule is named for it.
+        check(ROW, 'and names no ignore rule for it: the personal excludes file was not read [%s]'
+              % ((answer.get('found') or {}).get('ignored_rules'),),
+              (answer.get('found') or {}).get('ignored') == []
+              and (answer.get('found') or {}).get('ignored_rules') == {})
 
         # The re-review: three more kinds of planted work, each through the whole rule chain.
         ROW = 'work/hidden-edits'
