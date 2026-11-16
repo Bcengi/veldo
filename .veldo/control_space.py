@@ -927,6 +927,21 @@ class Ledger:
 
     # Reads.
 
+    def no_space_ends(self):
+        """The committed ends of the dispatches that ended for want of space (VELDO-0317), each as its
+        space_end record, which names the worktree and the classification. Rule 5 asks for them, so
+        that Signal reads no store and parses nothing itself. Only a no-space end records a worktree,
+        and its classification names it: the other dispatch records are passed over in the store and
+        never parsed here. With no store there are none."""
+        if getattr(self, 'conn', None) is None:
+            return []
+        found = []
+        for (raw,) in self.conn.execute("SELECT data FROM entities WHERE kind='dispatch' AND instr(data, 'no_space')"):
+            end = json.loads(raw).get('space_end') or {}
+            if end:
+                found.append(end)
+        return found
+
     def event_record(self, identity):
         return self._row(identity, EVENT_KIND)[1]
 

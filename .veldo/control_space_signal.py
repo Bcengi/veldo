@@ -752,16 +752,13 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     # VELDO-0317: even a review scratch or a disposable worker clone must stay after
     # a no-space end. Read the committed end on every rule path, including reconnect
     # and retirement, before either exception can save and remove its uncommitted work.
-    import json
-    conn = getattr(ledger, 'conn', None)
-    if conn is not None:
-        # Only a no-space end records a worktree, and its classification names it: the other
-        # dispatch records are passed over in the store and never parsed here.
-        for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch' AND instr(data, 'no_space')"):
-            end = json.loads(raw).get('space_end') or {}
-            tree = end.get('worktree')
-            if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):
-                return {'no_space_worktree': tree, 'classification': end['classification']}
+    # The ends are the Ledger's fact (no_space_ends): this module imports nothing and reads no store
+    # itself. A ledger that holds no store answers none, as before.
+    ends = getattr(ledger, 'no_space_ends', None)
+    for end in (ends() if ends is not None else ()):
+        tree = end.get('worktree')
+        if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):
+            return {'no_space_worktree': tree, 'classification': end['classification']}
     if kind == 'agent_repository' or _agent_repository(ledger, record):
         shared = _scope_repository(ledger, record)
         if shared is None:
