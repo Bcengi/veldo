@@ -276,6 +276,11 @@ def _v343_suite():
                       'refs/heads', 'refs/tags', 'refs/remotes')
             return [name for name in out.split('\n') if name]
 
+        def branch_at(path, name):
+            # The commit the branch `name` is at, or '' when there is no such branch.
+            return subprocess.run(['git', '-C', str(path), 'rev-parse', '--verify', '--quiet', 'refs/heads/' + str(name)],
+                                  capture_output=True).stdout.decode().strip()
+
         def branches(path):
             return git(path, 'for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads')
 
@@ -457,7 +462,7 @@ def _v343_suite():
                     result = act(item)
             stays('ac2/create-only', 'create-only', item, path, tip, result, name)
             check('ac2/create-only', 'the branch that took the name is where it was', bool(name)
-                  and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == head)
+                  and branch_at(repo, name) == head)
 
             # Only a branch holds a commit. A tag can be moved or deleted and a remote-tracking ref
             # goes with a prune, so a commit only one of them reaches gets a kept branch like any other,
@@ -507,7 +512,7 @@ def _v343_suite():
             check('ac2/name-of-a-leaving-item', 'no branch under the name: %r, named %r, %r'
                   % (result, name, record.get('deferral')),
                   result is not None and name == 'space-saved-leaving-item-2' and record['state'] == 'removed'
-                  and not path.exists() and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip
+                  and not path.exists() and branch_at(repo, name) == tip
                   and len(branch_items(name)) == 1 and list(branch_items(name).values())[0]['state'] == 'kept'
                   and ledger.item(other)['state'] == 'deferred' and 'kept_branch' not in ledger.item(other)
                   and subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
@@ -597,15 +602,17 @@ def _v343_suite():
                   and (kept.get('kept_branch') or {}).get('commit') == tip
                   and (kept.get('kept_branch') or {}).get('worktree') == item
                   and (record.get('kept_branch') or {}).get('item') in found
-                  and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip)
-            signal(item, owner, 'run_finished')
-            result = authorize(item, settle(item, 'keep')) if shown(item) else None
+                  and branch_at(repo, name) == tip)
+            result = None
+            if deferred.get('ok') is True:
+                signal(item, owner, 'run_finished')
+                result = authorize(item, settle(item, 'keep'))
             record = ledger.item(item)
             check('ac1/reconcile-records', 'the owner answers Keep: %r, items %r' % (result, branch_items(name)),
                   result is not None and result.get('ok') is True and record['state'] == 'kept'
                   and record.get('owner_keep') == {'by': 'owner'} and path.exists()
                   and contents(path / 'draft.txt') == 'draft left' and git(path, 'rev-parse', 'HEAD') == tip
-                  and branch_items(name) == found and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip
+                  and branch_items(name) == found and len(found) == 1 and branch_at(repo, name) == tip
                   and branch_items(str(name) + '-2') == {})
 
             # AC3: an agent's worktree, on its branch in the agent repository.
