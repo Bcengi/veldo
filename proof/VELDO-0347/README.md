@@ -1,9 +1,10 @@
 # VELDO-0347 proof
 
-Implementation 1f8aaebb059e759d982f4eb50e727d7c6ab02940 (the fix round; the build was f347196e), on base
-7e457e85 (the blocker commit of the first run). Builder evidence, not independent review. All five
-criteria remain pending the lead gate and independent review. The accepted rows that were pinned and red
-after the build are green: see "Fix round" below. One inherited row is red; suites 151 and up were not run.
+Implementation e422b65863a56b777edc9eea8777bd28d9aa9cbe (fix round 2, on the independent review of
+25f56001; the first fix round was 1f8aaebb, the build f347196e), on base 7e457e85 (the blocker commit of the first run). Builder evidence, not
+independent review. All five criteria remain pending the lead gate and independent review. No row of a
+suite run in this round is red; suites 151 and up were not run. Read "Fix round 2" first: it is the
+state of the bundle. The sections before it are the record of the build and the first fix round.
 
 ## What was built
 
@@ -117,6 +118,69 @@ Green in the fix round: the ticket suite, 0298 (135), 0299 (136), 0300 (138), 03
 0343, 0318. Fast checks passed: validation, docs, template sync, lint, space boundary, git boundary.
 Green neighbours of the build, not run again: 0327, 0297 (132), 0326 (133), 0312 (149), 0317.
 
+## Fix round 2
+
+On the independent review of 25f56001 (verdict FIX, no path that loses work). What changed, by finding.
+
+Finding 1, the table ruling was not kept by the code. The clone's handling (rule 5 reading a clone's work
+tree, the request, the worker clone's snapshot removal) was chosen by the item's form alone. It is now
+chosen by the row the kind registry answers for the item from the table of the item's own version: rules
+is given the row, Signal tells the remover the row only when it is agent_repository_clone, the remover
+saves and compares a worker clone only when told, and the Ledger takes a clone's request only for an
+item of the table it was given whose form that table names. Reconcile chooses no handling (it declares
+through the Ledger and ends items through Signal) and did not change. Rows: ac3/table-1-clone (a batch
+clone and a worker clone declared under table 1: no reading by rule 5, the remover refuses keep_failed,
+no request, the Ledger refuses a clone's request, nothing in the snapshot store, every file in place; a
+clean one is removed keep step first) and ac3/table-2-clone (the same two clones under table 2 at the
+same event: the request, and the snapshot removal). Five teeth cases, one for each place that chooses
+and one for the other side of Signal's hand-over. The request has no case of its own: it is raised only
+on rule 5's word work_tree, said for the clone's row alone, so a row test there changes nothing.
+
+Finding 3, the Ledger's Keep alone had no row. ac3/ledger-keep-only plants a settled Discard and a
+settled Save of a requested clone in the store, past the settlement path, and the Ledger refuses each as
+space_disposition_choice with the item unchanged; the same planted Discard of a worktree is taken. One
+teeth case (the reviewer's M5), which left the suite green before and reds this row now.
+
+Finding 4, the rows were not independent. Every row of the ticket suite runs under its own guard and
+builds its own state, or asks for the fixture of its criterion (AC4). Measured by hand in a copy of the
+tree: the reviewer's M2 reds six rows, all of AC2 (it reddened about twenty); M3 reds one row. In the
+teeth run each of the 25 mutants reds rows of one criterion only, six rows at most.
+
+The reviewer's question on AC4, evidence whose only copy is on the trunk. No criterion requires that
+removal: AC4 says an evidence file is removed only when a copy is held. No caller of Signal passes the
+declared trunk and every caller is outside the footprint, so such a file is kept: space is not freed
+and no work is lost. The follow-up is named in the spec History for the lead.
+
+Finding 2, the teeth of finding 301 (teeth-301.json). Two anchors had moved: VELDO-0334 (c638ab1f) had
+removed the line of space301-returns-after-marking-due and VELDO-0318 (a9628b86) had moved the line of
+space301-refused-item-not-deferred. Both cases name the code as it is and make the same defects. With
+the anchors repaired the cases ran and none could be judged: the baseline held the inherited red row
+ac4/no-clock, because VELDO-0317 (e8c903d4) had put an import and a read of the store in Signal's rule 5.
+That read is now the Ledger's (no_space_ends); the line the 0317 teeth case changes is as it was. After
+it: 0301 ac4/no-clock and 0330 rules/write-nothing are green, and finding 301 is 14 registered, 14
+executed, 14 rejected.
+
+Found by reading every teeth case of the changed modules against the code: five anchors this ticket's own
+build had moved. space327-target-another-item is repaired and rejected (finding 327, 16 of 16). The
+other four (space336-scratch-is-unique-work, space302-agent-form-refused,
+space324-ledger-drops-ticket-end, space324-failed-keep-still-deletes) are repaired, each matches once
+and each changed module parses, but their suites are 153 and 154: NOT SHOWN RED, for the lead to run.
+space306-volumes-first anchors a line that was not on the base either and was not changed.
+
+Runs, all on %s, the clean committed tree, nice -n 10 (checks.json, rows.json):
+
+- Ticket suite: 30 rows green (AC1 4, AC2 8, AC3 10, AC4 4, AC5 3, canon).
+- 135 (0298) 143, 136 (0299) 46, 138 (0300) 39, 139 (0301) 18, 140 (0345) 31, 142 (0303) 38, 0343 20,
+  0318 45, 137 (0330) 23, 0317 23, 0327 27: all green.
+- Fast checks passed: validation, docs, template sync, lint, space boundary, git boundary.
+- Teeth, as checks, in this order: 317, 9 of 9; 327, 16 of 16; 345, 22 of 22; 300, 26 of 26. Then
+  301, 14 of 14, and 347 last, 25 registered, 25 executed, 25 rejected (teeth-run.json,
+  teeth-receipt.json, falsifiers.json). Nothing was written in the worktree while they ran; no process
+  with the arguments space and supervise from this run was found after any run.
+
+Not recounted: keep-step-0345.json is the count of the first fix round. Suite 140 changed in one line of
+its fixture since (the row handed to the remover) and its 31 rows are green.
+
 ## Not built, not run
 
 - No Save and no Discard remover for a batch clone or a candidate workspace: no criterion asks for one,
@@ -126,4 +190,8 @@ Green neighbours of the build, not run again: 0327, 0297 (132), 0326 (133), 0312
 - With no ledger there is no snapshot store: the standalone path leaves a worker clone with uncommitted
   files in place, as before.
 - Not run: scripts/verify.sh and suites 151 and up, so the rows of 0302 (suite 153) and 0324 (suite 154)
-  were not run, and neither was 156_veldo_0315_reconcile. They may pin the same things.
+  were not run, and neither was 156_veldo_0315_reconcile. They may pin the same things, and the teeth of
+  findings 336, 302 and 324 were not run.
+- A clone declared under table 1 keeps table 1's handling for good: a dirty one stays, keep_failed, with
+  no request, as before this ticket. The Ledger is given one table, so a table 3 must give it what it
+  needs to go on asking about table 2 clones.

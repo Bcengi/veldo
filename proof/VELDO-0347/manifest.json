@@ -1,21 +1,24 @@
 {
  "artifacts": {
-  "README.md": "sha256:98d71d4138af9fc6289f572d33f3df8d319d326cb05ab975167a94918c236e28",
-  "checks.json": "sha256:2d9ab55cbeb61ba4947609bfaf0cec2befa27f3ddc86e8581af8c4cb1e4cc41a",
-  "falsifiers.json": "sha256:d8e599c2696e04061f1d2ea24268386b1edb0c8bd44960e06e3901506e7d4e6a",
+  "README.md": "sha256:19ee2dedbf78ce91821bcbc42c7ec4c423f361776deeff73d5937a6a595ec599",
+  "checks.json": "sha256:aca42d2884846ba3677b8447d90af7200e727f2a51bcfe58a503e64cd12c4794",
+  "falsifiers.json": "sha256:b1147ffb9bf2d8417ef12b834427c3608fa88c4358a0487612171a777a31738e",
   "keep-step-0345.json": "sha256:27365934d07f6922a41dc703008763e3877772f2864ffb1d0213d81092086ffa",
-  "rows.json": "sha256:b5e8c8092dfd275e9b524c090ecd6f6447548c5a4116b101272e43aad1b33c7c",
-  "sources.json": "sha256:4d80db1db166c4c4ce548e46ec5fb16181fb6d5ffab87ae4a49eab057ae89870",
-  "teeth-receipt.json": "sha256:b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
-  "teeth-run.json": "sha256:986c94741f0572524cd2b955afb546bb3c6a368f05c6b73ed4230bdc0494ae4a"
+  "rows.json": "sha256:d3f1d7defbc5eb1f1d85d6622188139f6f5b3af3f92c7f85499090999112980f",
+  "sources.json": "sha256:b6d442384bca8e9918582232d9714a1fc9b53999405167ab6a518f5a11150af6",
+  "teeth-301.json": "sha256:9292dfa802fbcac887fb9a536f028f4b35f625a3499cebf55a9d258aea74df9b",
+  "teeth-receipt.json": "sha256:16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
+  "teeth-run.json": "sha256:47dcbf898dd7d2478204c7faae552f0f9b8f34349e21727d72789b1de26edfb2"
  },
  "assumptions": [
   "Fix round: the accepted rows in suites 135, 138, 139 and 140 that pinned what AC1, AC5 and table 2 replace were changed on the lead decision, row by row, and are green. No production file changed in the fix round. In suite 140 the remover is handed the keeper module the suite loaded, the same file, so the failing disk and the kill seams the rows plant are in the keep step that runs; keep-step-0345.json counts that step row by row against the base.",
   "Lead decision, confirmed in the fix round: table 2 is issued and table 1 is not edited. A row added to table 1 would change how items already declared under table 1 with a form are judged.",
-  "The teeth of finding 301 cannot start (an anchor is missing from control_space_signal.py, on the base too) and were not repaired here. 0301 ac4/no-clock is red as on the base.",
+  "Fix round 2: the clone handling is chosen by the row the kind registry answers from the table of the item own version, in Signal, the remover and the Ledger. A clone declared under table 1 is judged, asked about and removed by table 1. Reconcile chooses no handling and was not changed. The Ledger is given one table: of an item of any other version it reads no clone row.",
+  "Fix round 2: four teeth anchors this ticket had moved (findings 336, 302, 324) are repaired but not shown red: their suites are 153 and 154, not run in this round.",
+  "Fix round 2: the two anchors of finding 301 that VELDO-0334 and VELDO-0318 moved are repaired, and the read of the no-space ends that VELDO-0317 put in Signal is the Ledger fact now, so 0301 ac4/no-clock and 0330 rules/write-nothing are green and the teeth of finding 301 are 14 of 14.",
   "Lead decision 3: a clone request offers Keep alone, because no criterion asks for a remover that carries a Save or a Discard of a private repository. That remover is a follow-up.",
   "A blob the store holds is read as a row of the store entities whose digest is the file digest and whose own content, encoded again, has it. The store has no other blob table.",
-  "The trunk is the one the caller of Signal names. No caller in the footprint names one yet, so until then evidence is removed only on a copy in the store or in a commit a kept ref reaches.",
+  "The trunk is the one the caller of Signal names. No caller names one and every caller is outside the footprint, so evidence whose only copy is in a commit of the trunk is kept. No criterion requires its removal (AC4: removed only when a copy is held). Kept is the safe direction; passing the trunk from the callers is a follow-up for the lead.",
   "A worker clone is known by its form and by the provisioner manifest beside it under the state root, read with no link followed, naming the item run as its one worker.",
   "A build output folder inside a worker clone is not saved and is deleted with the clone; a file in it is build output by the committed ignore rule or a declared pattern.",
   "ac3/renamed-back uses the two-name reading reconcile itself uses (places); the whole reconcile run is not driven, and suite 156 was not run.",
@@ -36,7 +39,7 @@
    "status": "not_run"
   },
   {
-   "detail": "27 ticket rows green. Green in the fix round: suites 135 (0298, 143), 136 (0299), 138 (0300), 140 (0345, 31), 142 (0303), 0343, 0318; 139 (0301) green but for ac4/no-clock. Green in the build and not run again: 0327, 132 (0297), 133 (0326), 149 (0312), 0317. Red and inherited, the same on the base: 0330 rules/write-nothing, 0301 ac4/no-clock, 0305 review/scratch-apart-from-run-directory, 3 rows of 0308, 0310 keep/kept-item-not-named.",
+   "detail": "30 ticket rows green. Green in fix round 2, on the committed tree: suites 135 (0298, 143), 136 (0299, 46), 137 (0330, 23), 138 (0300, 39), 139 (0301, 18), 140 (0345, 31), 142 (0303, 38), 0343 (20), 0318 (45), 0317 (23), 0327 (27). No row of these is red: 0301 ac4/no-clock and 0330 rules/write-nothing, inherited red since VELDO-0317, are green. Green earlier and not run again: 132 (0297), 133 (0326), 149 (0312). Inherited red, not run again: 0305 review/scratch-apart-from-run-directory, 3 rows of 0308, 0310 keep/kept-item-not-named.",
    "name": "targeted regressions",
    "status": "diagnostic_only"
   },
@@ -46,19 +49,19 @@
    "status": "passed"
   },
   {
-   "detail": "19 of 19 rejected in the run of finding 347 of the fix round, last, on the clean committed tree: the 11 declared falsifiers and 8 guards; no reuse, no invalid result, no surviving worker. As a check on the changed suites: finding 345, 22 of 22; finding 300, 26 of 26; finding 298, 6 of 6.",
+   "detail": "25 of 25 rejected in the run of finding 347 of fix round 2, last, on the clean committed tree: the 11 declared falsifiers, 8 guards and the 6 cases of fix round 2; no reuse, no invalid result, no surviving worker. Finding 301 before it: 14 of 14 (teeth-301.json). As checks on the same commit: 317, 9 of 9; 327, 16 of 16; 345, 22 of 22; 300, 26 of 26.",
    "name": "teeth",
    "status": "passed"
   }
  ],
- "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+ "commit": "e422b65863a56b777edc9eea8777bd28d9aa9cbe",
  "criteria": [
   {
    "evidence": [
     {
      "detail": "Rows ac1/loose-ignored-file, ac1/personal-rule, ac1/untraced-rule and ac1/build-output-is-not-work green; the declared falsifier (ignored paths left out of case 3) turned the first three red; a personal rule taken for build output turned ac1/personal-rule red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0347/teeth-receipt.json",
-     "sha256": "b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
+     "sha256": "16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
      "type": "falsifier"
     }
    ],
@@ -70,7 +73,7 @@
     {
      "detail": "Eight rows ac2/* green; looking beneath worktrees and agent repositories only turned ac2/unpushed-commit and ac2/build-output red, the logs left out turned ac2/log-only-commit red, a remote-tracking ref taken at its word turned ac2/hand-written-ref red; the remover with no last look turned ac2/last-look red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0347/teeth-receipt.json",
-     "sha256": "b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
+     "sha256": "16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
      "type": "falsifier"
     }
    ],
@@ -80,9 +83,9 @@
   {
    "evidence": [
     {
-     "detail": "Seven rows ac3/* green; no keep step turned ac3/keep-first red, no snapshot turned ac3/worker-clone-saved red, no comparison turned ac3/changed-after-snapshot red, the folder left under its marked name turned ac3/renamed-back red; no request, a worktree request taken for a clone, and any item with the form taken for a worker clone each turned its row red. A clone request offers Keep alone. Pending aggregate verification and review.",
+     "detail": "Ten rows ac3/* green; no keep step turned ac3/keep-first red, no snapshot turned ac3/worker-clone-saved red, no comparison turned ac3/changed-after-snapshot red, the folder left under its marked name turned ac3/renamed-back red; no request, a worktree request taken for a clone, and any item with the form taken for a worker clone each turned its row red. A clone request offers Keep alone. Fix round 2: the clone handling chosen by the form alone, in rule 5, in what Signal tells the remover, in the remover and in the Ledger, each turned ac3/table-1-clone red; the remover never told the clone row turned ac3/table-2-clone and ac3/worker-clone-saved red; the Ledger applying any settled choice to a clone turned ac3/ledger-keep-only red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0347/teeth-receipt.json",
-     "sha256": "b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
+     "sha256": "16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
      "type": "falsifier"
     }
    ],
@@ -94,7 +97,7 @@
     {
      "detail": "Four rows ac4/* green; the digest of the first measurement used turned ac4/changed-after-measure red; a file written while read, and a guessed trunk, each turned its row red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0347/teeth-receipt.json",
-     "sha256": "b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
+     "sha256": "16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
      "type": "falsifier"
     }
    ],
@@ -106,7 +109,7 @@
     {
      "detail": "Rows ac5/own-folder-holds, ac5/registry-row and ac5/no-form green; looking beneath the item only turned ac5/own-folder-holds red, an item with no form given the clone events turned ac5/no-form red, the registry giving it the clone row turned ac5/registry-row red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0347/teeth-receipt.json",
-     "sha256": "b18faeb8746b4f22cc3fda24a5c9228d0e8e237fcc42acd6107b5d9f35d93614",
+     "sha256": "16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
      "type": "falsifier"
     }
    ],
@@ -114,10 +117,10 @@
    "status": "pending"
   }
  ],
- "produced_at": "2026-11-16T18:18:12.914061+00:00",
- "producer": "Claude builder; not an independent reviewer; the fix round after the lead triage of the red accepted rows",
+ "produced_at": "2026-11-16T18:56:32.453983+00:00",
+ "producer": "Claude builder; not an independent reviewer; fix round 2, after the independent review of 25f56001",
  "rollback": "Revert the implementation. Kept refs, snapshots already written and every file left in place remain. Items declared under table 2 keep reading it only while the registry holds it: revert the registry last, or not at all.",
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0347",
- "tree": "987e5e643a892245f93cdccfaaf5fe8e7b79842c"
+ "tree": "008383233013a6c1d8b97b2545b0d05c39b270f3"
 }

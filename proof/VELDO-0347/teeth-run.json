@@ -10,11 +10,11 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v347fix/teeth347/logs",
+  "/tmp/v347r2/teeth347/logs",
   "--diff-dir",
-  "/tmp/v347fix/teeth347/diffs"
+  "/tmp/v347r2/teeth347/diffs"
  ],
- "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+ "commit": "e422b65863a56b777edc9eea8777bd28d9aa9cbe",
  "earlier_runs": [
   {
    "commit": "e76e97b493b481705fb575e5242a6645a6e25fc0",
@@ -24,24 +24,33 @@
    "rejected": 19,
    "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=83.405s",
    "tree": "8080540c63fb6046b3b34dba7e376d331a2830e8"
+  },
+  {
+   "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
+   "executed": 19,
+   "note": "the run of the first fix round",
+   "registered": 19,
+   "rejected": 19,
+   "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=75.083s",
+   "tree": "987e5e643a892245f93cdccfaaf5fe8e7b79842c"
   }
  ],
- "elapsed": 75.0832778820768,
- "executed": 19,
+ "elapsed": 134.0154154379852,
+ "executed": 25,
  "exit_code": 0,
  "hand_checks": [],
  "invalid_results": [],
- "note": "The teeth run of finding 347 of the fix round, last, on the clean committed tree. Nothing was written in the worktree while it ran and no mutant was applied by hand. Before it, at the same commit or one commit earlier, the teeth of the findings whose suites changed were run as a check (checks.json): 345, 300 and 298.",
+ "note": "The teeth run of finding 347 of fix round 2, last, on the clean committed tree. Nothing was written in the worktree while it ran. Before it, on the same commit and in this order, as checks (checks.json): the teeth of findings 317, 327, 345 and 300, then 301 (teeth-301.json). Each new case was also applied once by hand in a copy of the tree outside the worktree while it was written, and seen red on its row.",
  "ran_last": true,
- "registered": 19,
- "rejected": 19,
+ "registered": 25,
+ "rejected": 25,
  "reused": 0,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=19 executed=19 reused=0 rejected=19 workers=29 elapsed=75.083s",
+ "summary": "mutations: passed registered=25 executed=25 reused=0 rejected=25 workers=35 elapsed=134.015s",
  "supervisors_after": [],
  "supervisors_before": [],
  "surviving_workers": 0,
- "tree": "987e5e643a892245f93cdccfaaf5fe8e7b79842c",
- "wall_seconds": 75
+ "tree": "008383233013a6c1d8b97b2545b0d05c39b270f3",
+ "wall_seconds": 134
 }

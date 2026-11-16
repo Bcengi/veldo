@@ -1,0 +1,236 @@
+{
+ "cases": [
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac1/children-first",
+    "VELDO-0301 ac1/every-item-gets-an-outcome",
+    "VELDO-0301 ac1/kept-and-unknown",
+    "VELDO-0301 ac1/removes-before-return",
+    "VELDO-0301 ac2/deferred-then-retried",
+    "VELDO-0301 ac2/missing-is-gone",
+    "VELDO-0301 ac2/unreadable-is-not-gone",
+    "VELDO-0301 ac3/report-mode",
+    "VELDO-0301 ac5/keep-failed-passed-through",
+    "VELDO-0301 ac5/left-at-stays-removing",
+    "VELDO-0301 ac5/remover-deferrals",
+    "VELDO-0301 carrier/one-remover",
+    "VELDO-0301 carrier/recorded",
+    "VELDO-0301 look/agent-repository-held",
+    "VELDO-0301 rules/carry-out-refused"
+   ],
+   "name": "space301-returns-after-marking-due",
+   "noop_failed": [],
+   "targets": [
+    "ac1/removes-before-return"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac2/deferred-then-retried",
+    "VELDO-0301 ac2/missing-is-gone",
+    "VELDO-0301 ac2/unreadable-is-not-gone",
+    "VELDO-0301 ac5/keep-failed-passed-through",
+    "VELDO-0301 ac5/remover-deferrals",
+    "VELDO-0301 carrier/recorded"
+   ],
+   "name": "space301-refused-item-not-deferred",
+   "noop_failed": [],
+   "targets": [
+    "ac2/deferred-then-retried"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac3/report-mode",
+    "VELDO-0301 ac3/switch-off"
+   ],
+   "name": "space301-mode-ignored",
+   "noop_failed": [],
+   "targets": [
+    "ac3/report-mode",
+    "ac3/switch-off"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac4/no-clock"
+   ],
+   "name": "space301-age-rule-for-scratch",
+   "noop_failed": [],
+   "targets": [
+    "ac4/no-clock"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac5/keep-failed-passed-through",
+    "VELDO-0301 ac5/left-at-stays-removing",
+    "VELDO-0301 ac5/remover-deferrals"
+   ],
+   "name": "space301-every-tool-refusal-remove-refused",
+   "noop_failed": [],
+   "targets": [
+    "ac5/keep-failed-passed-through"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac2/missing-is-gone",
+    "VELDO-0301 ac5/left-at-stays-removing"
+   ],
+   "name": "space301-left-at-as-any-deferral",
+   "noop_failed": [],
+   "targets": [
+    "ac5/left-at-stays-removing"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 look/agent-repository-held"
+   ],
+   "name": "space301-look-answers-nothing",
+   "noop_failed": [],
+   "targets": [
+    "look/agent-repository-held"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_probe.py",
+   "mutant_failed": [
+    "VELDO-0301 ac2/unreadable-is-not-gone"
+   ],
+   "name": "space301-lexists-at-the-locator",
+   "noop_failed": [],
+   "targets": [
+    "ac2/unreadable-is-not-gone"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac1/every-item-gets-an-outcome",
+    "VELDO-0301 ac1/removes-before-return",
+    "VELDO-0301 carrier/one-remover",
+    "VELDO-0301 carrier/recorded",
+    "VELDO-0301 look/agent-repository-held",
+    "VELDO-0301 rules/carry-out-refused",
+    "VELDO-0301 signal/canon"
+   ],
+   "name": "space301-an-item-that-raises-stops-the-event",
+   "noop_failed": [],
+   "targets": [
+    "ac1/every-item-gets-an-outcome"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_remove.py",
+   "mutant_failed": [
+    "VELDO-0301 ac2/unreadable-is-not-gone"
+   ],
+   "name": "space301-lexists-under-the-marked-name",
+   "noop_failed": [],
+   "targets": [
+    "ac2/unreadable-is-not-gone"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 ac1/every-item-gets-an-outcome"
+   ],
+   "name": "space301-a-registry-that-raises-stops-the-event",
+   "noop_failed": [],
+   "targets": [
+    "ac1/every-item-gets-an-outcome"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 carrier/recorded"
+   ],
+   "name": "space301-no-carrier-on-the-record",
+   "noop_failed": [],
+   "targets": [
+    "carrier/recorded"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 carrier/one-remover"
+   ],
+   "name": "space301-writes-over-another-carrier",
+   "noop_failed": [],
+   "targets": [
+    "carrier/one-remover"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "module": "control_space_signal.py",
+   "mutant_failed": [
+    "VELDO-0301 rules/carry-out-refused"
+   ],
+   "name": "space301-carry-out-not-refused",
+   "noop_failed": [],
+   "targets": [
+    "rules/carry-out-refused"
+   ]
+  }
+ ],
+ "command": [
+  "nice",
+  "-n",
+  "10",
+  "python3",
+  "scripts/check_teeth_mutations.py",
+  "--finding",
+  "301",
+  "--jobs",
+  "2",
+  "--worker-log-dir",
+  "/tmp/v347r2/teeth301/logs",
+  "--diff-dir",
+  "/tmp/v347r2/teeth301/diffs"
+ ],
+ "commit": "e422b65863a56b777edc9eea8777bd28d9aa9cbe",
+ "executed": 14,
+ "exit_code": 0,
+ "note": "Before this round the driver stopped before any case: registered 14, executed 0, exit 1. With the first anchor repaired every case ran and none could be judged, because the baseline held the inherited red row ac4/no-clock (Signal imported json, VELDO-0317): registered 14, executed 14, rejected 0, exit 1. With that read moved to the Ledger the baseline is green and all 14 are rejected.",
+ "registered": 14,
+ "rejected": 14,
+ "repaired": {
+  "space301-refused-item-not-deferred": "its anchor was moved by VELDO-0318 (a9628b86); it now changes the same write, kept in a name",
+  "space301-returns-after-marking-due": "its anchor was removed by VELDO-0334 (c638ab1f); it now changes \"if selected:\" of the loop that carries the due items, the same defect"
+ },
+ "reused": 0,
+ "status_after": "",
+ "status_before": "",
+ "summary": "mutations: passed registered=14 executed=14 reused=0 rejected=14 workers=20 elapsed=39.410s",
+ "supervisors_after": [],
+ "supervisors_before": [],
+ "surviving_workers": 0,
+ "tree": "008383233013a6c1d8b97b2545b0d05c39b270f3",
+ "wall_seconds": 39
+}

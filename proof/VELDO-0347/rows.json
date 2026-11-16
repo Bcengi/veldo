@@ -1,7 +1,7 @@
 {
  "all_green": true,
- "commit": "1f8aaebb059e759d982f4eb50e727d7c6ab02940",
- "count": 27,
+ "commit": "e422b65863a56b777edc9eea8777bd28d9aa9cbe",
+ "count": 30,
  "criteria": {
   "AC1": [
    "ac1/loose-ignored-file",
@@ -26,7 +26,10 @@
    "ac3/worker-clone-saved",
    "ac3/changed-after-snapshot",
    "ac3/renamed-back",
-   "ac3/not-shown"
+   "ac3/not-shown",
+   "ac3/table-1-clone",
+   "ac3/table-2-clone",
+   "ac3/ledger-keep-only"
   ],
   "AC4": [
    "ac4/held-files-go",
@@ -40,7 +43,8 @@
    "ac5/no-form"
   ]
  },
- "limitation": "A partial selftest is diagnostic only. The lead runs the gate. Suites 151 and up were not run; one inherited row is red (0301 ac4/no-clock).",
+ "independence": "Every row runs under its own guard and builds its own state, or asks for the fixture of its criterion (AC4). A row that raises is red with what was raised; the rows after it run.",
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate. Suites 151 and up were not run. No row of a suite run in this round is red.",
  "other_suite": {
   "scripts/suites/135_veldo_0298_space_kinds.py": {
    "ac1/<row>/<event> (92 rows)": "fix round, superseded by AC5: the fixture item is declared under table 1 by its number; green",
@@ -53,6 +57,9 @@
   "scripts/suites/136_veldo_0299_space_probe.py": {
    "ac2/case-3-untracked": "updated, superseded by AC1: a loose ignored file is unique work, case 3; green"
   },
+  "scripts/suites/137_veldo_0330_space_rules.py": {
+   "rules/write-nothing": "fix round 2: green, for the same reason. The row was not changed."
+  },
   "scripts/suites/138_veldo_0300_space_remove.py": {
    "work/adopted-build-output": "fix round, superseded by AC1: rule 5 refuses and names build/ with its rule; the snapshot step by the rules of a settled answer; green",
    "work/ignored-files": "updated, superseded by AC1: rule 5 refuses first; the remover asked directly refuses as before; green",
@@ -61,6 +68,7 @@
    "work/worktree-second-probe": "fix round, superseded by AC1: plants build output rule 5 lets through; in_use as before; green"
   },
   "scripts/suites/139_veldo_0301_space_signal.py": {
+   "ac4/no-clock": "fix round 2: green. It was red on every base since VELDO-0317 put an import in Signal; the read is now the Ledger's. The row was not changed.",
    "ac5/keep-failed-passed-through": "fix round, superseded by AC1: the cause is a kept ref that cannot be written; green"
   },
   "scripts/suites/140_veldo_0345_space_keep.py": {
@@ -71,7 +79,8 @@
    "ac5/folders-synced": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
    "ac5/kill-points": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green; reds its own row when a folder of the store is not there",
    "ac5/retry-compares": "fix round, superseded by AC1: driven with a worker clone of an ended run; the same keep step; green",
-   "ac6/removing-put-back": "fix round, superseded by AC1: its file is written after the keep step answered; green"
+   "ac6/removing-put-back": "fix round, superseded by AC1: its file is written after the keep step answered; green",
+   "the fixture attempt": "fix round 2: the fixture's own call of the remover names the registry row of the item, as Signal does; nothing a row asserts changed; 31 green"
   },
   "scripts/suites/142_veldo_0303_space_paths.py": {
    "ac2/uncommitted-stays": "updated, superseded by AC3: saved and removed, no request; green",
@@ -98,6 +107,9 @@
   "ac3/changed-after-snapshot",
   "ac3/renamed-back",
   "ac3/not-shown",
+  "ac3/table-1-clone",
+  "ac3/table-2-clone",
+  "ac3/ledger-keep-only",
   "ac4/held-files-go",
   "ac4/changed-after-measure",
   "ac4/unreadable-is-no-copy",
@@ -108,6 +120,20 @@
   "unseen/canon"
  ],
  "suite": "scripts/suites/150_veldo_0347_unseen_work.py",
+ "suites_run": {
+  "135_veldo_0298_space_kinds": 143,
+  "136_veldo_0299_space_probe": 46,
+  "137_veldo_0330_space_rules": 23,
+  "138_veldo_0300_space_remove": 39,
+  "139_veldo_0301_space_signal": 18,
+  "140_veldo_0345_space_keep": 31,
+  "142_veldo_0303_space_paths": 38,
+  "150_veldo_0317_full_pool": 23,
+  "150_veldo_0318_unique_work": 45,
+  "150_veldo_0327_disposition": 27,
+  "150_veldo_0343_discard_keeps_commits": 20,
+  "150_veldo_0347_unseen_work": 30
+ },
  "what_each_row_holds": {
   "ac1/build-output-is-not-work": "A folder a committed rule covers, or a declared pattern, is build output and the worktree goes; a folder only a personal rule covers is work; an empty one holds none; in an adopted worktree only the declared pattern counts.",
   "ac1/loose-ignored-file": "A worktree whose only work is a local settings file a committed rule ignores: rule 5 refuses it as unique work, the deferral names the path and the rule, no remover is handed it, the file is in place. Plain git, asked to remove such a worktree without force, deletes the file.",
@@ -125,8 +151,11 @@
   "ac3/clone-request": "A batch clone with an untracked file and a candidate workspace with an edit: deferred as unique work by rule 5, one request raised, its terms naming the clone as a clone with form and file, shown with Keep alone; the next event raises no second one; a worktree's terms for a clone are refused by the Ledger.",
   "ac3/creators-declare-the-form": "The clone provisioner, the batch, the landing line and the worker runtime declare their repository as an agent repository with its form; such an item ends at run finished; the Ledger refuses a form on scratch.",
   "ac3/keep-first": "For each of the three forms: a commit made in the clone and never brought across is on a kept ref of the main repository, its file readable there, after the clone is removed.",
+  "ac3/ledger-keep-only": "A settled Discard and a settled Save of a requested clone, planted in the store past the settlement path: the Ledger refuses each as space_disposition_choice and the item is as it was. The same planted Discard of a worktree is taken.",
   "ac3/not-shown": "A worker clone no manifest shows to be one waits, as unique work, with no snapshot written.",
-  "ac3/renamed-back": "After that stop the folder is at its locator, a repository git reads, nothing is at the marked name, the item is deferred with its id and locator, reconcile's reading of the two names is (there, nothing marked), and the next attempt saves what is left as snapshot 2 and removes the clone.",
+  "ac3/renamed-back": "After that stop the folder is at its locator, a repository git reads, nothing is at the marked name, the item is deferred with its id and locator, reconcile's reading of the two names is (there, nothing marked), and the next attempt saves what is left as snapshot 2 and removes the clone. The row makes its own stopped clone (fix round 2).",
+  "ac3/table-1-clone": "A batch clone and a worker clone declared under table 1, with files in no commit, at ticket ended: rule 5 does not read the work tree, the remover refuses keep_failed, no request is raised, the Ledger takes no clone request for the item, nothing is written to the snapshot store, every file is in place. A table 1 clone with nothing uncommitted is removed, keep step first.",
+  "ac3/table-2-clone": "The same two clones declared under table 2, at the same event: the batch clone is deferred as unique work by rule 5 and one request names it as a clone; the worker clone is saved in the snapshot store, byte for byte, and removed with no request.",
   "ac3/worker-clone-saved": "An ended worker clone with a tracked edit, an untracked file, two ignored files that are work, a file in an untracked folder and a link: removed with no request, each of them in the snapshot store byte for byte, build output not saved, its commit on a kept ref.",
   "ac4/changed-after-measure": "A file measured while no copy was held, then changed, while the store came to hold the measured content: it stays. With the held content read now it goes. A file written between the read of its digest and its delete stays.",
   "ac4/held-files-go": "An evidence folder: the files whose digest, read now, is a blob of the store, a file in a trunk commit or a file in a commit of a kept ref are removed; a file with no copy and a link stay; the item is kept; the answer counts them.",
