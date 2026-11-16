@@ -193,12 +193,12 @@ def check_configured_remote(path, branch, remote):
 
 
 def remove_scaffold_ref(path, repository, ledger=None, identity=None):
-    """Ask the ref remover; without an ended owner item the scaffold ref stays. Never raises."""
+    """Ask the ref remover; the standalone entry proves the commit is held before releasing the ref. Never raises."""
     if R.repository_id_problems(repository):
         return False
     try:
         return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,
-                                                       ledger, identity)['ok']
+                                                       ledger, identity, standalone={'state': 'clear'}, main=str(path))['ok']
     except Exception:  # noqa: BLE001 - removing the record of a laid commit never decides an outcome
         return False
 
@@ -236,7 +236,8 @@ def lay_scaffold(path, base, record, templates, ref):
         git(clone, '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m',
             'Lay the Veldo scaffold for adoption under identity %s' % record['id'], identity=author)
         commit = git(clone, 'rev-parse', 'HEAD').stdout.strip()
-        git(path, 'fetch', '-q', '--no-tags', clone, '+%s:%s' % ('HEAD', ref))
+        git(path, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', clone, commit)
+        git(path, 'update-ref', '--no-deref', ref, commit, '')
         return commit
     finally:
         shutil.rmtree(work, ignore_errors=True)
