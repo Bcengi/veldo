@@ -12824,8 +12824,12 @@ def cases():
         saved_line, "        unsaved = (changed + work) if private else []\n",
         ['work/ignored-files'])
     result[-1]['siblings'] = True
+    # VELDO-0347 added a second last look, of a worker clone, with the same comparison: the anchor names
+    # the line before it too, so the case still changes the last look VELDO-0300 built and no other.
     add(300, 'space300-tips-not-read-again', space300, 'control_space_remove.py',
+        "    now = tips(where, record.get('kind'), ctx['commands'])\n"
         "    if now is None or now != kept['tips']:\n",
+        "    now = tips(where, record.get('kind'), ctx['commands'])\n"
         "    if False:\n",
         ['work/commit-in-the-gap'])
     result[-1]['siblings'] = True
