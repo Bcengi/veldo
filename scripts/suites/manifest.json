@@ -2174,7 +2174,7 @@
    "requires": [
     "150_veldo_0329_hook_install"
    ],
-   "regions": "VELDO-0329 AC1 to AC3: both git hooks installed in the shared or the configured hooks folder with an existing hook's lines kept, the session hooks installed in every named client account folder, reconcile's report of a missing hook, and the install at the service's start.",
+   "regions": "VELDO-0329 AC1 to AC3: both git hooks installed in the shared or the configured hooks folder with an existing hook's lines kept, the session hooks installed in every named client account folder, reconcile's report of a missing hook, and the install at the service's start. Fix round rows: a hooks path set outside the repository's local configuration, a hooks folder that is linked, relative or inside a work tree, a git that does not run, two installations naming one folder, a settings file with a key written twice or written meanwhile, and a CLI that blocks.",
    "requires_note": "Only ROOT and expect. Temporary git repositories whose installed hooks git itself runs, SQLite, a real Ledger with signed observer packets over the spool socket, real settings files. The CLI the git hooks start is a fixture script that writes down what it was given."
   }
  ],

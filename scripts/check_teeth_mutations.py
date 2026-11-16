@@ -16465,9 +16465,9 @@ def cases():
             "                record['refused'] = 'git_failed:could not configure '",
             ['space329/fix3/git-not-runnable'])
     hook329('space329-other-installation-sessions-taken',
-            "    if others:\n        record['refused'] = 'session_hooks_of_another_installation:'",
-            "    if False:  # defect: another installation's account folder is written to\n"
-            "        record['refused'] = 'session_hooks_of_another_installation:'",
+            "        if others:\n            record['refused'] = 'session_hooks_of_another_installation:'",
+            "        if False:  # defect: another installation's account folder is written to\n"
+            "            record['refused'] = 'session_hooks_of_another_installation:'",
             ['space329/fix4/two-installations'])
     hook329('space329-other-installation-state-root-taken',
             "    if code == 0 and text.rstrip('\\n') not in ('', str(state_root)):\n",

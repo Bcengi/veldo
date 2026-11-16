@@ -656,7 +656,7 @@ def _v329_suite():
         settings = json.loads((both_account / 'settings.json').read_text())
         check(row, 'an installation still rewrites its own entries, and only those: ' + str(moved[1]),
               moved[1].get('hooks') == {'SessionStart': 'updated', 'SessionEnd': 'updated'}
-              and settings['hooks']['SessionStart'][0] == {'hooks': [{'type': 'command', 'command': 'echo the owner greets'}]}
+              and settings['hooks']['SessionStart'][:1] == [{'hooks': [{'type': 'command', 'command': 'echo the owner greets'}]}]
               and all(len(ours_in(both_account, event)) == 1 and 'veldo-moved' in ours_in(both_account, event)[0]['command']
                       for event in R.SESSION_EVENTS)
               and told_to(both, 'veldo.space.cli') == str(temp / 'bin' / 'veldo-moved'))
@@ -684,7 +684,7 @@ def _v329_suite():
         record = session_install(written)
         check(row, 'text that is not ASCII is written back as the owner wrote it: ' + str(record),
               record.get('ok') is True and NOTE.encode() in (written / 'settings.json').read_bytes()
-              and json.loads((written / 'settings.json').read_bytes())['note'] == NOTE)
+              and json.loads((written / 'settings.json').read_bytes()).get('note') == NOTE)
 
         row = 'fix5/concurrent-write'
         import fcntl
@@ -736,7 +736,7 @@ def _v329_suite():
         record = session_install(raced)
         check(row, 'the next install, alone, keeps the client\'s key and adds the hooks: ' + str(record),
               record.get('ok') is True and record.get('hooks') == {'SessionStart': 'installed', 'SessionEnd': 'installed'}
-              and json.loads((raced / 'settings.json').read_bytes())['model'] == 'the client wrote this meanwhile')
+              and json.loads((raced / 'settings.json').read_bytes()).get('model') == 'the client wrote this meanwhile')
 
         row = 'fix6/blocked-cli-bounded'
         blocked = repository('blocked')
