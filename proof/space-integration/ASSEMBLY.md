@@ -1,8 +1,9 @@
 # Space-management integration: assembly record
 
 Lead's assembly, not a landing. Branch veldo-space-integration, from veldo-space-0304 at 98e08944
-(VELDO-0302, 0324, 0333, 0304). STATUS (resume 2): all seven picks in, lead decisions (a) and (b)
-applied, the integration defects fixed, suites run, and teeth for all twelve findings passed. Nothing
+(VELDO-0302, 0324, 0333, 0304). STATUS (fix round after the independent review, below): all seven
+picks in, lead decisions (a) and (b) applied, the integration defects fixed, the review's five findings
+fixed, suites run, and teeth passed. Nothing
 was pushed; verify.sh and policy_check.py were not run (lead's instruction).
 
 ## Picks (git cherry-pick 8ef46604..TIP, in order)
@@ -94,6 +95,50 @@ all passed with every case rejected: 302 12/12, 304 44/44, 309 20/20, 314 21/21,
 324 20/20, 328 14/14, 333 6/6, 335 13/13, 336 11/11, 337 18/18 (rerun at d6e2b3d9, after the
 anchor fix), 341 15/15. 302-336 and 341 ran at 09c1328c; d6e2b3d9 touches only suite 153_0337,
 which none of those findings run.
+
+## Fix round after the independent review (verdict FIX, five findings; one commit each)
+
+Review: review-veldo-space-integration.md, at 9b5ca496.
+
+- 5d419069 VELDO-0335, finding 1, decision (a) finished (design 6.9: the CLI event verb is for
+  released). The verb takes released alone: session_started, session_ended and ref_changed are refused
+  by name (space_event_hook_only:<type>) before anything is spooled or sent, with a ledger and with
+  none; its session and ref branches are removed. The Ledger refuses the emitter hook "event" for every
+  kind but released, so the spool route cannot bypass 0335's rule. The client hooks and the git hooks
+  spool directly as before. This supersedes the line of fba90748 above that the Ledger refuses the
+  CLI's session and ref events: the verb now refuses them itself. Rows: 154_0335
+  safety/spool-emitter-released-only (new), 151_0313 ac3/event-types, 153_0314 ac4/cli-spools,
+  fix5/cli-session-path-said, round2/cli-invalid-refused and round2/cli-unsafe-folder (the last two
+  now plant a release), 153_0323 compatibility/cli-envelope-refused. Teeth registry: new
+  space335-spool-emitter-any-kind; space314-cli-hook-type-taken replaces
+  space314-cli-folder-unresolved and space314-cli-session-path-silent, whose code is gone; the
+  anchors of space314-cli-raw-paths, space314-cli-unresolved and space335-cli-forges-hook follow the
+  code. proof/VELDO-0314/falsifiers.json still names the two replaced cases: that bundle is not
+  edited here. Suite registry sentence and 0335 History line updated.
+- 0063dff3 VELDO-0337, finding 2: row safety/review-scratch-in-use (a review_run_scratch whose
+  borrowed login is not settled under the borrow root is deferred at verdict_recorded, rule in_use,
+  and removed by the same event once settled) and teeth case space337-review-scratch-in-use-skipped;
+  suite 153_0337 names control_space_signal.py among its production copies.
+- c2de998d VELDO-0337, finding 3: row ac1/build-root-passes-between-kinds (a review run after a
+  build run on the same worktree, and a build run after a review run, are given the same build root)
+  and teeth cases space337-build-root-own-kind-only and space337-build-root-plain-kind-only.
+- 8cffa5be VELDO-0341, finding 4: pick 2 above declares the rename of 0328's Adapter._image.
+- 042705db VELDO-0337, finding 5: design VELDO-0295 amended (a review's scratch and build root end on
+  verdict_recorded, ticket_ended and project_ended; twelve kinds), with a dated note.
+
+Checks at 8cffa5be. Not run: verify.sh, policy_check.py. validate.py all exit 0, check_generated.sh
+and check_docs.sh pass (run during the round).
+
+Suites (selftest --suite, nice 10), green: 153_0314 54/0, 153_0323 66/0, 154_0335 58/0, 153_0337
+47/0, 153_0302 68/0, 153_0309 50/0, 153_0328 43/0, 153_0333 39/0, 153_0336 47/0, 153_0341 47/0,
+154_0324 55/0, 148_0311 57/0, 132_0297 57/0, 149_0312 67/0. Red, known rows only: 151_0313 42/12
+(the host-bound rows, a subset of the 18 above; ac3/event-types PASSES), 86_0127 52/2 (live/claude,
+live/codex).
+
+Teeth (check_teeth_mutations.py --finding N, nice 10, run last, nothing written meanwhile), all
+passed with every case rejected: 314 20/20, 335 14/14, 337 21/21. The other nine findings were not
+rerun: of their modules this round changed only control_space.py's emitter check and bin/veldo's
+event verb.
 
 ## Open
 
