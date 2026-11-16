@@ -132,6 +132,13 @@ JOURNEY = {
 SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')
 SPACE_DISCARD = ('Discard removes the worktree and its listed files from disk. The files are saved first '
                  'outside git; commits are kept before removal. Nothing is removed if saving fails.')
+# A clone's request (VELDO-0347): a batch clone or a candidate workspace whose work tree holds files
+# that are work. No remover carries a Save or a Discard of a private repository, so the request
+# offers the one answer the system can carry: Keep.
+SPACE_CLONE_CHOICES = ('accept keep',)
+SPACE_CLONE_KEEP = ('Keep leaves the clone and every file in it where they are. Nothing is removed. '
+                    'Veldo has no Save and no Discard for a clone.')
+SPACE_CLONE_FORMS = ('batch_clone', 'candidate_workspace')
 QUORUM_FIELDS = ('count', 'min_independence')
 # What Release 1 settles: one presented owner, at most separation from the requester.
 SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}
@@ -171,8 +178,51 @@ def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')
 
 
+def space_target(proposal):
+    """The one thing a space proposal names: its worktree entry, or its clone entry. Refused when it
+    names neither as one list of one entry."""
+    if isinstance(proposal, dict):
+        for field in ('worktrees', 'clones'):
+            listed = proposal.get(field)
+            if (field in proposal and isinstance(listed, list) and len(listed) == 1
+                    and isinstance(listed[0], dict) and ('worktrees' in proposal) != ('clones' in proposal)):
+                return listed[0]
+    raise Refused('invalid_input', 'space terms name one worktree or one clone')
+
+
+def space_risk(proposal):
+    """The risk statement a space request is framed with: what its terms say of the answer that
+    changes something. A clone's terms say that nothing is removed."""
+    return SPACE_CLONE_KEEP if isinstance(proposal, dict) and 'clones' in proposal else SPACE_DISCARD
+
+
+def _clone_presentation(proposal):
+    """The signed request content for one clone (VELDO-0347 AC3): a batch clone or a candidate
+    workspace, named as a clone with its form and never as a worktree. It lists the files of its work
+    tree that are work and offers Keep alone."""
+    if (set(proposal) != {'keep', 'clones'} or proposal.get('keep') != SPACE_CLONE_KEEP
+            or not isinstance(proposal.get('clones'), list) or len(proposal['clones']) != 1):
+        raise Refused('invalid_input', 'clone terms name one clone and say Keep removes nothing')
+    clone = proposal['clones'][0]
+    if (not isinstance(clone, dict) or set(clone) != {'item', 'path', 'form', 'files'}
+            or not all(_is_str(clone.get(k)) for k in ('item', 'path'))
+            or clone['form'] not in SPACE_CLONE_FORMS):
+        raise Refused('invalid_input', 'clone terms name the clone, its path and its form')
+    files = clone['files']
+    if not isinstance(files, list) or not files or not all(_is_str(path) for path in files):
+        raise Refused('invalid_input', 'clone terms list the files that are work')
+    quoted = lambda value: json.dumps(value, ensure_ascii=True)
+    lines = ['Space disposition', proposal['keep'], 'Clone: ' + quoted(clone['path']),
+             'Item: ' + quoted(clone['item']), 'Form: ' + quoted(clone['form']),
+             'Files in it that are in no commit:'] + ['  ' + quoted(path) for path in files]
+    return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CLONE_CHOICES)}
+
+
 def space_presentation(proposal):
     """The signed request content for one worktree, derived only from its signed terms.
+
+    Terms that name a clone (the field clones, and no worktrees) are a clone's request and are
+    presented as one (_clone_presentation): a clone is never listed as a worktree.
 
     Callers supply the probe's file list, the tips of the unlanded commits that make the work
     unique, branch (null for detached), whether commits are unheld, and the kept branch when
@@ -182,6 +232,8 @@ def space_presentation(proposal):
     uses this before signing its ordinary inbox open command. Group picks belong to VELDO-0342.
     This is a description and an obligation; filesystem effects belong to VELDO-0318.
     """
+    if isinstance(proposal, dict) and 'clones' in proposal:
+        return _clone_presentation(proposal)
     if (not isinstance(proposal, dict) or set(proposal) != {'discard', 'worktrees'}
             or proposal.get('discard') != SPACE_DISCARD
             or not isinstance(proposal.get('worktrees'), list) or len(proposal['worktrees']) != 1):
@@ -525,7 +577,7 @@ class Settlement:
                 raise Refused('invalid_input', 'proposal is a mapping or null')
             if c['touchpoint'] == 'space_disposition':
                 space_presentation(c['proposal'])
-                if target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:
+                if target['kind'] != 'space_item' or target['ref'] != space_target(c['proposal'])['item']:
                     raise Refused('invalid_input', 'space terms target the listed item')
             self._verified(c['principal'], c, packet.get('signature'), self.AC.BOUNDARIES['proposal_commit'])
             tid = terms_id(self.ids['repository_uuid'], c['terms'])

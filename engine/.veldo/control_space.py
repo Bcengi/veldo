@@ -440,6 +440,15 @@ class Refused(Exception):
         self.code, self.detail = code, detail
 
 
+# The forms of an agent repository item (design 4.1), and the names the lifecycle table may hold the
+# events of a form under: a form with a row of its own in the kind registry (VELDO-0347).
+FORMS = ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')
+CLONE_FORMS = FORMS[1:]
+# A clone's request offers Keep and nothing else: no remover carries a Save or a Discard of one.
+REQUEST_FORMS = ('batch_clone', 'candidate_workspace')
+FORM_NAMES = tuple('agent_repository:' + form for form in CLONE_FORMS)
+
+
 def _is_str(value):
     return isinstance(value, str) and value.strip() != ''
 
@@ -774,15 +783,18 @@ def _checked_subject(subject):
 
 def checked_lifecycle(lifecycle):
     """The lifecycle table the kind registry gives, as plain data: its version, its events, and for each
-    kind the events an item of that kind ends on."""
+    kind the events an item of that kind ends on. Beside the kinds it may hold the events of an agent
+    repository form that has a row of its own, under <kind>:<form> (VELDO-0347); no other name is
+    taken."""
     if (not isinstance(lifecycle, dict) or not _is_str(lifecycle.get('version'))
             or not isinstance(lifecycle.get('events'), (list, tuple))
             or not all(_is_str(event) for event in lifecycle['events'])
-            or not isinstance(lifecycle.get('ends_on'), dict) or set(lifecycle['ends_on']) != set(KINDS)):
+            or not isinstance(lifecycle.get('ends_on'), dict) or not set(lifecycle['ends_on']) >= set(KINDS)
+            or not set(lifecycle['ends_on']) <= set(KINDS) | set(FORM_NAMES)):
         raise _invalid('lifecycle', 'a version, the events, and the events each kind ends on')
     events = list(lifecycle['events'])
     ends_on = {}
-    for kind in KINDS:
+    for kind in list(KINDS) + sorted(set(lifecycle['ends_on']) - set(KINDS)):
         listed = lifecycle['ends_on'][kind]
         if not isinstance(listed, (list, tuple)) or any(event not in events for event in listed):
             raise _invalid('lifecycle', 'kind %s ends on events of the table' % kind)
@@ -1304,6 +1316,8 @@ class Ledger:
         retires its authorization; the next request has its own number and file list.
         `head` is the commit the worktree was at when the terms were read (None for a HEAD
         with no commit). It is recorded beside the terms: Save and Discard run only there.
+        A batch clone and a candidate workspace are asked about as clones (VELDO-0347): their
+        terms name the clone with its form and offer Keep alone.
         """
         record = self.item(item) or {}
         prior = record.get('disposition') or {}
@@ -1317,8 +1331,11 @@ class Ledger:
     def _t_disposition_request(self, conn, params, before):
         identity, record = self._stored(params, before)
         prior = record.get('disposition') or {}
-        if record['state'] != 'deferred' or record['kind'] != 'worktree' or record.get('owner_keep'):
-            raise Refused('space_disposition_state', 'a deferred worktree without an owner Keep')
+        clone = record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
+        if (record['state'] != 'deferred' or not (record['kind'] == 'worktree' or clone)
+                or record.get('owner_keep')):
+            raise Refused('space_disposition_state', 'a deferred worktree, batch clone or candidate workspace '
+                                                     'without an owner Keep')
         if prior and prior.get('state') != 'refused':
             raise Refused('space_disposition_exists', 'the item already has its request')
         proposal = params.get('proposal')
@@ -1327,9 +1344,11 @@ class Ledger:
             settlement.space_presentation(proposal)
         except settlement.Refused as error:
             raise Refused(error.code, error.detail) from error
-        tree = proposal['worktrees'][0]
-        if tree['item'] != identity or tree['path'] != record['locator']['path']:
-            raise Refused('space_disposition_item', 'the request names this worktree')
+        # A clone is named as a clone, with its form, and a worktree as a worktree: never one as the other.
+        tree = settlement.space_target(proposal)
+        if (tree['item'] != identity or tree['path'] != record['locator']['path']
+                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):
+            raise Refused('space_disposition_item', 'the request names this item as what it is')
         head = params.get('head')
         if 'head' not in params or head is not None and not (
                 _is_str(head) and len(head) in (40, 64) and not set(head) - set('0123456789abcdef')):
@@ -1429,6 +1448,9 @@ class Ledger:
         if record['state'] != 'deferred' or (record.get('disposition') or {}).get('state') != 'requested':
             raise Refused('space_disposition_state', 'the request has already been applied')
         choice = effect['choice'].split(' ')[1]
+        if record['kind'] != 'worktree' and choice != 'keep':
+            # No remover carries a Save or a Discard of a private repository: only Keep is offered.
+            raise Refused('space_disposition_choice', 'a clone is kept; nothing saves or discards one')
         record['disposition'] = dict(record['disposition'], state='authorized', choice=choice,
                                      request=request, by=owner)
         if choice == 'keep':
@@ -1477,7 +1499,7 @@ class Ledger:
             if not result.get('ok'):
                 return result
         result = presenter.frame(packet('frame', alias=alias, request_version=1,
-                                        risk_statement=st.SPACE_DISCARD))
+                                        risk_statement=st.space_risk(proposal)))
         return {'ok': result.get('outcome') == 'accepted', 'request': rid, 'framing': result}
 
     def snapshot_folder(self, item):
@@ -2259,8 +2281,7 @@ class Ledger:
     def _new_item(self, params, state, adopted):
         kind = params.get('kind')
         form = params.get('form')
-        if form is not None and (kind != 'agent_repository' or form not in
-                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):
+        if form is not None and (kind != 'agent_repository' or form not in FORMS):
             raise _invalid('form', 'a known agent repository form')
         canonical = canonical_locator(kind, params.get('locator'))
         if canonical != params.get('locator'):
@@ -2283,12 +2304,15 @@ class Ledger:
             if repository is not None and resolved_path(repository) != repository:
                 raise Refused('space_locator_link', 'the repository of this worktree is declared through a link: '
                                                     'declare the repository by its resolved path')
+        # The form picks the events (VELDO-0347 AC5): a clone ends at the events its creator sends,
+        # and an item with no form only on the agent repository's own.
+        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form), self.lifecycle['ends_on'][kind])
         return {'kind': kind, 'host': params['host'], 'pool': self._pool_for(kind, canonical, params.get('device'),
                                                                              params.get('pool')),
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],
                 'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'), 'form': form,
                 'process': process, 'state': state,
-                'ends_on': {'version': self.lifecycle['version'], 'events': list(self.lifecycle['ends_on'][kind])},
+                'ends_on': {'version': self.lifecycle['version'], 'events': list(ending)},
                 'size': None, 'confirmed': None, 'deferral': None, 'removal': None, 'report': None}
 
     def _fresh(self, params, before):

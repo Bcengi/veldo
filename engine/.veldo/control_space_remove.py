@@ -340,7 +340,7 @@ def _open_up(name, dir_fd=None):
         os.close(inner)
 
 
-def _walk(name, dir_fd, device, seen, open_up, own=None, depth=0):
+def _walk(name, dir_fd, device, seen, open_up, own=None, depth=0, allowed=None, relative=''):
     if open_up:
         _open_up(name, dir_fd)
     descriptor = os.open(name, os.O_RDONLY | DIRECTORY, dir_fd=dir_fd)
@@ -352,13 +352,20 @@ def _walk(name, dir_fd, device, seen, open_up, own=None, depth=0):
         with os.scandir(descriptor) as entries:
             listing = list(entries)
         names = set(entry.name for entry in listing)
+        pushed = False
         if own is not None and ('.git' in names or GIT_FOLDER <= names):
             # The item's own repository is its top, and the git folder right beneath its top.
             if not (own and (depth == 0 or (depth == 1 and name == '.git'))):
-                raise _Stop('a git repository is in the folder, at %s' % name)
+                # A clean clone the last look read (VELDO-0347 AC2) goes with the folder; no other does.
+                if allowed is None or relative not in allowed:
+                    raise _Stop('a git repository is in the folder, at %s' % name)
+                pushed = True
         for entry in listing:
             if entry.is_dir(follow_symlinks=False):
-                total += _walk(entry.name, descriptor, device, seen, open_up, own, depth + 1)
+                # The git folder of a clean clone is not looked into: the look read its refs and logs.
+                inner = None if pushed and ('.git' not in names or entry.name == '.git') else own
+                total += _walk(entry.name, descriptor, device, seen, open_up, inner, depth + 1, allowed,
+                               os.path.join(relative, entry.name))
                 continue
             found = entry.stat(follow_symlinks=False)
             if found.st_nlink > 1:
@@ -371,25 +378,31 @@ def _walk(name, dir_fd, device, seen, open_up, own=None, depth=0):
         os.close(descriptor)
 
 
-def measure(path, device=None, open_up=False, own=None, dir_fd=None):
+def measure(path, device=None, open_up=False, own=None, dir_fd=None, allowed=None):
     """The bytes the folder `path` takes on disk: every file and directory in it, a file with several
     names counted once, no link followed. With `open_up`, directories the owner cannot enter are opened
     up on the way. `own` says what the walk does with a git repository: None, nothing; False, any
     folder that is one or holds one stops it; True, the same but for the folder's own, at its top.
-    `path` is a name inside `dir_fd` when one is given. Raises OSError for what cannot be read and
-    _Stop for a filesystem mounted inside and for a repository."""
+    `path` is a name inside `dir_fd` when one is given. `allowed` names, by their paths inside the
+    folder, the repositories that do not stop the walk: the clean clones the last look read. Raises
+    OSError for what cannot be read and _Stop for a filesystem mounted inside and for a repository."""
     device = os.lstat(path, dir_fd=dir_fd).st_dev if device is None else device
-    return _walk(path, dir_fd, device, set(), open_up, own)
+    return _walk(path, dir_fd, device, set(), open_up, own, allowed=allowed)
 
 
-def _delete(name, dir_fd, device, before_file=None, relative=''):
+def _delete(name, dir_fd, device, before_file=None, relative='', last=None):
+    """Delete the folder `name` of `dir_fd` and everything in it, through descriptors, no link
+    followed. `before_file(path inside, descriptor, name)` is called for each file immediately before
+    it is deleted and may raise to stop the delete there. `last` names the entry of the top folder
+    that is deleted after every other: a repository's git folder, so that a delete that stops leaves
+    a repository git can still read."""
     descriptor = os.open(name, os.O_RDONLY | DIRECTORY, dir_fd=dir_fd)
     try:
         if os.fstat(descriptor).st_dev != device:
             raise _Stop('another filesystem is mounted inside the folder, at %s' % name)
         with os.scandir(descriptor) as entries:
             listing = [(entry.name, entry.is_dir(follow_symlinks=False)) for entry in entries]
-        for inner, directory in sorted(listing):
+        for inner, directory in sorted(listing, key=lambda entry: (entry[0] == last, entry)):
             child = os.path.join(relative, inner)
             if directory:
                 if before_file is None:
@@ -484,10 +497,15 @@ def _put_back(parent, tail, base):
     return None
 
 
-def _folder(ctx, identity, record, path, own=False, look=None, before_file=None):
+def _folder(ctx, identity, record, path, own=False, look=None, before_file=None, last=None, open_first=False):
     """Rename, second probe, last look, delete. Returns the bytes measured just before the delete.
     `own` is measure's: whether the folder may be a repository of its own. `look(marked name)`, when
-    given, is the last look at the folder under its marked name; its refusal puts the folder back."""
+    given, is the last look at the folder under its marked name; its refusal puts the folder back,
+    and a set it returns names the clean clones inside the folder that go with it (measure's
+    allowed). With `open_first` the directories a confined process left shut are opened up before
+    the look, which has to list them. `before_file` and `last` are _delete's. A refusal `before_file` raises stops the
+    delete there, and the folder, with what is left in it, is renamed back to its path before the
+    refusal is answered (design 0.3): the item keeps its locator."""
     ledger = ctx['ledger']
     path = _plain(path)
     name = marked(path, identity)
@@ -514,13 +532,13 @@ def _folder(ctx, identity, record, path, own=False, look=None, before_file=None)
         try:
             use = _second_probe(ctx, name)
             if use is None:
-                if look is not None:
-                    look(name)
-                size = measure(tail, found.st_dev, open_up=True, own=own, dir_fd=parent)
-                if before_file is None:
-                    _delete(tail, parent, found.st_dev)
-                else:
-                    _delete(tail, parent, found.st_dev, before_file)
+                if open_first:
+                    measure(tail, found.st_dev, open_up=True, dir_fd=parent)
+                looked = look(name) if look is not None else None
+                clones = {'allowed': looked} if isinstance(looked, (set, frozenset)) and looked else {}
+                size = measure(tail, found.st_dev, open_up=True, own=own, dir_fd=parent, **clones)
+                given = ([] if before_file is None else [before_file])
+                _delete(tail, parent, found.st_dev, *given, **({} if last is None else {'last': last}))
                 return size
             refusal = _Refusal(IN_USE, 'the folder is in use under its marked name', found=use)
         except _Refusal as refused:
@@ -647,7 +665,13 @@ def _hidden(commands, read, where):
 
 
 def _looked(ctx, record, where):
-    """The work tree at `where` as git reads it now, every ignored path included: (changed, work).
+    """_looked_all without the build output folders: (changed, work)."""
+    return _looked_all(ctx, record, where)[:2]
+
+
+def _looked_all(ctx, record, where):
+    """The work tree at `where` as git reads it now, every ignored path included: (changed, work,
+    build), build naming the ignored folders that are build output.
     changed names the modified, staged and untracked entries. work names every ignored file that is
     work: all but what lies in an ignored folder that a committed ignore file of this work tree or a
     build output pattern the project declares covers (design 0.1); for a worktree reconcile adopted
@@ -672,6 +696,7 @@ def _looked(ctx, record, where):
     folders = [name for name in ignored if name.endswith('/')]
     work = [name for name in ignored if not name.endswith('/')]  # a loose ignored file is work
     work.extend(_hidden(commands, read, where))
+    build = []
     if folders:
         rules = read('check-ignore', '-v', '-z', '--stdin',
                      feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
@@ -685,12 +710,13 @@ def _looked(ctx, record, where):
         for folder in folders:
             base = os.path.basename(folder.rstrip('/'))
             if source.get(folder) in committed or any(fnmatch.fnmatchcase(base, pattern) for pattern in patterns):
+                build.append(folder)
                 continue  # build output: a build makes it again
             top, inside = os.path.join(where, folder.rstrip('/')), []
             for at, _, files in os.walk(top, onerror=_raise):
                 inside.extend(os.path.relpath(os.path.join(at, name), where) for name in files)
             work.extend(inside)  # an empty folder holds no work
-    return changed, sorted(set(work))
+    return changed, sorted(set(work)), build
 
 
 def _raise(error):
@@ -748,22 +774,163 @@ def _last_look(ctx, record, kept, where):
                        differ=differ, tips=now)
 
 
+def _clean_clones(ctx, where):
+    """The last look at a scratch or build output folder under its marked name `where` (VELDO-0347
+    AC2): every git repository beneath it, read now by the probe. Returns the paths inside the folder
+    of those that are clean clones, which go with it. One that is not a clean clone, one that cannot
+    be read and a folder that cannot be listed refuse, in_use: the repository holds the folder."""
+    probe = ctx['probe']
+    beneath = probe.nested(where)
+    if not beneath.get('read'):
+        raise _Refusal(IN_USE, 'a folder beneath the item could not be listed', found=beneath)
+    allowed = set()
+    for repository in beneath.get('repositories') or ():
+        read = probe.clean_clone(repository, ctx['run'])
+        inside = os.path.relpath(repository, where)
+        if read.get('read') is not True or read.get('clean_clone') is not True:
+            raise _Refusal(IN_USE, 'a git repository in the folder is not a clean clone: ' + inside,
+                           repository=inside, why=read.get('why'), commits=read.get('commits'),
+                           unread=read.get('said'))
+        allowed.add(inside)
+        allowed.update(os.path.relpath(inner, where) for inner in read.get('inside') or ())
+    return allowed
+
+
 def _r_folder(ctx, identity, record, answer):
     answer['method'] = 'rename_probe_delete'
     pools = _before(ctx, record, answer)
-    answer['bytes'], answer['bytes_source'] = _folder(ctx, identity, record, record['locator']['path']), 'measured'
+    answer['bytes'], answer['bytes_source'] = _folder(
+        ctx, identity, record, record['locator']['path'], look=lambda name: _clean_clones(ctx, name),
+        open_first=True), 'measured'
     _after(ctx, pools, answer)
+
+
+WORKER_CLONE = 'worker_clone'
+
+
+def _signature(found):
+    """What says a file is the one that was looked at and has not been written since."""
+    return (found.st_dev, found.st_ino, found.st_mode, found.st_size, found.st_mtime_ns, found.st_ctime_ns)
+
+
+def _clone_look(ctx, record, kept, where, state):
+    """The last look at a worker clone under its marked name `where` (VELDO-0347 AC3): every file of
+    its work tree that is work is in the keep step's snapshot with the same mode and digest, and the
+    tips are the keep step's. It fills `state` with what the delete compares each file with:
+    files, the snapshot's rows; unchanged, the tracked files git reads as unchanged, each with what
+    os.lstat said of it before git's status was read; build, the ignored folders that are build
+    output. Raises the refusal."""
+    commands = ctx['commands']
+    try:
+        linked = _linked(ctx, where)
+        if linked:
+            raise _Refusal(KEEP_FAILED, 'the repository has linked worktrees, and no keep step saves the '
+                           'index of one: ' + ', '.join(linked[:3]), linked=linked[:NAMED],
+                           more=max(0, len(linked) - NAMED))
+        code, out = _git(commands, '-C', where, 'ls-files', '-z')
+        if code != 0:
+            raise _Stop('git could not list the tracked files: ' + str(out)[:200])
+        seen = {}
+        for name in out.split('\0')[:-1]:
+            try:
+                seen[name] = _signature(os.lstat(os.path.join(where, name)))
+            except (FileNotFoundError, NotADirectoryError):
+                pass  # deleted in the work tree: there is nothing to delete
+        changed, work, build = _looked_all(ctx, record, where)
+        snapshot = kept.get('snapshot') if isinstance(kept.get('snapshot'), dict) else {}
+        there = [name for name in sorted(set(changed) | set(work)) if os.path.lexists(os.path.join(where, name))]
+        unsaved = _unsaved(where, there, snapshot)
+    except (OSError, ValueError, RecursionError, _Stop) as error:
+        raise _Refusal(KEEP_FAILED, 'the last look could not be made: ' + _said(error))
+    if unsaved:
+        raise _Refusal(KEEP_FAILED, 'files that are work are in no snapshot of the keep step: '
+                       + ', '.join(unsaved[:3]), unsaved=unsaved[:NAMED], more=max(0, len(unsaved) - NAMED))
+    now = tips(where, record.get('kind'), commands)
+    if now is None or now != kept['tips']:
+        differ = sorted(key for key in set(now or {}) | set(kept['tips'])
+                        if (now or {}).get(key) != kept['tips'].get(key))
+        raise _Refusal(KEEP_FAILED, 'the item is not as the keep step recorded it: ' + ', '.join(differ),
+                       differ=differ, tips=now)
+    files = snapshot.get('files') if isinstance(snapshot.get('files'), dict) else {}
+    state.update(files=files, build=build,
+                 unchanged={name: found for name, found in seen.items() if name not in changed and name not in work})
+
+
+def _clone_compare(state, relative, descriptor, name):
+    """Called for each file of a worker clone immediately before it is deleted (design 0.3). A file of
+    the git folder is covered by the kept refs. A file the snapshot holds must have the mode and the
+    SHA-256 its manifest row records. A tracked file git read as unchanged must be as os.lstat found
+    it before that read. A file in a build output folder is build output. Any other file, and one that
+    differs, is work nothing saved: the delete stops there, keep_failed."""
+    if relative.split('/', 1)[0] == '.git':
+        return None
+    expected = state['files'].get(relative)
+    if isinstance(expected, dict):
+        # Read by the descriptor used for the unlink, so a replaced parent cannot redirect the read.
+        try:
+            found = _digest('/proc/self/fd/%d/%s' % (descriptor, name))
+        except OSError as error:
+            raise _Refusal(KEEP_FAILED, 'a file of the worker clone could not be read: ' + relative, said=_said(error))
+        if found != {key: expected.get(key) for key in ('mode', 'sha256')}:
+            raise _Refusal(KEEP_FAILED, 'a file of the worker clone differs from its snapshot: ' + relative,
+                           changed=relative)
+        return None
+    if relative in state['unchanged']:
+        if _signature(os.lstat(name, dir_fd=descriptor)) != state['unchanged'][relative]:
+            raise _Refusal(KEEP_FAILED, 'a tracked file of the worker clone changed after the last look: '
+                           + relative, changed=relative)
+        return None
+    if any(relative.startswith(folder) for folder in state['build']):
+        return None
+    raise _Refusal(KEEP_FAILED, 'a file of the worker clone is in no snapshot: ' + relative, changed=relative)
 
 
 def _r_agent_repository(ctx, identity, record, answer):
     answer['method'] = 'keep_then_rename_probe_delete'
-    _plain(record['locator']['path'])
+    path = _plain(record['locator']['path'])
+    saved = False
+    if record.get('form') == WORKER_CLONE and ctx['keep'] is not None:
+        # A worker clone of a run that has ended (VELDO-0347 AC3; rule 3 passed before this remover
+        # was called): its uncommitted state is saved in the snapshot store by the keep step, and
+        # each file is compared with the manifest immediately before it is deleted. One that cannot
+        # be shown to be a worker clone is removed as any agent repository is, or not at all.
+        shown = ctx['probe'].worker_clone(path, ((record.get('owner') or {}).get('run') or {}).get('id'),
+                                          ctx['ledger'].state_root)
+        saved = isinstance(shown, dict) and shown.get('clone') is True
+    if saved:
+        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=True)
+        answer['method'] = 'keep_snapshot_then_rename_probe_compare_delete'
     kept = _kept(ctx, identity, record)
     pools = _before(ctx, record, answer)
-    answer['bytes'], answer['bytes_source'] = _folder(
-        ctx, identity, record, record['locator']['path'], own=True,
-        look=lambda name: _last_look(ctx, record, kept, name)), 'measured'
+    if saved:
+        state = {}
+        answer['snapshot'] = (kept.get('snapshot') or {}).get('path')
+        answer['bytes'], answer['bytes_source'] = _folder(
+            ctx, identity, record, path, own=True,
+            look=lambda name: _clone_look(ctx, record, kept, name, state),
+            before_file=lambda relative, descriptor, name: _clone_compare(state, relative, descriptor, name),
+            last='.git'), 'measured'
+    else:
+        answer['bytes'], answer['bytes_source'] = _folder(
+            ctx, identity, record, path, own=True,
+            look=lambda name: _last_look(ctx, record, kept, name)), 'measured'
     _after(ctx, pools, answer)
+
+
+def clone_proposal(ledger, probe, identity, record, run=None):
+    """The terms of the request a batch clone or a candidate workspace with files in no commit raises
+    (VELDO-0347 AC3): the clone named as a clone, with its form and those files, read now. No remover
+    carries a Save or a Discard of a private repository, so the terms offer Keep alone."""
+    settlement = _sibling('control_request_settlement')
+    path = record['locator']['path']
+    patterns = [list(project.get('build_output') or ()) for project in ledger.projects
+                if ((record.get('owner') or {}).get('scope') or {}).get('type') == 'project'
+                and project.get('project') == record['owner']['scope'].get('id')]
+    tree = probe.private_work(path, patterns[0] if patterns else (), bool(record.get('adopted')), run)
+    if tree.get('read') is not True or not tree.get('files'):
+        raise _Refusal(KEEP_FAILED, 'the clone\'s work tree could not be read for its files')
+    return {'keep': settlement.SPACE_CLONE_KEEP,
+            'clones': [{'item': identity, 'path': path, 'form': record.get('form'), 'files': list(tree['files'])}]}
 
 
 def _worktree_remove(ctx, repository, path):
@@ -1239,6 +1406,183 @@ def _review_scratch(ctx, identity, record, kept, answer):
         raise _Refusal(KEEP_FAILED, 'review scratch could not be read: ' + _said(error))
 
 
+class _Copies:
+    """Where a copy of an evidence file is held, asked at the removal (design 0.4, VELDO-0347 AC4). A
+    file has a copy when the SHA-256 of its content, read now, is the digest of a blob the store holds,
+    or of a file in a commit that the trunk or a kept ref of the main repository reaches. Nothing
+    recorded at an earlier measurement is read. A store or a commit that cannot be read is no copy.
+
+    THE STORE holds a blob with a digest when a row of its entities has that digest and the row's
+    own content, encoded again as the store encodes it, has it too.
+
+    A COMMIT holds the file when a blob with the file's git object name is in a tree of a commit
+    reached from the trunk or from a ref under refs/veldo/kept/ of the item's main repository, and
+    that blob, read back from the repository, has the file's SHA-256. The trunk is the one
+    `trunk(repository)` names; it is never guessed, and with none given only kept refs are read."""
+
+    KEPT = 'refs/veldo/kept/'
+
+    def __init__(self, ctx, record):
+        self.ctx, self.record = ctx, record
+        self.objects, self.counts, self.unread = None, {'store': 0, 'commit': 0}, []
+        self.main = None
+
+    def _said(self, what):
+        if what not in self.unread and len(self.unread) < NAMED:
+            self.unread.append(what)
+
+    def _store(self, sha):
+        ledger = self.ctx['ledger']
+        try:
+            rows = ledger.conn.execute('SELECT kind, version, data FROM entities WHERE digest=?',
+                                       ('sha256:' + sha,)).fetchall()
+            for kind, version, raw in rows:
+                blob = ledger.store.canonical_bytes({'kind': kind, 'data': json.loads(raw), 'version': version})
+                if hashlib.sha256(blob).hexdigest() == sha:
+                    return True
+        except Exception as error:  # noqa: BLE001 - a store that cannot be read is no copy
+            self._said('the store could not be read: ' + _said(error))
+        return False
+
+    def _reached(self):
+        """The object names of everything the trunk and the kept refs of the main repository reach,
+        read once for this removal; an empty set when that cannot be read."""
+        if self.objects is not None:
+            return self.objects
+        self.objects = frozenset()
+        commands = self.ctx['commands']
+        try:
+            main = self.ctx['ledger']._main_of(self.record)
+            if not main or os.path.realpath(main) != main or not os.path.isdir(main):
+                self._said('no main repository is at its path')
+                return self.objects
+            refs = ['--glob=' + self.KEPT]
+            trunk = self.ctx.get('trunk')
+            named = trunk(main) if callable(trunk) else None
+            if isinstance(named, str) and named:
+                ref = named if named.startswith('refs/') else 'refs/heads/' + named
+                code, out = _git(commands, '-C', main, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+                if code == 0:
+                    refs.append(out.strip())
+                else:
+                    self._said('the trunk %s could not be read' % ref)
+            code, out = _git(commands, '-C', main, 'rev-list', '--objects', '--no-object-names', *refs)
+            if code != 0:
+                self._said('the commits could not be read: ' + str(out)[:200])
+                return self.objects
+            self.main, self.objects = main, frozenset(out.split())
+        except Exception as error:  # noqa: BLE001 - commits that cannot be read are no copy
+            self._said('the commits could not be read: ' + _said(error))
+        return self.objects
+
+    def _commit(self, at, sha):
+        reached = self._reached()
+        if not reached:
+            return False
+        commands = self.ctx['commands']
+        code, name = _git(commands, '-C', self.main, 'hash-object', '--no-filters', '--', at)
+        if code != 0 or name.strip() not in reached:
+            return False
+        code, out = _git(commands, '-C', self.main, 'cat-file', 'blob', name.strip())
+        return code == 0 and hashlib.sha256(out.encode('utf-8', 'surrogateescape')).hexdigest() == sha
+
+    def find(self, at, sha):
+        """Where a copy of the file open at `at`, whose content has the SHA-256 `sha`, is held: store,
+        commit, or None."""
+        for where, held in (('store', self._store), ('commit', lambda digest: self._commit(at, digest))):
+            if held(sha):
+                self.counts[where] += 1
+                return where
+        return None
+
+
+def _held_file(ctx, copies, name, dir_fd, relative, answer, removed, kept):
+    """One evidence file: its digest is read now, through one descriptor; it is deleted only when a
+    copy with that digest is held and the file is still as it was when it was read. A link, anything
+    that is no regular file, a file that cannot be read and a file with no copy stay."""
+    try:
+        descriptor = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC, dir_fd=dir_fd)
+    except OSError:
+        kept.append(relative)
+        return
+    try:
+        found = os.fstat(descriptor)
+        if not stat.S_ISREG(found.st_mode):
+            kept.append(relative)
+            return
+        digest = hashlib.sha256()
+        for block in iter(lambda: os.read(descriptor, 1 << 20), b''):
+            digest.update(block)
+        held = copies.find('/proc/self/fd/%d' % descriptor, digest.hexdigest())
+        if held is None or _signature(os.lstat(name, dir_fd=dir_fd)) != _signature(found):
+            kept.append(relative)  # no copy, or written since it was read: it stays
+            return
+        os.unlink(name, dir_fd=dir_fd)
+        removed.append(relative)
+        answer['bytes'] += found.st_blocks * BLOCK
+    except OSError:
+        kept.append(relative)
+    finally:
+        os.close(descriptor)
+
+
+def _held_folder(ctx, copies, name, dir_fd, device, relative, answer, removed, kept):
+    try:
+        descriptor = os.open(name, os.O_RDONLY | DIRECTORY, dir_fd=dir_fd)
+    except OSError:
+        kept.append(relative + '/')
+        return
+    try:
+        if os.fstat(descriptor).st_dev != device:
+            kept.append(relative + '/')  # another filesystem is mounted here: nothing in it is touched
+            return
+        with os.scandir(descriptor) as entries:
+            listing = sorted((entry.name, entry.is_dir(follow_symlinks=False)) for entry in entries)
+        names = set(inner for inner, _directory in listing)
+        if '.git' in names or GIT_FOLDER <= names:
+            kept.append(relative + '/')  # a repository is never taken apart file by file
+            return
+        for inner, directory in listing:
+            child = os.path.join(relative, inner)
+            if directory:
+                _held_folder(ctx, copies, inner, descriptor, device, child, answer, removed, kept)
+            else:
+                _held_file(ctx, copies, inner, descriptor, child, answer, removed, kept)
+    except OSError:
+        kept.append(relative + '/')
+    finally:
+        os.close(descriptor)
+
+
+def _r_remove_held(ctx, identity, record, answer):
+    """The evidence remover (design 0.4 and section 5, VELDO-0347 AC4): at a ticket's or a project's
+    end, remove the files of an evidence item that a copy holds, and keep the rest. The item stays.
+    No folder is removed and nothing is renamed: a file with no copy is where it was."""
+    answer['method'] = 'remove_files_a_copy_holds'
+    root = _plain(record['locator']['path'])
+    pools = _before(ctx, record, answer)
+    copies, removed, kept = _Copies(ctx, record), [], []
+    answer['bytes'], answer['bytes_source'] = 0, 'measured'
+    parent = _parent(root)
+    try:
+        base = os.path.basename(root)
+        try:
+            found = os.lstat(base, dir_fd=parent)
+        except OSError as error:
+            raise _Refusal(REFUSED, 'the path could not be read: ' + _said(error))
+        if stat.S_ISDIR(found.st_mode):
+            if mount_point(root):
+                raise _Refusal(REFUSED, 'the folder is a mount point')
+            _held_folder(ctx, copies, base, parent, found.st_dev, '', answer, removed, kept)
+        else:
+            _held_file(ctx, copies, base, parent, base, answer, removed, kept)
+    finally:
+        os.close(parent)
+    answer.update(removed_files=len(removed), kept_files=len(kept), removed=removed[:NAMED], kept=kept[:NAMED],
+                  copies=dict(copies.counts), unread=list(copies.unread))
+    _after(ctx, pools, answer)
+
+
 def _r_drop_caches(ctx, identity, record, answer):
     answer['method'] = 'drop_caches'
     root = _plain(record['locator']['path'])
@@ -1426,11 +1770,12 @@ REMOVERS = {
     ('stop_then_remove', 'container'): _r_container,
     ('remove_tag', 'image_tag'): _r_image_tag,
     ('drop_caches', 'evidence'): _r_drop_caches,
+    ('remove_held', 'evidence'): _r_remove_held,
 }
 
 
 def remove(ledger, probe, identity, record, action='remove', free=None, keep=None, run=None, proc=None,
-           review_check=None):
+           review_check=None, trunk=None):
     """Carry out one removal of the item `identity`, whose ledger record is `record`, by the remover
     of `action` and the item's kind, and return what it measured.
 
@@ -1444,7 +1789,8 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
 
     Returns {ok: True, ...} or the refusal {ok: False, reason, deferral, said, ...}, each with item,
     action, kind, method, bytes, bytes_source, pool, pool_free_before, pool_free_after, freed, host and
-    commands."""
+    commands. `trunk(repository)` names the declared trunk of a main repository, for the evidence
+    remover and nothing else; with none, only the store and the kept refs hold a copy."""
     commands, given = [], run or _run
 
     def logged(argv, cwd=None):
@@ -1452,15 +1798,20 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         return given(argv, cwd)
 
     ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc, 'action': action,
-           'commands': commands, 'review_check': review_check}
+           'commands': commands, 'review_check': review_check, 'trunk': trunk}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}
     try:
-        remover = (_r_disposition if action in ('save', 'discard') and record.get('kind') == 'worktree'
-                   else REMOVERS.get((action, record.get('kind'))))
+        kind = record.get('kind')
+        if action == 'remove_held':
+            # Evidence files are deleted one by one and nothing is renamed first, so the kind that
+            # picks this remover is the Ledger's own word for the item, never the record handed in.
+            kind = (ledger.item(identity) or {}).get('kind')
+        remover = (_r_disposition if action in ('save', 'discard') and kind == 'worktree'
+                   else REMOVERS.get((action, kind)))
         if remover is None:
-            raise _Refusal(REFUSED, 'no remover for the action %s on the kind %s' % (action, record.get('kind')))
+            raise _Refusal(REFUSED, 'no remover for the action %s on the kind %s' % (action, kind))
         if free is None:
             raise _Refusal(REFUSED, 'no reader of free space was given: the removal could not be measured')
         remover(ctx, identity, record, answer)

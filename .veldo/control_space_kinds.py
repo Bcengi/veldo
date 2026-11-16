@@ -48,9 +48,23 @@ ends_on lists it, and its action is the cell of the table of the item's own vers
 changes nothing for an item declared before it. A table is never edited once issued: a change is a new
 version beside the old one.
 
+TABLE 2 (VELDO-0347, design section 5) is table 1 with one more row, agent_repository_clone: an agent
+repository item whose form is a worker clone, a batch clone or a candidate workspace. Such an item is
+a private repository its creator ends (run finished for a clone's teardown and for a batch's discard,
+and the landing line's close), where the agent repository's own row does nothing at run finished. It
+is removed at each of the five columns as an agent repository is removed, the keep step and then the
+folder remover, once rule 5 finds no unique work in it, and is otherwise deferred as unique work.
+Table 1 stays as it was issued. THE FORM PICKS THE ROW AND THE EVENTS: ends_on holds, beside the
+events of each kind, the events of each such form under the name <kind>:<form> (FORM_ROWS), and the
+Ledger copies those to an item declared with that form. An item with no form, or with the form agent,
+reads the agent repository's own row and ends only on its events: a creator that forgets the form
+leaves a clone in place longer and never removes it sooner. Under table 1, which has no such row,
+an item with a form reads its kind's row.
+
 LIFECYCLE is the current table in the form the Ledger is given (control_space.checked_lifecycle): the
-version, the events, and for each kind the events an item of that kind ends on. A worktree's
-events are those of its three rows together.
+version, the events, and for each kind the events an item of that kind ends on, with the events of
+each form that has a row of its own under <kind>:<form>. A worktree's events are those of its three
+rows together.
 
 WHAT HOLDS A WORKTREE OR AN AGENT REPOSITORY. Every item inside it that is not removed and not gone:
 one that is declared, present, deferred, removing or kept, and one that is due and stays (its action is
@@ -83,6 +97,10 @@ KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence', 
 # The rows a kind reads. Only a worktree has more than one.
 ROWS_OF = {kind: (kind,) for kind in KINDS}
 ROWS_OF['worktree'] = ('worktree', 'worktree_review_run', 'worktree_station_run')
+
+# The forms of an agent repository item that read a row of their own (table 2), as (kind, form): row.
+CLONE_FORMS = ('worker_clone', 'batch_clone', 'candidate_workspace')
+FORM_ROWS = {('agent_repository', form): 'agent_repository_clone' for form in CLONE_FORMS}
 
 EVENTS = ('run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended',
           'worktree_abandoned', 'released', 'session_ended')
@@ -158,8 +176,27 @@ TABLE_1 = {
                 for kind in KINDS},
 }
 
+# Table 2 (VELDO-0347): table 1 and the row of an agent repository whose form is a clone. Rule 5 is
+# what finds unique work in it; one with files that are work raises one request (a worker clone of
+# a run that has ended is saved and removed instead, design 0.3).
+AGENT_CLONE = {'action': 'remove', 'after': ['worktree'], 'requires': 'no_unique_work',
+               'otherwise': 'deferred_unique_work', 'unique_work': 'decision_request'}
+SHEET_2 = dict(SHEET_1, agent_repository_clone=(AGENT_CLONE,) * len(COLUMNS))
+ROWS_2 = {row: dict([(event, dict(cell)) for column, cell in zip(COLUMNS, cells) if cell for event in column]
+                    + [('session_ended', dict(cell)) for name, cell in SESSION_1.items() if name == row])
+          for row, cells in SHEET_2.items()}
+TABLE_2 = {
+    'events': list(EVENTS),
+    'rows': ROWS_2,
+    'ends_on': dict(
+        [(kind, [event for event in EVENTS if any(event in ROWS_2[row] for row in ROWS_OF[kind])])
+         for kind in KINDS]
+        + [('%s:%s' % named, [event for event in EVENTS if event in ROWS_2[row]])
+           for named, row in sorted(FORM_ROWS.items())]),
+}
+
 # Every table this registry has issued, and the one a new item is declared under.
-REGISTRY = {'version': '1', 'tables': {'1': TABLE_1}}
+REGISTRY = {'version': '2', 'tables': {'1': TABLE_1, '2': TABLE_2}}
 
 LIFECYCLE = {'version': REGISTRY['version'],
              'events': list(REGISTRY['tables'][REGISTRY['version']]['events']),
@@ -172,7 +209,7 @@ def due(event, items, queued=None, registry=REGISTRY, look=None):
 
     `items` is a list of (identity, record) pairs in ledger order: the due items, and with them every
     item inside one of them and every item one of them is inside, in whatever state it is. A record is
-    the Ledger's item record: kind, state, parent, owner, branch and ends_on are read. `queued` maps the
+    the Ledger's item record: kind, state, parent, owner, branch, form and ends_on are read. `queued` maps the
     identity of a build output item to the queued run of the same ticket on the same worktree, when the
     caller says there is one. `registry` is the registry to read; the default is this module's. `look`
     is look(identity, record) -> {identity: state}, what is inside an item now, or None when that could
@@ -207,6 +244,11 @@ def due(event, items, queued=None, registry=REGISTRY, look=None):
             return 'worktree_review_run' if run.get('station') == 'review' else 'worktree_station_run'
         return record['kind']
 
+    def form_row(record, table):
+        """The row an item's form picks in `table`, when the table has it; else None."""
+        row = FORM_ROWS.get((record['kind'], record.get('form')))
+        return row if row in table['rows'] else None
+
     def answer(identity, above=()):
         if identity in answers:
             return answers[identity]
@@ -220,6 +262,7 @@ def due(event, items, queued=None, registry=REGISTRY, look=None):
                 entry = {'item': identity, 'row': row, 'version': ends_on.get('version'), 'action': 'wait',
                          'reason': 'table_version_unknown'}
             else:
+                row = form_row(record, table) or row
                 cell = {key: list(value) if isinstance(value, list) else value
                         for key, value in (table['rows'].get(row, {}).get(event) or {}).items()}
                 if cell.pop('owned_by', None) == 'session' and not (record.get('owner') or {}).get('session'):

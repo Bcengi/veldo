@@ -1679,14 +1679,120 @@ def _unread(path, said):
     return {'path': str(path), 'read': False, 'said': str(said)[:300], 'unique_work': None}
 
 
-def unique_work(path, landed=(), shared=None, run=None):
+class _Unreadable(Exception):
+    """Something git, or the disk, could not be read for: the text is what was said."""
+
+
+def _status(run, path):
+    """git's status of the work tree at `path`, every ignored path included: (modified, staged,
+    untracked, ignored), each a list of names, a folder git reports as a whole as one name ending
+    in /. Raises _Unreadable with what git said."""
+    code, status = _git(run, path, 'status', '--porcelain=v1', '-z', '--untracked-files=normal',
+                        '--ignored=matching')
+    if code != 0:
+        raise _Unreadable(str(status)[:300] or 'git gave no answer')
+    modified, staged, untracked, ignored = [], [], [], []
+    entries = status.split('\0')[:-1]
+    while entries:
+        entry = entries.pop(0)
+        state, name = entry[:2], entry[3:]
+        if 'R' in state or 'C' in state:
+            entries.pop(0)  # the name it was renamed or copied from
+        if state == '??':
+            untracked.append(name)
+        elif state == '!!':
+            ignored.append(name)
+        else:
+            if state[0] != ' ':
+                staged.append(name)
+            if state[1] != ' ':
+                modified.append(name)
+    return modified, staged, untracked, ignored
+
+
+def _ignore_rule(run, path, name):
+    """The rule that ignores `name` in the work tree at `path`, as git's check-ignore names it:
+    (source, 'source:line:pattern'), or (None, None) when git names none or cannot say."""
+    code, out = _git(run, path, 'check-ignore', '-v', '--', name)
+    rule = out.split('\t', 1)[0] if code == 0 and '\t' in out else None
+    if not rule:
+        return None, None
+    parts = rule.split(':')
+    for at in range(1, len(parts) - 1):
+        if parts[at].isdigit():
+            return ':'.join(parts[:at]), rule
+    return None, None
+
+
+def _holds_a_file(folder):
+    """Whether the folder holds any file, at any depth, no link followed. A folder that cannot be
+    listed holds one: what cannot be read is work."""
+    def stop(error):
+        raise error
+    try:
+        for _at, _folders, files in os.walk(folder, onerror=stop):
+            if files:
+                return True
+    except OSError:
+        return True
+    return False
+
+
+def ignored_work(path, ignored, patterns=(), adopted=False, run=None):
+    """Which of the paths git ignores in the work tree at `path` are work (design 0.1, VELDO-0347 AC1):
+    {work: [names], rules: {name: the rule that covers it, or None when none could be traced},
+    build_output: [the folders that are build output]}. `ignored` is what git's status listed.
+
+    An ignored folder is build output only when the rule that covers it is in an ignore file the
+    project has committed (a .gitignore of the work tree that git tracks) or its name matches one of
+    `patterns`, the build output patterns the project declares; in a worktree reconcile adopted
+    (`adopted`), whose history nobody saw, only the patterns count (design 6.3). Every other ignored
+    path is work: a folder only a personal rule covers (info/exclude; the user's excludes file is not
+    read at all, so what it hides is plainly untracked), a path whose rule cannot be traced, and a
+    loose ignored file outside every build output folder, such as a local settings file, whatever
+    rule covers it. A folder that holds no file holds no work. rules names at most NAMED paths."""
+    run = run or _run
+    work, rules, build = [], {}, []
+    committed = {}
+
+    def tracked(source):
+        if source not in committed:
+            code, out = _git(run, path, 'ls-files', '-z', '--', source)
+            committed[source] = code == 0 and source in out.split('\0')
+        return committed[source]
+
+    for name in ignored:
+        if not name.endswith('/'):
+            work.append(name)  # a loose ignored file is work
+            continue
+        source, rule = _ignore_rule(run, path, name)
+        base = os.path.basename(name.rstrip('/'))
+        declared = any(fnmatch.fnmatchcase(base, pattern) for pattern in patterns or ())
+        own = (source is not None and not adopted and not os.path.isabs(source)
+               and os.path.basename(source) == '.gitignore' and tracked(source))
+        if declared or own:
+            build.append(name)
+        elif _holds_a_file(os.path.join(str(path), name.rstrip('/'))):
+            work.append(name)
+            rules[name] = rule
+    for name in work[:NAMED]:
+        if name not in rules:
+            rules[name] = _ignore_rule(run, path, name)[1]
+    return {'work': work, 'rules': {name: rules[name] for name in work[:NAMED]}, 'build_output': build}
+
+
+def unique_work(path, landed=(), shared=None, run=None, patterns=(), adopted=False):
     """Rule 5's facts for the worktree at `path`.
 
     `landed` holds the source commits the completion receipts of completed landings name. `shared` is
-    the shared repository, given for an agent's worktree and for nothing else.
+    the shared repository, given for an agent's worktree and for nothing else. `patterns` are the
+    build output patterns the worktree's project declares and `adopted` says reconcile adopted the
+    worktree: both are ignored_work's.
 
     Returns read, branch (the full ref, None when detached), commit, and per case: modified (1), staged
-    (2), untracked (3: what git does not ignore, a folder as one name), operation (4), unlanded (5: the
+    (2), untracked (3: what git does not ignore, a folder as one name, and every ignored path that is
+    work and not build output; ignored names those again, apart, with ignored_rules, the rule that
+    covers each or None when none could be traced), operation (4), unlanded (5: the
     commit, when no other holding ref, no landing and so not the trunk holds it), with held_by (the
     refs that hold it) and landed_by (the source commit that covers it), and stashes, the number of
     stash entries of the worktree's repository (None when it cannot be read), which is no case. cases lists the numbers that hold and
@@ -1696,23 +1802,13 @@ def unique_work(path, landed=(), shared=None, run=None):
     folder = _git_folder(run, path)
     if not folder:
         return _unread(path, 'not the top of a git worktree')
-    code, status = _git(run, path, 'status', '--porcelain=v1', '-z', '--untracked-files=normal')
-    if code != 0:
-        return _unread(path, status)
-    modified, staged, untracked = [], [], []
-    entries = status.split('\0')[:-1]
-    while entries:
-        entry = entries.pop(0)
-        state, name = entry[:2], entry[3:]
-        if 'R' in state or 'C' in state:
-            entries.pop(0)  # the name it was renamed or copied from
-        if state == '??':
-            untracked.append(name)
-        elif state != '!!':
-            if state[0] != ' ':
-                staged.append(name)
-            if state[1] != ' ':
-                modified.append(name)
+    try:
+        modified, staged, untracked, ignored = _status(run, path)
+    except _Unreadable as unreadable:
+        return _unread(path, unreadable)
+    work = ignored_work(path, ignored, patterns, adopted, run)
+    # An ignored path that is work is an untracked file like any other (design 0.1): it is named with them.
+    untracked = untracked + [name for name in work['work'] if name not in untracked]
     operation = next((name for name, marker in OPERATIONS if os.path.lexists(os.path.join(folder, marker))), None)
     code, commit = _git(run, path, 'rev-parse', '--quiet', '--verify', 'HEAD^{commit}')
     commit = commit.strip() if code == 0 else None  # None: a branch with no commit yet
@@ -1732,8 +1828,9 @@ def unique_work(path, landed=(), shared=None, run=None):
              if holds]
     return {'path': str(path), 'read': True, 'branch': branch, 'commit': commit,
             'modified': modified[:NAMED], 'staged': staged[:NAMED], 'untracked': untracked[:NAMED],
+            'ignored': work['work'][:NAMED], 'ignored_rules': work['rules'],
             'more': {'modified': max(0, len(modified) - NAMED), 'staged': max(0, len(staged) - NAMED),
-                     'untracked': max(0, len(untracked) - NAMED)},
+                     'untracked': max(0, len(untracked) - NAMED), 'ignored': max(0, len(work['work']) - NAMED)},
             'operation': operation, 'unlanded': unlanded, 'held_by': refs[:NAMED], 'landed_by': landed_by,
             'compared': str(_compared(path, shared)), 'stashes': _stashes(run, path), 'cases': cases,
             'unique_work': bool(cases)}
@@ -1777,6 +1874,298 @@ def agent_repository(path, shared, run=None):
             'not_across': not_across[:NAMED], 'more': max(0, len(not_across) - NAMED),
             'refs': others[:NAMED], 'stashes': stashes,
             'unique_work': bool(not_across or others or stashes)}
+
+
+def private_work(path, patterns=(), adopted=False, run=None):
+    """Rule 5's facts for the work tree of the private repository at `path` (VELDO-0347 AC3): {read,
+    said, bare, modified, staged, untracked, ignored, ignored_rules, more, files, work}. files names
+    every path of it that is in no commit, at most NAMED, and work is true when there is one. A
+    bare repository has no work tree and no such file. read is False, with what was said and work
+    None, when git cannot read it."""
+    run = run or _run
+    code, out = _git(run, path, 'rev-parse', '--is-bare-repository')
+    if code != 0:
+        return dict(_unread(path, str(out) or 'git gave no answer'), work=None)
+    facts = {'path': str(path), 'read': True, 'said': None, 'bare': out.strip() == 'true', 'modified': [],
+             'staged': [], 'untracked': [], 'ignored': [], 'ignored_rules': {}, 'more': 0, 'files': [],
+             'work': False}
+    if facts['bare']:
+        return facts
+    try:
+        modified, staged, untracked, ignored = _status(run, path)
+    except _Unreadable as unreadable:
+        return dict(_unread(path, unreadable), work=None)
+    found = ignored_work(path, ignored, patterns, adopted, run)
+    files = sorted(set(modified) | set(staged) | set(untracked) | set(found['work']))
+    facts.update(modified=modified[:NAMED], staged=staged[:NAMED], untracked=untracked[:NAMED],
+                 ignored=found['work'][:NAMED], ignored_rules=found['rules'], files=files[:NAMED],
+                 more=max(0, len(files) - NAMED), work=bool(files))
+    return facts
+
+
+CLONE_MANIFEST = 'clone.json'  # control_clone.MANIFEST
+CLONE_SCHEMA = 'veldo.worker_clone/v1'  # control_clone.SCHEMA
+
+
+def worker_clone(path, dispatch, state_root):
+    """Whether the private repository at `path` can be shown to be the worker clone of the dispatch
+    `dispatch` (design section 5): {clone, said, root}. It is one when the folder it lies in is under
+    the state root and holds the clone provisioner's manifest, read with no link followed, which names
+    that folder as its root, `path` as its work tree and exactly one worker, whose dispatch is
+    `dispatch`. Anything else, and a manifest that cannot be read, is not shown: clone is False and
+    said is why."""
+    path, root = str(path).rstrip('/'), os.path.dirname(str(path).rstrip('/'))
+
+    def no(said):
+        return {'clone': False, 'said': said, 'root': root}
+
+    if not isinstance(dispatch, str) or not dispatch:
+        return no('the item names no dispatch')
+    top = os.path.realpath(str(state_root)) if state_root else None
+    if not top or os.path.realpath(root) != root or not _beneath(root, top) or root == top:
+        return no('the folder the repository lies in is not under the state root')
+    try:
+        descriptor = os.open(os.path.join(root, CLONE_MANIFEST), os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        with os.fdopen(descriptor, 'rb') as file:
+            data = json.loads(file.read().decode('utf-8'))
+    except (OSError, ValueError) as error:
+        return no('the clone manifest cannot be read: ' + _said(error))
+    if not isinstance(data, dict) or data.get('schema') != CLONE_SCHEMA:
+        return no('the manifest is not a worker clone manifest')
+    if data.get('root') != root or data.get('work') != path:
+        return no('the manifest names another root or another work tree')
+    users = data.get('users') if isinstance(data.get('users'), list) else []
+    workers = [user for user in users if isinstance(user, dict) and user.get('role') == 'worker']
+    if len(workers) != 1 or workers[0].get('dispatch_id') != dispatch:
+        return no('the manifest does not name this dispatch as its one worker')
+    return {'clone': True, 'said': None, 'root': root}
+
+
+# A repository wherever it is found (design 0.1, VELDO-0347 AC2 and AC5).
+
+def is_repository(path):
+    """Whether the folder `path` is itself a git repository: it holds a .git entry, or is itself a
+    git folder (HEAD, objects and refs). True, False, or None when the folder cannot be listed."""
+    try:
+        names = set(os.listdir(str(path)))
+    except (FileNotFoundError, NotADirectoryError):
+        return False
+    except OSError:
+        return None
+    return '.git' in names or GIT_FOLDER <= names
+
+
+TIPS_PER_CALL = 400  # the most commits named to one git command
+
+
+def _local_remote(url):
+    """Where the remote address `url` leads on this host: its path when the address is a path of
+    this host (an absolute path, or a file URL with no host or with localhost), None when it is on
+    another host, and False when it is a path of this host that is not absolute, which names no
+    one place."""
+    if url.startswith('file://'):
+        rest = url[len('file://'):]
+        if rest.startswith('/'):
+            return rest
+        host, slash, tail = rest.partition('/')
+        return '/' + tail if slash and host == 'localhost' else None
+    if '://' in url:
+        return None
+    if url.startswith('/'):
+        return url
+    head = url.split('/', 1)[0]
+    if ':' in head:
+        return None  # host:path, the form ssh takes
+    return False
+
+
+def _reached(run, repository, tips, holders):
+    """The commits of `tips` that the commits `holders` do not reach, in `repository`; None when git
+    cannot say."""
+    left = []
+    tips = sorted(tips)
+    for at in range(0, len(tips), TIPS_PER_CALL):
+        some = tips[at:at + TIPS_PER_CALL]
+        if not holders:
+            left.extend(some)
+            continue
+        # A commit of `some` that no holder reaches is listed, as the first commit that reaches itself.
+        code, out = _git(run, repository, 'rev-list', *some, '--not', *sorted(holders))
+        if code != 0:
+            return None
+        listed = set(out.split())
+        left.extend(commit for commit in some if commit in listed)
+    return left
+
+
+def _logs_readable(folder):
+    """None when every log file under the git folder `folder` can be opened for reading, else what
+    was said for the first that cannot. A git folder with no logs folder has no log."""
+    def stop(error):
+        raise error
+    try:
+        try:
+            os.lstat(os.path.join(folder, 'logs'))
+        except FileNotFoundError:
+            return None  # no log was ever written
+        for at, _folders, files in os.walk(os.path.join(folder, 'logs'), onerror=stop):
+            for name in files:
+                os.close(os.open(os.path.join(at, name), os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC))
+    except OSError as error:
+        return _said(error)
+    return None
+
+
+def clean_clone(path, run=None, depth=0):
+    """Whether the git repository at `path`, found beneath a scratch or a build output item, is a clean
+    clone (design 0.1, VELDO-0347 AC2): {path, read, said, clean_clone, why, commits, inside}. Everything in
+    a clean clone has been pushed somewhere, and a build that fetched it fetches it again. All of
+    this is read now and must hold:
+
+      - its work tree has no modified, staged or untracked file and no ignored path that is work
+        (ignored_work, with no declared pattern), and it has no stash and no linked worktree;
+      - every ref that is not one of its remote-tracking refs, and its HEAD, names a commit one of
+        its remote-tracking refs reaches. A remote-tracking ref counts only when it is under the
+        name of a remote the repository's configuration gives an address for;
+      - no entry of its HEAD log, or of the log of any ref that is not a remote-tracking ref, names
+        a commit those refs do not reach: a reset leaves such a commit named by a log alone;
+      - for a remote whose address is a path on this host, the ref is not taken at its word: each
+        of those commits that no remote on another host holds must be reached by a ref of a
+        repository at such a path now. Any process of the owner's can write a remote-tracking ref;
+      - every git repository beneath it (a submodule, a repository in a folder it ignores) is a
+        clean clone too.
+
+    why names what does not hold, and commits the commits that are held nowhere (at most NAMED).
+    A repository git cannot read, a log file that cannot be opened, a remote whose address names no
+    one place, a local remote that cannot be read and a folder beneath it that cannot be listed are
+    not clean: read is False, said is what was said, and clean_clone is False. For a remote on another
+    host the ref is all that can be read without the network (design 0.9)."""
+    run = run or _run
+    facts = {'path': str(path), 'read': True, 'said': None, 'clean_clone': False, 'why': [], 'commits': [],
+             'inside': []}
+
+    def unread(said):
+        return dict(facts, read=False, said=str(said)[:300], why=['unread'])
+
+    def git(*argv):
+        code, out = _git(run, path, *argv)
+        if code != 0:
+            raise _Unreadable(str(out)[:300] or 'git gave no answer')
+        return out
+
+    try:
+        if depth > 20:
+            raise _Unreadable('repositories lie too deep inside one another')
+        folder = git('rev-parse', '--absolute-git-dir').rstrip('\n')
+        common = os.path.realpath(git('rev-parse', '--path-format=absolute', '--git-common-dir').rstrip('\n'))
+        top = os.path.realpath(str(path))
+        if os.path.realpath(folder) != top:
+            # Not a bare repository at this folder: the work tree git reads must be this folder's own.
+            if os.path.realpath(git('rev-parse', '--show-toplevel').rstrip('\n')) != top:
+                raise _Unreadable('git reads a repository above this folder, not one in it')
+        for where in dict.fromkeys((os.path.realpath(folder), common)):
+            said = _logs_readable(where)
+            if said is not None:
+                raise _Unreadable('a log of the repository cannot be read: ' + said)
+        why = []
+        bare = git('rev-parse', '--is-bare-repository').strip() == 'true'
+        if not bare:
+            modified, staged, untracked, ignored = _status(run, path)
+            if modified or staged or untracked or ignored_work(path, ignored, (), False, run)['work']:
+                why.append('files_in_no_commit')
+        listed = [field for field in git('worktree', 'list', '--porcelain', '-z').split('\0')
+                  if field.startswith('worktree ')]
+        if len(listed) != 1:
+            why.append('linked_worktrees')
+        stashes = _stashes(run, path)
+        if stashes is None:
+            raise _Unreadable('the stashes cannot be read')
+        if stashes:
+            why.append('stash')
+        # The remotes the configuration names, each with where its addresses lead.
+        remotes = {}
+        for name in git('remote').split('\n')[:-1]:
+            remotes[name] = [_local_remote(url) for url in git('remote', 'get-url', '--all', name).split('\n')[:-1]]
+        tips, foreign, local = set(), set(), set()
+        for line in git('for-each-ref', '--format=%(objectname) %(objecttype) %(refname)').split('\n')[:-1]:
+            commit, kind, ref = line.split(' ', 2)
+            if kind != 'commit':
+                code, peeled = _git(run, path, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+                if code != 0:
+                    why.append('ref_to_no_commit')
+                    continue
+                commit = peeled.strip()
+            if not ref.startswith('refs/remotes/'):
+                tips.add(commit)
+                continue
+            rest = ref[len('refs/remotes/'):]
+            named = [name for name in remotes if rest.startswith(name + '/')]
+            if not named:
+                continue  # a ref under no remote the configuration names holds nothing
+            leads = remotes[max(named, key=len)]
+            if any(where is False for where in leads) or not leads:
+                raise _Unreadable('the address of the remote %s names no one place' % max(named, key=len))
+            (local if any(where for where in leads) else foreign).add(commit)
+        code, head = _git(run, path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+        if code == 0:
+            tips.add(head.strip())
+        elif not (code == 1 and not str(head).strip()):
+            raise _Unreadable('HEAD cannot be read')
+        if tips:
+            tips.update(git('rev-list', '--walk-reflogs', 'HEAD', '--exclude=refs/remotes/*', '--all').split())
+        unheld = _reached(run, path, tips, foreign | local)
+        if unheld is None:
+            raise _Unreadable('git cannot say which commits the remote-tracking refs reach')
+        if unheld:
+            why.append('commits_no_remote_ref_reaches')
+            facts['commits'] = unheld[:NAMED]
+        elif local:
+            # What only a local remote's ref holds must be in that remote now.
+            wanted = _reached(run, path, tips, foreign)
+            if wanted is None:
+                raise _Unreadable('git cannot say which commits the remote-tracking refs reach')
+            places = sorted(set(where for leads in remotes.values() for where in leads if where))
+            for place in places:
+                if not wanted:
+                    break
+                if repository(place, run) is None:
+                    raise _Unreadable('the local remote %s cannot be read' % place)
+                held = set()
+                for commit in wanted:
+                    code, _out = _git(run, place, 'cat-file', '-e', commit + '^{commit}')
+                    if code is None:
+                        raise _Unreadable('the local remote %s cannot be read' % place)
+                    if code != 0:
+                        continue
+                    code, out = _git(run, place, 'for-each-ref', '--count=1', '--format=%(refname)',
+                                     '--contains', commit)
+                    if code != 0:
+                        raise _Unreadable('the local remote %s cannot be read' % place)
+                    if out.strip():
+                        held.add(commit)
+                wanted = [commit for commit in wanted if commit not in held]
+            if wanted:
+                why.append('commits_the_local_remote_does_not_hold')
+                facts['commits'] = wanted[:NAMED]
+        beneath = nested(path)
+        if not beneath['read']:
+            raise _Unreadable(beneath['said'])
+        for where in beneath['repositories']:
+            inner = clean_clone(where, run, depth + 1)
+            facts['inside'].append(where)
+            if not inner['read']:
+                raise _Unreadable('a repository inside it cannot be read, %s: %s' % (where, inner['said']))
+            if not inner['clean_clone']:
+                why.append('repository_inside_not_clean')
+                facts['commits'] = facts['commits'] or inner['commits']
+                facts['inside'].extend(inner['inside'])
+            else:
+                facts['inside'].extend(inner['inside'])
+    except _Unreadable as unreadable:
+        return unread(unreadable)
+    except (OSError, ValueError, RecursionError) as error:
+        return unread(_said(error))
+    return dict(facts, clean_clone=not why, why=sorted(set(why)))
 
 
 # The owner's commands for the process reader (docs/veldo-procread-setup.txt).
