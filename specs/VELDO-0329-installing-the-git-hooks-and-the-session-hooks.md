@@ -8,7 +8,7 @@ owner: dmitry
 human_approval: required
 lane: standalone
 parent: VELDO-0295
-depends_on: [VELDO-0301]
+depends_on: [VELDO-0301, VELDO-0311, VELDO-0314, VELDO-0315, VELDO-0323]
 placement: [engine, loop, distribution]
 protected_paths: []
 footprint:
@@ -87,3 +87,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-15: a first build attempt stopped at base 8ef46604 because the session hooks (VELDO-0314),
+  the reconcile runner (VELDO-0315) and the Ledger's event command (VELDO-0323) were not in that tree.
+  Nothing was built then.
+
+- 2026-11-16: built on a base that holds them. depends_on now names what this ticket installs and
+  drives: the two git hooks (VELDO-0311), the session hook script (VELDO-0314), the reconcile runner
+  (VELDO-0315) and the event command a session's start reaches (VELDO-0323), beside the build step
+  before it (VELDO-0301). The design states no dependency for this ticket; these are the ones the
+  build needs. The installer and the two reports are in control_space_reconcile.py, and the service's
+  start (bootstrap) calls the installer, so a repository gets its hooks at the first start after it
+  is bound. By the owner's rule that no work is ever lost (2026-11-16), an existing hook is chained
+  when it is an executable shell script and refused otherwise, and the install record says which;
+  a refused hook is left byte for byte and reconcile reports it as missing. The hook files, the
+  pack's hooks.json and the session script are unchanged. Acceptance criteria are unchanged.

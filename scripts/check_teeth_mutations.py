@@ -16393,6 +16393,50 @@ def cases():
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
 
+    # VELDO-0329: installing the hooks and reporting a missing one. The first three are the spec's
+    # falsifiers word for word; the rest are the owner's rule (an existing hook is kept, chained or
+    # refused) and the wiring.
+    space329 = '150_veldo_0329_hook_install.py'
+
+    def hook329(name, old, new, rows):
+        add(329, name, space329, 'control_space_reconcile.py', old, new, rows)
+
+    hook329('space329-overwrite-existing-hook',
+            "    _put(path, b'\\n'.join(lines[:1] + [line] + lines[1:]) + (b'' if len(lines) > 1 else b'\\n'),\n",
+            "    _put(path, b'#!/bin/sh\\n' + line + b'\\n',  # defect: the existing hook file is overwritten\n",
+            ['space329/ac1/keeps-own-lines'])
+    hook329('space329-first-account-only',
+            "    for account in ledger.config.get('client_accounts') or ():\n        one('account', account,",
+            "    for account in (ledger.config.get('client_accounts') or ())[:1]:  # defect: the first only\n"
+            "        one('account', account,",
+            ['space329/ac2/session-under-second'])
+    hook329('space329-missing-hook-unreported',
+            "                if missing:\n                    self.note('hooks_missing',",
+            "                if False:  # defect: nothing is reported for a missing hook\n"
+            "                    self.note('hooks_missing',",
+            ['space329/ac3/missing-hook-reported'])
+    hook329('space329-missing-session-unreported',
+            "            if missing:\n                self.note('session_hooks_missing',",
+            "            if False:  # defect: nothing is reported for an account folder\n"
+            "                self.note('session_hooks_missing',",
+            ['space329/ac3/missing-session-reported'])
+    hook329('space329-program-hook-edited',
+            "            if not _shell(data):\n",
+            "            if False:  # defect: a hook that is no shell script gets the line too\n",
+            ['space329/ac1/refused-and-said'])
+    hook329('space329-shared-folder-always',
+            "    folder = text.rstrip('\\n')\n",
+            "    folder = os.path.join('.git', 'hooks')  # defect: the configured hooks folder is not asked for\n",
+            ['space329/ac1/configured-folder'])
+    hook329('space329-settings-rewritten',
+            "        settings = json.loads(before) if before is not None else {}\n",
+            "        settings = json.loads(before) and {} if before is not None else {}  # defect: the owner's keys go\n",
+            ['space329/ac2/every-account'])
+    hook329('space329-start-installs-nothing',
+            "            installed = install(ledger, installation=service.config.get('installation'))\n",
+            "            installed = []  # defect: a repository bound at this start gets no hook\n",
+            ['space329/wiring/bootstrap-installs'])
+
     return result
 
 
