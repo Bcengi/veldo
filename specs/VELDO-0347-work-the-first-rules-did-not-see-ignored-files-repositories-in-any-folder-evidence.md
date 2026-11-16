@@ -148,6 +148,35 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-16: build blocked by the declared footprint, on base 0a80f89b. No production change, no suite
+  change and no AC amendment was made; nothing was built. Four accepted suites that the footprint does not
+  name pin the behaviour AC1, AC3 and AC5 replace, so each of these rows turns red the moment the
+  criterion is built, and no row of this ticket can be green beside it:
+  - scripts/suites/135_veldo_0298_space_kinds.py, ac1/whole-table: the rows of the current table are
+    exactly the fourteen it lists, and checked_lifecycle returns LIFECYCLE at version 1. AC5 adds a row
+    for an agent repository with a form. A row kept outside the table's rows, so that this check does not
+    see it, would be a workaround of the pin and was not written. To decide with it: the registry says a
+    table is never edited once issued, and VELDO-0337 added its two rows to table 1.
+  - scripts/suites/136_veldo_0299_space_probe.py, ac2/case-3-untracked: "an untracked file git ignores
+    is not unique work", read on a loose ignored file. AC1 says it is. The row stays green only if the
+    probe reads ignored paths when the rule asks and not by default, which leaves a default that sees
+    less: the lead's call, not the builder's.
+  - scripts/suites/138_veldo_0300_space_remove.py, the row with notes-private.md and settings.local:
+    "rules 1 to 6 pass and the remover refuses, keep_failed", order 6. With AC1, rule 5 refuses first, as
+    unique_work.
+  - scripts/suites/142_veldo_0303_space_paths.py, ac2/uncommitted-stays: an ended worker clone with an
+    uncommitted file is deferred keep_failed and its teardown refused. AC3 saves the file and removes the
+    clone. And ac4/candidate-with-work-stays: a candidate workspace with an unsaved file is deferred
+    keep_failed. AC3 defers it as unique_work and raises a request.
+  Two more things outside the footprint, for the same decision. The request's signed terms are built by
+  control_request_settlement.space_presentation, which names one worktree ("Worktree:", the Discard
+  sentence, the restore command): a batch clone's or a candidate workspace's request would be shown as a
+  worktree's. And no remover carries a Save or a Discard of a private repository; no criterion here asks
+  for one, so a clone's request could be raised and answered but not carried out. Not blocked, read and
+  ready to build: AC2 and AC4 touch no pinned row that was found, and the keeper's snapshot (VELDO-0345)
+  already saves a private repository's work tree with no change. Asked of the lead: extend the footprint
+  to the four suites (and say whether table 1 gains the row or a table 2 is issued), or amend the
+  criteria.
 - 2026-11-15: lead decision, the repository form field and its validation are delivered by VELDO-0302.
 
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
