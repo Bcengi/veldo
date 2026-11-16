@@ -104,3 +104,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-16: fix round 1 (F3). The recovery brief names the no-space ends since the unit's last
   successful end. The kept worktree stays pinned by rule 5 after the work is recovered: releasing
   that pin belongs to VELDO-0327 (the disposition touchpoint), not to this ticket.
+
+- 2026-11-16: the lead accepted the footprint widening above (Dispatch, Service, Signal and their
+  synced copies) on 2026-11-16, in the review of this ticket (finding F4).
