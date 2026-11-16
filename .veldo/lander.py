@@ -967,7 +967,7 @@ class GitLandOps(LandOps):
             directory = creation.temporary('veldo-observation-', self.observations)
             with creation.item('evidence', directory):
                 directory.mkdir(mode=0o700)
-            c['space_items'].update(creation.items)
+            c.setdefault('space_items', {}).update(creation.items)
             c['observation_dir'] = str(directory)
             installed = self._installed(c)
             # The refs are bound: the workspace is this land's own repository, sharing no refs with
