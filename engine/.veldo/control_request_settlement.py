@@ -214,6 +214,30 @@ def digest(value):
     return 'sha256:' + hashlib.sha256(_canonical(value)).hexdigest()
 
 
+def request_problem(read, data):
+    """Why a request's content is not what its recorded terms require, or None.
+
+    The inbox's subject validator for settlement terms: control_assignment consults it in every
+    open and revise write, and the Presenter before it frames or presents. `read(entity_id)`
+    gives the stored entity or None. Only a space disposition binds its content to its terms:
+    the brief and the choices are exactly space_presentation(the signed proposal).
+    """
+    subject = data.get('subject') or {}
+    found = read(subject['ref']) if subject.get('kind') == SUBJECT_KIND and _is_str(subject.get('ref')) else None
+    if found is None or found['kind'] != TERMS_KIND or found['data'].get('touchpoint') != 'space_disposition':
+        return None
+    terms = found['data']
+    if digest(terms) != subject.get('digest') or terms.get('requested_by') != data.get('requested_by'):
+        return 'a space request binds its own recorded terms'
+    try:
+        expected = space_presentation(terms.get('proposal'))
+    except Refused as exc:
+        return exc.detail
+    if any(data.get(key) != value for key, value in expected.items()):
+        return 'space request choices and brief must match its signed terms'
+    return None
+
+
 def settlement_id(request, version):
     """THE settlement key: one per request version, whatever surface the answer came from."""
     return 'request-settlement:%s:%d' % (request, version)
@@ -344,11 +368,6 @@ class Settlement:
         conn.command_registry[SETTLE] = {'transition': self._settle_transition, 'writes': WRITES}
         conn.command_registry[TERMS] = {'transition': self._new_transition, 'writes': WRITES}
         conn.command_registry[API] = {'transition': self._new_transition, 'writes': WRITES}
-        # Validate space request content at the inbox's write boundary, including revisions.
-        # The inbox still performs its own transition and claim checks in this transaction.
-        # No channel map or existing touchpoint changes, and no disk probe runs here.
-        conn.command_registry[self.I.OPERATION] = {'transaction_transition': self._inbox_transition,
-                                                   'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={SETTLEMENT_KIND: (SETTLE,), EFFECT_KIND: (SETTLE,),
                                                  RECEIPT_KIND: (SETTLE,), TERMS_KIND: (TERMS,), API_KIND: (API,),
                                                  DECISION_SETTLEMENT_KIND: (SETTLE,)},
@@ -417,21 +436,6 @@ class Settlement:
         return entry, key
 
     # transitions
-
-    def _inbox_transition(self, conn, params, before):
-        changes = self.inbox._in_transaction(conn, params, before)
-        try:
-            for entity in changes.values():
-                if entity['kind'] != self.I.ENTITY_KIND:
-                    continue
-                data = entity['data']
-                subject = data.get('subject') or {}
-                terms = self._data(subject.get('ref'), TERMS_KIND) if subject.get('kind') == SUBJECT_KIND else None
-                if terms is not None and terms.get('touchpoint') == 'space_disposition':
-                    self._terms(data)
-        except Refused as exc:
-            raise self.store.StoreRefused(exc.code, exc.detail) from exc
-        return changes
 
     def _new_transition(self, params, before):
         eid, kind, data = params.get('entity_id'), params.get('kind'), params.get('data')
@@ -544,9 +548,9 @@ class Settlement:
         if touchpoint not in JOURNEY or JOURNEY[touchpoint]['assignment_kind'] != data.get('kind'):
             raise Refused('unsupported_touchpoint', 'the request is not a touchpoint of this journey')
         if touchpoint == 'space_disposition':
-            expected = space_presentation(terms.get('proposal'))
-            if any(data.get(key) != value for key, value in expected.items()):
-                raise Refused('invalid_input', 'space request choices and brief must match its signed terms')
+            problem = request_problem(self._entity, data)
+            if problem:
+                raise Refused('invalid_input', problem)
         return touchpoint, terms, found['version']
 
     # answers from the authenticated API

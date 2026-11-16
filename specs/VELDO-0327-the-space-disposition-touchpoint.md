@@ -14,6 +14,10 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_request_settlement.py"
   - ".veldo/control_request_settlement.py"
+  - "engine/.veldo/control_assignment.py"
+  - ".veldo/control_assignment.py"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
   - "scripts/suites/*_veldo_0327_*.py"
   - "scripts/suites/69_veldo_0068_settlement.py"
   - "scripts/suites/manifest.json"
@@ -116,3 +120,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   entries. Its fifteen original Telegram answer/effect cases stay intact; the new suite covers the
   space picks and required terms. No acceptance criterion changed. Request triggering, filesystem
   effects and review groups remain in their later tickets.
+
+- 2026-11-16: fix round 1 (review of f2ed9f0f, verdict FIX), F1. The check that a space request shows
+  what its terms require was a command override on the Settlement's own connection, so an Inbox built
+  later, or on a connection with no Settlement, opened a request that hid the file list. It is now a
+  subject validator registered at module level in control_assignment.py, which every Inbox consults in
+  its own open and revise write, and the Presenter refuses to frame or present a request it does not
+  pass. The footprint is widened by control_assignment.py and control_channel_presentation.py with
+  their synced copies; the lead accepted the widening on 2026-11-16. The presentation's choice map is
+  unchanged. No acceptance criterion changed.

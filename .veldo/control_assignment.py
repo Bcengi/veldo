@@ -78,12 +78,14 @@ the `answer` command here refuses it as `settlement_required`, so it never reach
 without its settlement, typed effect and receipt. A request without terms is answered here.
 """
 import hashlib
+import importlib.util
 import json
 import math
 import re
 import sqlite3
 import time
 from datetime import datetime
+from pathlib import Path
 
 SCHEMA = 'veldo.assignment/v1'
 ENTITY_KIND = 'assignment'
@@ -138,6 +140,41 @@ REFUSALS = ('invalid_input', 'not_authorized', 'missing_authority', 'stale_subje
 # The subject kind of a request that carries settlement terms (VELDO-0068): only the settlement
 # service answers it.
 SETTLEMENT_SUBJECT_KIND = 'settlement_terms'
+# What a request's content must be for its subject, by subject kind. Each validator is
+# `problem(read, data) -> text or None`, where read(entity_id) gives the stored entity as
+# {'kind', 'version', 'data'} or None. Every Inbox consults this in its own open and revise
+# write, and the Presenter before it frames or presents, so the check never depends on which
+# object was built last on a connection or on whether a Settlement exists there (VELDO-0327).
+SUBJECT_VALIDATORS = {}
+_SIBLINGS = {}
+
+
+def _settlement_request_problem(read, data):
+    module = _SIBLINGS.get('control_request_settlement')
+    if module is None:
+        spec = importlib.util.spec_from_file_location(
+            'assignment_request_settlement', Path(__file__).with_name('control_request_settlement.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _SIBLINGS['control_request_settlement'] = module
+    return module.request_problem(read, data)
+
+
+SUBJECT_VALIDATORS[SETTLEMENT_SUBJECT_KIND] = _settlement_request_problem
+
+
+def subject_problem(read, data):
+    """Why this request content is not what its subject requires, or None."""
+    subject = data.get('subject') if isinstance(data, dict) else None
+    validator = SUBJECT_VALIDATORS.get(subject.get('kind')) if isinstance(subject, dict) else None
+    return validator(read, data) if validator else None
+
+
+def stored_reader(conn):
+    def read(eid):
+        row = conn.execute('SELECT kind, version, data FROM entities WHERE id=?', (eid,)).fetchone()
+        return None if row is None else {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
+    return read
 _ALIAS = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 
@@ -532,7 +569,13 @@ class Inbox:
             plan = params['dispose']
             if self._siblings(conn, plan['unit_id'], plan['backlog_item_uuid']) != plan['siblings']:
                 raise self.store.StoreRefused('stale_subject', 'the backlog item\'s units changed while the unit was closed')
-        return self._transition(params, before)
+        changes = self._transition(params, before)
+        if params['action'] in ('open', 'revise'):
+            # The request's content is checked against its subject in the write itself.
+            problem = subject_problem(stored_reader(conn), changes[params['assignment_id']]['data'])
+            if problem:
+                raise self.store.StoreRefused('invalid_input', problem)
+        return changes
 
     def _siblings(self, conn, unit, backlog):
         """The other units of `backlog` that are not terminal, read on `conn`."""

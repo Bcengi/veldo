@@ -16630,8 +16630,22 @@ def cases():
         'RULINGS = ("approve", "reject", "return_for_elaboration", "save", "keep", "discard")',
         ['space327/ac4/rulings'])
     add(327, 'space327-hide-request-list', disposition327, 'control_request_settlement.py',
-        "                    self._terms(data)", "                    pass",
-        ['space327/ac2/request-binding'])
+        "    if any(data.get(key) != value for key, value in expected.items()):\n"
+        "        return 'space request choices and brief must match its signed terms'\n",
+        "", ['space327/ac2/request-binding'])
+    # Fix round 1, F1: the guard is the request write's own and the Presenter's.
+    add(327, 'space327-write-skips-validator', disposition327, 'control_assignment.py',
+        "            if problem:\n                raise self.store.StoreRefused('invalid_input', problem)\n",
+        "", ['space327/fix1/late-inbox', 'space327/fix1/no-settlement'])
+    add(327, 'space327-frames-unmatched', disposition327, 'control_channel_presentation.py',
+        "            if self.assignment.subject_problem(self._entity, c):\n"
+        "                raise Refused('presentation_mismatch', 'the request does not show what its terms require')\n",
+        "", ['space327/fix1/presenter'])
+    add(327, 'space327-presents-unmatched', disposition327, 'control_channel_presentation.py',
+        "        if self.assignment.subject_problem(self._entity, c):\n"
+        "            # A request whose content is not what its subject's terms require is never shown.\n"
+        "            return 'presentation_mismatch', None, {}\n",
+        "", ['space327/fix1/presenter'])
     add(327, 'space327-no-detached-branch', disposition327, 'control_request_settlement.py',
         "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
         "if False:", ['space327/ac2/missing-kept-branch'])

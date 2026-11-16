@@ -835,6 +835,9 @@ class Presenter:
         if not brief.get('valid') or brief.get('category') != 'pending':
             return 'stale_subject', None, {}
         c = brief['content']
+        if self.assignment.subject_problem(self._entity, c):
+            # A request whose content is not what its subject's terms require is never shown.
+            return 'presentation_mismatch', None, {}
         versions = {request: brief['version'], self.membership.VERSIONS_ENTITY:
                     (self._entity(self.membership.VERSIONS_ENTITY) or {}).get('version', 0)}
         framing = self._entity(framing_id(request))
@@ -1010,6 +1013,8 @@ class Presenter:
             c = brief['content']
             if command.get('request_version') != c['request_version']:
                 raise Refused('stale_subject', 'the framing names another request version')
+            if self.assignment.subject_problem(self._entity, c):
+                raise Refused('presentation_mismatch', 'the request does not show what its terms require')
             entry = self.AC.membership_entry(state['membership'], principal)
             active, _ = self.AC.active_member(entry, now)
             if (not active or entry['principal_type'] not in self.AC.BOUNDARIES['proposal_commit']

@@ -20,6 +20,8 @@ def _v327_suite():
     production = {
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
         'authority_contract.py': ROOT / ".veldo" / "authority_contract.py",
+        'control_assignment.py': ROOT / ".veldo" / "control_assignment.py",
+        'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
     }
     rows = {}
 
@@ -251,6 +253,79 @@ def _v327_suite():
             revised = inbox.apply(signed(command('revise', alias='bad-revision', request_version=1,
                                                   changes={'brief': 'The file list is hidden.'})))
             check('ac2/request-binding', 'revision cannot hide the list', not revised['ok'] and snapshot() == before)
+
+            # Fix round 1, F1: the guard is the request write's own, whatever was built last.
+            def fix1(row, body):
+                try:
+                    body()
+                except Exception:
+                    check(row, traceback.format_exc(), False)
+
+            def hidden_open(box, alias, **changes):
+                offered = proposal()
+                recorded = terms(alias, offered)
+                content = ST.space_presentation(offered)
+                content.update(owner='owner', scope=['project'], deadline='2099-01-01T00:00:00Z',
+                               budget={'owner_minutes': 1}, subject=recorded['subject'])
+                content.update(changes)
+                return box.apply(signed(command('open', alias=alias, assignment=content)))
+
+            def late_inbox():
+                late = I.Inbox(S, CM, claims, contract, conn, ids, 'steward', journal_sign)
+                for alias, changes in (('late-hidden', {'brief': 'Discard removes nothing.'}),
+                                       ('late-choice', {'choices': list(ST.SPACE_CHOICES) + ['reject']})):
+                    result = hidden_open(late, alias, **changes)
+                    check('fix1/late-inbox', alias + ' refused ' + repr(result), not result.get('ok', True)
+                          and entity(I.assignment_id(ids['repository_uuid'], alias)) is None)
+                result = hidden_open(late, 'late-good')
+                check('fix1/late-inbox', 'a matching request still opens ' + repr(result), result.get('ok') is True)
+                revised = late.apply(signed(command('revise', alias='late-good', request_version=1,
+                                                    changes={'brief': 'The file list is hidden.'})))
+                check('fix1/late-inbox', 'revision cannot hide the list ' + repr(revised), not revised.get('ok', True)
+                      and entity(I.assignment_id(ids['repository_uuid'], 'late-good'))['request_version'] == 1)
+
+            def no_settlement():
+                other = S.open_store(str(base / 'control.sqlite3'))
+                try:
+                    CM.attach(S)
+                    lone = I.Inbox(S, CM, claims, contract, other, ids, 'steward', journal_sign)
+                    check('fix1/no-settlement', 'this connection has no settlement command',
+                          ST.TERMS not in other.command_registry and ST.SETTLE not in other.command_registry)
+                    for alias, changes in (('lone-hidden', {'brief': 'Discard removes nothing.'}),
+                                           ('lone-choice', {'choices': list(ST.SPACE_CHOICES) + ['reject']})):
+                        result = hidden_open(lone, alias, **changes)
+                        check('fix1/no-settlement', alias + ' refused ' + repr(result), not result.get('ok', True)
+                              and entity(I.assignment_id(ids['repository_uuid'], alias)) is None)
+                    result = hidden_open(lone, 'lone-good')
+                    check('fix1/no-settlement', 'a matching request still opens ' + repr(result),
+                          result.get('ok') is True)
+                finally:
+                    other.close()
+
+            def unmatched_presentation():
+                # A request an unguarded writer stored: the validator is absent for this one write.
+                with patch.dict(I.SUBJECT_VALIDATORS, clear=True):
+                    result = hidden_open(inbox, 'stored-hidden', brief='Discard removes nothing.')
+                rid = I.assignment_id(ids['repository_uuid'], 'stored-hidden')
+                check('fix1/presenter', 'the fixture stored the unmatched request ' + repr(result),
+                      result.get('ok') is True and entity(rid) is not None)
+                framed = frame('stored-hidden')
+                check('fix1/presenter', 'not framed ' + repr(framed), framed.get('outcome') == 'refused'
+                      and framed.get('reason') == 'presentation_mismatch'
+                      and entity(V.framing_id(rid)) is None)
+                with patch.dict(I.SUBJECT_VALIDATORS, clear=True):
+                    framed = frame('stored-hidden')
+                check('fix1/presenter', 'the fixture stored a framing ' + repr(framed),
+                      framed.get('outcome') == 'accepted')
+                sent = len(transport.sent)
+                shown = presenter.present(rid)
+                check('fix1/presenter', 'not presented ' + repr(shown), shown.get('outcome') == 'refused'
+                      and shown.get('reason') == 'presentation_mismatch' and presenter.current(rid) is None
+                      and len(transport.sent) == sent)
+
+            fix1('fix1/late-inbox', late_inbox)
+            fix1('fix1/no-settlement', no_settlement)
+            fix1('fix1/presenter', unmatched_presentation)
 
             rid, result = open_request('unoffered')
             for choice in ('save', 'keep', 'discard', 'reject', 'accept unknown', 'accept keep w2'):
