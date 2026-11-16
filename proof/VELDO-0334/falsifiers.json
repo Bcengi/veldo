@@ -20,8 +20,8 @@
       "space334/ac2/no-read-or-write",
       "space334/ac2/public-admit"
     ],
-    "new_digest": "7ebbfc279f13b159fae65312515c48db8e179af67084836cd1352db6b667d466",
-    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "new_digest": "e022a077250679b6b66b9e38078d6cca248bccda115c62d9b830e84ce7ac5071",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -61,8 +61,8 @@
       "space334/ac3/reconcile",
       "space334/ac3/release"
     ],
-    "new_digest": "29a330458f16ac1291324b13fcb42b7f5b117934abf24d8ffb6ffa3229026ea1",
-    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "new_digest": "0938551ed0a151d8af900beece0bb481f661ecc7d45c8795d1af82f1b447e7b4",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -93,8 +93,8 @@
       "space334/ac3/release",
       "space334/ac3/stopped-clock"
     ],
-    "new_digest": "616f1c8c624ca6f2f5a4d0cbfc20c953b7ca3921bd062ea181e0d18a7c41c8bf",
-    "old_digest": "bb625e4c042e4cf1276430e26444bc664994bb9f8cb12b807e3906efb4cba784",
+    "new_digest": "1c2f0aadbfebcd0ff0f50bd75c9edb0980befcf81d1b28d1698bb130b16e8f43",
+    "old_digest": "fe5a58558c1a40ea7a383255b722c7474eb1874bba769feb1b71aecf1df406f9",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -131,10 +131,12 @@
       "space334/ac3/reconcile",
       "space334/ac3/release",
       "space334/ac3/stopped-clock",
-      "space334/ac3/waiting-set-race"
+      "space334/ac3/waiting-set-race",
+      "space334/fix2/release-marks-per-pool",
+      "space334/fix4/failed-read-rejudges"
     ],
-    "new_digest": "57d7662a47fff7b3742856a432581d5932eb8b396975846d481a87fc8a73dc2e",
-    "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    "new_digest": "20c55ef87a33035007929bbe6db3ba3ac285b8d38e15f3af2437229d42512527",
+    "old_digest": "f4c0c7e5487d984c8c958ce2380b224ea863aac708fca1436695abb8bc433c24",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -170,10 +172,11 @@
       "space334/ac3/outcome",
       "space334/ac3/reconcile",
       "space334/ac3/refusal-atomic",
-      "space334/ac3/release"
+      "space334/ac3/release",
+      "space334/fix4/failed-read-rejudges"
     ],
-    "new_digest": "02a055fd37634cec920a8f0839f200231b7271c828733854f1096118c8cea3b9",
-    "old_digest": "3336de25edc5388759afa33ed37bbc4456bccad9e8b56eea6be37c3b11851aa7",
+    "new_digest": "1ede9991d7b1eb6d32029e90a6d5c30dfb97a1a19a65cf51a719993a6990b2c0",
+    "old_digest": "f4c0c7e5487d984c8c958ce2380b224ea863aac708fca1436695abb8bc433c24",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -201,8 +204,8 @@
     "mutant_failed": [
       "space334/ac3/free-during-judgment"
     ],
-    "new_digest": "4f185fc3b698a44eb988af649fedc29251361b3522cc513b2c95e46b35b106ec",
-    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "new_digest": "350d79ced4e143fddd6f338f3b84caf2b1e82c052bb6983f35a90727360f2ae6",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -219,8 +222,8 @@
       "identity": "check_teeth_mutations.py:space334-cache-hides-freed",
       "module": "control_space_admission.py",
       "name": "space334-cache-hides-freed",
-      "new": "            if not hold or hold['state'] != 'released':",
-      "old": "            if not hold or (hold['state'] != 'released' and not (\n                    hold['state'] == 'waiting' and hold.get('freed'))):",
+      "new": "            elif hold['state'] != 'released':",
+      "old": "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
       "rows": [
         "space334/ac3/completion-race",
         "space334/ac3/stopped-clock"
@@ -230,10 +233,11 @@
     "control_failed": [],
     "mutant_failed": [
       "space334/ac3/completion-race",
-      "space334/ac3/stopped-clock"
+      "space334/ac3/stopped-clock",
+      "space334/fix4/failed-read-rejudges"
     ],
-    "new_digest": "b2c1cd01c7df41d18e41ea6164aeeff965e5d1c80c7568cc6eae9fcaf7e18938",
-    "old_digest": "d79731f6e0302a556fc8942991993ff392f94adbd191be05e887c330dcef7ae3",
+    "new_digest": "507b26f287db96bd9a29a29aa432a308a405df7c9c4b0768a79ed617e01df589",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
     "replacement_count": 1,
     "source": "fresh",
     "targets": {
@@ -241,6 +245,98 @@
         false
       ],
       "space334/ac3/stopped-clock": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-failed-judgment-kept",
+      "module": "control_space_admission.py",
+      "name": "space334-failed-judgment-kept",
+      "new": "                if not bound:\n                    self.answers[key] = answer\n                    return answer\n",
+      "old": "                if not bound:\n                    return answer\n",
+      "rows": [
+        "space334/fix4/failed-read-rejudges"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/fix4/failed-read-rejudges"
+    ],
+    "new_digest": "94c7c8f999e86332a8232c3d979fafde8dacf94ff612e0d2d87f8dd133b06896",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/fix4/failed-read-rejudges": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-waiting-release-marks",
+      "module": "control_space.py",
+      "name": "space334-waiting-release-marks",
+      "new": "                 if True}  # defect: any release counts as freed space",
+      "old": "                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}",
+      "rows": [
+        "space334/fix2/waiting-release-no-mark",
+        "space334/fix2/release-marks-per-pool"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/fix2/release-marks-per-pool",
+      "space334/fix2/waiting-release-no-mark"
+    ],
+    "new_digest": "99083607496c0fd23159dad5fa43235017aba294237beaf4c259026359c61c62",
+    "old_digest": "f4c0c7e5487d984c8c958ce2380b224ea863aac708fca1436695abb8bc433c24",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/fix2/release-marks-per-pool": [
+        false
+      ],
+      "space334/fix2/waiting-release-no-mark": [
+        false
+      ]
+    }
+  },
+  {
+    "baseline_failed": [],
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 334,
+      "identity": "check_teeth_mutations.py:space334-requests-resubmit-every-pass",
+      "module": "control_space_admission.py",
+      "name": "space334-requests-resubmit-every-pass",
+      "new": "            elif hold['state'] not in ('released', 'waiting'):",
+      "old": "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
+      "rows": [
+        "space334/fix3/requests-unrelated-passes"
+      ],
+      "suite": "150_veldo_0334_space_wait.py"
+    },
+    "control_failed": [],
+    "mutant_failed": [
+      "space334/fix3/requests-unrelated-passes"
+    ],
+    "new_digest": "369644e4521effc34dd8e9113c9413468066187e8491adb14832d14a54985349",
+    "old_digest": "f164efa9957e18cb56168db9ceeeb9d96a15e48aa29846a1d8f345ac5b29dc67",
+    "replacement_count": 1,
+    "source": "fresh",
+    "targets": {
+      "space334/fix3/requests-unrelated-passes": [
         false
       ]
     }

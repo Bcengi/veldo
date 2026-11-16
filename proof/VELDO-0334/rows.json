@@ -1,6 +1,6 @@
 {
   "basis": "The targeted suite and the final teeth baseline agree. Each teeth no-change control also passed.",
-  "own_rows": 18,
+  "own_rows": 24,
   "rows": [
     {
       "passed": true,
@@ -73,13 +73,37 @@
     {
       "passed": true,
       "row": "space334/compat/one-shot-adapter"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix1/act-refused-signal"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix1/report-refused-signal"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix2/release-marks-per-pool"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix2/waiting-release-no-mark"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix3/requests-unrelated-passes"
+    },
+    {
+      "passed": true,
+      "row": "space334/fix4/failed-read-rejudges"
     }
   ],
   "scope": "diagnostic only; aggregate verification pending",
   "selected_run": {
     "exit": 2,
     "failed": 0,
-    "passed": 44
+    "passed": 50
   },
   "shared_preamble": 26
 }

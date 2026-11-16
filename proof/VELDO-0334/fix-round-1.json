@@ -1,0 +1,304 @@
+{
+ "builder": "Claude, a different builder from the implementation; not an independent reviewer",
+ "commit": "af65a0beb70e40c1176a957dec423e7c90b43d24",
+ "fast_checks": {
+  "bash scripts/check_docs.sh": 0,
+  "bash scripts/check_generated.sh": 0,
+  "bash scripts/check_lint.sh": 0,
+  "bash scripts/check_template_sync.sh": 0,
+  "python3 -B .veldo/validate.py all": 0,
+  "python3 -B scripts/check_space_boundary.py": 0
+ },
+ "findings": {
+  "F1": {
+   "change": "The claim writes the answer the scope mode gives (advised in report mode) with retry_asked in one write, before Signal. A refused Signal is no longer raised: the final answer is written. answer_of is the one place the mode decides.",
+   "commit": "34f55fb9",
+   "rows": [
+    "space334/fix1/report-refused-signal",
+    "space334/fix1/act-refused-signal"
+   ]
+  },
+  "F2": {
+   "change": "Release marks only the pools where an admitted or advised hold still held bytes (need above used).",
+   "commit": "d89012ed",
+   "row_changed": "the release fixture of ac3/release and others now releases an admitted hold",
+   "rows": [
+    "space334/fix2/waiting-release-no-mark",
+    "space334/fix2/release-marks-per-pool"
+   ],
+   "teeth": "space334-waiting-release-marks"
+  },
+  "F3": {
+   "change": "Row only: journal, account_reset and run_end passes through a wired Requests: 0 consumer submits, 0 free reads (counted across processes by file), 0 journal records.",
+   "commit": "7c692680",
+   "rows": [
+    "space334/fix3/requests-unrelated-passes"
+   ],
+   "teeth": "space334-requests-resubmit-every-pass (the reviewer M4)"
+  },
+  "F4": {
+   "change": "Row only, after the rebase: mark set, one failing free read in the worker, reported once by name with the mark kept; the next offer judges again, admits and clears the mark.",
+   "commit": "63f2ea86",
+   "rows": [
+    "space334/fix4/failed-read-rejudges"
+   ],
+   "teeth": "space334-failed-judgment-kept"
+  },
+  "F5": {
+   "change": "Spec History: gate and wrapped runs do not send admission_requested yet; unreachable until the gate wiring of VELDO-0323; follow-up VELDO-0323 and VELDO-0325.",
+   "commit": "e091a393"
+  },
+  "F6": {
+   "change": "Spec History: the lead accepted the footprint widening (Signal and its copy) on 2026-11-16; the owner approves at landing.",
+   "commit": "af65a0be"
+  }
+ },
+ "not_run": [
+  "./scripts/verify.sh",
+  "suites 151 and up",
+  "policy_check.py",
+  "132_veldo_0297_space_ledger"
+ ],
+ "rebase": {
+  "build_proof": "0b93373a (was 82bb1c87)",
+  "command": "git rebase --onto veldo-space-0316 b8fb73f7",
+  "conflict": "Requests.prepare and its docstring, both copies. Kept both: an answer with no hold is returned once and judged afresh (0316 F1); a waiting answer whose hold is marked freed is dropped (0334).",
+  "implementation": "c638ab1f (was e1513571)",
+  "onto": "a03b9b73",
+  "reconcile": "0316 F2 reconcile already releases through Ledger.release, so the freed marks and the space wake follow it; no extra code.",
+  "teeth_text": "space334-cache-hides-freed and space316-block-report follow the new source text."
+ },
+ "round": "fix round 1 after the independent review (verdict FIX), with the rebase onto the fixed VELDO-0316",
+ "suites": {
+  "150_veldo_0316_admission": {
+   "exit": 2,
+   "failed": 0,
+   "own_rows": 29,
+   "passed": 55
+  },
+  "150_veldo_0334_space_wait": {
+   "exit": 2,
+   "failed": 0,
+   "own_rows": 24,
+   "passed": 50
+  },
+  "note": "nice -n 10 python3 -B scripts/selftest.py with one suite each, at this commit. Exit 2 marks a partial run."
+ },
+ "supervisors": "no space supervise process of this worktree after any run",
+ "teeth": {
+  "316": {
+   "cases": {
+    "space316-accept-released": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac2/acceptance-rechecks"
+     ]
+    },
+    "space316-admission-at-acceptance": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac2/before-reservation",
+      "space316/ac2/factory-waiting"
+     ]
+    },
+    "space316-block-report": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac1/metrics",
+      "space316/ac3/report-starts",
+      "space316/fix2/withdrawn-restart"
+     ]
+    },
+    "space316-ignore-floor": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac1/floor-boundaries",
+      "space316/ac1/metrics",
+      "space316/ac1/other-holds",
+      "space316/ac1/second-pool",
+      "space316/ac2/before-reservation",
+      "space316/ac2/completion-wakes",
+      "space316/ac2/factory-waiting",
+      "space316/ac3/report-starts",
+      "space316/ac4/one-run-default",
+      "space316/fix2/withdrawn-restart"
+     ]
+    },
+    "space316-lost-completion-wake": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac2/completion-wakes",
+      "space316/fix1/failed-judgment"
+     ]
+    },
+    "space316-measured-after-one": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac4/one-run-default"
+     ]
+    },
+    "space316-prepare-without-lock": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac1/concurrent"
+     ]
+    },
+    "space316-release-winning-promise": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac2/racing-prepare"
+     ]
+    },
+    "space316-wait-listed-refused": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space316/ac2/factory-waiting"
+     ]
+    }
+   },
+   "command": "nice -n 10 python3 -u -B scripts/check_teeth_mutations.py --finding 316 --jobs 2",
+   "executed": 9,
+   "exit": 0,
+   "invalid": 0,
+   "registered": 9,
+   "rejected": 9,
+   "reused": 0,
+   "seconds": 137,
+   "status": "passed",
+   "surviving_workers": 0
+  },
+  "334": {
+   "cases": {
+    "space334-cache-hides-freed": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac3/completion-race",
+      "space334/ac3/stopped-clock",
+      "space334/fix4/failed-read-rejudges"
+     ]
+    },
+    "space334-failed-judgment-kept": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/fix4/failed-read-rejudges"
+     ]
+    },
+    "space334-freeing-race-lost": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac3/free-during-judgment"
+     ]
+    },
+    "space334-mark-never-cleared": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac3/free-during-judgment",
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/refusal-atomic",
+      "space334/ac3/release",
+      "space334/fix4/failed-read-rejudges"
+     ]
+    },
+    "space334-mark-without-wake": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/release",
+      "space334/ac3/stopped-clock"
+     ]
+    },
+    "space334-no-freed-marks": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac1/signal-can-admit",
+      "space334/ac3/backing-pool",
+      "space334/ac3/completion-race",
+      "space334/ac3/free-during-judgment",
+      "space334/ac3/outcome",
+      "space334/ac3/pool-isolation",
+      "space334/ac3/reconcile",
+      "space334/ac3/release",
+      "space334/ac3/stopped-clock",
+      "space334/ac3/waiting-set-race",
+      "space334/fix2/release-marks-per-pool",
+      "space334/fix4/failed-read-rejudges"
+     ]
+    },
+    "space334-read-every-pass": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac2/manual-free-timer",
+      "space334/ac2/no-read-or-write",
+      "space334/ac2/public-admit"
+     ]
+    },
+    "space334-request-every-pass": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac1/one-signal",
+      "space334/ac2/manual-free-timer",
+      "space334/ac2/no-read-or-write",
+      "space334/ac2/public-admit",
+      "space334/ac3/outcome",
+      "space334/ac3/reconcile",
+      "space334/ac3/release"
+     ]
+    },
+    "space334-requests-resubmit-every-pass": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/fix3/requests-unrelated-passes"
+     ]
+    },
+    "space334-retry-loses-ending": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/ac1/signal-can-admit"
+     ]
+    },
+    "space334-waiting-release-marks": {
+     "baseline_failed": [],
+     "control_failed": [],
+     "red_rows": [
+      "space334/fix2/release-marks-per-pool",
+      "space334/fix2/waiting-release-no-mark"
+     ]
+    }
+   },
+   "command": "nice -n 10 python3 -u -B scripts/check_teeth_mutations.py --finding 334 --jobs 2",
+   "executed": 11,
+   "exit": 0,
+   "invalid": 0,
+   "registered": 11,
+   "rejected": 11,
+   "reused": 0,
+   "seconds": 67,
+   "status": "passed",
+   "surviving_workers": 0
+  },
+  "ran_last": true,
+  "worktree": "clean before and after; tracked-file digest 0d986a7cd15d4cd716ed3bf57389c3581fffaa443d53db63e1910c57a9e8072e both times"
+ },
+ "tree": "3a59ba0e1ac6db5e56c92e424459ca3d595ad555"
+}

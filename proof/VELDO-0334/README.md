@@ -80,3 +80,40 @@ all other artifacts are small summaries. Full transient logs and exact applied d
 Run ./scripts/verify.sh through the lead's gate lock. The proof manifest intentionally records
 pending criteria and no aggregate evidence claim. Roll back by reverting the implementation commit;
 stored holds and their recorded numbers remain data, with no deletion or migration involved.
+
+## Fix round 1 (2026-11-16)
+
+After the independent review (verdict FIX) the branch was rebased onto the fixed VELDO-0316 (a03b9b73)
+and six findings were answered, one commit each. fix-round-1.json is the record; the sections above
+describe the first build and are superseded where they differ. Fixes by Claude, a different builder; no
+independent review of this round is claimed.
+
+Rebase: one conflict, Requests.prepare, resolved keeping both rules. An answer with no hold is returned
+once and judged afresh; a waiting answer whose hold is marked freed is dropped. The VELDO-0316 reconcile
+releases through Ledger.release, so marks and the space wake follow it.
+
+1. Report mode never blocks. The claim before Signal writes advised with retry_asked in one write for a
+   report-mode scope, and a refused Signal is not raised. Rows fix1/report-refused-signal (refused
+   Signal and a worker lost inside Signal) and fix1/act-refused-signal.
+2. A release marks freed only on pools where an admitted or advised hold still held bytes. Rows
+   fix2/waiting-release-no-mark and fix2/release-marks-per-pool; teeth case space334-waiting-release-marks.
+3. Three unrelated passes through a wired Requests: no consumer submit, no free read, no journal
+   record. Row fix3/requests-unrelated-passes; the reviewer's M4 is teeth case
+   space334-requests-resubmit-every-pass.
+4. Mark set, one failing free read, the next offer judges again and clears the mark. Row
+   fix4/failed-read-rejudges; teeth case space334-failed-judgment-kept.
+5. Boundary, recorded in the spec History: gate and wrapped runs do not send admission_requested yet.
+   The one-shot admit callers carry no Signal context and the gate wiring answers ledger_unreachable
+   until VELDO-0323, so the path is unreachable today. Follow-up: VELDO-0323, and VELDO-0325 at the latest.
+6. The lead accepted the footprint widening (Signal and its copy) on 2026-11-16; the owner approves at
+   landing.
+
+Rows: 24 own rows, 50 with shared checks, zero failed, partial exit 2. VELDO-0316: 29 own rows, 55
+passed, zero failed. Fast checks passed: validation, docs, template sync, lint, generated, space boundary.
+
+Teeth ran last on a clean worktree at af65a0be, jobs 2, tracked-file digest equal before and after.
+Finding 316: 9 registered, 9 executed, 9 rejected. Finding 334: 11 registered, 11 executed, 11 rejected.
+Zero reused, zero invalid, zero surviving workers. falsifiers.json, teeth-receipt.json and teeth-run.json
+are this round's finding 334 run; fix-round-1.json summarizes both findings. checks.json is the first
+build's record. The space ledger suite, suites 151 and up, the policy check and the canonical verify
+command were not run.
