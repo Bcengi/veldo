@@ -1,0 +1,226 @@
+{
+  "base_head": "9e83b6cc",
+  "scope": "Fixture-only GATE FIX ROUND 2; no product or protected paths changed.",
+  "0215": {
+    "row": "case-deadlines/store-pruned",
+    "change": "Old live, pending and foreign entries retain their bytes and timestamps. Only the gone-authority entry disappears. One History line records the lead ruling, VELDO-0304 and Telegram 41209.",
+    "limitation": "The accepted protected scripts/gate_legs.py:prune_times still calls os.unlink directly. This row proves the accepted deletion condition, not traversal through control_space_remove. Product edits were forbidden; the route discrepancy was reported to the lead.",
+    "falsifiers": [
+      {
+        "defect": "age-delete",
+        "rows": 17,
+        "failed": [
+          "VELDO-0215 case-deadlines/store-pruned"
+        ]
+      },
+      {
+        "defect": "no-removal",
+        "rows": 17,
+        "failed": [
+          "VELDO-0215 case-deadlines/store-pruned"
+        ]
+      }
+    ]
+  },
+  "0208": {
+    "rows": [
+      "sandbox/unavailable-refuses-before-exec",
+      "sandbox/old-abi-refuses-before-exec"
+    ],
+    "cause": "run_tree execs the namespace helper, which executes agent_sandbox.py namespace-init in a fresh interpreter. The parent-only ctypes.CDLL monkeypatch is lost across that exec.",
+    "change": "A private authority copy doubles only the Landlock ABI query syscall. The helper executes the same copy, so both unavailable and ABI 5 reach landlock in the launched process. Exit 2, the specific diagnostic and absent command marker remain required; each case has its own marker."
+  },
+  "0344": {
+    "row": "ac6/installed no_pin",
+    "status": "Expected host failure, unchanged and not rerun. No installation key added; owner-install.txt step 4 remains the owner action after landing."
+  },
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "112_veldo_0215_case_deadlines"
+      ],
+      "exit": 1,
+      "seconds": 0.57,
+      "new_supervisors": {},
+      "summary": [
+        "  SELFTEST FAIL: VELDO-0215 case-deadlines/store-pruned",
+        "selftest (PARTIAL, 1 of 236 suites): 42 passed, 1 failed in 0.32s"
+      ],
+      "run": "112-red"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "112_veldo_0215_case_deadlines"
+      ],
+      "exit": 2,
+      "seconds": 0.33,
+      "new_supervisors": {},
+      "summary": [
+        "selftest (PARTIAL, 1 of 236 suites): 43 passed, 0 failed in 0.27s"
+      ],
+      "run": "112-fixed"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "/tmp/veldo-gate-round2-x6hpn42y/falsify215.py"
+      ],
+      "exit": 0,
+      "seconds": 0.54,
+      "new_supervisors": {},
+      "summary": [],
+      "run": "112-falsifiers"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        ".veldo/validate.py",
+        "all"
+      ],
+      "exit": 0,
+      "seconds": 7.19,
+      "new_supervisors": {},
+      "summary": [],
+      "run": "validate"
+    },
+    {
+      "command": [
+        "bash",
+        "scripts/check_docs.sh"
+      ],
+      "exit": 0,
+      "seconds": 0.76,
+      "new_supervisors": {},
+      "summary": [
+        "docs hygiene: pass"
+      ],
+      "run": "docs"
+    },
+    {
+      "command": [
+        "bash",
+        "scripts/check_template_sync.sh"
+      ],
+      "exit": 0,
+      "seconds": 0.24,
+      "new_supervisors": {},
+      "summary": [
+        "template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+      ],
+      "run": "templates"
+    },
+    {
+      "command": [
+        "bash",
+        "scripts/check_generated.sh"
+      ],
+      "exit": 0,
+      "seconds": 0.64,
+      "new_supervisors": {},
+      "summary": [
+        "generated: pass (specs/index.md)",
+        "generated: pass (proof/WARP-0716/crossing-state.md)",
+        "generated: pass (proof/WARP-0712/order-dependence.md)",
+        "generated: pass (proof/WARP-0712/split-plan.md)",
+        "generated: pass (scripts/suites/requires.json)",
+        "generated: pass"
+      ],
+      "run": "generated"
+    },
+    {
+      "command": [
+        "bash",
+        "scripts/check_lint.sh"
+      ],
+      "exit": 0,
+      "seconds": 3.46,
+      "new_supervisors": {},
+      "summary": [
+        "lint: pass (1245 python, 39 shell, 3.43s)"
+      ],
+      "run": "lint"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/check_git_boundary.py"
+      ],
+      "exit": 0,
+      "seconds": 3.7,
+      "new_supervisors": {},
+      "summary": [
+        "Git subprocess boundary: pass"
+      ],
+      "run": "git-boundary"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/check_space_boundary.py"
+      ],
+      "exit": 0,
+      "seconds": 5.63,
+      "new_supervisors": {},
+      "summary": [
+        "Space boundary: pass"
+      ],
+      "run": "space-boundary"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "101_veldo_0208_landing_reuse"
+      ],
+      "exit": 1,
+      "seconds": 300.67,
+      "new_supervisors": {},
+      "summary": [
+        "  SELFTEST FAIL: VELDO-0208 sandbox/unavailable-refuses-before-exec",
+        "  SELFTEST FAIL: VELDO-0208 sandbox/old-abi-refuses-before-exec",
+        "selftest (PARTIAL, 1 of 236 suites): 214 passed, 2 failed in 300.50s"
+      ],
+      "run": "101-red"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "101_veldo_0208_landing_reuse"
+      ],
+      "exit": 2,
+      "seconds": 282.46,
+      "new_supervisors": {},
+      "summary": [
+        "selftest (PARTIAL, 1 of 236 suites): 216 passed, 0 failed in 282.32s"
+      ],
+      "run": "101-fixed"
+    }
+  ],
+  "constraints": {
+    "nice": 10,
+    "full_gate_run": false,
+    "suites_151_and_up_run": false,
+    "policy_check_run": false,
+    "cases_registered": false,
+    "teeth_required": false
+  },
+  "note": "Targeted suite results are diagnostics, not a full gate claim.",
+  "supervisor_check": "After each run, a /proc argv scan found no new space supervise process."
+}

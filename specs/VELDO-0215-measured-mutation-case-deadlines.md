@@ -170,3 +170,7 @@ the measured allowance; that remains a visible timeout, never a silently retried
 
 scripts/check_gate_mutations.py and engine/scripts/check_gate_mutations.py are protected.
 Landing requires separate commit-bound human approval. The implementing agent authors none.
+
+## History
+
+- 2026-11-16: GATE FIX ROUND 2 lead ruling: VELDO-0304 and the owner rule that no work is ever lost (Telegram 41209) supersede AC4 and Design age-based store pruning; case-deadlines/store-pruned retains old live, pending and foreign files and removes only a gone authority entry. Removal is governed by VELDO-0304 through the removers.

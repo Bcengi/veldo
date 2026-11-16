@@ -199,30 +199,30 @@ print(json.dumps(results))
         defaults = json.loads((ROOT / 'scripts/agent_sandbox.json').read_text())
         expect('VELDO-0208 sandbox/default-no-broad-home-or-tmp',
                '~' not in defaults['read_roots'] and '/tmp' not in defaults['read_roots'])
-        # Kernel failure is injected at the syscall boundary, before exec. No root needed.
-        unavailable = '''import importlib.util, sys
-spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
-m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-class Kernel:
- def syscall(self, *args): return -1
-m.ctypes.CDLL = lambda *args, **kwargs: Kernel()
-sys.argv = [sys.argv[1], *sys.argv[2:]]
-sys.exit(m.main())
-'''
-        marker = worktree / 'must-not-start'
-        result = confined_run([sys.executable, '-I', '-S', '-c', unavailable,
-            str(ROOT / 'scripts/agent_sandbox.py'), '--config', str(config), '--worktree', str(worktree),
-            '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
-            capture_output=True, text=True, timeout=20)
-        expect('VELDO-0208 sandbox/unavailable-refuses-before-exec', result.returncode == 2
-               and 'Landlock unavailable' in result.stderr and not marker.exists())
-        obsolete = unavailable.replace('return -1', 'return 5')
-        result = confined_run([sys.executable, '-I', '-S', '-c', obsolete,
-            str(ROOT / 'scripts/agent_sandbox.py'), '--config', str(config), '--worktree', str(worktree),
-            '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
-            capture_output=True, text=True, timeout=20)
-        expect('VELDO-0208 sandbox/old-abi-refuses-before-exec', result.returncode == 2
-               and 'needs Landlock ABI 6' in result.stderr and not marker.exists())
+        # The namespace helper execs this file in a fresh interpreter. A monkeypatch in
+        # the parent cannot cross that exec, so put only the kernel query double in a
+        # private authority copy. Both the initial launch and namespace-init read it.
+        kernel_authority = top / 'kernel-authority'
+        (kernel_authority / 'scripts').mkdir(parents=True)
+        (kernel_authority / '.veldo').mkdir()
+        shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', kernel_authority / '.veldo/reuse_evidence.py')
+        kernel_launcher = kernel_authority / 'scripts/agent_sandbox.py'
+        kernel_source = (ROOT / 'scripts/agent_sandbox.py').read_text()
+        query = '        result = libc.syscall(number, *args)'
+        assert kernel_source.count(query) == 1
+        for name, answer, diagnostic in (
+                ('unavailable', -1, 'Landlock unavailable'),
+                ('old-abi', 5, 'needs Landlock ABI 6')):
+            kernel_launcher.write_text(kernel_source.replace(query,
+                '        result = %d if number == 444 and args == (0, 0, 1) else libc.syscall(number, *args)'
+                % answer))
+            marker = worktree / ('must-not-start-' + name)
+            result = confined_run([sys.executable, '-I', '-S', str(kernel_launcher),
+                '--config', str(config), '--worktree', str(worktree),
+                '--', sys.executable, '-c', 'open(' + repr(str(marker)) + ', "w").close()'],
+                capture_output=True, text=True, timeout=20)
+            expect('VELDO-0208 sandbox/' + name + '-refuses-before-exec: ' + result.stderr[-400:],
+                   result.returncode == 2 and diagnostic in result.stderr and not marker.exists())
         bad_policy = dict(policy, write_roots=[str(top)])
         bad_config = top / 'bad-config.json'; bad_config.write_text(json.dumps(bad_policy))
         bad = command[:]; bad[bad.index(str(config))] = str(bad_config)

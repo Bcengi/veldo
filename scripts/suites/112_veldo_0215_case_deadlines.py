@@ -316,8 +316,16 @@ def _v215_case_deadlines():
             p.write_text(json.dumps({'authority': str(authority)}))
             if stale:
                 os.utime(p, (old, old))
+        # VELDO-0304 supersedes age-based store deletion (owner rule, Telegram 41209).
+        # A gone authority is the only removal trigger. Old live and pending files
+        # retain their bytes and timestamps, as do foreign names.
+        retained = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in prune.iterdir()
+                    if p.name != 'a' * 32 + '.json'}
         gate.record_case_times(ROOT, {key: 80}, prune)
-        row('store-pruned', {p.name for p in prune.iterdir()} == {key + '.json', 'c' * 32 + '.json', 'foreign'})
+        row('store-pruned', {p.name for p in prune.iterdir()} == {key + '.json', *retained}
+            and all((prune / name).read_bytes() == content
+                    and (prune / name).stat().st_mtime_ns == modified
+                    for name, (content, modified) in retained.items()))
 
         # Real OS child, actual process-group kill and reap; no fake clock on this row.
         # Replace only the launch command; production Workers.run/finish/check_worker execute.
