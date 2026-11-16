@@ -1,0 +1,47 @@
+[
+ {
+  "name": "unit",
+  "command": "python3 scripts/selftest.py --suite 156_veldo_0315_reconcile",
+  "scope": "partial",
+  "summary": [
+   "              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.",
+   "  /tmp/tmp_dlh9mmi/proof4.json: criterion AC1 passed without evidence",
+   "  156_veldo_0315_reconcile                        16 passed    7.05s",
+   "selftest (PARTIAL, 1 of 227 suites): 42 passed, 0 failed in 7.05s"
+  ]
+ },
+ {
+  "name": "service regression",
+  "command": "python3 scripts/selftest.py --suite 149_veldo_0312_ticket_ended",
+  "scope": "partial",
+  "summary": [
+   "              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.",
+   "  /tmp/tmp76qhxbwc/proof4.json: criterion AC1 passed without evidence",
+   "  149_veldo_0312_ticket_ended                     41 passed    3.30s",
+   "selftest (PARTIAL, 1 of 227 suites): 67 passed, 0 failed in 3.30s"
+  ]
+ },
+ {
+  "name": "Docker ownership",
+  "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership",
+  "scope": "partial",
+  "summary": [
+   "              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.",
+   "  /tmp/tmprku2a8rn/proof4.json: criterion AC1 passed without evidence",
+   "  145_veldo_0307_space_docker_ownership           25 passed    1.05s",
+   "selftest (PARTIAL, 1 of 227 suites): 51 passed, 0 failed in 1.05s"
+  ]
+ },
+ {
+  "name": "installation",
+  "command": "python3 scripts/selftest.py --suite 66_veldo_0047_authority",
+  "scope": "partial",
+  "summary": [
+   "              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.",
+   "  /tmp/tmp7eaeh26t/proof4.json: criterion AC1 passed without evidence",
+   "  SELFTEST FAIL: VELDO-0047 authority/absent-service-refuses-by-name",
+   "  66_veldo_0047_authority                         29 passed   13.85s",
+   "selftest (PARTIAL, 1 of 227 suites): 55 passed, 1 failed in 13.85s"
+  ]
+ }
+]

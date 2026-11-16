@@ -339,6 +339,7 @@ BS = _organ('control_batch_service', lazy=True)
 # VELDO-0312: Signal, the one entry point an event is sent through. The modules it is given come with the ledger.
 SPACE_SIGNAL = _organ('control_space_signal', lazy=True)
 SPACE_CONSUMER = _organ('control_space_consumer', lazy=True)
+SPACE_RECONCILE = _organ('control_space_reconcile', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -1212,6 +1213,10 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             _write(os.path.join(config_dir, WORK), lines, 0o600)
         for path, record in laid['receivers'].items():
             _write(path, _json(record), 0o600)
+        if installation is not None:
+            config['installation'] = os.path.abspath(str(installation))
+        if state_root is not None:
+            config['state_root'] = os.path.abspath(str(state_root))
         _write(config_path, _json(config), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
@@ -1542,6 +1547,7 @@ class Service:
         self._space, self.space_seen = None, None
         self.space_consumer = None
         self.space_owned = []
+        self.space_refusal = None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1587,7 +1593,7 @@ class Service:
         found.append(getattr(getattr(self, 'api', None), 'conn', None))
         return found
 
-    def space_start(self, replay=None, reconcile=None):
+    def space_worker_start(self, replay=None, reconcile=None):
         """Replay in a child, then consume received events before starting reconcile."""
         consumer = self.space_consumer
         if consumer is None:
@@ -1628,6 +1634,74 @@ class Service:
         before = self.space_consumer.head
         self.space_consumer.readable(descriptor)
         self.hint_after(before, consume=False)
+
+    def space_start(self, replay=None, reconcile=None):
+        """VELDO-0315: finish replay and reconciliation before any first dispatch is served.
+
+        VELDO-0323 supplies a Consumer separately; its replay/received-event startup
+        hook can call space_reconcile after bootstrap has supplied this same mapping.
+        A named failure leaves the rest of the authority available.
+        """
+        try:
+            if self.space is None:
+                self.space = SPACE_RECONCILE.bootstrap(self)
+            if self.space is None:
+                return {'ok': True, 'configured': False}
+            if self.space_docker is None:
+                self.space_docker = _organ('control_space_docker').Adapter(
+                    self.space['ledger'], run=self.space.get('run'), reconcile=SPACE_RECONCILE)
+            if replay is not None:
+                replay()
+            else:
+                spool = _organ('control_space_spool')
+                folder = spool.spool_folder(self.space['ledger'].state_root)
+                if spool.pending(folder):
+                    installation = self.config.get('installation')
+                    if not installation:
+                        raise ValueError('space spool needs the installation signing keys')
+                    spool.replay(folder, spool.Local(self.space['ledger'], CM), spool.signer(installation), seconds=None)
+                    if spool.pending(folder):
+                        raise ValueError('space spool still has undelivered records')
+            if reconcile is not None:
+                return reconcile()
+            result = self.space_reconcile('service_start')
+            if result.get('ok'):
+                self.space_docker.start()
+            return result
+        except Exception as error:  # noqa: BLE001 - report startup failure and serve everything else
+            return self._space_reconcile_failed(error)
+
+    def _space_reconcile_failed(self, error):
+        self.space_refusal = 'space_reconcile_failed:' + type(error).__name__
+        with contextlib.suppress(Exception):
+            self._log({'kind': 'space', 'operation': 'reconcile', 'at': time.time(),
+                       'domain_uuid': self.domain, 'refusal': self.space_refusal, 'detail': str(error)[:400]})
+        return {'ok': False, 'reason': self.space_refusal, 'detail': str(error)[:400]}
+
+    def space_reconcile(self, started_by='console'):
+        """The explicit API/CLI entry; no service pass or timer calls it."""
+        try:
+            if self.space is None:
+                return {'ok': False, 'reason': 'space_not_configured'}
+            events = self._space_endings().retry(self._space_retry_event)
+            reconciler = SPACE_RECONCILE.Reconciler(self.space, docker=self.space_docker)
+            result = reconciler.run(started_by)
+            self.space_refusal = None
+            self._log({'kind': 'space', 'operation': 'reconcile', 'at': time.time(),
+                       'domain_uuid': self.domain, 'result': result, 'events': events})
+            return dict(result, events=events)
+        except Exception as error:  # noqa: BLE001 - an unread item never ends the service
+            return self._space_reconcile_failed(error)
+
+    def _space_endings(self):
+        return SPACE_RECONCILE.EndingEvents(self.space['ledger'].state_root)
+
+    def _space_retry_event(self, event):
+        if event['method'] == 'send':
+            return self.space_send(event['found'], _retry=True)
+        if event['method'] == 'abandon':
+            return self.space_abandon(event['item'], event['version'], event['by'], cause=event['cause'], _retry=True)
+        raise ValueError('unknown ending event')
 
     # -- signatures --------------------------------------------------------------------------
 
@@ -2381,8 +2455,16 @@ class Service:
         ledger = self.space['ledger']
         given = {key: value for key, value in self.space.items() if key not in ('ledger', 'emitter', 'principal')}
         for subject in subjects:
-            answer = SPACE_SIGNAL.signal(ledger, event, subject, emitter=emitter, principal=principal, **given)
-            out['subjects'].append({'subject': subject, 'ok': answer.get('ok') is True, 'reason': answer.get('reason'),
+            requested = subject
+            if 'items' not in subject:
+                selected = ledger._matching(event, subject)
+                subject = {'items': [{'item': identity, 'version': version} for identity, version, record in selected]}
+                if not subject['items']:
+                    continue
+            owners = {one['item']: (ledger.item(one['item']) or {}).get('owner') for one in subject['items']}
+            answer = SPACE_SIGNAL.signal(ledger, event, subject, emitter=dict(emitter, owners=owners),
+                                         principal=principal, **given)
+            out['subjects'].append({'subject': requested, 'ok': answer.get('ok') is True, 'reason': answer.get('reason'),
                                     'items': len(answer.get('items') or ()), 'left': len(answer.get('left') or ())})
             out['sent'] = out['sent'] or answer.get('ok') is True
             out['left'] += len(answer.get('left') or ())
@@ -2411,7 +2493,7 @@ class Service:
             self._log(out)
         return out
 
-    def space_send(self, found):
+    def space_send(self, found, _retry=False):
         """Send one event space_events found, through Signal: ticket ended once for each of its tickets, with
         the subject {the project, the ticket}; project ended once, with the project alone as the subject, so it
         reaches the project's items that have no ticket too. The emitter names the transition and the command
@@ -2436,9 +2518,11 @@ class Service:
                     'command_id': found.get('command_id'), 'seq': found.get('seq')})
         except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
             out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+            if not _retry:
+                self._space_endings().record({'method': 'send', 'found': found}, out['raised'])
         return self._space_logged(out)
 
-    def space_abandon(self, item, version=None, by=None, *, cause):
+    def space_abandon(self, item, version=None, by=None, *, cause, _retry=False):
         """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE,
         BY ITEM). `cause` says why: the owner's Abandon, or the ticket's next run provisioned in another
         worktree. It has no default: a caller that does not name its cause is a programming error and gets
@@ -2456,6 +2540,9 @@ class Service:
             self._space_abandon(out, item, version, by, cause)
         except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
             out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+            if not _retry:
+                self._space_endings().record({'method': 'abandon', 'item': item, 'version': version,
+                                              'by': by, 'cause': cause}, out['raised'])
         return self._space_logged(out)
 
     def _space_abandon(self, out, item, version, by, cause):
@@ -4098,6 +4185,7 @@ def serve(config_path):
             # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
             # adoption could not reach a running service is taken on.
             service.take_on()
+            service.space_start()
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
@@ -4117,6 +4205,7 @@ def serve(config_path):
             if service.api is not None:
                 # VELDO-0312: the console's signed Abandon reaches this instance's space ledger, when it has one.
                 service.api.authority.space_abandon = service.space_abandon
+                service.api.authority.space_reconcile = service.space_reconcile
             if service.loop_refusal:
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})

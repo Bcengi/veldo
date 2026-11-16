@@ -2158,6 +2158,15 @@
    ],
    "regions": "VELDO-0335: released observations name only hook and record creations, remain asynchronous, and go through the item-naming Signal, safety rules, keep step and removers. Owner Keep and unique work remain on disk.",
    "requires_note": "Only ROOT and expect. Real git, SQLite, child worker and signed observer packets. Fixture act eligibility, free space and private process table; no real engines. The decision request needs VELDO-0318, absent from this base."
+  },
+  {
+   "name": "156_veldo_0315_reconcile",
+   "file": "156_veldo_0315_reconcile.py",
+   "requires": [
+    "156_veldo_0315_reconcile"
+   ],
+   "regions": "VELDO-0315 AC1 to AC8: discovery, crash recovery, startup and ending-event retries.",
+   "requires_note": "Only ROOT and expect. Temporary Git, SQLite and real owner signatures; fixture process table, Docker reader and act prerequisite checks."
   }
  ],
  "resource_capacities": {

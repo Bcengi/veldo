@@ -1,0 +1,72 @@
+[
+ {
+  "revision": "current",
+  "rows": 30,
+  "failed": [
+   "VELDO-0047 authority/absent-service-refuses-by-name"
+  ],
+  "absent": {
+   "stopped": "inactive",
+   "state": {
+    "MainPID": "0",
+    "Result": "success",
+    "NRestarts": "0",
+    "LoadState": "loaded",
+    "ActiveState": "inactive",
+    "SubState": "dead"
+   },
+   "watermark": 12,
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "service": "store478c504c98",
+    "unit": "veldo-authority-ec78fdb9a419ae6a.service",
+    "last_watermark": 12
+   },
+   "claim": "authority_unavailable",
+   "stale": {
+    "stale": true,
+    "code": "AUTHORITY_UNAVAILABLE",
+    "watermark": 12,
+    "read_only": true
+   },
+   "socket_exists": true,
+   "bound": [],
+   "unchanged": true
+  }
+ },
+ {
+  "revision": "starting",
+  "rows": 30,
+  "failed": [
+   "VELDO-0047 authority/absent-service-refuses-by-name"
+  ],
+  "absent": {
+   "stopped": "inactive",
+   "state": {
+    "MainPID": "0",
+    "Result": "success",
+    "NRestarts": "0",
+    "LoadState": "loaded",
+    "ActiveState": "inactive",
+    "SubState": "dead"
+   },
+   "watermark": 12,
+   "mutation": {
+    "code": "AUTHORITY_UNAVAILABLE",
+    "service": "store472ff22ae1",
+    "unit": "veldo-authority-ba384cc27c1bda94.service",
+    "last_watermark": 12
+   },
+   "claim": "authority_unavailable",
+   "stale": {
+    "stale": true,
+    "code": "AUTHORITY_UNAVAILABLE",
+    "watermark": 12,
+    "read_only": true
+   },
+   "socket_exists": true,
+   "bound": [],
+   "unchanged": true
+  }
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": [
+   "Validation exit 0; existing historical proof notices remain."
+  ]
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": [
+   "docs hygiene: pass"
+  ]
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": [
+   "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+  ]
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": [
+   "generated: pass (specs/index.md)",
+   "generated: pass (proof/WARP-0716/crossing-state.md)",
+   "generated: pass (proof/WARP-0712/order-dependence.md)",
+   "generated: pass (proof/WARP-0712/split-plan.md)",
+   "generated: pass (scripts/suites/requires.json)",
+   "generated: pass"
+  ]
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit_code": 0,
+  "summary": [
+   "Syntax check passed after staging the new suite and falsifier harness."
+  ]
+ },
+ {
+  "command": "python3 scripts/check_git_boundary.py",
+  "exit_code": 0,
+  "summary": [
+   "Git subprocess boundary: pass"
+  ]
+ },
+ {
+  "command": "python3 scripts/check_space_boundary.py",
+  "exit_code": 0,
+  "summary": [
+   "Space boundary: pass"
+  ]
+ }
+]

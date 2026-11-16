@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_space_reconcile.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0315_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -154,6 +156,10 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-16: implementation footprint includes the synced runtime scaffold list so installed
+  services receive reconcile and its existing spool, kind registry and Docker adapter dependencies.
+  No acceptance criterion changed.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

@@ -1,0 +1,295 @@
+{
+ "baseline": [
+  {
+   "row": "space315/ac1/no-owner",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac1/table",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac1/private-forms",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac1/worker-clone",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac2/marked-not-gone",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac2/completion",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac2/keep-failure",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac5/live-carrier",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac5/unread-path",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac6/due",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac6/concurrent",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/loss/owner-keep",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac3/startup",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac4/no-schedule",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac7/bootstrap",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "row": "space315/ac8/retry-events",
+   "passed": true,
+   "detail": ""
+  }
+ ],
+ "results": [
+  {
+   "case": "space315-adopt-unowned",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac1/no-owner",
+     "passed": false,
+     "detail": "unowned folder is a report and its planted work stays"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "b707ecb7837769729143b125d790bbad134d8e4df2f1ec1d4bb78232b38e1551"
+  },
+  {
+   "case": "space315-batch-as-scratch",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac1/private-forms",
+     "passed": false,
+     "detail": "batch and candidate are private repositories with forms: [{'repository': '/tmp/veldo-0315-f28acz7o/ac1-private-forms/orchard', 'why': 'hooks_missing'}, {'project': 'orchard', 'why': 'gate_space_steps_missing'}, {'repository': '/tmp/veldo-0315-f28acz7o/ac1-private-forms/plain', 'why': 'hooks_missing'}]; repository is never scratch or build output"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "2bf971957d59b9320532ade7c0e99dd0f8c751393dbb67ff3f9c93a50255ca77"
+  },
+  {
+   "case": "space315-remove-reports",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac1/no-owner",
+     "passed": false,
+     "detail": "unowned folder is a report and its planted work stays"
+    },
+    {
+     "row": "space315/ac1/private-forms",
+     "passed": false,
+     "detail": "repository is never scratch or build output"
+    },
+    {
+     "row": "space315/ac2/keep-failure",
+     "passed": false,
+     "detail": "reported work is never removed"
+    },
+    {
+     "row": "space315/ac8/retry-events",
+     "passed": false,
+     "detail": "one raising event retains its count; the other is delivered; startup retries remaining event and clears pending only on return"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "1091bbc9550be9734edd281fdac247ec5ff60046b32fba2bc6d9ce4994ce46db"
+  },
+  {
+   "case": "space315-locator-alone",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac2/marked-not-gone",
+     "passed": false,
+     "detail": "changed marked worktree is restored and deferred, never gone; changed marked private repository is restored with its new file"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "cb890501911afed81d1ade4055d8f4a7f2d04850604ae3d80565d4c268f6a6c9"
+  },
+  {
+   "case": "space315-background-start",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac3/startup",
+     "passed": false,
+     "detail": "immediate dispatch sees adopted item after synchronous replay"
+    },
+    {
+     "row": "space315/ac4/no-schedule",
+     "passed": false,
+     "detail": "one year without event leaves exactly one reconcile"
+    },
+    {
+     "row": "space315/ac8/retry-events",
+     "passed": false,
+     "detail": "startup retries remaining event and clears pending only on return"
+    }
+   ],
+   "before_sha256": "59edfbe988f8ed83e1aea605dcfcd5f2d1791cbe4484de92265c9a7c9ec27163",
+   "after_sha256": "e6bb670426c1b8d5f15a304f25f619d44a86ceaa6058662cebf91fd3b5c6ce60"
+  },
+  {
+   "case": "space315-periodic-call",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac4/no-schedule",
+     "passed": false,
+     "detail": "one year without event leaves exactly one reconcile"
+    }
+   ],
+   "before_sha256": "59edfbe988f8ed83e1aea605dcfcd5f2d1791cbe4484de92265c9a7c9ec27163",
+   "after_sha256": "a22884422eca4722c1fc92447aee91102765cd9d5c8e6e06d688ad05049f93d6"
+  },
+  {
+   "case": "space315-ignore-carrier",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac5/live-carrier",
+     "passed": false,
+     "detail": "live carrier is unchanged and no second remover gets its work; dead carrier resumes; unread carrier is live"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "2271bdab509b79cf6d26be8f1bff90746226fb0227403d8f60abf2ddbb4c2457"
+  },
+  {
+   "case": "space315-unread-is-missing",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac5/unread-path",
+     "passed": false,
+     "detail": "unread parent never marks item gone; lstat error is not not-found, including for uid zero"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "654c07edb93f60f9cab2be0a028382d90c5b11b05b31bc963ef42eae6d60a48b"
+  },
+  {
+   "case": "space315-ignore-due",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac2/completion",
+     "passed": false,
+     "detail": "crashed scratch removal completes through remover; whole saved worktree retries rules and keeps head in main"
+    },
+    {
+     "row": "space315/ac5/live-carrier",
+     "passed": false,
+     "detail": "dead carrier resumes"
+    },
+    {
+     "row": "space315/ac6/due",
+     "passed": false,
+     "detail": "switch on carries due through rules and records carrier"
+    },
+    {
+     "row": "space315/ac6/concurrent",
+     "passed": false,
+     "detail": "one removing write wins; loser writes no item outcome and runs no remover"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "bdb42871c37d5ac5f5d0a4eb49d7afaa0dc942831b0d6a6d213a4405dc6da161"
+  },
+  {
+   "case": "space315-no-bootstrap",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac7/bootstrap",
+     "passed": false,
+     "detail": "service start must install its ledger before ending events"
+    }
+   ],
+   "before_sha256": "59edfbe988f8ed83e1aea605dcfcd5f2d1791cbe4484de92265c9a7c9ec27163",
+   "after_sha256": "2b081ab018af859a147aafc4c24482c8ab373fc814073cd84b8690ae1d903e00"
+  },
+  {
+   "case": "space315-drop-ending",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac8/retry-events",
+     "passed": false,
+     "detail": "failed sends are durable with transition, subject and command; one raising event retains its count; the other is delivered; startup retries remaining event and clears pending only on return"
+    }
+   ],
+   "before_sha256": "59edfbe988f8ed83e1aea605dcfcd5f2d1791cbe4484de92265c9a7c9ec27163",
+   "after_sha256": "899c4fed6b97e7e6f552bfea154dcee2e3600a306ed2efa1d7830e19c5618461"
+  },
+  {
+   "case": "space315-stop-retries",
+   "applications": 1,
+   "targeted_rows_red": true,
+   "red": [
+    {
+     "row": "space315/ac8/retry-events",
+     "passed": false,
+     "detail": "one raising event retains its count; the other is delivered"
+    }
+   ],
+   "before_sha256": "55ec3e715c0b2807015459380314b3ad243b489768eaa1b7807a247366108459",
+   "after_sha256": "fb2acf8cce64fb9fd382fef9e74e31bbcaa073ce5d7d939221d97620fe48f734"
+  }
+ ],
+ "scope": "targeted copies only; not a teeth stage or gate receipt"
+}
