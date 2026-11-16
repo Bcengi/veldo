@@ -160,12 +160,90 @@ the idle row raised early and left its twelve helper processes to the suite's en
 for each. The row now ends them in a finally; the three commits were rebuilt with that one change
 and every teeth run was repeated, which is the table above.
 
+## Fix round 5 (the third re-review, FIX small)
+
+Commits on 83b3e7df: 1231231b (finding 1), d4081b83 (finding 2), 7914c83e (finding 3), then two
+repairs of this round's own cases and row, 7c87cfd7 and a5bfee60, and this README.
+
+Finding 1, the wait. The reviewer's probe_wait.py (a run holder `sleep 1` and an unread holder
+`sleep 20` that the next read no longer names), run by me:
+
+| Tree | The wait returned after | Reads |
+| --- | ---: | ---: |
+| 031f1db6 | 1.0 s | 2 |
+| 83b3e7df | 20.0 s | 2 |
+| this round | 1.0 s | 2 |
+
+The exit of an unread holder while another holder lives is still one wake and no read
+(supervise/staying-is-idle and the second check of the new row).
+
+| New row | Suite | What it shows |
+| --- | --- | --- |
+| supervise/wait-reads-again-at-a-read-holders-exit | 151 | the probe's shape; and no read at an unread exit |
+| supervise/wrapper-gone-the-follower-makes-the-end | 151 | the real space_supervise, wrapper gone, nothing left: its follower makes the end after it ended. Stand-ins: the end writes a file, an unreadable process is no holder |
+| supervise/none-stays-on-nothing | 151 | each surviving supervisor is classified before it is ended |
+| f3/first-not-behind-second | 156 | the first owner reconcile is answered while a second, for another project, still runs |
+
+| New case | Mutation | Row it turns red |
+| --- | --- | --- |
+| space313-wait-sleeps-on-what-holds-nothing | the wait reads again only when every named holder exited | supervise/wait-reads-again-at-a-read-holders-exit |
+| space313-wait-reads-at-every-unread-exit | every exit is a read | supervise/wait-reads-again-at-a-read-holders-exit |
+| space313-wrapper-gone-nobody-makes-the-end | the reviewer's falsifier 5 | supervise/wrapper-gone-the-follower-makes-the-end |
+| space315-reconcile-wait-nested-in-the-request | the wait inside the request, serving both sockets from there | f3/first-not-behind-second, alone, in 44 s |
+
+Suites, each alone with nice -n 10, on the tree of 7914c83e (before the two repairs; the repair
+a5bfee60 changes one check of one row of suite 151, and that suite was not run on the host again:
+its run after that is the teeth baseline below). No `space supervise` process was left after either.
+
+| Suite | Passed | Failed | Seconds |
+| --- | ---: | ---: | ---: |
+| 156_veldo_0315_reconcile | 61 | 0 | 37.66 |
+| 151_veldo_0313_space_run | 51 | 12 | 426.64 |
+
+The 12 red rows of 151, on a host where another gate ran at the time. Eight are in the list of
+11 (9 host rows and the 2 end-is-made rows): ac2/act-waits-75, ac2/command-status,
+ac2/report-starts, fix2/end-follows-their-exit, fix3/handed-outside-the-tree,
+fix3/rewritten-environment-cwd-in-scratch, fix3/unread-process-holds,
+supervise/stop-after-the-command-end-is-made. Three of the 11 were green:
+ac1/build-output-has-item-and-goes, ac1/declared-started-ended, supervise/report-loss-end-is-made.
+Four are not in the list: fix2/captured-end-follows, fix3/rewritten-environment-open-file-in-worktree,
+fix3/the-house-group (each: the run's end still asleep after 120 s on unread processes of the host)
+and fix4/docker-objects-are-items (an item deferred). They read as the same host cause, and I did
+not prove that for each. In the teeth baseline, in a process table of its own, every row of the
+suite is green. The three new rows of 151 were green on the host.
+
+Teeth ran last, 313 then 315, `--jobs 4`, at a5bfee60 with a clean tree. The digest over every
+tracked file was `efa8f12a8f7a92a39dab5edd93ab91b3d84d5293765f6ce736c6ba21bfdb25d2` before and
+after, `git status` was empty, and no supervisor or teeth worker was left. This README was
+written after the last one returned. No test ran after them.
+
+| Finding | Registered | Executed | Rejected | Reused | Invalid | Exit |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 313 | 43 | 43 | 43 | 0 | 0 | 0 |
+| 315 | 25 | 25 | 25 | 0 | 0 | 0 |
+
+Input digest of both receipts: `3b29f937b1bdc3c9eb27ed2f532448676dc9f6b819063da53e4dcea1f3462494`.
+
+Two earlier teeth sequences of this round were not green, and each led to a commit:
+
+- At 7914c83e: 313 stopped at 12 of 16 executed, because space313-what-the-command-left-is-killed
+  anchored on the line finding 1 changed; 315 gave 24 of 25, the new nested case ran past its
+  120 s limit because its nested wait did not serve the packet socket. Repaired in 7c87cfd7.
+- At 7c87cfd7: 315 gave 25 of 25; 313 was refused as an invalid baseline. Under the unchanged code
+  two rows were red in the no-change control: the new follower row, which read the supervisor's
+  collection where it meant its end (repaired in a5bfee60), and
+  supervise/stop-after-the-command-ends-nothing, an existing row, whose cause I did not find. It
+  was green in that run's baseline and in both controls of the final run.
+
+Finding 323 was not run in this round.
+
 ## Not proven here
 
 - No CLI process is served a ledger yet (bin/veldo, _space_wired), so a real supervisor's follower
   never reaches _space_finish. As everywhere in suite 151, the "end is made" rows call the
-  follower's function in the suite's process. The branch that makes the end when the wrapper is
-  gone and nothing is left has no row that can tell it from a plain return, and no teeth case.
+  follower's function in the suite's process. Since fix round 5 the branch that makes the end
+  when the wrapper is gone and nothing is left has a row and a teeth case, with a stand-in for
+  the end (below).
 - cli/slow-client holds on the old code too: the reduced loop's missing handling was never reached
   by a client that only stalls. What turns red under the old shape is ac3/reconcile-responsive,
   through the case space315-reconcile-waited-inside-the-request.
@@ -175,4 +253,4 @@ and every teeth run was repeated, which is the table above.
   directly and suite 71 passes; no row sends a kept API reconcile through the socket.
 
 Only summaries are stored here. Logs, receipts, diffs and the probe scripts are in `/tmp/v315-r4/`
-on the build host. Historical proof under `review-fix/` is unchanged.
+(round 4) and `/tmp/r5/` (round 5) on the build host. Historical proof under `review-fix/` is unchanged.
