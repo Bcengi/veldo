@@ -14433,6 +14433,12 @@ def cases():
                "    'review_run_scratch': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),\n"
                "    'review_run_build_output': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),\n",
                ['ac1/real-ordering', 'ac1/declared-at-creation'])
+    # The review of the assembly, finding 2: the scratch in-use rule (a held lock, a borrowed login not
+    # settled) left out for a review run's scratch, so a borrower's scratch goes at the verdict.
+    verdict337('space337-review-scratch-in-use-skipped', 'control_space_signal.py',
+               "    if record['kind'] in ('scratch', 'review_run_scratch'):\n",
+               "    if record['kind'] in ('scratch',):\n",
+               ['safety/review-scratch-in-use'])
     # Finding 2: the reviewer's survivors. The first review named in place of the one the assignment
     # matches; a space error after the commit that leaves record_review; an item named that does not
     # end on the event.
