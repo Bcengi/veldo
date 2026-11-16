@@ -1,8 +1,9 @@
 # Space-management integration: assembly record
 
 Lead's assembly, not a landing. Branch veldo-space-integration, from veldo-space-0304 at 98e08944
-(VELDO-0302, 0324, 0333, 0304). STATUS: STOPPED before the teeth runs, on a genuine contradiction
-between accepted tickets (below). Nothing was pushed; verify.sh and policy_check.py were not run.
+(VELDO-0302, 0324, 0333, 0304). STATUS (resume 2): all seven picks in, lead decisions (a) and (b)
+applied, the integration defects fixed, suites run, and teeth for all twelve findings passed. Nothing
+was pushed; verify.sh and policy_check.py were not run (lead's instruction).
 
 ## Picks (git cherry-pick 8ef46604..TIP, in order)
 
@@ -34,30 +35,57 @@ Registries were rewritten with json indent 1 (the generator form); check_generat
   row compatibility/installed-closure checks the list.
 - Suite 155 (0304): its shutdown fixture names 0323's space_listener.
 
-## Checks
+## Resume 1 checks (superseded below)
 
-validate.py all: 3 problems, all in proof/VELDO-0304/manifest.json (checks, rollback, unit
-evidence); the same at 98e08944. check_docs.sh: pass. check_template_sync.sh: pass.
+At bd4b848b: stopped before teeth on the CLI event contract between 0314 and 0323/0335 (0314's CLI
+sent released {paths, creator} and session subjects with working_folder; the Ledger takes released
+{paths} and session {session, cwd, pid, started}).
 
-Suites (selftest --suite, nice 10), 42 suites from the proof manifests (0304: its round4 suite
-logs) plus 135_veldo_0298: green except:
-- 153_0314 (3 rows), 153_0323 compatibility/cli-envelope-refused, 154_0335 (18 rows),
-  151_0313 ac3/event-types: CONTRADICTION, below.
-- Red at base 98e08944 as well (not from this assembly): 154_0324 (9 rows; 0304's Batch.discard
-  with no ledger removes the clone, 0324 keeps it and defers not_in_ledger), 113_0220 (KeyError
-  space_items in lander.gate, 0302; and host-lock/held-not-started), 114_0220_gate_scope
-  host-scope/own-scope, 53_0123 (2 coordinator rows), 27_0010 AC1 (the 0304 manifest),
-  151_0313 (18 rows).
-- Red at the ticket tip as well: 86_0127 live/claude, live/codex (stale live captures);
-  101_0208 (2 sandbox rows, fixture-sharers 133/85).
+## Resume 2: lead decisions and fixes (one commit each)
 
-Teeth: not run (stopped).
+- fba90748 VELDO-0314, decision (a): the spool's subjects are the Ledger's (session: cwd; released:
+  paths alone, the --creator option gone, who released is the emitter's). The CLI sends released to
+  the Ledger with its {verb, host} emitter; its session and ref_changed events are refused there by
+  0335's emitter rule (kept), so session events reach the Ledger only from the spool through 0323's
+  consumer. 153_0314 rows adjusted: the waiting row simulates a Ledger with no event command (0323
+  installed it, so the real Ledger no longer makes an entry wait); the wired CLI rows expect the
+  Ledger's answers. History line in the spec as dictated.
+- 6917c232 VELDO-0324, decision (b): the nine rows now expect 0304's standalone removal with no
+  ledger (unique commit kept in main by the keep step, clone removed; an untracked only copy defers
+  it; the observation folder stays as evidence, space_deferred:kept). History line in the spec.
+- 45c38f49 VELDO-0302: lander.gate uses setdefault('space_items') (KeyError in 113_0220).
+- 77027ee5 VELDO-0304: 113_0220 and 114_0220 fixtures stub scripts/check_space_boundary.py, which
+  0304 added to verify.sh's CHECK_extra (host-lock/held-not-started, host-scope/own-scope).
+- 78285554 VELDO-0304: its proof manifest gains checks, rollback and unit evidence, from its own
+  round4-checks.json and teeth-receipt.json only; status stays pending_lead_validation (27_0010 AC1).
+- c7fe5048 VELDO-0304: 53_0123's isolated gate stubs check_space_boundary.py (2 coordinator rows).
+- 09c1328c VELDO-0337: the fixture lifecycle tables of 132_0297, 133_0326 and 134_0331 list the
+  review run kinds (found in this run: the pick-3 decision added them to KINDS, and those suites
+  were not in resume 1's list; 31 and 29 rows red, every Ledger refused invalid_input:lifecycle).
+- d6e2b3d9 VELDO-0337: suite 153_0337 carries the control_space_kinds.py production-copy anchor the
+  re-pointed teeth case needs (finding 337 had executed nothing: anchor moved).
 
-## The contradiction (needs a ticket decision)
+## Resume 2 checks
 
-0314 bin/veldo space_event sends the Ledger the spool's subject form: released
-{paths, creator} (control_space_spool FIELDS 'released': ('paths', 'creator')), session events
-{session, working_folder, pid, started}, with the emitter {verb: event}. 0323/0335 Ledger._t_event
-requires released subject exactly {paths}, session subject {session, cwd, pid, started}, and
-(0335 fix round 2) refuses the CLI emitter for session_ended and ref_changed. Result: the CLI's
-released and session events are refused invalid_input:subject / invalid_input:emitter.
+validate.py all: 0 problems. Not run: verify.sh, policy_check.py.
+
+Suites (selftest --suite, nice 10): 45 suites, the ones the twelve tickets' manifests and tests.json
+name (0304: round4-checks.json) plus 135_0298, 113/114_0220, 53_0123, 27_0010, 86_0127; and
+132_0297, 133_0326 (fixed above), 134_0331, 153_0337 rerun after their fixes. All green except:
+- 151_0313: 18 rows, ac3/event-types PASSES. The red rows are the host-bound ones (cgroup, process
+  group and kernel reads; the space admission rows wait 75 on this host's free disk: 25 GB free
+  against a 20 GB floor with 4 GB held); known, they fail at the ticket tip on this host too.
+- 101_0208: sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec and
+  unconfined-leg/fixture-sharers-are-listed (133_0326 shares with 85_0171); known.
+- 86_0127: live/claude, live/codex (stale live captures; recapture before landing); known.
+
+Teeth (python3 scripts/check_teeth_mutations.py --finding N, nice 10, nothing written meanwhile),
+all passed with every case rejected: 302 12/12, 304 44/44, 309 20/20, 314 21/21, 323 16/16,
+324 20/20, 328 14/14, 333 6/6, 335 13/13, 336 11/11, 337 18/18 (rerun at d6e2b3d9, after the
+anchor fix), 341 15/15. 302-336 and 341 ran at 09c1328c; d6e2b3d9 touches only suite 153_0337,
+which none of those findings run.
+
+## Open
+
+- Landing still needs the lead's gate (verify.sh), policy_check, independent review and the 0304
+  proof bundle's lead validation; 86_0127 live captures are to be recaptured.
