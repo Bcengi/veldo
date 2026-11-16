@@ -1,0 +1,281 @@
+[
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space_signal.py",
+    "mutant_failed": [
+      "space318/ac1/released-agent",
+      "space318/ac2/no-empty-commit",
+      "space318/ac2/no-unsettled-commit",
+      "space318/ac3/keeps-commits"
+    ],
+    "name": "space318-commit-at-deferral",
+    "new_digest": "cf9f66a3f9ada21490fa453c04ddb85ee56c6f1b24f2a6f188177333b6dfb532",
+    "noop_failed": [],
+    "old_digest": "0893d4ba6e97bce9e42c2a07fee95f8c6b7348d48a38afd0fe46974b67c80ac1",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac2/no-unsettled-commit": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac2/no-unsettled-commit"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space.py",
+    "mutant_failed": [
+      "space318/ac1/one-request",
+      "space318/ac1/released-agent"
+    ],
+    "name": "space318-request-every-event",
+    "new_digest": "5157f79a12874001cc7fc499347b5f9eec39c9fa2eddb68817fc6a788616ef2d",
+    "noop_failed": [],
+    "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac1/one-request": [
+        false
+      ],
+      "space318/ac1/released-agent": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac1/one-request",
+      "space318/ac1/released-agent"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space_remove.py",
+    "mutant_failed": [
+      "space318/ac2/snapshot-comparison",
+      "space318/safety/marked-difference"
+    ],
+    "name": "space318-save-without-comparison",
+    "new_digest": "912d97c982e0a5fc96cd8675739aeb15f0283a75e363ac62217f976bfa41af59",
+    "noop_failed": [],
+    "old_digest": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac2/snapshot-comparison": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac2/snapshot-comparison"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space_remove.py",
+    "mutant_failed": [
+      "space318/ac2/marked-path",
+      "space318/ac2/snapshot-comparison"
+    ],
+    "name": "space318-save-at-original-path",
+    "new_digest": "b3ad83c31b859fdb6e8a2f0a7194acb73995855e6d3517f2227842cc60fa2f41",
+    "noop_failed": [],
+    "old_digest": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac2/marked-path": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac2/marked-path"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space_remove.py",
+    "mutant_failed": [
+      "space318/ac3/marked-path"
+    ],
+    "name": "space318-discard-at-original-path",
+    "new_digest": "bb2ce5cd16426def75fcb2ca734268e28677a088589071da1cf648ae9e8d93b0",
+    "noop_failed": [],
+    "old_digest": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac3/marked-path": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac3/marked-path"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space_remove.py",
+    "mutant_failed": [
+      "space318/ac3/list-comparison"
+    ],
+    "name": "space318-discard-without-list",
+    "new_digest": "aeb899cfdcaa107a14e778611fa16edcde21243f7e1ff9fc9a9d04f40f2946ba",
+    "noop_failed": [],
+    "old_digest": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac3/list-comparison": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac3/list-comparison"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space.py",
+    "mutant_failed": [
+      "space318/ac4/atomic",
+      "space318/ac4/no-retry",
+      "space318/ac4/state"
+    ],
+    "name": "space318-keep-left-deferred",
+    "new_digest": "a97d8167bbdc7cb43902eadf963387e2f79da0e2f22fb707e3323ecaedc5aebf",
+    "noop_failed": [],
+    "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac4/state": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac4/state"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space.py",
+    "mutant_failed": [
+      "space318/ac4/abandon",
+      "space318/ac4/atomic",
+      "space318/ac4/mark",
+      "space318/ac4/no-retry"
+    ],
+    "name": "space318-keep-without-mark",
+    "new_digest": "b9ed37f4192f7a5845316e071373db3bfc5dca7826f27d68efece51369bc691d",
+    "noop_failed": [],
+    "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac4/mark": [
+        false
+      ],
+      "space318/ac4/no-retry": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac4/mark",
+      "space318/ac4/no-retry"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space.py",
+    "mutant_failed": [
+      "space318/ac4/abandon",
+      "space318/ac4/atomic",
+      "space318/ac4/mark",
+      "space318/ac4/no-retry",
+      "space318/ac4/signature",
+      "space318/ac4/state",
+      "space318/ac4/transaction-owner"
+    ],
+    "name": "space318-keep-two-commands",
+    "new_digest": "d200e15114b415f124edbf70b51a39b2735b599a3635c178b887668cb2bee91c",
+    "noop_failed": [],
+    "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac4/atomic": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac4/atomic"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_space.py",
+    "mutant_failed": [
+      "space318/ac4/signature",
+      "space318/ac4/transaction-owner"
+    ],
+    "name": "space318-keep-without-owner-signature",
+    "new_digest": "0b951c45db58fe27d9053acbf77ea35cf23cf2df81b2066067d3d800064095e9",
+    "noop_failed": [],
+    "old_digest": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": true,
+    "target_results": {
+      "space318/ac4/signature": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/ac4/signature"
+    ]
+  },
+  {
+    "baseline_failed": [],
+    "final_run_executions": 1,
+    "module": "control_service.py",
+    "mutant_failed": [
+      "space318/worker/no-lost-wakeup"
+    ],
+    "name": "space318-lost-worker-wakeup",
+    "new_digest": "d225dad664b70674d0dd1f07fd4479643106584dcdee4f99395095c805c76bf9",
+    "noop_failed": [],
+    "old_digest": "4b44e80db51037b5458a6a6815cbf91badf90850307dad0dbf268d6899745924",
+    "replacement_count": 1,
+    "source": "fresh",
+    "specification_falsifier": false,
+    "target_results": {
+      "space318/worker/no-lost-wakeup": [
+        false
+      ]
+    },
+    "targets": [
+      "space318/worker/no-lost-wakeup"
+    ]
+  }
+]

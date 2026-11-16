@@ -1,0 +1,16 @@
+{
+  ".veldo/control_service.py": "4b44e80db51037b5458a6a6815cbf91badf90850307dad0dbf268d6899745924",
+  ".veldo/control_space.py": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  ".veldo/control_space_remove.py": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+  ".veldo/control_space_signal.py": "0893d4ba6e97bce9e42c2a07fee95f8c6b7348d48a38afd0fe46974b67c80ac1",
+  "engine/.veldo/control_service.py": "4b44e80db51037b5458a6a6815cbf91badf90850307dad0dbf268d6899745924",
+  "engine/.veldo/control_space.py": "3149cf6e4f3d2fe9c0b2fdf5d596fd7eb5b5d5b18abddf1ba3d034cea68c62d9",
+  "engine/.veldo/control_space_remove.py": "505b15b351d6532621c9ca4ce7fe1c99054a7576ebf81255eb4d32ef041c8d4a",
+  "engine/.veldo/control_space_signal.py": "0893d4ba6e97bce9e42c2a07fee95f8c6b7348d48a38afd0fe46974b67c80ac1",
+  "scripts/check_teeth_mutations.py": "8bbb994f702a669cda60361809667c074537cc61166980a7f86110265c5d7820",
+  "scripts/suites/149_veldo_0312_ticket_ended.py": "7677b6f0002f3a1c66c0decc7e1fd75321d7fd2cb8a925ef74c274d353cbc76b",
+  "scripts/suites/150_veldo_0318_unique_work.py": "dafdb3eff80e2a4c30ba620147e20baede582fb0d65aa08fee9e83bd9d74780a",
+  "scripts/suites/manifest.json": "241a471664463c4f9554edc39fd8b8bed5154bc5e6148ec35d528f6232d55252",
+  "scripts/suites/requires.json": "ea079b2621ebd4ca80813f33cc2d88cfa18bd4096ae8e6a23eee90676181c796",
+  "specs/VELDO-0318-the-owner-decides-what-becomes-of-unique-work-at-a-tickets-end.md": "c1d26192f224b6c07c03146d032b9206bb9dcb97aa251039eec7aaf7c5531e5b"
+}

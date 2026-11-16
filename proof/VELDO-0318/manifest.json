@@ -1,0 +1,106 @@
+{
+  "artifacts": {
+    "README.md": "sha256:855d93b9880929137728f3eb56d6108b5e700992e26b0f28a8e316c3660b13c3",
+    "checks.json": "sha256:b82dc2c51e578f654c0be41d5ac155c74037ac031de040a3053907a1b1c7124e",
+    "falsifiers.json": "sha256:19232560e3af8bb80a2fb566de7c2068ce4d26e24ccf611e5444746bb7ce02d0",
+    "initial-teeth-summary.json": "sha256:edd523fd8915dd3872e89f9f31a0c9a2bc5a48e1f642d3b28ed8ef848a8cc8e1",
+    "rows.json": "sha256:28c641175c685825d07e943c5f115ff1c2903b6824ad885b09d4796485181234",
+    "sources.json": "sha256:0460a1bb0acd3e823b0d35437aae09a1273350bda0e654b05b0f1bb1054432ca",
+    "teeth-receipt.json": "sha256:4534099ef2a1708d8f195870d690bde3212456cdb8bfd149b2df2bdfca4a7fda",
+    "teeth312-summary.json": "sha256:fed79f2cfdbd446e738a52007cf2e9bff5a1c2746a4627daa146d62af8dc9fa1"
+  },
+  "assumptions": [
+    "Owner-signed Keep packet is required in addition to its settled request.",
+    "Fixture process table and Docker reads do not establish host-reader readiness.",
+    "All criteria remain pending aggregate verification and independent review."
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "reason": "Partial selftests only; no aggregate unit evidence.",
+      "status": "not_run"
+    },
+    {
+      "name": "integration",
+      "reason": "The lead owns aggregate integration and gate.",
+      "status": "not_run"
+    },
+    {
+      "detail": "34 ticket, 41 previous Keep and 22 touchpoint rows green; Signal 17 green and one baseline-source-confirmed no-imports failure.",
+      "name": "targeted regressions",
+      "status": "diagnostic_only"
+    },
+    {
+      "detail": "Validation, docs, template sync and lint.",
+      "name": "fast checks",
+      "status": "passed"
+    },
+    {
+      "detail": "11 of 11 rejected; all 10 declared falsifiers applied once in the final run; no reuse or surviving workers.",
+      "name": "falsifiers",
+      "status": "passed"
+    },
+    {
+      "name": "gate",
+      "reason": "Lead gate lock required.",
+      "status": "not_run"
+    }
+  ],
+  "commit": "c95ab31f78fbd708fb1c10aa9228bbfb6280ffbb",
+  "criteria": [
+    {
+      "evidence": [
+        {
+          "detail": "AC1 rows green and specification falsifiers red; pending aggregate verification and review.",
+          "ref": "proof/VELDO-0318/teeth-receipt.json",
+          "sha256": "4534099ef2a1708d8f195870d690bde3212456cdb8bfd149b2df2bdfca4a7fda",
+          "type": "falsifier"
+        }
+      ],
+      "id": "AC1",
+      "status": "pending"
+    },
+    {
+      "evidence": [
+        {
+          "detail": "AC2 rows green and specification falsifiers red; pending aggregate verification and review.",
+          "ref": "proof/VELDO-0318/teeth-receipt.json",
+          "sha256": "4534099ef2a1708d8f195870d690bde3212456cdb8bfd149b2df2bdfca4a7fda",
+          "type": "falsifier"
+        }
+      ],
+      "id": "AC2",
+      "status": "pending"
+    },
+    {
+      "evidence": [
+        {
+          "detail": "AC3 rows green and specification falsifiers red; pending aggregate verification and review.",
+          "ref": "proof/VELDO-0318/teeth-receipt.json",
+          "sha256": "4534099ef2a1708d8f195870d690bde3212456cdb8bfd149b2df2bdfca4a7fda",
+          "type": "falsifier"
+        }
+      ],
+      "id": "AC3",
+      "status": "pending"
+    },
+    {
+      "evidence": [
+        {
+          "detail": "AC4 rows green and specification falsifiers red; pending aggregate verification and review.",
+          "ref": "proof/VELDO-0318/teeth-receipt.json",
+          "sha256": "4534099ef2a1708d8f195870d690bde3212456cdb8bfd149b2df2bdfca4a7fda",
+          "type": "falsifier"
+        }
+      ],
+      "id": "AC4",
+      "status": "pending"
+    }
+  ],
+  "produced_at": "2026-11-16T14:56:04.830323+00:00",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "rollback": "Revert the implementation; branches, kept refs, snapshots and work remain.",
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0318",
+  "tree": "1eb8f72bb49c7402ab57d382935ac274d1fbb0b8"
+}
