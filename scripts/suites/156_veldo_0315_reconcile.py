@@ -658,6 +658,57 @@ def _v315_suite():
 
         case('ac7/stop-reaps', stop_reaps)
 
+        def supervise_pipes(f, row):
+            import signal
+            import sys
+            for phase in ('control-eof', 'report-before-command', 'report-during-command', 'sigterm'):
+                report_read, report_write = os.pipe()
+                control_read, control_write = os.pipe()
+                child = subprocess.Popen([sys.executable, '-B', str(ROOT / 'bin' / 'veldo'), 'space', 'supervise',
+                    '--report', str(report_write), '--control', str(control_read), '--',
+                    sys.executable, '-c', 'import time; time.sleep(120)'],
+                    pass_fds=(report_write, control_read), start_new_session=True,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                os.close(report_write)
+                os.close(control_read)
+                try:
+                    if phase == 'report-during-command':
+                        os.write(control_write, json.dumps({'run': 'pipe-fixture'}).encode() + b'\n')
+                        ready = select.select([report_read], [], [], 10)[0]
+                        assert ready and b'group' in os.read(report_read, 65536), 'command never started'
+                    if phase == 'control-eof':
+                        os.close(control_write)
+                        control_write = None
+                    elif phase.startswith('report'):
+                        os.close(report_read)
+                        report_read = None
+                    else:
+                        # Wait until the supervisor has installed its signal handlers.
+                        deadline = time.monotonic() + 10
+                        while time.monotonic() < deadline:
+                            status = Path('/proc/%d/status' % child.pid).read_text()
+                            caught = int(next(line.split()[1] for line in status.splitlines()
+                                              if line.startswith('SigCgt:')), 16)
+                            if caught & (1 << (signal.SIGTERM - 1)):
+                                break
+                            time.sleep(0.01)
+                        child.send_signal(signal.SIGTERM)
+                    try:
+                        child.wait(timeout=10)
+                        exited = True
+                    except subprocess.TimeoutExpired:
+                        exited = False
+                    check(row, phase + ' ends the supervisor without a forced kill', exited)
+                finally:
+                    with contextlib.suppress(ProcessLookupError):
+                        os.killpg(child.pid, signal.SIGKILL)
+                    child.wait()
+                    for descriptor in (report_read, control_write):
+                        if descriptor is not None:
+                            os.close(descriptor)
+
+        case('supervise/closed-pipes', supervise_pipes)
+
         class Docker:
             def __init__(self, ledger):
                 self.ledger, self.streams, self.starts, self.snapshots = ledger, {}, 0, 0
