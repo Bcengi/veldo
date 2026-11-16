@@ -517,6 +517,36 @@ def _v334_suite():
                   and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])
             svc.space_stop()
 
+            # Fix round 1, finding 4: a judgment that fails after a freeing write is not kept. The mark
+            # outlives the failed free read, and the next offer judges again and clears it.
+            f = fixture('failed-read')
+            first = f.request()
+            identity = first['space']['hold']
+            failing = f.root / 'free-read-fails'
+            f.space['free'] = lambda pool: None if failing.exists() else f.read_free(pool)
+            svc, loop, requests = wired(f)
+            requests.answers[tuple(given[k] for k in ('repository', 'unit', 'station', 'attempt'))] = first
+            A.accepted(mark(f, 'release'))
+            failing.write_text('once')
+            queued = requests.prepare(**given)
+            drain(svc)
+            failed = requests.prepare(**given)
+            check('fix4/failed-read-rejudges', 'the failed read is reported by name and the mark stays: '
+                  + repr((queued, failed)), queued.get('code') == 'space_pending'
+                  and failed.get('code') == 'space_free_unread:host' and not failed.get('space')
+                  and f.ledger.hold(identity)['state'] == 'waiting' and f.ledger.hold(identity)['freed'])
+            failing.unlink()
+            f.free['host'] = 10000
+            nreads = f.read_count()
+            again = requests.prepare(**given)
+            drain(svc)
+            judged = requests.prepare(**given)
+            check('fix4/failed-read-rejudges', 'the next offer judges again and clears the mark: '
+                  + repr((again, judged)), again.get('code') == 'space_pending' and judged.get('ok')
+                  and judged.get('answer') == 'admitted' and f.read_count() > nreads
+                  and f.ledger.hold(identity)['state'] == 'admitted' and not f.ledger.hold(identity)['freed'])
+            svc.space_stop()
+
             f = fixture('completion-race')
             svc, loop, requests = wired(f)
             result = requests.prepare(**given)

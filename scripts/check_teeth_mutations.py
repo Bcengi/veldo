@@ -16554,10 +16554,14 @@ def cases():
         "        options = {}  # defect: use the version after reading free space",
         ['space334/ac3/free-during-judgment'])
     add(334, 'space334-cache-hides-freed', wait334, 'control_space_admission.py',
-        "            if not hold or (hold['state'] != 'released' and not (\n"
-        "                    hold['state'] == 'waiting' and hold.get('freed'))):",
-        "            if not hold or hold['state'] != 'released':",
+        "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
+        "            elif hold['state'] != 'released':",
         ['space334/ac3/completion-race', 'space334/ac3/stopped-clock'])
+    # The 0316 fix round's rule, seen from this ticket: a failed judgment is returned once, not kept.
+    add(334, 'space334-failed-judgment-kept', wait334, 'control_space_admission.py',
+        "                if not bound:\n                    return answer\n",
+        "                if not bound:\n                    self.answers[key] = answer\n                    return answer\n",
+        ['space334/fix4/failed-read-rejudges'])
     # The reviewer's P2: a release that frees nothing marks every waiting hold of its pools.
     add(334, 'space334-waiting-release-marks', wait334, 'control_space.py',
         "                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}",
