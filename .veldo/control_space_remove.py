@@ -1033,7 +1033,7 @@ def remove_ref(repository, ref, ledger=None, identity=None, standalone=None, mai
         if not isinstance(ref, str) or not ref.startswith(
                 ('refs/veldo/pins/', 'refs/veldo/batch/', 'refs/veldo/adoption/')):
             raise ValueError('not an internal temporary ref')
-        code, out = _git(commands, '-C', repository, 'check-ref-format', ref)
+        code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', repository, 'check-ref-format', ref)
         if code != 0:
             raise ValueError('invalid ref name')
         keeper = _sibling('control_space_keep')
@@ -1050,26 +1050,26 @@ def remove_ref(repository, ref, ledger=None, identity=None, standalone=None, mai
                 raise ValueError('no standalone keep result authorizes this ref removal')
             main = _plain(str(main or standalone.get('repository')))
             for kept_ref, commit in (standalone.get('refs') or {}).items():
-                code, out = _git(commands, '-C', main, 'show-ref', '--verify', '--hash', kept_ref)
+                code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', main, 'show-ref', '--verify', '--hash', kept_ref)
                 if code != 0 or out.strip() != commit:
                     raise ValueError('the standalone keep could not be verified')
-        code, out = _git(commands, '-C', repository, 'symbolic-ref', '-q', ref)
+        code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', repository, 'symbolic-ref', '-q', ref)
         if code != 1:
             raise ValueError('a symbolic or unreadable ref is not removable')
-        code, out = _git(commands, '-C', repository, 'show-ref', '--verify', '--hash', ref)
+        code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', repository, 'show-ref', '--verify', '--hash', ref)
         if code != 0 or not out.strip():
             raise ValueError('the temporary ref could not be read')
         old = out.strip()
-        code, out = _git(commands, '-C', main, 'for-each-ref', '--format=%(objectname)',
+        code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', main, 'for-each-ref', '--format=%(objectname)',
                          'refs/heads/', 'refs/veldo/kept/')
         if code != 0 or not out.strip():
             raise ValueError('the main repository has no readable holding ref')
-        code, beyond = _git(commands, '-C', main, 'rev-list', '--stdin',
+        code, beyond = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', main, 'rev-list', '--stdin',
                             feed=('\n'.join([old, '--not', *out.split()]) + '\n').encode())
         if code != 0 or beyond.strip():
             raise ValueError('the temporary ref has work no main repository branch or kept ref reaches')
         # Compare the value under git's ref lock. Never follow a symbolic ref and never force.
-        code, out = _git(commands, '-C', repository, 'update-ref', '--no-deref', '-d', ref, old)
+        code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', repository, 'update-ref', '--no-deref', '-d', ref, old)
         if code != 0:
             raise ValueError('git refused the ref removal: ' + str(out)[:200])
         return dict(answer, ok=True, deferral=None, commit=old, repository=main)
