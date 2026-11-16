@@ -108,7 +108,8 @@ def _v315_suite():
                 self.serial = 0
                 self.journal = lambda data: 'stub:' + S.digest_of(data.decode())
                 CM.attach(S)
-                ids = {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store'}
+                ids = self.ids = {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store'}
+                self.made = {}
                 command = {'command_id': 'owner', 'operation': 'enroll_principal', 'target': 'authority',
                     'parameters': {'principal': 'owner', 'principal_type': 'person', 'roles': ['membership_steward', 'project_owner'],
                         'public_key': public, 'independence_group': 'owner', 'scope': '*'},
@@ -147,6 +148,84 @@ def _v315_suite():
                     store_path=str(self.state / 'store.sqlite3')), self.conn)
                 self.service.sign = self.journal
                 self.service.space = self.space
+
+            def desk(self):
+                """The owner's desk on this store (VELDO-0318): the production inbox, presenter and
+                settlement, a requester and an API edge enrolled by the owner. Only the channel's send
+                is a fixture."""
+                if self.made:
+                    return self.made
+                I, V, PJ, ST, claims, contract = [load('desk_' + name, mods / (name + '.py')) for name in (
+                    'control_assignment', 'control_channel_presentation', 'control_channel_projection',
+                    'control_request_settlement', 'control_claim', 'entity_contract')]
+                # One store module and one membership module: the ones the store was opened with.
+                claims.S, claims.CM, claims.AC = S, CM, AC
+                signers = {}
+                for who in ('requester', 'api-edge'):
+                    path = self.root / ('key-' + who)
+                    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(path)],
+                                   check=True, capture_output=True)
+                    signers[who] = lambda message, path=path: subprocess.run(
+                        ['ssh-keygen', '-Y', 'sign', '-f', str(path), '-n', AC.SIGNATURE_NAMESPACE],
+                        input=message, capture_output=True, check=True).stdout.decode()
+                    command = {'command_id': 'enroll-' + who, 'operation': 'enroll_principal', 'target': 'authority',
+                        'parameters': {'principal': who, 'principal_type': 'service', 'roles': [],
+                            'public_key': Path(str(path) + '.pub').read_text().strip(), 'independence_group': who,
+                            'scope': '*'},
+                        'artifact_digests': [], 'expected_versions': {}}
+                    membership = CM.authority_state(S, self.conn)
+                    envelope = dict(self.ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'],
+                        principal='owner', request_revision=1, nonce='nonce-enroll-' + who, expires_at=1600,
+                        membership_version=membership['membership_version'],
+                        delegation_version=membership['delegation_version'],
+                        command_digest=AC.canonical_command_digest(command))
+                    answer = CM.admit(S, self.conn, envelope, command, sign(AC.canonical_envelope_bytes(envelope)),
+                        self.ids, 1000, journal_signer=('authority', self.journal),
+                        enrollee_signature=signers[who](AC.canonical_envelope_bytes(dict(envelope, principal=who))))
+                    assert answer['committed'], answer
+                self.put('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner',
+                              chat_id=31501, revoked_at=None))
+
+                class Transport:
+                    sent = []
+
+                    def send(self, chat, text, reply_to):
+                        self.sent.append(text)
+                        return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                                    reply_to_message_id=reply_to)
+
+                inbox = I.Inbox(S, CM, claims, contract, self.conn, self.ids, 'authority', self.journal)
+                presenter = V.Presenter(S, CM, PJ, inbox, Transport(), self.conn, 'authority', self.journal, assignment=I)
+                settlement = ST.Settlement(S, CM, inbox, presenter, self.conn, 'authority', self.journal,
+                                           assignment=I, presentation=V, api_edge='api-edge')
+                self.made.update(ST=ST, inbox=inbox, presenter=presenter, settlement=settlement, signers=signers)
+                return self.made
+
+            def owner_keeps(self, identity):
+                """The owner answers Keep to the worktree's request and signs the disposition."""
+                made = self.desk()
+                published = self.L.publish_disposition(identity, made['settlement'], made['inbox'], made['presenter'],
+                                                       ('requester', made['signers']['requester']), 'owner')
+                assert published['ok'], published
+                rid = published['request']
+                made['presenter'].present(rid)
+                receipt = made['presenter'].current(rid)
+                assert receipt, published
+                self.serial += 1
+                body = dict(self.ids, schema=made['ST'].API_SCHEMA, edge='api-edge', answer_id='answer-%d' % self.serial,
+                            principal='owner', request_id=rid, request_version=receipt['request_version'],
+                            presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
+                            presentation_version=receipt['presentation_version'], choice='accept keep',
+                            rationale='Owner answer')
+                settled = made['settlement'].api_answer(
+                    dict(answer=body, signature=made['signers']['api-edge'](S.canonical_bytes(body))))
+                command = dict(operation='space_disposition', principal='owner', command_id='keep-%d' % self.serial,
+                               nonce='keep-nonce-%d' % self.serial,
+                               parameters=dict(item=identity, version=self.L._row(identity, SP.ITEM_KIND)[0], request=rid))
+                edge_alone = self.L.authorize_disposition(identity, rid)
+                signed = self.L.disposition({'command': command, 'signature': sign(S.canonical_bytes(command))}, CM, 1000)
+                return settled, edge_alone, signed
 
             def client(self, argv, cwd=None):
                 if argv[0] != 'docker':
@@ -591,11 +670,26 @@ def _v315_suite():
             identity = f.item(path, 'worktree')
             (path / 'only-copy').write_text('owner work')
             f.due(identity)
-            answer = f.L.outcome(identity, 'kept', {'owner_keep': {'at': 1000}}, principal='owner')
-            assert answer['ok'], answer
+            # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318).
+            refused = f.L.outcome(identity, 'kept', {'owner_keep': {'at': 1000}}, principal='owner')
+            check(row, 'an outcome that claims the owner mark is refused', not refused['ok']
+                  and refused.get('reason') == 'not_authorized' and not f.L.item(identity).get('owner_keep')
+                  and f.L.item(identity)['state'] == 'due')
+            f.run()
+            asked = f.L.item(identity)
+            check(row, 'reconcile leaves the due worktree and its work for the owner to decide [%s %s]'
+                  % (asked['state'], asked.get('deferral')),
+                  asked['state'] == 'deferred' and asked['deferral']['rule'] == 'unique_work'
+                  and (asked.get('disposition') or {}).get('state') == 'requested'
+                  and (path / 'only-copy').read_text() == 'owner work')
+            settled, edge_alone, marked = f.owner_keeps(identity)
+            check(row, 'the settled answer alone marks nothing', settled.get('outcome') == 'settled'
+                  and not edge_alone['ok'])
+            check(row, 'owner mark accepted [%s]' % (marked,), marked['ok'])
             record = f.L.item(identity)
             f.run(True)
             check(row, 'owner Keep survives discovery and recovery', f.L.item(identity) == record
+                  and record['state'] == 'kept' and record['owner_keep'] == {'by': 'owner'}
                   and (path / 'only-copy').read_text() == 'owner work')
 
         case('loss/owner-keep', kept)
@@ -615,8 +709,27 @@ def _v315_suite():
             check(row, 'immediate dispatch sees adopted item after synchronous replay', answer['ok'] and
                   f.at(path)[0] is not None and order == ['dispatch']
                   and replayed.is_file() and replayed.read_text() != str(os.getpid()))
-            f.service.space_worker_start(reconcile=f.service.space_received_reconcile)
-            check(row, 'no received event needs no second startup reconcile', f.service.space_consumer.active is None)
+            # The worker start also queues the dispositions task (VELDO-0318), so a worker child is
+            # active here. What must not be started is the reconcile hook: every start is read.
+            consumer = f.service.space_consumer
+            started, spawn = [], consumer._spawn
+
+            def reading(task=None):
+                started.append(task)
+                return spawn(task)
+
+            with patch.object(consumer, '_spawn', reading):
+                f.service.space_worker_start(reconcile=f.service.space_received_reconcile)
+                dispositions = consumer.task
+                deadline = time.monotonic() + 60
+                while consumer.active and time.monotonic() < deadline:
+                    for fd in select.select(list(consumer.pipes()), [], [], 0.1)[0]:
+                        consumer.readable(fd)
+            check(row, 'no received event needs no second startup reconcile [%s]' % (consumer.last_answer,),
+                  started == [f.service._space_dispositions] and dispositions == ('dispositions',)
+                  and consumer.reconcile is None and not consumer.startup_received
+                  and consumer.active is None and not consumer.tasks
+                  and (consumer.last_answer or {}).get('ok') is True)
             records = f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='space_reconcile'").fetchone()[0]
             with patch.object(SV.time, 'time', return_value=365 * 86400 + 1000):
                 for _ in range(3):
