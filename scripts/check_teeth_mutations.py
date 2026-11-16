@@ -15204,13 +15204,31 @@ def cases():
            "        holders = []\n        if any(one[\"how\"] in (\"descendant\", \"group\") for one in holders) or seen[\"group\"] != \"empty\":\n",
            ['fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit'])
     run313('space313-what-the-command-left-is-killed',
-           "                poller.poll()\n",
+           "                left = set(descriptors)\n",
            "                [os.kill(one[\"pid\"], 9) for one in waited if one[\"how\"] != \"supervisor\"]\n"
-           "                poller.poll()\n",
+           "                left = set(descriptors)\n",
            ['fix2/end-follows-their-exit'])
     run313('space313-end-waits-on-a-timer',
-           "                poller.poll()\n", "                poller.poll(50)\n",
+           "                    for descriptor, _event in poller.poll():\n",
+           "                    for descriptor, _event in poller.poll(50):\n",
            ['paths/canon'])
+    # VELDO-0315 fix round 4 (its second re-review, finding 1). The supervisor as fix round 3 left
+    # it: a report nobody reads cancels the supervision, and a stop sent after the command ended
+    # ends the supervisor. And the wait as it was before this round: the whole process table read
+    # again at every exit of a holder.
+    run313('space313-report-loss-cancels-the-supervision',
+           "            heard[\"reader\"] = False  # the reader has gone: the reporting ends, the supervision does not\n",
+           "            raise SystemExit(1)\n",
+           ['supervise/report-loss-keeps-supervising'])
+    run313('space313-stop-after-the-command-ends-the-supervisor',
+           "            except OSError:\n                pass\n    # A stop from the terminal reaches the command by itself",
+           "            except OSError:\n                pass\n        raise SystemExit(128 + number)\n"
+           "    # A stop from the terminal reaches the command by itself",
+           ['supervise/stop-after-the-command-ends-nothing'])
+    run313('space313-table-read-at-every-exit',
+           "                left = set(descriptors)\n                while left:\n",
+           "                left = set(descriptors)\n                if left:\n",
+           ['supervise/staying-is-idle'])
     run313('space313-scratch-records-no-process',
            "        made = runner.declare(\"scratch\", {\"path\": path}, owner, \"wrapper\", process=out[\"supervisor\"])\n",
            "        made = runner.declare(\"scratch\", {\"path\": path}, owner, \"wrapper\")\n",

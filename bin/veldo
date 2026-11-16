@@ -960,11 +960,20 @@ def _space_judged(space, given, environ=None):
 def _space_wait(read, reap=None, asleep=None):
     """Sleep until nothing that can be waited for holds the run, and return the last read. Each
     sleep is one poll with no time limit on a pidfd of every holder: the kernel wakes it when one
-    of them exits, and the table is then read again. A process whose environment cannot be read is
-    waited for like any other: its exit needs no reading. Nothing is signalled. What nobody can
-    wait for (a group nobody read, a table nobody could list) ends the wait at once: the caller
-    sends nothing for it. `asleep`, when given, is called once, when the first sleep is about to
-    begin: every holder's pidfd is open and registered then."""
+    of them exits. A process whose environment cannot be read is waited for like any other: its
+    exit needs no reading. Nothing is signalled. What nobody can wait for (a group nobody read, a
+    table nobody could list) ends the wait at once: the caller sends nothing for it. `asleep`,
+    when given, is called once, when the first sleep is about to begin: every holder's pidfd is
+    open and registered then.
+
+    THE TABLE IS READ AGAIN ONLY WHEN EVERY HOLDER THE LAST READ NAMED HAS EXITED. The run cannot
+    be over while one of them lives, so a read before that could only say "not yet". An exit
+    before the last one costs one wake and no read. On a host where processes nobody here can
+    read start all the time (other accounts' containers), each of them holds the run (fail
+    closed), and a read of the whole table at each of their exits was a busy process: measured
+    at 11 percent of a core for one staying supervisor. A holder that stops being one without
+    exiting (its label is read later by the process reader) is waited for until it exits: later
+    than before, never earlier."""
     import select
     while True:
         if reap is not None:
@@ -989,7 +998,11 @@ def _space_wait(read, reap=None, asleep=None):
                 if asleep is not None:
                     asleep, begun = None, asleep
                     begun()
-                poller.poll()
+                left = set(descriptors)
+                while left:
+                    for descriptor, _event in poller.poll():
+                        poller.unregister(descriptor)
+                        left.discard(descriptor)
         finally:
             for descriptor in descriptors:
                 os.close(descriptor)
@@ -1058,25 +1071,32 @@ def space_supervise(rest):
     not when what the command left exits. Nothing changes for the command, which has ended, or for
     what it left, which holds its own descriptors. Then it writes one more line, staying: true from
     inside the wait, when the pidfd of every holder is open and its first sleep is about to begin,
-    and false when it did not sleep at all. Losing the report reader cancels supervision,
-    leaving the run pending. Control EOF before its startup message starts nothing. SIGTERM
-    is forwarded to the running command and ends the supervisor even after that command ended."""
+    and false when it did not sleep at all.
+
+    LOSING THE REPORT READER ENDS THE REPORTING AND NOTHING ELSE. The wrapper closes its end after
+    the staying line, by design, and a wrapper may die at any moment. From the first write that
+    fails nothing more is written, and the supervision goes on unchanged: the command runs to its
+    own end, what it left is waited for, and the run's end is made by the follower as before. The
+    control descriptor ending before its one line starts nothing. A stop sent to this process is
+    passed on to the command while it runs; after the command ended it reaches nothing and ends
+    nothing, since this process is the one the scratch root records."""
     import json
     import signal
-    import select
-    import threading
     import subprocess
     if (len(rest) < 6 or rest[0] != "--report" or rest[2] != "--control" or rest[4] != "--"
             or not rest[1].isdigit() or not rest[3].isdigit()):
         sys.stderr.write("veldo space supervise: the wrapper's own verb\n")
         return 2
     descriptor, command = int(rest[1]), rest[5:]
+    heard = {"reader": True}
 
     def tell(**what):
+        if not heard["reader"]:
+            return
         try:
             os.write(descriptor, (json.dumps(what, sort_keys=True) + "\n").encode())
         except OSError:
-            raise SystemExit(1)
+            heard["reader"] = False  # the reader has gone: the reporting ends, the supervision does not
     try:
         import ctypes
         subreaper = ctypes.CDLL(None, use_errno=True).prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0
@@ -1090,21 +1110,10 @@ def space_supervise(rest):
                 os.kill(started["pid"], number)
             except OSError:
                 pass
-        raise SystemExit(128 + number)
     # A stop from the terminal reaches the command by itself; one sent to this process is passed on
     # to the command while it runs, and to nothing after it.
     _space_handlers({signal.SIGINT: lambda number, frame: None, signal.SIGQUIT: lambda number, frame: None,
                      signal.SIGTERM: forward, signal.SIGHUP: forward})
-
-    def report_closed():
-        # A blocking kernel wait also covers startup, waitpid, scope startup, and a
-        # process-table read that cannot find a child. No timer or repeated scan.
-        watcher = select.poll()
-        watcher.register(descriptor, select.POLLERR | select.POLLHUP)
-        watcher.poll()
-        os._exit(1)  # the caller is gone; do not manufacture a run-finished event
-
-    threading.Thread(target=report_closed, daemon=True).start()
     try:
         with os.fdopen(int(rest[3]), "rb") as control:
             said = json.loads(control.readline().decode() or "null")
@@ -1185,8 +1194,11 @@ def space_supervise(rest):
     if seen["holders"]:
         _space_let_go()
     tell(status=status, holders=seen["holders"], read=seen["group"] != "unread")
+    if not seen["holders"] and heard["reader"]:
+        return status  # the wrapper heard that nothing is left, and makes the run's end itself
     if not seen["holders"]:
-        return status
+        # Nothing is left and nobody heard it: the wrapper has gone, so the end is made from here.
+        _space_let_go()
     # Something of the run is left. This process is the one the run's scratch root records, so it
     # stays for as long as any of it lives, asleep on their exit.
     _space_wait(read, reap, asleep=lambda: tell(staying=True))
