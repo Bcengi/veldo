@@ -739,9 +739,19 @@ def _v300_space_remove_suite():
         (path / 'build' / 'output.bin').write_bytes(b'o' * 100)
         check(ROW, 'git sees the worktree as clean: all three are ignored [%r]' % git(path, 'status', '--porcelain'),
               git(path, 'status', '--porcelain') == '')
-        answer, said = refused_by_tool(through(item, keeper([])))
-        check(ROW, 'rules 1 to 6 pass and the remover refuses, keep_failed [%s]' % (answer,),
-              answer == (False, 'tool', 6, 'keep_failed'))
+        # VELDO-0347 AC1 supersedes what this row said, that rules 1 to 6 pass: rule 5 now sees the two
+        # ignored files that are work and refuses first, as unique work. The remover's own refusals
+        # below are asked of the remover itself, past the rules, and are as they were.
+        judged = through(item, keeper([]))
+        answer = refused_by_tool(judged)[0]
+        check(ROW, 'rule 5 refuses, as unique work, and the remover is not reached [%s]' % (answer,),
+              answer == (False, 'unique_work', 4, None))
+        check(ROW, 'rule 5 names the two files that are work and not the build output [%s]'
+              % ((judged.get('found') or {}).get('ignored'),),
+              (judged.get('found') or {}).get('ignored') == ['notes-private.md', 'settings.local'])
+        said = drive(item, keep=keeper([]))
+        check(ROW, 'the remover, asked past the rules, refuses keep_failed [%s]' % (named(said)[:2],),
+              named(said)[:2] == (False, 'keep_failed'))
         check(ROW, 'it names the two files that are work and not the build output [%s]' % (said.get('unsaved'),),
               said.get('unsaved') == ['notes-private.md', 'settings.local'])
         check(ROW, 'both files are still there, byte for byte, in the worktree at its own path',
@@ -749,14 +759,15 @@ def _v300_space_remove_suite():
               and text_of(path / 'settings.local') == 'a loose ignored settings file\n'
               and (path / 'build' / 'output.bin').is_file() and listed(path) and not os.path.lexists(mark))
         stale = saved(path, 'notes-private.md', 'settings.local')
-        answer, said = refused_by_tool(through(item, keeper([], snapshot=stale, then=lambda where: (
-            Path(where) / 'settings.local').write_text('changed after the snapshot\n'))))
+        said = drive(item, keep=keeper([], snapshot=stale, then=lambda where: (
+            Path(where) / 'settings.local').write_text('changed after the snapshot\n')))
         check(ROW, 'a file changed after the snapshot refuses too, and the change is still there [%s %s]'
-              % (answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+              % (named(said)[:2], said.get('unsaved')), named(said)[:2] == (False, 'keep_failed')
               and said.get('unsaved') == ['settings.local']
               and text_of(path / 'settings.local') == 'changed after the snapshot\n' and listed(path))
-        answer = through(item, keeper([], snapshot=saved(path, 'notes-private.md', 'settings.local')))
-        check(ROW, 'with a snapshot that holds both as they are, the worktree goes [%s]' % (answer.get('passed'),),
+        answer = drive(item, keep=keeper([], snapshot=saved(path, 'notes-private.md', 'settings.local')))
+        check(ROW, 'with a snapshot that holds both as they are, the remover removes the worktree [%s]'
+              % (named(answer),),
               answer.get('ok') is True and not path.exists() and not os.path.lexists(mark) and not listed(path))
 
         ROW = 'work/commit-in-the-gap'

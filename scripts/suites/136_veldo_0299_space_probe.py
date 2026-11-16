@@ -24,7 +24,7 @@ itself virtiofsd and holds a file beneath the path is counted), ac1/git-lock (a 
 the worktree's git folder, and git's worktree lock), ac1/seam (the test seam is called with the facts of each call),
 ac1/process (the kernel's start time of a live process; nothing for one that ended).
 
-AC2 rows: ac2/case-1-modified, ac2/case-2-staged, ac2/case-3-untracked (a file git ignores is not),
+AC2 rows: ac2/case-1-modified, ac2/case-2-staged, ac2/case-3-untracked (a loose file git ignores is, VELDO-0347 AC1),
 ac2/case-4-operation (a merge, a rebase and a cherry-pick, each stopped on a conflict, and none after
 it is given up), ac2/case-5-unlanded-commit (the declared falsifier row: a commit only the worktree's
 own branch holds), ac2/squash-landing (after a squash landing the trunk does not reach the tip; with
@@ -430,7 +430,15 @@ def _v299_space_probe_suite():
         check('ac2/case-2-staged', 'with nothing staged there is none', cases(tree) == [])
 
         (tree / 'ignored.log').write_text('ignored\n')
-        check('ac2/case-3-untracked', 'an untracked file git ignores is not unique work', cases(tree) == [])
+        # VELDO-0347 AC1 supersedes what this check said, that a file git ignores is not unique work: a
+        # loose ignored file outside every build output folder is work, and case 3 names it.
+        facts = P.unique_work(tree)
+        check('ac2/case-3-untracked', 'a loose file git ignores is unique work, case 3, named with its rule [%s %s]'
+              % (facts['untracked'], facts.get('ignored_rules')),
+              facts['cases'] == [3] and facts['untracked'] == ['ignored.log'] and facts['ignored'] == ['ignored.log']
+              and str(facts['ignored_rules'].get('ignored.log')).startswith('.gitignore:'))
+        (tree / 'ignored.log').unlink()
+        check('ac2/case-3-untracked', 'with the ignored file gone there is none', cases(tree) == [])
         (tree / 'loose file.txt').write_text('loose\n')
         (tree / 'loose').mkdir()
         (tree / 'loose' / 'deep.txt').write_text('deep\n')
@@ -439,7 +447,6 @@ def _v299_space_probe_suite():
               facts['cases'] == [3] and facts['untracked'] == ['loose file.txt', 'loose/'])
         (tree / 'loose file.txt').unlink()
         shutil.rmtree(tree / 'loose')
-        (tree / 'ignored.log').unlink()
         check('ac2/case-3-untracked', 'with the file gone there is none', cases(tree) == [])
 
         first = commit(tree, 'work.txt', 'one\n', 'first of the branch')

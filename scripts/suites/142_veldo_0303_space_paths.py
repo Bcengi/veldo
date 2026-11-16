@@ -36,7 +36,7 @@ items are deferred and the pins are still held), ac2/clone-in-use-first (a user 
 refused clone_in_use before the ledger is asked anything: no journal record, every item present),
 ac2/pins-after-outcome (each pin is released only after the work tree's removal outcome is written:
 the item is read removed at every release; a clone whose work tree stays keeps every pin, and its
-objects are still readable through the cache), ac2/uncommitted-stays (a work tree with a file the
+objects are still readable through the cache), ac2/uncommitted-stays (superseded by VELDO-0347 AC3, see the row; it was: a work tree with a file the
 worker left: the keep step's last look refuses, the work tree is deferred as keep_failed with the file
 byte for byte, the pins are held and the teardown is refused), ac2/failed-provision (a provisioning
 that fails after the work tree was made: the declared items are confirmed and go through Signal, the
@@ -462,6 +462,10 @@ def _v303_space_paths_suite():
         class Spy:
             """The removers, with every answer recorded: (item, what the remover said)."""
             left = staticmethod(RM.left)
+            # What Signal asks of the removers for a clone's request (VELDO-0347 AC3, the row
+            # ac4/candidate-with-work-stays).
+            clone_proposal = staticmethod(RM.clone_proposal)
+            disposition_head = staticmethod(RM.disposition_head)
 
             @staticmethod
             def remove(ledger, probe, identity, record, **given):
@@ -748,7 +752,7 @@ def _v303_space_paths_suite():
                 made.space = wired
                 return made
 
-            def clone(C, name, project=ORCHARD, scope=A, declare=True, state='exited'):
+            def clone(C, name, project=ORCHARD, scope=A, declare=True, state='exited', form=None):
                 """A worker clone laid out as the provisioner's _create lays it out, its pin held in the
                 cache, and its three items declared as design 6.10 gives them: the root and the scratch
                 folder as scratch, the work tree as an agent repository, both inside the root."""
@@ -779,7 +783,8 @@ def _v303_space_paths_suite():
                 if declare:
                     owner = {'scope': scope, 'ticket': 'VELDO-92' + name[-2:], 'run': {'id': dispatch_id, 'station': 'build'}}
                     items['root'] = declared('scratch', {'path': str(root)}, owner)
-                    items['work'] = declared('agent_repository', {'path': str(work)}, owner, parent=items['root'])
+                    items['work'] = declared('agent_repository', {'path': str(work)}, owner, parent=items['root'],
+                                             **({'form': form} if form else {}))
                     items['scratch'] = declared('scratch', {'path': str(root / 'scratch')}, owner, parent=items['root'])
                 return clone_id, root, work, head, items
 
@@ -887,19 +892,31 @@ def _v303_space_paths_suite():
             shutil.rmtree(holder)
 
             row = 'ac2/uncommitted-stays'
-            clone_id, root, work, head, items = clone(C, 'work-06')
+            # VELDO-0347 AC3 supersedes what this row said, that an ended worker clone with an uncommitted
+            # file is deferred keep_failed and its teardown refused: the file is saved in the snapshot
+            # store and the clone is removed, with no request. The item is declared with its form, as
+            # the provisioner declares it.
+            clone_id, root, work, head, items = clone(C, 'work-06', form='worker_clone')
             DRAFT = 'a draft the worker never committed\n'
             (work / 'draft.txt').write_text(DRAFT)
             with with_ledger(row):
                 refused = retire(C, clone_id)
-            check(row, 'the worker\'s file is on disk byte for byte and the work tree is whole [%s]' % (text_of(work / 'draft.txt'),),
-                  text_of(work / 'draft.txt') == DRAFT and (work / '.git').is_dir())
-            check(row, 'the work tree is deferred as keep_failed and the root waits for it [%s %s %s]'
-                  % (deferral_of(items['work']), deferral_of(items['root']), refused),
-                  state_of(items['work']) == 'deferred' and deferral_of(items['work']) == 'keep_failed'
-                  and state_of(items['root']) == 'deferred' and deferral_of(items['root']) == 'in_use'
-                  and refused == 'space_deferred:in_use')
-            check(row, 'the pins are still held', len(C._pins_held(clone_id)) == 1)
+            removal = removal_of(items['work'])
+            attempts = ((L.item(items['work']) or {}).get('kept') or {}).get('snapshots') or [{}]
+            snapshot = Path(str(attempts[-1].get('path') or temp / 'no-snapshot'))
+            check(row, 'the work tree is removed after its file was saved, and the teardown is not refused [%s %s %s]'
+                  % (state_of(items['work']), removal.get('method'), refused),
+                  state_of(items['work']) == 'removed' and not os.path.lexists(str(work)) and refused is None
+                  and removal.get('method') == 'keep_snapshot_then_rename_probe_compare_delete')
+            check(row, 'the worker\'s file is in the snapshot store byte for byte, under the state root [%s]'
+                  % (text_of(snapshot / 'work' / 'draft.txt'),),
+                  text_of(snapshot / 'work' / 'draft.txt') == DRAFT and str(snapshot).startswith(str(STATE) + os.sep)
+                  and snapshot.parent == Path(L.snapshot_folder(items['work'])))
+            check(row, 'no request was raised for it and the root went after it [%s %s]'
+                  % ((L.item(items['work']) or {}).get('disposition'), state_of(items['root'])),
+                  not (L.item(items['work']) or {}).get('disposition') and state_of(items['root']) == 'removed')
+            check(row, 'its commit is on a kept ref of the repository and the pins are released',
+                  kept_at(items['work'], REPOSITORY, head) and C._pins_held(clone_id) == [])
 
             row = 'ac2/failed-provision'
             FAILED = 'failed0000000000000000000000007'
@@ -1271,7 +1288,7 @@ def _v303_space_paths_suite():
             CANDIDATES.mkdir()
             LANDED = lambda owner: ENDED  # noqa: E731 - the landing line's run has ended: the wired answer
 
-            def candidate(name):
+            def candidate(name, form=None):
                 """A candidate folder as the landing line's build makes it: a fresh checkout of the collected
                 commit, detached; its item an agent repository."""
                 directory = CANDIDATES / ('candidate-' + name)
@@ -1280,7 +1297,8 @@ def _v303_space_paths_suite():
                 head = git(REPOSITORY, 'rev-parse', 'main')
                 git(directory, 'checkout', '-q', '--detach', head)
                 item = declared('agent_repository', {'path': str(directory)},
-                                {'scope': A, 'ticket': 'VELDO-94' + name[-2:], 'run': {'id': 'land/' + name, 'station': 'gate'}})
+                                {'scope': A, 'ticket': 'VELDO-94' + name[-2:], 'run': {'id': 'land/' + name, 'station': 'gate'}},
+                                **({'form': form} if form else {}))
                 return directory, item, head
 
             class Closed:
@@ -1357,7 +1375,11 @@ def _v303_space_paths_suite():
                   and removal_of(item).get('method') == 'keep_then_rename_probe_delete')
 
             row = 'ac4/candidate-with-work-stays'
-            directory, item, head = candidate('work-03')
+            # VELDO-0347 AC3 supersedes what this row said, that a candidate workspace with an unsaved file
+            # is deferred keep_failed by the remover: rule 5 defers it as unique work and one request
+            # is raised for it, as for a worktree. The item is declared with its form, as the landing
+            # line declares it.
+            directory, item, head = candidate('work-03', form='candidate_workspace')
             (directory / 'report.txt').write_text('a verification report nobody saved\n')
             W = runtime(space(owner_live=LANDED), [directory])
             with with_ledger(row):
@@ -1365,10 +1387,17 @@ def _v303_space_paths_suite():
             check(row, 'a candidate folder with a file nobody saved stays, the file byte for byte [%s]' % (W.kept,),
                   text_of(directory / 'report.txt') == 'a verification report nobody saved\n'
                   and (directory / '.git').is_dir())
-            check(row, 'it is deferred as keep_failed on the record and the runtime lists it',
-                  state_of(item) == 'deferred' and deferral_of(item) == 'keep_failed'
-                  and [entry.get('refusal') for entry in W.kept] == ['space_deferred:keep_failed']
+            check(row, 'it is deferred as unique work on the record and the runtime lists it [%s]'
+                  % (deferral_of(item),),
+                  state_of(item) == 'deferred' and deferral_of(item) == 'unique_work'
+                  and [entry.get('refusal') for entry in W.kept] == ['space_deferred:unique_work']
                   and W.kept[0].get('path') == str(directory))
+            asked = (L.item(item) or {}).get('disposition') or {}
+            clones = ((asked.get('terms') or {}).get('proposal') or asked.get('proposal') or {}).get('clones') or [{}]
+            check(row, 'one request is raised for it, naming the candidate workspace as a clone with its file [%s]'
+                  % (sorted(asked),),
+                  asked.get('state') == 'requested' and len(clones) == 1 and clones[0].get('item') == item
+                  and clones[0].get('form') == 'candidate_workspace' and clones[0].get('files') == ['report.txt'])
             place, item, merged, observed, observed_item = workspace('held-04')
             holder = process_entry(5404, '/', opened=str(place / 'merged.txt'))
             O = lander(space(owner_live=LANDED), place, observed)

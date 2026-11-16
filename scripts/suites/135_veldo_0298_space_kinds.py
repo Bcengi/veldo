@@ -145,7 +145,7 @@ def _v298_space_kinds_suite():
     }
 
     ROWS = (tuple('ac1/%s/%s' % (row, event) for row in TABLE_ROWS for event in EVENTS)
-            + ('ac1/whole-table', 'ac2/deferred-build-folder-first', 'ac2/child-holds-worktree',
+            + ('ac1/whole-table', 'ac1/table-2', 'ac2/deferred-build-folder-first', 'ac2/child-holds-worktree',
                'ac2/kept-child-holds-parent', 'ac2/looks-for-children', 'ac2/agent-repository-after-worktree', 'ac2/children-first', 'ac3/passes-to-queued-run',
                'ac3/removed-without', 'ac3/run-finished-only', 'ac4/keeps-its-version',
                'ac4/action-of-its-version', 'ac4/registry-untouched', 'kinds/ledger-accepts', 'kinds/pure',
@@ -215,9 +215,35 @@ def _v298_space_kinds_suite():
                       and (want is None or (got[0]['item'], got[0]['row'], got[0]['version'])
                            == ('space:item:1', row, '1')))
 
-        table = K.REGISTRY['tables'][K.REGISTRY['version']]
+        # VELDO-0347 AC5 issued table 2, so this row reads table 1 by its number where it read the
+        # current table: table 1 stays exactly as it was issued, the fourteen rows and no other.
+        table = K.REGISTRY['tables']['1']
         check('ac1/whole-table', 'the rows are the twelve [%s]' % sorted(table['rows']),
               sorted(table['rows']) == sorted(TABLE_ROWS))
+        second = K.REGISTRY['tables'].get('2') or {'rows': {}, 'events': [], 'ends_on': {}}
+        clone = {'action': 'remove', 'after': ['worktree'], 'requires': 'no_unique_work',
+                 'otherwise': 'deferred_unique_work', 'unique_work': 'decision_request'}
+        check('ac1/table-2', 'table 2 is the current table and the registry holds the two [%s %s]'
+              % (K.REGISTRY['version'], sorted(K.REGISTRY['tables'])),
+              K.REGISTRY['version'] == '2' and sorted(K.REGISTRY['tables']) == ['1', '2'])
+        check('ac1/table-2', 'its rows are the fourteen of table 1 and agent_repository_clone [%s]'
+              % sorted(second['rows']),
+              sorted(second['rows']) == sorted(TABLE_ROWS + ('agent_repository_clone',)))
+        check('ac1/table-2', 'every row of table 1 has the same cells in table 2, and the same events',
+              all(second['rows'].get(row) == table['rows'][row] for row in TABLE_ROWS)
+              and second['events'] == table['events']
+              and all(second['ends_on'].get(kind) == table['ends_on'][kind] for kind in table['ends_on']))
+        check('ac1/table-2', 'the clone row removes at each of the five columns, released with them, and never at '
+              'session ended [%s]' % sorted(second['rows'].get('agent_repository_clone', {})),
+              second['rows'].get('agent_repository_clone') == {event: clone for event in EVENTS
+                                                               if event != 'session_ended'})
+        check('ac1/table-2', 'each clone form ends on those events, under <kind>:<form>, and table 1 names no form',
+              all(second['ends_on'].get('agent_repository:' + form) == [event for event in EVENTS
+                                                                        if event != 'session_ended']
+                  for form in ('worker_clone', 'batch_clone', 'candidate_workspace'))
+              and sorted(set(second['ends_on']) - set(table['ends_on'])) == [
+                  'agent_repository:batch_clone', 'agent_repository:candidate_workspace',
+                  'agent_repository:worker_clone'])
         check('ac1/whole-table', 'the events are the nine [%s]' % (table['events'],),
               tuple(table['events']) == EVENTS and tuple(K.EVENTS) == EVENTS)
         check('ac1/whole-table', 'no row holds a cell for another event',
