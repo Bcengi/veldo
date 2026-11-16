@@ -12942,13 +12942,21 @@ def cases():
     # other deferral. And the spec's falsifier of the look: the kind registry is given a look that
     # answers {}.
     space301 = '139_veldo_0301_space_signal.py'
+    # The anchor of this case was the line that carried the due items, "... if carried else []".
+    # VELDO-0334 (c638ab1f) replaced that line with a loop over the due items grouped by their ending
+    # event and left the case as it was, so its anchor matched nothing and no case of finding 301
+    # could run. Repaired by VELDO-0347 (fix round 2): the same defect, on the line that now decides
+    # whether a group is carried. The call returns after marking due and removes nothing itself.
     add(301, 'space301-returns-after-marking-due', space301, 'control_space_signal.py',
-        "                      borrow_root=borrow_root) if carried else []\n",
-        "                      borrow_root=borrow_root) if False else []\n",
+        "    for ending, selected in groups.items():\n        if selected:\n",
+        "    for ending, selected in groups.items():\n        if False:\n",
         ['ac1/removes-before-return'])
+    # This anchor moved too: VELDO-0318 (a9628b86) keeps the written deferral in a name, to raise
+    # the owner's request after it, and left the case as it was. Repaired with the one above: the
+    # same defect on the same write, a refused item written as kept and not as deferred.
     add(301, 'space301-refused-item-not-deferred', space301, 'control_space_signal.py',
-        "    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
-        "    return write('kept', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+        "    result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+        "    result = write('kept', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
         ['ac2/deferred-then-retried'])
     add(301, 'space301-mode-ignored', space301, 'control_space_signal.py',
         "        if enabled and record.get('state') == 'due' and (\n"
@@ -16967,6 +16975,37 @@ def cases():
         "        row = FORM_ROWS.get((record['kind'], record.get('form')))\n",
         "        row = FORM_ROWS.get((record['kind'], record.get('form') or 'worker_clone'))  # defect\n",
         ['space347/ac5/registry-row'])
+    # Fix round 2 (the independent review of 25f56001). Finding 1: the clone's handling was chosen by
+    # the item's form alone, so an item declared under table 1 was judged by table 2. One case for each
+    # place that chooses: rule 5, what Signal tells the remover, the remover, the Ledger.
+    add(347, 'space347-rule-5-reads-a-table-1-clone-by-its-form', unseen347, 'control_space_signal.py',
+        "        if form not in CLONE_FORMS or given.get('row') != CLONE_ROW:\n",
+        "        if form not in CLONE_FORMS:  # defect: the form alone picks the clone's reading\n",
+        ['space347/ac3/table-1-clone'])
+    add(347, 'space347-signal-names-the-clone-row-for-any-item', unseen347, 'control_space_signal.py',
+        "        if entry.get('row') == CLONE_ROW:\n            # The item's own table gave it the clone's row",
+        "        if True:  # defect: every item is handed over as one of the clone's row\n"
+        "            # The item's own table gave it the clone's row",
+        ['space347/ac3/table-1-clone'])
+    add(347, 'space347-remover-saves-a-table-1-worker-clone-by-its-form', unseen347, 'control_space_remove.py',
+        "    if record.get('form') == WORKER_CLONE and ctx.get('row') == CLONE_ROW and ctx['keep'] is not None:\n",
+        "    if record.get('form') == WORKER_CLONE and ctx['keep'] is not None:  # defect: the form alone\n",
+        ['space347/ac3/table-1-clone'])
+    add(347, 'space347-ledger-takes-a-clone-request-for-a-table-1-item', unseen347, 'control_space.py',
+        "                 and self._clone_row(record))\n",
+        "                 and True)  # defect: the form alone makes it a clone to ask about\n",
+        ['space347/ac3/table-1-clone'])
+    # The other side of the same choice: an item of the clone's row is not told to the remover.
+    add(347, 'space347-signal-names-the-clone-row-for-no-item', unseen347, 'control_space_signal.py',
+        "        if entry.get('row') == CLONE_ROW:\n            # The item's own table gave it the clone's row",
+        "        if False:  # defect: the remover is never told the clone's row\n"
+        "            # The item's own table gave it the clone's row",
+        ['space347/ac3/table-2-clone', 'space347/ac3/worker-clone-saved'])
+    # Finding 3: the Ledger's own refusal of a settled Save or Discard of a clone had no row.
+    add(347, 'space347-ledger-applies-any-settled-choice-to-a-clone', unseen347, 'control_space.py',
+        "        if record['kind'] != 'worktree' and choice != 'keep':\n",
+        "        if False:  # defect: a settled Save or Discard of a clone is applied\n",
+        ['space347/ac3/ledger-keep-only'])
 
     return result
 
