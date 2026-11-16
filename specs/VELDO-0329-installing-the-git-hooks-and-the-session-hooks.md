@@ -28,8 +28,11 @@ footprint:
 behavior_bearing: true
 observability:
   logs: >
-    Each install records the repository or account folder and the hooks folder used. Reconcile lists each
-    missing hook under space.reports.
+    Each install records the repository or account folder and the hooks folder used. For a repository
+    the record also lists the keys of its local git configuration the hooks read, each written or
+    present: veldo.space.stateroot, veldo.space.cli, veldo.space.installation and veldo.space.trunk.
+    A refused install records why. Reconcile lists each missing hook under space.reports, and a hooks
+    folder or a state root that is not this installation's to write with the reason.
   error_taxonomy: >
     A missing hook is a report, not an error.
 acceptance_criteria:
@@ -102,3 +105,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   when it is an executable shell script and refused otherwise, and the install record says which;
   a refused hook is left byte for byte and reconcile reports it as missing. The hook files, the
   pack's hooks.json and the session script are unchanged. Acceptance criteria are unchanged.
+
+- 2026-11-16: fix round after the independent review (verdict FIX, six findings). (1) core.hooksPath
+  is read as the owner's git reads it, with the global and the system file; set outside the
+  repository's local configuration the install is refused and reconcile reports it. (2) The hooks
+  folder must be the repository's alone: a relative hooks path, a folder that is a link or is reached
+  through one, and a folder inside a work tree or another repository are refused, so no tracked file
+  is edited and no unbound repository gains a hook. (3) A git that did not run is a failure. (4) An
+  installation touches only what carries its own state root. Another installation's session entries
+  and veldo.space.stateroot are kept and the conflict is refused and reported; a second entry was not
+  added, because the git hook reads one state root and a session reported to two ledgers would have
+  two owners. (5) The settings file is rewritten under a lock beside it and read again after the
+  rename; a key written twice is refused; text that is not ASCII is kept. (6) The marked hook lines
+  run under timeout(1) with a deadline of 10 seconds; without timeout(1) the bound is the CLI's own
+  wait for the authority. The install record lists the veldo.space.* keys, and the observability
+  section names them. Acceptance criteria are unchanged.

@@ -69,7 +69,8 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   writes to a file that is or may become a tracked one. Veldo's
                   own hook goes there under its own name, veldo-post-checkout and
                   veldo-reference-transaction. Where no hook file exists, a two line file is written:
-                  the shell line and one marked line that starts Veldo's hook. Where a hook file
+                  the shell line and one marked line that starts Veldo's hook, under timeout(1)
+                  with a deadline of HOOK_SECONDS so a blocked CLI cannot hold a commit. Where a hook file
                   exists and is an executable shell script, the one marked line is added after its
                   first line and every other line is left as it was. The line for
                   reference-transaction hands Veldo's hook a copy of git's input and gives the
@@ -100,7 +101,9 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   its digest in its name. A file there that is not Veldo's is refused.
 
 Each install gives one record: the repository or the account folder, the hooks folder or settings file
-used, and for each hook installed, chained, present or refused with its reason. Reconcile reports a
+used, for each hook installed, chained, present or refused with its reason, and for a repository the
+keys of its local configuration the hooks read (veldo.space.stateroot, veldo.space.cli,
+veldo.space.installation, veldo.space.trunk), each written or present. Reconcile reports a
 repository whose hook is missing (hooks_missing) and a named account folder whose session hooks are
 missing (session_hooks_missing), each with what is missing. A missing hook is a report, not an error.
 
@@ -910,6 +913,7 @@ HOOKS = ('post-checkout', 'reference-transaction')
 HOOK_MARK = '# veldo-space-hook'
 HOOK_OURS = 'veldo-'
 HOOK_SIGN = b'# Veldo space management'  # the second line of each hook Veldo ships
+HOOK_SECONDS = 10  # the deadline of a marked line: the longest Veldo's hook can hold a git command
 HOOK_SHELLS = ('sh', 'bash', 'dash', 'ksh', 'zsh')
 HOOK_CONFIG = {'stateroot': 'veldo.space.stateroot', 'cli': 'veldo.space.cli',
                'installation': 'veldo.space.installation', 'trunk': 'veldo.space.trunk'}
@@ -1000,14 +1004,25 @@ def hook_line(folder, name):
     folder, which the install wrote to, and only where that is refused in the temporary folder: a host
     whose temporary folder cannot be written still records its landings. Where neither takes the
     copy, git's input is left untouched for the owner's lines and Veldo's hook is not started; the
-    next reconcile finds what that landing changed."""
+    next reconcile finds what that landing changed.
+
+    The line has a deadline of its own, HOOK_SECONDS: Veldo's hook is started under timeout(1), which
+    ends it and everything it started, so a CLI that blocks cannot hold one run of a hook longer than
+    that (a git command that runs both hooks waits that long for each at most). On a host with no timeout(1) the hook is started plainly, and the bound is then the
+    CLI's own: it waits control_space_spool.REACH_SECONDS for each answer of the authority and no
+    longer. Either way the line ends with success and git goes on."""
     ours = shlex.quote(os.path.join(folder, HOOK_OURS + name))
+
+    def bounded(feed):
+        return ('if command -v timeout >/dev/null 2>&1; then timeout %d %s "$@" %s; else %s "$@" %s; fi || :'
+                % (HOOK_SECONDS, ours, feed, ours, feed))
+
     if name == 'reference-transaction':
         beside = shlex.quote(os.path.join(folder, '.veldo-in.XXXXXX'))
         return ('[ "$1" != committed ] || { veldo_in=$(mktemp ' + beside + ' 2>/dev/null || mktemp) && '
-                'cat >"$veldo_in" && { ' + ours
-                + ' "$@" <"$veldo_in" || :; exec <"$veldo_in"; rm -f "$veldo_in"; }; :; }  ' + HOOK_MARK)
-    return ours + ' "$@" </dev/null || :  ' + HOOK_MARK
+                'cat >"$veldo_in" && { ' + bounded('<"$veldo_in"')
+                + '; exec <"$veldo_in"; rm -f "$veldo_in"; }; :; }  ' + HOOK_MARK)
+    return bounded('</dev/null') + '  ' + HOOK_MARK
 
 
 def _marked(line):
@@ -1187,6 +1202,7 @@ def install_git_hooks(repository, state_root, cli, installation=None, trunk=None
         record['refused'] = 'state_root_of_another_installation:' + text.rstrip('\n')[:200]
         return record
     values = {'stateroot': str(state_root), 'cli': str(cli), 'installation': installation, 'trunk': trunk}
+    record['config'] = {}  # each veldo.space.* key of the repository's local configuration: written or present
     for key, value in values.items():
         if not value:
             continue
@@ -1196,6 +1212,9 @@ def install_git_hooks(repository, state_root, cli, installation=None, trunk=None
             if code != 0:
                 record['refused'] = 'git_failed:could not configure ' + repository + ': ' + str(text)[:200]
                 return record
+            record['config'][HOOK_CONFIG[key]] = 'written'
+        else:
+            record['config'][HOOK_CONFIG[key]] = 'present'
     os.makedirs(folder, exist_ok=True)
     for name in HOOKS:
         record['hooks'][name] = _install_hook(folder, name, sources[name])

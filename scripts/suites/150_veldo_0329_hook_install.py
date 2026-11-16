@@ -738,6 +738,69 @@ def _v329_suite():
               record.get('ok') is True and record.get('hooks') == {'SessionStart': 'installed', 'SessionEnd': 'installed'}
               and json.loads((raced / 'settings.json').read_bytes())['model'] == 'the client wrote this meanwhile')
 
+        row = 'fix6/blocked-cli-bounded'
+        blocked = repository('blocked')
+        got, pids = temp / 'blocked-owner-got', temp / 'blocked-pids'
+        (blocked / '.git' / 'hooks' / 'reference-transaction').write_text('#!/bin/sh\ncat >>' + str(got) + '\n')
+        (blocked / '.git' / 'hooks' / 'reference-transaction').chmod(0o755)
+        slow = temp / 'bin' / 'veldo-that-blocks'
+        slow.write_text('#!/bin/sh\necho $$ >>' + str(pids) + '\nexec sleep 60\n')
+        slow.chmod(0o755)
+        bound_seconds, R.HOOK_SECONDS = R.HOOK_SECONDS, 2
+        try:
+            record = R.install_git_hooks(str(blocked), str(state), str(slow), str(installation), 'main',
+                                         str(HOOK_SOURCE), G)
+            again_blocked = R.install_git_hooks(str(blocked), str(state), str(slow), str(installation), 'main',
+                                                str(HOOK_SOURCE), G)
+        finally:
+            R.HOOK_SECONDS = bound_seconds
+        KEYS = ('veldo.space.stateroot', 'veldo.space.cli', 'veldo.space.installation', 'veldo.space.trunk')
+        check(row, 'the record lists the configuration keys the install wrote, then found present: '
+              + str((record.get('config'), again_blocked.get('config'))),
+              record.get('ok') is True and record.get('config') == {key: 'written' for key in KEYS}
+              and again_blocked.get('config') == {key: 'present' for key in KEYS}
+              and all(told_to(blocked, key) for key in KEYS))
+        check(row, 'the marked line names its deadline: ' + repr(marked(blocked / '.git' / 'hooks' / 'post-checkout')),
+              all(b'timeout 2 ' in marked(blocked / '.git' / 'hooks' / name)[0] for name in R.HOOKS)
+              and shutil.which('timeout') is not None)
+        try:
+            began = time.monotonic()
+            git(blocked, 'commit', '-q', '--allow-empty', '-m', 'the CLI blocks')
+            commit_took = time.monotonic() - began
+            began = time.monotonic()
+            git(blocked, 'checkout', '-q', '-b', 'while-blocked')
+            checkout_took = time.monotonic() - began
+            started = [int(line) for line in pids.read_text().split()] if pids.exists() else []
+            # The commit runs one hook, the new branch two (its ref, then the checkout): each has the deadline.
+            check(row, 'a CLI that blocks for a minute holds each hook for the deadline only, and git succeeds: '
+                  '%.1f s for one hook and %.1f s for two, %d starts' % (commit_took, checkout_took, len(started)),
+                  len(started) == 3 and 1.5 < commit_took < 20 and 3 < checkout_took < 30
+                  and git(blocked, 'log', '-1', '--format=%s', 'main') == 'the CLI blocks'
+                  and git(blocked, 'symbolic-ref', '--short', 'HEAD') == 'while-blocked')
+            check(row, 'the owner\'s own lines still got git\'s input after the deadline: '
+                  + repr(got.read_text() if got.exists() else None),
+                  got.exists() and ' refs/heads/main' in got.read_text()
+                  and not any(name.startswith('.veldo-in.') for name in os.listdir(blocked / '.git' / 'hooks')))
+
+            def alive(pid):
+                try:
+                    os.kill(pid, 0)
+                    return True
+                except OSError:
+                    return False
+
+            until = time.monotonic() + 5
+            while any(alive(pid) for pid in started) and time.monotonic() < until:
+                time.sleep(0.05)
+            check(row, 'and the blocked CLI was ended with its hook, none is left running',
+                  not any(alive(pid) for pid in started))
+        finally:
+            for pid in ([int(line) for line in pids.read_text().split()] if pids.exists() else []):
+                try:
+                    os.kill(pid, 9)
+                except OSError:
+                    pass
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'
