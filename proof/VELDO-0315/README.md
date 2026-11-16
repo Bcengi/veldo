@@ -1,120 +1,93 @@
-# VELDO-0315 small round after 3b13a979
+# VELDO-0315 fix round 3
 
-The failing row was `VELDO-0337 safety/review-scratch-in-use`: both the on-demand
-lost-verdict recovery fixture and the borrowed-login safety fixture used `planted('22')`.
-The second call raised `FileExistsError` for `scratch/22`, before its safety assertions
-and the later wiring/canon row could run. The reproduced result was 45 passed, 1 failed.
-The fix gives the on-demand fixture ID `23`. Every assertion remains intact, including
-Runtime leaving verdict recovery to the start reconcile and the longer engine-canon list.
-Production code is unchanged. Both recovery and scratch safety now execute successfully.
+Implementation: `0878d74524e027cc0b061afb0df0a4fa6d0e2102`, on `veldo-space-0315b`, from `daa49a1e`.
+The independent re-review was read in full before editing. Each finding has its own
+commit, followed by the separate supervise fix. All commits use Dmitry Grinberg
+<dmitry@bcengi.com>, with no trailers. No protected path changed.
 
-On 2026-11-15, all requested suites ran through
-`nice -n 10 python3 -B scripts/selftest.py --suite NAME`, with bytecode writes disabled.
-The suite driver also ran at niceness 10, so these suite processes inherited niceness 19.
-Counts include the shared preamble; these are partial regression results, not aggregate
-unit evidence or a landing decision. Green selected runs return 2 by design.
+| Finding | Cause and correction | Commit |
+| --- | --- | --- |
+| F1 | Startup omitted the land entry before the loop existed. Read installed work roles and pass land data to replay, including retries. Real serve replays, records and consumes a trunk event. | `60c7e87b` |
+| F2 | Replay ran git and observer signing in the service. Run it in the space worker with the replay deadline, waiting on its pipe before reconcile. The row records git-launching PIDs across startup. | `85d0bc75` |
+| F3 | Inline reconcile waited on item locks in the service. Coalesce worker tasks, keep serving packets while CLI/API wait for their result, and queue at most one Docker retry. Docker subscriptions stay in the service. | `dac93409` |
+| F4 | Owner refusal, pre-reconciler failure, child reaping and repeat-write checks were absent. Add them; avoid unchanged measurement writes so repeat reconcile adds only space_reconcile records. Update mutation anchors without weakening their defects. | `de1a5622` |
+| Supervise | Broken report writes were ignored; SIGTERM only forwarded to a live command. A blocking pipe watcher exits on report-reader loss, control EOF before startup cancels, and SIGTERM exits after forwarding. | `0878d745` |
 
-| Suite NAME | Passed | Failed | Exit |
+Pipe cancellation leaves the run pending; it does not manufacture a run-finished event.
+The supervise row covers control EOF, report-reader loss before and during a command,
+and SIGTERM. Tests clean up only their own fixture commands.
+
+## Requested suites
+
+Each ran sequentially with `nice -n 10 python3 -u -B scripts/selftest.py --suite NAME`.
+The final 156 rerun follows the one-line row-registration correction. Other suite
+implementation bytes are unchanged since their final runs. Counts include the shared
+preamble. Successful selected runs return 2 by design; these are partial regression
+results, not aggregate unit evidence or a landing decision.
+
+| Suite | Passed | Failed | Seconds |
 | --- | ---: | ---: | ---: |
-| 156_veldo_0315_reconcile | 51 | 0 | 2 |
-| 153_veldo_0323_hook_events | 66 | 0 | 2 |
-| 153_veldo_0337_verdict_recorded | 47 | 0 | 2 |
-| 153_veldo_0314_session_hooks | 54 | 0 | 2 |
-| 154_veldo_0335_released | 58 | 0 | 2 |
-| 151_veldo_0313_space_run | 37 | 17 | 1 |
+| 156_veldo_0315_reconcile | 59 | 0 | 37.72 |
+| 153_veldo_0323_hook_events | 66 | 0 | 13.23 |
+| 153_veldo_0337_verdict_recorded | 47 | 0 | 4.44 |
+| 153_veldo_0314_session_hooks | 54 | 0 | 2.57 |
+| 154_veldo_0335_released | 58 | 0 | 3.00 |
+| 151_veldo_0313_space_run | 36 | 18 | 486.81 |
 
-The 0313 failure names exactly match all 17 known host-bound rows in
-`review-fix/151_veldo_0313_space_run-final.txt`, with no new failing row. Its shared-host
-process/lifecycle limits remain unchanged; the run took 382.14 seconds.
+151 completed without the 20-minute no-output watchdog firing. Its 18 failing row
+names exactly match the union of the retained known host-bound failures in
+`review-fix/run-baseline.txt` and `review-fix/151_veldo_0313_space_run-final.txt`.
+No supervise process from these runs survived any suite; the final 156 rerun was
+also checked. Engine copies, ASCII, syntax, diff whitespace and protected-path
+exclusion were checked before the final teeth sequence.
 
-Teeth ran LAST, sequentially for findings 314, 315, 323, 335 and 337, using
-`nice -n 10 python3 -B scripts/check_teeth_mutations.py --finding N --jobs 4`, plus
-`--worker-log-dir /tmp/v315-small/wN --diff-dir /tmp/v315-small/dN`.
-No worktree file was written while any teeth stage ran. Tracked-file SHA-256 values,
-sizes and modification times were identical before and after the entire sequence;
-the worktree status still contained only the one-line suite edit. This README was
-updated after all five stages finished. No test was run after teeth.
+## Scratch falsifiers
 
-| Finding | Executed | Rejected | Reused | Surviving workers | Exit |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 314 | 20 | 20 | 0 | 0 | 0 |
-| 315 | 22 | 22 | 0 | 0 | 0 |
-| 323 | 16 | 16 | 0 | 0 | 0 |
-| 335 | 14 | 14 | 0 | 0 | 0 |
-| 337 | 22 | 22 | 0 | 0 | 0 |
+The reviewer's exact M3, M5 and M6 replacements were applied separately in
+`/tmp/v315-r3/mut`, outside the worktree, restored after each run, and run at niceness 10.
 
-All five receipts report `passed`, no invalid results, and input digest
-`9b3d64f25aa7ddcef08d3369e4a07a1f6fa8489d5fe27bf2eb6769631cf041df`.
-Full diagnostic logs, receipts and mutation diffs remain outside the worktree at
-`/tmp/v315-small/`; these are local artifacts, not durable aggregate gate evidence.
-Only this README and the unprotected 0337 suite changed. No protected path changed.
-Policy checking and the full verification gate were not run; both remain with the lead.
+| Falsifier | Failing row | Passed / failed |
+| --- | --- | --- |
+| M3 | space315/ac7/stop-reaps | 58 / 1 |
+| M5 | space315/cli/non-owner | 58 / 1 |
+| M6 | space315/ac3/failure-before-reconciler | 58 / 1 |
+| CLI-no-service | space315/cli/service-project | 57 / 2 |
 
-# Earlier VELDO-0315 review fixes
+All three surviving falsifiers now turn exactly their new row red. The extra
+CLI-no-service check confirms the authorization row remains registered when the
+CLI returns early. No supervise process survived these scratch runs.
 
-The implementation is committed at 361211d50f448a5d83bc3fe5a6cd1e4a1761cb7a, after carry-over commits d412260f and ba390ad9
-on integration base 9b5ca496. All six requested fixes are implemented. This bundle records
-partial regression runs and selected teeth stages. It is not an aggregate unit result, an
-independent review, or a landing decision. Every acceptance criterion remains pending the
-lead's full gate and review. No protected path changed. Policy checking and the full gate
-were not run.
+## Teeth ran last
 
-1. Service startup synchronously bootstraps, replays and reconciles, then starts the 0323
-   consumer. Shutdown stops and reaps its child. The real serve-order row checks both edges;
-   received-event recovery runs once after pending records drain.
-2. Reconciler.run invokes FloorAuthority.reconcile_verdicts before compare; Runtime no longer
-   invokes it at startup. The 0337 lost-send row uses Service.space_start and the on-demand
-   service method, verifies the lost verdict is sent, and checks repeat calls send nothing.
-3. Recovery and Signal use the same per-item filesystem lock. Recovery rereads the item under
-   that lock before acting. The stale-read row was red before the fix (race-before.txt), then
-   green. The cross-process row holds the lock over a marked folder and proves reconcile
-   cannot restore it before release, independently of Signal's nested lock.
-4. Docker subscribes before disk reconciliation, remains subscribed after a named startup
-   failure, and retries on the next event. On demand restores a missing stream. The startup
-   snapshot contributes to counts once.
-5. A removing worktree absent at both names and lacking a keep record must become deferred
-   with keep_failed. Its mutation removes the absent-item completion guard and turns the
-   designated row red.
-6. veldo space reconcile signs an owner command and sends it through the authority service.
-   The API route reaches the same service method. An optional project selects one project;
-   omission selects all. Removal safety still reads foreign-project children from the full
-   ledger, so selecting a project cannot hide work nested inside a due parent.
+Final order: 314, 315, 323, 335, 337; each used `nice -n 10 python3 -u -B
+scripts/check_teeth_mutations.py --finding N --jobs 4`, with worker logs and diffs
+under `/tmp/v315-r3/final-teeth/`. Bytecode writes were disabled. No worktree file
+was written during the sequence; all 8,489 tracked files retained identical SHA-256
+contents, sizes and mtimes. This README was written only after all five completed.
+No test was run after final teeth.
 
-The final targeted runs used nice -n 10 and the repository selftest entry point. Of 22 suites,
-19 have no failed assertions. The primary totals are 0315: 51/0, 0323: 66/0, and 0337: 45/0.
-These totals include the shared preamble; ticket rows are 25, 40 and 19 respectively. Selected
-selftest runs intentionally return nonzero even when green and cannot satisfy aggregate unit
-evidence. See review-fix/targeted-results.json for all commands, counts, logs and row names.
+| Finding | Executed | Rejected | Reused | Invalid | Surviving workers | Exit |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 314 | 20 | 20 | 0 | 0 | 0 | 0 |
+| 315 | 22 | 22 | 0 | 0 | 0 | 0 |
+| 323 | 16 | 16 | 0 | 0 | 0 | 0 |
+| 335 | 14 | 14 | 0 | 0 | 0 | 0 |
+| 337 | 22 | 22 | 0 | 0 | 0 | 0 |
 
-Three failing suites were compared with an unchanged archive of 9b5ca496 on this host:
-census has 51/1 on both (invalid owner.scope); Docker has 54/1 on both (a static poll-set
-assertion); run-wrapper has 37/17 here and 36/18 at base, with no current-only failing row.
-The API suite failed its restart row in two slower runs, passed 71/0 at base, and passed 71/0
-on the final rerun with fuller diagnostics and no production change. Its cause is unproven.
-Both failure and passing outputs are retained. The temporary baseline archive was removed
-with a plain command before teeth.
+All five final receipts report `passed`, with input digest
+`b3b3e45a37bc139fd96d7b48bc50f14a4c693ce131ad0598854e3f3143619e9b`.
 
-The final teeth sequence was 315, 323, then 337, all at nice -n 10 with four workers. Results
-are 22/22, 16/16 and 19/19 rejected mutations, zero reuse and zero surviving workers. The
-receipts share one input digest. No worktree file was edited while those stages ran; this
-proof was written only after all three completed. Full receipts and exact mutation diffs
-are retained. Earlier 315 attempts are retained too: the first had invalid baseline controls
-because the long output path exceeded the Unix socket pathname limit; the next exposed two
-test gaps; both corrected mutations then passed a focused check before the final sequence.
+Iteration results retained outside the worktree: the initial 0323 replay-list crash
+was fixed by normalizing task results; the restored 0337 guard initially failed
+(46/1) on repeated measurements and now passes. Initial 151 was 35/19: its extra
+timer assertion led to the blocking pipe watcher; final 151 has only the 18 known
+host-bound failures. The first teeth sequence passed 314/323/335/337 but 315 was
+21/22 with one invalid CLI-no-service result because its early return removed the
+non-owner row. That row now always executes. After the correction, 156 and all
+three reviewer falsifiers were rerun, followed by the full successful final teeth
+sequence. The first frozen sequence also had no tracked-file changes or survivors.
 
-Validation, generated files, template sync, lint and diff checks passed before the final
-teeth sequence. Later changes after the broad checks only strengthened test diagnostics,
-the lock row and the mutation anchor; lint and the affected suite were rerun. Protected-path
-comparison was empty. Acceptance criteria and production safety prerequisites were not relaxed.
-
-Fixture limits: suite 156 uses temporary real Git repositories and SQLite ledgers, real
-removers, real forked workers and real owner signatures. Docker and process observations are
-fixtures. The CLI transport is a fixture that reaches real Service.apply; the floor provider
-in the lost-send row supplies real FloorAuthority objects with fixture materialization.
-Act prerequisites are fixture inputs; these runs do not authorize production act mode.
-A removing item whose recorded carrier is still this service process remains protected by
-AC5 until that process ends, including the review's same-process left_at case.
-
-The root-level files other than this README and manifest are historical carry-over evidence.
-The current evidence is under review-fix/. Original README and manifest copies are retained
-there for provenance; they do not describe the current integration state.
+Only small summaries are stored here. Full logs, receipts, diffs and scratch data
+remain in `/tmp/v315-r3/`; these are local diagnostic artifacts. Historical proof
+under `review-fix/` is unchanged. Policy checking and the full verification gate
+were left to the lead, as requested.
