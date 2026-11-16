@@ -276,3 +276,10 @@ or null for all. Both entry points require the space owner.
   space that is never freed. AC8 gives that sentence its home: the event is recorded where the send
   raised and reconcile sends it again, one event that keeps raising holding nothing else back. Seven
   criteria became eight. No code in that round.
+- 2026-11-16: the lead's decision on VELDO-0319 (no dead routes) gives the console's Adopt button to the
+  ticket that introduces its ledger command. The builder of VELDO-0319 found no ticket that builds the
+  owner's Adopt of a reported thing: the ledger's adopt transition is VELDO-0297's, this ticket's
+  reconcile calls it and writes the reports the owner would adopt from, and the signed command
+  space.adopt and the read space.reports are named only by design 6.6 and 10. This line is here because
+  the reports are this ticket's; the lead is still to confirm which ticket carries the button, its
+  command and the Reports section. VELDO-0319 built none of the three.

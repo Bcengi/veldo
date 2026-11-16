@@ -56,6 +56,7 @@ def _v319_space_ui():
         'src/features/space/SpacePending.vue': ROOT / "engine/ui/src/features/space" / "SpacePending.vue",
         'src/features/run/runs.ts': ROOT / "engine/ui/src/features/run" / "runs.ts",
         'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
+        'src/composables/useLiveRead.ts': ROOT / "engine/ui/src/composables" / "useLiveRead.ts",
     }
     # The API organs the harness loads (VELDO_ORGANS): the checkout's .veldo, with these production copies laid
     # over a scratch copy of it (the registered mutation driver substitutes each of them here).

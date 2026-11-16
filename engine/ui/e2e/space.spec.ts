@@ -41,6 +41,10 @@ async function pageAs(browser: Browser, factory: SpaceFactory, who: string, view
   const phone = viewport.width < 768
   const context = await browser.newContext({ viewport, hasTouch: phone, isMobile: phone })
   const page = await context.newPage()
+  // The first load of the build on a busy host can take longer than one action's wait: the sign-in screen is
+  // awaited here with room, then signIn drives it.
+  await page.goto(factory.origin + '/sign-in')
+  await expect(page.getByTestId('sign-in')).toBeVisible({ timeout: 45_000 })
   await signIn(page, factory, who)
   return page
 }

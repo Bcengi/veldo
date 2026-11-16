@@ -112,3 +112,7 @@ act_checks) and so removes its part of that refusal; VELDO-0339's part stays unt
   acceptance criterion changed. The switch to act has a fourth condition beside this ticket's,
   VELDO-0339's and the process reader's ticket: a proof record of the no-work-is-lost suite for the space
   modules and the git in use (VELDO-0348 AC4).
+- 2026-11-16: the lead's decision on VELDO-0319 (no dead routes): this ticket now carries the console's
+  Wrong button and the mode switch with their commands. VELDO-0319 built the Space screen without them
+  and without the Modes section; the routes space.reject and space.mode, their operations and their
+  places on that screen come with this ticket.

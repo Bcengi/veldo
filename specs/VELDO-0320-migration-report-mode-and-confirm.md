@@ -93,3 +93,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-16: the lead's decision on VELDO-0319 (no dead routes): this ticket now carries the console's
+  Confirm button with its command. VELDO-0319 built the Space screen and its Pending removal section
+  without it; the route space.confirm, its operation and its place on that screen come with this ticket.

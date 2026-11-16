@@ -16934,6 +16934,69 @@ def cases():
         "    if not isinstance(picks, list):",
         ['space342/terms/indexes'])
 
+    # VELDO-0319: the console's Space screen. The API rows, then the browser rows.
+    api319 = '150_veldo_0319_space_screen.py'
+    # AC1, declared: sum only present items and leave out deferred ones.
+    add(319, 'space319-usage-sums-only-present-items', api319, 'control_api_models.py',
+        "        if data.get('state') not in SPACE_LIVE:",
+        "        if data.get('state') != 'present':",
+        ['space319/ac1/totals', 'space319/ac1/deferred-counts'])
+    # AC2, declared: hide deferred items.
+    add(319, 'space319-pending-hides-deferred-items', api319, 'control_api_models.py',
+        "SPACE_PENDING = ('due', 'deferred')",
+        "SPACE_PENDING = ('due',)",
+        ['space319/ac2/in-use-folder'])
+    # AC3, declared: accept Abandon as a plain read route.
+    add(319, 'space319-abandon-as-a-plain-read-route', api319, 'control_api.py',
+        "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n"
+        "          ('item', 'version'), (), 'abandon_worktree'),",
+        "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n"
+        "          ('item', 'version'), (), None),",
+        ['space319/ac3/unsigned-refused'],
+        also=[("        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})",
+               "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n"
+               "            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n"
+               "                                              cause='owner_abandon')), 'space.reconcile': self._write})")])
+    # The owner of a space command: a member who is not the owner reaches the service's reconcile.
+    add(319, 'space319-reconcile-for-any-member', api319, 'control_api_authority.py',
+        "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n"
+        "                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+        "            if False:\n"
+        "                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+        ['space319/ac3/not-owner-refused'])
+    # Removed is newest first; held counts only the holds whose promise is counted; a credential in a path is replaced.
+    add(319, 'space319-removed-oldest-first', api319, 'control_api_models.py',
+        "    rows.sort(key=lambda row: (-(row['seq'] or 0), row['id']))",
+        "    rows.sort(key=lambda row: (row['seq'] or 0, row['id']))",
+        ['space319/ac2/removed'])
+    add(319, 'space319-held-counts-a-waiting-hold', api319, 'control_api_models.py',
+        "SPACE_COUNTED = ('admitted', 'advised')",
+        "SPACE_COUNTED = ('admitted', 'advised', 'waiting')",
+        ['space319/ac4/pools-numbers'])
+    add(319, 'space319-advised-holds-not-listed', api319, 'control_api_models.py',
+        "SPACE_LISTED = ('waiting', 'advised')",
+        "SPACE_LISTED = ('waiting',)",
+        ['space319/ac4/pools-numbers'])
+    add(319, 'space319-locator-served-with-its-credential', api319, 'control_api_models.py',
+        "            return MARKER if piece and SCAN.scan_text(piece) else piece",
+        "            return piece",
+        ['space319/redact/locator'])
+
+    def ui319(name, directory, module, old, new, rows):
+        add(319, name, '150_veldo_0319_space_ui.py', module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC4, declared: poll on an interval. The screen still says it is live; with the page's clock stopped
+    # no timer fires and the row that waits for the new hold sees no update.
+    ui319('space319-poll-on-an-interval', 'engine/ui/src/composables', 'useLiveRead.ts',
+          "    live.value = 'live'\n    follow(currentSeq())",
+          "    live.value = 'live'\n    setInterval(() => void reread(), 2000)",
+          ['space319ui/ac4/live-no-clock'])
+    ui319('space319-run-row-without-its-hold', 'engine/ui/src/features/run', 'runs.ts',
+          "    space: holds.get(dispatch) ?? null,",
+          "    space: null,",
+          ['space319ui/ac4/runs-list'])
+
     return result
 
 
