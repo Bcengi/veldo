@@ -1,105 +1,105 @@
 {
-  "schema": "veldo.proof/v1",
-  "spec_id": "VELDO-0327",
-  "commit": "b1f15b3b499bac2ad244122b02e9416336c24a79",
-  "tree": "161f77e1647251c1b5ae3d811af3439a19be497b",
-  "producer": "Codex implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-16T14:14:16.314279+00:00",
-  "criteria": [
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0327",
+ "commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a",
+ "tree": "b44ddf80645ac7fc4e2ca8bbcfaa1a042d557329",
+ "producer": "Claude fix round 1 on the Codex implementation; not an independent reviewer",
+ "produced_at": "2026-11-16T14:27:24.536793+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
     {
-      "id": "AC1",
-      "status": "pending",
-      "evidence": [
-        {
-          "type": "falsifier",
-          "ref": "proof/VELDO-0327/teeth-receipt.json",
-          "sha256": "74ff46cdea134ea06ffed8e009b6a1f89fc063e39d23931edcfbc7bb035a80cd",
-          "detail": "Final finding 327: AC1 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
-        }
-      ]
-    },
-    {
-      "id": "AC2",
-      "status": "pending",
-      "evidence": [
-        {
-          "type": "falsifier",
-          "ref": "proof/VELDO-0327/teeth-receipt.json",
-          "sha256": "74ff46cdea134ea06ffed8e009b6a1f89fc063e39d23931edcfbc7bb035a80cd",
-          "detail": "Final finding 327: AC2 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
-        }
-      ]
-    },
-    {
-      "id": "AC3",
-      "status": "pending",
-      "evidence": [
-        {
-          "type": "falsifier",
-          "ref": "proof/VELDO-0327/teeth-receipt.json",
-          "sha256": "74ff46cdea134ea06ffed8e009b6a1f89fc063e39d23931edcfbc7bb035a80cd",
-          "detail": "Final finding 327: AC3 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
-        }
-      ]
-    },
-    {
-      "id": "AC4",
-      "status": "pending",
-      "evidence": [
-        {
-          "type": "falsifier",
-          "ref": "proof/VELDO-0327/teeth-receipt.json",
-          "sha256": "74ff46cdea134ea06ffed8e009b6a1f89fc063e39d23931edcfbc7bb035a80cd",
-          "detail": "Final finding 327: AC4 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
-        }
-      ]
+     "type": "falsifier",
+     "ref": "proof/VELDO-0327/teeth-receipt.json",
+     "sha256": "5f1a6281d9b7e1d39b848145ab76506244c41e4aa7b8d08ee81c2fca7e858890",
+     "detail": "Final finding 327: AC1 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
     }
-  ],
-  "checks": [
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
     {
-      "name": "unit",
-      "status": "not_run",
-      "reason": "No aggregate unit run. Partial selftests are diagnostic only."
-    },
-    {
-      "name": "integration",
-      "status": "not_run",
-      "reason": "No aggregate integration gate or independent acceptance run."
-    },
-    {
-      "name": "targeted regressions",
-      "status": "diagnostic_only",
-      "detail": "22 ticket, 8 settlement and 18 inbox rows green; required partial exit 2."
-    },
-    {
-      "name": "fast checks",
-      "status": "passed",
-      "detail": "Validation, docs, template sync and lint with nice -n 10; no surviving space supervisor."
-    },
-    {
-      "name": "falsifiers",
-      "status": "passed",
-      "detail": "Finding 327: 8 registered, executed once and rejected; zero reuse, invalid results or surviving workers."
-    },
-    {
-      "name": "gate",
-      "status": "not_run",
-      "reason": "The canonical gate belongs to the lead."
+     "type": "falsifier",
+     "ref": "proof/VELDO-0327/teeth-receipt.json",
+     "sha256": "5f1a6281d9b7e1d39b848145ab76506244c41e4aa7b8d08ee81c2fca7e858890",
+     "detail": "Final finding 327: AC2 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
     }
-  ],
-  "assumptions": [
-    "The fixture transport stands in for Telegram delivery; no live channel message was sent.",
-    "Filesystem application, request triggering and review groups are later tickets.",
-    "Acceptance criteria remain pending aggregate verification and independent review."
-  ],
-  "rollback": "Revert the implementation; existing work, kept refs and snapshots remain.",
-  "artifacts": {
-    "README.md": "sha256:dd2f69489e1b7beb12e3a137b983b3161bd048cac6b19f49cc1b8361d171145b",
-    "checks.json": "sha256:2bab023a53c1c1648baee9476d2ff27eaf133d9b1b25d050981d2d4eefffa2a5",
-    "falsifiers.json": "sha256:8a75666fc859e77c78227ec307d2b5f08ec0d7e5e6606dd205555f267a13595f",
-    "rows.json": "sha256:498c35769f35f874139d1d883686bc05fb7770ea75a5c5108af2780b76cd62c9",
-    "sources.json": "sha256:f6d694528603c85d8bd033cf604a387c5a117afc9624d97ca902e068ca03e5e9",
-    "teeth-receipt.json": "sha256:74ff46cdea134ea06ffed8e009b6a1f89fc063e39d23931edcfbc7bb035a80cd",
-    "teeth-run.json": "sha256:45c47df36613cd3eb158620d8e15d7d9581c841f1301e166743e18bdd6e021d0"
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0327/teeth-receipt.json",
+     "sha256": "5f1a6281d9b7e1d39b848145ab76506244c41e4aa7b8d08ee81c2fca7e858890",
+     "detail": "Final finding 327: AC3 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0327/teeth-receipt.json",
+     "sha256": "5f1a6281d9b7e1d39b848145ab76506244c41e4aa7b8d08ee81c2fca7e858890",
+     "detail": "Final finding 327: AC4 baseline rows green and its specification falsifier red. Pending aggregate verification and independent review."
+    }
+   ]
   }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "not_run",
+   "reason": "No aggregate unit run. Partial selftests are diagnostic only."
+  },
+  {
+   "name": "integration",
+   "status": "not_run",
+   "reason": "No aggregate integration gate or independent acceptance run."
+  },
+  {
+   "name": "targeted regressions",
+   "status": "diagnostic_only",
+   "detail": "27 ticket, 8 settlement, 18 inbox and 23 full-pool rows green; required partial exit 2."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "detail": "Validation, docs, template sync, space boundary and lint with nice -n 10; no surviving space supervisor."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "detail": "Finding 327: 16 registered, executed once and rejected; zero reuse, invalid results or surviving workers."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The canonical gate belongs to the lead."
+  }
+ ],
+ "assumptions": [
+  "The fixture transport stands in for Telegram delivery; no live channel message was sent.",
+  "Filesystem application, request triggering and review groups are later tickets.",
+  "Acceptance criteria remain pending aggregate verification and independent review."
+ ],
+ "rollback": "Revert the implementation; existing work, kept refs and snapshots remain.",
+ "artifacts": {
+  "README.md": "sha256:70519df60b9758e85a51dbbb8ee1ab90b35c5a84e52fdcac8515e89186f52a34",
+  "checks.json": "sha256:f8d063a74d58ebef65a4fe7651f7fc7554c83e9b080680d1fb76f386dc5ddb59",
+  "falsifiers.json": "sha256:2b990df6011d7718979ddef77cfa6954880813ddb668eca4f3b458ff6e8e2281",
+  "rows.json": "sha256:e36860f9ba559b616b1bf25bc71eecb5040b76bea58bf44d9bea39a03de89018",
+  "sources.json": "sha256:96bbcd41ebc6463c43feaacf03ec3c66bac0ef53086ebc19a86f0a76df8adb4d",
+  "teeth-receipt.json": "sha256:5f1a6281d9b7e1d39b848145ab76506244c41e4aa7b8d08ee81c2fca7e858890",
+  "teeth-run.json": "sha256:3c5bdfdd32cf2d80be872f10b3a4957276fa1ed25cfb938a0bbf093435637f5b"
+ }
 }

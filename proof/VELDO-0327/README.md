@@ -71,3 +71,48 @@ Every artifact is below 1 MB; transient logs remain in /tmp/veldo0327-build.
 
 The verify command is ./scripts/verify.sh, for the lead to run through the gate lock.
 Rollback: revert the implementation. No work, snapshots or kept refs are removed by this ticket.
+
+## Fix round 1 (review of f2ed9f0f, verdict FIX)
+
+Rebased onto the accepted VELDO-0317 (39a6387b) with no conflict; the 0317 suite passed 23 rows after
+it. Implementation after the round: d762312c5d6fd4711f347839cb07f2e56b7ccf5a. Builder evidence of the fix round, not independent review.
+
+F1 (high). The check that a space request shows what its terms require was a command override on the
+Settlement's own connection, so whichever Inbox was built last decided whether it ran. It is now
+request_problem in the settlement module, registered at module level in control_assignment.py as the
+subject validator for settlement terms (the module loads its sibling by its own path on first use).
+Every Inbox consults it inside its own open and revise transaction, and the Presenter consults it
+before it frames and before it presents (refusal presentation_mismatch). The Settlement's override is
+removed. Rows fix1/late-inbox (an Inbox built after the Settlement), fix1/no-settlement (a second
+connection that has no settlement command) and fix1/presenter (an unmatched stored request is neither
+framed nor presented). The footprint widening is recorded in the spec History as the lead's.
+
+F2 (medium, lead decision). Each worktree's terms gain the member commits, the tips of the unlanded
+commits. One of files and commits is non-empty; both empty is still refused. With no file the brief
+says "Discard removes no uncommitted file; the commits stay on" and the branch (the kept branch when
+detached), and the tips are listed. AC2 and its falsifier are amended in the spec. Row
+fix2/commits-only: a clean tree with one unlanded commit is presented with the three picks, accept
+discard settles, and the effect's proposal still names the commit and its branch. This ticket records
+the obligation; that the commits survive on disk is VELDO-0318's to show.
+
+F3 (low). Row fix3/target-item: terms whose target names another item, or another kind, are refused.
+F4 (process) is recorded in this spec's History; the VELDO-0317 spec is outside this footprint.
+
+Interface change for VELDO-0318: the worktree member now has eight fields, with commits (a list of
+commit ids, possibly empty) beside files (possibly empty when commits is not). Terms without the
+commits member are refused.
+
+Rows: 27 ticket rows passed (22 earlier, 5 new), zero failures, partial exit 2. Settlement 8, inbox 18
+and full pool 23 passed; validation, docs, template sync, space boundary and lint passed; all with
+nice -n 10 at the final implementation commit. The reviewer's probe file was not run; the fix1 rows
+are its P1 and the fix2 row its P2. No own supervisor survived any run.
+
+Teeth: finding 327 ran last on the committed tree, two workers, nice -n 10: 16 registered, 16
+executed, 16 rejected, 0 reused, 0 invalid, 0 surviving workers. Eight are new: the write skips the
+validator, the Presenter frames an unmatched request, the Presenter presents one (F1); files only,
+the commits not said to stay, the tips unlisted, detached commits with no kept branch (F2); terms
+that target another item (F3, the reviewer's M4). The anchors of three earlier cases moved with the
+code. The digest of git ls-files -s before and after was
+c056d23625461af2376a1dc87cd6fd1c7bfdc58a7a2053f5a7d1145dbea78504; the worktree was clean both times.
+After teeth only this proof bundle was written, and validate.py was run once on it (pass). No suite
+ran after teeth. Logs are in /tmp/v327-fix1.

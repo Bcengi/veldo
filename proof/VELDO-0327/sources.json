@@ -1,10 +1,14 @@
 {
-  ".veldo/control_request_settlement.py": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
-  "engine/.veldo/control_request_settlement.py": "3e4c81786cfc98bb843a7f7f2aca0c8e42f7157e156bc9fca8ea3d81686cc653",
-  "scripts/check_teeth_mutations.py": "8f189e6b3e0e3cdde626f1d9abce258b41c43d6391808b13d4e8ea7860e80b98",
-  "scripts/suites/150_veldo_0327_disposition.py": "45913cd468c253ed940dd0eddbd0c3e03496384a625f5e8dd5e21011e2d46a31",
-  "scripts/suites/69_veldo_0068_settlement.py": "8de43d3ea9c8cd20e3c6d78a34a58832e73fb3abe8ac4923b13947957a2e27d7",
-  "scripts/suites/manifest.json": "1b8a79126d546306e5590da8cbb9cb1b3334bf80dd6dcf5b053b0d09b745c2e2",
-  "scripts/suites/requires.json": "791afab7648ed5fdaff7c95468376437d8062f794fdd2de7605c680d390713a2",
-  "specs/VELDO-0327-the-space-disposition-touchpoint.md": "dc8a166f8736a1329f9d8c48f0d04a5af4c94ac73268d9514e33903565b3aa45"
+ ".veldo/control_assignment.py": "adf3f03575e91e0610d963334120bb8c168064799b90a8b954dbdd5006b2b851",
+ ".veldo/control_channel_presentation.py": "5969088bf07f78f93042aa2ee9243bdccf16c6ecb889b1dcd5fe455747d1ea15",
+ ".veldo/control_request_settlement.py": "2d144da259237f507feb6b19c6e6bdd2424efcda9498f3f754e6f1264b7b6ac8",
+ "engine/.veldo/control_assignment.py": "adf3f03575e91e0610d963334120bb8c168064799b90a8b954dbdd5006b2b851",
+ "engine/.veldo/control_channel_presentation.py": "5969088bf07f78f93042aa2ee9243bdccf16c6ecb889b1dcd5fe455747d1ea15",
+ "engine/.veldo/control_request_settlement.py": "2d144da259237f507feb6b19c6e6bdd2424efcda9498f3f754e6f1264b7b6ac8",
+ "scripts/check_teeth_mutations.py": "8611fda257ec8b013662a6ef6396642707e0e0575f4d2566cb351eaead2a5110",
+ "scripts/suites/150_veldo_0327_disposition.py": "b31005de99abd840194d88657d7527f2e565c6c1ed1fc3aac122c3b4d6756a55",
+ "scripts/suites/69_veldo_0068_settlement.py": "8de43d3ea9c8cd20e3c6d78a34a58832e73fb3abe8ac4923b13947957a2e27d7",
+ "scripts/suites/manifest.json": "1b8a79126d546306e5590da8cbb9cb1b3334bf80dd6dcf5b053b0d09b745c2e2",
+ "scripts/suites/requires.json": "791afab7648ed5fdaff7c95468376437d8062f794fdd2de7605c680d390713a2",
+ "specs/VELDO-0327-the-space-disposition-touchpoint.md": "d0e335a1e6dfbd71e00094b9d82c5447836808beccac3f70ad603d87ec48d88d"
 }
