@@ -967,10 +967,16 @@ def _own(path, data, mode, sign):
 def hook_line(folder, name):
     """The one marked line that starts Veldo's hook from a hook file in `folder`. It never fails the
     hook it is in. For reference-transaction git's input is copied to a file first: Veldo's hook reads
-    the copy, and the lines after this one read the same input again."""
+    the copy, and the lines after this one read the same input again. The copy is made in the hooks
+    folder, which the install wrote to, and only where that is refused in the temporary folder: a host
+    whose temporary folder cannot be written still records its landings. Where neither takes the
+    copy, git's input is left untouched for the owner's lines and Veldo's hook is not started; the
+    next reconcile finds what that landing changed."""
     ours = shlex.quote(os.path.join(folder, HOOK_OURS + name))
     if name == 'reference-transaction':
-        return ('[ "$1" != committed ] || { veldo_in=$(mktemp) && cat >"$veldo_in" && { ' + ours
+        beside = shlex.quote(os.path.join(folder, '.veldo-in.XXXXXX'))
+        return ('[ "$1" != committed ] || { veldo_in=$(mktemp ' + beside + ' 2>/dev/null || mktemp) && '
+                'cat >"$veldo_in" && { ' + ours
                 + ' "$@" <"$veldo_in" || :; exec <"$veldo_in"; rm -f "$veldo_in"; }; :; }  ' + HOOK_MARK)
     return ours + ' "$@" </dev/null || :  ' + HOOK_MARK
 

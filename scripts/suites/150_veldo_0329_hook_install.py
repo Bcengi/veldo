@@ -68,7 +68,9 @@ def _v329_suite():
         cli.write_text('#!/bin/sh\n{ printf "%s " "$@"; echo; cat; echo END; } >>' + str(seen) + '\n')
         cli.chmod(0o755)
         own_seen = temp / 'own-seen'
+        # TMPDIR names nothing: the hooks must work on a host whose temporary folder cannot be written.
         git_env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': str(home), 'LC_ALL': 'C',
+                   'TMPDIR': str(temp / 'no-such-temporary-folder'),
                    'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1',
                    'GIT_AUTHOR_NAME': 'Fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
                    'GIT_COMMITTER_NAME': 'Fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'}
@@ -274,6 +276,8 @@ def _v329_suite():
         check(row, 'the owner\'s lines still run, with git\'s input whole: ' + str(own),
               'own post-checkout 1' in own and 'own ref committed refs/heads/main' in own
               and 'own ref prepared refs/heads/main' in own)
+        check(row, 'nothing of the input copy is left in the hooks folder: ' + str(sorted(os.listdir(hooks))),
+              not any(name.startswith('.veldo-in.') for name in os.listdir(hooks)))
         check(row, 'and Veldo\'s hook runs beside them with the same input',
               any(words.startswith('space record ') and '--worktree ' + str(tree) in words for words, _l in said)
               and any(words.startswith('space event ') and '--common-dir ' + str(plain / '.git') in words
