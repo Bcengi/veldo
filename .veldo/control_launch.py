@@ -1783,11 +1783,14 @@ class Runner:
                 'space': space,
             }
             self.dispatches.prepare(contract, now=now)
-        except BaseException:
+        except BaseException as error:
             active = self.dispatches.active(unit, station)
             promised = ((active or {}).get('contract') or {}).get('space')
             if space is not None and promised != space:
-                space_release(self.space, space['hold'])
+                # VELDO-0316: a unit no account can take now has no dispatch and nothing reserved. Its
+                # admitted hold is kept, so each pass it waits on an account finds the same promise.
+                if not str(getattr(error, 'code', '')).startswith('no_account'):
+                    space_release(self.space, space['hold'])
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise
         return contract

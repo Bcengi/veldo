@@ -347,13 +347,34 @@ def _v316_suite():
 
             f = fixture('reservation-failure')
             f.free['host'] = 1000
-            with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused('no_account')):
+            with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused('capacity_exceeded')):
                 _, error = refused(f.offer)
-            check('ac2/reservation-failure', 'promise released', getattr(error, 'code', None) == 'no_account'
-                  and all(h['state'] == 'released' for h in f.ledger.holds().values()) and not f.slots())
+            check('ac2/reservation-failure', 'promise released', getattr(error, 'code', None) == 'capacity_exceeded'
+                  and [h['state'] for h in f.ledger.holds().values()] == ['released'] and not f.slots())
             contract = f.offer()
             check('ac2/reservation-failure', 'retry fresh promise same dispatch attempt', contract['attempt'] == 1
                   and f.ledger.hold(contract['space']['hold'])['state'] == 'admitted')
+
+            # Fix 4: a unit blocked on accounts keeps its one admitted hold across the passes it waits.
+            for code in ('no_account', 'no_account_until:1900000000'):
+                f = fixture('blocked-' + code.split(':')[0])
+                f.free['host'] = 1000
+                with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused(code)):
+                    _, error = refused(f.offer)
+                    kept = dict(f.ledger.holds())
+                    count = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                    reads = len(f.reads)
+                    errors = [refused(f.offer)[1] for _ in range(3)]
+                check('fix4/no-account-keeps-hold', code + ' refusal named', getattr(error, 'code', None) == code
+                      and all(getattr(one, 'code', None) == code for one in errors))
+                check('fix4/no-account-keeps-hold', code + ' one admitted hold', len(kept) == 1
+                      and f.ledger.holds() == kept and list(kept.values())[0]['state'] == 'admitted')
+                check('fix4/no-account-keeps-hold', code + ' no ledger write or free read on later passes',
+                      count == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                      and len(f.reads) == reads and f.no_dispatch() and not f.slots())
+                contract = f.offer()
+                check('fix4/no-account-keeps-hold', code + ' the kept hold is the one the dispatch carries',
+                      [contract['space']['hold']] == list(kept) and len(f.ledger.holds()) == 1)
 
             f = fixture('racing-preparation')
             f.free['host'] = 1000
