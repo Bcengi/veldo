@@ -316,7 +316,7 @@ sys.exit(P.reader_exec())
             (folder / 'veldo_procread.c').write_text(text)
             done = subprocess.run(BUILD + list(flags) + ['-ffile-prefix-map=%s=.' % folder, '-o', 'veldo-procread',
                                                          'veldo_procread.c'],
-                                  cwd=str(folder), env={'PATH': '/usr/bin:/bin'}, stdin=subprocess.DEVNULL,
+                                  cwd=str(folder), env={'PATH': '/usr/bin:/bin', 'TMPDIR': str(folder)}, stdin=subprocess.DEVNULL,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
             if done.returncode:
                 raise RuntimeError('the build failed: ' + done.stderr.decode()[-400:])
@@ -893,7 +893,7 @@ int main(int argc, char **argv)
         helper_folder.mkdir()
         (helper_folder / 'helper.c').write_text(HELPER)
         built = subprocess.run(['/usr/bin/cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', '-static', '-o',
-                                'helper', 'helper.c'], cwd=str(helper_folder), env={'PATH': '/usr/bin:/bin'},
+                                'helper', 'helper.c'], cwd=str(helper_folder), env={'PATH': '/usr/bin:/bin', 'TMPDIR': str(helper_folder)},
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
         if built.returncode:
             raise RuntimeError('the helper\'s build failed: ' + built.stderr.decode()[-400:])
