@@ -1,0 +1,248 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0315",
+ "commit": "8c7103f1b1127b5b923a7ca5ebad7f43acb3c92c",
+ "tree": "6677e36cc125080c009cd072961797252a2e160c",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-16T00:30:32.559509+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac1/no-owner, ac1/table, ac1/private-forms, ac1/worker-clone. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac2/marked-not-gone, ac2/completion, ac2/keep-failure. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac3/startup. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac4/no-schedule. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac5/live-carrier, ac5/unread-path. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac6/due, ac6/concurrent. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC7",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac7/bootstrap. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  },
+  {
+   "id": "AC8",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
+     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
+     "detail": "ac8/retry-events. Targeted rows green; criterion pending lead gate."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0315/targeted-checks.json",
+     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
+     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0315/falsifiers.json",
+     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0315/run_falsifiers.py",
+   "detail": "16 targeted baseline rows green; no full-suite unit result claimed."
+  },
+  {
+   "name": "integration",
+   "status": "failed",
+   "detail": "Selected service regression 41/41 and Docker ownership 25/25. Installation 29/30, with the same unbound socket pathname failure reproduced at the starting revision."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "detail": "12 of 12 designated rows red in disposable copies. Not a teeth stage."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "detail": "validate.py all, docs, template sync, generated files, lint, Git boundary, space boundary."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The lead runs ./scripts/verify.sh through the gate lock; heavy suites, teeth and policy checking were not run."
+  }
+ ],
+ "assumptions": [
+  "All criteria remain pending independent review and the lead gate.",
+  "No real engine or protected data was used by suite 156. Process tables, Docker reads and act prerequisites are fixture inputs.",
+  "The batch misclassification falsifier turns the row red, while the existing remover independently retains the repository.",
+  "VELDO-0323 startup integration remains with the lead; its worker was read but not copied.",
+  "Suite 86 captures were not changed or run."
+ ],
+ "rollback": "Revert the implementation. Retained refs, snapshots and work remain; rollback includes no data cleanup.",
+ "artifacts": {
+  "README.md": "sha256:e719c2b2e3a38038c70b06f3c3c62acf9eb64f97bcec2837a162a49f4f3a608e",
+  "falsifier-cases.json": "sha256:c55f906a3cc5c1dcd8670e0a151664f6084248beab13ff8fb48c2986a1880794",
+  "falsifiers.json": "sha256:85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
+  "fast-checks.json": "sha256:ab6cebe2d7e7f15ef21bcc04c1ba3f105acf39c8c85a1cb49d5fd827c709cb09",
+  "installation-comparison.json": "sha256:a48318b0001bbe485568e473e917c0fadb15d43061cd73e198deffc1dc5459f7",
+  "run_falsifiers.py": "sha256:1bd589d49c594178206b5cf4a8f954c7e034e20a52dd1ced5ccf3547ad1611ed",
+  "sources.json": "sha256:831c4824e77c28fcca0cd9bb8e43198c988534a4dc9ce1ae4a2c300384c019aa",
+  "targeted-checks.json": "sha256:083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef"
+ }
+}
