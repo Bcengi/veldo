@@ -1669,7 +1669,10 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     """veldo space event --type T [--path P ...] [--session S] [--repository R --ref N --new C]: a
     host script reports what happened or what it gave up. The types are ref_changed, session_started,
     session_ended and released. The event is handed to the Ledger's event command as space-observer:
-    it leaves one event record and returns, and removes nothing (design 6.9). Refused by name, with
+    it leaves one event record and returns, and removes nothing (design 6.9). The subject is exactly
+    the Ledger's (VELDO-0323, as VELDO-0335 extended it), and the verb's emitter is {verb, host}.
+    The Ledger records that emitter for released only: session events and ref_changed reach it from
+    the spool, through VELDO-0323's consumer, and the verb's own are refused there by name. Refused by name, with
     nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
     outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
     Released additionally refuses unrecorded paths and creations of a Veldo seam. Its force
@@ -1678,8 +1681,9 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     retained in the spool, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer
     on standard output, 1 for a refusal. With no ledger the notification is spooled and the verb exits
     0. The state root is the option, VELDO_SPACE_STATE_ROOT, the wired ledger's root, or the user's
-    XDG state folder under veldo. Session fields include working-folder, pid and started (kernel ticks);
-    defaults describe the caller. Released records carry creator, default record, for the consumer.
+    XDG state folder under veldo. Session fields include working-folder (the subject's cwd), pid and
+    started (kernel ticks); defaults describe the caller. A released subject holds the paths alone: who
+    released is the emitter's, never the subject's.
     A released entry holds the paths in the form the Ledger compares them in; with no ledger each is
     resolved (a relative path against the working folder, every link followed). A session's working
     folder is resolved the same way. A session entry holds no path: one given with --path is checked
@@ -1698,7 +1702,6 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     parser.add_argument("--working-folder")
     parser.add_argument("--pid", type=int)
     parser.add_argument("--started", type=int)
-    parser.add_argument("--creator", default="record")
     parser.add_argument("--force", action="store_true",
                         help="refused: force is not an event option")
     args = parser.parse_args(list(rest))
@@ -1723,7 +1726,7 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
                 if not all(args.path):
                     raise ValueError("a released path is empty")
                 paths = [spool.resolved(os.path.abspath(path)) for path in args.path]
-            one = spool.entry(args.kind, {"paths": list(paths), "creator": args.creator},
+            one = spool.entry(args.kind, {"paths": list(paths)},
                               "event", socket.gethostname() or "unknown")
         else:
             one = spool.entry(args.kind, subject or {"repository": args.repository, "ref": args.ref,

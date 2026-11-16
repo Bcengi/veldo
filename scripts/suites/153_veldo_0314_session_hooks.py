@@ -105,7 +105,10 @@ def _v314_suite():
             def accept(self, packet):
                 command = packet['command']
                 operations.append(command['operation'])
-                if command['operation'] == SP.EVENT and event_enabled[0]:
+                if command['operation'] == SP.EVENT and not event_enabled[0]:
+                    # A Ledger whose event command is not installed: the notification waits.
+                    return {'ok': False, 'reason': 'space_no_command:' + SP.EVENT}
+                if command['operation'] == SP.EVENT:
                     good = AC.ssh_keygen_verify(S.canonical_bytes(command), packet['signature'],
                             AC.allowed_signers_line(SP.OBSERVER, keys[SP.OBSERVER][1], SP.NAMESPACE),
                             SP.OBSERVER, SP.NAMESPACE)[0]
@@ -360,7 +363,7 @@ def _v314_suite():
         event_enabled[0] = False
         waiting = one('session_started', 'unbuilt', temp / 'outside')
         spool.submit(waiting, str(state), str(installation), authority, sign)
-        check('ac4/unbuilt-event-waits', 'real ledger refuses event, item exists and notification waits',
+        check('ac4/unbuilt-event-waits', 'a Ledger with no event command: item exists and notification waits',
               len(items('unbuilt')) == 1 and len(spool.pending(folder)) == 1
               and spool.read(folder, spool.pending(folder)[0])['tries'] == 1)
         event_enabled[0] = True
@@ -423,8 +426,9 @@ def _v314_suite():
                                '--path', str(planted)], env=cli_env, capture_output=True, timeout=15)
         entries = [spool.read(spool.spool_folder(str(cli_state)), name)
                    for name in spool.pending(spool.spool_folder(str(cli_state)))]
-        check('ac4/cli-spools', 'released retained with creator', done.returncode == 0 and len(entries) == 1
-              and entries[0]['subject'] == {'paths': [str(planted)], 'creator': 'record'})
+        check('ac4/cli-spools', 'released retained with the Ledger\'s subject, the paths alone',
+              done.returncode == 0 and len(entries) == 1 and entries[0]['subject'] == {'paths': [str(planted)]}
+              and entries[0]['emitter']['hook'] == 'event')
         done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'session_ended',
                                '--session', 'cli-session', '--working-folder', str(temp / 'outside'),
                                '--pid', str(pid), '--started', str(started)],
@@ -446,8 +450,7 @@ def _v314_suite():
         check('fix5/cli-resolves', 'released paths are resolved, not refused: '
               + str((done.returncode, done.stderr.decode(), [e['subject'] for e in entries])),
               done.returncode == 0 and len(entries) == 1 and entries[0]['subject'] == {
-                  'paths': [str(temp / 'outside/given-up'), str(temp / 'outside/linked-given-up'), str(planted)],
-                  'creator': 'record'})
+                  'paths': [str(temp / 'outside/given-up'), str(temp / 'outside/linked-given-up'), str(planted)]})
         done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'session_started',
                                '--session', 'cli-linked', '--working-folder', str(link) + '/',
                                '--pid', str(pid), '--started', str(started), '--path', str(planted),
@@ -481,7 +484,7 @@ def _v314_suite():
             check('round2/cli-unwritable-root', 'the entry is spooled under the fallback: '
                   + str((done.returncode, done.stderr.decode(), released(temp / 'xdg-cli-closed/veldo'))),
                   done.returncode == 0 and os.listdir(closed) == []
-                  and released(temp / 'xdg-cli-closed/veldo') == [{'paths': [str(planted)], 'creator': 'record'}])
+                  and released(temp / 'xdg-cli-closed/veldo') == [{'paths': [str(planted)]}])
             # The fallback's spool folder is made here when no entry made it, so the check that follows runs.
             (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).mkdir(parents=True, mode=0o700, exist_ok=True)
             (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).chmod(0o777)
@@ -524,8 +527,10 @@ def _v314_suite():
               + str(spooled(temp / 'xdg-cli-open/veldo')),
               spooled(temp / 'xdg-cli-open/veldo') == ['cli-unsafe'] and not lines(open_state))
         (open_state / spool.SPOOL).chmod(0o700)
-        # With a ledger (this fixture's, handed to the verb in this process): the entry holds the paths
-        # the Ledger's own checks gave. The real Ledger has no event command, so the entry is spooled.
+        # With a ledger (this fixture's, handed to the verb in this process): released goes to the Ledger
+        # with the paths its own checks gave, and the Ledger answers by that form. A session event from
+        # the verb is refused by the Ledger's emitter rule (VELDO-0335): session events reach the Ledger
+        # only from the spool, through the consumer (lead decision at assembly, 2026-11-16).
         loader = importlib.machinery.SourceFileLoader('v314_veldo_cli', str(temp / 'bin/veldo'))
         CLI = importlib.util.module_from_spec(importlib.util.spec_from_loader('v314_veldo_cli', loader))
         was, sys.dont_write_bytecode = sys.dont_write_bytecode, True
@@ -547,17 +552,18 @@ def _v314_suite():
             return status, out.getvalue(), said.getvalue()
         status, out, said = verb(['--type', 'released', '--path', str(scratch) + '//given-up/'])
         entries = [spool.read(wired_folder, name) for name in spool.pending(wired_folder)]
-        check('fix5/cli-wired-canonical', 'the entry holds the Ledger\'s form of the path: '
+        check('fix5/cli-wired-canonical', 'the Ledger is given its own form of the path and refuses it by that '
+              'form (no item there); nothing is spooled: '
               + str((status, out, said, [e['subject'] for e in entries])),
-              status == 0 and len(entries) == 1
-              and entries[0]['subject'] == {'paths': [str(scratch / 'given-up')], 'creator': 'record'})
+              status == 1 and out == '' and not entries
+              and said.strip() == 'veldo space event: refused space_release_no_item:' + str(scratch / 'given-up'))
         status, out, said = verb(['--type', 'session_ended', '--session', 'wired-session', '--path',
                                   str(scratch / 'given-up'), '--pid', str(pid), '--started', str(started),
                                   '--working-folder', str(temp / 'outside')])
         check('fix5/cli-session-path-said', 'with a ledger the verb says the path is not recorded: '
               + str((status, said)),
-              status == 0 and 'a session event records no path' in said
-              and len(spool.pending(wired_folder)) == 2)
+              status == 1 and 'a session event records no path' in said
+              and 'refused invalid_input:emitter' in said and not spool.pending(wired_folder))
         event_enabled[0] = True
 
         # Fix round, finding 4: the hook's timer raises TimeoutError. Raised where the entry is read (read

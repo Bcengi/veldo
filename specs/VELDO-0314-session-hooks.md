@@ -92,6 +92,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-16: lead decision at assembly, the spool and the CLI conform to the Ledger's event schema
+  (0323/0335); session events reach the Ledger only through the consumer
 - 2026-11-15: built the session notification hooks and extended the existing spool. New session
   declarations use the first configured scratch root and its session pattern; working_folder in
   that pattern is the UTF-8 hex encoding of the absolute working folder, so distinct folders do

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """The event spool, and what a git hook records through it (VELDO-0311, design 4.5, 4.6, 6.9, 8.4, 8.5).
 
-SESSION NOTIFICATIONS (VELDO-0314). SessionStart and SessionEnd carry the session, working folder,
-client pid and kernel start ticks. submit persists before any key lookup or socket call. A start
+SESSION NOTIFICATIONS (VELDO-0314). SessionStart and SessionEnd carry the session, the working
+folder (cwd), client pid and kernel start ticks: the subject is exactly the Ledger's event subject
+(VELDO-0323, as VELDO-0335 extended it). submit persists before any key lookup or socket call. A start
 asks Local.session for a declaration derived from the authority's scratch pattern, then sends the
 declaration and event as space-observer. An end sends only the event. Neither calls Signal or a
-remover. The event command and consumer remain VELDO-0323's: until then the event stays spooled.
-Released entries preserve paths and creator for that consumer's own authorization. Installation in
+remover. Session events reach the Ledger only from this spool, through VELDO-0323's consumer.
+A released entry holds the paths alone, as the Ledger takes them; who released is the emitter's,
+never the subject's. Installation in
 client accounts remains VELDO-0329's. Invalid notifications are never treated as removal permission.
 
 NO NOTIFICATION IS DROPPED WITHOUT A RECORD. The client's folder is resolved first (resolved: links
@@ -153,9 +155,9 @@ TYPES = ('worktree_added', 'branch_switched', 'ref_changed') + SESSION_TYPES + (
 FIELDS = {'worktree_added': ('repository', 'path', 'branch', 'start'),
           'branch_switched': ('repository', 'path', 'branch', 'start'),
           'ref_changed': ('repository', 'ref', 'old', 'new'),
-          'session_started': ('session', 'working_folder', 'pid', 'started'),
-          'session_ended': ('session', 'working_folder', 'pid', 'started'),
-          'released': ('paths', 'creator')}
+          'session_started': ('session', 'cwd', 'pid', 'started'),
+          'session_ended': ('session', 'cwd', 'pid', 'started'),
+          'released': ('paths',)}
 HOOKS = ('post-checkout', 'reference-transaction', 'SessionStart', 'SessionEnd', 'event')
 # The Ledger's own names (control_space.py); the suite holds them equal.
 OBSERVER = 'space-observer'
@@ -263,7 +265,7 @@ def checked(entry):
         if not _text(subject[field]) and not (field in ('branch', 'old') and subject[field] is None):
             raise Malformed('subject.%s is a name' % field)
     if entry['type'] in SESSION_TYPES:
-        plain_path(subject['working_folder'])
+        plain_path(subject['cwd'])
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,199}', subject['session']):
             raise Malformed('session is one safe path component')
     for field in ('repository', 'path'):
@@ -304,8 +306,8 @@ def _inside(path, root):
     return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
 
 
-def session_entry(kind, session, working_folder, pid, started, host):
-    one = entry(kind, {'session': session, 'working_folder': working_folder,
+def session_entry(kind, session, cwd, pid, started, host):
+    one = entry(kind, {'session': session, 'cwd': cwd,
                        'pid': pid, 'started': started},
                 'SessionStart' if kind == 'session_started' else 'SessionEnd', host)
     # Duplicate delivery of the same client notification uses the same command identity.
@@ -666,7 +668,7 @@ def _key(one):
     if one['type'] in SESSION_TYPES:
         return ('session', one['emitter']['host'], subject['session'])
     if one['type'] == 'released':
-        return ('released', tuple(subject['paths']), subject['creator'])
+        return ('released', tuple(subject['paths']))
     return ('ref', subject['repository'], subject['ref']) if one['type'] == 'ref_changed' else (
         'path', subject['path'])
 
@@ -1052,13 +1054,13 @@ class Local:
     def session(self, subject):
         """Derive the declaration from the authority's roots, never a caller's scratch path.
 
-        The first scratch root holds new sessions. working_folder is encoded as UTF-8 hex in the
+        The first scratch root holds new sessions. cwd is encoded as UTF-8 hex ({working_folder}) in the
         pattern so two folders cannot alias. An existing unrecorded folder is never made scratch.
         This reads and declares only; creation and event consumption are separate operations.
         """
         try:
             checked(entry('session_started', subject, 'SessionStart', self.ledger.host))
-            where = plain_path(subject['working_folder'])
+            where = plain_path(subject['cwd'])
             scopes = []
             for project in self.ledger.projects:
                 for root in (project['repository'], project['worktree_root']):
