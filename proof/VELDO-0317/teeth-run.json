@@ -1,0 +1,31 @@
+{
+  "after": {
+    "commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
+    "digest": "702c853cc88c9c106db0658e74ff27169a719dbdd4af41e82c4d2f9d319b8c16",
+    "status": ""
+  },
+  "before": {
+    "commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
+    "digest": "702c853cc88c9c106db0658e74ff27169a719dbdd4af41e82c4d2f9d319b8c16",
+    "status": ""
+  },
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "python3",
+    "-B",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "317",
+    "--jobs",
+    "2",
+    "--worker-log-dir",
+    "/tmp/veldo0317-build/teeth-logs",
+    "--diff-dir",
+    "/tmp/veldo0317-build/teeth-diffs"
+  ],
+  "exit": 0,
+  "seconds": 46.23302602767944,
+  "surviving_supervisors": []
+}

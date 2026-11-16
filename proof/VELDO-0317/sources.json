@@ -1,0 +1,21 @@
+{
+  "files": {
+    ".veldo/control_dispatch.py": "sha256:6dce8f359362e3cddad6302451bc23d41d4c8d16066d28e8a99e034bfd0cf6c6",
+    ".veldo/control_launch.py": "sha256:061e502c2297357f956b402a40c10cc7558276ae92e920350019b9ddad3b1b70",
+    ".veldo/control_service.py": "sha256:5d2c66512cfada44bf5c6251459e550ae969915466ee55dc96b6e33cd1571520",
+    ".veldo/control_space_admission.py": "sha256:33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
+    ".veldo/control_space_signal.py": "sha256:a1f833358df9d77b0cf7c588d146a1dc7a8b1bc7f5923ff8232ac90b48e18ad4",
+    "engine/.veldo/control_dispatch.py": "sha256:6dce8f359362e3cddad6302451bc23d41d4c8d16066d28e8a99e034bfd0cf6c6",
+    "engine/.veldo/control_launch.py": "sha256:061e502c2297357f956b402a40c10cc7558276ae92e920350019b9ddad3b1b70",
+    "engine/.veldo/control_service.py": "sha256:5d2c66512cfada44bf5c6251459e550ae969915466ee55dc96b6e33cd1571520",
+    "engine/.veldo/control_space_admission.py": "sha256:33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
+    "engine/.veldo/control_space_signal.py": "sha256:a1f833358df9d77b0cf7c588d146a1dc7a8b1bc7f5923ff8232ac90b48e18ad4",
+    "scripts/check_teeth_mutations.py": "sha256:fdef0532c56cf07093bbfefb4327c7a6a33637fc028d49530efa273089df6cbf",
+    "scripts/suites/150_veldo_0317_full_pool.py": "sha256:bd9774341ab2bb8cdf9395990fcbafb4b6c1ecb28d5f79c2eb4e2bfcf6bc05a6",
+    "scripts/suites/manifest.json": "sha256:2e4cdc4acbe86d7a666f502ac39bbc4abef4883c3b88f22872e45c481fc02593",
+    "scripts/suites/requires.json": "sha256:291e59154c23b4d3fe135db7a571ff70d9f5b69a1dc2b585532d621101e515b1",
+    "specs/VELDO-0317-a-dispatch-that-ends-on-a-full-pool-is-an-environment-failure.md": "sha256:e34da145d049c7fe9c761f62cf72f35b8004485559281e36fdfb4b97931e7ffb"
+  },
+  "implementation_commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
+  "tree": "933fd0bb187e856bbba093ca997dd8085938d2bc"
+}

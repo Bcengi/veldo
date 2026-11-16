@@ -1,0 +1,3984 @@
+{
+  "budget_seconds": 28936.0,
+  "case_deadlines": {
+    "check_teeth_mutations.py:space317-brief-omits-work": 120,
+    "check_teeth_mutations.py:space317-charge-environment-failure": 120,
+    "check_teeth_mutations.py:space317-remove-failed-worktree": 120,
+    "check_teeth_mutations.py:space317-repeat-without-bound": 120,
+    "check_teeth_mutations.py:space317-text-alone-is-environment": 120
+  },
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:space317-charge-environment-failure",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space317-text-alone-is-environment",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space317-remove-failed-worktree",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space317-repeat-without-bound",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:space317-brief-omits-work",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "drivers": {
+    "check_review_mutations.py": {
+      "executed": 0,
+      "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "registered": 0,
+      "reused": 0,
+      "wall_seconds": 0,
+      "worker_seconds": 0
+    },
+    "check_teeth_mutations.py": {
+      "executed": 5,
+      "inventory_digest": "f93cc304feca68cdd09b50d9a12ce9b44060a7baf93e4721fc081782f6b28c06",
+      "registered": 5,
+      "reused": 0,
+      "wall_seconds": 43.36334771104157,
+      "worker_seconds": 82.10496167978272
+    }
+  },
+  "elapsed": 45.94637811696157,
+  "executed": 5,
+  "force_fresh": false,
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "bb9ca900f5c0761eb684c55ec6912176910e167f8df98e11be2e6368c97d7318",
+  "invalid_results": [],
+  "parallel_workers": 2,
+  "peak_workers": 2,
+  "registered": 5,
+  "rejected": 5,
+  "resources": {
+    "capacities": {
+      "new_project_fixture": 2,
+      "systemd_user_manager": 16,
+      "ui_browser": 4
+    },
+    "peak_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    },
+    "remaining_slots": {
+      "new_project_fixture": 0,
+      "systemd_user_manager": 0,
+      "ui_browser": 0
+    }
+  },
+  "results": [
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac1/refunded": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-charge-environment-failure",
+        "module": "control_dispatch.py",
+        "name": "space317-charge-environment-failure",
+        "new": "released['attempts'] = released.get('attempts', 0)",
+        "old": "released['attempts'] = max(0, released.get('attempts', 0) - 1)",
+        "rows": [
+          "space317/ac1/refunded"
+        ],
+        "suite": "150_veldo_0317_full_pool.py"
+      },
+      "elapsed": 6.072283739689738,
+      "fixture_version": 1,
+      "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space317/ac1/behind-admission",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac4/two-stop"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            false
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            false
+          ],
+          [
+            "space317/ac1/replayed-end",
+            false
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            false
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac1/refunded": [
+            false
+          ]
+        }
+      },
+      "new_digest": "6faff449bfbb6e6ff4bb817c20c71e945e762e447e92419fd91af6d1616ce089",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac1/refunded": [
+            true
+          ]
+        }
+      },
+      "old_digest": "6dce8f359362e3cddad6302451bc23d41d4c8d16066d28e8a99e034bfd0cf6c6",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac2/repeat-once": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-text-alone-is-environment",
+        "module": "control_space_admission.py",
+        "name": "space317-text-alone-is-environment",
+        "new": "full = True",
+        "old": "full = any(p['free'] is not None and p['free'] < p['floor'] for p in pools)",
+        "rows": [
+          "space317/ac2/repeat-once"
+        ],
+        "suite": "150_veldo_0317_full_pool.py"
+      },
+      "elapsed": 6.075296295341104,
+      "fixture_version": 1,
+      "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space317/ac2/repeat-once",
+          "space317/classification/floor",
+          "space317/classification/unread"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            false
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            false
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            false
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac2/repeat-once": [
+            false
+          ]
+        }
+      },
+      "new_digest": "e2fd8f0b2217c61a585a2c3be9727b7ea596c0db4516ffe7defca25c75ab5586",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac2/repeat-once": [
+            true
+          ]
+        }
+      },
+      "old_digest": "33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/work-retained": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-remove-failed-worktree",
+        "module": "control_space_signal.py",
+        "name": "space317-remove-failed-worktree",
+        "new": "if False:",
+        "old": "if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):",
+        "rows": [
+          "space317/ac3/work-retained"
+        ],
+        "suite": "150_veldo_0317_full_pool.py"
+      },
+      "elapsed": 6.037446365691721,
+      "fixture_version": 1,
+      "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            false
+          ],
+          [
+            "space317/ac3/work-retained",
+            false
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/work-retained": [
+            false
+          ]
+        }
+      },
+      "new_digest": "9e5363f82a907caf4df0713b71389db18e435da9d07a52ba3185995508aea6e5",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/work-retained": [
+            true
+          ]
+        }
+      },
+      "old_digest": "a1f833358df9d77b0cf7c588d146a1dc7a8b1bc7f5923ff8232ac90b48e18ad4",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac2/repeat-once": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-repeat-without-bound",
+        "module": "control_space_admission.py",
+        "name": "space317-repeat-without-bound",
+        "new": "andon=False",
+        "old": "andon=streak >= 2",
+        "rows": [
+          "space317/ac4/two-stop"
+        ],
+        "suite": "150_veldo_0317_full_pool.py"
+      },
+      "elapsed": 6.504391503985971,
+      "fixture_version": 1,
+      "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space317/ac4/off-loop",
+          "space317/ac4/two-stop"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            false
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            false
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac4/two-stop": [
+            false
+          ]
+        }
+      },
+      "new_digest": "68db10b3a1fb8fe7d7a631e644b19d090509ecb3e456c797b7c5a34805891f6f",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac2/repeat-once": [
+            true
+          ]
+        }
+      },
+      "old_digest": "33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    },
+    {
+      "baseline": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/next-brief": [
+            true
+          ]
+        }
+      },
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-brief-omits-work",
+        "module": "control_launch.py",
+        "name": "space317-brief-omits-work",
+        "new": "payload = payload",
+        "old": "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)",
+        "rows": [
+          "space317/ac3/next-brief"
+        ],
+        "suite": "150_veldo_0317_full_pool.py"
+      },
+      "elapsed": 4.807580272201449,
+      "fixture_version": 1,
+      "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
+      "mutant": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [
+          "space317/ac3/next-brief"
+        ],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            false
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/next-brief": [
+            false
+          ]
+        }
+      },
+      "new_digest": "0982d6134941e2c281b44bc89eaf4f618cc2ba0542fb3a59d98d08f547c3373a",
+      "noop": {
+        "count": 44,
+        "failed_details": [],
+        "failed_rows": [],
+        "observations": [
+          [
+            "good spec accepted",
+            true
+          ],
+          [
+            "spec without criteria rejected",
+            true
+          ],
+          [
+            "unknown evidence kind rejected",
+            true
+          ],
+          [
+            "bad status rejected",
+            true
+          ],
+          [
+            "invented proof criterion rejected",
+            true
+          ],
+          [
+            "missing proof criterion rejected",
+            true
+          ],
+          [
+            "absent required evidence rejected",
+            true
+          ],
+          [
+            "passed-without-evidence rejected",
+            true
+          ],
+          [
+            "bad verdict value rejected",
+            true
+          ],
+          [
+            "good plan accepted",
+            true
+          ],
+          [
+            "plan dependency cycle rejected",
+            true
+          ],
+          [
+            "dangling dependency rejected",
+            true
+          ],
+          [
+            "unknown outcome ref rejected",
+            true
+          ],
+          [
+            "unknown feature ref rejected",
+            true
+          ],
+          [
+            "undeclared depends_on rejected",
+            true
+          ],
+          [
+            "ready without approval rejected",
+            true
+          ],
+          [
+            "decision without blocks rejected",
+            true
+          ],
+          [
+            "decision blocking unknown spec rejected",
+            true
+          ],
+          [
+            "duplicate work spec rejected",
+            true
+          ],
+          [
+            "bad release mode rejected",
+            true
+          ],
+          [
+            "mirror mismatch rejected",
+            true
+          ],
+          [
+            "correct mirror accepted",
+            true
+          ],
+          [
+            "spec binding to wrong plan rejected",
+            true
+          ],
+          [
+            "spec claiming missing work item rejected",
+            true
+          ],
+          [
+            "spec plan without work rejected",
+            true
+          ],
+          [
+            "correct spec binding accepted",
+            true
+          ],
+          [
+            "space317/ac1/behind-admission",
+            true
+          ],
+          [
+            "space317/ac1/order",
+            true
+          ],
+          [
+            "space317/ac1/refunded",
+            true
+          ],
+          [
+            "space317/ac1/replayed-end",
+            true
+          ],
+          [
+            "space317/ac2/repeat-once",
+            true
+          ],
+          [
+            "space317/ac2/restart",
+            true
+          ],
+          [
+            "space317/ac3/next-brief",
+            true
+          ],
+          [
+            "space317/ac3/reconnect",
+            true
+          ],
+          [
+            "space317/ac3/work-retained",
+            true
+          ],
+          [
+            "space317/ac4/off-loop",
+            true
+          ],
+          [
+            "space317/ac4/reset",
+            true
+          ],
+          [
+            "space317/ac4/two-stop",
+            true
+          ],
+          [
+            "space317/classification/floor",
+            true
+          ],
+          [
+            "space317/classification/incomplete",
+            true
+          ],
+          [
+            "space317/classification/ordinary",
+            true
+          ],
+          [
+            "space317/classification/streams",
+            true
+          ],
+          [
+            "space317/classification/success",
+            true
+          ],
+          [
+            "space317/classification/unread",
+            true
+          ]
+        ],
+        "row_names": [
+          "good spec accepted",
+          "spec without criteria rejected",
+          "unknown evidence kind rejected",
+          "bad status rejected",
+          "invented proof criterion rejected",
+          "missing proof criterion rejected",
+          "absent required evidence rejected",
+          "passed-without-evidence rejected",
+          "bad verdict value rejected",
+          "good plan accepted",
+          "plan dependency cycle rejected",
+          "dangling dependency rejected",
+          "unknown outcome ref rejected",
+          "unknown feature ref rejected",
+          "undeclared depends_on rejected",
+          "ready without approval rejected",
+          "decision without blocks rejected",
+          "decision blocking unknown spec rejected",
+          "duplicate work spec rejected",
+          "bad release mode rejected",
+          "mirror mismatch rejected",
+          "correct mirror accepted",
+          "spec binding to wrong plan rejected",
+          "spec claiming missing work item rejected",
+          "spec plan without work rejected",
+          "correct spec binding accepted",
+          "space317/ac1/behind-admission",
+          "space317/ac1/order",
+          "space317/ac1/refunded",
+          "space317/ac1/replayed-end",
+          "space317/ac2/repeat-once",
+          "space317/ac2/restart",
+          "space317/ac3/next-brief",
+          "space317/ac3/reconnect",
+          "space317/ac3/work-retained",
+          "space317/ac4/off-loop",
+          "space317/ac4/reset",
+          "space317/ac4/two-stop",
+          "space317/classification/floor",
+          "space317/classification/incomplete",
+          "space317/classification/ordinary",
+          "space317/classification/streams",
+          "space317/classification/success",
+          "space317/classification/unread"
+        ],
+        "targets": {
+          "space317/ac3/next-brief": [
+            true
+          ]
+        }
+      },
+      "old_digest": "061e502c2297357f956b402a40c10cc7558276ae92e920350019b9ddad3b1b70",
+      "replacement_count": 1,
+      "reuse_key": null,
+      "reuse_reason": "unknown_closure",
+      "schema": "veldo.mutation-result/v1",
+      "source": "fresh"
+    }
+  ],
+  "reuse_integrity_errors": [],
+  "reuse_qualified": 0,
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "surviving_workers": 0,
+  "unmeasured_cases": [
+    "check_teeth_mutations.py:space317-brief-omits-work",
+    "check_teeth_mutations.py:space317-charge-environment-failure",
+    "check_teeth_mutations.py:space317-remove-failed-worktree",
+    "check_teeth_mutations.py:space317-repeat-without-bound",
+    "check_teeth_mutations.py:space317-text-alone-is-environment"
+  ],
+  "worker_invocations": 13,
+  "worker_outcomes": [
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.438229218125343,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0317_full_pool.py:control_dispatch.py:False:noop",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/1",
+      "pid": 1689202,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3457
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 8.483077169395983,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0317_full_pool.py:control_dispatch.py:False:baseline",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/0",
+      "pid": 1689201,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3457
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.083044839091599,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0317_full_pool.py:control_space_admission.py:False:baseline",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/2",
+      "pid": 1691689,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3460
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.103142153006047,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0317_full_pool.py:control_space_admission.py:False:noop",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/3",
+      "pid": 1691700,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3460
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.900367331691086,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0317_full_pool.py:control_space_signal.py:False:baseline",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/4",
+      "pid": 1693150,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3462
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.879993036855012,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0317_full_pool.py:control_space_signal.py:False:noop",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/5",
+      "pid": 1693183,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3462
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.841532257851213,
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "150_veldo_0317_full_pool.py:control_launch.py:False:baseline",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/6",
+      "pid": 1695034,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3459
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 5.861222009174526,
+      "leg": "confined",
+      "mode": "noop",
+      "name": "150_veldo_0317_full_pool.py:control_launch.py:False:noop",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/7",
+      "pid": 1695038,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3459
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.075523093808442,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space317-charge-environment-failure",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/8",
+      "pid": 1696287,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3572
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.078296998981386,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space317-text-alone-is-environment",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/9",
+      "pid": 1696288,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3557
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.041234467644244,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space317-remove-failed-worktree",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/10",
+      "pid": 1697570,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3519
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 6.508059231098741,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space317-repeat-without-bound",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/11",
+      "pid": 1697571,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3508
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 3,
+        "units": []
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 4.811239873059094,
+      "leg": "confined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:space317-brief-omits-work",
+      "output_directory": "/tmp/veldo0317-build/teeth-logs/12",
+      "pid": 1698756,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 3486
+    }
+  ]
+}
