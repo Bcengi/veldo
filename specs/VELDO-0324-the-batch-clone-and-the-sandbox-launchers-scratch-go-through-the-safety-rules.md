@@ -145,3 +145,9 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   replaces safety/invalid-end-events. Read AC1's "declared to end at verdict_recorded" as:
   verdict_recorded is on its end list. The design now calls the folder evidence. The ledger and
   creator-seam files are back to their content before the first fix round.
+- 2026-11-16: lead decision at assembly, VELDO-0304's decision stands: a batch without its ledger
+  removes its clone through the removers' standalone entry after the look and the keep step, and a
+  missing ledger is no refusal. The rows safety/batch-no-ledger, ac1/saved-deferral,
+  ac1/saved-reassembly and the six ac1/saved-request rows now expect that: the clone's unique work is
+  kept in the main repository by the keep step, then the clone is removed; a deferral only when the
+  keep step cannot keep or the clone is in use; the observation folder is evidence and stays, kept.

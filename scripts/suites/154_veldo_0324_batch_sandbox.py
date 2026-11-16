@@ -263,12 +263,37 @@ def _v324_suite():
                   and at(evidence_path)[1]['kind'] == 'evidence' and at(evidence_path)[1]['state'] == 'kept')
         drive('ac1/evidence', evidence)
 
+        # A batch without its ledger (VELDO-0304's decision, upheld at assembly): the clone goes through
+        # the removers' standalone entry after the look and the keep step. Its unique commits are kept
+        # in the main repository first; a missing ledger is no refusal. A deferral only when the keep
+        # step cannot keep (an untracked only copy here) or the clone is in use. The observation folder
+        # is evidence: it stays, named kept.
         def no_ledger(row):
             b, path, observation = batch('no-ledger')
+            (path / 'unique').write_text('only in the clone')
+            git(path, 'add', 'unique')
+            git(path, 'commit', '-q', '-m', 'unique work')
+            unique = git(path, 'rev-parse', 'HEAD')
             b.space = None
             b.discard()
-            check(row, 'a batch without its ledger keeps its work and reports deferral',
-                  path.is_dir() and observation.is_dir() and b.record['space_deferred'][str(path)] == 'space_deferred:not_in_ledger')
+            entry = b.record['space_outcomes'].get(str(path), {})
+            reachable = [ref for ref in entry.get('refs') or {}
+                         if subprocess.run(['git', '-C', str(repo), 'merge-base', '--is-ancestor', unique, ref],
+                                           capture_output=True).returncode == 0]
+            check(row, 'a batch without its ledger keeps the clone\'s unique work in main, then removes the clone: '
+                  + str((entry, b.record['space_deferred'])),
+                  not path.exists() and entry.get('state') == 'removed' and bool(reachable)
+                  and observation.is_dir() and (observation / 'output').read_text() == 'rebuildable output'
+                  and b.record['space_deferred'] == {str(observation): 'space_deferred:kept'})
+            b, path, observation = batch('no-ledger-unsaved')
+            (path / 'notes').write_text('untracked only-copy work')
+            b.space = None
+            b.discard()
+            check(row, 'what the keep step cannot keep defers the clone, byte for byte: '
+                  + str(b.record['space_deferred']),
+                  (path / 'notes').read_text() == 'untracked only-copy work'
+                  and b.record['space_deferred'].get(str(path), 'space_deferred:removed') not in
+                  ('space_deferred:removed', 'space_deferred:gone'))
         drive('safety/batch-no-ledger', no_ledger)
 
         def saved_deferral(row):
@@ -279,13 +304,14 @@ def _v324_suite():
             b.observe = events.append
             b.discard()
             saved = json.loads((b.records / (b.record['id'] + '.json')).read_text())
-            expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
-            check(row, 'the saved batch retains no-ledger deferrals and an emitted discard outcome',
+            expected = {str(observation): 'space_deferred:kept'}
+            check(row, 'the saved batch retains the no-ledger outcomes and an emitted discard outcome',
                   saved.get('space_deferred') == expected and saved.get('space_outcomes') == b.record['space_outcomes']
                   and any(e['operation'] == 'discard' and e['outcome'] == 'deferred'
                           and e.get('space_deferred') == expected for e in saved.get('log', []))
                   and len(events) == 1 and events[0]['operation'] == 'discard'
-                  and (path / 'work.txt').read_text() == 'committed work\n' and observation.is_dir())
+                  and saved['space_outcomes'][str(path)]['state'] == 'removed' and not path.exists()
+                  and observation.is_dir())
         drive('ac1/saved-deferral', saved_deferral)
 
         def reassembly(row):
@@ -298,11 +324,11 @@ def _v324_suite():
             b.discard()
             saved = json.loads((b.records / (b.record['id'] + '.json')).read_text())
             previous = json.loads((b.records / (old_id + '.json')).read_text())
-            expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
-            check(row, 'reassembly and a later discard retain earlier deferrals on both saved records',
+            expected = {str(observation): 'space_deferred:kept'}
+            check(row, 'reassembly and a later discard retain earlier outcomes on both saved records',
                   saved.get('space_deferred') == previous.get('space_deferred') == expected
                   and saved.get('space_outcomes') == previous.get('space_outcomes')
-                  and (path / 'work.txt').read_text() == 'committed work\n')
+                  and saved['space_outcomes'][str(path)]['state'] == 'removed' and not path.exists())
         drive('ac1/saved-reassembly', reassembly)
 
         # Gate, approval and landing decisions are stand-ins; discard, request writes
@@ -334,10 +360,12 @@ def _v324_suite():
                 with patch.object(BS.BT, 'run', lambda *a: {'outcome': terminal.replace('-', '_')}):
                     line.pass_once()
                 saved = BS._row(conn, rid)['data']
-                expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
-                check(row, 'saved request includes the discard deferrals and outcomes with work intact',
+                expected = {str(observation): 'space_deferred:kept'}
+                check(row, 'saved request includes the discard outcomes: the clone removed after the keep '
+                           'step, the evidence kept',
                       saved.get('space_deferred') == expected and bool(saved.get('space_outcomes'))
-                      and (path / 'work.txt').read_text() == 'committed work\n' and observation.is_dir())
+                      and saved['space_outcomes'][str(path)]['state'] == 'removed' and not path.exists()
+                      and observation.is_dir())
                 # Keep this still-requested fixture out of the next independent pass.
                 line.held.clear()
                 if saved['state'] == BS.REQUESTED:
