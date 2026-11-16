@@ -455,16 +455,19 @@ def _v317_suite():
                   and getattr(error, 'code', '') == 'space_wait:host'
                   and f.ledger.hold(old_hold)['state'] == 'admitted'
                   and len(waiting) == 1 and waiting[0] != old_hold)
+            fresh = waiting[0] if waiting else None
             check('fix1/rerun-before-release', 'the rerun is judged with a free read', len(f.reads) > reads)
             check('fix1/rerun-before-release', 'no second dispatch record', len(line(f)._rows('dispatch')) == 1)
             L.space_release(f.space, old_hold, run=did)
             f.free['host'] = 10000
             A.accepted(f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS}))
-            again = f.offer()
+            rerun, _ = refused(f.offer)
             check('fix1/rerun-before-release', 'after the release the rerun holds its own admitted hold',
-                  again['attempt'] == 1 and again['space']['hold'] == waiting[0]
-                  and f.ledger.hold(waiting[0])['state'] == 'admitted'
+                  rerun is not None and fresh is not None
+                  and rerun['attempt'] == 1 and rerun['space']['hold'] == fresh
+                  and f.ledger.hold(fresh)['state'] == 'admitted'
                   and f.ledger.hold(old_hold)['state'] == 'released')
+            again = rerun or again or contract
             # The service's kept answer for that attempt is spent once a dispatch record carries its hold.
             submitted = []
             service = types.SimpleNamespace(space=f.space, space_consumer=types.SimpleNamespace(
