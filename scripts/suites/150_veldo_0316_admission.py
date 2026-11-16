@@ -473,6 +473,45 @@ def _v316_suite():
             os.close(write)
             consumer.stop()
             consumer = None
+
+            def pump(consumer):
+                deadline = time.monotonic() + 10
+                while consumer.active and time.monotonic() < deadline:
+                    poller = select.poll()
+                    poller.register(consumer.active[0], select.POLLIN | select.POLLHUP)
+                    if poller.poll(10000):
+                        consumer.readable(consumer.active[0])
+
+            def worker(f, wakes):
+                consumer = CON.Consumer(f.ledger)
+                service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
+                return consumer, A.Requests(service, types.SimpleNamespace(wake=lambda *args: wakes.append(args)))
+
+            # Fix 1: a failed first judgment is reported once and judged afresh on the next pass.
+            for mode, act in (('act', True), ('report', False)):
+                f = fixture('failed-reader-' + mode, act=act)
+                f.free['host'] = -1
+                wakes = []
+                consumer, requests = worker(f, wakes)
+                first = requests.prepare(**given)
+                pump(consumer)
+                failed = requests.prepare(**given)
+                check('fix1/failed-judgment', mode + ' failure reported once', first.get('code') == 'space_pending'
+                      and failed.get('code') == 'space_free_unread:host' and consumer.active is None)
+                f.free['host'] = 1000
+                again = requests.prepare(**given)
+                check('fix1/failed-judgment', mode + ' second pass submits again',
+                      again.get('code') == 'space_pending' and consumer.active is not None)
+                pump(consumer)
+                healthy = requests.prepare(**given)
+                check('fix1/failed-judgment', mode + ' healthy reader judged afresh', healthy.get('ok') is True
+                      and healthy.get('answer') == 'admitted' and len(wakes) == 2
+                      and [h['state'] for h in f.ledger.holds().values()] == ['admitted'])
+                kept = requests.prepare(**given)
+                check('fix1/failed-judgment', mode + ' answer with a hold is kept', kept == healthy
+                      and consumer.active is None and not consumer.tasks)
+                consumer.stop()
+                consumer = None
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:

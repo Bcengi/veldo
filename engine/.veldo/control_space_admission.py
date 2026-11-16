@@ -213,9 +213,10 @@ def prepare(space, *, repository, project, unit, station, attempt):
 class Requests:
     """Initial judgments on the existing consumer, coalesced by dispatch attempt.
 
-    Completed waiting answers are retained: unrelated factory passes do no work for them.
-    A later ticket supplies the freeing-event retry. A failed worker is reported by name;
-    its completion still wakes the factory so the offer does not vanish.
+    Completed answers that carry a hold are retained: unrelated factory passes do no work for
+    them. A later ticket supplies the freeing-event retry. An answer with no hold (a failed
+    read, a lost worker) is reported by name once and then dropped: its completion wakes the
+    factory, and the pass after the one that reports it submits the judgment again.
     """
     def __init__(self, service, loop):
         self.service, self.loop, self.answers = service, loop, {}
@@ -227,11 +228,17 @@ class Requests:
         key = tuple(given[name] for name in ('repository', 'unit', 'station', 'attempt'))
         answer = self.answers.get(key)
         if answer is not None:
+            # Only an answer that carries a hold is kept: waiting, admitted or advised. Any other
+            # answer (an unread pool, a lost worker) is returned once, and the next pass asks again.
             bound = answer.get('space')
             hold = space['ledger'].hold(bound['hold']) if bound else None
-            if not hold or hold['state'] != 'released':
-                return answer
             del self.answers[key]
+            if hold is None:
+                if not bound:
+                    return answer
+            elif hold['state'] != 'released':
+                self.answers[key] = answer
+                return answer
         consumer = self.service.space_consumer
         if consumer is None:
             return {'ok': False, 'code': 'space_worker_unavailable'}
