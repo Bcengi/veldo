@@ -74,6 +74,14 @@ def _yamlish():
     return module
 
 
+def child_environment(folder=None, environ=None):
+    """Copy the caller's environment and select its installation for a child when supplied."""
+    environment = dict(os.environ if environ is None else environ)
+    if folder:
+        environment[ENVIRONMENT] = str(folder)
+    return environment
+
+
 def resolve(environ=None):
     """{folder, how, found}: the folder this deployment's installation is read from, how it was chosen
     ('environment' or 'default') and whether it is a folder."""

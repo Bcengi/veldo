@@ -1450,6 +1450,8 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
               'channel_ingress': os.path.join(config_dir, CHANNEL_INGRESS) if ingress is not None else None,
               'api_service': os.path.join(config_dir, API_SERVICE) if api is not None else None,
               'work': os.path.join(config_dir, WORK) if lines is not None else None}
+    if state_root is not None:
+        config['state_root'] = os.path.abspath(str(state_root))
     return {'first': first, 'root': root, 'home': home, 'unit_dir': unit_dir, 'unit_path': unit_path, 'service': service,
             'unit': unit, 'journal': journal, 'keys': keys, 'qualification': qualification, 'bin': bin_dir,
             'config_dir': config_dir, 'state': state_dir, 'config_path': config_path, 'values': values, 'text': text,

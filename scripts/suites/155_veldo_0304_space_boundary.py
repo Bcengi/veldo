@@ -505,7 +505,7 @@ def _v304_suite():
             # Execute the production shutdown block. No service or host socket is started.
             exec(compile(ast.Module(body=block, type_ignores=[]), '<service shutdown>', 'exec'),
                  {'notify': lambda message: None, 'listener': SimpleNamespace(close=lambda: closed.append(True)),
-                  'service': SimpleNamespace(channel=None), 'contextlib': contextlib, 'os': os,
+                  'service': SimpleNamespace(channel=None, space_stop=lambda: None), 'contextlib': contextlib, 'os': os,
                   'space_listener': None,  # VELDO-0323's space socket, absent here (assembly)
                   'config': {'socket': str(path)}, 'socket_identity': (path.stat().st_dev, path.stat().st_ino),
                   'close_socket': namespace['close_socket']})

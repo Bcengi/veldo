@@ -176,6 +176,15 @@ def _v259_installation_suite():
         fixture = write_installation(temp / 'fixture')
         empty = write_installation(temp / 'empty', with_values=False)
 
+        parent = {'PATH': '/fixture/bin', INST.ENVIRONMENT: str(fixture)}
+        inherited = INST.child_environment(environ=parent)
+        selected = INST.child_environment(empty, environ=parent)
+        check('ac1/resolution', 'child environment preserves the caller and selects only the supplied folder',
+              inherited == parent and inherited is not parent
+              and selected == dict(parent, **{INST.ENVIRONMENT: str(empty)})
+              and parent[INST.ENVIRONMENT] == str(fixture)
+              and INST.child_environment(empty, environ={}) == {INST.ENVIRONMENT: str(empty)})
+
         # ---- AC1: resolution ---------------------------------------------------------------------------
         environ(VELDO_INSTALLATION=fixture, XDG_CONFIG_HOME=temp / 'xdg')
         found = INST.resolve()

@@ -1211,7 +1211,10 @@ class Ledger:
         if key in held:
             yield
             return
-        root = os.open(self.state_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            root = os.open(self.state_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        except FileNotFoundError as error:
+            raise FileNotFoundError(error.errno, 'space state root is missing', self.state_root) from error
         try:
             try:
                 os.mkdir('space-item-locks', 0o700, dir_fd=root)

@@ -1530,9 +1530,7 @@ def install(ledger, cli=None, installation=None, hooks_source=None, session_scri
 def bootstrap(service):
     """Build Service.space from this installation and central store, with Signal's real organs."""
     config_reader = _organ('control_space_config')
-    environment = dict(os.environ)
-    if service.config.get('installation'):
-        environment['VELDO_INSTALLATION'] = service.config['installation']
+    environment = _organ('installation').child_environment(service.config.get('installation'))
     config = config_reader.read(environ=environment)
     if not config.get('present'):
         return None
