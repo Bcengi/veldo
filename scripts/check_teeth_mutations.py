@@ -16591,7 +16591,7 @@ def cases():
     add(317, 'space317-repeat-without-bound', full317, 'control_space_admission.py',
         "andon=streak >= 2", "andon=False", ['space317/ac4/two-stop'])
     add(317, 'space317-brief-omits-work', full317, 'control_launch.py',
-        "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)",
+        "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload, D.completed)",
         "payload = payload", ['space317/ac3/next-brief'])
     # Fix round 1, F1 (the reviewer's P1): a refunded rerun takes the hold its ended run still carries.
     add(317, 'space317-rerun-takes-carried-hold', full317, 'control_space_admission.py',
@@ -16607,6 +16607,10 @@ def cases():
         "            if not answers[record['dispatch_id']]['outcome']:",
         "            if False:  # defect: a failed delivery is kept for the life of the service",
         ['space317/fix2/andon-redelivery'])
+    # Fix round 1, F3: the recovery brief is repeated after a run of the unit ended well.
+    add(317, 'space317-brief-never-ends', full317, 'control_space_admission.py',
+        "        if completed(record):\n            break\n", "        completed(record)\n",
+        ['space317/fix3/brief-ends'])
 
     return result
 

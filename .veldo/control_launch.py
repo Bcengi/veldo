@@ -1750,7 +1750,7 @@ class Runner:
         previous = ADMISSION.ends(self.dispatches.conn, unit_key)
         if previous and (previous[0].get('space_end') or {}).get('andon'):
             raise D.Refused('environment_failure:no_space:andon')
-        payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)
+        payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload, D.completed)
         attempt = self.dispatches.attempts(unit, station) + 1
         request = dict(repository=self.dispatches.repository, project=project, unit=unit,
                        station=station, attempt=attempt)

@@ -616,7 +616,9 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     import json
     conn = getattr(ledger, 'conn', None)
     if conn is not None:
-        for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch'"):
+        # Only a no-space end records a worktree, and its classification names it: the other
+        # dispatch records are passed over in the store and never parsed here.
+        for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch' AND instr(data, 'no_space')"):
             end = json.loads(raw).get('space_end') or {}
             tree = end.get('worktree')
             if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):

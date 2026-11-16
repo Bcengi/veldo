@@ -100,3 +100,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-16: footprint includes Dispatch for atomic attempt accounting, Service for factory retries
   and the owner andon, and Signal for retaining a failed run's worktree at rule 5. Their synced copies
   are included. These are unprotected paths. No acceptance criterion changed.
+
+- 2026-11-16: fix round 1 (F3). The recovery brief names the no-space ends since the unit's last
+  successful end. The kept worktree stays pinned by rule 5 after the work is recovered: releasing
+  that pin belongs to VELDO-0327 (the disposition touchpoint), not to this ticket.

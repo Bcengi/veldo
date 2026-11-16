@@ -543,6 +543,25 @@ def _v317_suite():
                   and all(len(rep['stopped']) == 1 for rep in reports))
             consumer.stop()
             consumer = None
+
+            # Fix round 1, F3: the brief names the no-space ends since the unit's last successful end.
+            f = fixture('brief-ends')
+            wire(f)
+            tree = worktree(f)
+            lost, _, item, _ = run(f, tree=tree)
+            f.free['host'] = 10000
+            recovered, _, _, _ = run(f, free=10000, text='recovered', code=0)
+            told = recovered['contract']['input']['payload'].get('space_recovery') or {}
+            later = f.offer()
+            unit_key = {'domain': 'domain', 'repository': 'repository', 'unit': 'unit'}
+            check('fix3/brief-ends', 'the run after the no-space end is told, the run after a successful end is not',
+                  (lost.get('space_end') or {}).get('worktree') == str(tree) and told.get('worktrees') == [str(tree)]
+                  and D.completed(recovered) and 'space_recovery' not in later['input']['payload'])
+            check('fix3/brief-ends', 'the worktree stays pinned after recovery', (tree / 'notes').is_file()
+                  and f.ledger.item(item)['state'] == 'deferred')
+            check('fix3/bounded-scan', 'only the records of the unit are read', len(A.ends(f.conn, unit_key)) == 2
+                  and A.ends(f.conn, dict(unit_key, unit='uni')) == [] and A.ends(f.conn, dict(unit_key, unit='unit2')) == []
+                  and A.ends(f.conn, dict(unit_key, repository='other')) == [])
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:

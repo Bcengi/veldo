@@ -82,7 +82,10 @@ def classify_end(space, termination, found, worktree=None, incomplete=False):
 def ends(conn, contract):
     """Committed terminal history of this unit, across stations, in store write order."""
     found = []
-    for seq, raw in conn.execute("SELECT rowid, data FROM entities WHERE kind='dispatch'"):
+    # Only the records that name this unit are parsed: the store writes a string as JSON writes it,
+    # so the quoted unit is in every record of the unit. The exact test stays the one below.
+    for seq, raw in conn.execute("SELECT rowid, data FROM entities WHERE kind='dispatch' AND instr(data, ?)",
+                                 (json.dumps(contract.get('unit')),)):
         record = json.loads(raw)
         other = record.get('contract') or {}
         if (all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
@@ -108,9 +111,15 @@ def settle_end(conn, contract, outcome):
     return result
 
 
-def recovery_payload(conn, contract, payload):
+def recovery_payload(conn, contract, payload, completed):
+    """The kept work the next run is told to recover: the worktrees of the unit's no-space ends since
+    its last successful end (`completed`, the dispatch completion gate). A run that ended well after
+    them had this brief, so later runs are not told again. The worktrees themselves stay pinned by
+    rule 5; releasing that pin is the disposition touchpoint's (VELDO-0327)."""
     trees = []
     for record in ends(conn, contract):
+        if completed(record):
+            break
         path = (record.get('space_end') or {}).get('worktree')
         if path and path not in trees:
             trees.append(path)
