@@ -172,7 +172,8 @@ class SpaceUi(F.FactoryUi):
             path = tree + 'reviews/' + tail
             entry = {'item': 'space:item:e2e-' + name, 'path': path, 'files': ['notes/file-%d.md' % n for n in range(files)],
                      'kept_branch': None}
-            deferred_tree(name, path, a('VELDO-9147', 'review-run-%d' % index, 'review'), files,
+            # A review worktree is added detached inside a review run and names no ticket (control_space.review_worktree).
+            deferred_tree(name, path, owner('project-a', None, 'review-run-%d' % index, 'review'), files,
                           {'number': 1, 'alias': GROUP_ALIAS, 'group': gid, 'index': index,
                            'proposal': {'worktrees': [entry]}, 'head': None, 'state': 'requested'})
             entries.append(entry)

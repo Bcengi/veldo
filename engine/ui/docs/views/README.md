@@ -20,6 +20,7 @@ refusals it shows.
 | Workers | `/workers` | [workers.md](workers.md) |
 | Gate and review | `/proof` | [proof.md](proof.md) |
 | Usage | `/usage` | [usage.md](usage.md) |
+| Space | `/space` | [space.md](space.md) |
 | Configuration | `/configuration` | [configuration.md](configuration.md) |
 | MCP catalog | `/catalog` | [catalog.md](catalog.md) |
 | Repositories and identities | `/repositories` | [repositories.md](repositories.md) |
