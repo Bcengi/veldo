@@ -1,0 +1,253 @@
+[
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac1/per-project-ticket-kind",
+   "VELDO-0319 space319/ac1/totals",
+   "VELDO-0319 space319/ac1/deferred-counts",
+   "VELDO-0319 space319/ac1/worktrees",
+   "VELDO-0319 space319/ac2/removed",
+   "VELDO-0319 space319/scope/member",
+   "VELDO-0319 space319/scope/digest"
+  ],
+  "name": "space319-usage-sums-only-present-items",
+  "new": "        if data.get('state') != 'present':",
+  "new_digest": "b78da47bb46e2e79de5d495156f4b3bb81fee26a932ef7f7fdb5f382e12a3dfa",
+  "noop_failed": [],
+  "old": "        if data.get('state') not in SPACE_LIVE:",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac1/totals",
+   "space319/ac1/deferred-counts"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac2/in-use-folder",
+   "VELDO-0319 space319/ac2/every-pending",
+   "VELDO-0319 space319/ac2/requests",
+   "VELDO-0319 space319/words/deferrals",
+   "VELDO-0319 space319/canon/synced"
+  ],
+  "name": "space319-pending-hides-deferred-items",
+  "new": "SPACE_PENDING = ('due',)",
+  "new_digest": "4dee8627676ae03d585d1349a0d49a85c03edb2e3d2613c4c4f5fa45bfe7ee23",
+  "noop_failed": [],
+  "old": "SPACE_PENDING = ('due', 'deferred')",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac2/in-use-folder"
+  ]
+ },
+ {
+  "also": [
+   [
+    "        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})",
+    "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n                                              cause='owner_abandon')), 'space.reconcile': self._write})"
+   ]
+  ],
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_api.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac3/routes-signed",
+   "VELDO-0319 space319/ac3/unsigned-refused",
+   "VELDO-0319 space319/ac3/not-owner-refused",
+   "VELDO-0319 space319/ac3/owner-accepted"
+  ],
+  "name": "space319-abandon-as-a-plain-read-route",
+  "new": "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n          ('item', 'version'), (), None),",
+  "new_digest": "60db97794334ca65d394491f39f8ca5ee4db5e5c9c1e97040133a7e5d05cbb2f",
+  "noop_failed": [],
+  "old": "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n          ('item', 'version'), (), 'abandon_worktree'),",
+  "old_digest": "63e3abcdf43ba1fea93770988f21aae8e82225d9f8fb4b4a4128a57ea3e0c113",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac3/unsigned-refused"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3 (Reconcile is the owner command)",
+  "final_run_executions": 1,
+  "module": "control_api_authority.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac3/not-owner-refused",
+   "VELDO-0319 space319/ac3/owner-accepted"
+  ],
+  "name": "space319-reconcile-for-any-member",
+  "new": "            if False:\n                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+  "new_digest": "20b424347abaf464fde621dcbf207b0dcc027b8dd1bfa05c51260d48c99a174d",
+  "noop_failed": [],
+  "old": "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+  "old_digest": "52f8d80fd5bad38ee4f3c9e997a5438d42d11ae4e8d96be00224ffd096b59b4a",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac3/not-owner-refused"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2 (Removed is newest first)",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac2/removed"
+  ],
+  "name": "space319-removed-oldest-first",
+  "new": "    rows.sort(key=lambda row: (row['seq'] or 0, row['id']))",
+  "new_digest": "c33f930c1372f633a238126d11545ee1581cb7dbf11cd107e8facefb8d7f622e",
+  "noop_failed": [],
+  "old": "    rows.sort(key=lambda row: (-(row['seq'] or 0), row['id']))",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac2/removed"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4 (held counts the promises that are counted)",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac4/pools-numbers"
+  ],
+  "name": "space319-held-counts-a-waiting-hold",
+  "new": "SPACE_COUNTED = ('admitted', 'advised', 'waiting')",
+  "new_digest": "baf5a8210828059855c23972507e344e4f48b764cf20c4e779c52cf3eadc9b29",
+  "noop_failed": [],
+  "old": "SPACE_COUNTED = ('admitted', 'advised')",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac4/pools-numbers"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4 (a run that would have waited is listed)",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/ac4/pools-numbers",
+   "VELDO-0319 space319/ac4/record-reaches-read",
+   "VELDO-0319 space319/scope/member",
+   "VELDO-0319 space319/scope/digest",
+   "VELDO-0319 space319/redact/locator",
+   "VELDO-0319 space319/words/deferrals",
+   "VELDO-0319 space319/canon/synced"
+  ],
+  "name": "space319-advised-holds-not-listed",
+  "new": "SPACE_LISTED = ('waiting',)",
+  "new_digest": "2af37642759f325859e2c1f959c0a3285a00259dd3adaf9e2c58ff9fd98d65b0",
+  "noop_failed": [],
+  "old": "SPACE_LISTED = ('waiting', 'advised')",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/ac4/pools-numbers"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "the redaction of a path (a credential in a path is replaced)",
+  "final_run_executions": 1,
+  "module": "control_api_models.py",
+  "mutant_failed": [
+   "VELDO-0319 space319/redact/locator"
+  ],
+  "name": "space319-locator-served-with-its-credential",
+  "new": "            return piece",
+  "new_digest": "733e7762c98f0e11a11581fa9f521facfea1c27e5d20867c6f0299a506506fbb",
+  "noop_failed": [],
+  "old": "            return MARKER if piece and SCAN.scan_text(piece) else piece",
+  "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_screen.py",
+  "target_rows": [
+   "space319/redact/locator"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4",
+  "final_run_executions": 1,
+  "module": "engine/ui/src/composables/useLiveRead.ts",
+  "mutant_failed": [
+   "space319ui/ac4/live-no-clock",
+   "space319ui/ui/api-only"
+  ],
+  "name": "space319-poll-on-an-interval",
+  "new": "    live.value = 'live'\n    setInterval(() => void reread(), 2000)",
+  "new_digest": "e30fa1ced52b4010b3780f34d5e2734604d7829f82add14c2fe9f90d2d653f13",
+  "noop_failed": null,
+  "old": "    live.value = 'live'\n    follow(currentSeq())",
+  "old_digest": "b00cbf41ebe9d9967c80cffb1a2170d8f6e1c8c2fc9ca7f2d94f02b750cd7967",
+  "replacement_count": 1,
+  "source": "by hand, once, in an export of 5f3afd34 (git archive), the registered edit applied to the one file and the whole browser suite run there; the baseline is the green run of the suite on the worktree at the same commit (checks.json)",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0319_space_ui.py",
+  "target_rows": [
+   "space319ui/ac4/live-no-clock"
+  ],
+  "why_by_hand": "The teeth driver ran the case in its confined leg, where every row of the browser suite fails by name (invalid_baseline, teeth-receipt-first.json): the suite needs system Chrome and the npm cache, as suites 120 to 124 do, and the unconfined list (scripts/gate_unconfined.json) is a protected path the lead changes."
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC4 (the runs list shows the four numbers)",
+  "final_run_executions": 1,
+  "module": "engine/ui/src/features/run/runs.ts",
+  "mutant_failed": [
+   "space319ui/ac4/runs-list",
+   "space319ui/unit/space"
+  ],
+  "name": "space319-run-row-without-its-hold",
+  "new": "    space: null,",
+  "new_digest": "a751517d15659d24e6c86734729da6cd1d3193861101787df43c28c7ffdcd1da",
+  "noop_failed": null,
+  "old": "    space: holds.get(dispatch) ?? null,",
+  "old_digest": "c39dfae3963d7336041de3ee570122aa3c8af99568fe50c20a6aca3f74535f5a",
+  "replacement_count": 1,
+  "source": "by hand, once, in an export of 5f3afd34 (git archive), the registered edit applied to the one file and the whole browser suite run there; the baseline is the green run of the suite on the worktree at the same commit (checks.json)",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0319_space_ui.py",
+  "target_rows": [
+   "space319ui/ac4/runs-list"
+  ],
+  "why_by_hand": "The teeth driver ran the case in its confined leg, where every row of the browser suite fails by name (invalid_baseline, teeth-receipt-first.json): the suite needs system Chrome and the npm cache, as suites 120 to 124 do, and the unconfined list (scripts/gate_unconfined.json) is a protected path the lead changes."
+ }
+]

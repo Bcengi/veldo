@@ -1,0 +1,115 @@
+{
+ "artifacts": {
+  "README.md": "sha256:cedfd5c19f2d12c5ff52ba8ae681ef25d7933dad62a69008ab9a3d3857f789dd",
+  "checks.json": "sha256:c29e60268109000e848216e803011483c5805daf76a61555b53b8f8c4a25ab56",
+  "falsifiers.json": "sha256:53926949a6a9b27deb03d33a9730a4ad99f488f15dbea94a6ea2b8febcac06c1",
+  "rows.json": "sha256:39aa6b9d707a2fb3a0027d6be5a88a29c393f8e5f46ae74eb7959abc84517716",
+  "screens.json": "sha256:f99a177102bed23d04b82c18ede879856aaec79117f36101a3fff572b81b56c0",
+  "sources.json": "sha256:fc1be0a0826a8fd943dce431368aa8c9d6831ca88a101d9f255cc6fdd1adc52a",
+  "teeth-receipt-first.json": "sha256:8f7f3c9362e27b073aec82cd41ae247e43c1fca46c2fb99bc4e57b38e129577a",
+  "teeth-receipt.json": "sha256:12e0b9b9e81d005cb98ff1fe9dcab36c4ff49041b1ee4d017892c0efa17c4179",
+  "teeth-run.json": "sha256:d44ea1c6686bfbb1b50d7477c5df84434720cfd706f42872fdca109d69dc42c1"
+ },
+ "assumptions": [
+  "AC3 is built as the lead amended it: Confirm is VELDO-0320, Wrong and the mode switch VELDO-0332, Adopt the ticket the lead confirms (the History line is on VELDO-0315).",
+  "An answer to a space request is given on the Decisions screen through the existing settlement path; the Space screen links there and sends no answer.",
+  "A pool capacity and its free space now are in no ledger record and are not shown; the four numbers of a hold are those the Ledger recorded when it judged it.",
+  "In the API suite the service entries for reconcile and abandon are recording functions, and the membership, credentials and edge key are fixture records; in the browser suite the harness is the VELDO-0131 factory harness with the space ledger records.",
+  "The browser suite needs system Chrome and the npm registry and is not yet in scripts/gate_unconfined.json (a protected path): the lead adds the entry.",
+  "All criteria remain pending aggregate verification and independent review."
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "reason": "Partial selftests and the UI Vitest specs only; no aggregate unit evidence.",
+   "status": "not_run"
+  },
+  {
+   "name": "integration",
+   "reason": "The lead owns aggregate integration and gate.",
+   "status": "not_run"
+  },
+  {
+   "detail": "Rows ui/states-360, -390, -1280 and -1440 green; 32 screenshots in proof/VELDO-0319/screens (screens.json).",
+   "name": "ui_states",
+   "status": "diagnostic_only"
+  },
+  {
+   "detail": "At 5f3afd34, rows green by suite: 104_veldo_0164_scoped_reads 19, 113_veldo_0145_ui 7, 117_veldo_0227_ui_location 7, 118_veldo_0159_mcp_credential_form 7, 119_veldo_0163_role_team_form 10, 120_veldo_0131_factory_ui 14, 121_veldo_0131_factory_screens_narrow 2, 122_veldo_0131_factory_screens_wide 2, 123_veldo_0174_conversations 21, 124_veldo_0131_factory_reads_commands 8, 149_veldo_0312_ticket_ended 41, 150_veldo_0318_unique_work 45, 150_veldo_0319_space_screen 21, 150_veldo_0319_space_ui 13, 150_veldo_0340_review_groups 16, 150_veldo_0342_member_picks 18, 71_veldo_0130_api 45. 0174 (suite 123) has 17 rows red, the same on the base; suites 121 and 122 are load-dependent on this tree and on the base alike (checks.json).",
+   "name": "targeted regressions",
+   "status": "diagnostic_only"
+  },
+  {
+   "detail": "Validation, docs, template sync, lint, the two boundary checks, the UI typecheck and Vitest.",
+   "name": "fast checks",
+   "status": "passed"
+  },
+  {
+   "detail": "8 of 8 API cases rejected by the teeth driver in the final run at 5f3afd34, no reuse, no invalid result, no surviving worker; the 2 browser cases red by hand in exports of the same commit. The 4 declared falsifiers are among the 10 (3 by the driver, AC4 by hand).",
+   "name": "falsifiers",
+   "status": "passed"
+  },
+  {
+   "name": "gate",
+   "reason": "Lead gate lock required.",
+   "status": "not_run"
+  }
+ ],
+ "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+ "criteria": [
+  {
+   "evidence": [
+    {
+     "detail": "AC1 rows green at the API and in the browser, and the specification falsifier red (only present items summed: the totals row fails); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/teeth-receipt.json",
+     "sha256": "12e0b9b9e81d005cb98ff1fe9dcab36c4ff49041b1ee4d017892c0efa17c4179",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC1",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC2 rows green and the specification falsifier red (deferred items hidden: the row that expects the in-use folder finds nothing); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/teeth-receipt.json",
+     "sha256": "12e0b9b9e81d005cb98ff1fe9dcab36c4ff49041b1ee4d017892c0efa17c4179",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC2",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC3 as amended by the lead (specification History, 2026-11-16): Reconcile and Abandon are signed owner commands and no route exists for Adopt, Confirm, Wrong or the mode switch. Rows green and the specification falsifier red (Abandon as a plain read route: the unsigned row succeeds); pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/teeth-receipt.json",
+     "sha256": "12e0b9b9e81d005cb98ff1fe9dcab36c4ff49041b1ee4d017892c0efa17c4179",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC3",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC4 rows green and the specification falsifier red (poll on an interval: with the page clock stopped the row sees no update), applied by hand in an export because the teeth driver cannot run the browser suite confined; pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/falsifiers.json",
+     "sha256": "53926949a6a9b27deb03d33a9730a4ad99f488f15dbea94a6ea2b8febcac06c1",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC4",
+   "status": "pending"
+  }
+ ],
+ "produced_at": "2026-11-16T18:46:36.741628+00:00",
+ "producer": "Claude builder for VELDO-0319; not an independent reviewer.",
+ "rollback": "Revert the change. The console has no Space screen; the ledger and the CLI are unaffected.",
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0319",
+ "tree": "2f265623c8b760b569be3ee71304899b48111c0c"
+}

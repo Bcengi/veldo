@@ -219,3 +219,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     suites 120 to 124 do. Those are listed in scripts/gate_unconfined.json, a protected path this ticket
     does not touch: the lead adds the entry.
 
+- 2026-11-16: the proof recorded at 5f3afd34 (proof/VELDO-0319): 34 rows green, 21 at the API and 13 in
+  the browser, and 32 screenshots of the screen's states. Teeth for finding 319: the eight API cases
+  rejected by the driver. The two browser cases (the declared falsifier of AC4 among them) are
+  invalid_baseline in the driver's confined leg, where the browser suite cannot run, and were applied by
+  hand in an export of the commit, both red; the gate's mutation stage runs them once the lead has added
+  150_veldo_0319_space_ui to scripts/gate_unconfined.json. Suites 121 and 122 (VELDO-0131) are
+  load-dependent on this host on this tree and on the base alike, and suite 123 (VELDO-0174) has 17 rows
+  red on the base too; the proof's checks.json holds the runs.

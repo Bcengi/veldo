@@ -1,0 +1,6793 @@
+{
+ "budget_seconds": 29608.0,
+ "case_deadlines": {
+  "check_teeth_mutations.py:space319-abandon-as-a-plain-read-route": 120,
+  "check_teeth_mutations.py:space319-advised-holds-not-listed": 120,
+  "check_teeth_mutations.py:space319-held-counts-a-waiting-hold": 120,
+  "check_teeth_mutations.py:space319-locator-served-with-its-credential": 120,
+  "check_teeth_mutations.py:space319-pending-hides-deferred-items": 120,
+  "check_teeth_mutations.py:space319-poll-on-an-interval": 212.87678334955126,
+  "check_teeth_mutations.py:space319-reconcile-for-any-member": 120,
+  "check_teeth_mutations.py:space319-removed-oldest-first": 120,
+  "check_teeth_mutations.py:space319-run-row-without-its-hold": 212.85712230904028,
+  "check_teeth_mutations.py:space319-usage-sums-only-present-items": 120
+ },
+ "case_receipts": [
+  {
+   "identity": "check_teeth_mutations.py:space319-usage-sums-only-present-items",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-pending-hides-deferred-items",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-abandon-as-a-plain-read-route",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-reconcile-for-any-member",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-removed-oldest-first",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-held-counts-a-waiting-hold",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-advised-holds-not-listed",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-locator-served-with-its-credential",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-poll-on-an-interval",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": false
+  },
+  {
+   "identity": "check_teeth_mutations.py:space319-run-row-without-its-hold",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": false
+  }
+ ],
+ "detail": "invalid_baseline: invalid_baseline: check_teeth_mutations.py:space319-poll-on-an-interval: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}}",
+ "drivers": {
+  "check_review_mutations.py": {
+   "executed": 0,
+   "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "registered": 0,
+   "reused": 0,
+   "wall_seconds": 0,
+   "worker_seconds": 0
+  },
+  "check_teeth_mutations.py": {
+   "executed": 10,
+   "inventory_digest": "c0fec4c8d5d89e73b128bd381360e6503a27438737d8876b1a1b5443eafe913e",
+   "registered": 10,
+   "reused": 0,
+   "wall_seconds": 235.02700111223385,
+   "worker_seconds": 469.4876841735095
+  }
+ },
+ "elapsed": 243.2336139450781,
+ "error": "invalid_baseline",
+ "executed": 10,
+ "force_fresh": false,
+ "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+ "input_digest": "ecb1f52edc28cfa72d2a4de909eef302153806fc030b5fb855837d3db9d56af7",
+ "invalid_results": [
+  {
+   "case": {
+    "dir": "engine/ui/src/composables",
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-poll-on-an-interval",
+    "module": "useLiveRead.ts",
+    "name": "space319-poll-on-an-interval",
+    "new": "    live.value = 'live'\n    setInterval(() => void reread(), 2000)",
+    "old": "    live.value = 'live'\n    follow(currentSeq())",
+    "rows": [
+     "space319ui/ac4/live-no-clock"
+    ],
+    "suite": "150_veldo_0319_space_ui.py"
+   },
+   "detail": "invalid_baseline: check_teeth_mutations.py:space319-poll-on-an-interval: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}}",
+   "error": "invalid_baseline"
+  },
+  {
+   "case": {
+    "dir": "engine/ui/src/features/run",
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-run-row-without-its-hold",
+    "module": "runs.ts",
+    "name": "space319-run-row-without-its-hold",
+    "new": "    space: null,",
+    "old": "    space: holds.get(dispatch) ?? null,",
+    "rows": [
+     "space319ui/ac4/runs-list"
+    ],
+    "suite": "150_veldo_0319_space_ui.py"
+   },
+   "detail": "invalid_baseline: check_teeth_mutations.py:space319-run-row-without-its-hold: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"VELDO-0319 space319ui/unit/space\", \"VELDO-0319 space319ui/ac1/usage-table-1280\", \"VELDO-0319 space319ui/ac1/usage-table-390\", \"VELDO-0319 space319ui/ac2/pending-removed\", \"VELDO-0319 space319ui/ac3/owner-commands\", \"VELDO-0319 space319ui/ac3/answer-path\", \"VELDO-0319 space319ui/ac4/live-no-clock\", \"VELDO-0319 space319ui/ac4/runs-list\", \"VELDO-0319 space319ui/ui/states-360\", \"VELDO-0319 space319ui/ui/states-390\", \"VELDO-0319 space319ui/ui/states-1280\", \"VELDO-0319 space319ui/ui/states-1440\", \"VELDO-0319 space319ui/ui/api-only\"]}}",
+   "error": "invalid_baseline"
+  }
+ ],
+ "parallel_workers": 2,
+ "peak_workers": 2,
+ "registered": 10,
+ "rejected": 8,
+ "resources": {
+  "capacities": {
+   "new_project_fixture": 2,
+   "systemd_user_manager": 16,
+   "ui_browser": 4
+  },
+  "peak_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 2
+  },
+  "remaining_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0,
+   "ui_browser": 0
+  }
+ },
+ "results": [
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-pending-hides-deferred-items",
+    "module": "control_api_models.py",
+    "name": "space319-pending-hides-deferred-items",
+    "new": "SPACE_PENDING = ('due',)",
+    "old": "SPACE_PENDING = ('due', 'deferred')",
+    "rows": [
+     "space319/ac2/in-use-folder"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 2.9760224861092865,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      false
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac2/in-use-folder": [
+      false
+     ]
+    }
+   },
+   "new_digest": "4dee8627676ae03d585d1349a0d49a85c03edb2e3d2613c4c4f5fa45bfe7ee23",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-usage-sums-only-present-items",
+    "module": "control_api_models.py",
+    "name": "space319-usage-sums-only-present-items",
+    "new": "        if data.get('state') != 'present':",
+    "old": "        if data.get('state') not in SPACE_LIVE:",
+    "rows": [
+     "space319/ac1/totals",
+     "space319/ac1/deferred-counts"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 3.0019941800273955,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      false
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      false
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      false
+     ],
+     "space319/ac1/totals": [
+      false
+     ]
+    }
+   },
+   "new_digest": "b78da47bb46e2e79de5d495156f4b3bb81fee26a932ef7f7fdb5f382e12a3dfa",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/unsigned-refused": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "also": [
+     [
+      "        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})",
+      "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n                                              cause='owner_abandon')), 'space.reconcile': self._write})"
+     ]
+    ],
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-abandon-as-a-plain-read-route",
+    "module": "control_api.py",
+    "name": "space319-abandon-as-a-plain-read-route",
+    "new": "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n          ('item', 'version'), (), None),",
+    "old": "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n          ('item', 'version'), (), 'abandon_worktree'),",
+    "rows": [
+     "space319/ac3/unsigned-refused"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 3.082290206104517,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/unsigned-refused": [
+      false
+     ]
+    }
+   },
+   "new_digest": "60db97794334ca65d394491f39f8ca5ee4db5e5c9c1e97040133a7e5d05cbb2f",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/unsigned-refused": [
+      true
+     ]
+    }
+   },
+   "old_digest": "63e3abcdf43ba1fea93770988f21aae8e82225d9f8fb4b4a4128a57ea3e0c113",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/not-owner-refused": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-reconcile-for-any-member",
+    "module": "control_api_authority.py",
+    "name": "space319-reconcile-for-any-member",
+    "new": "            if False:\n                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+    "old": "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+    "rows": [
+     "space319/ac3/not-owner-refused"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 3.122402062173933,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/not-owner-refused": [
+      false
+     ]
+    }
+   },
+   "new_digest": "20b424347abaf464fde621dcbf207b0dcc027b8dd1bfa05c51260d48c99a174d",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac3/not-owner-refused": [
+      true
+     ]
+    }
+   },
+   "old_digest": "52f8d80fd5bad38ee4f3c9e997a5438d42d11ae4e8d96be00224ffd096b59b4a",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-removed-oldest-first",
+    "module": "control_api_models.py",
+    "name": "space319-removed-oldest-first",
+    "new": "    rows.sort(key=lambda row: (row['seq'] or 0, row['id']))",
+    "old": "    rows.sort(key=lambda row: (-(row['seq'] or 0), row['id']))",
+    "rows": [
+     "space319/ac2/removed"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 3.2238212595693767,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac2/removed"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac2/removed": [
+      false
+     ]
+    }
+   },
+   "new_digest": "c33f930c1372f633a238126d11545ee1581cb7dbf11cd107e8facefb8d7f622e",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-held-counts-a-waiting-hold",
+    "module": "control_api_models.py",
+    "name": "space319-held-counts-a-waiting-hold",
+    "new": "SPACE_COUNTED = ('admitted', 'advised', 'waiting')",
+    "old": "SPACE_COUNTED = ('admitted', 'advised')",
+    "rows": [
+     "space319/ac4/pools-numbers"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 3.243835852947086,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac4/pools-numbers"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac4/pools-numbers": [
+      false
+     ]
+    }
+   },
+   "new_digest": "baf5a8210828059855c23972507e344e4f48b764cf20c4e779c52cf3eadc9b29",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-advised-holds-not-listed",
+    "module": "control_api_models.py",
+    "name": "space319-advised-holds-not-listed",
+    "new": "SPACE_LISTED = ('waiting',)",
+    "old": "SPACE_LISTED = ('waiting', 'advised')",
+    "rows": [
+     "space319/ac4/pools-numbers"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 2.7415044377557933,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      false
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      false
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      false
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      false
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      false
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      false
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac4/pools-numbers": [
+      false
+     ]
+    }
+   },
+   "new_digest": "2af37642759f325859e2c1f959c0a3285a00259dd3adaf9e2c58ff9fd98d65b0",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 319,
+    "identity": "check_teeth_mutations.py:space319-locator-served-with-its-credential",
+    "module": "control_api_models.py",
+    "name": "space319-locator-served-with-its-credential",
+    "new": "            return piece",
+    "old": "            return MARKER if piece and SCAN.scan_text(piece) else piece",
+    "rows": [
+     "space319/redact/locator"
+    ],
+    "suite": "150_veldo_0319_space_screen.py"
+   },
+   "elapsed": 2.8423995464108884,
+   "fixture_version": 1,
+   "input_digest": "4dea3b2e1715d442618b3cf19e8c52db40fc680436fb79958c9b1a8b8a3afcd7",
+   "mutant": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0319 space319/redact/locator"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      false
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/redact/locator": [
+      false
+     ]
+    }
+   },
+   "new_digest": "733e7762c98f0e11a11581fa9f521facfea1c27e5d20867c6f0299a506506fbb",
+   "noop": {
+    "count": 47,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/per-project-ticket-kind",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/totals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/deferred-counts",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/plain-and-no-project",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac1/worktrees",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/in-use-folder",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/every-pending",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/requests",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac2/removed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/routes-signed",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/unsigned-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/not-owner-refused",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/owner-accepted",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac3/no-dead-route",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/pools-numbers",
+      true
+     ],
+     [
+      "VELDO-0319 space319/ac4/record-reaches-read",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/member",
+      true
+     ],
+     [
+      "VELDO-0319 space319/scope/digest",
+      true
+     ],
+     [
+      "VELDO-0319 space319/redact/locator",
+      true
+     ],
+     [
+      "VELDO-0319 space319/words/deferrals",
+      true
+     ],
+     [
+      "VELDO-0319 space319/canon/synced",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/plain-and-no-project",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/words/deferrals",
+     "VELDO-0319 space319/canon/synced"
+    ],
+    "targets": {
+     "space319/ac1/deferred-counts": [
+      true
+     ],
+     "space319/ac1/totals": [
+      true
+     ]
+    }
+   },
+   "old_digest": "d219bf2eba40282f8b681e89e1cabdfdd843a492a506f06f0a31906c8764925c",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  }
+ ],
+ "reuse_integrity_errors": [],
+ "reuse_qualified": 0,
+ "reused": 0,
+ "schema": "veldo.mutation-stage/v1",
+ "scope": "selected",
+ "status": "failed",
+ "surviving_workers": 0,
+ "unmeasured_cases": [
+  "check_teeth_mutations.py:space319-abandon-as-a-plain-read-route",
+  "check_teeth_mutations.py:space319-advised-holds-not-listed",
+  "check_teeth_mutations.py:space319-held-counts-a-waiting-hold",
+  "check_teeth_mutations.py:space319-locator-served-with-its-credential",
+  "check_teeth_mutations.py:space319-pending-hides-deferred-items",
+  "check_teeth_mutations.py:space319-poll-on-an-interval",
+  "check_teeth_mutations.py:space319-reconcile-for-any-member",
+  "check_teeth_mutations.py:space319-removed-oldest-first",
+  "check_teeth_mutations.py:space319-run-row-without-its-hold",
+  "check_teeth_mutations.py:space319-usage-sums-only-present-items"
+ ],
+ "worker_invocations": 20,
+ "worker_outcomes": [
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.544144086074084,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0319_space_screen.py:control_api_models.py:False:noop",
+   "output_directory": "/tmp/v319r/teeth/logs/1",
+   "pid": 2581340,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4169
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.590108359698206,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0319_space_screen.py:control_api_models.py:False:baseline",
+   "output_directory": "/tmp/v319r/teeth/logs/0",
+   "pid": 2581339,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4169
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.12433550786227,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0319_space_screen.py:control_api.py:False:baseline",
+   "output_directory": "/tmp/v319r/teeth/logs/2",
+   "pid": 2582735,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4139
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.1654063588939607,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0319_space_screen.py:control_api.py:False:noop",
+   "output_directory": "/tmp/v319r/teeth/logs/3",
+   "pid": 2582744,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4139
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.044239172246307,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0319_space_screen.py:control_api_authority.py:False:baseline",
+   "output_directory": "/tmp/v319r/teeth/logs/4",
+   "pid": 2584116,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4140
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.0644197990186512,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0319_space_screen.py:control_api_authority.py:False:noop",
+   "output_directory": "/tmp/v319r/teeth/logs/5",
+   "pid": 2584164,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4140
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.96223137201741,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0319_space_ui.py:useLiveRead.ts:False:baseline",
+   "output_directory": "/tmp/v319r/teeth/logs/6",
+   "pid": 2585559,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3984
+  },
+  {
+   "budget_seconds": 212.87678334955126,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.94213368091732,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0319_space_ui.py:useLiveRead.ts:False:noop",
+   "output_directory": "/tmp/v319r/teeth/logs/7",
+   "pid": 2585614,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3984
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.95713905477896,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0319_space_ui.py:runs.ts:False:baseline",
+   "output_directory": "/tmp/v319r/teeth/logs/8",
+   "pid": 2606815,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3980
+  },
+  {
+   "budget_seconds": 212.85712230904028,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.93582141865045,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0319_space_ui.py:runs.ts:False:noop",
+   "output_directory": "/tmp/v319r/teeth/logs/9",
+   "pid": 2606849,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3980
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 2.9804777577519417,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-pending-hides-deferred-items",
+   "output_directory": "/tmp/v319r/teeth/logs/11",
+   "pid": 2629505,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4333
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.006405078805983,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-usage-sums-only-present-items",
+   "output_directory": "/tmp/v319r/teeth/logs/10",
+   "pid": 2629504,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4448
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 7,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.08680328913033,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-abandon-as-a-plain-read-route",
+   "output_directory": "/tmp/v319r/teeth/logs/12",
+   "pid": 2630405,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4314
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.1265155049040914,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-reconcile-for-any-member",
+   "output_directory": "/tmp/v319r/teeth/logs/13",
+   "pid": 2630425,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4228
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.227974715642631,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-removed-oldest-first",
+   "output_directory": "/tmp/v319r/teeth/logs/14",
+   "pid": 2631214,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4165
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 3.247956042177975,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-held-counts-a-waiting-hold",
+   "output_directory": "/tmp/v319r/teeth/logs/15",
+   "pid": 2631222,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4177
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 2.7459848895668983,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-advised-holds-not-listed",
+   "output_directory": "/tmp/v319r/teeth/logs/16",
+   "pid": 2632506,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4415
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 10,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 2.846916719339788,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-locator-served-with-its-credential",
+   "output_directory": "/tmp/v319r/teeth/logs/17",
+   "pid": 2632513,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 4171
+  },
+  {
+   "budget_seconds": 212.87678334955126,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.95515765901655,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-poll-on-an-interval",
+   "output_directory": "/tmp/v319r/teeth/logs/18",
+   "pid": 2633245,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3984
+  },
+  {
+   "budget_seconds": 212.85712230904028,
+   "cleanup": {
+    "directories": 3,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 70.93351370701566,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space319-run-row-without-its-hold",
+   "output_directory": "/tmp/v319r/teeth/logs/19",
+   "pid": 2633320,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3980
+  }
+ ]
+}

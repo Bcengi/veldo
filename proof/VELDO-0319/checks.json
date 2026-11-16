@@ -1,0 +1,422 @@
+[
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0319_space_screen"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0319_space_screen",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 21
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0319_space_ui"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0319_space_ui",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 13
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0342_member_picks"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0342_member_picks",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 18
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0340_review_groups"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0340_review_groups",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 16
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0318_unique_work"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0318_unique_work",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "149_veldo_0312_ticket_ended"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 149_veldo_0312_ticket_ended",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 41
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "71_veldo_0130_api"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 71_veldo_0130_api",
+  "note": "Not changed by this ticket: its tables name no read model one by one that the new reads would have to join.",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "104_veldo_0164_scoped_reads"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 104_veldo_0164_scoped_reads",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 19
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "113_veldo_0145_ui"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 113_veldo_0145_ui",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 7
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "117_veldo_0227_ui_location"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 117_veldo_0227_ui_location",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 7
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "118_veldo_0159_mcp_credential_form"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 118_veldo_0159_mcp_credential_form",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 7
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "119_veldo_0163_role_team_form"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 119_veldo_0163_role_team_form",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 10
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "120_veldo_0131_factory_ui"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 120_veldo_0131_factory_ui",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 14
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "121_veldo_0131_factory_screens_narrow"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 121_veldo_0131_factory_screens_narrow",
+  "note": "The rows ac1/screens-<width> open every factory screen in turn; under load a screen sometimes does not open in time (\"did not open\", a different screen each time). Seen on this tree and on an export of the base bf962cfc alike while another builder ran suites on the host. Runs on this tree: red (screens-390), green, red (screens-390), red (screens-390). Runs on the base: green, green, green. The entry is one green run; every row was green on this tree at least once.",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 2
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "122_veldo_0131_factory_screens_wide"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 122_veldo_0131_factory_screens_wide",
+  "note": "The rows ac1/screens-<width> open every factory screen in turn; under load a screen sometimes does not open in time (\"did not open\", a different screen each time). Seen on this tree and on an export of the base bf962cfc alike while another builder ran suites on the host. Runs on this tree: red in the earlier session (screens-1440), then green, green, green, green. Runs on the base: red (screens-1280), red (screens-1280), green. The entry is one green run; every row was green on this tree at least once.",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 2
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "124_veldo_0131_factory_reads_commands"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [],
+  "name": "targeted 124_veldo_0131_factory_reads_commands",
+  "processes": "space supervisors of this run: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 8
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "123_veldo_0174_conversations"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "failed_rows": [
+   "VELDO-0174 AC1/not-project",
+   "VELDO-0174 AC1/restart-open",
+   "VELDO-0174 AC1/version-owner",
+   "VELDO-0174 AC2/current-role-revision",
+   "VELDO-0174 AC2/durable-recovery",
+   "VELDO-0174 AC2/one-active-ordered",
+   "VELDO-0174 AC2/one-offer-per-pass",
+   "VELDO-0174 AC2/receiver-loss",
+   "VELDO-0174 AC2/restart-turns",
+   "VELDO-0174 AC3/parallel-conversations",
+   "VELDO-0174 AC3/three-running",
+   "VELDO-0174 AC3/turn-before-project",
+   "VELDO-0174 AC3/turn-first-slot",
+   "VELDO-0174 AC4/install-conversation-receiver",
+   "VELDO-0174 AC4/no-work-line",
+   "VELDO-0174 AC4/receiver-kind-refusal",
+   "VELDO-0174 AC4/unit-to-conversation"
+  ],
+  "name": "targeted 123_veldo_0174_conversations",
+  "note": "Not a console suite; run by mistake of its number. 17 rows red with AttributeError: 'types.SimpleNamespace' object has no attribute 'space', the same 17 on an export of the base bf962cfc (inherited, left).",
+  "processes": "space supervisors of this run: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 21
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "npm",
+   "run",
+   "typecheck"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "cwd": "engine/ui",
+  "exit_code": 0,
+  "name": "ui typecheck",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "npm",
+   "test"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "cwd": "engine/ui",
+  "detail": "Test Files 33 passed (33); Tests 155 passed (155)",
+  "exit_code": 0,
+  "name": "ui vitest",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "validate",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_docs.sh"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "docs",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "template-sync",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "lint",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_space_boundary.py"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "space-boundary",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "commit": "5f3afd347f7e72ccc7dd0bce5b1ace739ac90773",
+  "exit_code": 0,
+  "name": "git-boundary",
+  "status": "passed"
+ }
+]
