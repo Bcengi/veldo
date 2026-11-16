@@ -349,7 +349,7 @@ class ApiAuthority:
         connection now (VELDO-0319)."""
         def produce():
             scope = self._read_scope(principal)
-            answer = MO.read_model(self.S, self.conn, MO.SPACE_MODEL.name, scope=scope)
+            answer = MO.read_model(self.S, self.conn, MO.SPACE_MODEL.name, scope=scope, plain=True)
             carried = self._carried(answer['items']['space_hold'], scope) if view == 'pools' else None
             served = MO.space_view(self.conn, view, answer, scope.universal, carried)
             self._observe_read(principal, 'space.' + view, scope, served)

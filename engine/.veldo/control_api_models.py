@@ -254,8 +254,10 @@ def watermark(conn):
         {'seq': 0, 'record_digest': None, 'committed_at': None}
 
 
-def _item(store, conn, row, scope=None):
-    """(served item, redacted paths), or (None, the problem) for an entity that does not verify."""
+def _item(store, conn, row, scope=None, plain=False):
+    """(served item, redacted paths), or (None, the problem) for an entity that does not verify. With
+    `plain` the data is not redacted here: the space views are computed from the records and redacted as
+    views (space_view), since a redacted alias or path could no longer be joined or counted."""
     identity, kind, version, digest, text = row
     data = json.loads(text)
     if store.digest_of({'kind': kind, 'data': data, 'version': version}) != digest:
@@ -271,7 +273,7 @@ def _item(store, conn, row, scope=None):
     if kind == 'credential':
         data = {k: data[k] for k in CREDENTIAL_METADATA if k in data}
     served_data = scope.project_data(kind, data) if scope is not None else data
-    served, paths = redact(served_data, '$.' + identity)
+    served, paths = (served_data, []) if plain else redact(served_data, '$.' + identity)
     # A route's dispatch is a public authority identity, even when its random suffix
     # resembles entropy in a credential. Retain only a dispatch that the store owns.
     route = data.get('route') if kind == 'intake_proposal' else None
@@ -283,9 +285,12 @@ def _item(store, conn, row, scope=None):
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 
-def read_model(store, conn, name, scope=None):
+def read_model(store, conn, name, scope=None, plain=False):
     """One read model (or metadata read) from the authority's connection, in one read transaction at one
-    watermark. The repositories read's Git identities are added by the authority (`identities`)."""
+    watermark. The repositories read's Git identities are added by the authority (`identities`). `plain` is
+    for the space model alone, whose records are never served themselves (space_view redacts what is)."""
+    if plain and name != SPACE_MODEL.name:
+        raise ValueError('only the space model is read unredacted, for its views')
     model = MODELS.get(name) or METADATA.get(name) or {SPACE_MODEL.name: SPACE_MODEL}[name]
     kinds = [k.kind for k in model.kinds]
     items, problems, redacted = {k: [] for k in kinds}, [], []
@@ -298,7 +303,7 @@ def read_model(store, conn, name, scope=None):
                                 'ORDER BY kind, id' % ','.join('?' * len(kinds)), kinds).fetchall():
             if scope is not None and not scope.visible(row[0], row[1], json.loads(row[4])):
                 continue
-            item, extra = _item(store, conn, row, scope=scope)
+            item, extra = _item(store, conn, row, scope=scope, plain=plain)
             if item is None:
                 problems.append(extra)
                 continue
@@ -658,7 +663,7 @@ def space_pools(pools, holds, carried=None):
 
 
 def space_view(conn, view, answer, universal, carried=None):
-    """One space view from `answer`, the read of SPACE_MODEL at one watermark. A member whose scope is
+    """One space view from `answer`, the plain read of SPACE_MODEL at one watermark. A member whose scope is
     not universal is served the items, holds and groups of projects only: a plain repository and no
     project have no project a scope could cover. Every value is redacted like a read model's; the
     identities, which name what a command is sent for, are kept."""
@@ -682,29 +687,44 @@ def space_view(conn, view, answer, universal, carried=None):
     kept = _identities(body)
     served, paths = redact(body, '$.' + view)
     _restore(served, kept)
+    # A locator is a path, and the scanner reads a whole path as one long token. It is judged part by
+    # part instead: a part the scanner finds is replaced, the rest of the path is served.
+    located = [(path, _locator_served(text)) for path, text in _identities(body, fields=('locator',))]
+    _restore(served, located)
+    kept = kept + [(path, text) for path, text in located if MARKER not in text]
     named = {'$.' + view + ''.join('[%d]' % part if type(part) is int else '.' + part for part in path)
              for path, _original in kept}
     return dict(served, schema=SPACE_SCHEMA, view=view, problems=answer['problems'],
                 redacted=sorted(set(paths) - named), watermark=answer['watermark'], freshness=answer['freshness'])
 
 
-_IDENTITY_FIELDS = ('id', 'item', 'request', 'alias', 'group', 'run')
+_IDENTITY_FIELDS = ('id', 'item', 'request', 'alias', 'group', 'run', 'dispatch')
 
 
-def _identities(value, path=()):
+def _identities(value, path=(), fields=_IDENTITY_FIELDS):
     """Every identity field of a view with its place, so the redaction can be undone for them alone: a store
     identity may look like a credential to the scanner, and a command names its subject by it."""
     found = []
     if isinstance(value, dict):
         for key, item in value.items():
-            if key in _IDENTITY_FIELDS and isinstance(item, str):
+            if key in fields and isinstance(item, str):
                 found.append((path + (key,), item))
             else:
-                found.extend(_identities(item, path + (key,)))
+                found.extend(_identities(item, path + (key,), fields))
     elif isinstance(value, list):
         for index, item in enumerate(value):
-            found.extend(_identities(item, path + (index,)))
+            found.extend(_identities(item, path + (index,), fields))
     return found
+
+
+def _locator_served(text):
+    """A locator with each of its parts judged by the secret scanner alone: the parts between separators
+    of a path, and the words of any other locator. A part the scanner finds is the marker."""
+    def parts(piece, separators):
+        if not separators:
+            return MARKER if piece and SCAN.scan_text(piece) else piece
+        return separators[0].join(parts(one, separators[1:]) for one in piece.split(separators[0]))
+    return parts(text, ('/', ' '))
 
 
 def _restore(value, kept):

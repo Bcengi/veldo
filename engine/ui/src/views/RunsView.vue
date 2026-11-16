@@ -6,9 +6,6 @@ import StatePanel from '@/components/StatePanel.vue'
 import VButton from '@/components/VButton.vue'
 import RunList from '@/features/run/RunList.vue'
 import { LIVE_STATES, runsSummary } from '@/features/run/runs'
-import { holdNumbers, scopeLabel } from '@/features/space/space'
-import '@/styles/factory.css'
-import '@/features/space/space.css'
 import { useRunsStore } from '@/stores/runs'
 
 const runs = useRunsStore()
@@ -48,19 +45,6 @@ onMounted(() => void runs.refresh())
       @retry="runs.refresh()"
     >
       <div class="runs-groups" data-testid="runs">
-        <UCard v-if="runs.waitingForSpace.length" as="section" aria-labelledby="runs-space" data-testid="runs-waiting-space">
-          <template #header>
-            <h2 id="runs-space" class="panel-title">Waiting for space <span class="panel-count">{{ plural(runs.waitingForSpace.length, 'run', 'runs') }}</span></h2>
-          </template>
-          <ul class="factory-list">
-            <li v-for="hold in runs.waitingForSpace" :key="hold.id" class="factory-card" :data-hold="hold.id">
-              <span class="factory-card-title">A run of {{ scopeLabel(hold.scope) }} waits for space on {{ hold.pool }}</span>
-              <dl class="space-numbers" data-testid="hold-numbers">
-                <div v-for="n in holdNumbers(hold)" :key="n.label" :data-number="n.label.toLowerCase()"><dt>{{ n.label }}</dt><dd>{{ n.value }}</dd></div>
-              </dl>
-            </li>
-          </ul>
-        </UCard>
         <UCard v-for="group in groups" :key="group.id" as="section" :aria-labelledby="`runs-${group.id}`">
           <template #header>
             <h2 :id="`runs-${group.id}`" class="panel-title">{{ group.title }} <span class="panel-count">{{ plural(group.rows.length, 'run', 'runs') }}</span></h2>

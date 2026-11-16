@@ -5,13 +5,14 @@ import { readSpacePools, readWork, readWorkers } from '@/api/reads'
 import type { ReadAnswer, Watermark } from '@/api/types'
 import { useAsync } from '@/composables/useAsync'
 import { runRows, unitStateList, unitStates, type RunRow } from '@/features/run/runs'
-import { runHolds, type PoolsAnswer, type SpaceHold } from '@/features/space/space'
+import type { PoolsAnswer } from '@/features/space/space'
 
 /** The worker runs the signed-in member can see, from reads.workers, with each unit's state from reads.work. */
 export const useRunsStore = defineStore('runs', () => {
   const watermark = shallowRef<Watermark | null>(null)
   const work = shallowRef<ReadAnswer | null>(null)
-  /** VELDO-0319: the pools read, for the runs that wait or would have waited for space. */
+  /** VELDO-0319: the pools read, for the runs that wait or would have waited for space. A waiting run is a row
+   * of its own (runs.ts waitingRow): it has no dispatch yet. */
   const pools = shallowRef<PoolsAnswer | null>(null)
   const load = useAsync(
     async (signal) => {
@@ -33,15 +34,12 @@ export const useRunsStore = defineStore('runs', () => {
       }
       return runRows(workers, work.value, pools.value)
     },
-    // A run that waits for space has no dispatch yet: the list is not empty while one waits.
-    (rows) => rows.length === 0 && runHolds(pools.value).waiting.length === 0,
+    (rows) => rows.length === 0,
   )
   const rows = computed<RunRow[]>(() => load.data.value ?? [])
   const units = computed(() => unitStates(work.value))
   /** Every unit's state, or null when the work read was refused. */
   const unitList = computed(() => unitStateList(work.value))
-  /** The holds that wait for space and have no dispatch yet. */
-  const waitingForSpace = computed<SpaceHold[]>(() => runHolds(pools.value).waiting)
 
   function find(dispatch: string) {
     return rows.value.find((r) => r.dispatch === dispatch) ?? null
@@ -54,5 +52,5 @@ export const useRunsStore = defineStore('runs', () => {
     pools.value = null
   }
 
-  return { state: load.state, refusal: load.refusal, rows, units, unitList, waitingForSpace, watermark, refresh: load.run, find, reset }
+  return { state: load.state, refusal: load.refusal, rows, units, unitList, watermark, refresh: load.run, find, reset }
 })

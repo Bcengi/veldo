@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { PendingDecision } from '@/features/decisions/inbox'
 import {
   abandonText, bytesText, countText, holdSentence, hostNote, isEmpty, memberPicks, ownerText, pendingGroups, pendingReason,
-  removedSpace, retryText, runHolds, scopeLabel, usageRows,
+  removedSpace, retryText, runHolds, scopeLabel, sizeText, usageRows,
   type PendingAnswer, type PendingItem, type PoolsAnswer, type RemovedItem, type SpaceHold, type SpaceRead, type UsageAnswer,
 } from './space'
 
@@ -73,6 +73,9 @@ describe('usageRows', () => {
   it('says how many items were never measured, and is empty for no read', () => {
     expect(countText(usage.total)).toBe('4 items, 1 not measured')
     expect(countText({ bytes: 1, items: 1, unmeasured: 0 })).toBe('1 item')
+    expect(sizeText({ bytes: 0, items: 2, unmeasured: 2 })).toBe('not measured')
+    expect(sizeText({ bytes: 5, items: 2, unmeasured: 1 })).toBe('5 B')
+    expect(sizeText({ bytes: 0, items: 0, unmeasured: 0 })).toBe('0 B')
     expect(usageRows(null)).toEqual([])
   })
 })

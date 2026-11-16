@@ -9,15 +9,22 @@ import '@/features/space/space.css'
 
 /** Worker runs as rows: the run's lamp, its unit, its project and host, where the unit is on the line, and its
  * status as a badge with its word. A row opens the run. Used by the runs screen and the overview. A run that would
- * have waited for space says so in one line, with need, free, held and floor (VELDO-0319). */
+ * have waited for space says so in one line, with need, free, held and floor, and a run that waits for space is a
+ * row with the same line and no run to open: it has no dispatch yet (VELDO-0319). */
 const props = defineProps<{ runs: RunRow[] }>()
 const BADGE = { live: 'success', waiting: 'warning', stop: 'error', done: 'neutral', here: 'primary', off: 'neutral' } as const
 </script>
 
 <template>
   <ul class="runs">
-    <li v-for="run in props.runs" :key="run.dispatch">
-      <RouterLink :to="{ name: 'run', params: { dispatch: run.dispatch.split('/') } }" class="run-row" :data-dispatch="run.dispatch">
+    <li v-for="run in props.runs" :key="run.dispatch || run.space?.id">
+      <component
+        :is="run.dispatch ? 'RouterLink' : 'div'"
+        v-bind="run.dispatch ? { to: { name: 'run', params: { dispatch: run.dispatch.split('/') } } } : {}"
+        class="run-row"
+        :data-dispatch="run.dispatch || undefined"
+        :data-hold="run.dispatch ? undefined : run.space?.id"
+      >
         <Lamp :state="runSignal(run.state, run.unitState).lamp" :label="runSignal(run.state, run.unitState).word" />
         <span class="run-main">
           <span class="run-unit">{{ run.unit }}</span>
@@ -36,7 +43,7 @@ const BADGE = { live: 'success', waiting: 'warning', stop: 'error', done: 'neutr
           variant="subtle"
           :label="runSignal(run.state, run.unitState).word"
         />
-      </RouterLink>
+      </component>
     </li>
   </ul>
 </template>

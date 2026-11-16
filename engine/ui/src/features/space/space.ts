@@ -196,6 +196,11 @@ export function scopeKind(scope: SpaceScope): string {
   return scope.type === 'project' ? 'Project' : scope.type === 'plain_repository' ? 'Plain repository' : 'Sessions outside every project'
 }
 
+/** The size of a usage row: its bytes, or that nothing in it was ever measured (never a zero that was not read). */
+export function sizeText(figures: UsageFigures): string {
+  return figures.items > 0 && figures.unmeasured === figures.items ? 'not measured' : bytesText(figures.bytes)
+}
+
 export function countText(figures: UsageFigures): string {
   const base = plural(figures.items, 'item', 'items')
   return figures.unmeasured ? `${base}, ${figures.unmeasured} not measured` : base

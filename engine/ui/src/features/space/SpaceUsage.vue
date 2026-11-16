@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDesktop } from '@/composables/useMedia'
-import { bytesText, countText, usageRows, type UsageAnswer } from './space'
+import { bytesText, countText, sizeText, usageRows, type UsageAnswer } from './space'
 
 /** Usage (design 10): bytes and item counts by project, plain repository or no project, then ticket, then kind,
  * with the event each kind's sizes were measured at. A table on a desktop, the same rows as a list on a phone.
@@ -24,7 +24,7 @@ const rows = computed(() => usageRows(props.usage))
           <tbody>
             <tr v-for="row in rows" :key="row.key" :class="`space-level-${row.level}`" :data-usage="row.key" :data-level="row.level">
               <td>{{ row.label }}<span class="space-detail">{{ row.detail }}</span></td>
-              <td class="space-num" data-testid="usage-bytes" :data-bytes="row.bytes">{{ bytesText(row.bytes) }}</td>
+              <td class="space-num" data-testid="usage-bytes" :data-bytes="row.bytes">{{ sizeText(row) }}</td>
               <td class="space-num" data-testid="usage-items" :data-items="row.items">{{ countText(row) }}</td>
             </tr>
           </tbody>
@@ -40,7 +40,7 @@ const rows = computed(() => usageRows(props.usage))
       <ul v-else class="space-tree" aria-label="Space used by project, ticket and kind">
         <li v-for="row in rows" :key="row.key" class="space-tree-row" :class="`space-level-${row.level}`" :data-usage="row.key" :data-level="row.level">
           <span class="space-tree-label">{{ row.label }}<span class="space-detail">{{ row.detail }}; {{ countText(row) }}</span></span>
-          <span class="space-num" data-testid="usage-bytes" :data-bytes="row.bytes" :data-items="row.items">{{ bytesText(row.bytes) }}</span>
+          <span class="space-num" data-testid="usage-bytes" :data-bytes="row.bytes" :data-items="row.items">{{ sizeText(row) }}</span>
         </li>
         <li class="space-tree-row space-level-0" data-usage="total">
           <span class="space-tree-label">Total<span class="space-detail">{{ countText(props.usage.total) }}</span></span>
