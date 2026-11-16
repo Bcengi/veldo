@@ -229,8 +229,7 @@ class WorktreeProvisioner:
                       non-forced remove takes it. A worktree with an untracked file, or anything
                       else a rule keeps, stays on disk and is deferred on the record. A worktree
                       no item records stays too. This module runs no git remove of its own then.
-      without one     removal is refused as not_in_ledger. No standalone look can authorize
-                      deletion without the item's owner and item-naming signal.
+      without one     the standalone remover looks, keeps the commits, then removes without force.
 
     remove returns what became of the worktree, {path, item, state, deferral}, and `deferred` lists
     every worktree a remove left in place, with the reason."""
@@ -266,9 +265,18 @@ class WorktreeProvisioner:
         elif space_absent(path):
             entry = {"path": path, "item": None, "state": "gone", "deferral": None}  # idempotent
         else:
-            # Without an item and its owner no ending event can authorize a removal.
-            entry = {"path": path, "item": None, "state": None,
-                     "deferral": "not_in_ledger", "said": "removal requires a recorded owner and item"}
+            # No ledger: nothing judges this removal but the look made here, and nothing is removed
+            # that it did not answer for. git's non-forced remove runs only after the keep step.
+            entry = dict(_load("veldo_space_remove_fl", ".veldo/control_space_remove.py").remove_standalone(
+                path, "worktree", main=self.repo_root, event="worktree_abandoned", worktree=_git_worktree),
+                         path=path)
+            if entry["state"] == "kept":
+                try:
+                    entry["state"] = "removed"
+                except WorktreeError as error:
+                    entry.update(state=None, deferral="remove_refused", said=str(error))
+            elif entry["state"] != "gone":
+                entry.update(state=None, deferral=entry.get("deferral") or "remove_refused")
         if entry["state"] not in SPACE_ENDED:
             self.deferred.append(entry)
         return entry

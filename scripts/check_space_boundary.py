@@ -123,6 +123,7 @@ REVIEWED = {
     ('scripts/suite_equiv.py', 'main'): 'Lead decision class: only each mkdtemp result this call created with its own prefix.',
 }
 REMOVERS = {
+    ('engine/.veldo/control_space_remove.py', 'remove_standalone'): 'Fresh standalone look and keep, then non-forced removal.',
     ('engine/.veldo/control_space_remove.py', 'remove_ref'): 'Ended ledger item, verified keep and compare-and-delete.',
     ('engine/.veldo/control_space_remove.py', '_worktree_remove'): 'The existing non-forced worktree remover.',
     ('engine/.veldo/control_space_remove.py', '<module>'): 'The existing measured engine remover table.',

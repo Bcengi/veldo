@@ -1016,11 +1016,11 @@ def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=No
     return call
 
 
-def remove_ref(repository, ref, ledger=None, identity=None):
+def remove_ref(repository, ref, ledger=None, identity=None, standalone=None, main=None):
     """Release an internal pin only after its owner's recorded removal and verified keep.
 
-    There is no standalone authority to delete a ref. Without the ledger item,
-    its ending event and a verified keep record this refuses and leaves the ref.
+    The authority is an ended ledger item or a standalone keep result.
+    A missing or unverifiable keep refuses and leaves the ref.
     The main repository must still reach its commit through a kept ref or branch.
     A temporary ref unique even there stays for a later keep attempt. Branches,
     tags, stashes and kept refs are never accepted by this entry.
@@ -1036,14 +1036,23 @@ def remove_ref(repository, ref, ledger=None, identity=None):
         code, out = _git(commands, '-C', repository, 'check-ref-format', ref)
         if code != 0:
             raise ValueError('invalid ref name')
-        record = ledger.item(identity) if ledger is not None and identity else None
-        if (not record or not record.get('owner') or record.get('owner_keep')
-                or record.get('state') != 'removed' or not (record.get('due') or {}).get('event')):
-            return dict(answer, deferral='not_in_ledger', said='no ended owner item authorizes this ref removal')
         keeper = _sibling('control_space_keep')
-        if keeper.verify(ledger, identity).get('ok') is not True:
-            raise ValueError('the keep record could not be verified')
-        main = _plain(ledger.main_repository(identity))
+        if ledger is not None:
+            record = ledger.item(identity) if identity else None
+            if (not record or not record.get('owner') or record.get('owner_keep')
+                    or record.get('state') != 'removed' or not (record.get('due') or {}).get('event')):
+                return dict(answer, deferral='not_in_ledger', said='no ended owner item authorizes this ref removal')
+            if keeper.verify(ledger, identity).get('ok') is not True:
+                raise ValueError('the keep record could not be verified')
+            main = _plain(ledger.main_repository(identity))
+        else:
+            if not standalone or standalone.get('state') not in SPACE_SAFE:
+                raise ValueError('no standalone keep result authorizes this ref removal')
+            main = _plain(str(main or standalone.get('repository')))
+            for kept_ref, commit in (standalone.get('refs') or {}).items():
+                code, out = _git(commands, '-C', main, 'show-ref', '--verify', '--hash', kept_ref)
+                if code != 0 or out.strip() != commit:
+                    raise ValueError('the standalone keep could not be verified')
         code, out = _git(commands, '-C', repository, 'symbolic-ref', '-q', ref)
         if code != 1:
             raise ValueError('a symbolic or unreadable ref is not removable')
@@ -1066,3 +1075,58 @@ def remove_ref(repository, ref, ledger=None, identity=None):
         return dict(answer, ok=True, deferral=None, commit=old, repository=main)
     except Exception as error:  # noqa: BLE001 - no unread fact permits a delete
         return dict(answer, said=_said(error))
+
+
+SPACE_SAFE = ('gone', 'clear', 'kept')
+
+
+def remove_standalone(path, kind, main=None, event='run_finished', ticket=None,
+                      candidate=None, projected=(), remote=None, filesystem=None, worktree=None):
+    """No ledger: make the accepted standalone look and keep step here, then remove.
+
+    A caller cannot supply an earlier safe answer. Rebuildable landing candidates
+    use the accepted candidate look; every other repository needs its kept refs.
+    Folder deletion uses the descriptor-based folder remover; worktrees use git's
+    non-forced remover. The answer retains the look's state and adds removed.
+    """
+    look = _sibling('control_space_standalone')
+    path = str(path)
+    answer = None
+    if candidate is not None:
+        answer = look.candidate(path, str(main) if main is not None else None,
+                                candidate, projected, remote)
+    if answer is None or answer['state'] != look.REBUILDABLE:
+        answer = look.standalone(path, kind, main=None if main is None else str(main),
+                                 event=event, ticket=ticket)
+    if answer['state'] not in (*SPACE_SAFE, look.REBUILDABLE):
+        return answer
+    if answer['state'] == 'gone':
+        return dict(answer, removed=True)
+    try:
+        path = _plain(path)
+        if kind == 'worktree':
+            if answer['state'] != 'kept':
+                raise ValueError('the worktree has no verified keep')
+            if worktree is None:
+                code, out = _worktree_remove({'commands': []}, str(main), path)
+                if code != 0:
+                    raise ValueError(out)
+            else:
+                worktree(['remove', path], cwd=str(main))
+        else:
+            if mount_point(path):
+                raise ValueError('the folder is a mount point')
+            parent = _parent(path)
+            try:
+                base = os.path.basename(path)
+                device = os.lstat(base, dir_fd=parent).st_dev
+                measure(base, device, open_up=True, own=kind == 'agent_repository', dir_fd=parent)
+                if filesystem is None:
+                    _delete(base, parent, device)
+                else:
+                    filesystem.rmtree(base, dir_fd=parent)
+            finally:
+                os.close(parent)
+        return dict(answer, removed=True)
+    except Exception as error:
+        return dict(answer, state=None, deferral='remove_refused', said=_said(error), removed=False)

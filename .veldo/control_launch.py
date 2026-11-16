@@ -1628,10 +1628,11 @@ class Runner:
                                              'refusal': space_refusal(found), 'space': found})
                     continue
             else:
-                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}
-                self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                          'refusal': space_refusal(found), 'space': found})
-                continue
+                found = _organ('control_space_remove').remove_standalone(place, 'folder')
+                if found['state'] not in SPACE_SAFE:
+                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                              'refusal': space_refusal(found), 'space': found})
+                    continue
             if os.path.lexists(place):
                 refused = {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'}
                 if self.space is not None:
@@ -2348,8 +2349,9 @@ class Receiver:
                 self.run_sent = False
         elif not stays:
             self._unstage_skills()
-            self.run_removal = {'path': str(run), 'item': None, 'state': None,
-                                'deferral': 'not_in_ledger', 'refusal': 'space_deferred:not_in_ledger'}
+            found = _organ('control_space_remove').remove_standalone(run, 'folder')
+            self.run_removal = (None if found['state'] in SPACE_SAFE
+                                else dict(found, refusal=space_refusal(found)))
 
     def _group_empty(self):
         """Whether the run's containment group is empty, as the kernel answered when the receiver settled it:

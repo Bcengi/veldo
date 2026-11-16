@@ -747,11 +747,11 @@ class Clones(EP.EnvProvisioner):
             raise Refused('stale_input:commit_unavailable', 'the pinned object is not the named commit')
         return {'cache': str(cache), 'ref': ref, 'commit': commit}
 
-    def _release(self, cache, ref, identity=None):
+    def _release(self, cache, ref, identity=None, standalone=None, main=None):
         """Release only through the remover after the owning item's keep and outcome."""
         identity = identity or getattr(self, '_ref_items', {}).get((str(cache), ref))
         ledger = (self.space or {}).get('ledger')
-        answer = _organ('control_space_remove').remove_ref(str(cache), ref, ledger, identity)
+        answer = _organ('control_space_remove').remove_ref(str(cache), ref, ledger, identity, standalone=standalone, main=main)
         if not hasattr(self, 'ref_outcomes'):
             self.ref_outcomes = {}
         self.ref_outcomes[ref] = answer
@@ -995,7 +995,7 @@ class Clones(EP.EnvProvisioner):
     def _teardown(self, handle):
         """Retire a clone: once every worker and consumer has ended, remove it and release its pins.
         Idempotent; a clone still in use is refused clone_in_use and keeps its pins. Without a ledger,
-        retirement refuses as space_deferred:not_in_ledger and preserves the clone and pins. With a
+        the standalone remover looks and keeps before removing the clone and releasing pins. With a
         ledger, Signal names the items and applies the safety rules and keep step. Pin release then
         requires a verified keep record and reachability from the main repository. A refused pin
         release leaves the ref in place and records the reason."""
@@ -1018,7 +1018,7 @@ class Clones(EP.EnvProvisioner):
                 raise Refused(refusal, str(root))
             self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users, released=released)
             return
-        # No ledger: no item-naming ending event can authorize removal.
+        # No ledger: the standalone remover owns the look, keep step and removal.
         try:
             main = self.store.bound_repository(self.conn, manifest['domain'], manifest['repository'])
         except Exception:  # noqa: BLE001 - a repository that cannot be named keeps the clone
@@ -1036,10 +1036,25 @@ class Clones(EP.EnvProvisioner):
                     kept=looked[0].get('refs') or {})
 
     def _standalone(self, root, work, pins, main, ticket):
-        """Without a ledger there is no item-naming event: keep the whole clone and its pins."""
-        looked = [{'path': str(path), 'item': None, 'state': None, 'deferral': 'not_in_ledger',
-                   'said': 'removal requires a recorded owner and item'} for path in (work, root)]
-        return looked, []
+        """VELDO-0303, with no ledger: look at the clone's work tree as a private repository of `main` (its
+        commits go to kept refs there) and at its root as a folder, and only when both are answered for
+        delete the work tree, release the pins and delete the rest. Returns (the two answers, the refs
+        released). A clone the look does not answer for is left whole, with its pins."""
+        root = Path(root)
+        looked = [space_standalone(work, 'agent_repository', main=main, ticket=ticket),
+                  space_standalone(root, 'folder', skip=[work])]
+        released = []
+        if all(entry['state'] in SPACE_SAFE for entry in looked):
+            remover = _organ('control_space_remove')
+            looked[0] = remover.remove_standalone(work, 'agent_repository', main=main, ticket=ticket, filesystem=shutil)
+            if space_absent(work):
+                remover.remove_standalone(root / 'scratch', 'folder')
+                for pin in pins:
+                    answer = self._release(Path(pin['cache']), pin['ref'], standalone=looked[0], main=main)
+                    if answer['ok']:
+                        released.append(pin['ref'])
+                looked[1] = remover.remove_standalone(root, 'folder')
+        return looked, released
 
     def _through_space(self, root, work, pins, confirm=False):
         """VELDO-0303: send run finished through Signal for the clone's items (its work tree, its scratch

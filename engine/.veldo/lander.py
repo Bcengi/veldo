@@ -638,8 +638,14 @@ class GitLandOps(LandOps):
         return json.loads(json.dumps(self.candidate)) if self.candidate is not None else None
 
     def discard(self):
-        """End the candidate through its named ledger items and their keep step.
-        Without a ledger, keep the workspace and observation folder with a named refusal."""
+        """Remove the candidate workspace. A candidate is disposable, and its commits are still work: with
+        no ledger it goes with no kept ref written only when every commit it holds is held elsewhere or
+        is one the lander makes again (space_rebuildable), so that a refused land leaves the caller's
+        repository as it was (VELDO-0056); any other workspace has its commits written on kept refs in
+        the caller's repository first (space_standalone).
+        With a space ledger (VELDO-0303) the workspace, a private repository, and the observation
+        folder go through Signal: the rules, the keep step for the workspace, then the folder remover.
+        What a rule keeps stays on disk, deferred on the record, and the candidate says so under space."""
         c = self.candidate
         if c and self.space is not None:
             paths = [c["workspace"]] if c.get("workspace") and os.path.isdir(c["workspace"]) else []
@@ -652,16 +658,26 @@ class GitLandOps(LandOps):
                 if c.get("workspace") in paths:
                     c["discarded"] = found[os.path.normpath(c["workspace"])]["state"] in SPACE_ENDED
             return
-        if c:
-            paths = [c['workspace']] if c.get('workspace') else []
-            if c.get('observation_dir') and self.observations is None:
-                paths.append(c['observation_dir'])
-            for path in paths:
-                if not space_absent(path):
-                    c.setdefault('space', {})[path] = {'path': path, 'item': None, 'state': None,
-                                                       'deferral': 'not_in_ledger',
-                                                       'refusal': 'space_deferred:not_in_ledger'}
-            c['discarded'] = bool(c.get('workspace')) and space_absent(c['workspace'])
+        # No ledger: the unique work probe and the keep step by themselves, before either delete. The
+        # workspace is a private repository of the caller's: its commits go to kept refs there first, and
+        # one that holds unsaved files stays, as the candidate says under space.
+        # VELDO-0303 fix: but first the look that writes nothing. A candidate whose every commit is held
+        # by the caller's refs or the fetched trunk, or is the lander's own merge or projection, is
+        # removed with no kept ref; whatever that look does not clear takes the path above (fail closed).
+        # Fix 2: no ref of the workspace says what is held, and a commit no ref of the caller holds, the
+        # fetched trunk first of all, counts only while the remote's trunk, read now, contains it.
+        if c and c.get("workspace") and os.path.isdir(c["workspace"]):
+            found = _load("veldo_space_remove_ld", "control_space_remove.py").remove_standalone(
+                c["workspace"], "agent_repository", main=self.repo_root, candidate=c,
+                projected=REGEN_PATHS, remote=self._remote_trunk if c.get("remote") else None)
+            if not found.get("removed"):
+                c.setdefault("space", {})[c["workspace"]] = dict(found, refusal=space_refusal(found))
+            c["discarded"] = not os.path.exists(c["workspace"])
+        if c and c.get("observation_dir") and self.observations is None and os.path.isdir(c["observation_dir"]):
+            found = _load("veldo_space_remove_ld", "control_space_remove.py").remove_standalone(
+                c["observation_dir"], "folder")
+            if found["state"] not in SPACE_SAFE:
+                c.setdefault("space", {})[c["observation_dir"]] = dict(found, refusal=space_refusal(found))
 
     def _remote_trunk(self):
         """VELDO-0303 fix 2: the commit the remote's trunk names now, asked of the remote itself with the

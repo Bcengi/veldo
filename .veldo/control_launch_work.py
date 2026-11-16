@@ -154,8 +154,11 @@ class Runtime:
     def close(self):
         for directory in self.candidates:
             if self.space is None:
-                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}
-                self.kept.append(dict(found, refusal=space_refusal(found)))
+                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose
+                # commits are not on kept refs in the repository, or that holds unsaved files, stays.
+                found = organ('control_space_remove').remove_standalone(directory, 'agent_repository', main=self.root)
+                if found['state'] not in SPACE_SAFE:
+                    self.kept.append(dict(found, path=directory, refusal=space_refusal(found)))
                 continue
             # VELDO-0303: a candidate folder is a private repository. It goes through Signal, after the rules
             # and the keep step, or it stays and the deferral is on the record.

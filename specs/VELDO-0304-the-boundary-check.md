@@ -43,6 +43,8 @@ footprint:
   - "engine/.veldo/control_space_spool.py"
   - ".veldo/control_space_spool.py"
   - "scripts/check_space_boundary.py"
+  - "engine/.veldo/control_retirement.py"
+  - ".veldo/control_retirement.py"
   - "engine/.veldo/control_clone.py"
   - ".veldo/control_clone.py"
   - "engine/.veldo/control_batch.py"
@@ -128,6 +130,14 @@ The check is called from scripts/verify.sh, a protected path (policy.yaml:83). T
 approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: FIX ROUND lead decision clarifying RESUME 2: "through the removers"
+  includes the removers' STANDALONE entry. Without the space service or ledger,
+  removal still follows the look and keep step through that entry, never outside
+  the removers and never forced. A missing ledger is NOT a refusal. Suite 142,
+  VELDO-0303's accepted contract, stays unchanged and must pass. This supersedes
+  the earlier missing-ledger refusal interpretation below. Footprint extended to
+  control_retirement.py and its installed copy for item-bound pin release.
 
 - 2026-11-15: boundary implementation and targeted falsifiers are built. The three ref callers use
   the verified ref remover. No-ledger calls preserve their inputs and refuse as not_in_ledger;
