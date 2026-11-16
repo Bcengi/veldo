@@ -16341,6 +16341,14 @@ def cases():
         '                return 0\n', ['space315/cli/service-project'])
     result[-1]['dir'] = 'bin'
 
+    # Fix round 4 (the second re-review). Finding 2: the dispatcher stops after a task that failed,
+    # as after a failed event dispatch. Finding 3: the reconcile's answer is waited for inside the
+    # request, so nothing else is served until the worker is done.
+    add(315, 'space315-failed-task-stops-the-dispatcher', '156_veldo_0315_reconcile.py', 'control_space_consumer.py',
+        "        if advance and (self.tasked or self.tasks or (status == 0 and answer.get('ok') and finished)):\n",
+        "        if advance and (self.tasks or (status == 0 and answer.get('ok') and finished)):\n",
+        ['space315/ac3/failed-task-advances'])
+
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
 

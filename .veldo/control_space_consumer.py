@@ -2,8 +2,10 @@
 
 Each child opens its own store connection. A lock survives a service restart while its old
 child finishes, so a replacement service cannot run a second remover beside it. The output
-pipe is drained by the service poll set. A failed worker leaves the record for the next
-journal advance or start; it is never retried by a timer.
+pipe is drained by the service poll set. A failed event dispatch leaves its record for the next
+journal advance or start; it is never retried by a timer. That rule is the dispatch's alone: after
+a task (a reconcile, a retry, a replay), whatever its answer and also when its worker was lost,
+the dispatcher goes on, so a record received while the task ran is consumed.
 
 The child closes what the service holds and it must not keep: the descriptors and connections
 `held` names (the service's lock, listeners, pipes and store, and the store connections of its
@@ -47,6 +49,7 @@ class Consumer:
         self.reconcile = None
         self.last_answer = None
         self.tasks, self.task = {}, None
+        self.tasked = False  # whether the active or last child ran a task, and no event dispatch
         self.startup_received = False
         self.head, self.dispatched = 0, None
         self.watched = {}
@@ -129,6 +132,7 @@ class Consumer:
         if self.active:
             return
         ledger = self.ledger
+        self.tasked = task is not None
         self.head = ledger.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
         self.dispatched = next((identity for identity, record in ledger.events()
                                 if record['state'] == 'received'), None) if task is None else None
@@ -273,5 +277,7 @@ class Consumer:
             for one in (record['result'] or {}).get('held') or ():
                 if one.get('why') == 'client_alive':
                     self._watch(self.dispatched, record, one.get('item'))
-        if advance and (self.tasks or (status == 0 and answer.get('ok') and finished)):
+        # Stop on failure is the rule of a failed event dispatch only: its record waits for the next
+        # journal advance. A task's answer never holds back what was received while it ran.
+        if advance and (self.tasked or self.tasks or (status == 0 and answer.get('ok') and finished)):
             self.advance()

@@ -658,6 +658,43 @@ def _v315_suite():
 
         case('ac7/stop-reaps', stop_reaps)
 
+        def failed_task(f, row):
+            # The second re-review's finding 2, in its probe's shape: a record is received while a
+            # worker task runs, and the task then fails, or its worker is lost.
+            consumer = f.service.space_consumer
+
+            def drain():
+                deadline = time.monotonic() + 60
+                while consumer.active and time.monotonic() < deadline:
+                    for fd in select.select(list(consumer.pipes()), [], [], 0.1)[0]:
+                        consumer.readable(fd)
+
+            for number, (how, ending) in enumerate((('refused', lambda: {'ok': False, 'reason': 'fixture_refusal'}),
+                                                    ('lost', lambda: os._exit(3)))):
+                reading, writing = os.pipe()
+
+                def task(ending=ending, reading=reading):
+                    os.read(reading, 1)
+                    return ending()
+                ticket = consumer.submit(('reconcile', 'fixture', how), task)
+                event = f.L.event('session_ended', {'session': 'during-' + how, 'cwd': str(f.root), 'pid': 12345,
+                                                    'started': 77 + number}, {'hook': 'session-end', 'host': 'fixture'})
+                assert event['ok'], event
+                consumer.advance()  # the journal advance of that record: the worker is busy with the task
+                busy = consumer.active is not None and f.L.event_record(event['event'])['state'] == 'received'
+                os.write(writing, b'x')
+                drain()
+                os.close(reading)
+                os.close(writing)
+                check(row, 'a record received while a task ran is consumed after the task ended %s [%s %s]'
+                      % (how, ticket['answer'], f.L.event_record(event['event'])['state']),
+                      busy and ticket['done'] and ticket['answer'].get('ok') is False
+                      and ticket['answer'].get('reason') == ('fixture_refusal' if how == 'refused' else 'space_worker_lost')
+                      and f.L.event_record(event['event'])['state'] == 'consumed' and consumer.active is None)
+            f.service.space_stop()
+
+        case('ac3/failed-task-advances', failed_task)
+
         class Docker:
             def __init__(self, ledger):
                 self.ledger, self.streams, self.starts, self.snapshots = ledger, {}, 0, 0
