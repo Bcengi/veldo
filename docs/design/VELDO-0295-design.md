@@ -1676,14 +1676,22 @@ the worktree removed with the force option. What Discard removes from disk is un
 tracked edits, staged changes and untracked files. Since section 0 it saves them first, as a snapshot
 in the snapshot store, so it loses nothing (0.3).
 
+For this test only a branch holds a commit, because no branch is ever deleted. A tag can be moved or
+deleted and a remote-tracking ref goes with a prune (section 0), so a commit that only one of them
+reaches gets a kept branch like any other. A kept name is taken when a branch holding other work has
+it, when another open request has named it, and when the branch item at it is due, deferred or
+removing, since no kept branch is recorded onto an item that is on its way out; the next name is used.
+
 The order has one failure. When the branch cannot be created, because the name is taken by a branch
 that does not hold the commit or because git refuses the ref, the discard does not run and the worktree
 is deferred as remove_refused with everything in it. Discard never proceeds without the branch.
 
 The commit has a ref at every point where the process can stop. Before the branch it is on the kept ref
 the keep step wrote, and the worktree is untouched. Between the branch and its record it is on both,
-and the next Discard of that worktree finds the branch at its commit under the same name and records
-it: one branch, one item, never a second name. After the record it is on the recorded branch.
+and reconcile, as it defers the removing worktree at the next start, finds the branch at the commit
+under the name the terms showed and records it, so an owner's Keep that follows leaves no unrecorded
+branch. The next Discard of that worktree finds the same branch under the same name: one branch, one
+item, never a second name. After the record it is on the recorded branch.
 
 Creating the branch is a ref write. It is not a removal, so Discard stays the one forced removal. It is
 not a commit, so "Veldo never commits on its own" still holds. git runs the reference-transaction hook

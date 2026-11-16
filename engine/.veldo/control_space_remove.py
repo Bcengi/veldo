@@ -873,6 +873,7 @@ def disposition_branch(record, taken=None):
 
 
 BRANCH_NAMES = 1000
+BRANCH_LEAVING = ('due', 'deferred', 'removing')  # a live branch item keep_branch does not record onto
 
 
 def _kept_home(ledger, identity, record, path):
@@ -905,9 +906,15 @@ def _branch_holds(commands, path, branch, home=None):
 
 def _free_branch(ledger, identity, record, path, commands):
     """The next kept branch name free for this worktree: one that no branch holding other work has,
-    and that no other item's open request has named for its detached commits."""
+    that no other item's open request has named for its detached commits, and that no branch item
+    on its way out (due, deferred or removing) has: the Ledger records no kept branch onto such an
+    item, so its name is taken whether or not the branch holds this commit (VELDO-0343 fix round 2)."""
     named = set()
+    main = ledger.main_repository(identity)
     for other, item in ledger.items().items():
+        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING
+                and (item.get('locator') or {}).get('repository') == main):
+            named.add(item['locator'].get('ref'))
         decision = item.get('disposition') or {}
         if other != identity and decision.get('state') in ('requested', 'authorized'):
             for tree in (decision.get('proposal') or {}).get('worktrees') or ():
@@ -1029,16 +1036,20 @@ def _r_disposition(ctx, identity, record, answer):
     _r_worktree(ctx, identity, record, answer)
 
 
-HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')  # rule 5's: a kept ref and a stash hold nothing
+# Only a branch holds a commit for a Discard: Veldo never deletes one. A tag can be moved or deleted
+# and a remote-tracking ref goes with a prune (design 0), so neither is trusted alone, and a kept ref
+# and a stash hold nothing (lead decision, VELDO-0343 fix round 2).
+HOLDING_REFS = ('refs/heads/',)
 
 
 def _discard_branch(ctx, identity, record, path, answer, shown, kept):
     """Only the settled Discard path calls this, before the worktree is moved or removed. For a
-    detached worktree whose checked-out commit no branch, tag or remote-tracking ref of its repository
-    reaches, create the kept branch at that commit, read it back, and have the Ledger record it as a
-    branch item in state kept. The branch is written in the main repository, for an agent's worktree
-    too (_kept_home): never in the agent repository, which is removed later. The branch is named as Save names one: the name the terms showed, or
-    the next one free. It is a ref write: no commit is made and nothing is removed. Any failure is the
+    detached worktree whose checked-out commit no branch of its repository reaches, create the kept
+    branch at that commit, read it back, and have the Ledger record it as a branch item in state kept.
+    A commit only a tag or a remote-tracking ref reaches gets a kept branch like any other. The branch
+    is written in the main repository, for an agent's worktree too (_kept_home): never in the agent
+    repository, which is removed later. The branch is named as Save names one: the name the terms
+    showed, or the next one free. It is a ref write: no commit is made and nothing is removed. Any failure is the
     refusal remove_refused, and the worktree stays with everything in it.
 
     A worktree on a branch needs none: Discard removes the worktree and never the branch, in an agent
@@ -1064,7 +1075,7 @@ def _discard_branch(ctx, identity, record, path, answer, shown, kept):
     if holds is not False:
         if holders:
             answer['commit_held_by'] = holders[:NAMED]
-            return  # a ref reaches the commit: it survives the worktree
+            return  # a branch reaches the commit: it survives the worktree
         if holds:
             raise _Refusal(REFUSED, 'the kept branch name is taken by a branch that does not hold the commit',
                            kept_branch=branch, commit=commit)
@@ -1087,6 +1098,36 @@ def _discard_branch(ctx, identity, record, path, answer, shown, kept):
     if not isinstance(recorded, dict) or recorded.get('ok') is not True:
         raise _Refusal(REFUSED, 'the Ledger did not record the kept branch', kept_branch=branch, found=recorded)
     answer['kept_branch'], answer['kept_branch_item'] = branch, recorded.get('branch_item')
+
+
+def record_left_branch(ledger, identity, record, commands=None):
+    """Reconcile calls this for a removing item it is about to defer. A Discard that stopped between
+    its kept branch's write and the Ledger's record left a branch no item records. When the item is
+    a worktree removing under an authorized Discard and the kept branch its terms named is there at
+    the worktree's HEAD, the Ledger records it now, so an owner's Keep that follows cannot leave it
+    unrecorded (VELDO-0343 fix round 2). It writes no ref and removes nothing; the Ledger reads the
+    HEAD, the attachment and the branch itself and refuses what it does not find. Returns the
+    Ledger's answer, or None when there is nothing to record or it could not be read."""
+    decision = record.get('disposition') or {}
+    if (record.get('kind') != 'worktree' or record.get('state') != 'removing'
+            or decision.get('state') != 'authorized' or decision.get('choice') != 'discard'):
+        return None
+    try:
+        branch = decision['proposal']['worktrees'][0].get('kept_branch')
+        if not branch:
+            return None
+        commands = [] if commands is None else commands
+        path = _plain(record['locator']['path'])
+        home = _kept_home(ledger, identity, record, path)
+        if _branch_holds(commands, path, branch, home) is not False:
+            return None  # no such branch, or one that holds other work
+        commit = disposition_head(path, commands)
+        held = record.get('kept_branch') or {}
+        if not commit or (held.get('branch'), held.get('commit')) == (branch, commit):
+            return None  # no commit, or already recorded
+        return ledger.keep_branch(identity, branch, commit)
+    except Exception:  # noqa: BLE001 - reconcile defers the item whatever this read found
+        return None
 
 
 def _save_commit(ctx, identity, record, path, answer, shown):

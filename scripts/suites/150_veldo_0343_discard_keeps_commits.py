@@ -430,9 +430,101 @@ def _v343_suite():
             refused.append(ledger.keep_branch(item, 'space-saved-ledger-reads', tip).get('reason'))
             refused.append(ledger.keep_branch(item, 'space-saved-ledger-reads', head).get('reason'))
             refused.append(ledger.keep_branch(item, 'refs/heads/space-saved-ledger-reads', tip).get('reason'))
+            # A worktree on a branch: the branch named is there at the worktree's commit, and the
+            # Ledger still records nothing, because the worktree's own branch holds the commit.
+            git(repo, 'branch', 'space-saved-ledger-reads-on', tip)
+            git(path, 'switch', '-q', '-c', 'ledger-reads-own')
+            refused.append(ledger.keep_branch(item, 'space-saved-ledger-reads-on', tip).get('reason'))
             check('ac2/ledger-reads', repr(refused), refused == [
                 'space_keep_branch_state', 'space_keep_branch_ref', 'space_keep_branch_ref',
-                'space_keep_branch_head', 'invalid_input:branch'] and branch_items('space-saved-ledger-reads') == {})
+                'space_keep_branch_head', 'invalid_input:branch', 'space_keep_branch_attached']
+                and branch_items('space-saved-ledger-reads') == {}
+                and branch_items('space-saved-ledger-reads-on') == {})
+
+            # The kept name appears between the remover's look and its write (the look is made to say
+            # there is no such branch). The write is create-only, so git refuses it: the branch that
+            # took the name is not moved, and nothing is discarded.
+            item, path, owner, tip = detached('create-only')
+            signal(item, owner, 'run_finished')
+            name = shown(item).get('kept_branch')
+            result = None
+            if name:
+                rid = settle(item, 'discard')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                git(repo, 'branch', name, head)
+                with patch.object(RM, '_branch_holds', lambda *given, **named: None):
+                    result = act(item)
+            stays('ac2/create-only', 'create-only', item, path, tip, result, name)
+            check('ac2/create-only', 'the branch that took the name is where it was', bool(name)
+                  and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == head)
+
+            # Only a branch holds a commit. A tag can be moved or deleted and a remote-tracking ref
+            # goes with a prune, so a commit only one of them reaches gets a kept branch like any other,
+            # and is still on that branch once the tag or the remote-tracking ref is gone.
+            for label, ref in (('held-by-tag', 'refs/tags/held-by-tag'),
+                               ('held-by-remote', 'refs/remotes/origin/held-by-remote')):
+                item, path, owner, tip = detached(label)
+                git(repo, 'update-ref', ref, tip)
+                held = holders(repo, tip) == [ref]
+                result = discard(item, owner)
+                record, name = ledger.item(item), shown(item).get('kept_branch')
+                at = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
+                                     'refs/heads/' + str(name)], capture_output=True).stdout.decode().strip()
+                found = branch_items(name)
+                kept = list(found.values())[0] if len(found) == 1 else {}
+                check('ac1/only-a-branch-holds', '%s %r, branch %r at %r, items %r' % (label, result, name, at, found),
+                      result is not None and held and name == 'space-saved-' + label
+                      and record['state'] == 'removed' and not path.exists() and at == tip
+                      and sorted(holders(repo, tip)) == sorted(['refs/heads/' + name, ref])
+                      and len(found) == 1 and kept.get('state') == 'kept' and kept.get('start') == tip
+                      and (kept.get('kept_branch') or {}).get('worktree') == item
+                      and (record.get('removal') or {}).get('kept_branch') == name and order(item, found))
+                git(repo, 'update-ref', '-d', ref)
+                check('ac1/only-a-branch-holds', label + ' the commit is on the branch after the ref is deleted',
+                      bool(name) and holders(repo, tip) == ['refs/heads/' + str(name)])
+
+            # A kept name whose branch item is on its way out (due, deferred or removing) is taken:
+            # the Ledger records no kept branch onto such an item. The request names the next name
+            # and its Discard runs, where every Discard under the first name would be refused.
+            def leaving(name, at=None):
+                # A branch item under the kept name, deferred. With `at`, its branch is there at that commit.
+                if at:
+                    git(repo, 'branch', name, at)
+                made = ledger.declare('branch', {'repository': str(repo), 'ref': name}, {'scope': scope},
+                                      'record', start=at or head)
+                assert made['ok'], made
+                assert ledger.confirm(made['item'])['ok']
+                version = ledger._row(made['item'], SP.ITEM_KIND)[0]
+                assert ledger.signal('ticket_ended', {'items': [{'item': made['item'], 'version': version}]})['ok']
+                assert ledger.outcome(made['item'], 'deferred', {'rule': 'keep_failed', 'said': 'fixture'})['ok']
+                return made['item']
+
+            item, path, owner, tip = detached('leaving-item')
+            other = leaving('space-saved-leaving-item')
+            result = discard(item, owner)
+            record, name = ledger.item(item), shown(item).get('kept_branch')
+            check('ac2/name-of-a-leaving-item', 'no branch under the name: %r, named %r, %r'
+                  % (result, name, record.get('deferral')),
+                  result is not None and name == 'space-saved-leaving-item-2' and record['state'] == 'removed'
+                  and not path.exists() and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip
+                  and len(branch_items(name)) == 1 and list(branch_items(name).values())[0]['state'] == 'kept'
+                  and ledger.item(other)['state'] == 'deferred' and 'kept_branch' not in ledger.item(other)
+                  and subprocess.run(['git', '-C', str(repo), 'rev-parse', '--verify', '--quiet',
+                                      'refs/heads/space-saved-leaving-item'], capture_output=True).returncode == 1)
+            # The same with the leaving item's branch at the worktree's own commit: that branch holds
+            # the commit, so the Discard runs under the next name and writes nothing.
+            item, path, owner, tip = detached('leaving-branch')
+            other = leaving('space-saved-leaving-branch', tip)
+            before = branches(repo)
+            result = discard(item, owner)
+            record, name = ledger.item(item), shown(item).get('kept_branch')
+            check('ac2/name-of-a-leaving-item', 'a branch at the commit under the name: %r, named %r, %r'
+                  % (result, name, record.get('deferral')),
+                  result is not None and name == 'space-saved-leaving-branch-2' and record['state'] == 'removed'
+                  and not path.exists() and branches(repo) == before
+                  and holders(repo, tip) == ['refs/heads/space-saved-leaving-branch']
+                  and (record.get('removal') or {}).get('commit_held_by') == ['refs/heads/space-saved-leaving-branch']
+                  and ledger.item(other)['state'] == 'deferred' and 'kept_branch' not in ledger.item(other))
 
             # A Discard that stops between the branch write and its record (the process dies inside
             # keep_branch): the branch is there and no item records it. Reconcile defers the removing
@@ -475,10 +567,45 @@ def _v343_suite():
                   and (kept.get('kept_branch') or {}).get('commit') == tip
                   and (kept.get('kept_branch') or {}).get('worktree') == item
                   and (record.get('kept_branch') or {}).get('item') in found
+                  and (record.get('removal') or {}).get('kept_branch') == name
                   and branch_items(str(name) + '-2') == {} and order(item, found))
             saved = snapshot(item)
             check('ac1/stopped-before-record', 'the uncommitted file is in the snapshot ' + repr(saved),
                   saved is not None and contents(saved / 'work' / 'draft.txt') == 'draft stopped')
+
+            # The branch a stopped Discard left is recorded by reconcile, as it defers the removing
+            # worktree, and not only by the next Discard. The owner then answers Keep: the worktree
+            # stays, and the branch is a recorded kept branch all the same.
+            item, path, owner, tip = detached('left')
+            stopped = False
+            with patch.object(ledger, 'keep_branch', stop):
+                try:
+                    discard(item, owner)
+                except Stopped:
+                    stopped = True
+            name, record = shown(item).get('kept_branch'), ledger.item(item)
+            unrecorded = branch_items(name) == {} and record['state'] == 'removing'
+            deferred = REC.Reconciler(dict(given, ledger=ledger)).defer(item, record, 'retry from rule 1')
+            found, record = branch_items(name), ledger.item(item)
+            kept = list(found.values())[0] if len(found) == 1 else {}
+            check('ac1/reconcile-records', 'reconcile deferred %r and recorded %r' % (deferred, found),
+                  stopped and unrecorded and name == 'space-saved-left' and deferred.get('ok') is True
+                  and record['state'] == 'deferred' and path.exists()
+                  and len(found) == 1 and kept.get('state') == 'kept' and kept.get('start') == tip
+                  and kept.get('locator') == {'repository': str(repo), 'ref': name}
+                  and (kept.get('kept_branch') or {}).get('commit') == tip
+                  and (kept.get('kept_branch') or {}).get('worktree') == item
+                  and (record.get('kept_branch') or {}).get('item') in found
+                  and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip)
+            signal(item, owner, 'run_finished')
+            result = authorize(item, settle(item, 'keep')) if shown(item) else None
+            record = ledger.item(item)
+            check('ac1/reconcile-records', 'the owner answers Keep: %r, items %r' % (result, branch_items(name)),
+                  result is not None and result.get('ok') is True and record['state'] == 'kept'
+                  and record.get('owner_keep') == {'by': 'owner'} and path.exists()
+                  and contents(path / 'draft.txt') == 'draft left' and git(path, 'rev-parse', 'HEAD') == tip
+                  and branch_items(name) == found and git(repo, 'rev-parse', 'refs/heads/' + str(name)) == tip
+                  and branch_items(str(name) + '-2') == {})
 
             # AC3: an agent's worktree, on its branch in the agent repository.
             agent = trees / 'agent'

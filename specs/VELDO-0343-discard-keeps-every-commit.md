@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_space_remove.py"
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
+  - "engine/.veldo/control_space_reconcile.py"
+  - ".veldo/control_space_reconcile.py"
   - "scripts/suites/*_veldo_0343_*.py"
   - "scripts/suites/133_veldo_0326_space_principals.py"
   - "docs/design/VELDO-0295-design.md"
@@ -157,3 +159,23 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the Ledger recording there, a branch left by a stopped Discard counted a holder, and the observer
   let through for each of the three commands. Not taken up, the lead's call: findings 4, 5 and 6 of
   the review.
+- 2026-11-16: fix round 2, the three LOW findings of the same review. No acceptance criterion changed.
+  Finding 4 (teeth): ac2/ledger-reads gains a worktree on a branch, refused
+  space_keep_branch_attached with the branch named there at its commit. Row ac2/create-only: the
+  kept name is taken by another branch between the remover's look and its write (the look is made
+  to say no such branch); git refuses the create-only write, the Discard is remove_refused, the
+  other branch is not moved. No code changed for either.
+  Finding 5, lead decision: for the "already held" test only refs/heads count as holders. Design
+  section 0 does not trust a remote-tracking ref alone, and a tag can be moved or deleted; a branch
+  is never deleted by Veldo. A commit that only a tag or a remote-tracking ref reaches gets a kept
+  branch like any other (remover: HOLDING_REFS). Row ac1/only-a-branch-holds.
+  Finding 6: a kept name whose branch item is live in state due, deferred or removing is taken
+  (remover: _free_branch), where every Discard under that name was refused space_keep_branch_item;
+  the request names the next name. Row ac2/name-of-a-leaving-item. A branch left by a Discard that
+  stopped before its record is recorded by reconcile as it defers the removing worktree (remover:
+  record_left_branch, called from the Reconciler's defer), and not only by the next Discard, so an
+  owner's Keep leaves no unrecorded branch. Row ac1/reconcile-records. The lead's instruction puts
+  this in reconcile, so the footprint is widened to control_space_reconcile.py and its synced copy:
+  one call, three lines. Left as it is, the lead's call: an existing branch at the same commit
+  under the kept name is recorded as this Discard's kept branch (the review's R6).
+  Design 6.5 says all three. Six more teeth cases under finding 343, twenty in all.

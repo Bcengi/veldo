@@ -16836,6 +16836,33 @@ def cases():
         "    if holds is not False:\n        if holders:\n",
         "    if holds is not False or holders:\n        if holders:\n",
         ['space343/ac1/stopped-before-record'])
+    # Fix round 2. The Ledger refuses a worktree on a branch, the kept branch is written create-only,
+    # only a branch holds a commit, a name whose branch item is leaving is taken, and reconcile
+    # records the branch a stopped Discard left.
+    add(343, 'space343-ledger-accepts-an-attached-worktree', discard343, 'control_space.py',
+        "        if self._item_branch(path) is not None:\n            raise Refused('space_keep_branch_attached'",
+        "        if False:\n            raise Refused('space_keep_branch_attached'",
+        ['space343/ac2/ledger-reads'])
+    add(343, 'space343-kept-branch-written-over-a-branch', discard343, 'control_space_remove.py',
+        "                         ref, commit, '')",
+        "                         ref, commit)  # defect: not create-only",
+        ['space343/ac2/create-only'])
+    add(343, 'space343-tag-and-remote-ref-counted-holders', discard343, 'control_space_remove.py',
+        "HOLDING_REFS = ('refs/heads/',)",
+        "HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')",
+        ['space343/ac1/only-a-branch-holds'])
+    add(343, 'space343-name-of-a-leaving-item-is-free', discard343, 'control_space_remove.py',
+        "        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING\n",
+        "        if (False and item.get('state') in BRANCH_LEAVING\n",
+        ['space343/ac2/name-of-a-leaving-item'])
+    add(343, 'space343-left-branch-read-and-not-recorded', discard343, 'control_space_remove.py',
+        "        return ledger.keep_branch(identity, branch, commit)\n    except Exception:",
+        "        return None  # defect: the left branch is found and not recorded\n    except Exception:",
+        ['space343/ac1/reconcile-records'])
+    add(343, 'space343-reconcile-defers-without-recording', discard343, 'control_space_reconcile.py',
+        "            self.remove.record_left_branch(self.ledger, identity, record)",
+        "            pass  # defect: reconcile defers and the left branch stays unrecorded",
+        ['space343/ac1/reconcile-records'])
     for label343, name343 in (('keeps-a-branch', 'KEEP_BRANCH'), ('requests-a-disposition', 'REQUEST'),
                               ('signs-a-disposition', 'DISPOSITION')):
         add(343, 'space343-observer-' + label343, '133_veldo_0326_space_principals.py', 'control_space.py',

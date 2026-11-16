@@ -652,6 +652,9 @@ class Reconciler:
                     self.report(path)
 
     def defer(self, identity, record, why):
+        if record.get('state') == 'removing' and record.get('kind') == 'worktree':
+            # A Discard that stopped after its kept branch's write left a branch no item records.
+            self.remove.record_left_branch(self.ledger, identity, record)
         return self.ledger.outcome(identity, 'deferred', {'rule': 'keep_failed', 'refused_by': 'reconcile',
             'event': (record.get('due') or {}).get('event'), 'retry': record['ends_on']['events'], 'said': why})
 
