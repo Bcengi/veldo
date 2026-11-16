@@ -109,11 +109,11 @@ protected folder are each refused by name with exit 1; no item is made and the j
 scratch, build output and evidence are kinds the verb does not record, and a folder that exists is
 refused whatever its kind). ac3/record-accepted (a worktree a script is about to make is declared
 before it is made, then made with plain git and confirmed: present, creator record, owned by its
-project, written as space-observer; a path inside it is refused). ac3/event-types (the event types are exactly ref changed, session started, session
-ended and released; any other, an owner's action among them, is refused by name; a released event and
-a ref changed event that name a path outside every known root or on the protect list are refused by
-name; each of the four is handed to the Ledger as space-observer, and a Ledger that has no event
-command yet answers by name, nothing is written and nothing becomes due).
+project, written as space-observer; a path inside it is refused). ac3/event-types (the verb takes released alone, design 6.9 and the
+lead's decision at assembly; the hooks' three types, session started, session ended and ref changed, are
+refused by name, with a ledger and with none, before anything is sent or spooled; any other type, an
+owner's action among them, is refused by name; a released event that names a path outside every known
+root or on the protect list is refused by name; released is handed to the Ledger as space-observer).
 
 AC4 rows. ac4/no-installation-runs-unchanged (the declared falsifier row: with no central
 installation the wrapper says so and the command starts, with its own arguments, environment and
@@ -1786,9 +1786,10 @@ def _v313_space_run_suite():
                   status == 1 and said.strip() == 'veldo space record: refused space_record_inside:' + found[0][0])
 
             row = 'ac3/event-types'
-            check(row, 'the event types are ref changed, session started, session ended and released, and no other '
-                       '[%s]' % (CLI.SPACE_EVENT_TYPES,),
-                  tuple(CLI.SPACE_EVENT_TYPES) == ('ref_changed', 'session_started', 'session_ended', 'released'))
+            check(row, 'the verb takes released and no other type; the hooks\' three are named apart [%s %s]'
+                  % (CLI.SPACE_EVENT_TYPES, CLI.SPACE_HOOK_EVENT_TYPES),
+                  tuple(CLI.SPACE_EVENT_TYPES) == ('released',)
+                  and tuple(CLI.SPACE_HOOK_EVENT_TYPES) == ('ref_changed', 'session_started', 'session_ended'))
             since = seq()
             for name in ('landed', 'worktree_abandoned', 'run_finished', 'ticket_ended', ''):
                 status, out, said = verb(CLI.space_event, ['--type', name, '--path', str(made)], space())
@@ -1797,30 +1798,37 @@ def _v313_space_run_suite():
             for argv, wanted in ((['--type', 'released', '--path', str(made), '--path', str(outside)],
                                   'space_outside_roots'),
                                  (['--type', 'released', '--path', str(STATE / 'vms' / 'disk.raw')],
-                                  'space_protected:path:' + str(STATE / 'vms')),
-                                 (['--type', 'session_ended', '--session', 's-1', '--path', str(link)],
-                                  'space_protected:path:' + str(STATE / 'vms')),
-                                 (['--type', 'ref_changed', '--repository', str(temp / 'elsewhere'), '--ref',
-                                   'refs/heads/main', '--new', 'a' * 40], 'space_outside_roots'),
-                                 (['--type', 'ref_changed', '--repository', str(STATE / 'vms'), '--ref',
-                                   'refs/heads/main', '--new', 'a' * 40],
                                   'space_protected:path:' + str(STATE / 'vms'))):
                 status, out, said = verb(CLI.space_event, argv, space())
                 check(row, 'the event %s is refused as %s, exit 1 [%s %s]'
                       % (' '.join(argv[:2]), wanted, status, said.strip()),
                       status == 1 and said.strip() == 'veldo space event: refused ' + wanted and out == '')
+            # The hooks' types: refused by name before any send (with a ledger) and before any spool
+            # (with none). The Ledger sees no command and the state root holds no entry.
+            hook_state = temp / 'event-types-state'
             for argv in (['--type', 'session_started', '--session', 's-1'],
                          ['--type', 'session_ended', '--session', 's-1', '--path', str(SCRATCH / 'sessions' / 's-1')],
+                         ['--type', 'session_ended', '--session', 's-1', '--path', str(link)],
                          ['--type', 'ref_changed', '--repository', ORCHARD['repository'], '--ref', 'refs/heads/main',
-                          '--new', git(ORCHARD['repository'], 'rev-parse', 'HEAD')]):
-                status, out, said = verb(CLI.space_event, argv, space())
-                last = L.observations[-1] if L.observations else {}
-                check(row, 'the event %s is handed to the Ledger as space-observer; the incomplete CLI emitter '
-                           'is refused by the installed event command [%s %s %s]'
-                      % (argv[1], status, out.strip(), last.get('refusal')),
-                      status == 1 and out == '' and last.get('refusal') == 'invalid_input:emitter'
-                      and last.get('principal') == SP.OBSERVER and last.get('operation') == SP.EVENT
-                      and 'refused invalid_input:emitter' in said)
+                          '--new', git(ORCHARD['repository'], 'rev-parse', 'HEAD')],
+                         ['--type', 'ref_changed', '--repository', str(temp / 'elsewhere'), '--ref',
+                          'refs/heads/main', '--new', 'a' * 40]):
+                wanted = 'veldo space event: refused space_event_hook_only:' + argv[1]
+                seen = len(L.observations)
+                status, out, said = verb(CLI.space_event, argv + ['--state-root', str(hook_state)], space())
+                check(row, 'with a ledger the hook type %s is refused by name and nothing is sent [%s %s]'
+                      % (argv[1], status, said.strip()),
+                      status == 1 and out == '' and said.strip() == wanted and len(L.observations) == seen
+                      and not hook_state.exists())
+                out, said = io.StringIO(), io.StringIO()
+                status = CLI.space_event(argv + ['--state-root', str(hook_state)],
+                                         environ=dict(BASE, VELDO_INSTALLATION=str(temp / 'no-installation'),
+                                                      XDG_STATE_HOME=str(temp / 'event-types-xdg')),
+                                         stdout=out, stderr=said)
+                check(row, 'with no ledger the hook type %s is refused by name and nothing is spooled [%s %s]'
+                      % (argv[1], status, said.getvalue().strip()),
+                      status == 1 and out.getvalue() == '' and said.getvalue().strip() == wanted
+                      and not hook_state.exists() and not (temp / 'event-types-xdg').exists())
             check(row, 'no event wrote to the journal and the recorded worktree is present and on disk [%s]'
                   % (written(since),),
                   written(since) == [] and item_at(made)[0][1]['state'] == 'present' and (made / 'tracked.txt').is_file())

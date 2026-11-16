@@ -427,6 +427,25 @@ def _v335_suite():
                   and answer.get('reason') == 'invalid_input:emitter' and ledger.events() == before,
                   (kind, answer))
 
+        # Nor does the hook name the verb's spooled entries carry: a spooled entry of another kind
+        # under it is refused at replay, so the spool is no way around the rule. A hook's own name
+        # still records its own kind.
+        for kind, subject in (('ref_changed', {'repository': str(repo), 'ref': 'refs/heads/main',
+                                               'old': tip, 'new': tip}),
+                              ('session_ended', {'session': 'spool-emitter', 'cwd': str(base),
+                                                 'pid': os.getpid(), 'started': 1})):
+            before = ledger.events()
+            answer = ledger.event(kind, subject, {'hook': 'event', 'host': ledger.host})
+            check('safety/spool-emitter-released-only', not answer['ok']
+                  and answer.get('reason') == 'invalid_input:emitter' and ledger.events() == before,
+                  (kind, answer))
+        before = ledger.events()
+        answer = ledger.event('ref_changed', {'repository': str(repo), 'ref': 'refs/heads/main',
+                                              'old': tip, 'new': tip},
+                              {'hook': 'reference-transaction', 'host': ledger.host})
+        check('safety/spool-emitter-released-only', answer['ok'] and len(ledger.events()) == len(before) + 1,
+              answer)
+
         # Do not re-resolve a received observation after a later declaration takes its path.
         agent, agent_path, inner, inner_path = pair('identity')
         status, out, err = release([inner_path], wake=False)

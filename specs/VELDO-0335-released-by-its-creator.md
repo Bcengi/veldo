@@ -93,6 +93,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-16: fix round after the review of the assembly (finding 1), finishing the lead's decision (a)
+  (design 6.9: the CLI event verb is for released). The verb takes released alone: session_started,
+  session_ended and ref_changed are refused by name (space_event_hook_only:<type>) before anything is
+  spooled or sent, with a ledger and without one, and the verb's session and ref branches are gone.
+  The Ledger refuses the hook name the verb's spooled entries carry (emitter hook "event") for every
+  kind but released, so the spool is no way around the rule that the verb records released only. The
+  client hooks and the git hooks spool their own events as before and never call the verb. Row
+  safety/spool-emitter-released-only and teeth case space335-spool-emitter-any-kind; rows
+  ac3/event-types of suite 151_0313, the CLI rows of 153_0314 and compatibility/cli-envelope-refused
+  of 153_0323 expect the refusal by name. No acceptance criterion changed.
+
 - 2026-11-15: AC3 amended by lead decision 2026-11-15 (spec human_approval: required); the owner's
   approval is asked together with this ticket's landing
 - 2026-11-15: fix round 2 adds the row safety/cli-emitter-released-only (the Ledger refuses the CLI

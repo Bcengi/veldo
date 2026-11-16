@@ -665,7 +665,10 @@ def _v323_suite():
                      ['--type', 'ref_changed', '--repository', str(repo), '--ref', 'refs/heads/main', '--new', tip]):
             out, err = io.StringIO(), io.StringIO()
             status = cli.space_event(args, space={'ledger': ledger}, stdout=out, stderr=err)
-            refusal = 'space_release_creator:' + alive if args[1] == 'released' else 'invalid_input:emitter'
+            # Released reaches the Ledger and gets its answer; a hook's type is refused by the verb, by
+            # name, before anything is sent (design 6.9, the lead's decision at assembly).
+            refusal = ('space_release_creator:' + alive if args[1] == 'released'
+                       else 'space_event_hook_only:' + args[1])
             check('compatibility/cli-envelope-refused', status == 1 and out.getvalue() == ''
                   and 'refused ' + refusal in err.getvalue(), err.getvalue())
         check('compatibility/cli-envelope-refused', before == service.watermark())

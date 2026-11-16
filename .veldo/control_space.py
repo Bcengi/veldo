@@ -923,8 +923,11 @@ class Ledger:
             raise _invalid('event', 'a new event identity')
         if kind not in EVENT_TYPES or not isinstance(subject, dict):
             raise _invalid('event', 'a hook event type and its subject')
+        # The event verb stands for released alone (design 6.9), under its own emitter and under the
+        # hook name its spooled entries carry: neither route records another kind.
         if (not isinstance(emitter, dict) or emitter.get('host') != self.host
-                or not (_is_str(emitter.get('hook'))
+                or not ((_is_str(emitter.get('hook'))
+                         and (kind == 'released' or emitter['hook'] != 'event'))
                         or (kind == 'released' and emitter.get('verb') == 'event'))):
             raise _invalid('emitter', 'the hook and this host')
         if kind == 'ref_changed':
