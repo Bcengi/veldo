@@ -91,3 +91,43 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-16: BLOCKER, recorded by the builder before any code was written. Status stays ready; nothing
+  is built. Read on the base bf962cfc (VELDO-0342). The footprint holds the API's HTTP edge
+  (control_api.py), the route mirror, the feature folder, the view and the navigation. Every criterion
+  needs files outside it:
+  - AC1, AC2, AC4, the reads. control_api.py holds no store connection and serves nothing of its own
+    (its docstring, READS AND EVENTS): a read is authority.read(model, principal), which refuses any
+    name outside control_api_models.READ_MODELS (control_api_authority.py:317-321). No read model
+    holds a space kind (item, pool, hold, mode, group, event), and the inspection takes identities, so
+    it cannot list them. Needed: engine/.veldo/control_api_models.py (the space reads of design 6.6,
+    with the kinds' project rules) and engine/.veldo/control_api_authority.py (the grouping of usage,
+    pending with its reason, retry event and request, removed, pools with their holds), each with its
+    synced copy. The VELDO-0130 suite (scripts/suites/71_veldo_0130_api.py) pins the read models and
+    may need its tables extended.
+  - AC3, the signed commands. space.reconcile and space.abandon exist (VELDO-0315, VELDO-0312). Adopt,
+    Confirm, Wrong and the mode switch need an operation each in control_api_assertion.OPERATIONS
+    (shape_problems refuses an unknown operation, :113), a branch in control_api_authority.apply, an
+    action in control_api_models.ACTIONS and a service entry in control_service.py beside
+    space_abandon. The Ledger has adopt and set_mode; space_confirm_group and space_reject are only
+    named in control_space.py (:466-470, "Commands of later tickets"): the commands themselves are
+    VELDO-0320 and VELDO-0332, which come after this ticket in the build order. So "Confirm and Wrong
+    are signed owner commands" cannot be shown end to end here; what can be shown is that the routes
+    are POST, signed and refused without the owner's passkey, with the authority answering a named
+    refusal until those tickets land. That needs a lead decision.
+  - The screen is not reachable: engine/ui/src/router/index.ts holds every route and is outside the
+    footprint; the navigation entry would point at a route name that does not exist.
+  - AC4, the runs list: engine/ui/src/features/run/RunList.vue and runs.ts, engine/ui/src/stores/runs.ts
+    and engine/ui/src/api/reads.ts (the house place of every read; src/api is "the only code that
+    calls fetch or EventSource").
+  - The house rules of engine/ui/CLAUDE.md, which bind every UI ticket: a page per screen
+    (engine/ui/docs/views/space.md, and runs.md changed), the browser states at four widths in light
+    and dark (engine/ui/e2e/space.spec.ts with its harness and fixtures, e2e/falsifiers.json for the
+    falsifiers, the source of the ui_states evidence and of the screenshots), and a new glyph in
+    engine/ui/src/ui/icons.ts if no bundled icon fits.
+  Needed from the lead: the footprint widened by control_api_models.py, control_api_authority.py,
+  control_api_assertion.py and control_service.py (engine and synced copies; the lead says whether any
+  is protected), engine/ui/src/router/index.ts, engine/ui/src/api/reads.ts and actions.ts,
+  engine/ui/src/features/run/**, engine/ui/src/stores/runs.ts, engine/ui/src/ui/icons.ts,
+  engine/ui/docs/views/**, engine/ui/e2e/** and scripts/suites/71_veldo_0130_api.py; and the decision
+  on Confirm and Wrong above. Not built as a workaround: reads served by control_api.py from the store
+  or from files, a feature-local fetch, a screen with no route.
