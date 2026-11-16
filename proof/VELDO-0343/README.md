@@ -1,8 +1,41 @@
 # VELDO-0343 proof
 
-Implementation 25da645b27e98720fbfcd9fe736cbccc0e664d0a (fix round 2; fix round 1 at c8a68865, first built at 8e43624d).
+Implementation bb90e493f50fa2e06be2b0ed72a3a3af4707668b (fix round 3; fix round 2 at 25da645b, fix round 1 at c8a68865, first built at
+8e43624d).
 Builder evidence, not independent review. All four criteria remain pending the lead gate and independent
 review.
+
+## Fix round 3, 2026-11-16
+
+The lead ran 156_veldo_0315_reconcile, the reconcile module's own suite, on 0a80f89b: 59 passed, 2
+failed. Both rows were left stale by VELDO-0318 (commit a9628b86). Neither is caused by this
+ticket, and no product code changed in this round.
+
+- loss/owner-keep wrote the owner's Keep with Ledger.outcome and facts.owner_keep. Since
+  VELDO-0318 that is refused not_authorized: the Keep is the owner's signed space_disposition
+  command. The row now asserts the refusal, lets reconcile defer the due worktree as unique_work
+  with its request, and drives the Keep through the settled answer (which alone marks nothing)
+  and the owner's signed packet, as VELDO-0340's fix round did for VELDO-0336's rows. It proves
+  what it proved: the owner's Keep and the work survive discovery and recovery.
+- ac3/startup required that no worker child is active after the worker start. Since VELDO-0318
+  space_worker_start also queues the dispositions task, so a child is active there whatever was
+  received. Fix round 2's record_left_branch is not on this path: it is called only from the
+  Reconciler's defer of a removing worktree, and the row has none. The row now reads every start
+  the consumer makes: the dispositions task and nothing else, the reconcile hook taken and never
+  started, and still exactly one reconcile record.
+- Footprint, widened by the lead: scripts/suites/156_veldo_0315_reconcile.py.
+
+Runs: suite 156 once under the gate lock, 35 rows, 61 passed, 0 failed. The ticket suite, 20 rows
+green. Validation, docs, template sync, lint, space boundary and git boundary passed. The other
+neighbours were not run again; their results are fix round 2's (checks.json). No space supervisor
+survived any run.
+
+Teeth, finding 343, started once, last, on the clean committed tree: 20 registered, 20 executed, 20
+rejected, no reuse, no invalid result, no surviving worker, 234 s. No case was added: the rows
+changed are VELDO-0315's, whose teeth cases are that ticket's.
+
+The sections below describe the earlier rounds as they were written; where fix round 2 says suite
+156 was not run, this section replaces it.
 
 ## Fix round 2, 2026-11-16
 

@@ -1,12 +1,12 @@
 {
  "artifacts": {
-  "README.md": "sha256:6187891a3db9a654bd72019a03be157c0850b7413d2ec448806e4f2c63950c42",
-  "checks.json": "sha256:c591274bdabc4f90adfc313f1284a8781e1046a9d38e300672bf5528d5f217a2",
+  "README.md": "sha256:5b626f139e161da3286f0988ff79f603354ef8cc78e6acc23c0d5cbae2f04162",
+  "checks.json": "sha256:08167fc7a3702c217b3d14d99924772445c121ced4b50557a9a14fe450749f34",
   "falsifiers.json": "sha256:4fbb238ae72d39b0c6a8cef5cce730bc51307fbefc542bc3cac9c89ae6b25fdd",
   "rows.json": "sha256:47fed73a6cfadafe65c4ea3b58810fcae1f9cdb331464786fff99999f7700d9b",
-  "sources.json": "sha256:9d2b8093eab3c134683ac2f394523a6b5b40083d01dfefcd5148512a23dabd4c",
-  "teeth-receipt.json": "sha256:d67efe1b8d085d272108665397289330ea7eab3c24809b7e1e4f4011cdc8909f",
-  "teeth-run.json": "sha256:16d1490c98ed5bd2479abcdf3877a48bd184d4f3f90b9df890168a32f3b94d52"
+  "sources.json": "sha256:7c1119b4a6099d08dc5669a16e75fda9935de23bc400268c1ff12181919ad164",
+  "teeth-receipt.json": "sha256:b92c336e1a099e1ad398b09ea91a28af9aa6776c3a5159eb842d9bfe669a0d4b",
+  "teeth-run.json": "sha256:50959ea033c44991e26ddcfbcfe8cee4785fd9cbe79fbd060798f44b5883f544"
  },
  "assumptions": [
   "The branch is made after the terms were compared with the snapshot and before the worktree is moved; the lead kept this order and design 6.5 says it. The remove still runs only after the branch, the kept refs and the snapshot.",
@@ -14,10 +14,11 @@
   "The kept branch of an agent's detached worktree is in the main repository. A branch of the agent repository that holds the commit still means no branch is made, because rule 5 keeps that repository while its branch is not landed.",
   "A kept name is taken when its branch item is due, deferred or removing. When that item's branch is at the worktree's own commit, the Discard runs under the next name and writes no ref, because that branch holds the commit: this rests on the lead's statement that Veldo never deletes a branch.",
   "In AC3, kept is read as: the agent repository and its item are left as they were (deferred by rule 5 in the row), and its branch holds every commit.",
-  "The crash rows make the process stop by an exception raised inside keep_branch, and write reconcile's deferral through the Reconciler's own defer; the whole reconcile run is not driven, and 156_veldo_0315_reconcile was not run (suites 151 and up were excluded).",
+  "The crash rows make the process stop by an exception raised inside keep_branch, and write reconcile's deferral through the Reconciler's own defer; the whole reconcile run is not driven by the ticket suite. 156_veldo_0315_reconcile was run in fix round 3, once, under the gate lock: green after its two rows left stale by VELDO-0318 were changed.",
   "The footprint was widened to control_space_reconcile.py and its synced copy on the lead's instruction that reconcile records the left branch.",
   "Fixture process table and Docker reads do not establish host-reader readiness.",
   "VELDO-0301 ac4/no-clock, VELDO-0307 ownership/removes-nothing and 14 rows of VELDO-0331 are red on the base too: inherited and left.",
+  "Fix round 3 changed two rows of VELDO-0315's suite and no product code; the footprint was widened to that suite by the lead. The neighbour suites other than 156 and the ticket suite were not run again.",
   "All criteria remain pending aggregate verification and independent review."
  ],
  "checks": [
@@ -32,7 +33,7 @@
    "status": "not_run"
   },
   {
-   "detail": "Fix round 2: 20 ticket rows green. 0318 45, 0345 31, 0300 39, 0327 27, suite 133 (0326) 30, 0312 41, 0297 31, 0317 23 and 0329 21 rows green. Red and inherited, the same on the base: 0301 ac4/no-clock, 0307 ownership/removes-nothing, 14 rows of 0331.",
+   "detail": "Fix round 3: 156_veldo_0315_reconcile 35 rows green under the gate lock, 20 ticket rows green. From fix round 2, not run again: 0318 45, 0345 31, 0300 39, 0327 27, suite 133 (0326) 30, 0312 41, 0297 31, 0317 23 and 0329 21 rows green. Red and inherited, the same on the base: 0301 ac4/no-clock, 0307 ownership/removes-nothing, 14 rows of 0331.",
    "name": "targeted regressions",
    "status": "diagnostic_only"
   },
@@ -42,7 +43,7 @@
    "status": "passed"
   },
   {
-   "detail": "20 of 20 rejected in the final run of finding 343 in fix round 2: the 4 declared falsifiers, 4 guards, 6 for fix round 1 and 6 for fix round 2; no reuse, no invalid result, no surviving worker. A first start applied no mutant and a second rejected 19 with one invalid result; teeth-run.json says why.",
+   "detail": "20 of 20 rejected in the one teeth run of finding 343 in fix round 3, last, on the committed tree: the 4 declared falsifiers, 4 guards, 6 for fix round 1 and 6 for fix round 2; no reuse, no invalid result, no surviving worker. Earlier rounds' runs are in teeth-run.json.",
    "name": "falsifiers",
    "status": "passed"
   },
@@ -52,14 +53,14 @@
    "status": "not_run"
   }
  ],
- "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+ "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
  "criteria": [
   {
    "evidence": [
     {
      "detail": "Rows ac1/name, ac1/kept-branch, ac1/branch-item, ac1/snapshot, ac1/only-unheld, ac1/stopped-before-record, ac1/only-a-branch-holds and ac1/reconcile-records green; the declared falsifier (Discard without the branch) turned ac1/kept-branch and ac1/branch-item red; a stopped Discard's branch counted a holder turned ac1/stopped-before-record red; tags and remote-tracking refs counted holders turned ac1/only-a-branch-holds red; the left branch not recorded, in the remover and in reconcile, each turned ac1/reconcile-records red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0343/teeth-receipt.json",
-     "sha256": "d67efe1b8d085d272108665397289330ea7eab3c24809b7e1e4f4011cdc8909f",
+     "sha256": "b92c336e1a099e1ad398b09ea91a28af9aa6776c3a5159eb842d9bfe669a0d4b",
      "type": "falsifier"
     }
    ],
@@ -71,7 +72,7 @@
     {
      "detail": "Rows ac2/name-taken, ac2/git-refuses, ac2/not-recorded, ac2/ledger-reads, ac2/next-name, ac2/create-only and ac2/name-of-a-leaving-item green; the declared falsifier (the remove after the failed branch write) turned ac2/name-taken and ac2/git-refuses red; the Ledger accepting a worktree on a branch turned ac2/ledger-reads red; a write that is not create-only turned ac2/create-only red; a leaving item's name counted free turned ac2/name-of-a-leaving-item red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0343/teeth-receipt.json",
-     "sha256": "d67efe1b8d085d272108665397289330ea7eab3c24809b7e1e4f4011cdc8909f",
+     "sha256": "b92c336e1a099e1ad398b09ea91a28af9aa6776c3a5159eb842d9bfe669a0d4b",
      "type": "falsifier"
     }
    ],
@@ -83,7 +84,7 @@
     {
      "detail": "Rows ac3/agent, ac3/detached and ac3/detached-refused green; the declared falsifier (the agent repository removed with the worktree) turned ac3/agent red, and the kept branch written or recorded in the agent repository turned ac3/detached red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0343/teeth-receipt.json",
-     "sha256": "d67efe1b8d085d272108665397289330ea7eab3c24809b7e1e4f4011cdc8909f",
+     "sha256": "b92c336e1a099e1ad398b09ea91a28af9aa6776c3a5159eb842d9bfe669a0d4b",
      "type": "falsifier"
     }
    ],
@@ -95,7 +96,7 @@
     {
      "detail": "Rows ac4/no-commit and ac4/no-event green; the declared falsifier (Discard commits as Save does) turned ac4/no-commit red. Pending aggregate verification and review.",
      "ref": "proof/VELDO-0343/teeth-receipt.json",
-     "sha256": "d67efe1b8d085d272108665397289330ea7eab3c24809b7e1e4f4011cdc8909f",
+     "sha256": "b92c336e1a099e1ad398b09ea91a28af9aa6776c3a5159eb842d9bfe669a0d4b",
      "type": "falsifier"
     }
    ],
@@ -103,10 +104,10 @@
    "status": "pending"
   }
  ],
- "produced_at": "2026-11-16T16:51:35.754814+00:00",
- "producer": "Claude builder; not an independent reviewer; fix rounds 1 and 2 by a Claude builder",
+ "produced_at": "2026-11-16T23:29:04.902629+00:00",
+ "producer": "Claude builder; not an independent reviewer; fix rounds 1, 2 and 3 by a Claude builder",
  "rollback": "Revert the implementation. Kept branches already made, kept refs, snapshots and work remain.",
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0343",
- "tree": "4827523296b1ceedb6fd02356fcb427bcde26354"
+ "tree": "dea70f3433ea0c6245499555489ac66ec26d4e88"
 }
