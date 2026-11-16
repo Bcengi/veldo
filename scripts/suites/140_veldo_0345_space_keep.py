@@ -61,9 +61,23 @@ declared falsifier row: a folder of the store, the store and what is above it ca
 adopted or reported, rule 2 reads the store on the protect list though no declaration names it, and
 the snapshot is whole after the owner's ending event).
 
+History, VELDO-0347 (fix round, the lead's decision of 2026-11-16). VELDO-0347 AC1 has rule 5 refuse a
+worktree that holds a loose ignored file, so such a worktree is deferred as unique work and waits for the
+owner: it is no longer saved and removed at an event with no answer. The rows below that drove the keep
+step's snapshot with that worktree now drive it with a worker clone of a run that has ended (an agent
+repository with the form worker clone and the provisioner's manifest under the state root, ended by run
+finished), which production still saves and removes with no answer, by the same keep step with a
+snapshot. Nothing a row proves of the keep step changed. Superseded by VELDO-0347 AC1, row by row:
+ac4/outside-git (its third statement, the removal that saved the file, and with it the snapshot
+ac4/store-protected reads), ac5/failed-save-removes-nothing, ac5/kill-points, ac5/retry-compares,
+ac5/folders-synced (the fixture settings_tree), ac4/modes-kept (its first statement) and
+ac6/removing-put-back (its file is written after the keep step answered, where rule 5 cannot see it, so
+the worktree is removing and is put back as before). ac5/kill-points also reads the store's folders so
+that a folder that is not there reds its own row and the rows after it still run.
+
 AC5 rows: ac5/failed-save-removes-nothing (the declared falsifier row for a short write: an unwritable
 store, a pool that fills in the middle of a file, a short write, a read back that differs, a failing
-sync and a failing rename each defer the item keep_failed with the worktree and its file in place and
+sync and a failing rename each defer the item keep_failed with the clone and its file in place and
 what was written left under its temporary name; the next attempt takes the next number and removes
 once; the temporary folders are kept and counted), ac5/kill-points (killed inside the snapshot write,
 after the rename and before the record, and after the record and before the remover: each next attempt
@@ -428,6 +442,10 @@ def _v345_space_keep_suite():
                             branch=name, **more), path
 
         def listed(path):
+            """Whether the item is whole at its path: git lists the worktree, or, for a private
+            repository, its own git folder is there and reads its HEAD."""
+            if os.path.isdir(os.path.join(str(path), '.git')):
+                return raw(path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')[0] == 0
             return ('worktree ' + str(path)) in git(REPOSITORY, 'worktree', 'list', '--porcelain').splitlines()
 
         class Killed(BaseException):
@@ -517,11 +535,50 @@ def _v345_space_keep_suite():
                 answer['wrote'] = L.outcome(item, 'removed', {'event': event, 'method': answer.get('method')})
             return answer
 
+        CLONES = STATE / 'clones'
+        CLONES.mkdir()
+        RUN_OF = {}
+
         def settings_tree(name, ticket, content='key = SECRET\n'):
-            """A detached worktree whose only work is a loose ignored settings file: (item, path)."""
-            item, path = worktree(name, {'scope': A, 'ticket': ticket}, branch=False)
-            (path / 'settings.local').write_text(content)
-            return item, path
+            """A worker clone of a run that has ended, whose only work is a loose ignored settings file:
+            (item, its work tree). It is made as the clone provisioner makes one: a clone of the
+            project's repository under the state root, detached at the trunk's commit, with the
+            provisioner's manifest beside it, declared as an agent repository with the form worker
+            clone and owned by the ticket and the run.
+
+            VELDO-0347 AC1 supersedes the detached worktree this fixture was: rule 5 now refuses a
+            worktree with a loose ignored file before the keep step, and waits for the owner. A worker
+            clone of an ended run is the item production still saves and removes with no answer, by
+            the same keep step with a snapshot, so every failing save and every kill below is reached."""
+            root = CLONES / ('clone-' + name)
+            root.mkdir()
+            work = root / 'work'
+            subprocess.run(['git', 'clone', '-q', '--no-hardlinks', str(REPOSITORY), str(work)], env=ENVIRONMENT,
+                           check=True, capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
+            git(work, 'checkout', '-q', '--detach', 'main')
+            run = 'dispatch/' + name
+            (root / 'clone.json').write_text(json.dumps({
+                'schema': 'veldo.worker_clone/v1', 'clone_id': 'clone-' + name, 'root': str(root),
+                'work': str(work), 'users': [{'dispatch_id': run, 'role': 'worker',
+                                              'scratch': str(root / 'scratch'), 'group': None}]}))
+            if isinstance(content, bytes):
+                (work / 'settings.local').write_bytes(content)
+            elif content is not None:
+                (work / 'settings.local').write_text(content)
+            RUN_OF[ticket] = run
+            owner = {'scope': A, 'ticket': ticket, 'run': {'id': run, 'station': 'build'}}
+            return declared('agent_repository', {'path': str(work)}, owner, form='worker_clone'), work
+
+        def ended(ticket, **given):
+            """The event that ends the run of the ticket's worker clone, as its teardown sends it."""
+            return send('run_finished', {'run': RUN_OF[ticket]}, **given)
+
+        # The remover makes the keeper of a worker clone itself, from the keeper module beside it. It is
+        # handed the keeper module this suite loaded, which is that same file (or the copy the mutation
+        # driver put in its place), so a failing disk and a kill seam planted below are in the keep
+        # step that runs.
+        real_sibling = RM._sibling
+        RM._sibling = lambda name: KP if name == 'control_space_keep' else real_sibling(name)
 
         STORE = STATE / 'space-saved'
         SAVING = KP.keeper(L, snapshot=True)
@@ -1006,13 +1063,21 @@ def _v345_space_keep_suite():
               'repository', MARKER in (bytes_of(folder / 'work' / 'settings.local') or b'')
               and not in_objects(REPOSITORY, MARKER))
         L.outcome(item, 'deferred', {'rule': 'unique_work', 'event': 'landed'})
-        secret, secret_path = worktree('settings-only', {'scope': A, 'ticket': 'VELDO-9213'}, branch=False)
-        (secret_path / 'settings.local').write_bytes(b'key = ' + MARKER + b'\n')
-        done = send('landed', {'ticket': 'VELDO-9213'}, keep=SAVING)
+        # VELDO-0347 AC1 supersedes "a worktree whose only work is that ignored file is removed once the
+        # file is saved", at landed and with no owner's answer: rule 5 now refuses that worktree first.
+        # The item is a worker clone of a run that has ended, which the same keep step saves.
+        secret, secret_path = settings_tree('settings-only', 'VELDO-9213s', b'key = ' + MARKER + b'\n')
+        refs_then = kept_refs(REPOSITORY) or {}
+        done = ended('VELDO-9213s', keep=SAVING)
         attempt_path = Path(L.snapshot_folder(secret)) / '1'
-        check(ROW, 'a worktree whose only work is that ignored file is removed once the file is saved [%s]'
-              % (outcome_of(done, secret),),
+        check(ROW, 'a worker clone of an ended run whose only work is that ignored file is removed once the file is '
+              'saved [%s]' % (outcome_of(done, secret),),
               named(done, secret)[0] == 'removed' and not os.path.lexists(str(secret_path)))
+        check(ROW, 'the keep step ran for it: its record lists the snapshot and a kept ref the main repository '
+              'now holds [%s %s]' % (numbers(secret), sorted(record_of(secret).get('refs') or ())),
+              numbers(secret) == [1] and bool(record_of(secret).get('refs'))
+              and all(name not in refs_then and (kept_refs(REPOSITORY) or {}).get(name) == commit_id
+                      for name, commit_id in (record_of(secret).get('refs') or {}).items()))
         check(ROW, 'after the removal the file is in the snapshot, byte for byte, and the marker is in no object of '
               'the main repository',
               bytes_of(attempt_path / 'work' / 'settings.local') == b'key = ' + MARKER + b'\n'
@@ -1088,7 +1153,7 @@ def _v345_space_keep_suite():
                 else:
                     setattr(KP, name, stand_in)
                 try:
-                    done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING)
+                    done = ended('VELDO-9215', keep=SAVING)
                 finally:
                     os.chmod(str(STORE), 0o700)
                     KP._write, KP._sync, KP._rename, KP._stored = (real['write'], real['sync'], real['rename'],
@@ -1096,7 +1161,7 @@ def _v345_space_keep_suite():
                 found = sorted(os.listdir(str(item_folder))) if item_folder.is_dir() else []
                 check(ROW, 'when %s the item is deferred as keep_failed [%s]' % (label, named(done, item)),
                       named(done, item) == ('deferred', 'keep_failed', 'tool') and state_of(item) == 'deferred')
-                check(ROW, 'when %s the worktree and its file are in place' % label,
+                check(ROW, 'when %s the clone and its file are in place' % label,
                       listed(path) and text_of(path / 'settings.local') == CONTENT
                       and not os.path.lexists(RM.marked(str(path), item)))
                 check(ROW, 'when %s what the attempt wrote stays under its temporary name, no numbered folder is '
@@ -1107,7 +1172,7 @@ def _v345_space_keep_suite():
             KP._write, KP._sync, KP._rename, KP._stored, KP.BLOCK = (real['write'], real['sync'], real['rename'],
                                                                     real['stored'], real['block'])
             os.chmod(str(STORE), 0o700)
-        done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING)
+        done = ended('VELDO-9215', keep=SAVING)
         counted = KP.attempts(L, item)
         check(ROW, 'the next attempt takes the next number, saves the file whole and removes the item once [%s %s]'
               % (named(done, item), numbers(item)),
@@ -1120,11 +1185,13 @@ def _v345_space_keep_suite():
               and all(isinstance(entry['bytes'], int) and entry['bytes'] > 0 for entry in counted))
 
         ROW = 'ac5/kill-points'
+        # The store's folders are read with names_in, which answers None for a folder that is not there:
+        # a save that was never made reds this row, and the rows after it still run.
 
         def killed_at(seam, ticket):
             KP.SEAM[seam] = die
             try:
-                send('landed', {'ticket': ticket}, keep=SAVING)
+                ended(ticket, keep=SAVING)
                 return False
             except Killed:
                 return True
@@ -1135,22 +1202,22 @@ def _v345_space_keep_suite():
         item_folder = Path(L.snapshot_folder(item))
         died = killed_at('in_snapshot', 'VELDO-9216')
         check(ROW, 'killed inside the snapshot write: the item is untouched and a temporary folder is in the store '
-              '[%s %s]' % (died, os.listdir(str(item_folder))),
-              died and os.listdir(str(item_folder)) == ['1.partial'] and text_of(path / 'settings.local') == 'key = SECRET\n'
+              '[%s %s]' % (died, names_in(item_folder)),
+              died and names_in(item_folder) == ['1.partial'] and text_of(path / 'settings.local') == 'key = SECRET\n'
               and listed(path) and not numbers(item))
         answer = attempt(item, snapshot=True)
         check(ROW, 'the next attempt writes the next number, removes the item once, and the temporary folder stays '
-              '[%s %s]' % (answer.get('said'), sorted(os.listdir(str(item_folder)))),
+              '[%s %s]' % (answer.get('said'), names_in(item_folder)),
               answer.get('ok') is True and state_of(item) == 'removed' and numbers(item) == [2]
-              and sorted(os.listdir(str(item_folder))) == ['1.partial', '2']
+              and names_in(item_folder) == ['1.partial', '2']
               and text_of(item_folder / '2' / 'work' / 'settings.local') == 'key = SECRET\n')
 
         item, path = settings_tree('killed-before-record', 'VELDO-9217')
         item_folder = Path(L.snapshot_folder(item))
         died = killed_at('after_snapshot', 'VELDO-9217')
         check(ROW, 'killed after the rename and before the keep record: a whole folder no record names, the item '
-              'untouched [%s]' % (os.listdir(str(item_folder)),),
-              died and os.listdir(str(item_folder)) == ['1'] and not numbers(item) and listed(path)
+              'untouched [%s]' % (names_in(item_folder),),
+              died and names_in(item_folder) == ['1'] and not numbers(item) and listed(path)
               and text_of(path / 'settings.local') == 'key = SECRET\n')
         answer = attempt(item, snapshot=True)
         counted = KP.attempts(L, item)
@@ -1168,9 +1235,9 @@ def _v345_space_keep_suite():
               died and numbers(item) == [1] and listed(path) and state_of(item) == 'removing')
         answer = attempt(item, snapshot=True)
         check(ROW, 'the next attempt uses the attempt the record lists, writes nothing, and removes the item once '
-              '[%s %s]' % (answer.get('said'), os.listdir(str(item_folder))),
+              '[%s %s]' % (answer.get('said'), names_in(item_folder)),
               answer.get('ok') is True and state_of(item) == 'removed' and numbers(item) == [1]
-              and os.listdir(str(item_folder)) == ['1'] and not os.path.lexists(str(path))
+              and names_in(item_folder) == ['1'] and not os.path.lexists(str(path))
               and text_of(item_folder / '1' / 'work' / 'settings.local') == 'key = SECRET\n')
 
         ROW = 'ac5/retry-compares'
@@ -1288,9 +1355,17 @@ def _v345_space_keep_suite():
               wrote.get('ok') is False and wrote.get('reason') == 'space_item_state:removing' and L.item(item) == before)
 
         ROW = 'ac6/removing-put-back'
+        # VELDO-0347 AC1 supersedes the file this row planted before the event: rule 5 now refuses a
+        # worktree with a loose ignored file before the remover is called, so it is never removing.
+        # The file is written after the keep step has answered, which rule 5 cannot see: the remover
+        # finds it under the marked name, in no snapshot, and puts the worktree back, as before.
         tree, tree_path = worktree('unsaved-file', {'scope': A, 'ticket': 'VELDO-9222'}, branch=False)
-        (tree_path / 'settings.local').write_text('nothing saved this\n')
         states = []
+
+        def keep_then_a_file(identity, record):
+            answer = keep(identity, record)
+            (Path(record['locator']['path']) / 'settings.local').write_text('nothing saved this\n')
+            return answer
 
         class Watching:
             """The removers, with the state the ledger holds for each item as it is handed to them."""
@@ -1301,7 +1376,7 @@ def _v345_space_keep_suite():
                 states.append((identity, state_of(identity)))
                 return RM.remove(ledger, probe, identity, record, **given)
 
-        done = send('landed', {'ticket': 'VELDO-9222'}, remover=Watching)
+        done = send('landed', {'ticket': 'VELDO-9222'}, remover=Watching, keep=keep_then_a_file)
         check(ROW, 'the worktree was removing while its remover ran [%s]' % (states,), states == [(tree, 'removing')])
         check(ROW, 'put back with an unsaved file, it is recorded as deferred with keep_failed and is not left '
               'removing [%s %s]' % (named(done, tree), state_of(tree)),
@@ -1502,7 +1577,9 @@ def _v345_space_keep_suite():
         L.outcome(unborn, 'deferred', {'rule': 'keep_failed', 'event': 'ticket_ended'})
 
         ROW = 'ac4/modes-kept'
-        item, path = worktree('modes', {'scope': A, 'ticket': 'VELDO-9243'}, branch=False)
+        # VELDO-0347 AC1 supersedes the worktree this statement removed at landed: rule 5 now refuses a
+        # worktree with ignored files that are work. The item is a worker clone of a run that has ended.
+        item, path = settings_tree('modes', 'VELDO-9243', None)
         kept_head = git(path, 'rev-parse', 'HEAD')
         PLANTED = (('run.local', 0o755, b'#!/bin/sh\necho ran\n'), ('secret.local', 0o600, b'token = 9243\n'),
                    ('shared.local', 0o664, b'shared\n'), ('readonly.local', 0o444, bytes(range(256)) * 9),
@@ -1512,14 +1589,14 @@ def _v345_space_keep_suite():
             (path / name).write_bytes(content)
             os.chmod(str(path / name), mode)
         before = tree_of(path)
-        done = send('landed', {'ticket': 'VELDO-9243'}, keep=SAVING)
+        done = ended('VELDO-9243', keep=SAVING)
         saved = Path(L.snapshot_folder(item)) / '1'
         try:
             manifest = json.loads((saved / 'manifest.json').read_text())
         except (OSError, ValueError):
             manifest = {'files': {}}
-        check(ROW, 'a worktree whose work is five ignored files, an executable among them, is removed once they are '
-              'saved [%s]' % (outcome_of(done, item),),
+        check(ROW, 'a worker clone of an ended run whose work is five ignored files, an executable among them, is '
+              'removed once they are saved [%s]' % (outcome_of(done, item),),
               named(done, item)[0] == 'removed' and not os.path.lexists(str(path)))
         check(ROW, 'each saved file has the mode of the file it was copied from, and the manifest names the same '
               '[%s]' % ([(name, oct(stat_mode(saved / 'work' / name)) if (saved / 'work' / name).exists() else None)
@@ -1589,7 +1666,7 @@ def _v345_space_keep_suite():
         check(ROW, 'the ticket has no folder in the store yet', not ticket_folder.exists())
         KP._sync = store_sync_fails
         try:
-            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+            done = ended('VELDO-9244', keep=SAVING)
         finally:
             KP._sync = real_sync
         check(ROW, 'when the sync that puts the ticket\'s new folder on the disk fails the item is deferred as '
@@ -1620,7 +1697,7 @@ def _v345_space_keep_suite():
 
         KP._sync, KP._rename = watching_sync, watching_rename
         try:
-            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+            done = ended('VELDO-9244', keep=SAVING)
         finally:
             KP._sync, KP._rename = real_sync, real_rename
         check(ROW, 'the next attempt saves the file and removes the item [%s %s]' % (named(done, item), numbers(item)),
