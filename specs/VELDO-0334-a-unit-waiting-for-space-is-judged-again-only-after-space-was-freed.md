@@ -92,3 +92,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-16: footprint includes Signal and its synced copy. Admission requested retries a pool
   through the existing ending event, rules, keep step and removers. No acceptance criterion changed.
+
+- 2026-11-16: fix round 1, review finding 5. Gate and wrapped runs do not send admission_requested
+  yet. Only factory preparation carries the Signal context; the one-shot admit callers pass none, and
+  the gate wiring answers ledger_unreachable until VELDO-0323 connects it, so the path cannot be
+  reached today. Follow-up: when VELDO-0323 wires the gate, and VELDO-0325 at the latest, those
+  callers send the pool's one admission_requested the first time their hold would wait (design 6.7).
+  No acceptance criterion changed.
