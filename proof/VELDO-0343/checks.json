@@ -9,13 +9,13 @@
    "--suite",
    "150_veldo_0343_discard_keeps_commits"
   ],
-  "commit": "c8a68865c03d7041e86585390392c5e4b044b1a9",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 150_veldo_0343_discard_keeps_commits",
-  "note": "The ticket suite, on the bytes of this commit before it was made. 16 rows green.",
+  "note": "The ticket suite. 20 rows green.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
-  "ticket_rows_passed": 16
+  "ticket_rows_passed": 20
  },
  {
   "command": [
@@ -27,7 +27,7 @@
    "--suite",
    "150_veldo_0318_unique_work"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 150_veldo_0318_unique_work",
   "processes": "space supervisors: []",
@@ -44,7 +44,7 @@
    "--suite",
    "140_veldo_0345_space_keep"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 140_veldo_0345_space_keep",
   "processes": "space supervisors: []",
@@ -61,7 +61,7 @@
    "--suite",
    "138_veldo_0300_space_remove"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 138_veldo_0300_space_remove",
   "processes": "space supervisors: []",
@@ -78,10 +78,9 @@
    "--suite",
    "133_veldo_0326_space_principals"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 133_veldo_0326_space_principals",
-  "note": "ac2/observer-refused-by-name is green with the three names added; it was red on the base.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 30
@@ -96,7 +95,7 @@
    "--suite",
    "150_veldo_0327_disposition"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 150_veldo_0327_disposition",
   "processes": "space supervisors: []",
@@ -113,10 +112,9 @@
    "--suite",
    "149_veldo_0312_ticket_ended"
   ],
-  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 149_veldo_0312_ticket_ended",
-  "note": "Not run again in fix round 1: this is the result at the commit named.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 41
@@ -131,10 +129,9 @@
    "--suite",
    "132_veldo_0297_space_ledger"
   ],
-  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 132_veldo_0297_space_ledger",
-  "note": "Not run again in fix round 1: this is the result at the commit named.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 31
@@ -149,10 +146,9 @@
    "--suite",
    "150_veldo_0317_full_pool"
   ],
-  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [],
   "name": "targeted 150_veldo_0317_full_pool",
-  "note": "Not run again in fix round 1: this is the result at the commit named.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 23
@@ -167,12 +163,12 @@
    "--suite",
    "139_veldo_0301_space_signal"
   ],
-  "commit": "8e43624de12a5ae17d01f9103b2fa991aebbd6c5",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "failed_rows": [
    "SELFTEST FAIL: VELDO-0301 ac4/no-clock: Signal imports nothing and names no clock [[]]"
   ],
   "name": "targeted 139_veldo_0301_space_signal",
-  "note": "ac4/no-clock is red on the base too: inherited, left. Not run again in fix round 1: this is the result at the commit named.",
+  "note": "ac4/no-clock is red on the base too: inherited, left.",
   "processes": "space supervisors: []",
   "status": "failed_inherited",
   "ticket_rows_passed": 17
@@ -183,10 +179,68 @@
    "-n",
    "10",
    "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0329_hook_install"
+  ],
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0329_hook_install",
+  "note": "Run because it loads the reconcile module, which this round touches.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 21
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "145_veldo_0307_space_docker_ownership"
+  ],
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "failed_rows": [
+   "SELFTEST FAIL: VELDO-0307 ownership/removes-nothing: the source of control_space_reconcile.py names no remove, no prune, no kill and no force option, and calls no delete [[] ['unlink']]"
+  ],
+  "name": "targeted 145_veldo_0307_space_docker_ownership",
+  "note": "Run because it reads the reconcile module. The one red row is red with the same message on an exported copy of the base 48af7f64: inherited, left.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 24
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "134_veldo_0331_space_mode"
+  ],
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "failed_rows": [
+   "14 rows of VELDO-0331, from ac1/no-record-is-report (FileNotFoundError: its temporary state folder) on"
+  ],
+  "name": "targeted 134_veldo_0331_space_mode",
+  "note": "Run because it loads the reconcile module. 14 rows red, the first with FileNotFoundError for its own temporary state folder; the same 14 are red on an exported copy of the base 48af7f64: inherited, left.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 2
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
    ".veldo/validate.py",
    "all"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "validate",
   "status": "passed"
  },
@@ -198,7 +252,7 @@
    "bash",
    "scripts/check_docs.sh"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "docs",
   "status": "passed"
  },
@@ -210,7 +264,7 @@
    "bash",
    "scripts/check_template_sync.sh"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "template-sync",
   "status": "passed"
  },
@@ -222,7 +276,7 @@
    "bash",
    "scripts/check_lint.sh"
   ],
-  "commit": "c8a68865c03d7041e86585390392c5e4b044b1a9",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "lint",
   "status": "passed"
  },
@@ -234,7 +288,7 @@
    "python3",
    "scripts/check_space_boundary.py"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "space-boundary",
   "status": "passed"
  },
@@ -246,13 +300,13 @@
    "python3",
    "scripts/check_git_boundary.py"
   ],
-  "commit": "be4609e538ca66566d8602f116835f3b2ccb08de",
+  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
   "name": "git-boundary",
   "status": "passed"
  },
  {
   "name": "when",
-  "note": "The suites and the six fast checks ran on the working tree that became be4609e5, before that commit. c8a68865 changes the ticket suite only; the ticket suite and lint ran again on its bytes before it was made. The teeth run came last. After the bundle was written, validate.py was run once more, on the bundle. No space supervisor survived any run.",
+  "note": "Fix round 2. The thirteen suites and the six fast checks ran once, on the working tree that became c7f824c0, before it was made. The two commits after it change the ticket suite only (the reconcile module loaded from the tree, and a missing branch read as missing); the ticket suite and lint ran again on the bytes of the commit named here before it was made, and the other results are those of c7f824c0. The teeth run came last, on the committed tree. After the bundle was written, validate.py was run once more, on the bundle. No space supervisor survived any run. Not run: scripts/verify.sh and suites 151 and up, among them 156_veldo_0315_reconcile, the reconcile module's own suite.",
   "status": "note"
  }
 ]

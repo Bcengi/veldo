@@ -8,8 +8,12 @@
   "mutant_failed": [
    "space343/ac1/branch-item",
    "space343/ac1/kept-branch",
+   "space343/ac1/only-a-branch-holds",
+   "space343/ac1/reconcile-records",
    "space343/ac1/stopped-before-record",
+   "space343/ac2/create-only",
    "space343/ac2/git-refuses",
+   "space343/ac2/name-of-a-leaving-item",
    "space343/ac2/name-taken",
    "space343/ac2/next-name",
    "space343/ac2/not-recorded",
@@ -20,10 +24,10 @@
   ],
   "name": "space343-discard-without-the-branch",
   "new": "        pass  # defect: no kept branch before the Discard",
-  "new_digest": "125c22b4dd53bf61c769cc11730fb646c1bd420314e83be10f6e2089dc097324",
+  "new_digest": "dde4e782e5df91c445f977f01ce04482529914eaea89ed654a2cb81acbd11f08",
   "noop_failed": [],
   "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -48,6 +52,7 @@
   "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
+   "space343/ac2/create-only",
    "space343/ac2/git-refuses",
    "space343/ac2/name-taken",
    "space343/ac2/next-name",
@@ -56,10 +61,10 @@
   ],
   "name": "space343-remove-after-the-failed-branch-write",
   "new": "        try:\n            _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])\n        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
-  "new_digest": "d11ac4ef233054fc64aaf4bec00e22118097c4ddb601d9cf67d7e931041085c9",
+  "new_digest": "ed7d9d747a366cea36fd9a4a2b2417f143d44a1b4c12760d1e13172b84915a0a",
   "noop_failed": [],
   "old": "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -90,10 +95,10 @@
   ],
   "name": "space343-agent-repository-goes-with-the-worktree",
   "new": "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n            import shutil\n            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
-  "new_digest": "114b686405e89487c02fe9a1710d5d8281a11ba55f5e42e0a2dffb2758ee6fbf",
+  "new_digest": "aba061f05f86420663572b7ea61cda9f8979848aee91bab5b293092e52ad5491",
   "noop_failed": [],
   "old": "        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -116,9 +121,11 @@
   "mutant_failed": [
    "space343/ac1/branch-item",
    "space343/ac1/kept-branch",
+   "space343/ac1/only-a-branch-holds",
    "space343/ac1/only-unheld",
    "space343/ac1/snapshot",
    "space343/ac1/stopped-before-record",
+   "space343/ac2/name-of-a-leaving-item",
    "space343/ac2/next-name",
    "space343/ac3/agent",
    "space343/ac3/detached",
@@ -127,10 +134,10 @@
   ],
   "name": "space343-discard-commits-as-save-does",
   "new": "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
-  "new_digest": "1196250119a9748ad94b179a4be7debec8b872b837fc521c164f9af8c59255c8",
+  "new_digest": "fb854d989442c6fdac40e386394078c72912e2b2a1d9c092e26a6c753e46f77e",
   "noop_failed": [],
   "old": "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": true,
@@ -155,10 +162,10 @@
   ],
   "name": "space343-branch-made-and-not-recorded",
   "new": "    if False:",
-  "new_digest": "944ae009ea0ddb871fce0331571cd2e6af4fbe1aa027e568ac945f59e5858e21",
+  "new_digest": "34177a26b1e9ae61046c2b0494298e3b837d9e87a85720d4ce662abf04a1952b",
   "noop_failed": [],
   "old": "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -179,14 +186,15 @@
   "fix_round": 0,
   "module": "control_space_remove.py",
   "mutant_failed": [
-   "space343/ac1/only-unheld"
+   "space343/ac1/only-unheld",
+   "space343/ac2/name-of-a-leaving-item"
   ],
   "name": "space343-branch-for-a-held-commit",
   "new": "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
-  "new_digest": "7880235c81c043592fd38c6339ec00d9ccc06a7300cb8ce369219dcc5d3df0a3",
+  "new_digest": "4f2379ec0b4d21363d63bb9159dc214814744d207d87c85a441fe163a9033def",
   "noop_failed": [],
   "old": "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -268,10 +276,10 @@
   ],
   "name": "space343-kept-branch-in-the-agent-repository",
   "new": "    home = path  # defect: an agent's worktree gets its kept branch in the agent repository\n",
-  "new_digest": "1b932616f62b5c74d5dd99082fe5cc4c6bfd604dc675160e33e5de6bea90eb28",
+  "new_digest": "a4bdb754f5122fac035d603fd56cfadcde14ea03552de9aaf933964e412c8135",
   "noop_failed": [],
   "old": "    home = _kept_home(ctx['ledger'], identity, record, path)\n",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -324,10 +332,10 @@
   ],
   "name": "space343-orphan-branch-counted-a-holder",
   "new": "    if holds is not False or holders:\n        if holders:\n",
-  "new_digest": "c332f7fbe885a83fce3e7dc9c6b2421f43e99544aac9dc80f3f96f70514ba537",
+  "new_digest": "9d5b35ddd8c859fe12207c235e24144ec621fc90e9c7f5bc127347ca2a7a43c8",
   "noop_failed": [],
   "old": "    if holds is not False:\n        if holders:\n",
-  "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
   "replacement_count": 1,
   "source": "fresh",
   "specification_falsifier": false,
@@ -339,6 +347,174 @@
   },
   "targets": [
    "space343/ac1/stopped-before-record"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2, review finding 4",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space343/ac2/ledger-reads"
+  ],
+  "name": "space343-ledger-accepts-an-attached-worktree",
+  "new": "        if False:\n            raise Refused('space_keep_branch_attached'",
+  "new_digest": "a04f0ab5ab5956eac3a107414d40c9a979578849e9a8e1f00dc45bd607ef449f",
+  "noop_failed": [],
+  "old": "        if self._item_branch(path) is not None:\n            raise Refused('space_keep_branch_attached'",
+  "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/ledger-reads": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/ledger-reads"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2, review finding 4",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac2/create-only"
+  ],
+  "name": "space343-kept-branch-written-over-a-branch",
+  "new": "                         ref, commit)  # defect: not create-only",
+  "new_digest": "c8f48cc4cf26b1f947c49fc2ff7447ea9e64a8ec1057503ac4f9232b7e8da713",
+  "noop_failed": [],
+  "old": "                         ref, commit, '')",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/create-only": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/create-only"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1, review finding 5, lead decision",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/only-a-branch-holds"
+  ],
+  "name": "space343-tag-and-remote-ref-counted-holders",
+  "new": "HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')",
+  "new_digest": "02f4d0149c26856b2ea49e99e91d7fc9be8c24b4f916994519f81e4feae7f573",
+  "noop_failed": [],
+  "old": "HOLDING_REFS = ('refs/heads/',)",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/only-a-branch-holds": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/only-a-branch-holds"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2, review finding 6",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac2/name-of-a-leaving-item"
+  ],
+  "name": "space343-name-of-a-leaving-item-is-free",
+  "new": "        if (False and item.get('state') in BRANCH_LEAVING\n",
+  "new_digest": "68675431fe98a7fe6501d22b4984acc68a64039e7eb7e23a7ae65dcc3c760de1",
+  "noop_failed": [],
+  "old": "        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING\n",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac2/name-of-a-leaving-item": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac2/name-of-a-leaving-item"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1, review finding 6",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space343/ac1/reconcile-records"
+  ],
+  "name": "space343-left-branch-read-and-not-recorded",
+  "new": "        return None  # defect: the left branch is found and not recorded\n    except Exception:",
+  "new_digest": "cbac0aa2a28f9bd9b1b9b4a32bb505825bb494b521323e1f0f21125a1028a2e6",
+  "noop_failed": [],
+  "old": "        return ledger.keep_branch(identity, branch, commit)\n    except Exception:",
+  "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/reconcile-records": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/reconcile-records"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1, review finding 6",
+  "final_run_executions": 1,
+  "fix_round": 2,
+  "module": "control_space_reconcile.py",
+  "mutant_failed": [
+   "space343/ac1/reconcile-records"
+  ],
+  "name": "space343-reconcile-defers-without-recording",
+  "new": "            pass  # defect: reconcile defers and the left branch stays unrecorded",
+  "new_digest": "9841c3dc77fe821d073569cffb9bff234a7e5ba815a769ffcc9cc5545a62fd53",
+  "noop_failed": [],
+  "old": "            self.remove.record_left_branch(self.ledger, identity, record)",
+  "old_digest": "83be710aba7e9431f35a6313d3bb1aa8e806739c823bf32fc7b06a8db0b604e9",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0343_discard_keeps_commits.py",
+  "target_results": {
+   "space343/ac1/reconcile-records": [
+    false
+   ]
+  },
+  "targets": [
+   "space343/ac1/reconcile-records"
   ]
  },
  {

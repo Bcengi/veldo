@@ -1,5 +1,5 @@
 {
- "budget_seconds": 29416.0,
+ "budget_seconds": 29464.0,
  "case_deadlines": {
   "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree": 120,
   "check_teeth_mutations.py:space343-branch-for-a-held-commit": 120,
@@ -7,14 +7,20 @@
   "check_teeth_mutations.py:space343-discard-commits-as-save-does": 120,
   "check_teeth_mutations.py:space343-discard-without-the-branch": 120,
   "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository": 120,
+  "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch": 120,
+  "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree": 120,
   "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository": 120,
   "check_teeth_mutations.py:space343-ledger-trusts-the-branch": 120,
   "check_teeth_mutations.py:space343-ledger-trusts-the-commit": 120,
+  "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded": 120,
+  "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free": 120,
   "check_teeth_mutations.py:space343-observer-keeps-a-branch": 120,
   "check_teeth_mutations.py:space343-observer-requests-a-disposition": 120,
   "check_teeth_mutations.py:space343-observer-signs-a-disposition": 120,
   "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder": 120,
-  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write": 120
+  "check_teeth_mutations.py:space343-reconcile-defers-without-recording": 120,
+  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write": 120,
+  "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders": 120
  },
  "case_receipts": [
   {
@@ -95,6 +101,48 @@
    "validated": true
   },
   {
+   "identity": "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:space343-reconcile-defers-without-recording",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
    "identity": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
    "key": null,
    "reason": "unknown_closure",
@@ -126,24 +174,24 @@
    "worker_seconds": 0
   },
   "check_teeth_mutations.py": {
-   "executed": 14,
-   "inventory_digest": "68af9382db833637f1009719ade89f932719df64ec3934e03774436275b01154",
-   "registered": 14,
+   "executed": 20,
+   "inventory_digest": "88eb33e010b657716f123803a8d274de0a23fb858a56537a394e00535d2870c8",
+   "registered": 20,
    "reused": 0,
-   "wall_seconds": 196.85484292684123,
-   "worker_seconds": 362.06418802635744
+   "wall_seconds": 252.36038289777935,
+   "worker_seconds": 477.5679317996837
   }
  },
- "elapsed": 199.84773503709584,
- "executed": 14,
+ "elapsed": 255.1462876331061,
+ "executed": 20,
  "force_fresh": false,
  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "input_digest": "5a627bbea701f48efa2db5e1ddc09f979c96ca483795b06bd9b64f2261f7cf8c",
+ "input_digest": "be3a6ee275e24aa49e722629d0c5d7f5cbd41e8673761c60cc727d65db85fc4e",
  "invalid_results": [],
  "parallel_workers": 2,
  "peak_workers": 2,
- "registered": 14,
- "rejected": 14,
+ "registered": 20,
+ "rejected": 20,
  "resources": {
   "capacities": {
    "new_project_fixture": 2,
@@ -164,7 +212,7 @@
  "results": [
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -285,7 +333,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -297,11 +353,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -367,11 +431,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -404,17 +472,21 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 8.96311907703057,
+   "elapsed": 12.668782679829746,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/reconcile-records",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -541,8 +613,16 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      false
+     ],
+     [
       "space343/ac1/only-unheld",
       true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      false
      ],
      [
       "space343/ac1/snapshot",
@@ -553,12 +633,20 @@
       false
      ],
      [
+      "space343/ac2/create-only",
+      false
+     ],
+     [
       "space343/ac2/git-refuses",
       false
      ],
      [
       "space343/ac2/ledger-reads",
       true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      false
      ],
      [
       "space343/ac2/name-taken",
@@ -623,11 +711,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -646,9 +738,9 @@
      ]
     }
    },
-   "new_digest": "125c22b4dd53bf61c769cc11730fb646c1bd420314e83be10f6e2089dc097324",
+   "new_digest": "dde4e782e5df91c445f977f01ce04482529914eaea89ed654a2cb81acbd11f08",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -769,7 +861,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -781,11 +881,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -851,11 +959,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -874,7 +986,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -883,7 +995,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1004,7 +1116,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -1016,11 +1136,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -1086,11 +1214,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -1123,13 +1255,14 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 9.473799696192145,
+   "elapsed": 13.582977831363678,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
@@ -1254,7 +1387,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -1266,11 +1407,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      false
+     ],
+     [
       "space343/ac2/git-refuses",
       false
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -1336,11 +1485,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -1359,9 +1512,9 @@
      ]
     }
    },
-   "new_digest": "d11ac4ef233054fc64aaf4bec00e22118097c4ddb601d9cf67d7e931041085c9",
+   "new_digest": "ed7d9d747a366cea36fd9a4a2b2417f143d44a1b4c12760d1e13172b84915a0a",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1482,7 +1635,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -1494,11 +1655,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -1564,11 +1733,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -1587,7 +1760,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -1596,7 +1769,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -1717,7 +1890,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -1729,11 +1910,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -1799,11 +1988,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -1835,11 +2028,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 8.498320686165243,
+   "elapsed": 12.813624161295593,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac3/agent",
@@ -1964,7 +2157,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -1976,11 +2177,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -2046,11 +2255,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -2066,9 +2279,9 @@
      ]
     }
    },
-   "new_digest": "114b686405e89487c02fe9a1710d5d8281a11ba55f5e42e0a2dffb2758ee6fbf",
+   "new_digest": "aba061f05f86420663572b7ea61cda9f8979848aee91bab5b293092e52ad5491",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2189,7 +2402,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -2201,11 +2422,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -2271,11 +2500,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -2294,7 +2527,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -2303,7 +2536,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2424,7 +2657,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -2436,11 +2677,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -2506,11 +2755,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -2542,18 +2795,20 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.309712163172662,
+   "elapsed": 16.12919660191983,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/next-name",
      "space343/ac3/agent",
      "space343/ac3/detached",
@@ -2678,8 +2933,16 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      false
+     ],
+     [
       "space343/ac1/only-unheld",
       false
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
      ],
      [
       "space343/ac1/snapshot",
@@ -2690,12 +2953,20 @@
       false
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
       true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      false
      ],
      [
       "space343/ac2/name-taken",
@@ -2760,11 +3031,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -2780,9 +3055,9 @@
      ]
     }
    },
-   "new_digest": "1196250119a9748ad94b179a4be7debec8b872b837fc521c164f9af8c59255c8",
+   "new_digest": "fb854d989442c6fdac40e386394078c72912e2b2a1d9c092e26a6c753e46f77e",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -2903,7 +3178,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -2915,11 +3198,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -2985,11 +3276,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -3008,7 +3303,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -3017,7 +3312,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3138,7 +3433,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -3150,11 +3453,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -3220,11 +3531,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -3256,11 +3571,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 10.64246780378744,
+   "elapsed": 14.058786789886653,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/not-recorded"
@@ -3383,7 +3698,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -3395,11 +3718,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -3465,11 +3796,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -3485,9 +3820,9 @@
      ]
     }
    },
-   "new_digest": "944ae009ea0ddb871fce0331571cd2e6af4fbe1aa027e568ac945f59e5858e21",
+   "new_digest": "34177a26b1e9ae61046c2b0494298e3b837d9e87a85720d4ce662abf04a1952b",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3608,7 +3943,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -3620,11 +3963,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -3690,11 +4041,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -3713,7 +4068,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -3722,7 +4077,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -3843,7 +4198,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -3855,11 +4218,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -3925,11 +4296,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -3961,14 +4336,15 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.119586078915745,
+   "elapsed": 13.685173965990543,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
-     "space343/ac1/only-unheld"
+     "space343/ac1/only-unheld",
+     "space343/ac2/name-of-a-leaving-item"
     ],
     "observations": [
      [
@@ -4088,8 +4464,16 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
       false
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
      ],
      [
       "space343/ac1/snapshot",
@@ -4100,12 +4484,20 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
       true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      false
      ],
      [
       "space343/ac2/name-taken",
@@ -4170,11 +4562,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -4190,9 +4586,9 @@
      ]
     }
    },
-   "new_digest": "7880235c81c043592fd38c6339ec00d9ccc06a7300cb8ce369219dcc5d3df0a3",
+   "new_digest": "4f2379ec0b4d21363d63bb9159dc214814744d207d87c85a441fe163a9033def",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4313,7 +4709,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -4325,11 +4729,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -4395,11 +4807,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -4418,7 +4834,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -4427,7 +4843,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -4548,7 +4964,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -4560,11 +4984,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -4630,11 +5062,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -4663,11 +5099,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.889839155599475,
+   "elapsed": 11.914536291267723,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/ledger-reads"
@@ -4790,7 +5226,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -4802,12 +5246,20 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
       false
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
      ],
      [
       "space343/ac2/name-taken",
@@ -4872,11 +5324,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -4894,7 +5350,7 @@
    },
    "new_digest": "995d54f54f0c295a81d4a8897eb76362dcbc1e88e4c1cef8aa124f040d8d2397",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5015,7 +5471,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -5027,11 +5491,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -5097,11 +5569,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -5126,7 +5602,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5247,7 +5723,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -5259,11 +5743,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -5329,11 +5821,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -5362,11 +5858,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.354351170826703,
+   "elapsed": 12.068489676341414,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac2/ledger-reads"
@@ -5489,7 +5985,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -5501,12 +6005,20 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
       false
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
      ],
      [
       "space343/ac2/name-taken",
@@ -5571,11 +6083,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -5593,7 +6109,7 @@
    },
    "new_digest": "d178ee90e2ff91eef509fc1a7ea6e64f8d6a16df5662f6a24270fd565c387463",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5714,7 +6230,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -5726,11 +6250,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -5796,11 +6328,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -5825,7 +6361,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -5946,7 +6482,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -5958,11 +6502,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -6028,11 +6580,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -6064,11 +6620,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.674107955768704,
+   "elapsed": 12.28916882397607,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac3/detached",
@@ -6192,7 +6748,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -6204,11 +6768,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -6274,11 +6846,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -6294,9 +6870,9 @@
      ]
     }
    },
-   "new_digest": "1b932616f62b5c74d5dd99082fe5cc4c6bfd604dc675160e33e5de6bea90eb28",
+   "new_digest": "a4bdb754f5122fac035d603fd56cfadcde14ea03552de9aaf933964e412c8135",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -6417,7 +6993,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -6429,11 +7013,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -6499,11 +7091,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -6522,7 +7118,7 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -6531,7 +7127,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -6652,7 +7248,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -6664,11 +7268,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -6734,11 +7346,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -6767,11 +7383,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.982101034373045,
+   "elapsed": 12.266711048781872,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac3/detached"
@@ -6894,7 +7510,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -6906,11 +7530,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -6976,11 +7608,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -6998,7 +7634,7 @@
    },
    "new_digest": "fa8909674fad774c0e1fe9e50fb6495aa374e6fca4476c5e6f242a44b69aae4b",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -7119,7 +7755,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -7131,11 +7775,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -7201,11 +7853,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -7230,7 +7886,7 @@
   },
   {
    "baseline": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -7351,7 +8007,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -7363,11 +8027,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -7433,11 +8105,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -7469,11 +8145,11 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.392782458104193,
+   "elapsed": 12.478468392975628,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [
      "space343/ac1/stopped-before-record"
@@ -7596,7 +8272,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -7608,11 +8292,19 @@
       false
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -7678,11 +8370,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -7698,9 +8394,9 @@
      ]
     }
    },
-   "new_digest": "c332f7fbe885a83fce3e7dc9c6b2421f43e99544aac9dc80f3f96f70514ba537",
+   "new_digest": "9d5b35ddd8c859fe12207c235e24144ec621fc90e9c7f5bc127347ca2a7a43c8",
    "noop": {
-    "count": 42,
+    "count": 46,
     "failed_details": [],
     "failed_rows": [],
     "observations": [
@@ -7821,7 +8517,15 @@
       true
      ],
      [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
       "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
       true
      ],
      [
@@ -7833,11 +8537,19 @@
       true
      ],
      [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
       "space343/ac2/git-refuses",
       true
      ],
      [
       "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
       true
      ],
      [
@@ -7903,11 +8615,15 @@
      "space343/ac1/branch-item",
      "space343/ac1/kept-branch",
      "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
      "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
      "space343/ac1/snapshot",
      "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
      "space343/ac2/git-refuses",
      "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
      "space343/ac2/name-taken",
      "space343/ac2/next-name",
      "space343/ac2/not-recorded",
@@ -7926,7 +8642,4585 @@
      ]
     }
    },
-   "old_digest": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree",
+    "module": "control_space.py",
+    "name": "space343-ledger-accepts-an-attached-worktree",
+    "new": "        if False:\n            raise Refused('space_keep_branch_attached'",
+    "old": "        if self._item_branch(path) is not None:\n            raise Refused('space_keep_branch_attached'",
+    "rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.597582494840026,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/ledger-reads"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      false
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      false
+     ]
+    }
+   },
+   "new_digest": "a04f0ab5ab5956eac3a107414d40c9a979578849e9a8e1f00dc45bd607ef449f",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/ledger-reads": [
+      true
+     ]
+    }
+   },
+   "old_digest": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch",
+    "module": "control_space_remove.py",
+    "name": "space343-kept-branch-written-over-a-branch",
+    "new": "                         ref, commit)  # defect: not create-only",
+    "old": "                         ref, commit, '')",
+    "rows": [
+     "space343/ac2/create-only"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.095603024121374,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/create-only"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      false
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/create-only": [
+      false
+     ]
+    }
+   },
+   "new_digest": "c8f48cc4cf26b1f947c49fc2ff7447ea9e64a8ec1057503ac4f9232b7e8da713",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders",
+    "module": "control_space_remove.py",
+    "name": "space343-tag-and-remote-ref-counted-holders",
+    "new": "HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')",
+    "old": "HOLDING_REFS = ('refs/heads/',)",
+    "rows": [
+     "space343/ac1/only-a-branch-holds"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.11690048314631,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/only-a-branch-holds"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      false
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/only-a-branch-holds": [
+      false
+     ]
+    }
+   },
+   "new_digest": "02f4d0149c26856b2ea49e99e91d7fc9be8c24b4f916994519f81e4feae7f573",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free",
+    "module": "control_space_remove.py",
+    "name": "space343-name-of-a-leaving-item-is-free",
+    "new": "        if (False and item.get('state') in BRANCH_LEAVING\n",
+    "old": "        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING\n",
+    "rows": [
+     "space343/ac2/name-of-a-leaving-item"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 11.996092508081347,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac2/name-of-a-leaving-item"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      false
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac2/name-of-a-leaving-item": [
+      false
+     ]
+    }
+   },
+   "new_digest": "68675431fe98a7fe6501d22b4984acc68a64039e7eb7e23a7ae65dcc3c760de1",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded",
+    "module": "control_space_remove.py",
+    "name": "space343-left-branch-read-and-not-recorded",
+    "new": "        return None  # defect: the left branch is found and not recorded\n    except Exception:",
+    "old": "        return ledger.keep_branch(identity, branch, commit)\n    except Exception:",
+    "rows": [
+     "space343/ac1/reconcile-records"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 11.956365898251534,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/reconcile-records"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      false
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/reconcile-records": [
+      false
+     ]
+    }
+   },
+   "new_digest": "cbac0aa2a28f9bd9b1b9b4a32bb505825bb494b521323e1f0f21125a1028a2e6",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/branch-item": [
+      true
+     ],
+     "space343/ac1/kept-branch": [
+      true
+     ]
+    }
+   },
+   "old_digest": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/reconcile-records": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 343,
+    "identity": "check_teeth_mutations.py:space343-reconcile-defers-without-recording",
+    "module": "control_space_reconcile.py",
+    "name": "space343-reconcile-defers-without-recording",
+    "new": "            pass  # defect: reconcile defers and the left branch stays unrecorded",
+    "old": "            self.remove.record_left_branch(self.ledger, identity, record)",
+    "rows": [
+     "space343/ac1/reconcile-records"
+    ],
+    "suite": "150_veldo_0343_discard_keeps_commits.py"
+   },
+   "elapsed": 12.661972928326577,
+   "fixture_version": 1,
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "mutant": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [
+     "space343/ac1/reconcile-records"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      false
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/reconcile-records": [
+      false
+     ]
+    }
+   },
+   "new_digest": "9841c3dc77fe821d073569cffb9bff234a7e5ba815a769ffcc9cc5545a62fd53",
+   "noop": {
+    "count": 46,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "space343/ac1/branch-item",
+      true
+     ],
+     [
+      "space343/ac1/kept-branch",
+      true
+     ],
+     [
+      "space343/ac1/name",
+      true
+     ],
+     [
+      "space343/ac1/only-a-branch-holds",
+      true
+     ],
+     [
+      "space343/ac1/only-unheld",
+      true
+     ],
+     [
+      "space343/ac1/reconcile-records",
+      true
+     ],
+     [
+      "space343/ac1/snapshot",
+      true
+     ],
+     [
+      "space343/ac1/stopped-before-record",
+      true
+     ],
+     [
+      "space343/ac2/create-only",
+      true
+     ],
+     [
+      "space343/ac2/git-refuses",
+      true
+     ],
+     [
+      "space343/ac2/ledger-reads",
+      true
+     ],
+     [
+      "space343/ac2/name-of-a-leaving-item",
+      true
+     ],
+     [
+      "space343/ac2/name-taken",
+      true
+     ],
+     [
+      "space343/ac2/next-name",
+      true
+     ],
+     [
+      "space343/ac2/not-recorded",
+      true
+     ],
+     [
+      "space343/ac3/agent",
+      true
+     ],
+     [
+      "space343/ac3/detached",
+      true
+     ],
+     [
+      "space343/ac3/detached-refused",
+      true
+     ],
+     [
+      "space343/ac4/no-commit",
+      true
+     ],
+     [
+      "space343/ac4/no-event",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "space343/ac1/branch-item",
+     "space343/ac1/kept-branch",
+     "space343/ac1/name",
+     "space343/ac1/only-a-branch-holds",
+     "space343/ac1/only-unheld",
+     "space343/ac1/reconcile-records",
+     "space343/ac1/snapshot",
+     "space343/ac1/stopped-before-record",
+     "space343/ac2/create-only",
+     "space343/ac2/git-refuses",
+     "space343/ac2/ledger-reads",
+     "space343/ac2/name-of-a-leaving-item",
+     "space343/ac2/name-taken",
+     "space343/ac2/next-name",
+     "space343/ac2/not-recorded",
+     "space343/ac3/agent",
+     "space343/ac3/detached",
+     "space343/ac3/detached-refused",
+     "space343/ac4/no-commit",
+     "space343/ac4/no-event"
+    ],
+    "targets": {
+     "space343/ac1/reconcile-records": [
+      true
+     ]
+    }
+   },
+   "old_digest": "83be710aba7e9431f35a6313d3bb1aa8e806739c823bf32fc7b06a8db0b604e9",
    "replacement_count": 1,
    "reuse_key": null,
    "reuse_reason": "unknown_closure",
@@ -8242,9 +13536,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 42.702522702049464,
+   "elapsed": 35.24301968701184,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -9157,9 +14451,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 41.18512035999447,
+   "elapsed": 34.97941451892257,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -10072,9 +15366,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 37.410242869053036,
+   "elapsed": 34.334519322030246,
    "fixture_version": 1,
-   "input_digest": "cd1079c3aa5a58c67facdddd9c13a62f6ab2acc9cecce13d4aedee2a147ac7f8",
+   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -10698,100 +15992,140 @@
   "check_teeth_mutations.py:space343-discard-commits-as-save-does",
   "check_teeth_mutations.py:space343-discard-without-the-branch",
   "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
+  "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch",
+  "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree",
   "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
   "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
   "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
+  "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded",
+  "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free",
   "check_teeth_mutations.py:space343-observer-keeps-a-branch",
   "check_teeth_mutations.py:space343-observer-requests-a-disposition",
   "check_teeth_mutations.py:space343-observer-signs-a-disposition",
   "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
-  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write"
+  "check_teeth_mutations.py:space343-reconcile-defers-without-recording",
+  "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
+  "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders"
  ],
- "worker_invocations": 20,
+ "worker_invocations": 28,
  "worker_outcomes": [
   {
    "budget_seconds": 1800,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.764090724755079,
+   "elapsed": 14.022468557115644,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:baseline",
-   "output_directory": "/tmp/v343r1/teeth/logs/0",
-   "pid": 2070238,
+   "output_directory": "/tmp/v343r2/teeth3/logs/0",
+   "pid": 2869503,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3302
+   "stdout_bytes": 3608
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.913513720035553,
+   "elapsed": 14.050504588056356,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:noop",
-   "output_directory": "/tmp/v343r1/teeth/logs/1",
-   "pid": 2070239,
+   "output_directory": "/tmp/v343r2/teeth3/logs/1",
+   "pid": 2869504,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3302
-  },
-  {
-   "budget_seconds": 1800,
-   "cleanup": {
-    "directories": 110,
-    "units": []
-   },
-   "driver": "check_teeth_mutations.py",
-   "elapsed": 11.39147091191262,
-   "leg": "confined",
-   "mode": "baseline",
-   "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v343r1/teeth/logs/2",
-   "pid": 2082627,
-   "returncode": 0,
-   "stderr_bytes": 0,
-   "stdout_bytes": 3267
+   "stdout_bytes": 3608
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.492046923842281,
+   "elapsed": 14.005240191705525,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v343r1/teeth/logs/3",
-   "pid": 2082980,
+   "output_directory": "/tmp/v343r2/teeth3/logs/3",
+   "pid": 2880408,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3267
+   "stdout_bytes": 3573
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 14.105118932202458,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v343r2/teeth3/logs/2",
+   "pid": 2880407,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3573
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 14.270159863866866,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_reconcile.py:False:noop",
+   "output_directory": "/tmp/v343r2/teeth3/logs/5",
+   "pid": 2891216,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3578
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 14.369936727453023,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_reconcile.py:False:baseline",
+   "output_directory": "/tmp/v343r2/teeth3/logs/4",
+   "pid": 2891210,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3578
   },
   {
    "budget_seconds": 1800,
    "cleanup": {
     "directories": 176,
     "units": [
-     "v1713c38fd.slice"
+     "v171594121.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.89974220888689,
+   "elapsed": 35.003710590302944,
    "leg": "confined",
    "mode": "baseline",
    "name": "133_veldo_0326_space_principals.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v343r1/teeth/logs/4",
-   "pid": 2093046,
+   "output_directory": "/tmp/v343r2/teeth3/logs/6",
+   "pid": 2902197,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4736
@@ -10801,16 +16135,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v17170ad07.slice"
+     "v1716cf94e.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.82149179279804,
+   "elapsed": 35.56682975683361,
    "leg": "confined",
    "mode": "noop",
    "name": "133_veldo_0326_space_principals.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v343r1/teeth/logs/5",
-   "pid": 2093148,
+   "output_directory": "/tmp/v343r2/teeth3/logs/7",
+   "pid": 2902201,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4736
@@ -10818,205 +16152,307 @@
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 96,
+    "directories": 138,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 8.970683344174176,
+   "elapsed": 12.678374009672552,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-without-the-branch",
-   "output_directory": "/tmp/v343r1/teeth/logs/6",
-   "pid": 2109488,
+   "output_directory": "/tmp/v343r2/teeth3/logs/8",
+   "pid": 2913508,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3626
+   "stdout_bytes": 4073
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 103,
+    "directories": 154,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 9.481511757243425,
+   "elapsed": 13.593388425186276,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
-   "output_directory": "/tmp/v343r1/teeth/logs/7",
-   "pid": 2109489,
+   "output_directory": "/tmp/v343r2/teeth3/logs/9",
+   "pid": 2913509,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3449
+   "stdout_bytes": 3784
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 96,
+    "directories": 147,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 8.5041208663024,
+   "elapsed": 12.823412009049207,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
-   "output_directory": "/tmp/v343r1/teeth/logs/8",
-   "pid": 2117318,
+   "output_directory": "/tmp/v343r2/teeth3/logs/10",
+   "pid": 2926493,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3342
+   "stdout_bytes": 3648
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.318586231209338,
+   "elapsed": 16.13677171897143,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
-   "output_directory": "/tmp/v343r1/teeth/logs/9",
-   "pid": 2117513,
+   "output_directory": "/tmp/v343r2/teeth3/logs/11",
+   "pid": 2927379,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3544
+   "stdout_bytes": 3927
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 10.650072107091546,
+   "elapsed": 14.066341096069664,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
-   "output_directory": "/tmp/v343r1/teeth/logs/10",
-   "pid": 2124069,
+   "output_directory": "/tmp/v343r2/teeth3/logs/12",
+   "pid": 2939373,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3296
+   "stdout_bytes": 3602
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.125888976734132,
+   "elapsed": 13.692737318109721,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
-   "output_directory": "/tmp/v343r1/teeth/logs/11",
-   "pid": 2126997,
+   "output_directory": "/tmp/v343r2/teeth3/logs/13",
+   "pid": 2942531,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3294
+   "stdout_bytes": 3640
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.902556728571653,
+   "elapsed": 11.92203067895025,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
-   "output_directory": "/tmp/v343r1/teeth/logs/12",
-   "pid": 2133209,
+   "output_directory": "/tmp/v343r2/teeth3/logs/14",
+   "pid": 2952489,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3296
+   "stdout_bytes": 3602
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.361096362117678,
+   "elapsed": 12.078787201084197,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
-   "output_directory": "/tmp/v343r1/teeth/logs/13",
-   "pid": 2136576,
+   "output_directory": "/tmp/v343r2/teeth3/logs/15",
+   "pid": 2955773,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3296
+   "stdout_bytes": 3602
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.681155214086175,
+   "elapsed": 12.29687342280522,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
-   "output_directory": "/tmp/v343r1/teeth/logs/14",
-   "pid": 2146239,
+   "output_directory": "/tmp/v343r2/teeth3/logs/16",
+   "pid": 2963245,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3322
+   "stdout_bytes": 3628
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.98902773624286,
+   "elapsed": 12.274528237991035,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
-   "output_directory": "/tmp/v343r1/teeth/logs/15",
-   "pid": 2150724,
+   "output_directory": "/tmp/v343r2/teeth3/logs/17",
+   "pid": 2966685,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3288
+   "stdout_bytes": 3594
   },
   {
    "budget_seconds": 120,
    "cleanup": {
-    "directories": 110,
+    "directories": 161,
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.403226130176336,
+   "elapsed": 12.486262063030154,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
-   "output_directory": "/tmp/v343r1/teeth/logs/16",
-   "pid": 2160718,
+   "output_directory": "/tmp/v343r2/teeth3/logs/18",
+   "pid": 2975390,
    "returncode": 0,
    "stderr_bytes": 0,
-   "stdout_bytes": 3314
+   "stdout_bytes": 3620
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.608000092208385,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree",
+   "output_directory": "/tmp/v343r2/teeth3/logs/19",
+   "pid": 2979800,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3602
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.106473158113658,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch",
+   "output_directory": "/tmp/v343r2/teeth3/logs/20",
+   "pid": 2989763,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3600
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.127263624221087,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders",
+   "output_directory": "/tmp/v343r2/teeth3/logs/21",
+   "pid": 2993101,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3616
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.004269437398762,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free",
+   "output_directory": "/tmp/v343r2/teeth3/logs/22",
+   "pid": 3000486,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3622
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 11.963956185150892,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded",
+   "output_directory": "/tmp/v343r2/teeth3/logs/23",
+   "pid": 3004145,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3612
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.669581467285752,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:space343-reconcile-defers-without-recording",
+   "output_directory": "/tmp/v343r2/teeth3/logs/24",
+   "pid": 3011274,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3612
   },
   {
    "budget_seconds": 120,
    "cleanup": {
     "directories": 176,
     "units": [
-     "v171116637.slice"
+     "v171e6025c.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 42.740471249911934,
+   "elapsed": 35.276823124848306,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
-   "output_directory": "/tmp/v343r1/teeth/logs/17",
-   "pid": 2164844,
+   "output_directory": "/tmp/v343r2/teeth3/logs/25",
+   "pid": 3014804,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4903
@@ -11026,16 +16462,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v171051465.slice"
+     "v1711067c2.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 41.21503646718338,
+   "elapsed": 35.00483171828091,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-requests-a-disposition",
-   "output_directory": "/tmp/v343r1/teeth/logs/18",
-   "pid": 2173292,
+   "output_directory": "/tmp/v343r2/teeth3/logs/26",
+   "pid": 3019916,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4919
@@ -11045,16 +16481,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v17131d7c3.slice"
+     "v171b11ea7.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 37.43839857308194,
+   "elapsed": 34.36325760371983,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-signs-a-disposition",
-   "output_directory": "/tmp/v343r1/teeth/logs/19",
-   "pid": 2202777,
+   "output_directory": "/tmp/v343r2/teeth3/logs/27",
+   "pid": 3032109,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 5087

@@ -1,7 +1,61 @@
 # VELDO-0343 proof
 
-Implementation c8a68865c03d7041e86585390392c5e4b044b1a9 (fix round 1; first built at 8e43624d). Builder
-evidence, not independent review. All four criteria remain pending the lead gate and independent review.
+Implementation 25da645b27e98720fbfcd9fe736cbccc0e664d0a (fix round 2; fix round 1 at c8a68865, first built at 8e43624d).
+Builder evidence, not independent review. All four criteria remain pending the lead gate and independent
+review.
+
+## Fix round 2, 2026-11-16
+
+The three LOW findings of the same review. Where this section gives counts they replace the ones below.
+
+- Finding 4 (teeth), rows only, no code changed. ac2/ledger-reads gains a worktree on a branch,
+  refused space_keep_branch_attached. Row ac2/create-only: another branch takes the kept name
+  between the remover's look and its write; git refuses the create-only write, the Discard is
+  remove_refused and the other branch is not moved. Falsifiers: the Ledger's attached check dropped
+  (ac2/ledger-reads red), and the write made without the empty old value (ac2/create-only red).
+- Finding 5, lead decision. Only refs/heads count as holders for the "already held" test; a commit
+  that only a tag or a remote-tracking ref reaches gets a kept branch like any other (remover,
+  HOLDING_REFS). Row ac1/only-a-branch-holds. Falsifier: tags and remote-tracking refs counted
+  again; the row went red. Spec History and design 6.5 record the decision.
+- Finding 6, first part. A kept name whose branch item is due, deferred or removing is taken
+  (remover, _free_branch): the request names the next name, where every Discard under the first
+  was refused space_keep_branch_item. Row ac2/name-of-a-leaving-item. Falsifier: such an item's
+  name counted free; the row went red.
+- Finding 6, second part. The branch a stopped Discard left is recorded by reconcile as it defers
+  the removing worktree (remover record_left_branch, called from the Reconciler's defer), so an
+  owner's Keep leaves no unrecorded branch. It writes no ref and removes nothing; the Ledger reads
+  the HEAD, the attachment and the branch as for any kept branch. Row ac1/reconcile-records.
+  Falsifiers: the branch found and not recorded, and reconcile deferring without the call; each
+  turned the row red. The review's R6 is left as it is, the lead's call.
+- Footprint. The lead's instruction puts the record in reconcile, so the spec's footprint now
+  names control_space_reconcile.py and its synced copy: one call, three lines. That module's own
+  suite, 156_veldo_0315_reconcile, is above the limit this round was given and was NOT run.
+- ac1/stopped-before-record now also requires that the Discard itself answered with the kept
+  branch: with reconcile recording the branch first, the round 1 holder mutant would otherwise
+  have survived. It is rejected in the final run.
+
+Rows: 20 green in the ticket suite. Neighbours, all run this round: 0318 45, 0345 31, 0300 39, 0327
+27, suite 133 30, 0312 41, 0297 31, 0317 23, 0329 21, all green; 0301 17 green and ac4/no-clock red,
+inherited. Two more suites that load the reconcile module were run and are red exactly as on an
+exported copy of the base 48af7f64: 0307 ownership/removes-nothing (1 row) and 0331 (14 rows, its
+own temporary state folder is missing). Inherited, left. Fast checks passed: validation, docs,
+template sync, lint, space boundary, git boundary. All 188 registered teeth cases that mutate the
+three engine modules find their anchor exactly once (counted).
+
+Teeth, finding 343, final run, last, on the clean committed tree: 20 registered, 20 executed, 20
+rejected, no reuse, no invalid result, no surviving worker, 255 s. It was not the only run
+(teeth-run.json, earlier_runs). The first start, on c7f824c0, stopped with a driver error before
+any mutant, because the suite did not load the reconcile module from the tree (fixed in e126530f).
+The second applied all 20 and rejected 19: the declared AC1 falsifier was an invalid result,
+because three new rows read a branch that mutant never makes, and the rows after them were absent
+instead of red. The new rows now read a missing branch as missing (the commit named above), and
+the whole finding ran again. So the harness applied each of the 20 mutants twice, where the brief
+asked for once. Before the first commit each of the six
+new mutants and the round 1 holder mutant was applied once by hand and seen red (teeth-run.json,
+hand_checks).
+
+The sections below describe fix round 1 and the first build; the holding refs, the row and
+falsifier counts and the suites run are as this section says.
 
 ## Fix round 1, 2026-11-16
 

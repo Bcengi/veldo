@@ -1,6 +1,6 @@
 {
  "all_green": true,
- "count": 16,
+ "count": 20,
  "criteria": {
   "AC1": [
    "ac1/name",
@@ -8,14 +8,18 @@
    "ac1/branch-item",
    "ac1/snapshot",
    "ac1/only-unheld",
-   "ac1/stopped-before-record"
+   "ac1/stopped-before-record",
+   "ac1/only-a-branch-holds",
+   "ac1/reconcile-records"
   ],
   "AC2": [
    "ac2/name-taken",
    "ac2/git-refuses",
    "ac2/not-recorded",
    "ac2/ledger-reads",
-   "ac2/next-name"
+   "ac2/next-name",
+   "ac2/create-only",
+   "ac2/name-of-a-leaving-item"
   ],
   "AC3": [
    "ac3/agent",
@@ -37,11 +41,15 @@
   "space343/ac1/branch-item",
   "space343/ac1/kept-branch",
   "space343/ac1/name",
+  "space343/ac1/only-a-branch-holds",
   "space343/ac1/only-unheld",
+  "space343/ac1/reconcile-records",
   "space343/ac1/snapshot",
   "space343/ac1/stopped-before-record",
+  "space343/ac2/create-only",
   "space343/ac2/git-refuses",
   "space343/ac2/ledger-reads",
+  "space343/ac2/name-of-a-leaving-item",
   "space343/ac2/name-taken",
   "space343/ac2/next-name",
   "space343/ac2/not-recorded",
@@ -53,13 +61,17 @@
  ],
  "what_each_row_holds": {
   "ac1/branch-item": "One branch item at the repository and that name, in state kept, with the commit and the worktree it was made for; the Ledger accepted it before the outcome removed.",
-  "ac1/kept-branch": "Before the Discard no branch, tag or remote-tracking ref holds the commit made on the detached HEAD. After it the worktree is gone by the forced remove, the kept branch is at that commit, it is the one holding ref, and the committed file is on it.",
+  "ac1/kept-branch": "Before the Discard no ref holds the commit made on the detached HEAD. After it the worktree is gone by the forced remove, the kept branch is at that commit, it is the one holding ref, and the committed file is on it.",
   "ac1/name": "The terms name space-saved-<ticket> for a ticket worktree and space-saved-<run label> for a run worktree, the name Save would write.",
+  "ac1/only-a-branch-holds": "Fix round 2, review finding 5, lead decision. A detached worktree whose commit only a tag reaches, and one whose commit only a remote-tracking ref reaches: each Discard makes the kept branch at the commit and one kept branch item for it, before the outcome removed; after the tag or the remote-tracking ref is deleted the branch is the one ref holding the commit.",
   "ac1/only-unheld": "A detached worktree at a commit the trunk holds, and a worktree on its own branch, are discarded with no new branch and no new branch item.",
+  "ac1/reconcile-records": "Fix round 2, review finding 6. The Discard stops inside keep_branch after the ref write; no item records the branch. Reconcile's deferral of the removing worktree records it: one kept branch item at the repository and the name, with the commit and the worktree. The owner then answers Keep: the worktree stays kept with its file and HEAD, the branch and its one item are as recorded, and there is no -2 name.",
   "ac1/snapshot": "The uncommitted file is gone from disk and is in the saved snapshot with its content.",
-  "ac1/stopped-before-record": "Fix round 1, review finding 2. The Discard stops inside keep_branch, after the ref write: the worktree, its uncommitted file and its HEAD are as they were, the item is removing, the branch is at the commit and no item records it. After the deferral reconcile writes, the next request names the same branch; its Discard removes the worktree and leaves exactly one branch of that name family at the commit, one kept branch item for it written before the outcome removed, no item for a -2 name, and the uncommitted file in the snapshot.",
+  "ac1/stopped-before-record": "Fix round 1, review finding 2. The Discard stops inside keep_branch, after the ref write: the worktree, its uncommitted file and its HEAD are as they were, the item is removing, the branch is at the commit and no item records it. After the deferral reconcile writes, the next request names the same branch; its Discard removes the worktree and leaves exactly one branch of that name family at the commit, one kept branch item for it written before the outcome removed, no item for a -2 name, and the uncommitted file in the snapshot. Fix round 2: reconcile now records the branch as it defers, so the row also requires that the Discard itself answered with the kept branch, which a branch counted a holder does not.",
+  "ac2/create-only": "Fix round 2, review finding 4. Another branch takes the kept name between the remover's look and its write (the look is made to say there is no such branch). The write is create-only and git refuses it: the worktree, its files and its HEAD are as they were, deferred as remove_refused, no branch item, and the branch that took the name is not moved.",
   "ac2/git-refuses": "A ref below the name makes git refuse the write: the same as above, and git made no such branch.",
-  "ac2/ledger-reads": "The Ledger refuses a kept branch for a worktree no Discard is authorized for, a branch that is not there, a branch at another commit, a commit that is not the HEAD of the worktree, and a full ref name; it writes no item.",
+  "ac2/ledger-reads": "The Ledger refuses a kept branch for a worktree no Discard is authorized for, a branch that is not there, a branch at another commit, a commit that is not the HEAD of the worktree, a full ref name and, fix round 2 (review finding 4), a worktree on a branch while the branch named is there at its commit (space_keep_branch_attached); it writes no item.",
+  "ac2/name-of-a-leaving-item": "Fix round 2, review finding 6. The kept name belongs to a branch item that is deferred. With no branch under it: the request names the -2 name, the Discard runs, the commit is on the -2 branch with one kept branch item, nothing is written under the first name and the deferred item is as it was. With its branch at the worktree's own commit: the request names the -2 name, the Discard runs and writes no ref, because that branch holds the commit, and the deferred item is as it was.",
   "ac2/name-taken": "The name is taken, after the request was shown, by a branch that does not hold the commit: the worktree, its uncommitted file, its committed file and its HEAD are as they were, the item is deferred as remove_refused, the other branch did not move, no branch item was written.",
   "ac2/next-name": "After the refusal the next request names space-saved-<run>-2, and its Discard puts the commit there; the first name is where it was.",
   "ac2/not-recorded": "The branch is written and the Ledger does not record it: nothing is discarded, deferred as remove_refused.",

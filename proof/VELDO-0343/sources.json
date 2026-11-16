@@ -1,13 +1,15 @@
 {
  ".veldo/control_space.py": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
- ".veldo/control_space_remove.py": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
- "docs/design/VELDO-0295-design.md": "587c681e519cfdf51a842ab35332b62a76d9ce7618a96348ef260631731173c4",
+ ".veldo/control_space_reconcile.py": "83be710aba7e9431f35a6313d3bb1aa8e806739c823bf32fc7b06a8db0b604e9",
+ ".veldo/control_space_remove.py": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+ "docs/design/VELDO-0295-design.md": "b56e5ef0e0463778494f1860c351ab5c05650d179f26c8ef26e939ab14d8a2a0",
  "engine/.veldo/control_space.py": "f7ee1ca631a3d078bf1c8044c80c411189f226a10bd3fdf4fca54a16edf0b335",
- "engine/.veldo/control_space_remove.py": "01e48cebfcafe56f4d1b499a7c66c2bd97f82f9fff27e2b509fe55b0b15e8ddf",
- "scripts/check_teeth_mutations.py": "f4c2a2ea1b0c5137562716c4307c489501f480c975ed1f5e5ca7911f46cc1b9d",
+ "engine/.veldo/control_space_reconcile.py": "83be710aba7e9431f35a6313d3bb1aa8e806739c823bf32fc7b06a8db0b604e9",
+ "engine/.veldo/control_space_remove.py": "0a16dd2fdd18da866c9ef48ff14ea8a932abeef38c3f18c14991756ee3046fa1",
+ "scripts/check_teeth_mutations.py": "20c16fe37fdb45fb48b34ca7004566de8b8ef12e1641f123fb71aee82a9d4cf0",
  "scripts/suites/133_veldo_0326_space_principals.py": "e3ac2a0db0b02199642b6645612a81089ecd6ee7b7292387af18741bb7a0794b",
- "scripts/suites/150_veldo_0343_discard_keeps_commits.py": "3e7a714c8d48c14536a5567b08ff762936e980b7f5f6964e93841ae97487f1e8",
+ "scripts/suites/150_veldo_0343_discard_keeps_commits.py": "0c0db5e2ea3263407a2fdc11c8b477d213a71a73a4d756b2ecf3a8c33a9214ab",
  "scripts/suites/manifest.json": "e7595acad83360def3a0695fb913595e691a8acf66d9929343beef5ddf82f9d9",
  "scripts/suites/requires.json": "06fcea8a4bed33c193f303a9e58c74894acdc590f934999083eda0e8434a5e9f",
- "specs/VELDO-0343-discard-keeps-every-commit.md": "4cd56deea1139faec66e1704b48ad1c022fd221bc74b03f25632843ff7e19229"
+ "specs/VELDO-0343-discard-keeps-every-commit.md": "7b6c733b64b8cc4db83bdbaeabef904654a5a75eb4a1b781213e5452919cc6a7"
 }
