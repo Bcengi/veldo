@@ -550,6 +550,38 @@ def _v337_verdict_suite():
                   for kind in ('review_run_scratch', 'review_run_build_output'))
               and 'ends' not in SP.COMMAND_PARAMETERS[SP.DECLARE])
 
+        # The review of the assembly, finding 3: the build root is one per worktree and passes from run
+        # to run as it is, whichever of the two build kinds it was declared with. A review run after a
+        # build run on the same worktree is given the build run's root, and a build run after a review
+        # run the review's; each keeps its item and its kind, and each run's scratch is its own.
+        row = 'ac1/build-root-passes-between-kinds'
+        for first, second in (('build', 'review'), ('review', 'build')):
+            tree = WORKTREES / ('reuse-%s-then-%s' % (first, second))
+            git(REPOSITORY, 'worktree', 'add', '-q', '-d', str(tree), 'main')
+            declared('worktree', tree, {'scope': A, 'run': {'id': 'dispatch/reuse-tree-' + first,
+                                                           'station': first}}, start=head)
+            earlier = LA.space_run_folders(floor.space, str(tree), 'dispatch/reuse-%s-1-%s' % (first, first), first)
+            root_item = (earlier.get('items') or {}).get(earlier.get('build'))
+            was = L.item(root_item) or {}
+            later = LA.space_run_folders(floor.space, str(tree), 'dispatch/reuse-%s-2-%s' % (first, second), second)
+            now = L.item(root_item) or {}
+            scratch_kind = (L.item((later.get('items') or {}).get(later.get('scratch'))) or {}).get('kind')
+            check(row, 'a %s run after a %s run on the same worktree is given that run\'s build root, the item '
+                       'and its kind as they were [%s %s %s %s]'
+                  % (second, first, earlier.get('refusal'), later.get('refusal'), was.get('kind'), now.get('kind')),
+                  earlier.get('refusal') is None and later.get('refusal') is None
+                  and was.get('kind') == LA.space_kind('build_output', {'run': {'station': first}})
+                  and later.get('build') == earlier['build'] and later['items'].get(later['build']) == root_item
+                  and now.get('kind') == was['kind'] and now.get('state') == was.get('state')
+                  and Path(later['build']).is_dir())
+            check(row, 'the %s run\'s scratch is its own, apart from the %s run\'s, with its own kind [%s]'
+                  % (second, first, scratch_kind),
+                  later.get('scratch') != earlier.get('scratch')
+                  and scratch_kind == LA.space_kind('scratch', {'run': {'station': second}}))
+        check(row, 'the two orders met the two build kinds',
+              LA.space_kind('build_output', {'run': {'station': 'build'}}) == 'build_output'
+              and LA.space_kind('build_output', {'run': {'station': 'review'}}) == 'review_run_build_output')
+
         row = 'ac1/adopt-refuses-ends'
         adopt_path = SCRATCH / 'adopt-ends'
         adopt_path.mkdir()
