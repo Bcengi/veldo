@@ -89,3 +89,35 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-16: BLOCKER, recorded by the builder before any code was written. Status stays ready; nothing
+  is built. Read on the base 73c7b832 (VELDO-0340 with its fix round 1). AC1 and AC2 need a group's
+  request to offer member picks and to say in its text which members have none, and three files outside
+  this ticket's footprint refuse or pin that:
+  - engine/.veldo/control_request_settlement.py (and its synced copy). space_presentation returns the
+    choices as the three group picks alone (:244, :257) and a fixed brief, and request_problem (:275-296)
+    binds every open and revise of a space request, and every framing by the presenter, to exactly that
+    brief and those choices. So no request with a member pick, and none whose text names the members
+    without a pick, can be opened, revised or presented by the Ledger and Signal alone. The brief also
+    numbers the worktrees by their place in the list (:256), not by the member's index: after member 2
+    leaves, members 1 and 3 would be shown as Worktree 1 and Worktree 2 beside the picks w1 and w3,
+    which is terms that differ from what is acted on.
+  - engine/.veldo/control_space_remove.py (and its synced copy). _r_disposition refuses unless the
+    settled choice equals accept and the action (:968), so the settled answer accept discard w2 removes
+    nothing. The Ledger could hand the remover an effect with the index cut off, but that is a rewritten
+    settled answer, a workaround, and it was not built.
+  - scripts/suites/150_veldo_0340_review_groups.py. Row terms/group (:644) asserts that a group's
+    choices are exactly the three group picks; it goes red the moment member picks are offered.
+  Needed from the lead: the footprint widened by those three files and the two synced copies. The terms
+  would carry each member's index and the indexes offered a pick, signed, so that space_presentation
+  derives the member picks and the line naming the members without one from the signed terms alone;
+  every single-worktree behavior of VELDO-0327 and VELDO-0318 stays as it is.
+  engine/.veldo/control_service.py reads the settled choice at :1729 (anything but accept keep is
+  authorized); the Ledger's authorize_disposition can refuse an accept keep w2 inside the footprint, so
+  that file may not need to change, to be confirmed in the build.
+  Not blocked: AC3. VELDO-0340 already built the sequence number (its History, "A join is taken by the
+  day's first group that is open"); what is left for it here is the rows and the falsifier, and the
+  close by the last member pick, which waits on AC1.
+  The VELDO-0340 review's point (b), a group whose request is canceled or declined: no criterion of this
+  ticket names it, and the design (4.9, section 7 item 4) gives a group two closures only, a group pick
+  applied and the last member leaving by a member pick. So it is not built here without a lead decision
+  that adds a criterion; the members stay deferred on disk and no work is lost meanwhile.
