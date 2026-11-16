@@ -836,7 +836,7 @@ def _v329_suite():
                 except OSError:
                     pass
 
-        # ---- The re-review's finding (second fix round) ------------------------------
+        # ---- The re-review's finding and its note (second fix round) ------------------------------
         row = 'fix7/worktree-configuration'
         several = repository('several')
         record = direct(several)
@@ -889,6 +889,39 @@ def _v329_suite():
         git(second, 'config', '--worktree', '--unset', 'core.hooksPath')
         check(row, 'with the worktrees\' settings gone the report is in place again',
               R.hooks_missing(str(several), str(state), G) == (str(several / '.git' / 'hooks'), {}))
+
+        row = 'fix8/included-file'
+        included_hooks = temp / 'included-hooks'
+        included_hooks.mkdir()
+        shared_file = temp / 'shared-gitconfig'
+        shared_file.write_text('[core]\n\thooksPath = %s\n' % included_hooks)
+        including, beside = repository('including'), repository('beside-including')
+        for path in (including, beside):
+            git(path, 'config', 'include.path', str(shared_file))
+        check(row, 'git reads the included value as local, and runs both repositories\' hooks from the one folder',
+              git(including, 'config', '--show-scope', '--get', 'core.hooksPath') == 'local\t' + str(included_hooks)
+              and git(beside, 'rev-parse', '--git-path', 'hooks') == str(included_hooks))
+        record = direct(including)
+        check(row, 'a hooks path from an included file is refused, with the file: ' + str(record),
+              record.get('ok') is False and record.get('hooks') == {}
+              and record.get('hooks_folder') == str(included_hooks)
+              and record.get('refused') == 'hooks_path_set_in_included_file:' + str(shared_file))
+        check(row, 'nothing is written: not in the folder the other repository shares, not in the configuration',
+              entries(included_hooks) == [] and told_to(including, 'veldo.space.stateroot') is None)
+        check(row, 'and it is reported, never "in place"',
+              R.hooks_missing(str(including), str(state), G)
+              == (str(included_hooks), {'hooks_folder': record.get('refused')}))
+        own_hooks = temp / 'own-file-hooks'
+        own_hooks.mkdir()
+        own_file = repository('own-file')
+        git(own_file, 'config', 'core.hooksPath', str(own_hooks))
+        tree = temp / 'own-file-trees' / 'one'
+        git(own_file, 'worktree', 'add', '-q', '-b', 'one', str(tree))
+        check(row, 'the same path in the repository\'s own configuration file is taken, asked through either worktree: '
+              + str((R.hooks_place(str(own_file), G), R.hooks_place(str(tree), G))),
+              R.hooks_place(str(own_file), G) == (str(own_hooks), None)
+              and R.hooks_place(str(tree), G) == (str(own_hooks), None)
+              and direct(own_file).get('ok') is True)
 
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'

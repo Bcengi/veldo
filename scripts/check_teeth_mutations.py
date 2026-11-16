@@ -16473,11 +16473,15 @@ def cases():
             "    if code == 0 and text.rstrip('\\n') not in ('', str(state_root)):\n",
             "    if False:  # defect: another installation's state root is overwritten\n",
             ['space329/fix4/two-installations'])
-    # The re-review's finding (second fix round).
+    # The re-review's finding and its note (second fix round).
     hook329('space329-worktree-hooks-path-unseen',
             "    if elsewhere:\n",
             "    if False:  # defect: a worktree's own hooks path is not reported\n",
             ['space329/fix7/worktree-configuration'])
+    hook329('space329-included-hooks-path-used',
+            "        if named is None or os.path.realpath(os.path.join(repository, named)) != os.path.join(common, 'config'):\n",
+            "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
+            ['space329/fix8/included-file'])
 
     return result
 

@@ -61,7 +61,8 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
                   folder every linked worktree uses, or the folder core.hooksPath configures in the
                   repository's own local configuration. core.hooksPath is read as the owner's git
                   reads it, with the global and the system file: set there (a global hook manager), or
-                  in the named worktree's own file, it names a folder that is not this repository's alone,
+                  in the named worktree's own file, or in a file the local configuration includes
+                  (include.path), it names a folder that is not this repository's alone,
                   so the install is REFUSED whole and reconcile reports hooks_folder with why. With
                   extensions.worktreeConfig on, reconcile also reads every other worktree's own file
                   and reports each that sets core.hooksPath (worktree_configuration): git runs that
@@ -1114,7 +1115,8 @@ def hooks_place(repository, git, environ=None):
       - core.hooksPath is read with the owner's global and system configuration, at the one worktree
         `repository` names. Set anywhere but in the repository's own local configuration (a global
         hook manager, the system file, that worktree's own file) it names a folder other
-        repositories use too.
+        repositories use too. So does a local value that comes from an included file (include.path):
+        the file may be shared by repositories nobody bound.
       - The other worktrees' own files are not read here. hooks_path_in_worktrees reads them, and
         hooks_missing reports each one that takes its worktree's hooks elsewhere.
       - A relative core.hooksPath is a different folder in every worktree, and a committed one.
@@ -1138,6 +1140,11 @@ def hooks_place(repository, git, environ=None):
     if code != 0:  # a git that did not run answers None, and its text is no folder
         raise ValueError('git could not read ' + repository + ': ' + str(text)[:200])
     common = os.path.realpath(text.rstrip('\n'))
+    if configured is not None:
+        named = origin[5:] if origin.startswith('file:') else None
+        if named is None or os.path.realpath(os.path.join(repository, named)) != os.path.join(common, 'config'):
+            return (os.path.normpath(os.path.join(repository, configured)),
+                    'hooks_path_set_in_included_file:' + (origin if named is None else named)[:200])
     if configured is None:
         folder = os.path.join(common, 'hooks')
     elif not os.path.isabs(configured):
