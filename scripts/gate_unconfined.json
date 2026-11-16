@@ -28,6 +28,7 @@
     {"suite": "83_veldo_0154_factory_loop", "reason": "systemd user manager: the factory loop runs inside the installed authority user service"},
     {"suite": "85_veldo_0158_credential_delivery", "reason": "systemd user manager: credentials are delivered to transient user units through /run/user/<uid>"},
     {"suite": "85_veldo_0171_setup_api", "reason": "systemd user manager: factory setup installs the API's user services and checks them with systemctl --user"},
+    {"suite": "133_veldo_0326_space_principals", "reason": "systemd user manager: shares 85_veldo_0171_setup_api setup fixture, which installs and checks the authority user services"},
     {"suite": "86_veldo_0127_agent_configuration", "reason": "systemd user manager: accepted role revisions run through both production adapters in transient user units"},
     {"suite": "86_veldo_0148_re_land", "reason": "systemd user manager: re-landing drives the installed authority services"},
     {"suite": "86_veldo_0189_engine_upgrade", "reason": "systemd user manager: re-running factory setup upgrades and restarts installed user services"},

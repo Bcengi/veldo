@@ -644,7 +644,7 @@ def _v305_space_census_suite():
                 made = object.__new__(LA.Receiver)
                 made.space, made.run_removal, made.run, made.supervision, made.role_skills = wired, None, None, None, []
                 made.config, made.dispatches, made.run_dispatch = {}, None, None
-                made.contract = {'station': station}
+                made.contract = {'station': station, 'reservation': {'project': ORCHARD['project']}}
                 made.runner = {'runner': runner, 'why': None}
                 made.delivered = delivered
                 made.space_run, made.run_census = None, None
@@ -1262,6 +1262,7 @@ def _v305_space_census_suite():
             dispatch_id = run['run']['id']
             R = receiver(space(ledger=Rooted(STATE)), path)
             R.config = {'state_root': str(STATE)}
+            R.contract.update(dispatch_id=dispatch_id, unit=ticket)
             made = R._run_directories(dispatch_id)
             TOKEN = plant(Path(made['config']) / 'token', 'the run\'s subscription token\n')
             before = sorted(str(one.relative_to(made['root'])) for one in Path(made['root']).rglob('*'))
@@ -1284,9 +1285,11 @@ def _v305_space_census_suite():
             dispatch_id = run['run']['id']
             R = receiver(space(), path)
             R.config = {'runs': str(SCRATCH / 'run-scratch')}
+            R.contract.update(dispatch_id=dispatch_id, unit=ticket)
             made = R._run_directories(dispatch_id)
             TOKEN = plant(Path(made['config']) / 'token', 'the run\'s subscription token\n')
             length, raised = journal_length(), None
+            run_items = items_at(made['root'])
             try:
                 with drive(row):
                     R._space_given(dispatch_id, ['worker'], dict(BASE), {'identity': 'local'})
@@ -1298,7 +1301,7 @@ def _v305_space_census_suite():
                   and made['root'] in getattr(raised, 'detail', ''))
             check(row, 'nothing was declared, no variable points anywhere and the token is byte for byte',
                   journal_length() == length and (R.space_run or {}).get('environment') == {}
-                  and items_at(made['root']) == {} and text_of(Path(made['config']) / 'token') == TOKEN)
+                  and items_at(made['root']) == run_items and text_of(Path(made['config']) / 'token') == TOKEN)
         except Exception as error:
             stopped(row, error)
 

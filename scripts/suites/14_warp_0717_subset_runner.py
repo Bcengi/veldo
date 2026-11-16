@@ -106,8 +106,10 @@ expect("WARP-0717 AC2 NON-VACUITY: the FULL scope PRODUCES the aggregate summary
 # The stamp's SHAPE is taken from verify.sh's own printf line rather than retyped here, so
 # the payload cannot drift from the file that actually writes it.
 _w17_verify_text = (_w17_scripts / "verify.sh").read_text()
-_w17_stamp_keys = _w17_re.findall(r'"([a-z_]+)":', _w17_verify_text.split("last_verify")[0].split(
-    "printf")[-1]) if "last_verify" in _w17_verify_text else []
+_w17_stamp_formats = _w17_re.findall(r"printf '([^{]*\{[^'\n]+)'", _w17_verify_text)
+_w17_stamp_formats = [text for text in _w17_stamp_formats if '"checks_na":' in text]
+_w17_stamp_keys = (_w17_re.findall(r'"([a-z_]+)":', _w17_stamp_formats[0])
+                   if len(_w17_stamp_formats) == 1 else [])
 # The printf's last field is the reuse fragment scripts/reuse_stamp.py returns, and VELDO-0208 makes
 # its force_fresh and reused mandatory on every stamp. Its top-level keys are read from the
 # fragment verify.sh itself writes when no valid receipt exists, so they are parsed, not retyped.

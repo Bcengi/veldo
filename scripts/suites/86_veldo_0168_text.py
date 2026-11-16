@@ -442,6 +442,20 @@ def _v168_suite():
                 ('control_factory_setup_api.py', 'passkey.send', 'CC', 'send'),
                 ('control_claim_client.py', 'Client.request', 'IPC', 'send'),
                 ('control_channel_activation.py', 'main.send', 'CC', 'send'),
+                # Local space journal operations and signed authority IPC.
+                ('control_space.py', 'Ledger.event', 'self', '_send'),
+                ('control_space.py', 'Ledger.consumed', 'self', '_send'),
+                ('control_space.py', 'Ledger._item_command', 'self', '_send'),
+                ('control_space.py', 'Ledger._create', 'self', '_send'),
+                ('control_space.py', 'Ledger.signal', 'self', '_send'),
+                ('control_space.py', 'Ledger.report', 'self', '_send'),
+                ('control_space.py', 'Ledger.set_pool', 'self', '_send'),
+                ('control_space.py', 'Ledger.place_hold', 'self', '_send'),
+                ('control_space.py', 'Ledger._hold_command', 'self', '_send'),
+                ('control_space.py', 'Ledger.issue', 'self', '_send'),
+                ('control_space.py', 'Ledger.reconcile', 'self', '_send'),
+                ('control_space.py', 'Ledger.set_mode', 'self', '_send'),
+                ('control_service.py', 'reconcile_cli', 'client', 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
             wanted_calls = Counter(wanted_calls)

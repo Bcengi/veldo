@@ -1034,7 +1034,7 @@ def _v306_space_docker_suite():
         asked, joined = 'dockers = service.docker_pipes()', 'pipes = {**pipes, **dockers}'
         check(ROW, 'the service loop has one select, on the listener and the pipes, and the adapter\'s pipes '
               'are read in each iteration and put among them before it [%s]' % selects,
-              len(selects) == 1 and selects[0].startswith('select.select([listener] + sorted(pipes), ')
+              len(selects) == 1 and selects[0].startswith('select.select([listener] + ([space_listener] if space_listener is not None else []) + sorted(pipes), ')
               and loop_text.count(asked) == 1 and loop_text.count(joined) == 1
               and loop_text.index(asked) < loop_text.index(joined) < loop_text.index(selects[0]))
         check(ROW, 'a ready pipe of the adapter is handed to docker_readable, before any other reader is asked',

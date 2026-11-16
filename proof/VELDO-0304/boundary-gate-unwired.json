@@ -5,7 +5,7 @@
   {
    "row": "VELDO-0304 integration/gate-wired",
    "passed": false,
-   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 494, in gate_wired\n    assert 'CHECK_extra=\"required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py\"' in source\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+   "detail": " Traceback (most recent call last):\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 494, in gate_wired\n    assert 'CHECK_extra=\"required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py\"' in source\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
   }
  ],
  "before": "c23316d1ba959569833f598ac975546b30cdb2fe9dda261e4e6ba18c43be3ffc",

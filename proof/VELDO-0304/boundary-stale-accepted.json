@@ -5,7 +5,7 @@
   {
    "row": "VELDO-0304 ac3/stale-entries",
    "passed": false,
-   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 473, in stale_entries\n    assert any('stale reviewed entry' in error for error in errors), errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: []\n"
+   "detail": " Traceback (most recent call last):\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 473, in stale_entries\n    assert any('stale reviewed entry' in error for error in errors), errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: []\n"
   }
  ],
  "before": "c4d4eb4e255b0126e319ae4ef50f9b21d62787e75f364e6b657b783f5c1d2f51",

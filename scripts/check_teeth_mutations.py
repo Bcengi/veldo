@@ -3754,13 +3754,13 @@ def cases():
     def candidate(name, old, new, row, also=()):
         add(56, name, '67_veldo_0056_candidates.py', 'lander.py', old, new, ['candidate/' + row], also)
 
-    init_anchor = '            self._git(workspace, "init", "-q", "--template=")\n'
+    init_anchor = '                self._git(workspace, "init", "-q", "--template=")\n'
     # AC1, declared: sync_main checks out the trunk (held by another worktree, so the checkout fails).
     candidate('candidate-checks-out-trunk', init_anchor,
-              '            self._git(self.repo_root, "checkout", self.trunk, ok=None)  # defect: sync_main checks out the trunk\n'
+              '                self._git(self.repo_root, "checkout", self.trunk, ok=None)  # defect: sync_main checks out the trunk\n'
               + init_anchor, 'detached-held-trunk')
     candidate('candidate-checkout-ignores-other-worktrees', init_anchor,
-              '            self._git(self.repo_root, "checkout", "-q", "--ignore-other-worktrees", self.trunk, ok=None)'
+              '                self._git(self.repo_root, "checkout", "-q", "--ignore-other-worktrees", self.trunk, ok=None)'
               '  # defect: the trunk is checked out in the caller anyway\n' + init_anchor, 'detached-held-trunk')
     candidate('candidate-fetch-into-caller',
               '                self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),\n',
@@ -9112,8 +9112,9 @@ def cases():
     def loop154(name, module, old, new, rows, also=()):
         add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
     loop154('loop154-pipe-not-polled', 'control_service.py',
-            "                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]\n",
-            "                    ready = select.select([listener], [], [], wait)[0]  # defect: the launch pipes are not polled\n",
+            "                    ready = select.select([listener] + ([space_listener] if space_listener is not None else [])\n"
+            "                                          + sorted(pipes), [], [], wait)[0]\n",
+            "                    ready = select.select([listener] + ([space_listener] if space_listener is not None else []), [], [], wait)[0]  # defect: the launch pipes are not polled\n",
             ['loop/review-offered'])
     loop154('loop154-eof-ignored', 'control_launch.py',
             "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
@@ -10832,7 +10833,7 @@ def cases():
         'refusal=refusal,\n                    detail=push.stderr.strip())', 'refusal=refusal)',
         ['lander/push-detail'])
     add(153, 'identity153-common-dir-reread', '67_veldo_0056_candidates.py', 'lander.py',
-        '            self.common_dir = common or None\n', '',
+        '                self.common_dir = common or None\n', '',
         ['candidate/every-git-operation-checked'])
 
     # VELDO-0161: each criterion's declared falsifiers first, then the threat model's other shapes, then one

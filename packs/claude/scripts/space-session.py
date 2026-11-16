@@ -2,7 +2,7 @@
 """Record a client session notification, with a deadline shorter than the hook's 15 seconds.
 
 The installer supplies VELDO_SPACE_STATE_ROOT (the authority's state root) and puts veldo on PATH,
-or supplies VELDO_SPACE_CLI. VELDO_INSTALLATION retains its usual meaning. Installation in account
+or supplies VELDO_SPACE_CLI. The central installation selector retains its usual meaning. Installation in account
 folders belongs to the installer ticket. This script creates no scratch and removes nothing.
 
 No notification is dropped without a record. With no VELDO_SPACE_STATE_ROOT the state root is the

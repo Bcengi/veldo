@@ -5,12 +5,12 @@
   {
    "row": "VELDO-0304 ac4/repository",
    "passed": false,
-   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 502, in <lambda>\n    row('ac4/repository', lambda: repository_boundary('removal reads'))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['scripts/gate_legs.py: prune_times: removal reads a file time or compares the clock']\n"
+   "detail": " Traceback (most recent call last):\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 502, in <lambda>\n    row('ac4/repository', lambda: repository_boundary('removal reads'))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['scripts/gate_legs.py: prune_times: removal reads a file time or compares the clock']\n"
   },
   {
    "row": "VELDO-0304 integration/boundary",
    "passed": false,
-   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['scripts/gate_legs.py: prune_times: removal reads a file time or compares the clock']\n"
+   "detail": " Traceback (most recent call last):\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/<user>/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['scripts/gate_legs.py: prune_times: removal reads a file time or compares the clock']\n"
   }
  ],
  "before": "2f89fa7c8e12dd0af30c6017cc03dc132a5091c1e28e13752a5ba1e1eee12b01",

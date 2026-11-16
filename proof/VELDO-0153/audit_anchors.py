@@ -71,6 +71,8 @@ def registrations(source, findings=FINDINGS, read_text=None):
                 return left not in right
         if isinstance(node, ast.Dict):
             return {evaluate(key, env): evaluate(value, env) for key, value in zip(node.keys, node.values)}
+        if isinstance(node, ast.Set):
+            return {evaluate(item, env) for item in node.elts}
         if isinstance(node, (ast.List, ast.Tuple)):
             items = []
             for item in node.elts:
@@ -81,6 +83,8 @@ def registrations(source, findings=FINDINGS, read_text=None):
             return tuple(items) if isinstance(node, ast.Tuple) else items
         if isinstance(node, ast.BinOp):
             left, right = evaluate(node.left, env), evaluate(node.right, env)
+            if isinstance(node.op, ast.BitOr) and isinstance(left, set) and isinstance(right, set):
+                return left | right
             if isinstance(node.op, ast.Add):
                 return left + right
             if isinstance(node.op, ast.Mod):
@@ -116,7 +120,7 @@ def registrations(source, findings=FINDINGS, read_text=None):
                     if not path.is_relative_to(ROOT):
                         raise ValueError('data path outside repository')
                     return read_text(path)
-                allowed = ((str, ('replace', 'join', 'format', 'rstrip')),
+                allowed = ((str, ('replace', 'join', 'format', 'rstrip', 'lstrip')),
                            (dict, ('get', 'items')), (set, ('update',)))
                 if any(isinstance(value, kind) and node.func.attr in methods for kind, methods in allowed):
                     return getattr(value, node.func.attr)(*args, **kwargs)
