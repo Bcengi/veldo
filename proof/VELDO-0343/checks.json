@@ -9,13 +9,33 @@
    "--suite",
    "150_veldo_0343_discard_keeps_commits"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "failed_rows": [],
   "name": "targeted 150_veldo_0343_discard_keeps_commits",
   "note": "The ticket suite. 20 rows green.",
   "processes": "space supervisors: []",
   "status": "diagnostic_only",
   "ticket_rows_passed": 20
+ },
+ {
+  "command": [
+   "bash",
+   "/home/dmitry/projects/myday/scripts/host_heavy.sh",
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "156_veldo_0315_reconcile"
+  ],
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
+  "failed_rows": [],
+  "name": "targeted 156_veldo_0315_reconcile",
+  "note": "The reconcile module's own suite, fix round 3: 35 rows, 61 checks passed, 0 failed, run once under the gate lock. On 0a80f89b the lead saw 59 passed and 2 failed: loss/owner-keep and ac3/startup, both stale since VELDO-0318 (a9628b86) and both changed in this round; no product code changed.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 35
  },
  {
   "command": [
@@ -240,7 +260,7 @@
    ".veldo/validate.py",
    "all"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "validate",
   "status": "passed"
  },
@@ -252,7 +272,7 @@
    "bash",
    "scripts/check_docs.sh"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "docs",
   "status": "passed"
  },
@@ -264,7 +284,7 @@
    "bash",
    "scripts/check_template_sync.sh"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "template-sync",
   "status": "passed"
  },
@@ -276,7 +296,7 @@
    "bash",
    "scripts/check_lint.sh"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "lint",
   "status": "passed"
  },
@@ -288,7 +308,7 @@
    "python3",
    "scripts/check_space_boundary.py"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "space-boundary",
   "status": "passed"
  },
@@ -300,13 +320,13 @@
    "python3",
    "scripts/check_git_boundary.py"
   ],
-  "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+  "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
   "name": "git-boundary",
   "status": "passed"
  },
  {
   "name": "when",
-  "note": "Fix round 2. The thirteen suites and the six fast checks ran once, on the working tree that became c7f824c0, before it was made. The two commits after it change the ticket suite only (the reconcile module loaded from the tree, and a missing branch read as missing); the ticket suite and lint ran again on the bytes of the commit named here before it was made, and the other results are those of c7f824c0. The teeth run came last, on the committed tree. After the bundle was written, validate.py was run once more, on the bundle. No space supervisor survived any run. Not run: scripts/verify.sh and suites 151 and up, among them 156_veldo_0315_reconcile, the reconcile module's own suite.",
+  "note": "Fix round 3. Run on the commit named in each entry: 156_veldo_0315_reconcile once, under the gate lock, on the working tree whose bytes became bb90e493 (the two commits were made after it was green and change nothing else); then, on bb90e493, the ticket suite and the six fast checks; then the teeth run, last. No space supervisor survived any run. The other suites listed were not run again in round 3: no product code changed, and their results are those of fix round 2 on the commit each names. Not run: scripts/verify.sh and the other suites 151 and up. Fix round 2, as it was written then: Fix round 2. The thirteen suites and the six fast checks ran once, on the working tree that became c7f824c0, before it was made. The two commits after it change the ticket suite only (the reconcile module loaded from the tree, and a missing branch read as missing); the ticket suite and lint ran again on the bytes of the commit named here before it was made, and the other results are those of c7f824c0. The teeth run came last, on the committed tree. After the bundle was written, validate.py was run once more, on the bundle. No space supervisor survived any run. Not run: scripts/verify.sh and suites 151 and up, among them 156_veldo_0315_reconcile, the reconcile module's own suite.",
   "status": "note"
  }
 ]

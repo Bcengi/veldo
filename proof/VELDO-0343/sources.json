@@ -9,7 +9,8 @@
  "scripts/check_teeth_mutations.py": "20c16fe37fdb45fb48b34ca7004566de8b8ef12e1641f123fb71aee82a9d4cf0",
  "scripts/suites/133_veldo_0326_space_principals.py": "e3ac2a0db0b02199642b6645612a81089ecd6ee7b7292387af18741bb7a0794b",
  "scripts/suites/150_veldo_0343_discard_keeps_commits.py": "0c0db5e2ea3263407a2fdc11c8b477d213a71a73a4d756b2ecf3a8c33a9214ab",
- "scripts/suites/manifest.json": "e7595acad83360def3a0695fb913595e691a8acf66d9929343beef5ddf82f9d9",
+ "scripts/suites/156_veldo_0315_reconcile.py": "225d5a2c970d9706a1c48b1767dfaab0f2293b380e04a3294c126e0a712422cb",
+ "scripts/suites/manifest.json": "0ffdcadecb8a89c52d93eedc6c8c75fc7ef37a7acba1cfdc8d27f4a3988fa3a3",
  "scripts/suites/requires.json": "06fcea8a4bed33c193f303a9e58c74894acdc590f934999083eda0e8434a5e9f",
- "specs/VELDO-0343-discard-keeps-every-commit.md": "7b6c733b64b8cc4db83bdbaeabef904654a5a75eb4a1b781213e5452919cc6a7"
+ "specs/VELDO-0343-discard-keeps-every-commit.md": "8c1af162be36c720b868d285662b2482a6d4f4dc5b7a2f5983edfeebf8a2895d"
 }

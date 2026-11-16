@@ -10,11 +10,11 @@
   "--jobs",
   "2",
   "--worker-log-dir",
-  "/tmp/v343r2/teeth3/logs",
+  "/tmp/v343r3/teeth/logs",
   "--diff-dir",
-  "/tmp/v343r2/teeth3/diffs"
+  "/tmp/v343r3/teeth/diffs"
  ],
- "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+ "commit": "bb90e493f50fa2e06be2b0ed72a3a3af4707668b",
  "earlier_rounds": {
   "fix_round_1": {
    "commit": "c8a68865c03d7041e86585390392c5e4b044b1a9",
@@ -38,67 +38,74 @@
    "executed": 14,
    "registered": 14,
    "rejected": 14
+  },
+  "fix_round_2": {
+   "commit": "25da645b27e98720fbfcd9fe736cbccc0e664d0a",
+   "earlier_runs": [
+    {
+     "commit": "c7f824c0d35299795bb8e747ca151927010ea010",
+     "elapsed": 29.0,
+     "executed": 0,
+     "exit_code": 1,
+     "registered": 20,
+     "what": "driver_error before any mutant: the suite did not name control_space_reconcile.py among the modules it loads from the tree, so the case that changes it had no place to be applied (suite production-copy anchor moved). Baseline and no-op runs only; no mutant was applied. The suite now names the module (e126530f), and the finding was started again."
+    },
+    {
+     "commit": "e126530f55a79f472d19dc7ea8ec6eba8004ecf5",
+     "elapsed": 255.0,
+     "executed": 20,
+     "exit_code": 1,
+     "registered": 20,
+     "rejected": 19,
+     "what": "One invalid result, missing_target, for the declared AC1 falsifier space343-discard-without-the-branch: with no kept branch made, three of the new rows read a branch that was not there, the suite stopped, and the rows after them were absent instead of red. The new rows now read a missing branch as missing (the commit this run is on). All 17 cases of the ticket suite were then applied by hand once each, every row was present and every target red, and the whole finding was run again. So in fix round 2 the harness applied each of the 20 mutants twice."
+    }
+   ],
+   "executed": 20,
+   "hand_checks": {
+    "red_rows": {
+     "space343-kept-branch-written-over-a-branch": [
+      "space343/ac2/create-only"
+     ],
+     "space343-ledger-accepts-an-attached-worktree": [
+      "space343/ac2/ledger-reads"
+     ],
+     "space343-left-branch-read-and-not-recorded": [
+      "space343/ac1/reconcile-records"
+     ],
+     "space343-name-of-a-leaving-item-is-free": [
+      "space343/ac2/name-of-a-leaving-item"
+     ],
+     "space343-orphan-branch-counted-a-holder": [
+      "space343/ac1/stopped-before-record"
+     ],
+     "space343-reconcile-defers-without-recording": [
+      "space343/ac1/reconcile-records"
+     ],
+     "space343-tag-and-remote-ref-counted-holders": [
+      "space343/ac1/only-a-branch-holds"
+     ]
+    },
+    "what": "Before the commit: one edit, one run of the ticket suite, the file restored; the diff digest was the same before and after all seven."
+   },
+   "registered": 20,
+   "rejected": 20
   }
  },
- "earlier_runs": [
-  {
-   "commit": "c7f824c0d35299795bb8e747ca151927010ea010",
-   "elapsed": 29.0,
-   "executed": 0,
-   "exit_code": 1,
-   "registered": 20,
-   "what": "driver_error before any mutant: the suite did not name control_space_reconcile.py among the modules it loads from the tree, so the case that changes it had no place to be applied (suite production-copy anchor moved). Baseline and no-op runs only; no mutant was applied. The suite now names the module (e126530f), and the finding was started again."
-  },
-  {
-   "commit": "e126530f55a79f472d19dc7ea8ec6eba8004ecf5",
-   "elapsed": 255.0,
-   "executed": 20,
-   "exit_code": 1,
-   "registered": 20,
-   "rejected": 19,
-   "what": "One invalid result, missing_target, for the declared AC1 falsifier space343-discard-without-the-branch: with no kept branch made, three of the new rows read a branch that was not there, the suite stopped, and the rows after them were absent instead of red. The new rows now read a missing branch as missing (the commit this run is on). All 17 cases of the ticket suite were then applied by hand once each, every row was present and every target red, and the whole finding was run again. So in fix round 2 the harness applied each of the 20 mutants twice."
-  }
- ],
- "elapsed": 255.0,
+ "earlier_runs": [],
+ "elapsed": 234.0,
  "executed": 20,
  "exit_code": 0,
- "hand_checks": {
-  "red_rows": {
-   "space343-kept-branch-written-over-a-branch": [
-    "space343/ac2/create-only"
-   ],
-   "space343-ledger-accepts-an-attached-worktree": [
-    "space343/ac2/ledger-reads"
-   ],
-   "space343-left-branch-read-and-not-recorded": [
-    "space343/ac1/reconcile-records"
-   ],
-   "space343-name-of-a-leaving-item-is-free": [
-    "space343/ac2/name-of-a-leaving-item"
-   ],
-   "space343-orphan-branch-counted-a-holder": [
-    "space343/ac1/stopped-before-record"
-   ],
-   "space343-reconcile-defers-without-recording": [
-    "space343/ac1/reconcile-records"
-   ],
-   "space343-tag-and-remote-ref-counted-holders": [
-    "space343/ac1/only-a-branch-holds"
-   ]
-  },
-  "what": "Before the commit: one edit, one run of the ticket suite, the file restored; the diff digest was the same before and after all seven."
- },
  "invalid_results": [],
- "note": "The final teeth run of fix round 2, last, on the clean committed tree: the third start and the second that applied mutants (earlier_runs). Nothing was written in the worktree while it ran. Before the first start, each of the six new mutants and the round 1 holder mutant was applied once by hand to the working tree, the ticket suite was run, and the file was put back (hand_checks).",
+ "note": "The teeth run of fix round 3, last, on the clean committed tree, started once. Nothing was written in the worktree while it ran. Fix round 3 changed no product code and registered no new case: the same twenty.",
  "ran_last": true,
  "registered": 20,
  "rejected": 20,
  "reused": 0,
  "status_after": "",
  "status_before": "",
- "summary": "mutations: passed registered=20 executed=20 reused=0 rejected=20 workers=28 elapsed=255.146s",
+ "summary": "mutations: passed registered=20 executed=20 reused=0 rejected=20 workers=28 elapsed=233.689s",
  "supervisors_after": [],
  "supervisors_before": [],
  "surviving_workers": 0,
- "tree": "4827523296b1ceedb6fd02356fcb427bcde26354"
+ "tree": "dea70f3433ea0c6245499555489ac66ec26d4e88"
 }

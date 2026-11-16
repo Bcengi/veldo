@@ -178,15 +178,15 @@
    "inventory_digest": "88eb33e010b657716f123803a8d274de0a23fb858a56537a394e00535d2870c8",
    "registered": 20,
    "reused": 0,
-   "wall_seconds": 252.36038289777935,
-   "worker_seconds": 477.5679317996837
+   "wall_seconds": 230.97841331688687,
+   "worker_seconds": 436.33282102737576
   }
  },
- "elapsed": 255.1462876331061,
+ "elapsed": 233.6887786546722,
  "executed": 20,
  "force_fresh": false,
  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
- "input_digest": "be3a6ee275e24aa49e722629d0c5d7f5cbd41e8673761c60cc727d65db85fc4e",
+ "input_digest": "756a5c0bb946d98281b0475ea38aeec762cf78f354b3bc156f0a6021a0263543",
  "invalid_results": [],
  "parallel_workers": 2,
  "peak_workers": 2,
@@ -472,9 +472,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.668782679829746,
+   "elapsed": 10.348584265913814,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -1255,9 +1255,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 13.582977831363678,
+   "elapsed": 11.202623728197068,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -2028,9 +2028,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.813624161295593,
+   "elapsed": 11.131983782164752,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -2795,9 +2795,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 16.12919660191983,
+   "elapsed": 13.927169456612319,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -3571,9 +3571,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 14.058786789886653,
+   "elapsed": 11.808558277320117,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -4336,9 +4336,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 13.685173965990543,
+   "elapsed": 11.76510610198602,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -5099,9 +5099,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.914536291267723,
+   "elapsed": 11.513675193767995,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -5858,9 +5858,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.068489676341414,
+   "elapsed": 11.412664977833629,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -6620,9 +6620,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.28916882397607,
+   "elapsed": 11.518977256957442,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -7383,9 +7383,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.266711048781872,
+   "elapsed": 11.499936355743557,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -8145,9 +8145,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.478468392975628,
+   "elapsed": 11.918164202012122,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -8907,9 +8907,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.597582494840026,
+   "elapsed": 12.17807057313621,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -9669,9 +9669,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.095603024121374,
+   "elapsed": 11.805610686074942,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -10434,9 +10434,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.11690048314631,
+   "elapsed": 11.347686294000596,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -11199,9 +11199,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.996092508081347,
+   "elapsed": 11.368068241979927,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -11964,9 +11964,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 11.956365898251534,
+   "elapsed": 11.388185162097216,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -12726,9 +12726,9 @@
     ],
     "suite": "150_veldo_0343_discard_keeps_commits.py"
    },
-   "elapsed": 12.661972928326577,
+   "elapsed": 11.49261912656948,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 46,
     "failed_details": [],
@@ -13536,9 +13536,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 35.24301968701184,
+   "elapsed": 32.544697710778564,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -14451,9 +14451,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 34.97941451892257,
+   "elapsed": 32.430939607322216,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -15366,9 +15366,9 @@
     "siblings": true,
     "suite": "133_veldo_0326_space_principals.py"
    },
-   "elapsed": 34.334519322030246,
+   "elapsed": 33.10709174722433,
    "fixture_version": 1,
-   "input_digest": "6fa221c530daed5d70843f54ff1e2a34d75293f8c116dfffcc15f834085731a9",
+   "input_digest": "92e640f33cbeb5aaef3f3c27c892b1823ebaf14a6b02bdb6e078d761091f9198",
    "mutant": {
     "count": 56,
     "failed_details": [
@@ -16016,12 +16016,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.022468557115644,
+   "elapsed": 13.169281411916018,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:baseline",
-   "output_directory": "/tmp/v343r2/teeth3/logs/0",
-   "pid": 2869503,
+   "output_directory": "/tmp/v343r3/teeth/logs/0",
+   "pid": 3180813,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3608
@@ -16033,12 +16033,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.050504588056356,
+   "elapsed": 13.178672656882554,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_remove.py:False:noop",
-   "output_directory": "/tmp/v343r2/teeth3/logs/1",
-   "pid": 2869504,
+   "output_directory": "/tmp/v343r3/teeth/logs/1",
+   "pid": 3180814,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3608
@@ -16050,12 +16050,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.005240191705525,
+   "elapsed": 13.006115198135376,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v343r2/teeth3/logs/3",
-   "pid": 2880408,
+   "output_directory": "/tmp/v343r3/teeth/logs/3",
+   "pid": 3191442,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3573
@@ -16067,15 +16067,32 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.105118932202458,
+   "elapsed": 13.037420126143843,
    "leg": "confined",
    "mode": "baseline",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v343r2/teeth3/logs/2",
-   "pid": 2880407,
+   "output_directory": "/tmp/v343r3/teeth/logs/2",
+   "pid": 3191441,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3573
+  },
+  {
+   "budget_seconds": 1800,
+   "cleanup": {
+    "directories": 161,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 12.10329342726618,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_reconcile.py:False:baseline",
+   "output_directory": "/tmp/v343r3/teeth/logs/4",
+   "pid": 3202012,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3578
   },
   {
    "budget_seconds": 120,
@@ -16084,67 +16101,50 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.270159863866866,
+   "elapsed": 12.100921497214586,
    "leg": "confined",
    "mode": "noop",
    "name": "150_veldo_0343_discard_keeps_commits.py:control_space_reconcile.py:False:noop",
-   "output_directory": "/tmp/v343r2/teeth3/logs/5",
-   "pid": 2891216,
+   "output_directory": "/tmp/v343r3/teeth/logs/5",
+   "pid": 3202022,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3578
   },
   {
-   "budget_seconds": 1800,
-   "cleanup": {
-    "directories": 161,
-    "units": []
-   },
-   "driver": "check_teeth_mutations.py",
-   "elapsed": 14.369936727453023,
-   "leg": "confined",
-   "mode": "baseline",
-   "name": "150_veldo_0343_discard_keeps_commits.py:control_space_reconcile.py:False:baseline",
-   "output_directory": "/tmp/v343r2/teeth3/logs/4",
-   "pid": 2891210,
-   "returncode": 0,
-   "stderr_bytes": 0,
-   "stdout_bytes": 3578
-  },
-  {
-   "budget_seconds": 1800,
+   "budget_seconds": 120,
    "cleanup": {
     "directories": 176,
     "units": [
-     "v171594121.slice"
+     "v171994659.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.003710590302944,
+   "elapsed": 31.854008672758937,
    "leg": "confined",
-   "mode": "baseline",
-   "name": "133_veldo_0326_space_principals.py:control_space.py:False:baseline",
-   "output_directory": "/tmp/v343r2/teeth3/logs/6",
-   "pid": 2902197,
+   "mode": "noop",
+   "name": "133_veldo_0326_space_principals.py:control_space.py:False:noop",
+   "output_directory": "/tmp/v343r3/teeth/logs/7",
+   "pid": 3212258,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4736
   },
   {
-   "budget_seconds": 120,
+   "budget_seconds": 1800,
    "cleanup": {
     "directories": 176,
     "units": [
-     "v1716cf94e.slice"
+     "v17157d51f.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.56682975683361,
+   "elapsed": 31.93135918909684,
    "leg": "confined",
-   "mode": "noop",
-   "name": "133_veldo_0326_space_principals.py:control_space.py:False:noop",
-   "output_directory": "/tmp/v343r2/teeth3/logs/7",
-   "pid": 2902201,
+   "mode": "baseline",
+   "name": "133_veldo_0326_space_principals.py:control_space.py:False:baseline",
+   "output_directory": "/tmp/v343r3/teeth/logs/6",
+   "pid": 3212257,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4736
@@ -16156,12 +16156,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.678374009672552,
+   "elapsed": 10.358014065772295,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-without-the-branch",
-   "output_directory": "/tmp/v343r2/teeth3/logs/8",
-   "pid": 2913508,
+   "output_directory": "/tmp/v343r3/teeth/logs/8",
+   "pid": 3219816,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4073
@@ -16173,12 +16173,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 13.593388425186276,
+   "elapsed": 11.212681225966662,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-remove-after-the-failed-branch-write",
-   "output_directory": "/tmp/v343r2/teeth3/logs/9",
-   "pid": 2913509,
+   "output_directory": "/tmp/v343r3/teeth/logs/9",
+   "pid": 3219817,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3784
@@ -16190,12 +16190,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.823412009049207,
+   "elapsed": 11.139070095028728,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-agent-repository-goes-with-the-worktree",
-   "output_directory": "/tmp/v343r2/teeth3/logs/10",
-   "pid": 2926493,
+   "output_directory": "/tmp/v343r3/teeth/logs/10",
+   "pid": 3229723,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3648
@@ -16207,12 +16207,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 16.13677171897143,
+   "elapsed": 13.934809837024659,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-discard-commits-as-save-does",
-   "output_directory": "/tmp/v343r2/teeth3/logs/11",
-   "pid": 2927379,
+   "output_directory": "/tmp/v343r3/teeth/logs/11",
+   "pid": 3230325,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3927
@@ -16224,12 +16224,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 14.066341096069664,
+   "elapsed": 11.816277406178415,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-made-and-not-recorded",
-   "output_directory": "/tmp/v343r2/teeth3/logs/12",
-   "pid": 2939373,
+   "output_directory": "/tmp/v343r3/teeth/logs/12",
+   "pid": 3239937,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3602
@@ -16241,12 +16241,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 13.692737318109721,
+   "elapsed": 11.77553139720112,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-branch-for-a-held-commit",
-   "output_directory": "/tmp/v343r2/teeth3/logs/13",
-   "pid": 2942531,
+   "output_directory": "/tmp/v343r3/teeth/logs/13",
+   "pid": 3243218,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3640
@@ -16258,12 +16258,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.92203067895025,
+   "elapsed": 11.523705313913524,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-branch",
-   "output_directory": "/tmp/v343r2/teeth3/logs/14",
-   "pid": 2952489,
+   "output_directory": "/tmp/v343r3/teeth/logs/14",
+   "pid": 3250792,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3602
@@ -16275,12 +16275,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.078787201084197,
+   "elapsed": 11.420191107783467,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-trusts-the-commit",
-   "output_directory": "/tmp/v343r2/teeth3/logs/15",
-   "pid": 2955773,
+   "output_directory": "/tmp/v343r3/teeth/logs/15",
+   "pid": 3253708,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3602
@@ -16292,12 +16292,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.29687342280522,
+   "elapsed": 11.526300649158657,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-kept-branch-in-the-agent-repository",
-   "output_directory": "/tmp/v343r2/teeth3/logs/16",
-   "pid": 2963245,
+   "output_directory": "/tmp/v343r3/teeth/logs/16",
+   "pid": 3261231,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3628
@@ -16309,12 +16309,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.274528237991035,
+   "elapsed": 11.510553678963333,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-records-in-the-agent-repository",
-   "output_directory": "/tmp/v343r2/teeth3/logs/17",
-   "pid": 2966685,
+   "output_directory": "/tmp/v343r3/teeth/logs/17",
+   "pid": 3264200,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3594
@@ -16326,12 +16326,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.486262063030154,
+   "elapsed": 11.928824118338525,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-orphan-branch-counted-a-holder",
-   "output_directory": "/tmp/v343r2/teeth3/logs/18",
-   "pid": 2975390,
+   "output_directory": "/tmp/v343r3/teeth/logs/18",
+   "pid": 3271752,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3620
@@ -16343,12 +16343,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.608000092208385,
+   "elapsed": 12.1857715328224,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-ledger-accepts-an-attached-worktree",
-   "output_directory": "/tmp/v343r2/teeth3/logs/19",
-   "pid": 2979800,
+   "output_directory": "/tmp/v343r3/teeth/logs/19",
+   "pid": 3274742,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3602
@@ -16360,12 +16360,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.106473158113658,
+   "elapsed": 11.815901447087526,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-kept-branch-written-over-a-branch",
-   "output_directory": "/tmp/v343r2/teeth3/logs/20",
-   "pid": 2989763,
+   "output_directory": "/tmp/v343r3/teeth/logs/20",
+   "pid": 3282205,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3600
@@ -16377,12 +16377,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.127263624221087,
+   "elapsed": 11.355142643675208,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-tag-and-remote-ref-counted-holders",
-   "output_directory": "/tmp/v343r2/teeth3/logs/21",
-   "pid": 2993101,
+   "output_directory": "/tmp/v343r3/teeth/logs/21",
+   "pid": 3285177,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3616
@@ -16394,12 +16394,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.004269437398762,
+   "elapsed": 11.378777331206948,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-name-of-a-leaving-item-is-free",
-   "output_directory": "/tmp/v343r2/teeth3/logs/22",
-   "pid": 3000486,
+   "output_directory": "/tmp/v343r3/teeth/logs/22",
+   "pid": 3292606,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3622
@@ -16411,12 +16411,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 11.963956185150892,
+   "elapsed": 11.398562683258206,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-left-branch-read-and-not-recorded",
-   "output_directory": "/tmp/v343r2/teeth3/logs/23",
-   "pid": 3004145,
+   "output_directory": "/tmp/v343r3/teeth/logs/23",
+   "pid": 3295346,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3612
@@ -16428,12 +16428,12 @@
     "units": []
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 12.669581467285752,
+   "elapsed": 11.499961098656058,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-reconcile-defers-without-recording",
-   "output_directory": "/tmp/v343r2/teeth3/logs/24",
-   "pid": 3011274,
+   "output_directory": "/tmp/v343r3/teeth/logs/24",
+   "pid": 3302778,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 3612
@@ -16443,16 +16443,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v171e6025c.slice"
+     "v1716c53db.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.276823124848306,
+   "elapsed": 32.574051985982805,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-keeps-a-branch",
-   "output_directory": "/tmp/v343r2/teeth3/logs/25",
-   "pid": 3014804,
+   "output_directory": "/tmp/v343r3/teeth/logs/25",
+   "pid": 3305455,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4903
@@ -16462,16 +16462,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v1711067c2.slice"
+     "v1714842b5.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 35.00483171828091,
+   "elapsed": 32.45814532088116,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-requests-a-disposition",
-   "output_directory": "/tmp/v343r2/teeth3/logs/26",
-   "pid": 3019916,
+   "output_directory": "/tmp/v343r3/teeth/logs/26",
+   "pid": 3309807,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 4919
@@ -16481,16 +16481,16 @@
    "cleanup": {
     "directories": 176,
     "units": [
-     "v171b11ea7.slice"
+     "v171deb2eb.slice"
     ]
    },
    "driver": "check_teeth_mutations.py",
-   "elapsed": 34.36325760371983,
+   "elapsed": 33.13947590906173,
    "leg": "confined",
    "mode": "mutant",
    "name": "check_teeth_mutations.py:space343-observer-signs-a-disposition",
-   "output_directory": "/tmp/v343r2/teeth3/logs/27",
-   "pid": 3032109,
+   "output_directory": "/tmp/v343r3/teeth/logs/27",
+   "pid": 3316434,
    "returncode": 0,
    "stderr_bytes": 0,
    "stdout_bytes": 5087
