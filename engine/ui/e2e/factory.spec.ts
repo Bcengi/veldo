@@ -80,7 +80,7 @@ const SCREENS: { name: string; path: string; read: string; ready: string; primar
 
 /** Subscribe before navigating. Loaded hosts wait for the screen's own read inside the test
  * budget. Loading observes the held request; error observes its failed network operation. */
-async function openRead(page: Page, factory: FactoryUi, screen: (typeof SCREENS)[number], state = 'ready') {
+async function openRead(page: Page, factory: FactoryUi, screen: { path: string; read: string }, state = 'ready') {
   const matches = (method: string, url: string) => routeOf(method, url, factory.domain) === screen.read
   const read = state === 'loading'
     ? page.waitForRequest((request) => matches(request.method(), request.url()), { timeout: 0 })
@@ -151,44 +151,44 @@ function renders(): Render[] {
     {
       name: 'project-detail',
       async open(page, factory) {
-        await page.goto(factory.origin + '/projects/project-a')
-        await expect(page.getByTestId('project-detail')).toBeVisible()
+        await openRead(page, factory, { path: '/projects/project-a', read: 'reads.objectives' })
+        await expect(page.getByTestId('project-detail')).toBeVisible({ timeout: 0 })
         return { primary: isPhone(page) ? '[data-testid="message-open"]' : '[data-testid="message-send"]' }
       },
     },
     {
       name: 'chat-sheet',
       async open(page, factory) {
-        await page.goto(factory.origin + '/projects/project-a')
+        await openRead(page, factory, { path: '/projects/project-a', read: 'reads.objectives' })
         if (!isPhone(page)) return { primary: '[data-testid="message-send"]' }
-        await page.getByTestId('message-open').click()
-        await expect(page.getByTestId('chat-sheet')).toBeVisible()
+        await page.getByTestId('message-open').click({ timeout: 0 })
+        await expect(page.getByTestId('chat-sheet')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="message-send"]' }
       },
     },
     {
       name: 'backlog-detail',
       async open(page, factory) {
-        await page.goto(factory.origin + '/backlog')
-        await page.locator(`${tree(page)} [data-row="backlog:131-report"] [data-testid="backlog-details"]`).click()
-        await expect(page.getByTestId(isPhone(page) ? 'backlog-sheet' : 'backlog-detail')).toBeVisible()
+        await openRead(page, factory, { path: '/backlog', read: 'reads.work' })
+        await page.locator(`${tree(page)} [data-row="backlog:131-report"] [data-testid="backlog-details"]`).click({ timeout: 0 })
+        await expect(page.getByTestId(isPhone(page) ? 'backlog-sheet' : 'backlog-detail')).toBeVisible({ timeout: 0 })
         return { primary: isPhone(page) ? '[data-testid="backlog-sheet"] button' : `${tree(page)} [data-row="backlog:131-report"] [data-testid="move-up"]` }
       },
     },
     {
       name: 'workers-confirm',
       async open(page, factory) {
-        await page.goto(factory.origin + '/workers')
-        await page.locator('[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]').click()
+        await openRead(page, factory, { path: '/workers', read: 'reads.workers' })
+        await page.locator('[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]').click({ timeout: 0 })
         return { primary: '[data-testid="worker-stop-confirm"]' }
       },
     },
     {
       name: 'workflow-step',
       async open(page, factory) {
-        await page.goto(factory.origin + '/workflows/delivery')
-        await page.locator('[data-step="wait"] [data-testid="step-select"]').click()
-        await expect(page.getByTestId('node-settings')).toBeVisible()
+        await openRead(page, factory, { path: '/workflows/delivery', read: 'reads.workflow' })
+        await page.locator('[data-step="wait"] [data-testid="step-select"]').click({ timeout: 0 })
+        await expect(page.getByTestId('node-settings')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="node-port-admit"]' }
       },
     },
@@ -196,8 +196,8 @@ function renders(): Render[] {
       name: 'run-live',
       async open(page, factory) {
         const ids = await factory.state()
-        await page.goto(factory.origin + '/runs/' + ids.dispatches.live)
-        await expect(page.getByTestId('terminal')).toBeVisible()
+        await openRead(page, factory, { path: '/runs/' + ids.dispatches.live, read: 'runs.record' })
+        await expect(page.getByTestId('terminal')).toBeVisible({ timeout: 0 })
         return { primary: null }
       },
     },
@@ -205,8 +205,8 @@ function renders(): Render[] {
       name: 'decision-inline',
       async open(page, factory) {
         const ids = await factory.state()
-        await page.goto(factory.origin + '/decisions/' + ids.requests.de3)
-        await expect(page.getByTestId('decision')).toBeVisible()
+        await openRead(page, factory, { path: '/decisions/' + ids.requests.de3, read: 'reads.decisions' })
+        await expect(page.getByTestId('decision')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="send-answer"]' }
       },
     },
