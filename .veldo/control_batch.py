@@ -888,6 +888,7 @@ class Batch:
             r['receipts'].append(receipt)
             self.authority.write_receipt(receipt)
         r['state'] = 'landed'
+        self.discard()
         self._event('land', 'landed', units=[u['unit'] for u in r['units']])
         return {'ok': True, 'outcome': 'landed', 'tip': r['tip'], 'receipts': list(r['receipts'])}
 
@@ -923,13 +924,8 @@ class Batch:
         else:
             staging = 'refs/veldo/batch/' + r['id']
             self._git(self.clone, 'push', '-q', self.repo_root, '%s:%s' % (r['tip'], staging))
-            try:
-                swap = self._git(self.repo_root, 'update-ref', ref, r['tip'], r['watermark'], ok=None)
-            finally:
-                ledger = (self.space or {}).get('ledger')
-                identity = (r.get('space_items') or {}).get(str(self.clone))
-                r.setdefault('ref_outcomes', {})[staging] = _organ('control_space_remove').remove_ref(
-                    str(self.repo_root), staging, ledger, identity)
+            r['staging_ref'] = staging
+            swap = self._git(self.repo_root, 'update-ref', ref, r['tip'], r['watermark'], ok=None)
             found, read = self._read_trunk()
             operation = 'update-ref'
         if not read:
@@ -961,7 +957,7 @@ class Batch:
         """Hand the batch's items to Signal; keep every refusal on the batch record.
 
         Observation folders are evidence (VELDO-0302), so their lifecycle may keep
-        them. With no ledger there is no authorized removal of a batch's work.
+        them. Without a ledger the clone uses the standalone look and keep step.
         """
         r = self.record
         if r is None:
@@ -969,12 +965,28 @@ class Batch:
         paths = [r[key] for key in ('clone', 'observation_dir') if r.get(key)]
         clones = _organ('control_clone')
         if self.space is None:
-            found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+            remover = _organ('control_space_remove')
+            found = {}
+            for path in paths:
+                if path == r.get('clone'):
+                    entry = remover.remove_standalone(path, 'agent_repository', main=self.repo_root)
+                    if entry.get('removed'):
+                        entry = dict(entry, state='removed' if entry['state'] != 'gone' else 'gone')
+                else:
+                    entry = {'item': None, 'state': 'kept', 'deferral': None}
+                found[path] = entry
         elif any(not os.path.isabs(path) or os.path.normpath(path) != path or os.path.realpath(path) != path
                  for path in paths):
             found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
         else:
             found = clones.space_signal(self.space, 'run_finished', paths, 'batch.discard', confirm=True)
+        tree = found.get(r.get('clone'), {})
+        if r.get('staging_ref') and tree.get('state') in clones.SPACE_ENDED:
+            ledger = (self.space or {}).get('ledger')
+            kept = dict(tree, state='kept' if tree.get('refs') else 'clear')
+            r.setdefault('ref_outcomes', {})[r['staging_ref']] = _organ('control_space_remove').remove_ref(
+                str(self.repo_root), r['staging_ref'], ledger, tree.get('item'),
+                standalone=kept, main=str(self.repo_root))
         r.setdefault('space_outcomes', {}).update(found)
         r['space_deferred'] = {path: clones.space_refusal(entry) for path, entry in r['space_outcomes'].items()
                                if entry.get('state') not in clones.SPACE_ENDED}

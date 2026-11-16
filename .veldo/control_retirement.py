@@ -391,7 +391,7 @@ class Retirements:
             return released
         try:
             pinned = self._pinned()
-            every = list(self._space()['ledger'].items().values()) if pinned else []
+            every = self._space()['ledger'].items() if pinned else {}
         except Exception as error:  # noqa: BLE001 - pins or a ledger that cannot be read release nothing
             self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': None,
                                       'outcome': 'refused', 'refusal': 'unavailable_service:' + type(error).__name__})
@@ -400,8 +400,9 @@ class Retirements:
             done = []
             try:
                 where = os.path.normpath(str(Path(self.clones.clones) / clone_id / 'work'))
-                recorded = [record for record in every if (record.get('locator') or {}).get('path') == where]
-                if any(record.get('state') not in SPACE_ENDED for record in recorded):
+                recorded = [(identity, record) for identity, record in every.items()
+                            if (record.get('locator') or {}).get('path') == where]
+                if any(record.get('state') not in SPACE_ENDED for identity, record in recorded):
                     continue  # the ledger still holds the work tree: not before its removal
                 if not recorded:
                     continue  # no item records a removal: a clone being made is pinned before its work tree
@@ -411,8 +412,11 @@ class Retirements:
                 except FileNotFoundError:
                     pass
                 for pin in pinned[clone_id]:
-                    self.clones._release(Path(pin['cache']), pin['ref'])
-                    done.append(pin['ref'])
+                    identity = next((identity for identity, record in recorded
+                                     if record.get('state') == 'removed'), None)
+                    answer = self.clones._release(Path(pin['cache']), pin['ref'], identity=identity)
+                    if answer['ok']:
+                        done.append(pin['ref'])
             except Exception as error:  # noqa: BLE001 - what could not be read or released stays pinned
                 self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': clone_id,
                                           'outcome': 'refused', 'released': done,
@@ -421,7 +425,7 @@ class Retirements:
                 continue
             released += done
             self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': clone_id,
-                                      'outcome': 'released', 'released': done})
+                                      'outcome': 'released' if done else 'refused', 'released': done})
         return released
 
     def _removable(self, entry):
