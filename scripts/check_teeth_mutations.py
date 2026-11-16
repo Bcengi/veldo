@@ -15226,8 +15226,8 @@ def cases():
            "    # A stop from the terminal reaches the command by itself",
            ['supervise/stop-after-the-command-ends-nothing'])
     run313('space313-table-read-at-every-exit',
-           "                left = set(descriptors)\n                while left:\n",
-           "                left = set(descriptors)\n                if left:\n",
+           "                left, again = set(descriptors), False\n                while left and not again:\n",
+           "                left, again = set(descriptors), False\n                if left:\n",
            ['supervise/staying-is-idle'])
     run313('space313-scratch-records-no-process',
            "        made = runner.declare(\"scratch\", {\"path\": path}, owner, \"wrapper\", process=out[\"supervisor\"])\n",
@@ -15301,6 +15301,16 @@ def cases():
     run313('space313-supervisor-does-not-stay',
            "    _space_wait(read, reap, asleep=lambda: tell(staying=True))\n", "    return status\n",
            ['fix2/returns-at-the-commands-exit'])
+    # VELDO-0315 fix round 5 (the third re-review). Finding 1: the wait reads again only when every
+    # named holder has exited, so a process that stopped being a holder pins the run's end; and its
+    # converse, a read at the exit of every unread process.
+    run313('space313-wait-sleeps-on-what-holds-nothing',
+           "                while left and not again:\n", "                while left:\n",
+           ['supervise/wait-reads-again-at-a-read-holders-exit'])
+    run313('space313-wait-reads-at-every-unread-exit',
+           "                        again = again or kinds[descriptor] != \"unread\"\n",
+           "                        again = True\n",
+           ['supervise/wait-reads-again-at-a-read-holders-exit'])
     run313('space313-rule-three-answered-without-a-read',
            "            {\"conclusive\": True, \"group_empty\": held() is None}\n",
            "            {\"conclusive\": True, \"group_empty\": True}\n",

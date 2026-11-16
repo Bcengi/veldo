@@ -966,14 +966,16 @@ def _space_wait(read, reap=None, asleep=None):
     when given, is called once, when the first sleep is about to begin: every holder's pidfd is
     open and registered then.
 
-    THE TABLE IS READ AGAIN ONLY WHEN EVERY HOLDER THE LAST READ NAMED HAS EXITED. The run cannot
-    be over while one of them lives, so a read before that could only say "not yet". An exit
-    before the last one costs one wake and no read. On a host where processes nobody here can
-    read start all the time (other accounts' containers), each of them holds the run (fail
-    closed), and a read of the whole table at each of their exits was a busy process: measured
-    at 11 percent of a core for one staying supervisor. A holder that stops being one without
-    exiting (its label is read later by the process reader) is waited for until it exits: later
-    than before, never earlier."""
+    THE TABLE IS READ AGAIN AT THE EXIT OF A HOLDER THAT WAS READ (a descendant, a member of the
+    group, a process that carries the label, the supervisor), AND WHEN EVERY HOLDER THE LAST READ
+    NAMED HAS EXITED. The exit of a holder nobody could read (`unread`) costs one wake and no
+    read while another holder lives. On a host where processes nobody here can read start all
+    the time (other accounts' containers), each of them holds the run (fail closed), and a read
+    of the whole table at each of their exits was a busy process: measured at 11 percent of a
+    core for one staying supervisor. The exits of the run's own processes are few, and a read at
+    each of them finds what has stopped being a holder without exiting (an unread process that
+    the reader reads now, or that has finished its exec): the wait does not go on for a process
+    that holds nothing, once the run's own are gone."""
     import select
     while True:
         if reap is not None:
@@ -998,11 +1000,13 @@ def _space_wait(read, reap=None, asleep=None):
                 if asleep is not None:
                     asleep, begun = None, asleep
                     begun()
-                left = set(descriptors)
-                while left:
+                kinds = dict(zip(descriptors, (one["how"] for one in waited)))
+                left, again = set(descriptors), False
+                while left and not again:
                     for descriptor, _event in poller.poll():
                         poller.unregister(descriptor)
                         left.discard(descriptor)
+                        again = again or kinds[descriptor] != "unread"
         finally:
             for descriptor in descriptors:
                 os.close(descriptor)

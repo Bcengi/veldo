@@ -113,6 +113,12 @@ by one while the supervisor stays on a process the command left: over thirty sec
 uses under one percent of a core and makes no pass over the process table, read as the kernel's count
 of its read calls).
 
+Fix round 5 of VELDO-0315 (its third re-review). supervise/wait-reads-again-at-a-read-holders-exit
+(finding 1: the wait is given a process of the run that ends after a second and a process nobody
+could read that lives on, and a second read that names neither: it returns at the first one's exit,
+not at the second's; and the exit of an unread process, while a process of the run lives, costs no
+read).
+
 WHAT A FIXTURE LEAVES. Every row ends what its command left before the row ends, by its latch. On a
 host shared with other accounts' containers a supervisor also stays on their processes, which this
 account cannot read (fail closed), for as long as they keep starting. So the suite ends every
@@ -215,7 +221,7 @@ def _v313_space_run_suite():
             'fix2/captured-output-ends-at-return', 'fix2/captured-end-follows',
             'supervise/report-loss-keeps-supervising', 'supervise/report-loss-end-is-made',
             'supervise/stop-after-the-command-ends-nothing', 'supervise/stop-after-the-command-end-is-made',
-            'supervise/staying-is-idle',
+            'supervise/staying-is-idle', 'supervise/wait-reads-again-at-a-read-holders-exit',
             'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/environment-not-whole-holds',
             'fix3/same-program-holds', 'fix3/rewritten-environment-cwd-in-scratch',
             'fix3/rewritten-environment-open-file-in-worktree', 'fix3/rule-3-reads-the-kernel',
@@ -257,7 +263,7 @@ def _v313_space_run_suite():
     temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0313-')))
     connections = []
     waiting = []  # the fixture's own processes, ended when the suite ends
-    supervisors = []  # every supervisor a row started, {pid, started}: none outlives the suite
+    supervisors = []  # every supervisor a row started, {pid, started, run}: none outlives the suite
     opened = []  # descriptors the fixture holds for them
     row = ROWS[0]
     try:
@@ -560,7 +566,7 @@ def _v313_space_run_suite():
             status = CLI.space_run(list(argv), space=wiring, environ=more.pop('environ', dict(BASE)),
                                    cwd=str(where), stderr=said, report=report, **more)
             if isinstance((report.get('given') or {}).get('supervisor'), dict):
-                supervisors.append(dict(report['given']['supervisor']))
+                supervisors.append(dict(report['given']['supervisor'], run=report['given'].get('run')))
             if isinstance(report.get('end'), dict):
                 report['end'] = settled(wiring, report.get('given'), report['end'])
             return status, said.getvalue(), report
@@ -939,7 +945,7 @@ def _v313_space_run_suite():
             given = CLI._space_begin(wiring, 'build', 'report-loss', str(W16), start=wrapper.start)
             process = given.get('supervisor') or {}
             if process:
-                supervisors.append(dict(process))
+                supervisors.append(dict(process, run=given.get('run')))
             wrapper.go(given, CLI._space_group(wiring, dict(BASE)))
             started = json.loads(wrapper.lines.readline().decode() or 'null')
             wrapper.lines.close()  # the wrapper is gone: nobody reads the supervisor's report any more
@@ -1046,8 +1052,8 @@ def _v313_space_run_suite():
             os.close(writing)
             os.close(heard)
             idle_process = {'pid': idle.pid, 'started': (CLI._space_process(idle.pid) or {}).get('started')}
-            supervisors.append(idle_process)
             idle_run = 'row:idle-' + os.urandom(4).hex()
+            supervisors.append(dict(idle_process, run=idle_run))
             os.write(told, (json.dumps({'run': idle_run, 'environment': {}, 'scope': None, 'given': {}}) + '\n').encode())
             os.close(told)
             lines = os.fdopen(reading, 'rb')
@@ -1120,6 +1126,68 @@ def _v313_space_run_suite():
                     made.wait(timeout=30)
                 except Exception:  # noqa: BLE001 - the fixture's own stand-in, never a process of a run
                     made.kill()
+
+        nappers = []  # the row's own stand-ins for holders
+        try:
+            row = 'supervise/wait-reads-again-at-a-read-holders-exit'
+            import threading
+
+            def napper(seconds):
+                made = subprocess.Popen(['sleep', str(seconds)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.DEVNULL)
+                nappers.append(made)
+                return made
+
+            def holder(made, how):
+                return {'pid': made.pid, 'how': how, 'started': (CLI._space_process(made.pid) or {}).get('started')}
+
+            def waited(first, later):
+                """(seconds, reads) of one _space_wait whose first read names `first` and whose
+                later reads name what `later` gives."""
+                reads = []
+
+                def read():
+                    reads.append(time.monotonic())
+                    return {'group': 'empty', 'holders': first if len(reads) == 1 else later()}
+
+                def reap():
+                    for made in nappers:
+                        made.poll()
+                began = time.monotonic()
+                CLI._space_wait(read, reap)
+                return time.monotonic() - began, len(reads)
+
+            # A process of the run that ends after a second, and one nobody could read at the
+            # first read that lives on. The next read does not name it: the reader has read it
+            # since, and it is not the run's. The suite ends it after six seconds, so a wait that
+            # sleeps on it ends too, late.
+            own, other = napper(1), napper(20)
+            ender = threading.Timer(6.0, other.kill)
+            ender.start()
+            try:
+                took, reads = waited([holder(own, 'descendant'), holder(other, 'unread')], lambda: [])
+                lived = other.poll() is None
+            finally:
+                ender.cancel()
+            check(row, 'the wait returns at the exit of the run\'s own process, after about a second, while the '
+                       'process the next read no longer names lives on [%.1fs, %d reads, lives on %s]'
+                  % (took, reads, lived), 0.5 <= took < 4.0 and reads == 2 and lived)
+            # The exit of an unread process while a process of the run lives: one wake, no read.
+            own, other = napper(2), napper(0.3)
+            named = [holder(own, 'descendant'), holder(other, 'unread')]
+            took, reads = waited(named, lambda: [one for one, made in zip(named, (own, other)) if made.poll() is None])
+            check(row, 'the exit of a process nobody could read, while a process of the run lives, costs no read: '
+                       'the table is read again once, at the exit of the run\'s own [%.1fs, %d reads]' % (took, reads),
+                  took >= 1.5 and reads == 2)
+        except Exception as error:
+            stopped(row, error)
+        finally:
+            for made in nappers:
+                try:
+                    made.kill()  # the row's own stand-in, never a process of a wrapped run
+                    made.wait(timeout=30)
+                except Exception:  # noqa: BLE001
+                    pass
 
         try:
             row = 'fix3/handed-outside-the-tree'
