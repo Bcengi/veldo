@@ -16429,8 +16429,8 @@ def cases():
             "        folder = os.path.join(common, 'hooks')  # defect: the configured hooks folder is not used\n",
             ['space329/ac1/configured-folder'])
     hook329('space329-settings-rewritten',
-            "        settings = json.loads(before) if before is not None else {}\n",
-            "        settings = json.loads(before) and {} if before is not None else {}  # defect: the owner's keys go\n",
+            "        settings = _settings(before)\n",
+            "        settings = _settings(before) and {}  # defect: the owner's keys go\n",
             ['space329/ac2/every-account'])
     hook329('space329-start-installs-nothing',
             "            installed = install(ledger, installation=service.config.get('installation'))\n",

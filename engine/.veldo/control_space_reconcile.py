@@ -80,7 +80,12 @@ repository bound later gets its hooks at the next start. Nothing an owner wrote 
   session hooks   One entry for SessionStart and one for SessionEnd is added to the account folder's
                   settings.json; every other key and every other hook in it is kept. The script goes
                   beside it as veldo-space-session.py. A settings file that cannot be read as the
-                  mapping it must be is REFUSED and left as it is.
+                  mapping it must be, or that writes a key twice (a rewrite would drop one of the
+                  two), is REFUSED and left as it is. Text that is not ASCII is written back as it
+                  was. The read, the compare and the rename are done under a lock on the file
+                  .settings.json.veldo-lock beside it, and the file is read again after the rename:
+                  a write of the client's in between is kept and the install says
+                  settings_changed_while_installing or settings_changed_after_write.
   one installation  A git hook reads one state root (veldo.space.stateroot) and a session belongs to
                   one ledger. So this installation touches only what carries its own state root: its
                   own session entries and its own configuration keys. Where a repository or an
@@ -113,6 +118,7 @@ import shlex
 import stat
 import string
 import subprocess
+import time
 
 SCHEMA = 'veldo.control_space_reconcile/v1'
 
@@ -915,6 +921,8 @@ SESSION_SIGN = b'Record a client session notification'
 SESSION_SECONDS = 15
 SESSION_ROOT = 'VELDO_SPACE_STATE_ROOT='
 SETTINGS = 'settings.json'
+SETTINGS_LOCK = '.settings.json.veldo-lock'  # beside the settings file; every Veldo installer takes it
+SETTINGS_LOCK_SECONDS = 5.0                  # how long an install waits for it before it is refused
 
 
 def _sources(folder, names):
@@ -1242,6 +1250,20 @@ def session_command(account, event, state_root, cli, installation=None):
                     words + ['python3', os.path.join(account, SESSION_SCRIPT), event])
 
 
+def _pairs(pairs):
+    seen = {}
+    for key, value in pairs:
+        if key in seen:
+            raise ValueError('a key is written twice: ' + json.dumps(key)[:80])
+        seen[key] = value
+    return seen
+
+
+def _settings(data):
+    """The mapping a settings file holds. A key written twice anywhere in it is an error."""
+    return json.loads(data, object_pairs_hook=_pairs)
+
+
 def _session_entries(settings, event):
     """The hook entries of `event` that start Veldo's session script, as (group, entry) pairs."""
     hooks = settings.get('hooks') if isinstance(settings, dict) else None
@@ -1276,7 +1298,7 @@ def session_hooks_missing(account, state_root=None):
     """What of the session hooks is missing in one client account folder; an empty list is in place.
     With `state_root` only that installation's entries count, and another installation's are named."""
     try:
-        settings = json.loads((Path(account) / SETTINGS).read_bytes())
+        settings = _settings((Path(account) / SETTINGS).read_bytes())
     except FileNotFoundError:
         return ['settings_absent']
     except (OSError, ValueError) as error:
@@ -1293,58 +1315,115 @@ def session_hooks_missing(account, state_root=None):
     return missing
 
 
+def _settings_read(path):
+    """(bytes or None, mode, mapping, None) of one settings file, or (.., .., None, why it is refused).
+    A key written twice is refused: json keeps the last one only, and a rewrite would drop the other."""
+    try:
+        held = os.lstat(path)
+    except FileNotFoundError:
+        return None, 0o600, {'hooks': {}}, None
+    if not stat.S_ISREG(held.st_mode):
+        return None, None, None, 'settings_is_a_link' if stat.S_ISLNK(held.st_mode) else 'settings_is_no_file'
+    before = Path(path).read_bytes()
+    try:
+        settings = _settings(before)
+        hooks = settings.setdefault('hooks', {}) if isinstance(settings, dict) else None
+        if not isinstance(hooks, dict) or any(not isinstance(hooks.get(event, []), list)
+                                              for event in SESSION_EVENTS):
+            raise ValueError('not the mapping a settings file is')
+    except ValueError as error:
+        return before, None, None, 'settings_unread:' + str(error)[:120]
+    return before, stat.S_IMODE(held.st_mode), settings, None
+
+
+@contextlib.contextmanager
+def _settings_lock(account):
+    """Hold the lock file beside the settings file, or give False when it stays taken. Every Veldo
+    installer takes it around its read, compare and rename, so two of them never write over each other.
+    The client itself takes no lock: its write is caught by the compare before the rename and by the
+    read after it, and the next start installs again."""
+    descriptor = os.open(os.path.join(account, SETTINGS_LOCK), os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    try:
+        until = time.monotonic() + SETTINGS_LOCK_SECONDS
+        while True:
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= until:
+                    yield False
+                    return
+                time.sleep(0.05)
+        yield True
+    finally:
+        os.close(descriptor)
+
+
 def install_session_hooks(account, state_root, cli, installation=None, script=None):
     """Install the session hooks in one client account folder. Every key and hook already in its
-    settings file is kept; a settings file that is not the mapping it must be is refused and left."""
+    settings file is kept, non-ASCII text as it was written; a settings file that is not the mapping
+    it must be, or that writes a key twice, is refused and left."""
     path = os.path.join(account, SETTINGS)
     record = {'account': account, 'settings': path, 'hooks': {}, 'ok': False}
     if not os.path.isdir(account):
         record['refused'] = 'account_folder_absent'
         return record
     source = _session_source(script)
-    try:
-        before = Path(path).read_bytes()
-        mode = stat.S_IMODE(os.lstat(path).st_mode)
-        if os.path.islink(path):
-            record['refused'] = 'settings_is_a_link'
+    # Read once without the lock: a folder whose settings file is refused gains no file, not even the lock.
+    refusal = _settings_read(path)[3]
+    if refusal:
+        record['refused'] = refusal
+        return record
+    with _settings_lock(account) as held:
+        if not held:
+            record['refused'] = 'settings_locked'
             return record
-    except FileNotFoundError:
-        before, mode = None, 0o600
-    try:
-        settings = json.loads(before) if before is not None else {}
-        hooks = settings.setdefault('hooks', {}) if isinstance(settings, dict) else None
-        if not isinstance(hooks, dict) or any(not isinstance(hooks.get(event, []), list)
-                                              for event in SESSION_EVENTS):
-            raise ValueError('not the mapping a settings file is')
-    except ValueError as error:
-        record['refused'] = 'settings_unread:' + str(error)[:120]
-        return record
-    # Only entries that carry this installation's state root are this installation's to touch. An
-    # entry of another installation is kept as it is, and nothing is added beside it: a session
-    # reported to two ledgers would have two owners. The conflict is the record, and reconcile's report.
-    others = sorted({root for event in SESSION_EVENTS for root in _session_split(settings, event, state_root)[1]})
-    if others:
-        record['refused'] = 'session_hooks_of_another_installation:' + ','.join(others)[:200]
-        return record
-    own = _own(os.path.join(account, SESSION_SCRIPT), source, 0o700, SESSION_SIGN)
-    if own.startswith('refused'):
-        record['refused'] = own[len('refused:'):]
-        return record
-    for event in SESSION_EVENTS:
-        command = session_command(account, event, state_root, cli, installation)
-        found = _session_split(settings, event, state_root)[0]
-        if not found:
-            hooks.setdefault(event, []).append(
-                {'hooks': [{'type': 'command', 'command': command, 'timeout': SESSION_SECONDS}]})
-            record['hooks'][event] = 'installed'
-        elif all(entry.get('command') == command for _group, entry in found):
-            record['hooks'][event] = 'present'
-        else:
-            for _group, entry in found:
-                entry['command'] = command
-            record['hooks'][event] = 'updated'
-    if set(record['hooks'].values()) != {'present'}:
-        _put(path, (json.dumps(settings, indent=2) + '\n').encode(), mode, expected=before)
+        before, mode, settings, refusal = _settings_read(path)
+        if refusal:
+            record['refused'] = refusal
+            return record
+        hooks = settings['hooks']
+        # Only entries that carry this installation's state root are this installation's to touch. An
+        # entry of another installation is kept as it is, and nothing is added beside it: a session
+        # reported to two ledgers would have two owners. The conflict is the record, and reconcile's report.
+        others = sorted({root for event in SESSION_EVENTS for root in _session_split(settings, event, state_root)[1]})
+        if others:
+            record['refused'] = 'session_hooks_of_another_installation:' + ','.join(others)[:200]
+            return record
+        own = _own(os.path.join(account, SESSION_SCRIPT), source, 0o700, SESSION_SIGN)
+        if own.startswith('refused'):
+            record['refused'] = own[len('refused:'):]
+            return record
+        for event in SESSION_EVENTS:
+            command = session_command(account, event, state_root, cli, installation)
+            found = _session_split(settings, event, state_root)[0]
+            if not found:
+                hooks.setdefault(event, []).append(
+                    {'hooks': [{'type': 'command', 'command': command, 'timeout': SESSION_SECONDS}]})
+                record['hooks'][event] = 'installed'
+            elif all(entry.get('command') == command for _group, entry in found):
+                record['hooks'][event] = 'present'
+            else:
+                for _group, entry in found:
+                    entry['command'] = command
+                record['hooks'][event] = 'updated'
+        if set(record['hooks'].values()) != {'present'}:
+            try:
+                data = (json.dumps(settings, indent=2, ensure_ascii=False) + '\n').encode()
+            except UnicodeEncodeError:  # half of a surrogate pair, written as an escape: kept as one
+                data = (json.dumps(settings, indent=2) + '\n').encode()
+            try:
+                if before is None:
+                    _put(path, data, mode)
+                else:
+                    _put(path, data, mode, expected=before)
+            except (FileExistsError, ValueError):
+                # The client wrote the file between the read and the rename: its write is the one kept.
+                record['refused'] = 'settings_changed_while_installing'
+                return record
+            if Path(path).read_bytes() != data:
+                record['refused'] = 'settings_changed_after_write'
+                return record
     record['ok'] = True
     return record
 

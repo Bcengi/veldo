@@ -661,6 +661,83 @@ def _v329_suite():
                       for event in R.SESSION_EVENTS)
               and told_to(both, 'veldo.space.cli') == str(temp / 'bin' / 'veldo-moved'))
 
+        def session_install(account, root=None):
+            return R.install_session_hooks(str(account), root or str(state), str(cli), None, str(SESSION_SOURCE))
+
+        row = 'fix5/duplicate-keys'
+        twice = temp / 'account-twice'
+        twice.mkdir(mode=0o700)
+        TWICE = '{"env": {"A": "1"}, "model": "x", "env": {"B": "2"}, "note": "caf\u00e9"}\n'.encode()
+        (twice / 'settings.json').write_bytes(TWICE)
+        record = session_install(twice)
+        check(row, 'a settings file that writes a key twice is refused, with the key: ' + str(record),
+              record.get('ok') is False
+              and record.get('refused') == 'settings_unread:a key is written twice: "env"')
+        check(row, 'and is left byte for byte, with no file of Veldo\'s beside it: ' + str(entries(twice)),
+              (twice / 'settings.json').read_bytes() == TWICE and entries(twice) == ['settings.json'])
+        check(row, 'and reconcile reports the account folder',
+              R.session_hooks_missing(str(twice), str(state))[:1] == ['settings_unread:ValueError'])
+        written = temp / 'account-written'
+        written.mkdir(mode=0o700)
+        NOTE = 'caf\u00e9 \u2615 \u043f\u0440\u0438\u0432\u0435\u0442'
+        (written / 'settings.json').write_bytes(json.dumps({'note': NOTE}, ensure_ascii=False).encode())
+        record = session_install(written)
+        check(row, 'text that is not ASCII is written back as the owner wrote it: ' + str(record),
+              record.get('ok') is True and NOTE.encode() in (written / 'settings.json').read_bytes()
+              and json.loads((written / 'settings.json').read_bytes())['note'] == NOTE)
+
+        row = 'fix5/concurrent-write'
+        import fcntl
+        raced = temp / 'account-raced'
+        raced.mkdir(mode=0o700)
+        (raced / 'settings.json').write_text('{"model": "before"}\n')
+        CLIENT = b'{"model": "the client wrote this meanwhile"}\n'
+        real_own, real_put = R._own, R._put
+
+        def own_then_client(path, *rest):
+            (raced / 'settings.json').write_bytes(CLIENT)  # the client writes after the installer read
+            return real_own(path, *rest)
+
+        def put_then_client(path, *rest, **more):
+            real_put(path, *rest, **more)
+            if os.path.basename(path) == 'settings.json':
+                (raced / 'settings.json').write_bytes(CLIENT)  # the client writes right after the rename
+
+        R._own = own_then_client
+        try:
+            record = session_install(raced)
+        finally:
+            R._own = real_own
+        check(row, 'a write of the client\'s between the read and the rename is kept, and the install says so: '
+              + str(record),
+              record.get('ok') is False and record.get('refused') == 'settings_changed_while_installing'
+              and (raced / 'settings.json').read_bytes() == CLIENT
+              and [name for name in entries(raced) if name.startswith('.settings.json.veldo-')] == [R.SETTINGS_LOCK])
+        R._put = put_then_client
+        try:
+            record = session_install(raced)
+        finally:
+            R._put = real_put
+        check(row, 'a write right after the rename is seen by the read that follows it: ' + str(record),
+              record.get('ok') is False and record.get('refused') == 'settings_changed_after_write'
+              and (raced / 'settings.json').read_bytes() == CLIENT)
+        lock = os.open(raced / R.SETTINGS_LOCK, os.O_RDWR)
+        waited, R.SETTINGS_LOCK_SECONDS = R.SETTINGS_LOCK_SECONDS, 0.3
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            record = session_install(raced)
+            check(row, 'while another installer holds the lock beside the file nothing is read or written: '
+                  + str(record),
+                  record.get('ok') is False and record.get('refused') == 'settings_locked'
+                  and (raced / 'settings.json').read_bytes() == CLIENT)
+        finally:
+            R.SETTINGS_LOCK_SECONDS = waited
+            os.close(lock)
+        record = session_install(raced)
+        check(row, 'the next install, alone, keeps the client\'s key and adds the hooks: ' + str(record),
+              record.get('ok') is True and record.get('hooks') == {'SessionStart': 'installed', 'SessionEnd': 'installed'}
+              and json.loads((raced / 'settings.json').read_bytes())['model'] == 'the client wrote this meanwhile')
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'
