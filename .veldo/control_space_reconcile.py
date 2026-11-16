@@ -58,7 +58,11 @@ installation names. `bootstrap` calls it, so it runs when the service starts wit
 repository bound later gets its hooks at the next start. Nothing an owner wrote is ever discarded:
 
   git hooks       The hooks folder is the one git itself names for the repository: the shared hooks
-                  folder every linked worktree uses, or the folder core.hooksPath configures. Veldo's
+                  folder every linked worktree uses, or the folder core.hooksPath configures in the
+                  repository's own local configuration. core.hooksPath is read as the owner's git
+                  reads it, with the global and the system file: set there (a global hook manager), or
+                  in one worktree's own file, it names a folder that is not this repository's alone,
+                  so the install is REFUSED whole and reconcile reports hooks_folder with why. Veldo's
                   own hook goes there under its own name, veldo-post-checkout and
                   veldo-reference-transaction. Where no hook file exists, a two line file is written:
                   the shell line and one marked line that starts Veldo's hook. Where a hook file
@@ -95,6 +99,7 @@ import re
 import shlex
 import stat
 import string
+import subprocess
 
 SCHEMA = 'veldo.control_space_reconcile/v1'
 
@@ -889,6 +894,8 @@ HOOK_SIGN = b'# Veldo space management'  # the second line of each hook Veldo sh
 HOOK_SHELLS = ('sh', 'bash', 'dash', 'ksh', 'zsh')
 HOOK_CONFIG = {'stateroot': 'veldo.space.stateroot', 'cli': 'veldo.space.cli',
                'installation': 'veldo.space.installation', 'trunk': 'veldo.space.trunk'}
+HOOKS_PATH = 'core.hooksPath'
+OWNER_CONFIG_VARIABLES = ('GIT_CONFIG_GLOBAL', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_NOSYSTEM')
 SESSION_EVENTS = ('SessionStart', 'SessionEnd')
 SESSION_SCRIPT = 'veldo-space-session.py'
 SESSION_SIGN = b'Record a client session notification'
@@ -1033,9 +1040,49 @@ def hooks_folder(repository, git):
     return os.path.normpath(folder if os.path.isabs(folder) else os.path.join(repository, folder))
 
 
-def hooks_missing(repository, state_root, git, source=None):
+def _owner_git(*argv, environ=None):
+    """One git command read as the repository's owner's own git reads it: (exit code, output). The
+    remover's git leaves out the owner's global and system configuration, and git itself does not when
+    it picks the folder it runs hooks from. Only the three variables that name those files are kept."""
+    remover = _organ('control_space_remove')
+    _git_process = remover._git_process
+    source = os.environ if environ is None else environ
+    kept = {key: value for key, value in source.items()
+            if not key.startswith('GIT_') or key in OWNER_CONFIG_VARIABLES}
+    try:
+        done = _git_process.run(['git', '--no-optional-locks'] + [str(word) for word in argv],
+                                profile='network', env=dict(kept, LC_ALL='C'), stdin=subprocess.DEVNULL,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=remover.SECONDS)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        return None, type(error).__name__ + ': ' + str(error)[:200]
+    if done.returncode:
+        return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
+    return 0, done.stdout.decode('utf-8', 'surrogateescape')
+
+
+def hooks_place(repository, git, environ=None):
+    """(hooks folder, None), or (the folder git runs hooks from, why Veldo installs nothing there).
+    core.hooksPath is read with the owner's global and system configuration. Set anywhere but in the
+    repository's own local configuration (a global hook manager, the system file, one worktree's own
+    file) it names a folder that is not this repository's alone, so the install is refused."""
+    code, text = _owner_git('-C', repository, 'config', '--show-scope', '--show-origin', '--type=path',
+                            '-z', '--get-all', HOOKS_PATH, environ=environ)
+    if code not in (0, 1):  # 1: the key is set nowhere
+        raise ValueError('git could not read the configuration of ' + repository + ': ' + str(text)[:200])
+    if code == 0:
+        fields = text.split('\0')
+        scope, origin, value = fields[-4:-1] if len(fields) >= 4 else ('unread', '', '')
+        if scope != 'local':
+            return (os.path.normpath(os.path.join(repository, value)),
+                    'hooks_path_set_in_%s_configuration:%s' % (scope, origin[:200]))
+    return hooks_folder(repository, git), None
+
+
+def hooks_missing(repository, state_root, git, source=None, environ=None):
     """(hooks folder, {hook or configuration: why}) for one repository; an empty mapping is in place."""
-    folder = hooks_folder(repository, git)
+    folder, refusal = hooks_place(repository, git, environ)
+    if refusal:
+        return folder, {'hooks_folder': refusal}
     try:
         whole = _sources(source, HOOKS)
     except (OSError, ValueError):
@@ -1051,13 +1098,18 @@ def hooks_missing(repository, state_root, git, source=None):
     return folder, missing
 
 
-def install_git_hooks(repository, state_root, cli, installation=None, trunk=None, source=None, git=None):
+def install_git_hooks(repository, state_root, cli, installation=None, trunk=None, source=None, git=None,
+                      environ=None):
     """Install both git hooks for one repository. The record names the hooks folder used and, for each
-    hook, installed, chained, present, updated or refused:<why>. An existing hook's lines are kept."""
+    hook, installed, chained, present, updated or refused:<why>. An existing hook's lines are kept.
+    A hooks folder Veldo must not write to is refused whole, before anything is written."""
     git = git or _organ('control_space_remove')._git
     sources = _sources(source, HOOKS)
-    folder = hooks_folder(repository, git)
+    folder, refusal = hooks_place(repository, git, environ)
     record = {'repository': repository, 'hooks_folder': folder, 'hooks': {}, 'ok': False}
+    if refusal:
+        record['refused'] = refusal
+        return record
     if os.path.lexists(folder) and not os.path.isdir(folder):
         record['refused'] = 'hooks_folder_is_no_folder'
         return record

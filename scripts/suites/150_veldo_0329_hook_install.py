@@ -42,6 +42,14 @@ def _v329_suite():
     temp = Path(tempfile.mkdtemp(prefix='veldo-0329-')).resolve()
     conn = boot_conn = listener = None
     children = []
+    # The installer reads core.hooksPath as the owner's git does, with the global and the system file.
+    # The fixture's owner has a global file of its own, empty until a row writes to it.
+    OWNER_VARIABLES = ('GIT_CONFIG_GLOBAL', 'GIT_CONFIG_SYSTEM', 'GIT_CONFIG_NOSYSTEM')
+    owner_before = {key: os.environ.get(key) for key in OWNER_VARIABLES}
+    owner_config = temp / 'owner-gitconfig'
+    owner_config.write_text('')
+    os.environ.pop('GIT_CONFIG_SYSTEM', None)
+    os.environ.update(GIT_CONFIG_GLOBAL=str(owner_config), GIT_CONFIG_NOSYSTEM='1')
     try:
         mods = temp / '.veldo'
         shutil.copytree(ROOT / '.veldo', mods, ignore=shutil.ignore_patterns('__pycache__'))
@@ -71,7 +79,7 @@ def _v329_suite():
         # TMPDIR names nothing: the hooks must work on a host whose temporary folder cannot be written.
         git_env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': str(home), 'LC_ALL': 'C',
                    'TMPDIR': str(temp / 'no-such-temporary-folder'),
-                   'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1',
+                   'GIT_CONFIG_GLOBAL': str(owner_config), 'GIT_CONFIG_NOSYSTEM': '1',
                    'GIT_AUTHOR_NAME': 'Fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
                    'GIT_COMMITTER_NAME': 'Fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'}
 
@@ -432,6 +440,53 @@ def _v329_suite():
               result['ok'] and told_of.get(str(accounts['b'])) == ['SessionEnd']
               and told_of.get(str(accounts['a'])) == ['settings_absent'])
 
+        # ---- The independent review's findings (fix round) ----------------------------------------
+        G = R._organ('control_space_remove')._git
+
+        def direct(path, **more):
+            return R.install_git_hooks(str(path), str(state), str(cli), str(installation), 'main',
+                                       str(HOOK_SOURCE), more.pop('git', G), **more)
+
+        def entries(path):
+            return sorted(os.listdir(path))
+
+        row = 'fix1/global-hooks-path'
+        husky = repository('husky')
+        manager = temp / 'global-hook-manager'
+        manager.mkdir()
+        shared_before = entries(husky / '.git' / 'hooks')
+        owner_config.write_text('[core]\n\thooksPath = %s\n' % manager)
+        try:
+            check(row, 'the owner\'s git runs this repository\'s hooks from the global folder',
+                  git(husky, 'rev-parse', '--git-path', 'hooks') == str(manager))
+            record = direct(husky)
+            check(row, 'the install is refused and says why, with the folder git uses: ' + str(record),
+                  record.get('ok') is False and record.get('hooks') == {} and record.get('hooks_folder') == str(manager)
+                  and str(record.get('refused')).startswith('hooks_path_set_in_global_configuration:file:'
+                                                            + str(owner_config)))
+            check(row, 'nothing is written: not in the global folder, not in the shared one, not in the configuration',
+                  entries(manager) == [] and entries(husky / '.git' / 'hooks') == shared_before
+                  and told_to(husky, 'veldo.space.stateroot') is None)
+            folder, missing = R.hooks_missing(str(husky), str(state), G)
+            check(row, 'the report is never "in place": ' + str((folder, missing)),
+                  folder == str(manager) and missing == {'hooks_folder': record.get('refused')})
+            result, found = findings('hooks_missing')
+            told_of = {one['repository']: one for one in found}
+            check(row, 'reconcile reports every repository the global folder takes over, with the reason: '
+                  + str(told_of.get(str(bound))),
+                  result['ok'] and all(
+                      str(told_of.get(str(path), {}).get('missing', {}).get('hooks_folder', '')).startswith(
+                          'hooks_path_set_in_global_configuration') for path in (bound, plain, refuse, dormant)))
+            check(row, 'a repository whose own local configuration names its folder is not taken over: '
+                  + str(told_of.get(str(custom))),
+                  'hooks_folder' not in told_of.get(str(custom), {}).get('missing', {'hooks_folder': 1})
+                  and told_of.get(str(custom), {}).get('hooks_folder') == str(custom_hooks))
+        finally:
+            owner_config.write_text('')
+        record = direct(husky)
+        check(row, 'with the global folder gone the same repository gets its hooks: ' + str(record),
+              record.get('ok') is True and record.get('hooks_folder') == str(husky / '.git' / 'hooks'))
+
         # ---- The service's start: binding a repository is what installs --------------------------
         row = 'wiring/bootstrap-installs'
         boot = temp / 'boot'
@@ -491,6 +546,10 @@ def _v329_suite():
         for one in (conn, boot_conn):
             if one is not None:
                 one.close()
+        for key, value in owner_before.items():
+            os.environ.pop(key, None)
+            if value is not None:
+                os.environ[key] = value
         shutil.rmtree(temp)
     for row, values in rows.items():
         failed = [message for message, good in values if not good]
