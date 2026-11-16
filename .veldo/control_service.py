@@ -3998,6 +3998,14 @@ def restore_owners(config_path):
     return {'restored': len(restored)}
 
 
+def close_socket(path, identity):
+    """At service shutdown remove only the socket this instance bound, with no clock involved."""
+    with contextlib.suppress(OSError):
+        found = os.lstat(path)
+        if stat.S_ISSOCK(found.st_mode) and (found.st_dev, found.st_ino) == identity:
+            os.unlink(path)
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
@@ -4043,6 +4051,8 @@ def serve(config_path):
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})
             listener = CC.bind(config['socket'])
+            socket_stat = os.lstat(config['socket'])
+            socket_identity = (socket_stat.st_dev, socket_stat.st_ino)
             # VELDO-0161: read once more now the socket is bound. An adoption that wrote its record after the
             # read above handed it over before there was a socket (refused, authority_unavailable); from here
             # on a hand-off waits in the backlog and is answered, so no record falls between the two.
@@ -4108,7 +4118,7 @@ def serve(config_path):
             finally:
                 notify('STOPPING=1')
                 listener.close()
-                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.
+                close_socket(config['socket'], socket_identity)
                 if service.channel is not None:
                     with contextlib.suppress(Exception):
                         service.channel.close()
