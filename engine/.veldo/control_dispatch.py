@@ -165,7 +165,7 @@ TAXONOMY = {
     'no_stop_request': 'stale_subject',
     'unresolved_dependency': 'missing_evidence', 'missing_evidence': 'missing_evidence',
     'unavailable_service': 'unavailable_service', 'receiver_unavailable': 'unavailable_service',
-    'spawn_failed': 'unavailable_service',
+    'spawn_failed': 'unavailable_service', 'environment_failure': 'unavailable_service',
     'clock_uncertain': 'unknown_outcome', 'dispatch_outcome_unknown': 'unknown_outcome',
     'launch_evidence_missing': 'unknown_outcome', 'outcome_unknown': 'unknown_outcome',
     'process_identity_unreadable': 'unknown_outcome',
@@ -339,7 +339,9 @@ def completed(record):
     artifact = (record or {}).get('artifact')
     return ((record or {}).get('state') == 'exited' and termination.get('returncode') == 0
             and termination.get('signal') is None and termination.get('deadline_stop') is False
-            and (artifact is None or artifact.get('complete') is True))
+            and (artifact is None or artifact.get('complete') is True)
+            and not (record.get('space_end') or {}).get('retry')
+            and not (record.get('space_end') or {}).get('andon'))
 
 
 def _entity(conn, identity):
@@ -531,6 +533,7 @@ def transition(conn, params, before):
         _claim_bound(conn, contract)
         _space_bound(conn, contract)
         record = {'schema': SCHEMA, 'dispatch_id': params['dispatch_id'], 'state': 'prepared',
+                  'sequence': conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0],
                   'contract': contract, 'contract_digest': digest(contract), 'receiver': None, 'process': None,
                   'termination': None, 'refusal': None, 'stop': None, 'reason': None,
                   'history': [dict(history, state='prepared')]}
@@ -570,7 +573,16 @@ def transition(conn, params, before):
         if _execution_record_problems(params.get('execution_record')):
             raise Refused('invalid_input', 'an execution record binding carries its line count, byte count and digest only')
         record['termination'] = params['termination']
-        record['artifact'] = params.get('artifact')
+        admission = _organ('control_space_admission')
+        outcome = params.get('space_end')
+        if outcome is not None and (not isinstance(outcome, dict)
+                or outcome.get('classification') not in ('environment_failure:no_space',
+                                                        'unknown_outcome:no_space_unconfirmed')
+                or not isinstance(outcome.get('pools'), list)):
+            raise Refused('invalid_input', 'a space end carries the receiver snapshot')
+        record['space_end'] = admission.settle_end(conn, contract, outcome)
+        record['artifact'] = (None if (record['space_end'] or {}).get('retry')
+                              or (record['space_end'] or {}).get('andon') else params.get('artifact'))
         # VELDO-0141: the run's execution record, committed with its end.
         record['execution_record'] = params.get('execution_record')
     elif action == 'refuse':
@@ -585,6 +597,8 @@ def transition(conn, params, before):
         record.update(execution_record=params.get('execution_record'))
         record['stop'], record['reason'] = STOP, params['reason']
     record['state'] = target
+    if action in ENDS:
+        record['end_sequence'] = conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
     record['history'].append(dict(history, state=target))
     changes = {rid: {'kind': RECORD_KIND, 'data': record}}
     if target not in HOLDING:
@@ -592,7 +606,10 @@ def transition(conn, params, before):
         iid = index_id(contract['domain'], contract['repository'], contract['unit'], contract['station'])
         index = (before.get(iid) or {}).get('data') or {}
         if index.get('dispatch_id') == record['dispatch_id']:
-            changes[iid] = {'kind': INDEX_KIND, 'data': dict(index, dispatch_id=None, released_by=target)}
+            released = dict(index, dispatch_id=None, released_by=target)
+            if (record.get('space_end') or {}).get('classification') == 'environment_failure:no_space':
+                released['attempts'] = max(0, released.get('attempts', 0) - 1)
+            changes[iid] = {'kind': INDEX_KIND, 'data': released}
     return changes
 
 
@@ -803,7 +820,8 @@ class Dispatches:
         return self._run('run', dispatch_id, {'contract_digest': contract_digest, 'process': process}, now)
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
-    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None, execution_record=None):
+    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None,
+             execution_record=None, space_end=None):
         """The reaped worker's termination, bound to the process `run` recorded, the verdict and digest
         of its engine's artifact (None for a worker with no engine) and the line count, byte count and digest
         of its execution record (VELDO-0141; None when none was kept)."""
@@ -811,6 +829,8 @@ class Dispatches:
                   'artifact': artifact}
         if execution_record is not None:
             fields['execution_record'] = execution_record
+        if space_end is not None:
+            fields['space_end'] = space_end
         return self._run('exit', dispatch_id, fields, now)
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))

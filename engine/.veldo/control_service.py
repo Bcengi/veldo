@@ -3200,7 +3200,8 @@ class Line:
             workflow = payload.get('workflow') if isinstance(payload, dict) else None
             node = workflow.get('node') if isinstance(workflow, dict) else None
             for key in [key] + ([key + (node,)] if isinstance(node, str) else []):
-                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
+                if key not in found or (record.get('sequence', 0), contract.get('attempt', 0)) > (
+                        found[key].get('sequence', 0), found[key]['contract'].get('attempt', 0)):
                     found[key] = record
         return found
 
@@ -3718,6 +3719,11 @@ class Line:
             return self.another_account(record, report)
         if record.get('state') != 'exited':
             return None
+        space_end = record.get('space_end') or {}
+        if space_end.get('andon'):
+            return self.space_andon(record, report)
+        if space_end.get('retry'):
+            return self.rerun(record, report)
         invocation = self.invocation(record['dispatch_id']) or {}
         if invocation.get('outcome') != L.ACC.LIMIT_OUTCOME:
             return None
@@ -3735,6 +3741,51 @@ class Line:
         if decision['decision'] == LIM.RERUN:
             return self.rerun(record, report)
         return self.ask(record, decision, invocation, report)
+
+    def space_andon(self, record, report):
+        """Durable stop in the dispatch, delivered through the existing owner inbox.
+
+        Delivery failure never permits a third run. Space disposition is a later ticket;
+        this request informs the owner and does not authorize automatic resumption.
+        """
+        contract = record['contract']
+        alias = 'space-andon-' + hashlib.sha256(record['dispatch_id'].encode()).hexdigest()[:24]
+        inbox = self.service.inbox(self.repository)
+        entry = {'repository': self.repository, 'unit': contract['unit'],
+                 'dispatch_id': record['dispatch_id'], 'reason': 'environment_failure:no_space',
+                 'andon': True}
+        report['stopped'].append(entry)
+        if inbox.read(I.assignment_id(self.repository, alias)) is not None:
+            return None
+        answers = self.__dict__.setdefault('space_andon_answers', {})
+        if record['dispatch_id'] in answers:
+            report['asked'].append(dict(entry, **answers[record['dispatch_id']]))
+            return None
+        consumer = getattr(self.service, 'space_consumer', None)
+        if consumer is None:
+            report['asked'].append(dict(entry, outcome=False, refusal='space_worker_unavailable'))
+            return None
+
+        def deliver():
+            # The consumer reopened its SQLite connection after fork. No service handle
+            # or inbox constructed on the parent's connection may be used in this child.
+            self.service.conn = consumer.ledger.conn
+            self.gate.conn = consumer.ledger.conn
+            child_inbox = self.service.inbox(self.repository)
+            owner, opened = self.open_question(child_inbox, alias, contract['unit'],
+                'Andon: two consecutive no-space environment failures for ' + contract['unit'] +
+                '. Automatic repeats have stopped. The worktrees and their uncommitted changes are kept. '
+                + json.dumps(record['space_end'], sort_keys=True), ['acknowledge'],
+                {'dispatch_id': record['dispatch_id'], 'space_end': record['space_end']}, alias)
+            return {'ok': opened.get('ok') is True, 'owner': owner, 'reason': opened.get('reason')}
+
+        def complete(answer):
+            answers[record['dispatch_id']] = {'owner': answer.get('owner'), 'outcome': answer.get('ok') is True,
+                                             'refusal': None if answer.get('ok') else answer.get('reason')}
+            self.loop.wake('space_andon', record['dispatch_id'])
+
+        consumer.submit(('space_andon', record['dispatch_id']), deliver, complete)
+        return None
 
     def another_account(self, record, report):
         """VELDO-0185 AC4: the unit's station again (a re-run) after its receiver refused the dispatch before spawn

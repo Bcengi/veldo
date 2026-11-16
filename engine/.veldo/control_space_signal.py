@@ -610,6 +610,17 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     if kind not in ('worktree', 'agent_repository'):
         return None
     path = record['locator']['path']
+    # VELDO-0317: even a review scratch or a disposable worker clone must stay after
+    # a no-space end. Read the committed end on every rule path, including reconnect
+    # and retirement, before either exception can save and remove its uncommitted work.
+    import json
+    conn = getattr(ledger, 'conn', None)
+    if conn is not None:
+        for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch'"):
+            end = json.loads(raw).get('space_end') or {}
+            tree = end.get('worktree')
+            if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):
+                return {'no_space_worktree': tree, 'classification': end['classification']}
     if kind == 'agent_repository' or _agent_repository(ledger, record):
         shared = _scope_repository(ledger, record)
         if shared is None:

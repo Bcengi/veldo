@@ -1746,6 +1746,11 @@ class Runner:
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
+        unit_key = {'domain': self.dispatches.domain, 'repository': self.dispatches.repository, 'unit': unit}
+        previous = ADMISSION.ends(self.dispatches.conn, unit_key)
+        if previous and (previous[0].get('space_end') or {}).get('andon'):
+            raise D.Refused('environment_failure:no_space:andon')
+        payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)
         attempt = self.dispatches.attempts(unit, station) + 1
         request = dict(repository=self.dispatches.repository, project=project, unit=unit,
                        station=station, attempt=attempt)
@@ -2696,8 +2701,13 @@ class Receiver:
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
-            if self.metering.report is not None:
-                self.emit({'event': 'artifact', 'artifact': self.metering.report})
+        report = self.metering.report if self.metering is not None else None
+        space_end = ADMISSION.classify_end(getattr(self, 'space', None), termination,
+            getattr(getattr(self, 'no_space_output', None), 'found', False),
+            (getattr(self, 'space_run', None) or {}).get('worktree'),
+            incomplete=report is not None and report.get('complete') is not True)
+        if report is not None and space_end is None:
+            self.emit({'event': 'artifact', 'artifact': report})
         if getattr(self, 'space', None) is None:
             self._remove_run()
         # VELDO-0308 AC1: with a space ledger nothing of the run is judged here, where only the worker's own
@@ -2728,15 +2738,18 @@ class Receiver:
                                     expected_state='running', execution_record=self.committed)
             report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
-        report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
-                             execution_record=self.committed)
+                             execution_record=self.committed, **({'space_end': space_end} if space_end else {}))
+        settled = (self.dispatches.record(dispatch_id) or {}).get('space_end')
+        if (space_end is not None and not (settled or {}).get('retry')
+                and not (settled or {}).get('andon') and report is not None):
+            self.emit({'event': 'artifact', 'artifact': report})
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
         report_end(self, contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
-                                    'record': self._ended()})
+                                    'space_end': settled, 'record': self._ended()})
 
     def _conclude_exit(self):
         group = self._exit_group
@@ -3375,6 +3388,7 @@ class Receiver:
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
         metering = self.metering
+        self.no_space_output = ADMISSION.NoSpaceOutput()
         # THE ENGINE PROTOCOL's Guard (VELDO-0155 AC3): what is written first, and whether the input then closes;
         # a held prompt is written only once the Guard releases it, and nothing more once the run stops.
         login = metering.login_guard if metering is not None else None
@@ -3442,6 +3456,7 @@ class Receiver:
                 code = worker.returncode
 
         def take(chunk):
+            self.no_space_output.feed('engine', chunk)
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
@@ -3498,8 +3513,10 @@ class Receiver:
                         chunk = os.read(errors, 65536)
                         if not chunk:
                             poller.unregister(errors)
-                        elif recorder is not None:
-                            recorder.feed('stderr', chunk)
+                        else:
+                            self.no_space_output.feed('stderr', chunk)
+                            if recorder is not None:
+                                recorder.feed('stderr', chunk)
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -3549,6 +3566,7 @@ class Receiver:
         os.set_blocking(output, False)
         with contextlib.suppress(OSError):
             for chunk in iter(lambda: os.read(output, 65536), b''):
+                self.no_space_output.feed('engine', chunk)
                 size += len(chunk)
                 hasher.update(chunk)
                 if recorder is not None:
@@ -3559,6 +3577,7 @@ class Receiver:
             os.set_blocking(errors, False)
             with contextlib.suppress(OSError):
                 for chunk in iter(lambda: os.read(errors, 65536), b''):
+                    self.no_space_output.feed('stderr', chunk)
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
         feeder.join(timeout=1)

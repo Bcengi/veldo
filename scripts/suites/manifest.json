@@ -2194,6 +2194,15 @@
    ],
    "regions": "VELDO-0334 AC1 to AC3: one request, recorded waiting answers, atomic pool marks and event wakes.",
    "requires_note": "Only ROOT and expect. Temporary SQLite, real Ledger, Signal, folder remover, Runner and serial Consumer. Fixture process table, free-space reader, eligibility and source. No live engines."
+  },
+  {
+   "name": "150_veldo_0317_full_pool",
+   "file": "150_veldo_0317_full_pool.py",
+   "requires": [
+    "150_veldo_0317_full_pool"
+   ],
+   "regions": "VELDO-0317 AC1 to AC4: receiver snapshot, atomic refund, one unconfirmed repeat, retained worktree and bounded environment retries.",
+   "requires_note": "Only ROOT and expect. Real temporary SQLite, receiver reap and finish, Python child, Ledger, Signal, keep and removers. Fixture eligibility, source, pool free bytes and process table. No live engine."
   }
  ],
  "resource_capacities": {

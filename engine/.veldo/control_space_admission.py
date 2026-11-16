@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Admission: the answer a run gets for the space it asked to hold (design 4.3 and 6.7, VELDO-0331).
 
-Runner admission and need selection (VELDO-0316).
+Runner admission and need selection (VELDO-0316), waiting holds (VELDO-0334),
+and full-pool receiver ends (VELDO-0317).
 
 THE RULE, per pool, the same for every scope: free now, minus what other runs still hold, must be at
 least the need plus the pool's floor. What a run still holds is its need minus the size of its own items
@@ -41,6 +42,83 @@ from pathlib import Path
 
 
 SCHEMA = 'veldo.control_space_admission/v1'
+
+
+class NoSpaceOutput:
+    """Search both output streams incrementally, retaining only a token-sized tail."""
+    tokens = (b'no space left on device', b'enospc')
+
+    def __init__(self):
+        self.tails, self.found = {}, False
+
+    def feed(self, stream, chunk):
+        data = self.tails.get(stream, b'') + chunk.lower()
+        self.found = self.found or any(token in data for token in self.tokens)
+        self.tails[stream] = data[-max(map(len, self.tokens)):]
+
+
+def classify_end(space, termination, found, worktree=None, incomplete=False):
+    """Receiver-only snapshot, before census or Signal. Unread is never confirmed full."""
+    if not enabled(space) or not found or (termination.get('returncode') == 0
+            and termination.get('signal') is None and not termination.get('deadline_stop') and not incomplete):
+        return None
+    pools = []
+    for name in sorted(space['ledger'].config['pools']):
+        pool = space['ledger'].pool(name)
+        try:
+            free = space['free'](pool)
+            if type(free) is not int or free < 0:
+                raise ValueError('free space unread')
+            pools.append({'pool': name, 'free': free, 'floor': pool['floor']})
+        except Exception as error:
+            pools.append({'pool': name, 'free': None, 'floor': (pool or {}).get('floor'),
+                          'unread': type(error).__name__})
+    full = any(p['free'] is not None and p['free'] < p['floor'] for p in pools)
+    return {'classification': 'environment_failure:no_space' if full else 'unknown_outcome:no_space_unconfirmed',
+            'class': 'unavailable_service' if full else 'unknown_outcome',
+            'pools': pools, 'worktree': worktree}
+
+
+def ends(conn, contract):
+    """Committed terminal history of this unit, across stations, in store write order."""
+    found = []
+    for seq, raw in conn.execute("SELECT rowid, data FROM entities WHERE kind='dispatch'"):
+        record = json.loads(raw)
+        other = record.get('contract') or {}
+        if (all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
+                and record.get('state') in ('exited', 'refused', 'unknown')
+                and record.get('dispatch_id') != contract.get('dispatch_id')):
+            found.append((record.get('end_sequence', 0), record['history'][-1]['at'], seq, record))
+    return [row[-1] for row in sorted(found, key=lambda row: row[:-1], reverse=True)]
+
+
+def settle_end(conn, contract, outcome):
+    """Called inside the exit transaction; replay cannot charge or repeat an end twice."""
+    if outcome is None:
+        return None
+    result = dict(outcome)
+    prior = ends(conn, contract)
+    previous = (prior[0].get('space_end') or {}) if prior else {}
+    confirmed = result['classification'] == 'environment_failure:no_space'
+    streak = previous.get('consecutive', 0) + 1 if confirmed else 0
+    repeated = previous.get('classification') == 'unknown_outcome:no_space_unconfirmed'
+    result.update(consecutive=streak, retry=confirmed or not repeated, andon=streak >= 2)
+    if result['andon']:
+        result['retry'] = False
+    return result
+
+
+def recovery_payload(conn, contract, payload):
+    trees = []
+    for record in ends(conn, contract):
+        path = (record.get('space_end') or {}).get('worktree')
+        if path and path not in trees:
+            trees.append(path)
+    if not trees:
+        return payload
+    return dict(payload, space_recovery={'worktrees': trees,
+        'brief': 'The previous run ended with a no-space error. These worktrees are kept with their '
+                 'uncommitted changes. Recover the work before continuing: ' + ', '.join(trees)})
 
 # The holds whose promise is counted: a run that was started, admitted or advised.
 COUNTED = ('admitted', 'advised')
@@ -161,6 +239,8 @@ def finished(ledger, project, station):
         record = json.loads(raw)
         contract = record.get('contract') or {}
         if (record.get('state') == 'exited' and contract.get('station') == station
+                and not (record.get('space_end') or {}).get('retry')
+                and not (record.get('space_end') or {}).get('andon')
                 and (contract.get('reservation') or {}).get('project') == project):
             hold = ledger.hold((contract.get('space') or {}).get('hold')) or {}
             at = (record.get('history') or [{}])[-1].get('at', 0)

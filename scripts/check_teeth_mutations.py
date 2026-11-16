@@ -16577,6 +16577,23 @@ def cases():
         "            ending = event  # defect: retry forgets why the item ended",
         ['space334/ac1/signal-can-admit'])
 
+    # VELDO-0317: each specification falsifier, plus the kept-work brief.
+    full317 = '150_veldo_0317_full_pool.py'
+    add(317, 'space317-charge-environment-failure', full317, 'control_dispatch.py',
+        "released['attempts'] = max(0, released.get('attempts', 0) - 1)",
+        "released['attempts'] = released.get('attempts', 0)", ['space317/ac1/refunded'])
+    add(317, 'space317-text-alone-is-environment', full317, 'control_space_admission.py',
+        "full = any(p['free'] is not None and p['free'] < p['floor'] for p in pools)",
+        "full = True", ['space317/ac2/repeat-once'])
+    add(317, 'space317-remove-failed-worktree', full317, 'control_space_signal.py',
+        "if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):",
+        "if False:", ['space317/ac3/work-retained'])
+    add(317, 'space317-repeat-without-bound', full317, 'control_space_admission.py',
+        "andon=streak >= 2", "andon=False", ['space317/ac4/two-stop'])
+    add(317, 'space317-brief-omits-work', full317, 'control_launch.py',
+        "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)",
+        "payload = payload", ['space317/ac3/next-brief'])
+
     return result
 
 
