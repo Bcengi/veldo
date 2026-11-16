@@ -140,3 +140,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   unlanded commits (their branch and tips), one of the file list and the commit list is non-empty, and
   for a clean tree the brief says Discard removes no uncommitted file and the commits stay on their
   branch. The falsifier now empties both lists. Each worktree's terms gain the member commits.
+
+- 2026-11-16: fix round 1, F3: a row and a teeth case for terms whose target names another item. F4
+  (process): this ticket records the owner's choice as an effect and releases nothing. Releasing the
+  kept worktree's pin, which VELDO-0317's History handed here, is the Ledger applying the effect in
+  VELDO-0318.

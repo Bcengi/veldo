@@ -127,8 +127,8 @@ def _v327_suite():
                 files=['modified.py', 'staged.py', 'notes.txt', '.local-settings', 'line\nbreak'], commits=[],
                 restore="veldo space restore space-item:fixture")]}
 
-        def terms(alias, offered, touchpoint='space_disposition'):
-            target = dict(kind='space_item', ref='space-item:fixture', digest=ST.digest('fixture-item'))
+        def terms(alias, offered, touchpoint='space_disposition', ref='space-item:fixture', kind='space_item'):
+            target = dict(kind=kind, ref=ref, digest=ST.digest('fixture-item'))
             return settlement.terms(signed(command('terms', terms=alias, touchpoint=touchpoint,
                 target=target, proposal=offered, required_roles=[], quorum=None)))
 
@@ -361,6 +361,16 @@ def _v327_suite():
                       receipt is not None and 'the commits stay on "space-saved-fixture"'
                       in '\n'.join(receipt['rendered']))
 
+            def target_item():
+                # Fix round 1, F3: the terms target is the item the list is about.
+                for name, changes in (('another item', dict(ref='space-item:another')),
+                                      ('another kind', dict(kind='backlog_item'))):
+                    before = snapshot()
+                    result = terms('target-' + name.split()[1], proposal(), **changes)
+                    check('fix3/target-item', name + ' refused ' + repr(result),
+                          result.get('reason') == 'invalid_input' and snapshot() == before)
+
+            fix1('fix3/target-item', target_item)
             fix1('fix2/commits-only', commits_only)
             fix1('fix1/late-inbox', late_inbox)
             fix1('fix1/no-settlement', no_settlement)
