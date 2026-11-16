@@ -193,12 +193,13 @@ def check_configured_remote(path, branch, remote):
 
 
 def remove_scaffold_ref(path, repository, ledger=None, identity=None):
-    """Ask the ref remover; the standalone entry proves the commit is held before releasing the ref. Never raises."""
+    """Ask the ref remover to keep unheld scaffold work before releasing its ref. Never raises."""
     if R.repository_id_problems(repository):
         return False
     try:
         return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,
-                                                       ledger, identity, standalone={'state': 'clear'}, main=str(path))['ok']
+                                                       ledger, identity, standalone={'state': 'clear', 'keep_unheld': True},
+                                                       main=str(path))['ok']
     except Exception:  # noqa: BLE001 - removing the record of a laid commit never decides an outcome
         return False
 

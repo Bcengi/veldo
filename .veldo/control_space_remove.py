@@ -1022,7 +1022,7 @@ def remove_ref(repository, ref, ledger=None, identity=None, standalone=None, mai
     The authority is an ended ledger item or a standalone keep result.
     A missing or unverifiable keep refuses and leaves the ref.
     The main repository must still reach its commit through a kept ref or branch.
-    A temporary ref unique even there stays for a later keep attempt. Branches,
+    Standalone scaffold cleanup keeps an unheld commit there before releasing its ref. Branches,
     tags, stashes and kept refs are never accepted by this entry.
     """
     commands = []
@@ -1062,10 +1062,26 @@ def remove_ref(repository, ref, ledger=None, identity=None, standalone=None, mai
         old = out.strip()
         code, out = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', main, 'for-each-ref', '--format=%(objectname)',
                          'refs/heads/', 'refs/veldo/kept/')
-        if code != 0 or not out.strip():
-            raise ValueError('the main repository has no readable holding ref')
+        if code != 0:
+            raise ValueError('the main repository holding refs could not be read')
         code, beyond = _git(commands, '-c', 'core.hooksPath=' + os.devnull, '-C', main, 'rev-list', '--stdin',
                             feed=('\n'.join([old, '--not', *out.split()]) + '\n').encode())
+        if code != 0:
+            raise ValueError('the temporary ref reachability could not be read')
+        if beyond.strip() and ledger is None and (standalone or {}).get('keep_unheld') is True:
+            if keeper._common(commands, repository) != keeper._common(commands, main):
+                raise ValueError('standalone ref keeping requires its main repository')
+            kept = keeper.keep_ref(main, ref, old)
+            commands.extend(kept.get('commands') or ())
+            if kept.get('ok') is not True or not kept.get('refs'):
+                raise ValueError('the temporary ref keep failed: ' + str(kept.get('said')))
+            for name, commit in kept['refs'].items():
+                code, value = _git(commands, '-C', main, 'show-ref', '--verify', '--hash', name)
+                if code != 0 or value.strip() != commit:
+                    raise ValueError('the temporary ref keep could not be read back')
+            code, beyond = _git(commands, '-C', main, 'rev-list', '--stdin',
+                                feed=('\n'.join([old, '--not', *kept['refs'].values()]) + '\n').encode())
+            answer['kept'] = kept['refs']
         if code != 0 or beyond.strip():
             raise ValueError('the temporary ref has work no main repository branch or kept ref reaches')
         # Compare the value under git's ref lock. Never follow a symbolic ref and never force.

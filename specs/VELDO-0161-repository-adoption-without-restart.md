@@ -146,6 +146,8 @@ commit rather than a first unit.
 
 ## History
 
+2026-11-15: lead decision, a failed adoption's unheld commit is kept on a kept ref (design 0.2); suite 109 accepts the kept-ref namespace only
+
 2026-09-25: split from VELDO-0143 AC3 on the third review of PLAN-0019 revision 4. AC1 is the former AC3's
 adoption, scaffold commit and signer scope, with its falsifier unchanged; AC2 is its "taken on by the
 running service without a restart", which had no falsifier, now with its own. A draft: only the owner

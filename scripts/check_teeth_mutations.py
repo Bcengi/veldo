@@ -15588,6 +15588,13 @@ def cases():
         "        git(path, 'update-ref', '--no-deref', ref, commit)", ['scaffold/no-overwrite'])
     result[-1]['siblings'] = True
 
+    add(304, 'space304-scaffold-skip-keep', '155_veldo_0304_space_boundary.py', 'control_space_keep.py',
+        "        _record_refs(commands, main, None, refs, held, 'veldo keep: ref_finished ' + identity,\n"
+        "                     options=('-c', 'core.hooksPath=' + os.devnull))\n",
+        "        pass  # defect: report kept without writing the scaffold's kept refs\n",
+        ['scaffold/unique-work'])
+    result[-1]['siblings'] = True
+
     return result
 
 

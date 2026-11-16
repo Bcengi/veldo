@@ -272,7 +272,7 @@ def _held(commands, main, prefix):
     return {name: commit for commit, _, name in (line.partition(' ') for line in out.split('\n')[:-1])}
 
 
-def _record_refs(commands, main, source, refs, held, note):
+def _record_refs(commands, main, source, refs, held, note, options=()):
     """Bring the objects across when they are in another store, create each ref that is not there, and
     read every ref and every object back from the main repository. Raises _Failed with the ref and
     git's words."""
@@ -289,7 +289,7 @@ def _record_refs(commands, main, source, refs, held, note):
     for name in sorted(refs):
         if name in held:
             continue  # the newest attempt already holds it, at the same commit: left as it is
-        code, out = _git(commands, main, '-c', 'user.name=Veldo', '-c', 'user.email=veldo@localhost',
+        code, out = _git(commands, main, *options, '-c', 'user.name=Veldo', '-c', 'user.email=veldo@localhost',
                          'update-ref', '--create-reflog', '-m', note, name, refs[name], '')
         if code != 0:
             raise _Failed('the kept ref %s could not be written: %s' % (name, str(out)[:300]), ref=name,
@@ -313,6 +313,30 @@ def _record_refs(commands, main, source, refs, held, note):
 def name_prefix(refs):
     """The item's own prefix, from its refs: refs/veldo/kept/<ticket>/<item>/."""
     return '/'.join(sorted(refs)[0].split('/')[:5]) + '/'
+
+
+def keep_ref(repository, ref, commit):
+    """Keep one temporary ref's observed commit in its main repository before ref removal.
+
+    Use the ordinary keep plan, append-only attempts and readback. The refs are the
+    standalone keep record; no work tree or uncommitted file is being removed.
+    """
+    commands = []
+    try:
+        main = _remove._plain(str(repository))
+        if _common(commands, main) is None:
+            raise _Failed('the main repository is not readable')
+        identity = 'standalone-ref-' + hashlib.sha256(ref.encode()).hexdigest()[:32]
+        prefix = _space.kept_prefix(identity, {})
+        held = _held(commands, main, prefix)
+        tips = {'refs': [commit + ' ' + ref]}
+        refs = _attempt(_plan(commands, main, tips), prefix, held)
+        _record_refs(commands, main, None, refs, held, 'veldo keep: ref_finished ' + identity,
+                     options=('-c', 'core.hooksPath=' + os.devnull))
+        return {'ok': True, 'state': 'kept', 'repository': main, 'refs': refs, 'commands': commands}
+    except (_Failed, OSError, ValueError) as error:
+        failed = error if isinstance(error, _Failed) else _Failed(str(error))
+        return _refused(failed, commands)
 
 
 # ---------------------------------------------------------------------------------------------

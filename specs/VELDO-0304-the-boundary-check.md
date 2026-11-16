@@ -53,6 +53,8 @@ footprint:
   - ".veldo/control_repository_provisioner.py"
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
+  - "engine/.veldo/control_space_keep.py"
+  - ".veldo/control_space_keep.py"
   - "scripts/verify.sh"
   - "scripts/suites/*_veldo_0304_*.py"
   - "scripts/suites/manifest.json"
@@ -130,6 +132,16 @@ The check is called from scripts/verify.sh, a protected path (policy.yaml:83). T
 approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: lead decision, a failed adoption's unheld commit is kept on a kept ref (design 0.2); suite 109 accepts the kept-ref namespace only
+
+- 2026-11-15: FIX ROUND 2 lead decision: failed-adoption scaffold commits with
+  unheld work go on the keep step's existing kept refs in the main repository
+  before the ref remover releases the scaffold ref. The keep step reuses its
+  ordinary plan, append-only attempt numbering, compare-and-create and readback.
+  Failure leaves the scaffold ref intact. Suite 155 checks preservation, retry,
+  append-only attempts, hook isolation and keep failure, with a skip-keep falsifier.
+  The prior proposed alternate preservation format is superseded.
 
 - 2026-11-15: FIX ROUND restores standalone look/keep/removal through the central
   entry and keeps suite 142 unchanged. Retirement supplies the item identity and

@@ -19,6 +19,7 @@ def _v304_suite():
         '.veldo/control_memory_check.py': ROOT / ".veldo" / "control_memory_check.py",
         '.veldo/control_repository_provisioner.py': ROOT / ".veldo" / "control_repository_provisioner.py",
         '.veldo/control_service.py': ROOT / ".veldo" / "control_service.py",
+        '.veldo/control_space_keep.py': ROOT / ".veldo" / "control_space_keep.py",
         '.veldo/control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
         '.veldo/control_space_spool.py': ROOT / ".veldo" / "control_space_spool.py",
         '.veldo/fleet.py': ROOT / ".veldo" / "fleet.py",
@@ -212,13 +213,60 @@ def _v304_suite():
             repository = 'fixture'
             ref = provisioner.SCAFFOLD_REF + repository
             git(main, 'update-ref', ref, tip)
-            assert not provisioner.remove_scaffold_ref(str(main), repository)
-            assert git(main, 'rev-parse', ref) == tip
-            assert git(main, 'show', ref + ':unique') == 'unique scaffold commit'
+            (main / 'draft').write_text('uncommitted work stays here\n')
+            hook = main / '.git' / 'hooks' / 'reference-transaction'
+            marker = main / 'hook-ran'
+            hook.write_text('#!/bin/sh\nprintf called > "' + str(marker) + '"\n')
+            hook.chmod(0o700)
+            assert provisioner.remove_scaffold_ref(str(main), repository)
+            assert not marker.exists(), 'scaffold keeping or removal ran a repository hook'
+            assert git(main, 'for-each-ref', '--format=%(refname)', ref) == ''
+            held = git(main, 'for-each-ref', '--format=%(refname)', 'refs/veldo/kept/').splitlines()
+            assert len(held) == 1, held
+            assert held[0].endswith('/1/ref/' + ref), held
+            assert git(main, 'rev-parse', held[0]) == tip
+            assert git(main, 'show', held[0] + ':unique') == 'unique scaffold commit'
+            assert (main / 'draft').read_text() == 'uncommitted work stays here\n'
+            # A retried cleanup uses the existing keep; a new unheld commit appends an attempt.
+            git(main, 'update-ref', ref, tip)
+            assert provisioner.remove_scaffold_ref(str(main), repository)
+            assert git(main, 'for-each-ref', '--format=%(refname)', 'refs/veldo/kept/').splitlines() == held
+            next_tip = git(main, 'commit-tree', git(main, 'write-tree'), '-p', tip, '-m', 'next attempt')
+            git(main, 'update-ref', ref, next_tip)
+            assert provisioner.remove_scaffold_ref(str(main), repository)
+            after = git(main, 'for-each-ref', '--format=%(refname)', 'refs/veldo/kept/').splitlines()
+            assert len(after) == 2 and set(held) < set(after), after
+            newer = next(name for name in after if name not in held)
+            assert newer.endswith('/2/ref/' + ref) and git(main, 'rev-parse', newer) == next_tip
+            assert git(main, 'rev-parse', held[0]) == tip
+            # A scaffold already held by the branch needs no new keep attempt.
             git(main, 'update-ref', 'refs/heads/main', tip)
+            git(main, 'update-ref', ref, tip)
             assert provisioner.remove_scaffold_ref(str(main), repository)
             assert git(main, 'for-each-ref', '--format=%(refname)', ref) == ''
             assert git(main, 'show', 'main:unique') == 'unique scaffold commit'
+            assert git(main, 'for-each-ref', '--format=%(refname)', 'refs/veldo/kept/').splitlines() == after
+
+    def scaffold_keep_failure():
+        from unittest.mock import patch
+        provisioner = load('provisioner_failure', source_path('.veldo/control_repository_provisioner.py'))
+        remove = load('remove_failure', source_path('.veldo/control_space_remove.py'))
+        keeper = load('keeper_failure', source_path('.veldo/control_space_keep.py'))
+        with tempfile.TemporaryDirectory(prefix='v304-scaffold-failure-') as temporary:
+            main = Path(temporary)
+            git(main, 'init', '-q', '-b', 'main')
+            (main / 'unique').write_text('failed keep must leave this commit\n')
+            git(main, 'add', '.')
+            tip = git(main, 'commit-tree', git(main, 'write-tree'), '-m', 'unique')
+            ref = provisioner.SCAFFOLD_REF + 'fixture'
+            git(main, 'update-ref', ref, tip)
+            with patch.object(provisioner, 'organ', return_value=remove), patch.object(
+                    remove, '_sibling', return_value=keeper), patch.object(
+                    keeper, '_record_refs', side_effect=OSError('fixture write failure')):
+                assert not provisioner.remove_scaffold_ref(str(main), 'fixture')
+            assert git(main, 'rev-parse', ref) == tip
+            assert git(main, 'show', ref + ':unique') == 'failed keep must leave this commit'
+            assert git(main, 'for-each-ref', '--format=%(refname)', 'refs/veldo/kept/') == ''
 
     def scaffold_overwrite():
         from types import SimpleNamespace
@@ -248,6 +296,7 @@ def _v304_suite():
     row('scaffold/no-overwrite', scaffold_overwrite)
 
     row('scaffold/unique-work', scaffold_work)
+    row('scaffold/keep-failure', scaffold_keep_failure)
     row('scaffold/boundary', lambda: module_boundary('control_repository_provisioner', ('remove_scaffold_ref',)))
 
     def launch_work():
