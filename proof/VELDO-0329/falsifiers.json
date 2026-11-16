@@ -1,0 +1,128 @@
+{
+  "scope": "Every mutation registered for finding 329, applied once by hand to a copy of .veldo/control_space_reconcile.py. The teeth driver run is recorded in teeth.json. No full gate.",
+  "baseline": {
+    "rows": [
+      "space329/ac1/bound-and-plain",
+      "space329/ac1/configured-folder",
+      "space329/ac1/keeps-own-lines",
+      "space329/ac1/refused-and-said",
+      "space329/ac2/every-account",
+      "space329/ac2/session-under-second",
+      "space329/ac3/missing-hook-reported",
+      "space329/ac3/missing-session-reported",
+      "space329/wiring/bootstrap-installs"
+    ],
+    "all_green": true
+  },
+  "results": [
+    {
+      "case": "space329-overwrite-existing-hook",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac1/keeps-own-lines"
+      ],
+      "red_rows": [
+        "space329/ac1/keeps-own-lines"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-first-account-only",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac2/session-under-second"
+      ],
+      "red_rows": [
+        "space329/ac2/every-account",
+        "space329/ac2/session-under-second",
+        "space329/ac3/missing-session-reported"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-missing-hook-unreported",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac3/missing-hook-reported"
+      ],
+      "red_rows": [
+        "space329/ac3/missing-hook-reported"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-missing-session-unreported",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac3/missing-session-reported"
+      ],
+      "red_rows": [
+        "space329/ac3/missing-session-reported"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-program-hook-edited",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac1/refused-and-said"
+      ],
+      "red_rows": [
+        "space329/ac1/refused-and-said",
+        "space329/ac3/missing-hook-reported"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-shared-folder-always",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac1/configured-folder"
+      ],
+      "red_rows": [
+        "space329/ac1/configured-folder",
+        "space329/ac1/refused-and-said",
+        "space329/ac3/missing-hook-reported"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-settings-rewritten",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/ac2/every-account"
+      ],
+      "red_rows": [
+        "space329/ac2/every-account"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    },
+    {
+      "case": "space329-start-installs-nothing",
+      "module": "control_space_reconcile.py",
+      "applied": 1,
+      "target_rows": [
+        "space329/wiring/bootstrap-installs"
+      ],
+      "red_rows": [
+        "space329/wiring/bootstrap-installs"
+      ],
+      "rows_run": 9,
+      "rejected": true
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0329",
+  "commit": "6c98a90727679590f4448c814092ec2295c95da7",
+  "tree": "608a00514d5680176825054a57c63475fa6ac248",
+  "producer": "Claude implementation agent (build 3cc596c0, hook line fix 6c98a907); not an independent reviewer",
+  "produced_at": "2026-11-16T06:00:47.621822+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac1/bound-and-plain: the install puts both hooks, executable, in the shared hooks folder of a bound repository and of a plain one; a linked worktree made before the install uses the same folder; git itself then runs them: a worktree add and a trunk commit each start the CLI with the state root and git's own lines."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac1/configured-folder: with core.hooksPath set the hooks go to that folder, none to the shared one, and git runs them from there."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac1/keeps-own-lines: two existing shell hooks of the owner's keep every line, in order, and gain one marked line; the owner's lines still run with git's input whole (prepared and committed), Veldo's hook runs beside them with the same input, the temporary folder cannot be written, and a second install changes no byte."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac1/refused-and-said: a program hook, a link and a hook git does not run are refused by name with why and left byte for byte; an earlier copy of Veldo's own hook is replaced and kept beside it; a file of the owner's under Veldo's name is refused."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/wiring/bootstrap-installs: the service's start (bootstrap) installs for the repository bound at that start, the named plain repository and the named account folder, and logs each with the folder used."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0329/targeted-tests.json",
+          "detail": "The suite passed on the committed tree through selftest (partial run): real git running the installed hooks, real store and Ledger, signed observer packets over the spool socket, real settings files, the real reconciler and bootstrap. Full gate pending."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0329/teeth.json",
+          "detail": "The spec's falsifier, space329-overwrite-existing-hook (the existing hook file is overwritten): applied once, row space329/ac1/keeps-own-lines red, baseline and no-op green. Also space329-program-hook-edited, space329-shared-folder-always and space329-start-installs-nothing, each red on its row. The same four by hand in proof/VELDO-0329/falsifiers.json."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac2/every-account: each of two named account folders gets one bounded entry for SessionStart and one for SessionEnd and the script beside its settings file; every key and hook the owner had in the second is kept; a settings file that cannot be read is refused and left byte for byte."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac2/session-under-second: the client's part is played by running the account's own SessionStart command with no Veldo variable in the environment; a session started under the second account leaves its scratch item in the Ledger, owned by that session."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0329/targeted-tests.json",
+          "detail": "The suite passed on the committed tree through selftest (partial run): real git running the installed hooks, real store and Ledger, signed observer packets over the spool socket, real settings files, the real reconciler and bootstrap. Full gate pending."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0329/teeth.json",
+          "detail": "The spec's falsifier, space329-first-account-only (install in the first account folder only): applied once, the row that starts a session under the second finds no item, space329/ac2/session-under-second red. Also space329-settings-rewritten, red on space329/ac2/every-account."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac3/missing-hook-reported: with the hooks in place reconcile reports only the refused ones, with why; after the fixture's hook is deleted in the bound repository and in a plain one, each is reported with the hook and the hooks folder; a hook whose marked line starts nothing is reported; reconcile puts nothing back."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/150_veldo_0329_hook_install.py",
+          "detail": "space329/ac3/missing-session-reported: an account folder whose SessionEnd entry was taken out, and one whose settings file is gone, are each reported with what is missing."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0329/targeted-tests.json",
+          "detail": "The suite passed on the committed tree through selftest (partial run): real git running the installed hooks, real store and Ledger, signed observer packets over the spool socket, real settings files, the real reconciler and bootstrap. Full gate pending."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0329/teeth.json",
+          "detail": "The spec's falsifier, space329-missing-hook-unreported (report nothing for a missing hook): applied once, the row that deletes the fixture's hook finds an empty report, space329/ac3/missing-hook-reported red. Also space329-missing-session-unreported, red on space329/ac3/missing-session-reported."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 150_veldo_0329_hook_install: 9 rows, 35 checks including the shared preamble, 0 failed; partial exit 2."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "The same suite: git runs the installed hooks, a session started through the installed command reaches the Ledger over the spool socket with a signed packet. Regressions 148_veldo_0311_git_hooks (57 passed) and 149_veldo_0312_ticket_ended (67 passed); partial exit 2 each."
+    },
+    {
+      "name": "teeth",
+      "status": "passed",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 329: passed, baseline valid in the confined leg, registered 8, executed 8, rejected 8, reused 0, surviving workers 0. Run last."
+    },
+    {
+      "name": "fast checks",
+      "status": "passed",
+      "command": "validate.py all, check_docs.sh, check_template_sync.sh, check_generated.sh, check_lint.sh, check_git_boundary.py, check_space_boundary.py: each exit 0 (proof/VELDO-0329/fast-checks.json)."
+    }
+  ],
+  "assumptions": [
+    "Criteria remain pending until the lead runs the canonical gate, ./scripts/verify.sh. Neither the full gate, a suite numbered 151 or higher, nor the policy check was run. Suite 156_veldo_0315_reconcile exercises the changed Reconciler.repositories and bootstrap and was not run here. Suite 86_veldo_0127 and all live captures are untouched.",
+    "Binding installs at the service's start: bootstrap reads the bound repositories and calls the installer, so a repository gets its hooks at the first start after it is bound. No bind command outside the footprint was changed. The first start of a real service with space management enabled therefore writes into the hooks folder and git configuration of every bound and named plain repository and into settings.json of every named account folder. Nothing on the protect list is touched, and no live repository or account folder was touched by this build.",
+    "The engine finds its hook files in hooks/ beside .veldo (or engine/hooks in this repository) and the session script in packs/claude/scripts beside or above the engine. Whether a deployed engine carries both there was not measured. Where it does not, the install record names the refusal and reconcile reports the hooks as missing; nothing is silent.",
+    "Chained hooks are shell hooks only (sh, bash, dash, ksh, zsh by their first line). A program, a link, a file with no first line naming a shell and a hook that is not executable are refused and reported, by the owner's rule that an existing hook is kept and chained or refused. An owner's shell hook that the marked line precedes still receives git's input; where neither the hooks folder nor the temporary folder takes the input copy, the owner's lines run and that landing is left to the next reconcile.",
+    "The trunk a hook is told (veldo.space.trunk) is the one the work configuration's land entry gives through the spool's about; the fixture has none, so no row sets it. The client was played by running the installed command through sh; no live client was started.",
+    "The reports are findings of the reconcile result (hooks_missing and session_hooks_missing), which the service logs; the space.reports API route belongs to a later ticket."
+  ],
+  "rollback": "Revert the two commits. Hooks already installed stay where they are and keep working; a repository bound afterwards gets none. The marked lines and Veldo's own files can be taken out by hand; nothing of the owner's was changed beyond the one marked line."
+}

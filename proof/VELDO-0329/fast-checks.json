@@ -1,0 +1,51 @@
+[
+ {
+  "command": "python3 -B .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": [
+   "Validation exit 0; the existing historical proof notices remain."
+  ]
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": [
+   "docs hygiene: pass"
+  ]
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": [
+   "template sync: pass (324 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+  ]
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": [
+   "generated: pass (specs/index.md and scripts/suites/requires.json among them)"
+  ]
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit_code": 0,
+  "summary": [
+   "lint: pass (1242 python, 39 shell)"
+  ]
+ },
+ {
+  "command": "python3 -B scripts/check_git_boundary.py",
+  "exit_code": 0,
+  "summary": [
+   "Git subprocess boundary: pass"
+  ]
+ },
+ {
+  "command": "python3 -B scripts/check_space_boundary.py",
+  "exit_code": 0,
+  "summary": [
+   "Space boundary: pass"
+  ]
+ }
+]

@@ -1,0 +1,227 @@
+{
+ "command": "nice -n 10 python3 -B scripts/check_teeth_mutations.py --finding 329 --jobs 4 --worker-log-dir /tmp/v329-teeth/w --diff-dir /tmp/v329-teeth/d",
+ "commit": "6c98a90727679590f4448c814092ec2295c95da7",
+ "exit_code": 0,
+ "last_line": "mutations: passed registered=8 executed=8 reused=0 rejected=8 workers=10 elapsed=17.061s",
+ "status": "passed",
+ "registered": 8,
+ "executed": 8,
+ "rejected": 8,
+ "reused": 0,
+ "surviving_workers": 0,
+ "leg": "confined",
+ "input_digest": "1bc65c37525ec62b2717fbdd46bff69d4df8bef6d56ae65831cfe989f424ab6e",
+ "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+ "note": "Run last, after the commit it names. Nothing was written in the worktree while it ran; git status before and after showed only this untracked proof folder. A first run, on commit 3cc596c0, gave invalid_baseline: in the confined leg the temporary folder cannot be written, so the chained reference-transaction line did not start the hook. That was a defect of the line, fixed in 6c98a907; no case was changed between the two runs.",
+ "cases": [
+  {
+   "case": "space329-first-account-only",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac2/session-under-second"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "2739f2964e10432da77a872e1d1ce86adfcc35a1e9517765b223b0b67e4dcc28",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac2/every-account",
+    "space329/ac2/session-under-second",
+    "space329/ac3/missing-session-reported"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac2/every-account",
+     "account b: the record names the settings file and both hooks: {}"
+    ],
+    [
+     "space329/ac2/session-under-second",
+     "a session started under account b leaves its item: (None, [])"
+    ],
+    [
+     "space329/ac3/missing-session-reported",
+     "with the session hooks in place only the refused account is reported: [{'account': '/tmp/v329-teeth/w/3/veldo-0329-wnqm145c/account-b', 'missing': ['SessionStar"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-missing-hook-unreported",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac3/missing-hook-reported"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "9e57f51efd20e0710e891993a8036711b7872c1134a2fcd9d35e2005d90dd332",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac3/missing-hook-reported"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac3/missing-hook-reported",
+     "with the hooks in place only the refused ones are reported, with why: []"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-missing-session-unreported",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac3/missing-session-reported"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "afd9bdbe36eb78ec0e0f7225a86388aa952b7cf0ef2a51e3a2e8ce8d2da65adb",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac3/missing-session-reported"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac3/missing-session-reported",
+     "with the session hooks in place only the refused account is reported: []"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-overwrite-existing-hook",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac1/keeps-own-lines"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "a1a67e8c5d61f88944356d968ebeb3c20e0f71700a98f0f8e762dd61c85bad45",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac1/keeps-own-lines"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac1/keeps-own-lines",
+     "post-checkout: every line the owner wrote is still there, in order, and one marked line was added: '#!/bin/sh\\n/tmp/v329-teeth/w/2/veldo-0329-pg8x6p4r/plain/.gi"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-program-hook-edited",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac1/refused-and-said"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "4cf01d10884b84cdad414a1a16d695129b75453488608224deb134d05e2046de",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac1/refused-and-said",
+    "space329/ac3/missing-hook-reported"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac1/refused-and-said",
+     "a program and a link are refused by name, with why: {'repository': '/tmp/v329-teeth/w/6/veldo-0329-wir4tp7l/refuse', 'hooks_folder': '/tmp/v329-teeth/w/6/veldo-"
+    ],
+    [
+     "space329/ac3/missing-hook-reported",
+     "with the hooks in place only the refused ones are reported, with why: [{'repository': '/tmp/v329-teeth/w/6/veldo-0329-wir4tp7l/refuse', 'hooks_folder': '/tmp/v3"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-settings-rewritten",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac2/every-account"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "5a2c6c8189e8141f6c2551134d911e18941691c79aaaae0bc3c0db2759e36896",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac2/every-account"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac2/every-account",
+     "every key and hook the owner had in the second account is kept: {'hooks': {}}"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-shared-folder-always",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/ac1/configured-folder"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "e323e9cdf93219f7eef1bb466d95e15f51142e86158e68596f0cbf8f1473513c",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/ac1/configured-folder",
+    "space329/ac1/refused-and-said",
+    "space329/ac3/missing-hook-reported"
+   ],
+   "mutant_said": [
+    [
+     "space329/ac1/configured-folder",
+     "the hooks go to the folder the repository configures: {'repository': '/tmp/v329-teeth/w/7/veldo-0329-cw9bz_dq/custom', 'hooks_folder': '/tmp/v329-teeth/w/7/veld"
+    ],
+    [
+     "space329/ac1/refused-and-said",
+     "a file of the owner's under Veldo's name is refused and kept: {'repository': '/tmp/v329-teeth/w/7/veldo-0329-cw9bz_dq/custom', 'hooks_folder': '/tmp/v329-teeth/"
+    ],
+    [
+     "space329/ac3/missing-hook-reported",
+     "a hook whose marked line starts nothing is reported: None"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  },
+  {
+   "case": "space329-start-installs-nothing",
+   "module": "control_space_reconcile.py",
+   "target_rows": [
+    "space329/wiring/bootstrap-installs"
+   ],
+   "replacement_count": 1,
+   "old_digest": "c6c77f8a2451927674bc3a2d07be18fb51c9015612c490f2ac5506c7b0ab6e26",
+   "new_digest": "427246c1aa84f9f934b0c258f673aa1d6574caef445d8be52c4163aaf16f74f0",
+   "baseline_failed_rows": [],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "space329/wiring/bootstrap-installs"
+   ],
+   "mutant_said": [
+    [
+     "space329/wiring/bootstrap-installs",
+     "the start installs for the bound repository, the named plain repository and the named account: {}"
+    ]
+   ],
+   "rows_run": 35,
+   "source": "fresh"
+  }
+ ]
+}
