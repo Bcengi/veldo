@@ -340,23 +340,32 @@ def _v318_suite():
                                   branch='private-work', start=head)['item']
             ledger.confirm(item)
             signal(item, owner, 'released')
-            rid = request(item)
-            count = conn.execute("SELECT COUNT(*) FROM entities WHERE kind='assignment'").fetchone()[0]
-            signal(item, owner, 'released')
-            check('ac1/released-agent', repr(ledger.item(item)), request(item) == rid and agent_tree.exists()
-                  and git(agent_tree, 'rev-parse', 'HEAD') == tip and count == conn.execute(
-                      "SELECT COUNT(*) FROM entities WHERE kind='assignment'").fetchone()[0])
+            # Every row is observed under a defect too: a request that was not raised is a red row,
+            # and the rows after it still run.
+            if shown(item):
+                rid = request(item)
+                count = conn.execute("SELECT COUNT(*) FROM entities WHERE kind='assignment'").fetchone()[0]
+                signal(item, owner, 'released')
+                check('ac1/released-agent', repr(ledger.item(item)), request(item) == rid and agent_tree.exists()
+                      and shown(item).get('commits') == [tip]
+                      and git(agent_tree, 'rev-parse', 'HEAD') == tip and count == conn.execute(
+                          "SELECT COUNT(*) FROM entities WHERE kind='assignment'").fetchone()[0])
+            else:
+                check('ac1/released-agent', 'no request was raised ' + repr(ledger.item(item)), False)
 
             item, path, owner = tree('save-committed')
             git(path, 'add', 'draft.txt')
             git(path, 'commit', '-q', '-m', 'already committed')
             before = git(path, 'rev-parse', 'HEAD')
             signal(item, owner)
-            rid = settle(item, 'save')
-            assert ledger.authorize_disposition(item, rid)['ok']
-            result = act(item)
-            check('ac2/no-empty-commit', repr(result), ledger.item(item)['state'] == 'removed'
-                  and git(repo, 'rev-parse', RM.disposition_branch(ledger.item(item))) == before)
+            if shown(item):
+                rid = settle(item, 'save')
+                assert ledger.authorize_disposition(item, rid)['ok']
+                result = act(item)
+                check('ac2/no-empty-commit', repr(result), ledger.item(item)['state'] == 'removed'
+                      and git(repo, 'rev-parse', RM.disposition_branch(ledger.item(item))) == before)
+            else:
+                check('ac2/no-empty-commit', 'no request was raised', False)
 
             # Installed owner identity wins over an agent's repository-local identity.
             conn.execute('CREATE TABLE git_identity_repositories(domain TEXT,repository TEXT,path TEXT,identity TEXT)')
