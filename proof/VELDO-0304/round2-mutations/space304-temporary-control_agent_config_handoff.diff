@@ -1,0 +1,5 @@
+--- a/.veldo/control_agent_config_handoff.py
++++ b/.veldo/control_agent_config_handoff.py
+@@ -594 +594 @@
+-    with tempfile.TemporaryDirectory(prefix='tool-observation-') as temp:
++    with tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config) as temp:

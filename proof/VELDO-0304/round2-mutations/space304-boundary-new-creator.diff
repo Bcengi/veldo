@@ -1,0 +1,7 @@
+--- a/.veldo/fleet.py
++++ b/.veldo/fleet.py
+@@ -205,0 +206,4 @@
++
++
++def undeclared_creator(path):
++    _git_worktree(["add", path])

@@ -1,0 +1,6 @@
+--- a/scripts/gate_legs.py
++++ b/scripts/gate_legs.py
+@@ -274,0 +275,3 @@
++        if time.time() - entry.stat().st_mtime > 30 * 24 * 60 * 60:
++            os.unlink(entry.path)
++            continue

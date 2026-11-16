@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_remove.py
++++ b/.veldo/control_space_remove.py
+@@ -1038,0 +1039,2 @@
++        _git(commands, '-C', repository, 'update-ref', '-d', ref)
++        return dict(answer, ok=True)

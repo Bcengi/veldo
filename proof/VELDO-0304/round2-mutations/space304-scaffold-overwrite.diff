@@ -1,0 +1,5 @@
+--- a/.veldo/control_repository_provisioner.py
++++ b/.veldo/control_repository_provisioner.py
+@@ -241 +241 @@
+-        git(path, 'update-ref', '--no-deref', ref, commit, '')
++        git(path, 'update-ref', '--no-deref', ref, commit)

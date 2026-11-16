@@ -1,0 +1,6 @@
+--- a/scripts/mutation_ownership.py
++++ b/scripts/mutation_ownership.py
+@@ -565 +565,2 @@
+-        wait_for_empty(self.path)
++        if time.monotonic() > 0:
++            wait_for_empty(self.path)

@@ -1,0 +1,5 @@
+--- a/scripts/verify.sh
++++ b/scripts/verify.sh
+@@ -204 +204 @@
+-CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
++CHECK_extra="required:bash scripts/check_template_sync.sh"

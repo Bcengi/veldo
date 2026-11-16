@@ -1,0 +1,5 @@
+--- a/.veldo/fleet.py
++++ b/.veldo/fleet.py
+@@ -268 +268 @@
+-            # No ledger: nothing judges this removal but the look made here, and nothing is removed
++            _git_worktree(["remove", "--force", path], cwd=self.repo_root)

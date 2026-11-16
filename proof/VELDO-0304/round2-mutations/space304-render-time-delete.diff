@@ -1,0 +1,6 @@
+--- a/scripts/render_pdfs.py
++++ b/scripts/render_pdfs.py
+@@ -213 +213,2 @@
+-        ws_url = devtools_endpoint(proc)
++        if time.time() > 0:
++            ws_url = devtools_endpoint(proc)

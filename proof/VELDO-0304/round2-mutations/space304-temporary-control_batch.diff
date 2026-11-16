@@ -1,0 +1,5 @@
+--- a/.veldo/control_batch.py
++++ b/.veldo/control_batch.py
+@@ -573 +573 @@
+-                with tempfile.TemporaryDirectory(prefix='veldo-control-batch-') as td:
++                with tempfile.TemporaryDirectory() as td:

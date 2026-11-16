@@ -1,0 +1,5 @@
+--- a/scripts/rename_migration.py
++++ b/scripts/rename_migration.py
+@@ -707 +707 @@
+-        raise SystemExit("rename: destination exists; a recorded owner item is required for removal: %s" % d)
++        shutil.rmtree(d)

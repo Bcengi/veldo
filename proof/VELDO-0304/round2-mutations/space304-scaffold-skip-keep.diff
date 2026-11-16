@@ -1,0 +1,6 @@
+--- a/.veldo/control_space_keep.py
++++ b/.veldo/control_space_keep.py
+@@ -334,2 +334 @@
+-        _record_refs(commands, main, None, refs, held, 'veldo keep: ref_finished ' + identity,
+-                     options=('-c', 'core.hooksPath=' + os.devnull))
++        pass  # defect: report kept without writing the scaffold's kept refs

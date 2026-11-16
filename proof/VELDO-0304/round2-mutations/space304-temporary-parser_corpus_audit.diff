@@ -1,0 +1,5 @@
+--- a/scripts/parser_corpus_audit.py
++++ b/scripts/parser_corpus_audit.py
+@@ -123 +123 @@
+-            with tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-') as tmp:
++            with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,5 @@
+--- a/scripts/check_space_boundary.py
++++ b/scripts/check_space_boundary.py
+@@ -304 +304 @@
+-                if traverses and any('delete:single path' in primitives(call, values) for call in ast.walk(loop)):
++                if False:

@@ -1,0 +1,77 @@
+{
+  "implementation": "8d617d8a2d79c7655e5d1c0d64fa34b216c9f036",
+  "nice": 10,
+  "status": "diagnostic_only",
+  "suites": [
+    {
+      "suite": "109_veldo_0161_adoption",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 81 passed, 0 failed in 26.25s",
+      "log": "proof/VELDO-0304/109_veldo_0161_adoption.log",
+      "sha256": "7c004ac0a3a70b9a32b82687b291dd116fed52ab8c852cddc16415263e157994"
+    },
+    {
+      "suite": "155_veldo_0304_space_boundary",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 71 passed, 0 failed in 5.53s",
+      "log": "proof/VELDO-0304/155_veldo_0304_space_boundary.log",
+      "sha256": "7a2bdc24f632c37382abd011ac8838d889e4c51426261f2ab1a7e4f5f8d6b42c"
+    },
+    {
+      "suite": "142_veldo_0303_space_paths",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 64 passed, 0 failed in 5.65s",
+      "log": "proof/VELDO-0304/142_veldo_0303_space_paths.log",
+      "sha256": "b0b13ee0ef45f1ec25080f5cc9ffd911847bd512541f60788ae9c6fef48e1f8b"
+    },
+    {
+      "suite": "66_veldo_0042_clones",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 46 passed, 0 failed in 1.80s",
+      "log": "proof/VELDO-0304/66_veldo_0042_clones.log",
+      "sha256": "28c9dd0eea3932aee9fc04668ad86ef72c22b7a5f4c5a32905d4f648939120bd"
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 37 passed, 0 failed in 54.90s",
+      "log": "proof/VELDO-0304/67_veldo_0056_candidates.log",
+      "sha256": "2e47a599c2305b591eefb8c25adafd1a8e59f2522c1e6f7a5b3969d2749ec01f"
+    },
+    {
+      "suite": "146_veldo_0308_run_finished",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 64 passed, 0 failed in 3.61s",
+      "log": "proof/VELDO-0304/146_veldo_0308_run_finished.log",
+      "sha256": "7df2e0319c0bddec589ba166a57dc6efd4a5415d7cda4e6e91a48efb7f4ab3bf"
+    },
+    {
+      "suite": "129_veldo_0239_batch_landing",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 49 passed, 0 failed in 22.52s",
+      "log": "proof/VELDO-0304/129_veldo_0239_batch_landing.log",
+      "sha256": "39deaf081c1782967939320cfcebf5eeb5f6a8e13849e76d440a04e813f4a664"
+    },
+    {
+      "suite": "138_veldo_0300_space_remove",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 65 passed, 0 failed in 2.26s",
+      "log": "proof/VELDO-0304/138_veldo_0300_space_remove.log",
+      "sha256": "e2febee9f6a2af31b9c8fc49dee865e10b8640f2e7f7c7882ce1a462c7ce18a1"
+    },
+    {
+      "suite": "139_veldo_0301_space_signal",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 44 passed, 0 failed in 1.03s",
+      "log": "proof/VELDO-0304/139_veldo_0301_space_signal.log",
+      "sha256": "5aecbf5d21cb002639c701276d43614415d001f3e0fea26948825b72768d154a"
+    },
+    {
+      "suite": "140_veldo_0345_space_keep",
+      "exit_code": 2,
+      "summary": "selftest (PARTIAL, 1 of 226 suites): 57 passed, 0 failed in 4.21s",
+      "log": "proof/VELDO-0304/140_veldo_0345_space_keep.log",
+      "sha256": "d16a091072f7b2380ed0a245d662e4173d1aab08365c6e1892b962d3ab27a9b9"
+    }
+  ]
+}

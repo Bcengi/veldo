@@ -1,0 +1,5 @@
+--- a/scripts/publish.py
++++ b/scripts/publish.py
+@@ -304 +304 @@
+-        raise SystemExit("publish: destination exists; a recorded owner item is required for removal: %s" % dest)
++        shutil.rmtree(dest)

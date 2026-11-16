@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_spool.py
++++ b/.veldo/control_space_spool.py
+@@ -766 +766 @@
+-                    remove_delivered(folder, name)  # delivery acknowledgement, never age, authorizes cleanup
++                    os.unlink(os.path.join(folder, name))

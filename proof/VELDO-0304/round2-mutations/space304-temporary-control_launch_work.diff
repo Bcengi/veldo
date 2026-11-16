@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch_work.py
++++ b/.veldo/control_launch_work.py
+@@ -258 +258 @@
+-        with tempfile.TemporaryDirectory(prefix='import-') as directory:
++        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:

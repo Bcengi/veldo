@@ -12,42 +12,32 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmp1tw24d6a: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp1tw24d6a/nocrit.md: no acceptance criteria
-  /tmp/tmp1tw24d6a/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmp1tw24d6a/status.md: bad status: donezo
-  /tmp/tmp1tw24d6a/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmp1tw24d6a/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmp1tw24d6a/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmp1tw24d6a/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmp1tw24d6a/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmp1tw24d6a/verdict.json: bad verdict: looks_fine
-  /tmp/tmpkjg9gexy/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpkjg9gexy/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpkjg9gexy/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpkjg9gexy/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpkjg9gexy/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpkjg9gexy/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpkjg9gexy/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpkjg9gexy/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpkjg9gexy/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpkjg9gexy/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpkjg9gexy/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpkjg9gexy/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmp8ro0xzkw: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp8ro0xzkw/nocrit.md: no acceptance criteria
+  /tmp/tmp8ro0xzkw/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp8ro0xzkw/status.md: bad status: donezo
+  /tmp/tmp8ro0xzkw/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp8ro0xzkw/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp8ro0xzkw/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp8ro0xzkw/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp8ro0xzkw/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp8ro0xzkw/verdict.json: bad verdict: looks_fine
+  /tmp/tmpodiqr7fa/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpodiqr7fa/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpodiqr7fa/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpodiqr7fa/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpodiqr7fa/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpodiqr7fa/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpodiqr7fa/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpodiqr7fa/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpodiqr7fa/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpodiqr7fa/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpodiqr7fa/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpodiqr7fa/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  VELDO-0161 detail: adoption/signer-enrolled: it refuses before the branch moves or the scaffold is pushed, and removes the ref it was recorded under
-  SELFTEST FAIL: VELDO-0161 adoption/signer-enrolled
-  VELDO-0161 detail: adoption/repository-commands: the settled adoption of a repository that came to name one refuses it before the branch moves; the settled adoption of a repository that came to borrow objects refuses it before the branch moves
-  SELFTEST FAIL: VELDO-0161 adoption/repository-commands
-  VELDO-0161 detail: adoption/transport-config: before the branch moved: the working branch and the remote are at the base, the ref removed
-  SELFTEST FAIL: VELDO-0161 adoption/transport-config
-  VELDO-0161 detail: adoption/interrupted: the scaffold ref is removed, nothing more is pushed, signed, enrolled or bound
-  SELFTEST FAIL: VELDO-0161 adoption/interrupted
-  VELDO-0161 detail: adoption/store-checks-before-push: the path is another repository's identity binding: a scaffold commit was named, and the branch never moved, nothing was pushed and the ref is removed; the store binds it at another path: a scaffold commit was named, and the branch never moved, nothing was pushed and the ref is removed; the configured generation is below the store's: a scaffold commit was named, and the branch never moved, nothing was pushed and the ref is removed
-  SELFTEST FAIL: VELDO-0161 adoption/store-checks-before-push
-VELDO-0161 suite seconds: 27.792
-  109_veldo_0161_adoption                         50 passed   27.81s
-selftest (PARTIAL, 1 of 226 suites): 76 passed, 5 failed in 27.81s
+VELDO-0161 suite seconds: 26.238
+  109_veldo_0161_adoption                         55 passed   26.25s
+selftest (PARTIAL, 1 of 226 suites): 81 passed, 0 failed in 26.25s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

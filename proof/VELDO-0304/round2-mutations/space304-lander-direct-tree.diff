@@ -1,0 +1,4 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -649,0 +650 @@
++        shutil.rmtree(c["workspace"])

@@ -1,0 +1,128 @@
+{
+  "status": "passed",
+  "suite_exit": 1,
+  "unchanged_suite": true,
+  "unheld_cleanups": 10,
+  "observations": [
+    {
+      "path": "/dev/shm/v161-islt3b15/g/legacy",
+      "repository": "repository-161-legacy",
+      "ref": "refs/veldo/adoption/repository-161-legacy",
+      "commit": "5953644e7252516eda0bcc3251b1959a4befc90d",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-dface58d94fd0da870226aefd99bf0a8/1/ref/refs/veldo/adoption/repository-161-legacy"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/monitored",
+      "repository": "repository-161-monitored",
+      "ref": "refs/veldo/adoption/repository-161-monitored",
+      "commit": "01cbb557f42113117f5d77d8c6b71e159e1eb8ab",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-b704182f4c96cfae94363e028fe92826/1/ref/refs/veldo/adoption/repository-161-monitored"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/borrowing",
+      "repository": "repository-161-borrowing",
+      "ref": "refs/veldo/adoption/repository-161-borrowing",
+      "commit": "38008d4202cb9b257f7e230be4b81ab99791215f",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-9768948662a1a45cd33ef342e4b7dd21/1/ref/refs/veldo/adoption/repository-161-borrowing"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/routed",
+      "repository": "repository-161-routed",
+      "ref": "refs/veldo/adoption/repository-161-routed",
+      "commit": "493a6bcb135065271489a11be3ebc10c82a398ed",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-df777ee5f4070c3c2cdc18d4963e6766/1/ref/refs/veldo/adoption/repository-161-routed"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/crafted",
+      "repository": "repository-161-crafted-b",
+      "ref": "refs/veldo/adoption/repository-161-crafted-b",
+      "commit": "be50b519b5060988cdb446ff57865c93d469aab4",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-693cf0c0d7b4ff74ed77c616e320c569/1/ref/refs/veldo/adoption/repository-161-crafted-b"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/crafted",
+      "repository": "repository-161-crafted-c",
+      "ref": "refs/veldo/adoption/repository-161-crafted-c",
+      "commit": "eb79ec163ab0c85e12e16bb13c501de672320d45",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-c7003b2f5c4166a6cf41c8930c2131ca/1/ref/refs/veldo/adoption/repository-161-crafted-c"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/interrupted",
+      "repository": "repository-161-interrupted",
+      "ref": "refs/veldo/adoption/repository-161-interrupted",
+      "commit": "e0b3d813a330c3230b18c35f90034960a2739a26",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-faf767e59b5b92abb64712c8294b43bb/1/ref/refs/veldo/adoption/repository-161-interrupted"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/orphan-path",
+      "repository": "repository-161-orphan-path",
+      "ref": "refs/veldo/adoption/repository-161-orphan-path",
+      "commit": "916eb237dc042b94bc3da7c65aff87069d8395b5",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-912a419d11195ede532f51c2c3559123/1/ref/refs/veldo/adoption/repository-161-orphan-path"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/store-bound",
+      "repository": "repository-161-store-bound",
+      "ref": "refs/veldo/adoption/repository-161-store-bound",
+      "commit": "7a6fee3d820e39621f29c3ed3ad32784f78fc061",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-f36248390a417e87d4246920aaecce53/1/ref/refs/veldo/adoption/repository-161-store-bound"
+      ],
+      "preserved": true,
+      "removed": true
+    },
+    {
+      "path": "/dev/shm/v161-islt3b15/g/behind",
+      "repository": "repository-161-behind",
+      "ref": "refs/veldo/adoption/repository-161-behind",
+      "commit": "b8c832aa9d0e62c1ef40fafca7b24f73d61d76a4",
+      "cleanup_result": true,
+      "kept_refs": [
+        "refs/veldo/kept/none/standalone-ref-365f2e7aab2389d91492d57f6518ed8b/1/ref/refs/veldo/adoption/repository-161-behind"
+      ],
+      "preserved": true,
+      "removed": true
+    }
+  ]
+}

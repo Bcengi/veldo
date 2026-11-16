@@ -1,35 +1,20 @@
-# VELDO-0304 fix round
+# VELDO-0304 fix round 3
 
-Implementation: 6e9738497df777f86dad54f56ecf37a0b12e06dc. This fix round is incomplete: the lead decision
-about failed-adoption scaffold preservation is pending. No aggregate gate or landing result is claimed.
+Implementation: 8d617d8a2d79c7655e5d1c0d64fa34b216c9f036.
 
-The requested suites ran with nice -n 10. Suites 155, 142, 66_0042, 67_0056,
-146_0308, 129_0239, 138, 139 and 140 have zero failed rows. Suite 109_0161 has
-five failed-adoption cleanup rows; integration-conflict.json names each one and
-records the conflict. All accepted suites are unchanged. Selected selftest runs
-return exit 1 even with zero failed rows; these logs are diagnostics, not a
-passed unit-evidence record.
+The lead decision is recorded in VELDO-0161 and VELDO-0304 History: design 0.2
+keeps a failed adoption's unheld commit on the keep step's kept ref. The five
+failing adoption checks now accept only refs/veldo/kept/ as leftover Veldo refs.
+The repository-commands check contains two affected comparisons.
 
-The final check was check_teeth_mutations.py --finding 304, also at nice 10.
-Its valid baseline and all 37 rejected cases are recorded in teeth.log and
-teeth-receipt.json. No edits occurred while it ran. Only proof files were
-written after it. Exact applied diffs are in fix-round-mutations/.
+All ten requested suites ran with nice -n 10 and have zero failed rows.
+round3-suites.json records their logs, hashes and exit code 2: these selected
+runs are diagnostic partial runs, not aggregate verification or acceptance proof.
 
-Standalone cleanup now looks and keeps before removal through the removers.
-Retirement supplies the item id and records only successful pin releases.
-Batch staging refs wait for clone discard. Successful scaffold cleanup proves
-branch reachability; creation cannot overwrite an existing ref. Failed-adoption
-scaffold refs with unheld work remain until the lead decides their preservation
-format. Ref cleanup runs no repository hooks. Delivery acknowledgement removes
-spool inputs, and shutdown removes only the socket this service instance bound.
-The boundary catches recursive walk deletion, stdin ref deletion, indirect
-rmtree, forced ref overwrite and unchecked kept-ref updates. Suite 155 loads
-all script dependencies beside its installed .veldo for every mutation copy.
+The final finding 304 teeth check is pending. Prior teeth files and the other
+proof records are historical until the final receipt replaces them. Round 2's
+failed teeth stdout is retained as round2-teeth.log. Its input changed during
+that run, so rejection of all cases did not make it a valid stage result.
+The adoption-preservation files and round2-mutations retain the round 2 work.
 
-The protected scripts/verify.sh line is unchanged. policy_check.py and the
-aggregate verification command were not run; they remain the lead's.
-
-manifest.json, sources.json, registered-falsifiers.json, integration-conflict.json,
-boundary.log, teeth files, fix-round-mutations/ and the ten requested suite logs
-are this round's evidence. Other files here are historical artifacts from the
-prior build and do not describe this round's result.
+No protected path was changed. Policy validation and landing remain the lead's.
