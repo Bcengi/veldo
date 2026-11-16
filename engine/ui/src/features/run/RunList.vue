@@ -4,9 +4,12 @@ import Lamp from '@/components/Lamp.vue'
 import { runSignal } from './lamps'
 import LineLamps from './LineLamps.vue'
 import type { RunRow } from './runs'
+import { holdSentence } from '@/features/space/space'
+import '@/features/space/space.css'
 
 /** Worker runs as rows: the run's lamp, its unit, its project and host, where the unit is on the line, and its
- * status as a badge with its word. A row opens the run. Used by the runs screen and the overview. */
+ * status as a badge with its word. A row opens the run. Used by the runs screen and the overview. A run that would
+ * have waited for space says so in one line, with need, free, held and floor (VELDO-0319). */
 const props = defineProps<{ runs: RunRow[] }>()
 const BADGE = { live: 'success', waiting: 'warning', stop: 'error', done: 'neutral', here: 'primary', off: 'neutral' } as const
 </script>
@@ -23,6 +26,7 @@ const BADGE = { live: 'success', waiting: 'warning', stop: 'error', done: 'neutr
             <span v-if="run.host" class="run-host">{{ run.host }}</span>
             <span v-if="run.station" class="run-station">{{ run.station }}</span>
           </span>
+          <span v-if="run.space" class="run-space" data-testid="run-space" :data-hold="run.space.state">{{ holdSentence(run.space) }}</span>
         </span>
         <LineLamps class="run-line" :unit-state="run.unitState" :live="run.state === 'running'" />
         <UBadge

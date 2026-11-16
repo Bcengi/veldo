@@ -23,6 +23,24 @@ describe('runRows', () => {
   })
 })
 
+describe('runs and space (VELDO-0319)', () => {
+  it('gives a run the hold its dispatch carries, and no other run one', () => {
+    const workers = read({
+      dispatch: [
+        item('dispatch:dispatch/A/1', 'dispatch', { state: 'running', contract: { unit: 'A' } }),
+        item('dispatch:dispatch/B/1', 'dispatch', { state: 'running', contract: { unit: 'B' } }),
+      ],
+    })
+    const hold = { id: 'space:hold:h', version: 1, state: 'advised' as const, pool: 'main', scope: { type: 'project' as const, id: 'p' },
+      need: 4, free: 10, held: 3, floor: 5, source: 'declared', run: { dispatch: 'dispatch/B/1', unit: 'B', station: 'build' } }
+    const pools = { pools: [{ name: 'main', waiting: [], advised: [hold] }] } as unknown as Parameters<typeof runRows>[2]
+    const rows = runRows(workers, null, pools)
+    expect(rows.find((r) => r.unit === 'B')!.space).toEqual(hold)
+    expect(rows.find((r) => r.unit === 'A')!.space).toBeNull()
+    expect(runRows(workers, null).every((r) => r.space === null)).toBe(true)
+  })
+})
+
 describe('runsSummary', () => {
   const row = (dispatch: string, project: string, host: string): RunRow => ({
     dispatch, unit: dispatch, station: '', project, state: 'running', host, platform: '', unitState: null,

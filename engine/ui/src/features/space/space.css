@@ -1,0 +1,131 @@
+/* VELDO-0319: the Space screen. Tokens only (tokens.css); panels, cards, tables and tags are the factory
+   screens' (styles/factory.css). */
+@layer components {
+  .space-num {
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .factory-table th.space-num {
+    text-align: end;
+  }
+  .space-level-1 > :first-child {
+    padding-inline-start: var(--space-6);
+  }
+  .space-level-2 > :first-child {
+    padding-inline-start: calc(var(--space-6) * 2);
+  }
+  .space-level-0 > td {
+    font-weight: 650;
+  }
+  .space-total > td,
+  .space-total > th {
+    border-top: 2px solid var(--rule-strong);
+    border-bottom: 0;
+    font-weight: 650;
+  }
+  .space-detail {
+    display: block;
+    color: var(--ink-muted);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+  .space-tree {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+  .space-tree-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-1) var(--space-3);
+    align-items: baseline;
+    padding-block: var(--space-1);
+    border-bottom: 1px solid var(--rule);
+  }
+  .space-tree-row.space-level-0 {
+    font-weight: 650;
+  }
+  .space-tree-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .space-numbers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2) var(--space-3);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+  @media (min-width: 768px) {
+    .space-numbers {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .space-numbers div {
+    min-width: 0;
+  }
+  .space-numbers dt {
+    color: var(--ink-muted);
+    font-size: var(--text-xs);
+  }
+  .space-numbers dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .space-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+  .space-path {
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+  .space-sub {
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+  .space-note {
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+  .space-request {
+    border-inline-start: 3px solid var(--amber);
+  }
+  .space-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 600;
+    color: var(--accent-text, var(--accent));
+    text-decoration: underline;
+  }
+  .space-form {
+    display: grid;
+    gap: var(--space-3);
+    align-items: end;
+  }
+  @media (min-width: 768px) {
+    .space-form {
+      grid-template-columns: minmax(0, 320px) auto;
+      justify-content: start;
+    }
+  }
+  .run-space {
+    display: block;
+    color: var(--amber-text);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+}

@@ -173,6 +173,9 @@ SPACE_SCHEMA = 'veldo.api_space/v1'
 # as pending removal.
 SPACE_LIVE = ('declared', 'present', 'due', 'deferred', 'removing', 'kept')
 SPACE_PENDING = ('due', 'deferred')
+# The states in which a worktree takes the owner's Abandon (control_space.SIGNALLED), and its event.
+SPACE_ABANDONED_FROM = ('present', 'kept', 'deferred')
+SPACE_ABANDON_EVENT = 'worktree_abandoned'
 # The holds whose promise is counted (control_space_admission.COUNTED), and those the screen lists.
 SPACE_COUNTED = ('admitted', 'advised')
 SPACE_LISTED = ('waiting', 'advised')
@@ -489,13 +492,22 @@ def _sum(rows):
 
 def space_usage(items):
     """Bytes and item counts by scope, then ticket, then kind (design 6.6 and 10), over every item that is
-    still there. An item never measured counts as an item and adds no bytes; `unmeasured` says how many."""
-    cells = {}
+    still there. An item never measured counts as an item and adds no bytes; `unmeasured` says how many.
+    `worktrees` lists each worktree the owner's Abandon can be sent for (design 6.6: worktree abandoned,
+    for one worktree), with the version a command names and whether it holds the owner's Keep."""
+    cells, worktrees = {}, []
     for item in items:
         data = item['data']
         if data.get('state') not in SPACE_LIVE:
             continue
         owner, size = _mapping(data.get('owner')), _mapping(data.get('size'))
+        if (data.get('kind') == 'worktree' and data.get('state') in SPACE_ABANDONED_FROM
+                and SPACE_ABANDON_EVENT in (_mapping(data.get('ends_on')).get('events') or ())):
+            worktrees.append({'id': item['id'], 'version': item['version'], 'state': data['state'],
+                              'owner': _owner_view(owner), 'locator': space_locator('worktree', data.get('locator')),
+                              'branch': data.get('branch'),
+                              'bytes': size.get('bytes') if type(size.get('bytes')) is int else None,
+                              'owner_keep': bool(data.get('owner_keep'))})
         key = (space_scope_key(owner.get('scope')), owner.get('ticket') if isinstance(owner.get('ticket'), str) else None,
                str(data.get('kind')))
         cell = cells.setdefault(key, {'bytes': 0, 'items': 0, 'unmeasured': 0, 'measured_at': set()})
@@ -517,7 +529,9 @@ def space_usage(items):
                      if key[0] == scope and key[1] == ticket]
             tickets.append(dict(_sum(kinds), ticket=ticket, kinds=kinds))
         scopes.append(dict(_sum(tickets), scope={'type': scope[0], 'id': scope[1]}, tickets=tickets))
-    return {'scopes': scopes, 'total': _sum(scopes)}
+    worktrees.sort(key=lambda row: (order[row['owner']['scope']['type']], row['owner']['scope']['id'] or '',
+                                    row['owner']['ticket'] or '', row['locator'], row['id']))
+    return {'scopes': scopes, 'total': _sum(scopes), 'worktrees': worktrees}
 
 
 def space_pending(items, groups):

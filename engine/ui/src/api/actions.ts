@@ -10,6 +10,10 @@ export const ACTION_ROUTES = {
   owner_priority: 'backlog.reprioritize',
   /** The owner's cap of one account's concurrent runs (control_accounts.cap). */
   worker_cap: 'workers.cap',
+  /** The owner's Reconcile of the space ledger, for one project or all (VELDO-0315, through VELDO-0319's screen). */
+  space_reconcile: 'space.reconcile',
+  /** The owner's Abandon of one worktree: worktree abandoned for that item (VELDO-0312). */
+  worktree_abandon: 'space.abandon',
 } as const
 
 export type ActionResult<T> = { sent: true; answer: T } | { sent: false; route: string }
@@ -37,4 +41,27 @@ export function reprioritize(item: string, itemVersion: number, rank: number, co
 /** Set one account's run concurrency (1 to 16) at the version shown, by the owner's own command. */
 export function setCap(account: string, accountVersion: number, concurrency: number, contractRoute: string | null = null) {
   return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })
+}
+
+/** What the API answers an accepted Abandon with: the item's state now, what was removed, what was deferred and
+ * the worktrees that stay until the owner's Discard, which saves first. */
+export interface AbandonAnswer {
+  outcome: string
+  item?: string
+  version?: number | null
+  state?: string | null
+  removed?: string[]
+  deferred?: { item: string; deferral: string | null }[]
+  discard_required?: string[]
+  api_request_id: string
+}
+
+/** Run a reconcile of the space ledger now, for one project or, with null, for all (the owner's signed command). */
+export function reconcileSpace(project: string | null, contractRoute: string | null = null) {
+  return send<{ outcome: string; api_request_id: string }>(contractRoute ?? ACTION_ROUTES.space_reconcile, { project })
+}
+
+/** Abandon one worktree: the item at the version shown (the owner's signed command). It removes no unique work. */
+export function abandonWorktree(item: string, version: number, contractRoute: string | null = null) {
+  return send<AbandonAnswer>(contractRoute ?? ACTION_ROUTES.worktree_abandon, { item, version })
 }

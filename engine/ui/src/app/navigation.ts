@@ -50,6 +50,8 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
     { id: 'backlog', label: 'Backlog', to: { name: 'backlog' }, matches: ['backlog'], icon: 'decisions', glyph: 'i-lucide-list-todo', phone: false, group: 'factory' },
     { id: 'workers', label: 'Workers', to: { name: 'workers' }, matches: ['workers'], icon: 'runs', glyph: 'i-lucide-cpu', phone: false, group: 'factory' },
     { id: 'proof', label: 'Gate and review', to: { name: 'proof' }, matches: ['proof'], icon: 'check', glyph: 'i-lucide-shield-check', phone: false, group: 'factory' },
+    // VELDO-0319: the space ledger's screen, in the factory group (design 10).
+    { id: 'space', label: 'Space', to: { name: 'space' }, matches: ['space'], icon: 'overview', glyph: 'i-lucide-hard-drive', phone: false, group: 'factory' },
     { id: 'usage', label: 'Usage', to: { name: 'usage' }, matches: ['usage'], icon: 'refresh', glyph: 'i-lucide-chart-column', phone: false, group: 'factory' },
     { id: 'configuration', label: 'Configuration', to: { name: 'configuration' }, matches: ['configuration'], icon: 'key', glyph: 'i-lucide-settings', phone: false, group: 'setup' },
     { id: 'catalog', label: 'MCP catalog', to: { name: 'catalog' }, matches: ['catalog'], icon: 'search', glyph: 'i-lucide-library', phone: false, group: 'setup' },

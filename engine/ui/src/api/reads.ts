@@ -1,4 +1,5 @@
 import { request } from './client'
+import type { PoolsAnswer, PendingAnswer, RemovedAnswer, UsageAnswer } from '@/features/space/space'
 import type { ReadAnswer } from './types'
 
 export const readDecisions = (signal?: AbortSignal) => request<ReadAnswer>('reads.decisions', { signal })
@@ -43,3 +44,13 @@ export interface IdentityMeta {
 /** The repository records and the Git identities. */
 export const readRepositories = (signal?: AbortSignal) =>
   request<ReadAnswer & { identities: IdentityMeta[] }>('repositories.read', { signal })
+
+// VELDO-0319: the four reads of the Space screen, each one view of the space ledger's records.
+/** Each pool with its floor and what is held on it, and the waiting and the advised runs with their numbers. */
+export const readSpacePools = (signal?: AbortSignal) => request<PoolsAnswer>('space.pools', { signal })
+/** Bytes and item counts by project, plain repository or no project, then ticket, then kind; the worktrees. */
+export const readSpaceUsage = (signal?: AbortSignal) => request<UsageAnswer>('space.usage', { signal })
+/** Every due and deferred item with its reason, its retry events and its decision request. */
+export const readSpacePending = (signal?: AbortSignal) => request<PendingAnswer>('space.pending', { signal })
+/** Every removal, newest first, with its event, size and the pool's free space before and after. */
+export const readSpaceRemoved = (signal?: AbortSignal) => request<RemovedAnswer>('space.removed', { signal })

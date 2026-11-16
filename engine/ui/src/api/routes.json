@@ -39,6 +39,11 @@
     "workers.stop": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/stop", "required": ["dispatch", "dispatch_version"], "optional": []},
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},
     "space.abandon": {"method": "POST", "path": "/api/v1/domains/{domain}/space/abandon", "required": ["item", "version"], "optional": []},
+    "space.reconcile": {"method": "POST", "path": "/api/v1/domains/{domain}/space/reconcile", "required": ["project"], "optional": []},
+    "space.pools": {"method": "GET", "path": "/api/v1/domains/{domain}/space/pools", "required": [], "optional": []},
+    "space.usage": {"method": "GET", "path": "/api/v1/domains/{domain}/space/usage", "required": [], "optional": []},
+    "space.pending": {"method": "GET", "path": "/api/v1/domains/{domain}/space/pending", "required": [], "optional": []},
+    "space.removed": {"method": "GET", "path": "/api/v1/domains/{domain}/space/removed", "required": [], "optional": []},
     "events.read": {"method": "GET", "path": "/api/v1/domains/{domain}/events", "required": [], "optional": ["after"]},
     "events.stream": {"method": "GET", "path": "/api/v1/domains/{domain}/events/stream", "required": [], "optional": ["after"]}
   }

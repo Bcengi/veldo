@@ -15,6 +15,7 @@ export const ICONS = [
   'i-lucide-cpu',
   'i-lucide-shield-check',
   'i-lucide-chart-column',
+  'i-lucide-hard-drive',
   'i-lucide-settings',
   'i-lucide-library',
   'i-lucide-git-branch',

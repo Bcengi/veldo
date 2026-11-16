@@ -1,4 +1,5 @@
 import type { Item, ReadAnswer } from '@/api/types'
+import { runHolds, type PoolsAnswer, type SpaceHold } from '@/features/space/space'
 
 /** One worker run as the runs list shows it, from a dispatch record (control_dispatch). */
 export interface RunRow {
@@ -11,6 +12,9 @@ export interface RunRow {
   platform: string
   /** The unit's own state (execution_unit), for the station strip, or null when not readable. */
   unitState: string | null
+  /** VELDO-0319: the run's hold when it would have waited for space (report mode: it was started on advice),
+   * with need, free, held and floor as the ledger recorded them; null for every other run. */
+  space?: SpaceHold | null
 }
 
 type Json = Record<string, unknown>
@@ -40,7 +44,7 @@ export function unitStateList(work: ReadAnswer | null): string[] | null {
   return (work.items.execution_unit ?? []).map((item) => str((item.data as Json).state)).filter(Boolean)
 }
 
-export function runRow(item: Item, units: Map<string, string>): RunRow {
+export function runRow(item: Item, units: Map<string, string>, holds: Map<string, SpaceHold> = new Map()): RunRow {
   const d = item.data as Json
   const contract = obj(d.contract)
   const reservation = obj(contract.reservation)
@@ -58,14 +62,16 @@ export function runRow(item: Item, units: Map<string, string>): RunRow {
     host: str(process.host),
     platform: str(process.platform),
     unitState: units.get(unit) ?? null,
+    space: holds.get(dispatch) ?? null,
   }
 }
 
 /** The runs list: live runs first, then by unit. */
-export function runRows(workers: ReadAnswer, work: ReadAnswer | null): RunRow[] {
+export function runRows(workers: ReadAnswer, work: ReadAnswer | null, pools: PoolsAnswer | null = null): RunRow[] {
   const units = unitStates(work)
+  const holds = runHolds(pools).byDispatch
   return (workers.items.dispatch ?? [])
-    .map((item) => runRow(item, units))
+    .map((item) => runRow(item, units, holds))
     .sort((a, b) => (ORDER[a.state] ?? 9) - (ORDER[b.state] ?? 9) || a.unit.localeCompare(b.unit) || a.dispatch.localeCompare(b.dispatch))
 }
 
