@@ -1,0 +1,4 @@
+--- a/.veldo/control_space_signal.py
++++ b/.veldo/control_space_signal.py
+@@ -291 +290,0 @@
+-    ledger = getattr(ledger, 'removal_ledger', ledger)

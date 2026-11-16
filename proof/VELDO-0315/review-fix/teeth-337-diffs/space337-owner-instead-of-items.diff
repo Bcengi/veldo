@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1307 +1307 @@
+-                ledger, 'verdict_recorded', subject, emitter=emitter, **given)
++                ledger, 'verdict_recorded', {'run': dispatch}, emitter=emitter, **given)

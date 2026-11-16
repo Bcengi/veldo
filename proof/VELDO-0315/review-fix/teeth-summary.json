@@ -1,0 +1,67 @@
+{
+  "commit": "361211d50f448a5d83bc3fe5a6cd1e4a1761cb7a",
+  "results": [
+    {
+      "finding": 315,
+      "log": "teeth-315-verified.txt",
+      "status": "passed",
+      "registered": 22,
+      "executed": 22,
+      "rejected": 22,
+      "reused": 0,
+      "input_digest": "eddb18a27c2b8c23c0c345846dfc8d52c0979cca72d539af3f0a9fa264534136",
+      "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+      "elapsed": 493.66922834003344,
+      "worker_invocations": 32,
+      "surviving_workers": 0
+    },
+    {
+      "finding": 323,
+      "log": "teeth-323-verified.txt",
+      "status": "passed",
+      "registered": 16,
+      "executed": 16,
+      "rejected": 16,
+      "reused": 0,
+      "input_digest": "eddb18a27c2b8c23c0c345846dfc8d52c0979cca72d539af3f0a9fa264534136",
+      "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+      "elapsed": 118.32260194979608,
+      "worker_invocations": 26,
+      "surviving_workers": 0
+    },
+    {
+      "finding": 337,
+      "log": "teeth-337-verified.txt",
+      "status": "passed",
+      "registered": 19,
+      "executed": 19,
+      "rejected": 19,
+      "reused": 0,
+      "input_digest": "eddb18a27c2b8c23c0c345846dfc8d52c0979cca72d539af3f0a9fa264534136",
+      "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+      "elapsed": 55.887139476370066,
+      "worker_invocations": 35,
+      "surviving_workers": 0
+    }
+  ],
+  "order": [
+    315,
+    323,
+    337
+  ],
+  "worktree_edits_during_final_sequence": false,
+  "earlier_attempts": [
+    {
+      "log": "teeth-315.txt",
+      "result": "invalid baseline: long worker output path exceeded Unix socket pathname limit"
+    },
+    {
+      "log": "teeth-315-final.txt",
+      "result": "20 of 22 killed; corrected keep-verification branch anchor and strengthened lock row"
+    },
+    {
+      "log": "teeth-315-focused.txt",
+      "result": "both corrected mutations killed before final full sequence"
+    }
+  ]
+}

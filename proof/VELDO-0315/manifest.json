@@ -1,248 +1,250 @@
 {
- "schema": "veldo.proof/v1",
- "spec_id": "VELDO-0315",
- "commit": "8c7103f1b1127b5b923a7ca5ebad7f43acb3c92c",
- "tree": "6677e36cc125080c009cd072961797252a2e160c",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-16T00:30:32.559509+00:00",
- "criteria": [
-  {
-   "id": "AC1",
-   "status": "pending",
-   "evidence": [
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0315",
+  "commit": "361211d50f448a5d83bc3fe5a6cd1e4a1761cb7a",
+  "tree": "74c47855d181dbdce2937b26b742d0e1a68867df",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-16T03:48:52.023836+00:00",
+  "criteria": [
     {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac1/no-owner, ac1/table, ac1/private-forms, ac1/worker-clone. Targeted rows green; criterion pending lead gate."
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
     },
     {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
     },
     {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
+    },
+    {
+      "id": "AC8",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0315/review-fix/teeth-315-verified.txt",
+          "sha256": "6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+          "detail": "Selected teeth stage; criterion remains pending aggregate verification and independent review."
+        }
+      ]
     }
-   ]
-  },
-  {
-   "id": "AC2",
-   "status": "pending",
-   "evidence": [
+  ],
+  "checks": [
     {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac2/marked-not-gone, ac2/completion, ac2/keep-failure. Targeted rows green; criterion pending lead gate."
+      "name": "unit",
+      "status": "not_run",
+      "reason": "No aggregate unit run; selected selftests are diagnostic only."
     },
     {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
+      "name": "integration",
+      "status": "not_run",
+      "reason": "No independent acceptance integration result; partial fixture regressions recorded separately."
     },
     {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
+      "name": "targeted regressions",
+      "status": "failed",
+      "detail": "19 of 22 suites green. The three failing suites have no failing row absent at unchanged integration base. Earlier API restart failures are retained; final API 71/0."
+    },
+    {
+      "name": "falsifiers",
+      "status": "passed",
+      "detail": "Final selected teeth: 315 22/22, 323 16/16, 337 19/19 rejected; zero reuse and no surviving workers."
+    },
+    {
+      "name": "fast checks",
+      "status": "passed",
+      "detail": "Validation, template sync, generated files, lint, diff and protected-path comparison; see timestamps and limits in README."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Full gate, policy checking and landing belong to the lead."
     }
-   ]
-  },
-  {
-   "id": "AC3",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac3/startup. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
-  },
-  {
-   "id": "AC4",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac4/no-schedule. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
-  },
-  {
-   "id": "AC5",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac5/live-carrier, ac5/unread-path. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
-  },
-  {
-   "id": "AC6",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac6/due, ac6/concurrent. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
-  },
-  {
-   "id": "AC7",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac7/bootstrap. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
-  },
-  {
-   "id": "AC8",
-   "status": "pending",
-   "evidence": [
-    {
-     "type": "unit",
-     "ref": "scripts/suites/156_veldo_0315_reconcile.py",
-     "sha256": "c37899602f46a79fe3d33bb29ea7609ac3f1a7fc5c1da182bb0acd32127da91a",
-     "detail": "ac8/retry-events. Targeted rows green; criterion pending lead gate."
-    },
-    {
-     "type": "integration",
-     "ref": "proof/VELDO-0315/targeted-checks.json",
-     "sha256": "083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef",
-     "detail": "Temporary Git and SQLite fixtures; selected regression summaries and baseline installation failure."
-    },
-    {
-     "type": "falsifier",
-     "ref": "proof/VELDO-0315/falsifiers.json",
-     "sha256": "85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-     "detail": "Registered mutations applied once per case in the final targeted run; designated rows red. Limits in README.md."
-    }
-   ]
+  ],
+  "assumptions": [
+    "All acceptance criteria remain pending the lead gate and independent review.",
+    "See README for fixture boundaries and prior failed attempts.",
+    "No worktree edits occurred during the final teeth sequence."
+  ],
+  "rollback": "Revert the implementation; retained refs, snapshots and work remain.",
+  "artifacts": {
+    "review-fix/132_veldo_0297_space_ledger.txt": "sha256:0810e23343774c7e34ec5c3467f6e160fe27e0431775dfc8e6f34cc21704a987",
+    "review-fix/133_veldo_0326_space_principals.txt": "sha256:ac299e5b9da57cae9b3cac5599bf18f29a97d7ba4b7c1d2ed9ce2d928636bdf0",
+    "review-fix/135_veldo_0298_space_kinds.txt": "sha256:1cfd05ae642a00cd32ac66e98b388ff7c75997b750757afb59bbe0a1901c661c",
+    "review-fix/139_veldo_0301_space_signal.txt": "sha256:c78d2749afb40011e949fd3e6db0fa58da02b2cad4fde06d725762bc4c3ddc20",
+    "review-fix/142_veldo_0303_space_paths.txt": "sha256:96868769f1818cd0392eb67ff21c47108208be71ce2246f86641b803b5a6323f",
+    "review-fix/143_veldo_0305_space_census.txt": "sha256:0ecf4eb46fa245de58370887480336e3d25e292e68047265021483f55eb93c2f",
+    "review-fix/144_veldo_0306_space_docker.txt": "sha256:00b70683d018341d88588fbfbaf993da8fede780736843c1aa0061048a375c26",
+    "review-fix/145_veldo_0307_space_docker_ownership.txt": "sha256:f7fc5a2b14d3f6ac99a64157d899d9fb39db37b5d296daf652671b3ec88f8fd8",
+    "review-fix/146_veldo_0308_run_finished.txt": "sha256:0a812b3fef47965a5f4faa816c692a21b8dbf19a81d9afb61368c7fdb35b4870",
+    "review-fix/147_veldo_0310_landed_contained.txt": "sha256:e35373ba86e21c143b6f58f27d6e46c46d97f09be29217b2fa9ef95b502f4815",
+    "review-fix/148_veldo_0311_git_hooks.txt": "sha256:ac328f7ce4b3d8bfd5cccd619ec09b507573e2ec448dc1403de58dab824b7e7a",
+    "review-fix/149_veldo_0312_ticket_ended.txt": "sha256:68dcc90924f7cf29203568bc6bf0bdb11bd26911e1e033553f0043270cbd6956",
+    "review-fix/151_veldo_0313_space_run-final.txt": "sha256:244c17655f94a577f2bebc4a2e807258eb8875000c8c728cc87c292868cdb338",
+    "review-fix/153_veldo_0323_hook_events.txt": "sha256:633dc422d9f53ed9a2dcf8bac58380b72194eecb13bad143e219bce55ee712e3",
+    "review-fix/153_veldo_0337_verdict_recorded-final.txt": "sha256:708009ade08b6721f90a278d04cba69f489787f40f743e0ccd90acfc79b4eb2c",
+    "review-fix/156_veldo_0315_reconcile-final.txt": "sha256:64d7e7bf201f3dd0bb0007e1ada4d1a923d3e20a02a32aa3d437c38a2769fbf8",
+    "review-fix/59_veldo_0031_review.txt": "sha256:c3721ff3921e4bd7134f3b26e6d6019d5a6bf57ffd744e83910b7a95468183c8",
+    "review-fix/62_veldo_0039_dispatch.txt": "sha256:aba3ef34bf90bce4b1bc6ac35f77ec8e5fd194cb30489a1d572214b89a20656f",
+    "review-fix/63_veldo_0049_floor.txt": "sha256:e32ba848f10921a15275f7a2c0593b95bfc1c9638fac0df115fd68189e86850f",
+    "review-fix/66_veldo_0047_authority.txt": "sha256:7287de3f32afe9879592faf4f6b97816884ae96790f4383d7368e2a040588372",
+    "review-fix/71_veldo_0130_api-final-green.txt": "sha256:85b538bf7cef300bb53c00c4237739e5e43a8707a0ca4a36d94ba7a0eedc7abf",
+    "review-fix/71_veldo_0130_api-final.txt": "sha256:bd690c3e91aacf42ecc669b3d5ab72dc366480a7ab98fac0590fca97b80cbcd9",
+    "review-fix/82_veldo_0129_worker_wiring.txt": "sha256:5ebf4ee383e332f853620df1adc5e9af08be52bb9115d527a2779ce0e5568352",
+    "review-fix/api-baseline.txt": "sha256:2fc85c486a2c5a59d8b2957297e1b22a02cb3fbc1b477831ee2dd1b79285846a",
+    "review-fix/carry-over-README.md": "sha256:e719c2b2e3a38038c70b06f3c3c62acf9eb64f97bcec2837a162a49f4f3a608e",
+    "review-fix/carry-over-manifest.json": "sha256:2272c1be25d2f4312ab6b7746db11dded4eb1898c9a89b8fd5d1c6766479c85e",
+    "review-fix/census-baseline.txt": "sha256:2b52632da92e00a5cd38db96a04feb466d4a4e8afb7f0d6c4ac97c5450b81797",
+    "review-fix/checks.json": "sha256:2877691361145da7d9b31772532ab72f27899a2d2eadbb2061722c0d60306f4e",
+    "review-fix/diff.txt": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "review-fix/docker-baseline.txt": "sha256:d57e70e84d2127b666a71c9690c7c246fa028ddcf4092d3c6e6d716c40282bb3",
+    "review-fix/generated.txt": "sha256:f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
+    "review-fix/lint.txt": "sha256:07b740a280d5f7abe8c728d9210d16f19c44462738e084117136155df708776d",
+    "review-fix/race-before.txt": "sha256:4c400c2600bfd641dc21aa5e218e1f0e9b3184043dbd22c10db884dae4bc0461",
+    "review-fix/run-baseline.txt": "sha256:9b8f8ddb90194e56bde1f55d9123892ab6db0a18396ceff4a276639db322659b",
+    "review-fix/sources.json": "sha256:dda0ce040a36755cc5dc1a3c7e99c60a8d1cc3d6628ccfba8b66f4e9ebbe40f2",
+    "review-fix/targeted-results.json": "sha256:eda690cf6ad650317a6a41dfeec96b4c752cd3977d7ae969a38ab5412a86e51d",
+    "review-fix/teeth-315-diffs/space315-adopt-unowned.diff": "sha256:86a5a73fcdbd622abe2174f2b2fd4c72d0f05a24eca783b3dfff894463de5860",
+    "review-fix/teeth-315-diffs/space315-background-start.diff": "sha256:0d84b43d8e58d79946cea3fe15c9b36877ec9c9e1ed2140e617683b266ccc373",
+    "review-fix/teeth-315-diffs/space315-batch-as-scratch.diff": "sha256:1e4227c1a58b3cd28e20458a15024ef2c88d9b91aa50e522117c07c2a5f34404",
+    "review-fix/teeth-315-diffs/space315-cli-no-service.diff": "sha256:a21164591422cebd728df7df37705c77fe5d96f26eec678a20b4afa6aa951bd5",
+    "review-fix/teeth-315-diffs/space315-complete-without-keep.diff": "sha256:4db3c0a6e25689416caeb24769ea638a1183369a99e0ac289c8ef35544849075",
+    "review-fix/teeth-315-diffs/space315-docker-no-event-retry.diff": "sha256:335bb8079c5985b985a8df6ff24e4ba0be96c8f6c68981195531ade065410dd6",
+    "review-fix/teeth-315-diffs/space315-drop-ending.diff": "sha256:69578a3d68033a81c69924f7cd6e5419ff3961514454a5193a1dde04b7035f8c",
+    "review-fix/teeth-315-diffs/space315-filter-hides-children.diff": "sha256:7da8d2603a377e50c97f6b7db299540fce085e6f093c26f8193ab976cfa95780",
+    "review-fix/teeth-315-diffs/space315-ignore-carrier.diff": "sha256:7a02f195e935ce1d00bbae06fefc1e854b727ac34958ce9b9524fc2b3b9c7e2f",
+    "review-fix/teeth-315-diffs/space315-ignore-due.diff": "sha256:8a814d56403126b7ccbe60d61c6ca287fd573359746deb02b22df3e5c642da54",
+    "review-fix/teeth-315-diffs/space315-locator-alone.diff": "sha256:099d50d0660a47ecb36ded3235f7e1c98a4c6485e06c16e600702a634a8545f6",
+    "review-fix/teeth-315-diffs/space315-no-bootstrap.diff": "sha256:3c43045add1b0a80513f12ee1e2dd95b33faa4d9dd9544a3eea56db1cc66f610",
+    "review-fix/teeth-315-diffs/space315-no-received-hook.diff": "sha256:2ffaeb6efb59c4fbf9149f1a87776511bab08c4f677a4a7f33b3e0f86855dc17",
+    "review-fix/teeth-315-diffs/space315-no-worker-start.diff": "sha256:7a604761800981ebd5a8ad22234845ba7677f5f3c5d515acb0f999bea5fc2db2",
+    "review-fix/teeth-315-diffs/space315-no-worker-stop.diff": "sha256:ba59d4fd34f67e336cdb5ad76738165816ee5e3542fbdc345d2babaf0255c068",
+    "review-fix/teeth-315-diffs/space315-periodic-call.diff": "sha256:7c865dbc4d5ead7104bd935836292dbd1e26f4f6fbf3450cceaee163e4532cd5",
+    "review-fix/teeth-315-diffs/space315-reconcile-unlocked.diff": "sha256:5e83bb08916a0e9e067bd80099aa420d11f58c9cd98e858f053718d5f4c03ff0",
+    "review-fix/teeth-315-diffs/space315-remove-reports.diff": "sha256:332d0d6dfde8c2c2d231d6ce6306f7e1f2d0907872603bca513f8718d9f30a86",
+    "review-fix/teeth-315-diffs/space315-signal-unlocked.diff": "sha256:5dde5aa97bba95fb57c547202cdb103e80bc886d15e806a289e3d909ad459839",
+    "review-fix/teeth-315-diffs/space315-stale-read.diff": "sha256:5c126ea7a3e52a68220b5ac6f75a7f34a7c4f76a7604c412e462defbea08be63",
+    "review-fix/teeth-315-diffs/space315-stop-retries.diff": "sha256:d497c1713e1d1e38a8ef3d21c638825bfdf124e04316f113911458b894f63e18",
+    "review-fix/teeth-315-diffs/space315-unread-is-missing.diff": "sha256:8cc4a814aca4cc5c3de4e6e97d96d7f4d7c8ca0112235b9e96e14a9287bf617d",
+    "review-fix/teeth-315-final.txt": "sha256:7a8506013a2918b590527e48aa0e550b3109affebcd0308dc8ea7b1e316fcac1",
+    "review-fix/teeth-315-focused.txt": "sha256:da54062e936522a77ac76b653a9ce08870fed980a604cb510e9f1b719d835975",
+    "review-fix/teeth-315-verified.txt": "sha256:6973f07e60c7e65199388633e7b818858d75867058fe8cc2bcc57642da5bbda9",
+    "review-fix/teeth-315.txt": "sha256:ed8cbaa0551514522a23a144a1b72220778e6eb5aa1046815630cfad3082739b",
+    "review-fix/teeth-323-diffs/space323-api-descriptor-kept.diff": "sha256:e98c003327512dba558c690460b379c2e2ef01e15cff232c1629f77e51cb1792",
+    "review-fix/teeth-323-diffs/space323-channel-descriptor-kept.diff": "sha256:c4a9f98475833cd3006a376932e8ce32e5e89dba521a31f1f114136bc362c379",
+    "review-fix/teeth-323-diffs/space323-client-exit-not-watched.diff": "sha256:56e596a6aa12a6a385a3f2e0a83d6fd60a1070bcde47c5d439f11ae29940b662",
+    "review-fix/teeth-323-diffs/space323-consumption-not-recorded.diff": "sha256:d352ee5168ab83324a4e63b06c9e461a7d2eed4f18d53753ebe243973bda101e",
+    "review-fix/teeth-323-diffs/space323-keeper-skipped.diff": "sha256:9e426e4dd1c6090c431ac1579eef9177c0311965b1c6b18c4acb08bea192f1d5",
+    "review-fix/teeth-323-diffs/space323-live-session-end-dropped.diff": "sha256:dd1c4f9ced74af582bc2a012c04bc4da2cde3598ffbb4b3453cd847cb3434ef8",
+    "review-fix/teeth-323-diffs/space323-newest-first.diff": "sha256:7b1c88a4eb8f2d65f9c4373ae70fa3343ab4c331c0bb642640123e15dfdcd72d",
+    "review-fix/teeth-323-diffs/space323-no-project-sessions-skipped.diff": "sha256:8660d57850c8b3aaaa31cfe1900941961c908553d845a02c6a3c9b9bd8d264f0",
+    "review-fix/teeth-323-diffs/space323-no-read-under-lock.diff": "sha256:c1aa9a0960ac027a16f451123cbb4533e2390da2860c9b6cb0a8019540a75f3d",
+    "review-fix/teeth-323-diffs/space323-no-worker-lock.diff": "sha256:8c69dd2b807a04ed83d452b31c4abc89593b81094cf97f7a60dd7a4bad00d633",
+    "review-fix/teeth-323-diffs/space323-service-computes-containment.diff": "sha256:a1abc5deb68d74ac14514f76608a2d2d4753615de4e6165f6e6347b302841f19",
+    "review-fix/teeth-323-diffs/space323-service-descriptors-kept.diff": "sha256:248c287e40dd4fb749fcc3c4d7c883a04fde0bbd829634242445b73a50083f90",
+    "review-fix/teeth-323-diffs/space323-service-git-by-another-path.diff": "sha256:59521b87c6731b3846c154140549d1924a645ac6fe25eb241935159cfa406735",
+    "review-fix/teeth-323-diffs/space323-session-repository-deleted.diff": "sha256:804e30d53cceeabf61d09cffca359fcbacf170a40425a3e91b0a165d408137d9",
+    "review-fix/teeth-323-diffs/space323-uncollected-client-alive.diff": "sha256:a40c2839f0db396d2c57e9019791cebda211e440df6d112096a52b6c965f4387",
+    "review-fix/teeth-323-diffs/space323-waits-for-interval.diff": "sha256:9a2fa212f0e1ae1dd97d37fce31421b71ac0966e09c28edecf9197834f5989ba",
+    "review-fix/teeth-323-verified.txt": "sha256:e74495a89fe8a841bcc958345caa9d46a3aa901697866a8381c12640c6cbfe2d",
+    "review-fix/teeth-337-diffs/space337-adopt-accepts-ends.diff": "sha256:37e2205735acdff75bac59e19cd15e1cd433915c17b566d19befc78c373553e4",
+    "review-fix/teeth-337-diffs/space337-before-commit.diff": "sha256:9c8642c9e3933feedd3b28d9999ad68c4c3848933bec6967d429238dd2a55692",
+    "review-fix/teeth-337-diffs/space337-error-after-commit-raised.diff": "sha256:ac6a68ed37e485c557078ce57d25ba9b2246545f2bfd8270ffbe51e3e393db1e",
+    "review-fix/teeth-337-diffs/space337-evidence-removed-with-caches.diff": "sha256:4a36e77f0b9d963c0ffc29da7f961e105da975c2ebc9e9e39a9697c8ed313053",
+    "review-fix/teeth-337-diffs/space337-first-review-named.diff": "sha256:62a7e89e9ba61951c50ce91216dee16ddefd14deff04099ef3296d62a9ce6e2d",
+    "review-fix/teeth-337-diffs/space337-keep-skipped.diff": "sha256:1aed3e41ac26c2fb1b7fbd135de9f03bd1c0bace667753a0e72f28bc2416ae9e",
+    "review-fix/teeth-337-diffs/space337-lost-send-not-reconciled.diff": "sha256:a943fdf9dac188834e9f41acbfc8b2297c05d794a89d831e7a774a70a0f9364d",
+    "review-fix/teeth-337-diffs/space337-not-ending-item-named.diff": "sha256:acb391754bc197c1ad73b587f2d50dd63884f88087f43811fa710d07c5c70fc3",
+    "review-fix/teeth-337-diffs/space337-other-run-named.diff": "sha256:3c29a177d6afa1089c198cb460fd912331a630cdaa3a0a3a14ad96dbbf5a1c8c",
+    "review-fix/teeth-337-diffs/space337-owner-instead-of-items.diff": "sha256:7cad914f4dc3e6157674a93f3a5c5b8960b2589fe9ab2f7be3a17006dc8d8f51",
+    "review-fix/teeth-337-diffs/space337-owner-keep-named.diff": "sha256:04a36b11ab479edcd453a74b5d12ca24eaad4b51bc4c8021a47e2323e67ab451",
+    "review-fix/teeth-337-diffs/space337-receiver-emits-verdict.diff": "sha256:f087e4d93df770108f7a39cf9e42d5465923ba9d1e0be2180a39fc031f07e4f9",
+    "review-fix/teeth-337-diffs/space337-reconcile-foreign-scope.diff": "sha256:6d6503e02411390a399ff88f827a6d817a9c5996b91071f5fd80beca62de76f6",
+    "review-fix/teeth-337-diffs/space337-reconcile-not-at-start.diff": "sha256:06a033b2fd550c6ef8beba4e1932718dd83e287dbaeec2d7d5e7190c65e82e85",
+    "review-fix/teeth-337-diffs/space337-reconcile-sends-again.diff": "sha256:3730b29f90f9fc9d8df5836894cee09ab333da420237be927361e088393f03c3",
+    "review-fix/teeth-337-diffs/space337-review-kinds-end-at-run-finished.diff": "sha256:49c2d2b5e888e19408073ced9e7d1e5eca70d255993c7b99f9567ca5443ac572",
+    "review-fix/teeth-337-diffs/space337-run-finished-takes-review-folders.diff": "sha256:39d36e68e68bd31c0a51531ec0490849d7a537b455eaa70b278fc95a25d298bf",
+    "review-fix/teeth-337-diffs/space337-runtime-space-not-wired.diff": "sha256:4c0997bcc6dd889bb2821d4957aa38da6d4ab5e51193328cb40e959a0df1448c",
+    "review-fix/teeth-337-diffs/space337-service-omits-verdicts.diff": "sha256:57b2140458424982b207208bc8720329bab14b1b404cfe6bf72afc463c8a233e",
+    "review-fix/teeth-337-verified.txt": "sha256:e557088b4f6a38e0a00e7aa82205e184da87ecf72576bd72b2d253d2c579d3e9",
+    "review-fix/teeth-summary.json": "sha256:bb3841f02e5f8ab62bbe29422dd6a10abf4c16381cd0ea7400fd114c6150f220",
+    "review-fix/teeth-verified-status.jsonl": "sha256:0dd7de27d6cce42b83fe8aab0912762ca1bf455790e2a91ab1187e9d5c4d6a05",
+    "review-fix/template-sync.txt": "sha256:31f485c4f6c848349ff684a8e8bc7d641c0de5fb6cc39102447b161ef398f1a7",
+    "review-fix/validate.txt": "sha256:144f356a1bfe148bdfa2f0ad76f630c0fb8b71658422ddd8d5edf651f928ae8a",
+    "README.md": "sha256:42e7204cd2a075054dfd3a6a5197f802fc43bb2b2e91f2614afdc298acb68d9a"
   }
- ],
- "checks": [
-  {
-   "name": "unit",
-   "status": "passed",
-   "command": "python3 proof/VELDO-0315/run_falsifiers.py",
-   "detail": "16 targeted baseline rows green; no full-suite unit result claimed."
-  },
-  {
-   "name": "integration",
-   "status": "failed",
-   "detail": "Selected service regression 41/41 and Docker ownership 25/25. Installation 29/30, with the same unbound socket pathname failure reproduced at the starting revision."
-  },
-  {
-   "name": "falsifiers",
-   "status": "passed",
-   "detail": "12 of 12 designated rows red in disposable copies. Not a teeth stage."
-  },
-  {
-   "name": "fast checks",
-   "status": "passed",
-   "detail": "validate.py all, docs, template sync, generated files, lint, Git boundary, space boundary."
-  },
-  {
-   "name": "gate",
-   "status": "not_run",
-   "reason": "The lead runs ./scripts/verify.sh through the gate lock; heavy suites, teeth and policy checking were not run."
-  }
- ],
- "assumptions": [
-  "All criteria remain pending independent review and the lead gate.",
-  "No real engine or protected data was used by suite 156. Process tables, Docker reads and act prerequisites are fixture inputs.",
-  "The batch misclassification falsifier turns the row red, while the existing remover independently retains the repository.",
-  "VELDO-0323 startup integration remains with the lead; its worker was read but not copied.",
-  "Suite 86 captures were not changed or run."
- ],
- "rollback": "Revert the implementation. Retained refs, snapshots and work remain; rollback includes no data cleanup.",
- "artifacts": {
-  "README.md": "sha256:e719c2b2e3a38038c70b06f3c3c62acf9eb64f97bcec2837a162a49f4f3a608e",
-  "falsifier-cases.json": "sha256:c55f906a3cc5c1dcd8670e0a151664f6084248beab13ff8fb48c2986a1880794",
-  "falsifiers.json": "sha256:85c33d9d631e098235cbacc95c21f6e7c4ce3bfdd528c6e16b634e6b4497b1e3",
-  "fast-checks.json": "sha256:ab6cebe2d7e7f15ef21bcc04c1ba3f105acf39c8c85a1cb49d5fd827c709cb09",
-  "installation-comparison.json": "sha256:a48318b0001bbe485568e473e917c0fadb15d43061cd73e198deffc1dc5459f7",
-  "run_falsifiers.py": "sha256:1bd589d49c594178206b5cf4a8f954c7e034e20a52dd1ced5ccf3547ad1611ed",
-  "sources.json": "sha256:831c4824e77c28fcca0cd9bb8e43198c988534a4dc9ce1ae4a2c300384c019aa",
-  "targeted-checks.json": "sha256:083534207bb755a53ad96cc0aa419775a0d58d8aa5fc514691ed6e0a90b3c2ef"
- }
 }

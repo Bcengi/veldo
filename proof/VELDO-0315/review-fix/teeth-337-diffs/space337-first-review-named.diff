@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1292 +1292 @@
+-            review = next(one for one in record["reviews"] if one["assignment"] == assignment)
++            review = record["reviews"][0]

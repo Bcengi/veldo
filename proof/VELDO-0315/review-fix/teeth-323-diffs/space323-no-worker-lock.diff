@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -134 +134 @@
+-            fcntl.flock(lock, fcntl.LOCK_EX)
++            pass  # defect: a second service's child does not wait for the first

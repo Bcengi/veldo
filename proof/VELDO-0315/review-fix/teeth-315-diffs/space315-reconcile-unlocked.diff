@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -622 +622 @@
+-            with self.ledger.item_lock(identity):
++            with contextlib.nullcontext():

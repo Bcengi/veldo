@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -619,0 +620,2 @@
++            if record.get('owner') is None and os.path.isdir(record['locator'].get('path', '')):
++                __import__('shutil').rmtree(record['locator']['path'])

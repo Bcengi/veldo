@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_remove.py
++++ b/.veldo/control_space_remove.py
+@@ -352 +352 @@
+-        if own is not None and ('.git' in names or GIT_FOLDER <= names):
++        if False:  # defect: a session's scratch repository is deleted

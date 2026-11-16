@@ -1,0 +1,4 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1158 +1157,0 @@
+-            and 'verdict_recorded' in ((item.get('ends_on') or {}).get('events') or ())

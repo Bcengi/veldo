@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -118 +118 @@
+-            for one in [read] + list(self.watched) + list(self.held()):
++            for one in [read] + list(self.watched):  # defect: the service's descriptors stay open

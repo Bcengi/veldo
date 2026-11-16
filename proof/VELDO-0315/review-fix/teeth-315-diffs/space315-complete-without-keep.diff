@@ -1,0 +1,6 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -665,3 +664,0 @@
+-                            if record['kind'] in self.sp.KEEP_KINDS and not self.keep.verify(self.ledger, identity)['ok']:
+-                                self.defer(identity, record, 'keep verification failed')
+-                                continue

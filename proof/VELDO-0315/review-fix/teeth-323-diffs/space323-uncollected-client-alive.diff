@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_worker.py
++++ b/.veldo/control_space_worker.py
+@@ -89 +89 @@
+-        if state(base) != (b'Z', process['started']):
++        if True:  # defect: a client that ended and is not yet collected is treated as alive

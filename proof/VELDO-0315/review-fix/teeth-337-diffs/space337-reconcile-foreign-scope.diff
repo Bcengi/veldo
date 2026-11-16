@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1342,2 +1341,0 @@
+-            if record.get("domain") != self.domain or record.get("repository") != self.repository:
+-                continue

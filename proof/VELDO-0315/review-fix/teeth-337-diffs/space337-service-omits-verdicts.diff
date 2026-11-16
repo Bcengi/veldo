@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1724 +1724 @@
+-                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter, floors=floors)
++                    reconciler = SPACE_RECONCILE.Reconciler(space, docker=adapter)

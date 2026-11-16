@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -2379 +2379 @@
+-                self.space, 'run_finished', folders, 'receiver', clones=self.config.get('clones'),
++                self.space, 'verdict_recorded', folders, 'receiver', clones=self.config.get('clones'),

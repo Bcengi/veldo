@@ -1,0 +1,52 @@
+[
+ {
+  "check": "validate",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "exit": 0
+ },
+ {
+  "check": "template-sync",
+  "command": [
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "exit": 0
+ },
+ {
+  "check": "generated",
+  "command": [
+   "bash",
+   "scripts/check_generated.sh"
+  ],
+  "exit": 0
+ },
+ {
+  "check": "lint",
+  "command": [
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "exit": 0
+ },
+ {
+  "check": "diff",
+  "command": [
+   "git",
+   "diff",
+   "--check"
+  ],
+  "exit": 0
+ },
+ {
+  "check": "protected-paths",
+  "changed_protected_paths": [],
+  "exit": 0
+ }
+]

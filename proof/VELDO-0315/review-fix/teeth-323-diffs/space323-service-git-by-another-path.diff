@@ -1,0 +1,7 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -88 +88,3 @@
+-            self.startup_received = True
++            for _item in self.ledger.items().values():
++                if _item["kind"] == "branch":
++                    WORKER.SPOOL._commit(_item["locator"]["repository"], _item["locator"]["ref"])

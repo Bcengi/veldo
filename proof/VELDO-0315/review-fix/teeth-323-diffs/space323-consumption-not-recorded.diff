@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_worker.py
++++ b/.veldo/control_space_worker.py
+@@ -246 +246 @@
+-    return ledger.consumed(identity, result)
++    return {"ok": True}  # defect: never record consumption

@@ -1,0 +1,4 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2475,0 +2476 @@
++        self.space_reconcile()

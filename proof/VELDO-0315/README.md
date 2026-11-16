@@ -1,47 +1,68 @@
-# VELDO-0315 implementation evidence
+# VELDO-0315 review fixes
 
-This bundle records targeted checks, not a gate result or an independent review. All acceptance
-criteria remain pending the lead's gate and review. Run `./scripts/verify.sh` through the lead's
-gate lock. The full gate, heavy suites, teeth stage and policy checker were not run here.
+The implementation is committed at 361211d50f448a5d83bc3fe5a6cd1e4a1761cb7a, after carry-over commits d412260f and ba390ad9
+on integration base 9b5ca496. All six requested fixes are implemented. This bundle records
+partial regression runs and selected teeth stages. It is not an aggregate unit result, an
+independent review, or a landing decision. Every acceptance criterion remains pending the
+lead's full gate and review. No protected path changed. Policy checking and the full gate
+were not run.
 
-The implementation adopts from declared repositories and committed ownership records, compares both
-the locator and marked name, leaves live or unread carriers alone, restores changed marked work,
-verifies the keeper's refs and snapshot attempts, and retries due items through Signal and the
-existing removers. It bootstraps Service.space before dispatch and records raised ending events in
-synced retry records before the journal cursor advances. Reconcile has no timer. Existing act
-prerequisites remain in place.
+1. Service startup synchronously bootstraps, replays and reconciles, then starts the 0323
+   consumer. Shutdown stops and reaps its child. The real serve-order row checks both edges;
+   received-event recovery runs once after pending records drain.
+2. Reconciler.run invokes FloorAuthority.reconcile_verdicts before compare; Runtime no longer
+   invokes it at startup. The 0337 lost-send row uses Service.space_start and the on-demand
+   service method, verifies the lost verdict is sent, and checks repeat calls send nothing.
+3. Recovery and Signal use the same per-item filesystem lock. Recovery rereads the item under
+   that lock before acting. The stale-read row was red before the fix (race-before.txt), then
+   green. The cross-process row holds the lock over a marked folder and proves reconcile
+   cannot restore it before release, independently of Signal's nested lock.
+4. Docker subscribes before disk reconciliation, remains subscribed after a named startup
+   failure, and retries on the next event. On demand restores a missing stream. The startup
+   snapshot contributes to counts once.
+5. A removing worktree absent at both names and lacking a keep record must become deferred
+   with keep_failed. Its mutation removes the absent-item completion guard and turns the
+   designated row red.
+6. veldo space reconcile signs an owner command and sends it through the authority service.
+   The API route reaches the same service method. An optional project selects one project;
+   omission selects all. Removal safety still reads foreign-project children from the full
+   ledger, so selecting a project cannot hide work nested inside a due parent.
 
-Suite 156 uses real temporary Git repositories, private commits, linked worktrees, a real SQLite
-ledger and owner signatures. Its process table and Docker client are fixtures. The act prerequisite
-callbacks are supplied only in those fixtures. Every removal test uses the established removers;
-the owner Keep, changed marked work, unread carrier, failed snapshot, and unowned work rows retain
-their planted work. The concurrent row interleaves another successful removing write at the ledger
-boundary and checks that the loser makes no item write and invokes no removal. Startup is the real
-Service.space_start; the fixture's immediate dispatch reads the resulting ledger, without running
-a worker or an external service. Bootstrap checks use the real central ledger and installation,
-then the real ending-event and owner Abandon entry points.
+The final targeted runs used nice -n 10 and the repository selftest entry point. Of 22 suites,
+19 have no failed assertions. The primary totals are 0315: 51/0, 0323: 66/0, and 0337: 45/0.
+These totals include the shared preamble; ticket rows are 25, 40 and 19 respectively. Selected
+selftest runs intentionally return nonzero even when green and cannot satisfy aggregate unit
+evidence. See review-fix/targeted-results.json for all commands, counts, logs and row names.
 
-`run_falsifiers.py` reads the literal registrations using AST, checks them against
-`falsifier-cases.json`, and runs disposable production copies. It neither imports nor runs the teeth
-driver. The final run applies each of the 12 mutations once after a green baseline. A preceding
-exploratory run exposed two assertions that reported missing-file exceptions instead of the intended
-wrong state; those assertions and the unowned-folder mutant were tightened before the recorded run.
-The batch-as-scratch mutation turns the classification row red; the existing remover's independent
-repository guard still retains its unique commit. This evidence does not claim that bypassing that
-second guard was necessary or tested. The report-removal mutation deliberately deletes fixture-only
-unowned work in its disposable copy and the retention row turns red. No such path is in production.
+Three failing suites were compared with an unchanged archive of 9b5ca496 on this host:
+census has 51/1 on both (invalid owner.scope); Docker has 54/1 on both (a static poll-set
+assertion); run-wrapper has 37/17 here and 36/18 at base, with no current-only failing row.
+The API suite failed its restart row in two slower runs, passed 71/0 at base, and passed 71/0
+on the final rerun with fuller diagnostics and no production change. Its cause is unproven.
+Both failure and passing outputs are retained. The temporary baseline archive was removed
+with a plain command before teeth.
 
-The service ending-event regression passes all 41 selected rows and Docker ownership passes all 25.
-The installation suite passes 29 of 30 rows. Its stopped-service row also fails against the starting
-revision: systemd reports inactive, no process is bound, and the unbound socket pathname remains.
-`installation-comparison.json` records both observations. No prior suite or live capture was edited.
-Partial selftest selections intentionally return a nonzero code even with no failed assertions.
+The final teeth sequence was 315, 323, then 337, all at nice -n 10 with four workers. Results
+are 22/22, 16/16 and 19/19 rejected mutations, zero reuse and zero surviving workers. The
+receipts share one input digest. No worktree file was edited while those stages ran; this
+proof was written only after all three completed. Full receipts and exact mutation diffs
+are retained. Earlier 315 attempts are retained too: the first had invalid baseline controls
+because the long output path exceeded the Unix socket pathname limit; the next exposed two
+test gaps; both corrected mutations then passed a focused check before the final sequence.
 
-The accepted VELDO-0323 worker and service startup were read from their branch with Git. They were
-not copied into this branch. At landing, its Consumer startup must retain this ticket's bootstrap
-before Consumer.start and the synchronous reconcile callback after replay and received events.
-The service entry here is synchronous; introducing the accepted worker is the lead's integration.
-The API authority is given the on-demand method; later presentation and CLI tickets own their edges.
+Validation, generated files, template sync, lint and diff checks passed before the final
+teeth sequence. Later changes after the broad checks only strengthened test diagnostics,
+the lock row and the mutation anchor; lint and the affected suite were rerun. Protected-path
+comparison was empty. Acceptance criteria and production safety prerequisites were not relaxed.
 
-All retained artifacts are small summaries. Fixture logs are omitted. The protected real data,
-engines, images, captures and database volumes were not used by the VELDO-0315 tests.
+Fixture limits: suite 156 uses temporary real Git repositories and SQLite ledgers, real
+removers, real forked workers and real owner signatures. Docker and process observations are
+fixtures. The CLI transport is a fixture that reaches real Service.apply; the floor provider
+in the lost-send row supplies real FloorAuthority objects with fixture materialization.
+Act prerequisites are fixture inputs; these runs do not authorize production act mode.
+A removing item whose recorded carrier is still this service process remains protected by
+AC5 until that process ends, including the review's same-process left_at case.
+
+The root-level files other than this README and manifest are historical carry-over evidence.
+The current evidence is under review-fix/. Original README and manifest copies are retained
+there for provenance; they do not describe the current integration state.

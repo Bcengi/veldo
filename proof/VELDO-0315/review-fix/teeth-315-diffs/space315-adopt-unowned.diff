@@ -1,0 +1,8 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -584 +584,4 @@
+-                    self.report(path)
++                    if os.path.isdir(path):
++                        self.adopt(path, 'scratch', {'scope': {'type': 'project', 'id': self.ledger.projects[0]['project']}}, 'guessed')
++                    else:
++                        self.report(path)

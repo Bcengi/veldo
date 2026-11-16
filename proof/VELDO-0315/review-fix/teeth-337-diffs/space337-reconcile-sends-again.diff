@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1160 +1160 @@
+-            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))
++            )

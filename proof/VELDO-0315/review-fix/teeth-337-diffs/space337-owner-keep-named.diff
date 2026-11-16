@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1157 +1157 @@
+-    return (item.get('state') in ('present', 'kept', 'deferred') and not item.get('owner_keep')
++    return (item.get('state') in ('present', 'kept', 'deferred')

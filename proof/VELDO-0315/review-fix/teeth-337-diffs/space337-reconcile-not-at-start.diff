@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -745 +745 @@
+-            verdicts.extend(floor.reconcile_verdicts())
++            pass

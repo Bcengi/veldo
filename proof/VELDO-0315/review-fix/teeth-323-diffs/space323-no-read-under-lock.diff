@@ -1,0 +1,6 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -142,2 +142 @@
+-                pending = [identity for identity, record in ledger.events() if record['state'] == 'received']
+-                answer = WORKER.consume(ledger, pending[0], self.given, self.landing) if pending else {'ok': True}
++                answer = WORKER.consume(ledger, self.dispatched, self.given, self.landing)

@@ -1,0 +1,7 @@
+--- a/.veldo/control_space_kinds.py
++++ b/.veldo/control_space_kinds.py
+@@ -143,2 +143,2 @@
+-    'review_run_scratch': (NOTHING, REMOVE, NOTHING, REMOVE, NOTHING),
+-    'review_run_build_output': (NOTHING, REMOVE, NOTHING, REMOVE, NOTHING),
++    'review_run_scratch': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),
++    'review_run_build_output': (REMOVE, REMOVE, NOTHING, REMOVE, NOTHING),

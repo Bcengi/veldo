@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -88 +88 @@
+-            self.startup_received = True
++            WORKER.selected(self.ledger, self.ledger.event_record(pending[0]), self.landing, self.given.get("proc") or "/proc")

@@ -1,0 +1,10 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -179,2 +179,5 @@
+-        return (remover._there(os.path.basename(path), parent),
+-                remover._there(os.path.basename(remover.marked(path, identity)), parent))
++        try:
++            return (remover._there(os.path.basename(path), parent),
++                    remover._there(os.path.basename(remover.marked(path, identity)), parent))
++        except OSError:
++            return False, False

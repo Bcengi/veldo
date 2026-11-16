@@ -1,0 +1,8 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -342 +342 @@
+-        if kind in ('scratch', 'build_output') and self.repository(path):
++        if kind in ('scratch', 'build_output') and not rule.startswith('record:') and self.repository(path):
+@@ -481 +481 @@
+-            paths = [('clone', 'agent_repository', 'batch_clone'), ('observation_dir', 'scratch', None)] \
++            paths = [('clone', 'scratch', None), ('observation_dir', 'scratch', None)] \

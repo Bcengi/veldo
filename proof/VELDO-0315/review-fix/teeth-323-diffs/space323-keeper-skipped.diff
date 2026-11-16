@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_worker.py
++++ b/.veldo/control_space_worker.py
+@@ -239 +239 @@
+-        given.setdefault('keep', KEEP.keeper(ledger, event=emitter))
++        given.setdefault('keep', lambda identity, item: {'ok': True, 'tips': REMOVE.tips(item['locator']['path'], item['kind'])})

@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1139 +1139 @@
+-SPACE_VERDICT_STATIONS = ('review',)  # the stations whose run ends with a verdict the floor records
++SPACE_VERDICT_STATIONS = ()  # the stations whose run ends with a verdict the floor records

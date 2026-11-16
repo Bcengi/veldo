@@ -1,0 +1,479 @@
+{
+  "suites": [
+    {
+      "suite": "132_veldo_0297_space_ledger",
+      "log": "132_veldo_0297_space_ledger.txt",
+      "passed": 57,
+      "failed": 0,
+      "seconds": 1.65,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 57 passed, 0 failed in 1.65s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "132_veldo_0297_space_ledger"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "133_veldo_0326_space_principals",
+      "log": "133_veldo_0326_space_principals.txt",
+      "passed": 56,
+      "failed": 0,
+      "seconds": 29.45,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 56 passed, 0 failed in 29.45s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "133_veldo_0326_space_principals"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "135_veldo_0298_space_kinds",
+      "log": "135_veldo_0298_space_kinds.txt",
+      "passed": 168,
+      "failed": 0,
+      "seconds": 0.01,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 168 passed, 0 failed in 0.01s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "135_veldo_0298_space_kinds"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "139_veldo_0301_space_signal",
+      "log": "139_veldo_0301_space_signal.txt",
+      "passed": 44,
+      "failed": 0,
+      "seconds": 1.06,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 44 passed, 0 failed in 1.06s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "139_veldo_0301_space_signal"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "142_veldo_0303_space_paths",
+      "log": "142_veldo_0303_space_paths.txt",
+      "passed": 64,
+      "failed": 0,
+      "seconds": 6.76,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 64 passed, 0 failed in 6.76s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "142_veldo_0303_space_paths"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "143_veldo_0305_space_census",
+      "log": "143_veldo_0305_space_census.txt",
+      "passed": 51,
+      "failed": 1,
+      "seconds": 2.82,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 51 passed, 1 failed in 2.82s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "143_veldo_0305_space_census"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "144_veldo_0306_space_docker",
+      "log": "144_veldo_0306_space_docker.txt",
+      "passed": 54,
+      "failed": 1,
+      "seconds": 5.55,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 54 passed, 1 failed in 5.55s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "144_veldo_0306_space_docker"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "145_veldo_0307_space_docker_ownership",
+      "log": "145_veldo_0307_space_docker_ownership.txt",
+      "passed": 51,
+      "failed": 0,
+      "seconds": 1.04,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 51 passed, 0 failed in 1.04s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "145_veldo_0307_space_docker_ownership"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "146_veldo_0308_run_finished",
+      "log": "146_veldo_0308_run_finished.txt",
+      "passed": 64,
+      "failed": 0,
+      "seconds": 4.53,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 64 passed, 0 failed in 4.53s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "146_veldo_0308_run_finished"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "147_veldo_0310_landed_contained",
+      "log": "147_veldo_0310_landed_contained.txt",
+      "passed": 59,
+      "failed": 0,
+      "seconds": 26.39,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 59 passed, 0 failed in 26.39s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "147_veldo_0310_landed_contained"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "148_veldo_0311_git_hooks",
+      "log": "148_veldo_0311_git_hooks.txt",
+      "passed": 57,
+      "failed": 0,
+      "seconds": 8.49,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 57 passed, 0 failed in 8.49s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "148_veldo_0311_git_hooks"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "149_veldo_0312_ticket_ended",
+      "log": "149_veldo_0312_ticket_ended.txt",
+      "passed": 67,
+      "failed": 0,
+      "seconds": 3.43,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 67 passed, 0 failed in 3.43s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "149_veldo_0312_ticket_ended"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "151_veldo_0313_space_run",
+      "log": "151_veldo_0313_space_run-final.txt",
+      "passed": 37,
+      "failed": 17,
+      "seconds": 414.29,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 37 passed, 17 failed in 414.29s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "151_veldo_0313_space_run"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "153_veldo_0323_hook_events",
+      "log": "153_veldo_0323_hook_events.txt",
+      "passed": 66,
+      "failed": 0,
+      "seconds": 34.91,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 66 passed, 0 failed in 34.91s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "153_veldo_0323_hook_events"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "153_veldo_0337_verdict_recorded",
+      "log": "153_veldo_0337_verdict_recorded-final.txt",
+      "passed": 45,
+      "failed": 0,
+      "seconds": 32.99,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 45 passed, 0 failed in 32.99s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "153_veldo_0337_verdict_recorded"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "156_veldo_0315_reconcile",
+      "log": "156_veldo_0315_reconcile-final.txt",
+      "passed": 51,
+      "failed": 0,
+      "seconds": 13.53,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 51 passed, 0 failed in 13.53s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "156_veldo_0315_reconcile"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "59_veldo_0031_review",
+      "log": "59_veldo_0031_review.txt",
+      "passed": 32,
+      "failed": 0,
+      "seconds": 3.02,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 32 passed, 0 failed in 3.02s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "59_veldo_0031_review"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "62_veldo_0039_dispatch",
+      "log": "62_veldo_0039_dispatch.txt",
+      "passed": 51,
+      "failed": 0,
+      "seconds": 9.81,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 51 passed, 0 failed in 9.81s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "62_veldo_0039_dispatch"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "63_veldo_0049_floor",
+      "log": "63_veldo_0049_floor.txt",
+      "passed": 46,
+      "failed": 0,
+      "seconds": 11.26,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 46 passed, 0 failed in 11.26s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "63_veldo_0049_floor"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "66_veldo_0047_authority",
+      "log": "66_veldo_0047_authority.txt",
+      "passed": 56,
+      "failed": 0,
+      "seconds": 14.1,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 56 passed, 0 failed in 14.10s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "66_veldo_0047_authority"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "71_veldo_0130_api",
+      "log": "71_veldo_0130_api-final-green.txt",
+      "passed": 71,
+      "failed": 0,
+      "seconds": 33.22,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 71 passed, 0 failed in 33.22s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "71_veldo_0130_api"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "log": "82_veldo_0129_worker_wiring.txt",
+      "passed": 55,
+      "failed": 0,
+      "seconds": 41.02,
+      "summary": "selftest (PARTIAL, 1 of 235 suites): 55 passed, 0 failed in 41.02s",
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "82_veldo_0129_worker_wiring"
+      ],
+      "scope": "partial; no aggregate unit or gate evidence"
+    }
+  ],
+  "green_suites": 19,
+  "total_suites": 22,
+  "baseline_comparisons": [
+    {
+      "current_log": "143_veldo_0305_space_census.txt",
+      "baseline_log": "census-baseline.txt",
+      "baseline_commit": "9b5ca496",
+      "current_failed_rows": [
+        "VELDO-0305 review/scratch-apart-from-run-directory"
+      ],
+      "baseline_failed_rows": [
+        "VELDO-0305 review/scratch-apart-from-run-directory"
+      ],
+      "current_only": [],
+      "baseline_only": []
+    },
+    {
+      "current_log": "144_veldo_0306_space_docker.txt",
+      "baseline_log": "docker-baseline.txt",
+      "baseline_commit": "9b5ca496",
+      "current_failed_rows": [
+        "VELDO-0306 ac4/poll-set"
+      ],
+      "baseline_failed_rows": [
+        "VELDO-0306 ac4/poll-set"
+      ],
+      "current_only": [],
+      "baseline_only": []
+    },
+    {
+      "current_log": "151_veldo_0313_space_run-final.txt",
+      "baseline_log": "run-baseline.txt",
+      "baseline_commit": "9b5ca496",
+      "current_failed_rows": [
+        "VELDO-0313 ac1/declared-started-ended",
+        "VELDO-0313 ac1/only-the-runs-own-items",
+        "VELDO-0313 ac1/unread-group-sends-nothing",
+        "VELDO-0313 ac2/act-waits-75",
+        "VELDO-0313 ac2/command-status",
+        "VELDO-0313 ac2/report-starts",
+        "VELDO-0313 fix2/captured-output-ends-at-return",
+        "VELDO-0313 fix2/end-follows-their-exit",
+        "VELDO-0313 fix2/returns-at-the-commands-exit",
+        "VELDO-0313 fix3/handed-outside-the-tree",
+        "VELDO-0313 fix3/rewritten-environment-cwd-in-scratch",
+        "VELDO-0313 fix3/rewritten-environment-open-file-in-worktree",
+        "VELDO-0313 fix3/rule-3-reads-the-kernel",
+        "VELDO-0313 fix3/the-house-group",
+        "VELDO-0313 fix3/unread-process-holds",
+        "VELDO-0313 fix4/docker-objects-are-items",
+        "VELDO-0313 fix6/scratch-not-made"
+      ],
+      "baseline_failed_rows": [
+        "VELDO-0313 ac1/build-output-has-item-and-goes",
+        "VELDO-0313 ac1/declared-started-ended",
+        "VELDO-0313 ac1/only-the-runs-own-items",
+        "VELDO-0313 ac1/unread-group-sends-nothing",
+        "VELDO-0313 ac2/act-waits-75",
+        "VELDO-0313 ac2/command-status",
+        "VELDO-0313 ac2/report-starts",
+        "VELDO-0313 fix2/captured-output-ends-at-return",
+        "VELDO-0313 fix2/end-follows-their-exit",
+        "VELDO-0313 fix2/returns-at-the-commands-exit",
+        "VELDO-0313 fix3/handed-outside-the-tree",
+        "VELDO-0313 fix3/rewritten-environment-cwd-in-scratch",
+        "VELDO-0313 fix3/rewritten-environment-open-file-in-worktree",
+        "VELDO-0313 fix3/rule-3-reads-the-kernel",
+        "VELDO-0313 fix3/the-house-group",
+        "VELDO-0313 fix3/unread-process-holds",
+        "VELDO-0313 fix4/docker-objects-are-items",
+        "VELDO-0313 fix6/scratch-not-made"
+      ],
+      "current_only": [],
+      "baseline_only": [
+        "VELDO-0313 ac1/build-output-has-item-and-goes"
+      ]
+    }
+  ],
+  "api_note": "Two restart-row failures during slower runs; unchanged base passed 71/0. The final rerun with fuller failure diagnostics passed 71/0 with no production change. Cause unproven; earlier logs retained."
+}

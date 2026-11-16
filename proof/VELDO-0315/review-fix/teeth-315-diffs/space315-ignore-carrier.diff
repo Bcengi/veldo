@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -627 +627 @@
+-                if record['state'] == 'removing' and carrier_live(record, self.probe, self.space.get('proc')):
++                if False:

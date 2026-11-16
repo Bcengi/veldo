@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_worker.py
++++ b/.veldo/control_space_worker.py
+@@ -192 +192 @@
+-            elif kind == 'session_ended':
++            elif False:  # defect: a record whose client is alive selects nothing and says nothing

@@ -1,0 +1,5 @@
+--- a/.veldo/dispatch.py
++++ b/.veldo/dispatch.py
+@@ -1311 +1311 @@
+-        except Exception as error:  # A space failure cannot undo a committed verdict or authorize removal.
++        except FloorRefused as error:

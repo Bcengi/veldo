@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_worker.py
++++ b/.veldo/control_space_worker.py
+@@ -190 +190 @@
+-            if _ended(process, proc):
++            if _ended(process, proc) and item["owner"]["scope"]["type"] != "no_project":

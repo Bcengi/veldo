@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_signal.py
++++ b/.veldo/control_space_signal.py
+@@ -307 +307 @@
+-        with ledger.item_lock(identity):
++        if True:

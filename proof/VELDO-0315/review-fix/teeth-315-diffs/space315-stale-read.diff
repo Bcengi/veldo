@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -623,2 +622,0 @@
+-                # The diagnostic read may predate a live remover taking this item.
+-                record = self.ledger.item(identity)

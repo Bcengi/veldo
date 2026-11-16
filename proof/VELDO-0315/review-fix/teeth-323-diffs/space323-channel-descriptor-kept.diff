@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -1592 +1592 @@
+-        found.append(getattr(getattr(getattr(self, 'channel', None), 'ingress', None), 'conn', None))
++        found.append(None)  # defect: the channel's descriptor stays open in the worker

@@ -1,0 +1,6 @@
+generated: pass (specs/index.md)
+generated: pass (proof/WARP-0716/crossing-state.md)
+generated: pass (proof/WARP-0712/order-dependence.md)
+generated: pass (proof/WARP-0712/split-plan.md)
+generated: pass (scripts/suites/requires.json)
+generated: pass

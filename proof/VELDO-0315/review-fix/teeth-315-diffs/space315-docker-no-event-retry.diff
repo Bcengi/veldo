@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2379,2 +2378,0 @@
+-            if getattr(self, 'space_refusal', None) is not None:
+-                self.space_start(replay=None)

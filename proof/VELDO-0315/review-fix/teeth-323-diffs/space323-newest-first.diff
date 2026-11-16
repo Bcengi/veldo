@@ -1,0 +1,5 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -903 +903 @@
+-            'SELECT id, data FROM entities WHERE kind=? ORDER BY json_extract(data, "$.received"), id',
++            'SELECT id, data FROM entities WHERE kind=? ORDER BY json_extract(data, "$.received") DESC, id',

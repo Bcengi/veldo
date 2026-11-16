@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -58 +58 @@
+-        self.reconcile = reconcile
++        self.reconcile = None

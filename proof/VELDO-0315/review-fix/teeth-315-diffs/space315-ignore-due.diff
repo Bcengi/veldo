@@ -1,0 +1,4 @@
+--- a/.veldo/control_space_reconcile.py
++++ b/.veldo/control_space_reconcile.py
+@@ -590,0 +591 @@
++        return []

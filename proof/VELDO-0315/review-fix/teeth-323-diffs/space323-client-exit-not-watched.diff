@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_consumer.py
++++ b/.veldo/control_space_consumer.py
+@@ -231 +231 @@
+-                if one.get('why') == 'client_alive':
++                if False:  # defect: nothing waits for the client's end
