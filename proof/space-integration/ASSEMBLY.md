@@ -8,7 +8,17 @@ was pushed; verify.sh and policy_check.py were not run (lead's instruction).
 ## Picks (git cherry-pick 8ef46604..TIP, in order)
 
 1. veldo-space-0328 (7cf06b02): clean.
-2. veldo-space-0341 (efca30b3): clean.
+2. veldo-space-0341 (efca30b3): no conflict, with one change to VELDO-0328's code that is declared
+   here (the review of the assembly, finding 4). The 0341 fix commit d50ab560 renames 0328's
+   Adapter._image(engine, name) (added by 28f89a22: read one image by name, refuse an unread one) to
+   _named_image, in control_space_docker.py and its engine copy, and gives the name _image to its own
+   new method (engine, shown, relations: judge one image the engine showed, by itself or by a
+   protected container made from it). Why: both methods are on the one Adapter, so without the rename
+   0341's _image would replace 0328's and its two callers, built and pulled, would call the wrong
+   method with the wrong arguments. With it, built and pulled call _named_image and keep 0328's
+   checks unchanged, and the image_tag removal probe applies 0341's related protection
+   (control_space_probe.py, the image_tag and network branch). The rename changes no behaviour of
+   0328.
 3. veldo-space-0337 (42995a87): control_space.py pair, declare `ends` vs 0302's `form`. Lead
    decision applied: declare takes no end list; new kinds review_run_scratch and
    review_run_build_output in the kind registry (end on verdict_recorded, ticket_ended,
