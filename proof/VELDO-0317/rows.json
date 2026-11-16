@@ -1,102 +1,135 @@
 {
-  "criteria": {
-    "AC1": [
-      "space317/ac1/behind-admission",
-      "space317/ac1/order",
-      "space317/ac1/refunded",
-      "space317/ac1/replayed-end"
-    ],
-    "AC2": [
-      "space317/ac2/repeat-once",
-      "space317/ac2/restart"
-    ],
-    "AC3": [
-      "space317/ac3/next-brief",
-      "space317/ac3/reconnect",
-      "space317/ac3/work-retained"
-    ],
-    "AC4": [
-      "space317/ac4/off-loop",
-      "space317/ac4/reset",
-      "space317/ac4/two-stop"
-    ]
-  },
-  "failed": 0,
-  "own_passed": 18,
-  "partial_exit": 2,
-  "rows": [
-    {
-      "result": "passed",
-      "row": "space317/ac1/behind-admission"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac1/order"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac1/refunded"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac1/replayed-end"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac2/repeat-once"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac2/restart"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac3/next-brief"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac3/reconnect"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac3/work-retained"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac4/off-loop"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac4/reset"
-    },
-    {
-      "result": "passed",
-      "row": "space317/ac4/two-stop"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/floor"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/incomplete"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/ordinary"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/streams"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/success"
-    },
-    {
-      "result": "passed",
-      "row": "space317/classification/unread"
-    }
+ "criteria": {
+  "AC1": [
+   "space317/ac1/behind-admission",
+   "space317/ac1/order",
+   "space317/ac1/refunded",
+   "space317/ac1/replayed-end"
   ],
-  "shared_passed": 26
+  "AC2": [
+   "space317/ac2/repeat-once",
+   "space317/ac2/restart"
+  ],
+  "AC3": [
+   "space317/ac3/next-brief",
+   "space317/ac3/reconnect",
+   "space317/ac3/work-retained"
+  ],
+  "AC4": [
+   "space317/ac4/off-loop",
+   "space317/ac4/reset",
+   "space317/ac4/two-stop"
+  ]
+ },
+ "failed": 0,
+ "findings": {
+  "F1": [
+   "space317/fix1/rerun-before-release",
+   "space317/fix1/spent-answer"
+  ],
+  "F2": [
+   "space317/fix2/andon-redelivery"
+  ],
+  "F3": [
+   "space317/fix3/bounded-scan",
+   "space317/fix3/brief-ends"
+  ]
+ },
+ "own_passed": 23,
+ "partial_exit": 2,
+ "rows": [
+  {
+   "result": "passed",
+   "row": "space317/ac1/behind-admission"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac1/order"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac1/refunded"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac1/replayed-end"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac2/repeat-once"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac2/restart"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac3/next-brief"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac3/reconnect"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac3/work-retained"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac4/off-loop"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac4/reset"
+  },
+  {
+   "result": "passed",
+   "row": "space317/ac4/two-stop"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/floor"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/incomplete"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/ordinary"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/streams"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/success"
+  },
+  {
+   "result": "passed",
+   "row": "space317/classification/unread"
+  },
+  {
+   "result": "passed",
+   "row": "space317/fix1/rerun-before-release"
+  },
+  {
+   "result": "passed",
+   "row": "space317/fix1/spent-answer"
+  },
+  {
+   "result": "passed",
+   "row": "space317/fix2/andon-redelivery"
+  },
+  {
+   "result": "passed",
+   "row": "space317/fix3/bounded-scan"
+  },
+  {
+   "result": "passed",
+   "row": "space317/fix3/brief-ends"
+  }
+ ],
+ "shared_passed": 26
 }

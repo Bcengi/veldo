@@ -51,3 +51,45 @@ mutation diffs remain in /tmp/veldo0317-build; the full receipt and compact red-
 
 The verify command is ./scripts/verify.sh, to be run by the lead through the gate lock.
 Rollback: revert the implementation. Existing retained worktrees, journal records and snapshots stay.
+
+## Fix round 1 (review of f8a66f9d, verdict FIX)
+
+Implementation after the round: 4b4f8ebbe6c98a6cb5bc9ffee56a643d14651e43. Builder evidence of the fix round, not independent review.
+
+F1 (high). A refunded rerun asks under the attempt number of the run that just ended, and found that
+run's hold still admitted until its receiver released it. Prepare now passes over an identity a
+dispatch record carries, under the admission lock, as reconcile does, and judges a fresh hold with a
+free read. This was chosen over keying the hold by dispatch sequence, which would change the hold
+identity in the contract, the Requests key and reconcile's leaving keys; the carried test is one
+condition where the hold is handed out. The factory line also spends its kept answer once a dispatch
+record carries its hold, since a fast end could otherwise be answered from the service's kept answer
+without reaching prepare. Rows fix1/rerun-before-release (the reviewer's P1: exit committed, rerun
+before the receiver's release, answer space_wait:host, a free read, one dispatch record, and after the
+release the rerun is admitted on its own hold) and fix1/spent-answer.
+
+F2 (medium). Only a delivered owner notice is kept. A failed delivery is reported once and dropped,
+and the pass after that submits it again. Row fix2/andon-redelivery (the reviewer's P2): one failing
+delivery, then a healthy inbox, exactly one notice, two worker completions, no third run.
+
+F3 (low). The recovery brief names the no-space ends since the unit's last completed dispatch. The
+unit's ends and rule 5's kept worktrees are selected in the store (by the quoted unit, by the no-space
+classification), so other dispatch records are not parsed on each judgment; SQLite still walks the
+dispatch rows, there is no new index entity. The kept worktree stays pinned after recovery: the spec
+History records that releasing it is VELDO-0327's. Rows fix3/brief-ends and fix3/bounded-scan.
+
+F4 (low). The spec History records that the lead accepted the footprint widening on 2026-11-16.
+
+Rows: 23 ticket rows passed, 26 shared, zero failures, partial exit 2. Suites 150_veldo_0334_space_wait
+(24) and 150_veldo_0316_admission (29) passed, and validation, docs, template sync, space boundary and
+lint passed, all with nice -n 10; those ran at d4410d55, before a repair of the F1 row that changed
+only the 0317 suite file, and the 0317 suite ran again after it. The three other adjacent suites of
+the build (dispatch, run-finished, factory) were not rerun in this round. The reviewer's probe file was
+not run; the two rows above are its P1 and P2. No own supervisor survived any run.
+
+Teeth: finding 317 ran last on the committed tree, two workers, nice -n 10: 9 registered, 9 executed,
+9 rejected, 0 reused, 0 invalid, 0 surviving workers. Four are new: the rerun takes the carried hold
+(F1), the kept answer outlives its dispatch (F1), a failed notice is kept (F2), the brief never ends
+(F3). A first run at d4410d55 failed with missing_target: under the F1 mutant the F1 row raised and
+removed the later rows. The row was repaired (4b4f8ebb) and the whole finding was run again.
+The digest of git ls-files -s before and after was 318e26d278312c756153e2c6a4ea1b6515e8136a7279b8c35eabe5cb684cdd3b; the worktree was clean both
+times. Nothing ran after teeth; only this proof bundle was written. Logs are in /tmp/v317-fix1.

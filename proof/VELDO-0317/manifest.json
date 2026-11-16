@@ -1,158 +1,158 @@
 {
-  "artifacts": {
-    "README.md": "sha256:6df94abfabe92aeb0720e81ff6e6a77fd780cb68d0a6dbf45cd0b02d85439edc",
-    "checks.json": "sha256:7e52c98301aa2eb3ae3d434ce103b90fa5ba24c8b3edc6e99f5d5a1b66ee93ef",
-    "falsifiers.json": "sha256:6119f8d2d3dcec16f8767f07bfb84979ff7bb65e9682285a04c3b591fe84a354",
-    "rows.json": "sha256:ff85e7c3af886e7f24bcb05f53a1c32d6d25c8f77780c2d9f6d020e58e8727de",
-    "sources.json": "sha256:a0b11c4b41a46b9cf481a80f4fa1832bfde4fee885748aecc0f443f8a8dfe93d",
-    "teeth-receipt.json": "sha256:c067921eac18c5359c16883da2b960f103d76167e6bc39a5da935376c46c3403",
-    "teeth-run.json": "sha256:ccb208c2c46c32cce430164c63c5e6d13d63930c94e69e405e4c9e8332f6f318"
+ "artifacts": {
+  "README.md": "sha256:ea393c02b8237b901e48254325a9fd6e4dfa1e8bcb2ee0c75afbe82f09874952",
+  "checks.json": "sha256:2357f98605cb0d382d751c5324faf1b3ce99f5c4ffefb1993e1fb67ec82915ac",
+  "falsifiers.json": "sha256:96a8ce80602368e67588e1c0e0de059572ca4957723d4f6c097290b9d7010486",
+  "rows.json": "sha256:8ddb844c38a93004b980c2cf7032c6e670335f6fe440f88279042bba4cb1ed40",
+  "sources.json": "sha256:792cb291ae9809096fa6e2f2a298fd2393b53b326da5485e7192c83693ede247",
+  "teeth-receipt.json": "sha256:f6801ff95e2678f8482777ecd37d44682f80a9ca2f349c3bdc202bb42ea29e2c",
+  "teeth-run.json": "sha256:776b8fd135adc173a541f282f3ce59a3d7d3ee3bf97bbf87b65b03a93d4ee9d8"
+ },
+ "assumptions": [
+  "All criteria await aggregate verification and independent review.",
+  "Fixture boundaries and owner notice seam are described in README.",
+  "Only proof files were written after the final teeth stage; the new proof was not revalidated after teeth."
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "reason": "No aggregate unit run. Selected rows are diagnostic only.",
+   "status": "not_run"
   },
-  "assumptions": [
-    "All criteria await aggregate verification and independent review.",
-    "Fixture boundaries and owner notice seam are described in README.",
-    "Only proof files were written after the final teeth stage; the new proof was not revalidated after teeth."
-  ],
-  "checks": [
+  {
+   "name": "integration",
+   "reason": "No aggregate integration run or live-engine qualification.",
+   "status": "not_run"
+  },
+  {
+   "detail": "23 ticket rows and 26 shared checks, zero failures, partial exit 2 (fix round 1).",
+   "name": "targeted rows",
+   "status": "passed"
+  },
+  {
+   "detail": "Fix round 1 reran the 0334 and 0316 suites; the three other adjacent suites are from the build. See checks.json.",
+   "name": "regressions",
+   "status": "passed"
+  },
+  {
+   "detail": "Validation, docs, template sync, boundary, lint, whitespace and ASCII before teeth.",
+   "name": "fast checks",
+   "status": "passed"
+  },
+  {
+   "detail": "9 applied once, 9 rejected, 0 reused, 0 invalid, 0 surviving workers (fix round 1).",
+   "name": "falsifiers",
+   "status": "passed"
+  },
+  {
+   "name": "gate",
+   "reason": "The lead runs the canonical command through the gate lock.",
+   "status": "not_run"
+  }
+ ],
+ "commit": "4b4f8ebbe6c98a6cb5bc9ffee56a643d14651e43",
+ "criteria": [
+  {
+   "evidence": [
     {
-      "name": "unit",
-      "reason": "No aggregate unit run. Selected rows are diagnostic only.",
-      "status": "not_run"
+     "detail": "Diagnostic definitions: space317/ac1/behind-admission, space317/ac1/order, space317/ac1/refunded, space317/ac1/replayed-end",
+     "ref": "scripts/suites/150_veldo_0317_full_pool.py",
+     "sha256": "f6a73a552d0a510b462abc800806ccb1eed7076dba0b8ef2e071d9baee16a2c9",
+     "type": "unit"
     },
     {
-      "name": "integration",
-      "reason": "No aggregate integration run or live-engine qualification.",
-      "status": "not_run"
+     "detail": "Selected rows passed; aggregate verification remains pending.",
+     "ref": "proof/VELDO-0317/rows.json",
+     "sha256": "8ddb844c38a93004b980c2cf7032c6e670335f6fe440f88279042bba4cb1ed40",
+     "type": "integration"
     },
     {
-      "detail": "18 ticket rows and 26 shared checks, zero failures, partial exit 2.",
-      "name": "targeted rows",
-      "status": "passed"
-    },
-    {
-      "detail": "All five adjacent selected suites passed; see checks.json.",
-      "name": "regressions",
-      "status": "passed"
-    },
-    {
-      "detail": "Validation, docs, template sync, boundary, lint, whitespace and ASCII before teeth.",
-      "name": "fast checks",
-      "status": "passed"
-    },
-    {
-      "detail": "5 applied once, 5 rejected, 0 reused, 0 invalid, 0 surviving workers.",
-      "name": "falsifiers",
-      "status": "passed"
-    },
-    {
-      "name": "gate",
-      "reason": "The lead runs the canonical command through the gate lock.",
-      "status": "not_run"
+     "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
+     "ref": "proof/VELDO-0317/falsifiers.json",
+     "sha256": "96a8ce80602368e67588e1c0e0de059572ca4957723d4f6c097290b9d7010486",
+     "type": "falsifier"
     }
-  ],
-  "commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
-  "criteria": [
+   ],
+   "id": "AC1",
+   "status": "pending"
+  },
+  {
+   "evidence": [
     {
-      "evidence": [
-        {
-          "detail": "Diagnostic definitions: space317/ac1/behind-admission, space317/ac1/order, space317/ac1/refunded, space317/ac1/replayed-end",
-          "ref": "scripts/suites/150_veldo_0317_full_pool.py",
-          "sha256": "bd9774341ab2bb8cdf9395990fcbafb4b6c1ecb28d5f79c2eb4e2bfcf6bc05a6",
-          "type": "unit"
-        },
-        {
-          "detail": "Selected rows passed; aggregate verification remains pending.",
-          "ref": "proof/VELDO-0317/rows.json",
-          "sha256": "ff85e7c3af886e7f24bcb05f53a1c32d6d25c8f77780c2d9f6d020e58e8727de",
-          "type": "integration"
-        },
-        {
-          "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
-          "ref": "proof/VELDO-0317/falsifiers.json",
-          "sha256": "6119f8d2d3dcec16f8767f07bfb84979ff7bb65e9682285a04c3b591fe84a354",
-          "type": "falsifier"
-        }
-      ],
-      "id": "AC1",
-      "status": "pending"
+     "detail": "Diagnostic definitions: space317/ac2/repeat-once, space317/ac2/restart",
+     "ref": "scripts/suites/150_veldo_0317_full_pool.py",
+     "sha256": "f6a73a552d0a510b462abc800806ccb1eed7076dba0b8ef2e071d9baee16a2c9",
+     "type": "unit"
     },
     {
-      "evidence": [
-        {
-          "detail": "Diagnostic definitions: space317/ac2/repeat-once, space317/ac2/restart",
-          "ref": "scripts/suites/150_veldo_0317_full_pool.py",
-          "sha256": "bd9774341ab2bb8cdf9395990fcbafb4b6c1ecb28d5f79c2eb4e2bfcf6bc05a6",
-          "type": "unit"
-        },
-        {
-          "detail": "Selected rows passed; aggregate verification remains pending.",
-          "ref": "proof/VELDO-0317/rows.json",
-          "sha256": "ff85e7c3af886e7f24bcb05f53a1c32d6d25c8f77780c2d9f6d020e58e8727de",
-          "type": "integration"
-        },
-        {
-          "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
-          "ref": "proof/VELDO-0317/falsifiers.json",
-          "sha256": "6119f8d2d3dcec16f8767f07bfb84979ff7bb65e9682285a04c3b591fe84a354",
-          "type": "falsifier"
-        }
-      ],
-      "id": "AC2",
-      "status": "pending"
+     "detail": "Selected rows passed; aggregate verification remains pending.",
+     "ref": "proof/VELDO-0317/rows.json",
+     "sha256": "8ddb844c38a93004b980c2cf7032c6e670335f6fe440f88279042bba4cb1ed40",
+     "type": "integration"
     },
     {
-      "evidence": [
-        {
-          "detail": "Diagnostic definitions: space317/ac3/next-brief, space317/ac3/reconnect, space317/ac3/work-retained",
-          "ref": "scripts/suites/150_veldo_0317_full_pool.py",
-          "sha256": "bd9774341ab2bb8cdf9395990fcbafb4b6c1ecb28d5f79c2eb4e2bfcf6bc05a6",
-          "type": "unit"
-        },
-        {
-          "detail": "Selected rows passed; aggregate verification remains pending.",
-          "ref": "proof/VELDO-0317/rows.json",
-          "sha256": "ff85e7c3af886e7f24bcb05f53a1c32d6d25c8f77780c2d9f6d020e58e8727de",
-          "type": "integration"
-        },
-        {
-          "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
-          "ref": "proof/VELDO-0317/falsifiers.json",
-          "sha256": "6119f8d2d3dcec16f8767f07bfb84979ff7bb65e9682285a04c3b591fe84a354",
-          "type": "falsifier"
-        }
-      ],
-      "id": "AC3",
-      "status": "pending"
-    },
-    {
-      "evidence": [
-        {
-          "detail": "Diagnostic definitions: space317/ac4/off-loop, space317/ac4/reset, space317/ac4/two-stop",
-          "ref": "scripts/suites/150_veldo_0317_full_pool.py",
-          "sha256": "bd9774341ab2bb8cdf9395990fcbafb4b6c1ecb28d5f79c2eb4e2bfcf6bc05a6",
-          "type": "unit"
-        },
-        {
-          "detail": "Selected rows passed; aggregate verification remains pending.",
-          "ref": "proof/VELDO-0317/rows.json",
-          "sha256": "ff85e7c3af886e7f24bcb05f53a1c32d6d25c8f77780c2d9f6d020e58e8727de",
-          "type": "integration"
-        },
-        {
-          "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
-          "ref": "proof/VELDO-0317/falsifiers.json",
-          "sha256": "6119f8d2d3dcec16f8767f07bfb84979ff7bb65e9682285a04c3b591fe84a354",
-          "type": "falsifier"
-        }
-      ],
-      "id": "AC4",
-      "status": "pending"
+     "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
+     "ref": "proof/VELDO-0317/falsifiers.json",
+     "sha256": "96a8ce80602368e67588e1c0e0de059572ca4957723d4f6c097290b9d7010486",
+     "type": "falsifier"
     }
-  ],
-  "produced_at": "2026-11-16T14:00:46.557312+00:00",
-  "producer": "Codex implementation agent; not an independent reviewer",
-  "rollback": "Revert the implementation; retained worktrees, journal records and saved work remain.",
-  "schema": "veldo.proof/v1",
-  "spec_id": "VELDO-0317",
-  "tree": "933fd0bb187e856bbba093ca997dd8085938d2bc"
+   ],
+   "id": "AC2",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "Diagnostic definitions: space317/ac3/next-brief, space317/ac3/reconnect, space317/ac3/work-retained",
+     "ref": "scripts/suites/150_veldo_0317_full_pool.py",
+     "sha256": "f6a73a552d0a510b462abc800806ccb1eed7076dba0b8ef2e071d9baee16a2c9",
+     "type": "unit"
+    },
+    {
+     "detail": "Selected rows passed; aggregate verification remains pending.",
+     "ref": "proof/VELDO-0317/rows.json",
+     "sha256": "8ddb844c38a93004b980c2cf7032c6e670335f6fe440f88279042bba4cb1ed40",
+     "type": "integration"
+    },
+    {
+     "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
+     "ref": "proof/VELDO-0317/falsifiers.json",
+     "sha256": "96a8ce80602368e67588e1c0e0de059572ca4957723d4f6c097290b9d7010486",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC3",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "Diagnostic definitions: space317/ac4/off-loop, space317/ac4/reset, space317/ac4/two-stop",
+     "ref": "scripts/suites/150_veldo_0317_full_pool.py",
+     "sha256": "f6a73a552d0a510b462abc800806ccb1eed7076dba0b8ef2e071d9baee16a2c9",
+     "type": "unit"
+    },
+    {
+     "detail": "Selected rows passed; aggregate verification remains pending.",
+     "ref": "proof/VELDO-0317/rows.json",
+     "sha256": "8ddb844c38a93004b980c2cf7032c6e670335f6fe440f88279042bba4cb1ed40",
+     "type": "integration"
+    },
+    {
+     "detail": "The specification falsifier was applied once and observed red in the final teeth stage.",
+     "ref": "proof/VELDO-0317/falsifiers.json",
+     "sha256": "96a8ce80602368e67588e1c0e0de059572ca4957723d4f6c097290b9d7010486",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC4",
+   "status": "pending"
+  }
+ ],
+ "produced_at": "2026-11-16T14:19:21.338483+00:00",
+ "producer": "Codex implementation agent, then Claude fix round 1; not an independent reviewer",
+ "rollback": "Revert the implementation; retained worktrees, journal records and saved work remain.",
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0317",
+ "tree": "437f509949c459284481fd9dedfbe49e05e0d266"
 }

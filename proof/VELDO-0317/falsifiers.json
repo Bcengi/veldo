@@ -1,225 +1,399 @@
 {
-  "cases": [
-    {
-      "additional_controls": {
-        "elapsed": 6.072283739689738,
-        "fixture_version": 1,
-        "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
-        "new_digest": "6faff449bfbb6e6ff4bb817c20c71e945e762e447e92419fd91af6d1616ce089",
-        "old_digest": "6dce8f359362e3cddad6302451bc23d41d4c8d16066d28e8a99e034bfd0cf6c6",
-        "replacement_count": 1,
-        "reuse_key": null,
-        "reuse_reason": "unknown_closure",
-        "schema": "veldo.mutation-result/v1",
-        "source": "fresh"
-      },
-      "applied": 1,
-      "baseline_targets": {
-        "space317/ac1/refunded": [
-          true
-        ]
-      },
-      "case": {
-        "driver": "check_teeth_mutations.py",
-        "finding": 317,
-        "identity": "check_teeth_mutations.py:space317-charge-environment-failure",
-        "module": "control_dispatch.py",
-        "name": "space317-charge-environment-failure",
-        "new": "released['attempts'] = released.get('attempts', 0)",
-        "old": "released['attempts'] = max(0, released.get('attempts', 0) - 1)",
-        "rows": [
-          "space317/ac1/refunded"
-        ],
-        "suite": "150_veldo_0317_full_pool.py"
-      },
-      "criterion": "AC1",
-      "mutant_targets": {
-        "space317/ac1/refunded": [
-          false
-        ]
-      },
-      "red_rows": [
-        "space317/ac1/behind-admission",
-        "space317/ac1/refunded",
-        "space317/ac1/replayed-end",
-        "space317/ac4/two-stop"
-      ]
-    },
-    {
-      "additional_controls": {
-        "elapsed": 6.075296295341104,
-        "fixture_version": 1,
-        "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
-        "new_digest": "e2fd8f0b2217c61a585a2c3be9727b7ea596c0db4516ffe7defca25c75ab5586",
-        "old_digest": "33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
-        "replacement_count": 1,
-        "reuse_key": null,
-        "reuse_reason": "unknown_closure",
-        "schema": "veldo.mutation-result/v1",
-        "source": "fresh"
-      },
-      "applied": 1,
-      "baseline_targets": {
-        "space317/ac2/repeat-once": [
-          true
-        ]
-      },
-      "case": {
-        "driver": "check_teeth_mutations.py",
-        "finding": 317,
-        "identity": "check_teeth_mutations.py:space317-text-alone-is-environment",
-        "module": "control_space_admission.py",
-        "name": "space317-text-alone-is-environment",
-        "new": "full = True",
-        "old": "full = any(p['free'] is not None and p['free'] < p['floor'] for p in pools)",
-        "rows": [
-          "space317/ac2/repeat-once"
-        ],
-        "suite": "150_veldo_0317_full_pool.py"
-      },
-      "criterion": "AC2",
-      "mutant_targets": {
-        "space317/ac2/repeat-once": [
-          false
-        ]
-      },
-      "red_rows": [
-        "space317/ac2/repeat-once",
-        "space317/classification/floor",
-        "space317/classification/unread"
-      ]
-    },
-    {
-      "additional_controls": {
-        "elapsed": 6.037446365691721,
-        "fixture_version": 1,
-        "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
-        "new_digest": "9e5363f82a907caf4df0713b71389db18e435da9d07a52ba3185995508aea6e5",
-        "old_digest": "a1f833358df9d77b0cf7c588d146a1dc7a8b1bc7f5923ff8232ac90b48e18ad4",
-        "replacement_count": 1,
-        "reuse_key": null,
-        "reuse_reason": "unknown_closure",
-        "schema": "veldo.mutation-result/v1",
-        "source": "fresh"
-      },
-      "applied": 1,
-      "baseline_targets": {
-        "space317/ac3/work-retained": [
-          true
-        ]
-      },
-      "case": {
-        "driver": "check_teeth_mutations.py",
-        "finding": 317,
-        "identity": "check_teeth_mutations.py:space317-remove-failed-worktree",
-        "module": "control_space_signal.py",
-        "name": "space317-remove-failed-worktree",
-        "new": "if False:",
-        "old": "if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):",
-        "rows": [
-          "space317/ac3/work-retained"
-        ],
-        "suite": "150_veldo_0317_full_pool.py"
-      },
-      "criterion": "AC3",
-      "mutant_targets": {
-        "space317/ac3/work-retained": [
-          false
-        ]
-      },
-      "red_rows": [
-        "space317/ac3/reconnect",
-        "space317/ac3/work-retained"
-      ]
-    },
-    {
-      "additional_controls": {
-        "elapsed": 6.504391503985971,
-        "fixture_version": 1,
-        "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
-        "new_digest": "68db10b3a1fb8fe7d7a631e644b19d090509ecb3e456c797b7c5a34805891f6f",
-        "old_digest": "33e8701e4ecae7a5c6011ea28273f12f1c885a248a59f409091e2ccd77c65d76",
-        "replacement_count": 1,
-        "reuse_key": null,
-        "reuse_reason": "unknown_closure",
-        "schema": "veldo.mutation-result/v1",
-        "source": "fresh"
-      },
-      "applied": 1,
-      "baseline_targets": {
-        "space317/ac2/repeat-once": [
-          true
-        ]
-      },
-      "case": {
-        "driver": "check_teeth_mutations.py",
-        "finding": 317,
-        "identity": "check_teeth_mutations.py:space317-repeat-without-bound",
-        "module": "control_space_admission.py",
-        "name": "space317-repeat-without-bound",
-        "new": "andon=False",
-        "old": "andon=streak >= 2",
-        "rows": [
-          "space317/ac4/two-stop"
-        ],
-        "suite": "150_veldo_0317_full_pool.py"
-      },
-      "criterion": "AC4",
-      "mutant_targets": {
-        "space317/ac4/two-stop": [
-          false
-        ]
-      },
-      "red_rows": [
-        "space317/ac4/off-loop",
-        "space317/ac4/two-stop"
-      ]
-    },
-    {
-      "additional_controls": {
-        "elapsed": 4.807580272201449,
-        "fixture_version": 1,
-        "input_digest": "d141cbe749834b117cdbbc273112727d4a39fae7acb9e826dfb3fbc1fa853651",
-        "new_digest": "0982d6134941e2c281b44bc89eaf4f618cc2ba0542fb3a59d98d08f547c3373a",
-        "old_digest": "061e502c2297357f956b402a40c10cc7558276ae92e920350019b9ddad3b1b70",
-        "replacement_count": 1,
-        "reuse_key": null,
-        "reuse_reason": "unknown_closure",
-        "schema": "veldo.mutation-result/v1",
-        "source": "fresh"
-      },
-      "applied": 1,
-      "baseline_targets": {
-        "space317/ac3/next-brief": [
-          true
-        ]
-      },
-      "case": {
-        "driver": "check_teeth_mutations.py",
-        "finding": 317,
-        "identity": "check_teeth_mutations.py:space317-brief-omits-work",
-        "module": "control_launch.py",
-        "name": "space317-brief-omits-work",
-        "new": "payload = payload",
-        "old": "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload)",
-        "rows": [
-          "space317/ac3/next-brief"
-        ],
-        "suite": "150_veldo_0317_full_pool.py"
-      },
-      "criterion": "AC3",
-      "mutant_targets": {
-        "space317/ac3/next-brief": [
-          false
-        ]
-      },
-      "red_rows": [
-        "space317/ac3/next-brief"
-      ]
-    }
-  ],
-  "executed": 5,
-  "registered": 5,
-  "rejected": 5,
-  "reused": 0
+ "cases": [
+  {
+   "additional_controls": {
+    "elapsed": 16.514757534954697,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "6faff449bfbb6e6ff4bb817c20c71e945e762e447e92419fd91af6d1616ce089",
+    "old_digest": "6dce8f359362e3cddad6302451bc23d41d4c8d16066d28e8a99e034bfd0cf6c6",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/ac1/refunded": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-charge-environment-failure",
+    "module": "control_dispatch.py",
+    "name": "space317-charge-environment-failure",
+    "new": "released['attempts'] = released.get('attempts', 0)",
+    "old": "released['attempts'] = max(0, released.get('attempts', 0) - 1)",
+    "rows": [
+     "space317/ac1/refunded"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "AC1",
+   "mutant_targets": {
+    "space317/ac1/refunded": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/ac1/behind-admission",
+    "space317/ac1/refunded",
+    "space317/ac1/replayed-end",
+    "space317/ac4/two-stop",
+    "space317/fix1/rerun-before-release",
+    "space317/fix1/spent-answer"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 16.600083680357784,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "3f1c2d090512751bfd5d173dd19bc53aaff4b0e440acaafb666099d9cde3ac10",
+    "old_digest": "299cda03d95c4be19e9f723363d8f9a702e15fe34aa25e8ef5ae2e328b85c3b1",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/ac2/repeat-once": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-text-alone-is-environment",
+    "module": "control_space_admission.py",
+    "name": "space317-text-alone-is-environment",
+    "new": "full = True",
+    "old": "full = any(p['free'] is not None and p['free'] < p['floor'] for p in pools)",
+    "rows": [
+     "space317/ac2/repeat-once"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "AC2",
+   "mutant_targets": {
+    "space317/ac2/repeat-once": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/ac2/repeat-once",
+    "space317/classification/floor",
+    "space317/classification/unread"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 22.919269199017435,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "4e9ce21400b733cddc6adb537f68a5bd4d2b9396cd9bdd9e62338983859a487e",
+    "old_digest": "7ae6ae1e1df8b1871c4586b4d8681bc9fcdd6c3805044ba45ee8a14ea071bdec",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/ac3/work-retained": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-remove-failed-worktree",
+    "module": "control_space_signal.py",
+    "name": "space317-remove-failed-worktree",
+    "new": "if False:",
+    "old": "if tree and (tree == path or tree.startswith(path.rstrip('/') + '/')):",
+    "rows": [
+     "space317/ac3/work-retained"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "AC3",
+   "mutant_targets": {
+    "space317/ac3/work-retained": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/ac3/reconnect",
+    "space317/ac3/work-retained",
+    "space317/fix3/brief-ends"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 23.987113506998867,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "b8f8595ceaadaf6ad7954e405f89b839976ab498db5de7ad6fb23c1bd775ba8d",
+    "old_digest": "299cda03d95c4be19e9f723363d8f9a702e15fe34aa25e8ef5ae2e328b85c3b1",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/ac4/two-stop": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-repeat-without-bound",
+    "module": "control_space_admission.py",
+    "name": "space317-repeat-without-bound",
+    "new": "andon=False",
+    "old": "andon=streak >= 2",
+    "rows": [
+     "space317/ac4/two-stop"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "AC4",
+   "mutant_targets": {
+    "space317/ac4/two-stop": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/ac4/off-loop",
+    "space317/ac4/two-stop",
+    "space317/fix2/andon-redelivery"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 16.085436551831663,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "d1ed0b70842a9ff0590d3f2dc238644ca7fa270cde6b849cf863adddcdc5b9bd",
+    "old_digest": "94e5b916cea7b47d3da653ecce774cc99ef7f44111c89b4fc476178e0494b26d",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/ac3/next-brief": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-brief-omits-work",
+    "module": "control_launch.py",
+    "name": "space317-brief-omits-work",
+    "new": "payload = payload",
+    "old": "payload = ADMISSION.recovery_payload(self.dispatches.conn, unit_key, payload, D.completed)",
+    "rows": [
+     "space317/ac3/next-brief"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "AC3",
+   "mutant_targets": {
+    "space317/ac3/next-brief": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/ac3/next-brief",
+    "space317/fix3/brief-ends"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 15.35738666402176,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "5d2b6e3ce601af5fe6a953834ba11009cf8a51b665c77bbb75e7ebddd3b73210",
+    "old_digest": "299cda03d95c4be19e9f723363d8f9a702e15fe34aa25e8ef5ae2e328b85c3b1",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/fix1/rerun-before-release": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-rerun-takes-carried-hold",
+    "module": "control_space_admission.py",
+    "name": "space317-rerun-takes-carried-hold",
+    "new": "            while hold and hold['state'] == 'released':",
+    "old": "            while hold and (hold['state'] == 'released' or carried(ledger, identity)):",
+    "rows": [
+     "space317/fix1/rerun-before-release"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "F1",
+   "mutant_targets": {
+    "space317/fix1/rerun-before-release": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/fix1/rerun-before-release",
+    "space317/fix1/spent-answer"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 15.273605642840266,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "f1f7fabcfa1e26e950eb30400478d78d3f726a67b424951b0090fd346b543d91",
+    "old_digest": "d3e1f264c8369287f94a390c469a11c46ba271b3ab44041289eca990946afdae",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/fix1/spent-answer": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-spent-answer-kept",
+    "module": "control_service.py",
+    "name": "space317-spent-answer-kept",
+    "new": "            pass  # defect: the kept answer outlives the dispatch that carries its hold",
+    "old": "            requests.taken(contract)",
+    "rows": [
+     "space317/fix1/spent-answer"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "F1",
+   "mutant_targets": {
+    "space317/fix1/spent-answer": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/fix1/spent-answer"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 15.360015477053821,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "862d04bb943818ad8674cc382a2d843528af8d6432260f9dd1010f88aeb8efb1",
+    "old_digest": "d3e1f264c8369287f94a390c469a11c46ba271b3ab44041289eca990946afdae",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/fix2/andon-redelivery": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-failed-andon-notice-kept",
+    "module": "control_service.py",
+    "name": "space317-failed-andon-notice-kept",
+    "new": "            if False:  # defect: a failed delivery is kept for the life of the service",
+    "old": "            if not answers[record['dispatch_id']]['outcome']:",
+    "rows": [
+     "space317/fix2/andon-redelivery"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "F2",
+   "mutant_targets": {
+    "space317/fix2/andon-redelivery": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/fix2/andon-redelivery"
+   ]
+  },
+  {
+   "additional_controls": {
+    "elapsed": 17.800548541825265,
+    "fixture_version": 1,
+    "input_digest": "b30fd0aafc76c7c993e6977cf349e44d04053b5208f6fd9f904e640cc98a5179",
+    "new_digest": "235086c127af3ccf974b4e44195865ad783a901f80bb80ec0d62fb5e3073ecf6",
+    "old_digest": "299cda03d95c4be19e9f723363d8f9a702e15fe34aa25e8ef5ae2e328b85c3b1",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   "applied": 1,
+   "baseline_targets": {
+    "space317/fix3/brief-ends": [
+     true
+    ]
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 317,
+    "identity": "check_teeth_mutations.py:space317-brief-never-ends",
+    "module": "control_space_admission.py",
+    "name": "space317-brief-never-ends",
+    "new": "        completed(record)\n",
+    "old": "        if completed(record):\n            break\n",
+    "rows": [
+     "space317/fix3/brief-ends"
+    ],
+    "suite": "150_veldo_0317_full_pool.py"
+   },
+   "criterion": "F3",
+   "mutant_targets": {
+    "space317/fix3/brief-ends": [
+     false
+    ]
+   },
+   "red_rows": [
+    "space317/fix3/brief-ends"
+   ]
+  }
+ ],
+ "executed": 9,
+ "registered": 9,
+ "rejected": 9,
+ "reused": 0
 }

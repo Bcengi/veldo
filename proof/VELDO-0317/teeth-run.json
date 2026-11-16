@@ -1,31 +1,40 @@
 {
-  "after": {
-    "commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
-    "digest": "702c853cc88c9c106db0658e74ff27169a719dbdd4af41e82c4d2f9d319b8c16",
-    "status": ""
-  },
-  "before": {
-    "commit": "41610308d2b7dbd91a89388734c52d19fd8b42eb",
-    "digest": "702c853cc88c9c106db0658e74ff27169a719dbdd4af41e82c4d2f9d319b8c16",
-    "status": ""
-  },
-  "command": [
-    "nice",
-    "-n",
-    "10",
-    "python3",
-    "-B",
-    "scripts/check_teeth_mutations.py",
-    "--finding",
-    "317",
-    "--jobs",
-    "2",
-    "--worker-log-dir",
-    "/tmp/veldo0317-build/teeth-logs",
-    "--diff-dir",
-    "/tmp/veldo0317-build/teeth-diffs"
-  ],
-  "exit": 0,
-  "seconds": 46.23302602767944,
-  "surviving_supervisors": []
+ "after": {
+  "commit": "4b4f8ebbe6c98a6cb5bc9ffee56a643d14651e43",
+  "digest": "318e26d278312c756153e2c6a4ea1b6515e8136a7279b8c35eabe5cb684cdd3b",
+  "status": ""
+ },
+ "before": {
+  "commit": "4b4f8ebbe6c98a6cb5bc9ffee56a643d14651e43",
+  "digest": "318e26d278312c756153e2c6a4ea1b6515e8136a7279b8c35eabe5cb684cdd3b",
+  "status": ""
+ },
+ "command": [
+  "nice",
+  "-n",
+  "10",
+  "python3",
+  "-B",
+  "scripts/check_teeth_mutations.py",
+  "--finding",
+  "317",
+  "--jobs",
+  "2",
+  "--worker-log-dir",
+  "/tmp/v317-fix1/teeth-logs",
+  "--diff-dir",
+  "/tmp/v317-fix1/teeth-diffs"
+ ],
+ "digest_of": "sha256 of git ls-files -s",
+ "earlier_run": {
+  "commit": "d4410d55",
+  "detail": "missing_target: space317-rerun-takes-carried-hold: baseline rows removed. The F1 row raised under its own mutant and removed the later rows; the row was repaired in 4b4f8ebb and the whole finding was run again, last.",
+  "exit": 1,
+  "registered": 9,
+  "rejected": 8
+ },
+ "exit": 0,
+ "seconds": 172.29020873,
+ "summary": "mutations:passed registered=9 executed=9 reused=0 rejected=9 workers=19 elapsed=172.158s",
+ "surviving_supervisors": []
 }
