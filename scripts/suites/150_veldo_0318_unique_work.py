@@ -556,12 +556,15 @@ def _v318_suite():
                   and before == after)
             check('ac4/unsigned-outcome', 'old Keep path refused', not ledger.outcome(
                 item, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')['ok'])
-            (path / 'another-draft.txt').write_text('new work after Keep')
-            version = ledger._row(item, SP.ITEM_KIND)[0]
-            result = SIG.signal(ledger, 'worktree_abandoned', {'items': [{'item': item, 'version': version}],
-                'owner_abandon': {'item': item, 'at': time.time()}}, principal='owner', **given)
-            check('ac4/abandon', repr(result), path.exists() and ledger.item(item)['state'] == 'deferred'
-                  and not ledger.item(item).get('owner_keep') and request(item) != rid)
+            if path.exists():
+                (path / 'another-draft.txt').write_text('new work after Keep')
+                version = ledger._row(item, SP.ITEM_KIND)[0]
+                result = SIG.signal(ledger, 'worktree_abandoned', {'items': [{'item': item, 'version': version}],
+                    'owner_abandon': {'item': item, 'at': time.time()}}, principal='owner', **given)
+                check('ac4/abandon', repr(result), path.exists() and ledger.item(item)['state'] == 'deferred'
+                      and not ledger.item(item).get('owner_keep') and request(item) != rid)
+            else:
+                check('ac4/abandon', 'Keep lost its worktree', False)
         except Exception:
             check('setup', traceback.format_exc(), False)
         finally:

@@ -16691,7 +16691,9 @@ def cases():
             "    name = path if ctx.get('disposition') == '" + choice + "' else marked(path, identity)\n    if name != path and os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
             ['space318/' + ac + '/marked-path'], also=[(
                 "    refused = _worktree_move(ctx, repository, path, name)",
-                "    refused = None if name == path else _worktree_move(ctx, repository, path, name)")])
+                "    refused = None if name == path else _worktree_move(ctx, repository, path, name)"), (
+                "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None",
+                "        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) and name != path else None")])
     add(318, 'space318-discard-without-list', disposition318, 'control_space_remove.py',
         "    if disposition_files(ledger, record, path) != decision['proposal']['worktrees'][0]['files']:",
         "    if False:", ['space318/ac3/list-comparison'])
