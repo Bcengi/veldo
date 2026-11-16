@@ -228,6 +228,7 @@ def _organ(name):
 
 SC = _organ('control_clone')
 D = _organ('control_dispatch')
+ADMISSION = _organ('control_space_admission')
 S = D.S
 C = _organ('control_containment')
 HB = _organ('control_heartbeat')
@@ -773,7 +774,7 @@ def space_named(ledger, event, paths, subjects, root):
     return {'items': [{'item': identity, 'version': versions[identity]} for identity in named]}
 
 
-def space_release(space, identity):
+def space_release(space, identity, run=None):
     """VELDO-0308 AC2: release the hold `identity` (design 6.7: at run finished, after Signal). The answer is
     {hold, state, released, refusal}: released is True when this call wrote the release. A hold that is
     released already is left as it is, and a run that was given no hold has none (refusal no_hold).
@@ -786,7 +787,17 @@ def space_release(space, identity):
             return dict(out, refusal='no_hold')
         if held.get('state') == 'released':
             return dict(out, state='released')
-        done = ledger.release(identity)
+        used = None
+        if run is not None:
+            used = {pool: 0 for pool in held['needs']}
+            for item in ledger.items().values():
+                if _space_run_of(item) == run and item.get('pool') in used:
+                    size = (item.get('size') or {}).get('bytes')
+                    if type(size) is not int:
+                        used.pop(item['pool'], None)
+                    else:
+                        used[item['pool']] += size
+        done = ledger.release(identity, used=used)
         if not done.get('ok'):
             return dict(out, state=held.get('state'), refusal=str(done.get('reason')))
         return dict(out, state='released', released=True)
@@ -1453,11 +1464,12 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None, space=None):
+                 profile=None, space=None, admission=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None where
         # the installation has none. With it, a leftover run directory goes through Signal and not by a delete here.
         self.space = space
+        self.admission = admission
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
@@ -1511,6 +1523,11 @@ class Runner:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
                                    stop_requested=getattr(launch, 'stop_requested', False),
                                    supervision=getattr(launch, 'supervision', None))
+        record = self.dispatches.record(dispatch_id) or {}
+        if record.get('state') == 'refused' and self.space is not None:
+            bound = (record.get('contract') or {}).get('space')
+            if bound:
+                space_release(self.space, bound['hold'])
         return self.retirements.retire(dispatch_id, outcome, basis)
 
     def sweep(self):
@@ -1729,21 +1746,31 @@ class Runner:
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
+        attempt = self.dispatches.attempts(unit, station) + 1
+        request = dict(repository=self.dispatches.repository, project=project, unit=unit,
+                       station=station, attempt=attempt)
+        admission = (self.admission(**request) if self.admission is not None
+                     else ADMISSION.prepare(self.space, **request))
+        if not admission.get('ok'):
+            error = D.Refused(admission.get('code') or admission.get('reason') or 'space_admission_failed')
+            error.numbers = admission.get('reason') if isinstance(admission.get('reason'), dict) else None
+            raise error
+        space = admission.get('space')
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
-        account = self.account
-        if hasattr(account, 'reserve'):
-            # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
-            # reservation, reading the pool now: an account registered while work runs takes this dispatch.
-            account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
-                                      adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
-        else:
-            self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:
+            account = self.account
+            if hasattr(account, 'reserve'):
+                # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
+                # reservation, reading the pool now: an account registered while work runs takes this dispatch.
+                account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
+                                          adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
+            else:
+                self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
             entity, version, slot_digest = self._slot(dispatch_id)
             contract = {
                 'schema': D.SCHEMA, 'dispatch_id': dispatch_id, 'domain': self.dispatches.domain,
                 'repository': self.dispatches.repository, 'unit': unit, 'station': station,
-                'attempt': self.dispatches.attempts(unit, station) + 1,
+                'attempt': attempt,
                 'source': dict(resolve_source(source, revision), repository_uuid=self.dispatches.repository),
                 'input': {'decision': {k: decision[k] for k in ('decision_id', 'station', 'unit', 'domain_uuid',
                                                                 'watermark', 'inputs')},
@@ -1753,9 +1780,14 @@ class Runner:
                 'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
                                 'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
+                'space': space,
             }
             self.dispatches.prepare(contract, now=now)
         except BaseException:
+            active = self.dispatches.active(unit, station)
+            promised = ((active or {}).get('contract') or {}).get('space')
+            if space is not None and promised != space:
+                space_release(self.space, space['hold'])
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise
         return contract
@@ -1817,7 +1849,8 @@ class Runner:
                                        'configuration_digest': D.digest(bound)},
                         'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
                                         'account': account, 'project': None},
-                        'claim': None, 'deadline': deadline, 'authority_generation': self.dispatches.generation}
+                        'claim': None, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
+                        'space': None}
             self.dispatches.prepare(contract, now=now)
         except BaseException:
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
@@ -2441,7 +2474,7 @@ class Receiver:
         if not self.run_sent:
             end['reason'] = ((self.run_removal or {}).get('deferral') if self.run_removal else None) or 'nothing_recorded'
         named = ((contract or {}).get('space') or {}).get('hold') if isinstance((contract or {}).get('space'), dict) else None
-        end['hold'] = space_release(space, named or dispatch_id)
+        end['hold'] = space_release(space, named or dispatch_id, run=dispatch_id)
         return end
 
     def _settlement_trust(self, EL):

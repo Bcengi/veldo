@@ -16483,6 +16483,48 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0316: the four specification falsifiers and the factory acceptance seams.
+    admission316 = '150_veldo_0316_admission.py'
+    add(316, 'space316-ignore-floor', admission316, 'control_space_admission.py',
+        "if free_now - others < need + record['floor']:",
+        "if free_now - others < need:", ['space316/ac1/floor-boundaries'])
+    add(316, 'space316-admission-at-acceptance', admission316, 'control_launch.py',
+        "        if not admission.get('ok'):\n",
+        "        if False:  # defect: preparation does not wait for admission\n",
+        ['space316/ac2/before-reservation'], also=[
+            ("        space = admission.get('space')\n",
+             "        space = admission.get('space') if admission.get('ok') else None\n"),
+            ("        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)",
+             "        contract = self.prepare(unit, station, **kwargs)\n"
+             "        answer = ADMISSION.prepare(self.space, repository=self.dispatches.repository,\n"
+             "            project=contract['reservation']['project'], unit=unit, station=station,\n"
+             "            attempt=contract['attempt'])\n"
+             "        if not answer.get('ok'):\n"
+             "            raise D.Refused(answer.get('code', 'space_wait'))\n"
+             "        launch = self.receiver(contract)")])
+    add(316, 'space316-block-report', admission316, 'control_space_admission.py',
+        "answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'",
+        "answer = 'admitted' if reason is None else 'waiting'", ['space316/ac3/report-starts'])
+    add(316, 'space316-measured-after-one', admission316, 'control_space_admission.py',
+        "elif len(recent) == 5 and all(type(run.get(name)) is int for run in recent):",
+        "elif len(recent) >= 1 and all(type(run.get(name)) is int for run in recent):",
+        ['space316/ac4/one-run-default'])
+    add(316, 'space316-wait-listed-refused', admission316, 'control_service.py',
+        "if code.startswith('space_wait:') or code == 'space_pending':",
+        "if code == 'space_pending':", ['space316/ac2/factory-waiting'])
+    add(316, 'space316-accept-released', admission316, 'control_dispatch.py',
+        "        _space_bound(conn, contract)\n        if _identity_problems(params.get('receiver'), ('principal',))",
+        "        # defect: the promised hold is not read at acceptance\n"
+        "        if _identity_problems(params.get('receiver'), ('principal',))",
+        ['space316/ac2/acceptance-rechecks'])
+    add(316, 'space316-lost-completion-wake', admission316, 'control_space_admission.py',
+        "            self.loop.wake('space_admission', key)",
+        "            pass  # defect: the factory never hears the completed judgment",
+        ['space316/ac2/completion-wakes'])
+    add(316, 'space316-release-winning-promise', admission316, 'control_launch.py',
+        "            if space is not None and promised != space:",
+        "            if space is not None:", ['space316/ac2/racing-prepare'])
+
     return result
 
 

@@ -3103,8 +3103,10 @@ class Line:
         self.registration = S.COMMAND_REGISTRY['subscription_reservation']
         pool = L.D.RES.POOL.Pool({name: {'engine': engine, 'host': host} for name, engine in self.engines.items()})
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
+        self.space_admission = L.ADMISSION.Requests(service, loop)
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
-                               runs=L.runs_root(receiver), profile=receiver.get('profile'))
+                               runs=L.runs_root(receiver), profile=receiver.get('profile'), space=service.space,
+                               admission=self.space_admission.prepare)
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(
@@ -3136,6 +3138,7 @@ class Line:
         return L.invoke(self.receiver_path, contract, self.dispatches)
 
     def activate(self):
+        self.runner.space = self.service.space
         S.COMMAND_REGISTRY['subscription_reservation'] = self.registration
 
     def _rows(self, kind):
@@ -3646,7 +3649,9 @@ class Line:
                                         **({'exclude': list(exclude)} if exclude else {}))
         except Exception as error:  # noqa: BLE001 - a refused offer is named in the pass, never the end of the service
             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
-            if code.startswith('no_account'):
+            if code.startswith('space_wait:') or code == 'space_pending':
+                report['waiting'].append(dict(entry, refusal=code, numbers=getattr(error, 'numbers', None)))
+            elif code.startswith('no_account'):
                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
                 report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
             else:

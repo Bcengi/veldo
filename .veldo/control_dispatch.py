@@ -139,7 +139,7 @@ END_RETRIES = 8
 STOP = 'dispatch-outcome-unknown'
 
 CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'station', 'attempt', 'source',
-                   'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation')
+                   'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation', 'space')
 SUBJECT_KINDS = ('project', 'conversation')
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
 # VELDO-0131: the owner's stop request and the runner's record of its ask, outside TRANSITIONS (no state moves).
@@ -218,10 +218,18 @@ def contract_problems(contract):
     complete only when every binding is present and each digest it carries recomputes."""
     if not isinstance(contract, dict):
         return ['contract']
-    missing = [f for f in CONTRACT_FIELDS if f not in contract]
+    missing = [f for f in CONTRACT_FIELDS if f not in contract and f != 'space']
     if missing:
         return missing
     problems = ['unexpected:' + f for f in sorted(set(contract) - set(CONTRACT_FIELDS) - {'subject_kind'})]
+    # Stored contracts written before admission have no space field. Do not rewrite them
+    # or recompute their stored digest. New Runner contracts include space, even when off.
+    space = contract.get('space')
+    if space is not None and (not isinstance(space, dict) or set(space) != {'hold', 'needs'}
+            or not _text(space.get('hold')) or not isinstance(space.get('needs'), dict)
+            or not space['needs'] or not all(_text(pool) and type(size) is int and size >= 0
+                                            for pool, size in space['needs'].items())):
+        problems.append('space')
     subject_kind = contract.get('subject_kind', 'project')
     if subject_kind not in SUBJECT_KINDS:
         problems.append('subject_kind')
@@ -451,6 +459,24 @@ def stop_transition(conn, params, before):
     return {rid: {'kind': RECORD_KIND, 'data': record}}
 
 
+def _space_bound(conn, contract):
+    """Re-read the already judged promise in the accepting transaction. Never ask admission here."""
+    bound = contract.get('space')
+    if bound is None:
+        return
+    space = _organ('control_space')
+    row = _entity(conn, space.hold_id(bound['hold']))
+    hold = (row or {}).get('data') or {}
+    scope = {'type': 'project', 'id': contract['reservation']['project']}
+    if ((row or {}).get('kind') != space.HOLD_KIND
+            or hold.get('scope') != scope or hold.get('needs') != bound['needs']
+            or hold.get('state') not in ('admitted', 'advised')):
+        raise Refused('space_hold_unavailable:' + bound['hold'])
+    mode = _entity(conn, space.mode_id(scope))
+    if ((mode or {}).get('data') or {}).get('mode') == 'act' and hold['state'] != 'admitted':
+        raise Refused('space_hold_not_admitted:' + bound['hold'])
+
+
 def transition(conn, params, before):
     """THE ONE TRANSITION every dispatch command commits, inside its store transaction."""
     action, now = params.get('action'), params.get('now')
@@ -503,6 +529,7 @@ def transition(conn, params, before):
             raise Refused('deadline_passed')
         _reservation_bound(conn, contract)
         _claim_bound(conn, contract)
+        _space_bound(conn, contract)
         record = {'schema': SCHEMA, 'dispatch_id': params['dispatch_id'], 'state': 'prepared',
                   'contract': contract, 'contract_digest': digest(contract), 'receiver': None, 'process': None,
                   'termination': None, 'refusal': None, 'stop': None, 'reason': None,
@@ -525,6 +552,7 @@ def transition(conn, params, before):
             raise Refused('deadline_passed')
         _reservation_bound(conn, contract)
         _claim_bound(conn, contract)
+        _space_bound(conn, contract)
         if _identity_problems(params.get('receiver'), ('principal',)) or params['receiver']['principal'] != params['principal']:
             raise Refused('invalid_input', 'the receiver names its own process identity and principal')
         record['receiver'] = params['receiver']

@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_space_admission.py"
   - "engine/.veldo/control_launch.py"
   - ".veldo/control_launch.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
   - "engine/.veldo/control_dispatch.py"
   - ".veldo/control_dispatch.py"
   - "scripts/suites/*_veldo_0316_*.py"
@@ -98,3 +100,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-16: footprint names control_service and its synced copy for AC2, the factory waiting branch
+  cited in design 6.7, and initial admission through the existing space worker. No AC changed.
