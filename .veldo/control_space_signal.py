@@ -412,6 +412,9 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
             review['review_check'] = review_check
         if action == 'remove_held' and given.get('trunk') is not None:
             review['trunk'] = given['trunk']
+        if entry.get('row') == CLONE_ROW:
+            # The item's own table gave it the clone's row: the remover is told, and only then.
+            review['row'] = CLONE_ROW
         seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
                                       keep=given['keep'], run=given['run'], proc=given['proc'], **review)
         return seen['said']
@@ -419,7 +422,7 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     try:
         judged = rules(ledger, probe, identity, record, purpose=REMOVE, tool=tool, owner_live=given['owner_live'],
                        landed=given['landed'], run=given['run'], proc=given['proc'],
-                       borrow_root=given['borrow_root'])
+                       borrow_root=given['borrow_root'], row=entry.get('row'))
     except Exception as error:  # noqa: BLE001 - what could not be judged is refused, never removed
         judged = {'ok': False, 'rule': 'error', 'order': None, 'deferral': DEFERRAL['tool'],
                   'found': {'raised': _raised(error)}}
@@ -459,7 +462,10 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
             and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
             and found.get('work_tree') is True):
         # A batch clone or a candidate workspace with files in no commit raises one request, as a
-        # worktree does (VELDO-0347 AC3). It names the clone as a clone and offers Keep alone.
+        # worktree does (VELDO-0347 AC3). It names the clone as a clone and offers Keep alone. Only
+        # an item whose own table gave it the clone's row is asked about, and table 1 names no
+        # request: rule 5 says work_tree of such an item alone (CLONE_ROW), and the Ledger takes a
+        # clone's request for no other.
         try:
             asked = ledger.request_disposition(
                 identity, remover.clone_proposal(ledger, probe, identity, record, given['run']),
@@ -585,6 +591,12 @@ HOLDS_UNPUSHED = ('scratch', 'build_output', 'review_run_scratch', 'review_run_b
 WORKER_CLONE = 'worker_clone'
 CLONE_FORMS = (WORKER_CLONE, 'batch_clone', 'candidate_workspace')
 REQUEST_FORMS = ('batch_clone', 'candidate_workspace')
+# The row of the kind registry such an item reads when its own table has it (table 2). DECIDED UNDER
+# TABLE N, JUDGED BY TABLE N: the clone's reading of rule 5, its request and the worker clone's
+# snapshot removal are chosen by the row the registry answered for the item, never by its form alone.
+# An item with a clone form that was declared under table 1 reads the agent repository's own row
+# and is judged and removed as before VELDO-0347.
+CLONE_ROW = 'agent_repository_clone'
 NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
@@ -765,7 +777,7 @@ def _rule_unique_work(ledger, probe, identity, record, given):
             return {'not_across': facts['not_across'], 'more': facts['more'], 'refs': facts['refs'],
                     'stashes': facts['stashes']}
         form = record.get('form')
-        if form not in CLONE_FORMS:
+        if form not in CLONE_FORMS or given.get('row') != CLONE_ROW:
             return None
         # A clone's work tree (VELDO-0347 AC3): a file in no commit is unique work, and the clone waits
         # for the owner. A worker clone of a run that has ended does not: rule 3 has passed, so its
@@ -896,7 +908,7 @@ RULES = {'ledger': _rule_ledger, 'protect': _rule_protect, 'owner_live': _rule_o
 
 
 def rules(ledger, probe, identity, record, purpose=REMOVE, tool=None, owner_live=None, landed=(), run=None,
-          proc=None, borrow_root=None):
+          proc=None, borrow_root=None, row=None):
     """Judge one removal of the item `identity`, whose ledger record is `record`, by the safety rules
     in their order, and stop at the first that refuses.
 
@@ -906,11 +918,13 @@ def rules(ledger, probe, identity, record, purpose=REMOVE, tool=None, owner_live
     with {conclusive, group_empty}; with no answer the run is not known to have ended, and rule 3
     refuses. `landed` holds the source commits of completed landings (rule 5). `run`, `proc` and
     `borrow_root` are the probes' own parameters: the client runner, the process table and the
-    launcher's journal root."""
+    launcher's journal root. `row` is the row the kind registry answered for the item, read from the
+    table of the item's own version: rule 5 reads a clone's work tree only when it is CLONE_ROW, and
+    with none an agent repository is read as its own row reads it, whatever its form."""
     if purpose not in APPLIES:
         raise ValueError('not a purpose of removal: %r' % (purpose,))
     given = {'tool': tool, 'owner_live': owner_live, 'landed': landed, 'run': run, 'proc': proc,
-             'borrow_root': borrow_root}
+             'borrow_root': borrow_root, 'row': row}
     passed = []
     for order, name in enumerate(ORDER, 1):
         if name not in APPLIES[purpose] or (name == 'tool' and tool is None):

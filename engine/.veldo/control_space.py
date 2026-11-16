@@ -1328,10 +1328,21 @@ class Ledger:
             result['request'] = self.item(item)['disposition']
         return result
 
+    def _clone_row(self, record):
+        """Whether the table the item was declared under has a row of its own for the item's form
+        (VELDO-0347): the item's version is the version of the table this Ledger was given, and that
+        table names <kind>:<form>. Decided under table N, judged by table N: an item with a clone
+        form that was declared under table 1, which has no such row, is not asked about as a clone.
+        The Ledger is given one table; of an item of any other version it reads no such row."""
+        ends_on = record.get('ends_on') or {}
+        return (ends_on.get('version') == self.lifecycle['version']
+                and '%s:%s' % (record.get('kind'), record.get('form')) in self.lifecycle['ends_on'])
+
     def _t_disposition_request(self, conn, params, before):
         identity, record = self._stored(params, before)
         prior = record.get('disposition') or {}
-        clone = record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
+        clone = (record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
+                 and self._clone_row(record))
         if (record['state'] != 'deferred' or not (record['kind'] == 'worktree' or clone)
                 or record.get('owner_keep')):
             raise Refused('space_disposition_state', 'a deferred worktree, batch clone or candidate workspace '

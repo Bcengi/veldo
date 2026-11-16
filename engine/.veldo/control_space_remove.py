@@ -806,6 +806,8 @@ def _r_folder(ctx, identity, record, answer):
 
 
 WORKER_CLONE = 'worker_clone'
+# The row of the kind registry a clone reads when its own table has it (control_space_signal.CLONE_ROW).
+CLONE_ROW = 'agent_repository_clone'
 
 
 def _signature(found):
@@ -889,11 +891,13 @@ def _r_agent_repository(ctx, identity, record, answer):
     answer['method'] = 'keep_then_rename_probe_delete'
     path = _plain(record['locator']['path'])
     saved = False
-    if record.get('form') == WORKER_CLONE and ctx['keep'] is not None:
+    if record.get('form') == WORKER_CLONE and ctx.get('row') == CLONE_ROW and ctx['keep'] is not None:
         # A worker clone of a run that has ended (VELDO-0347 AC3; rule 3 passed before this remover
         # was called): its uncommitted state is saved in the snapshot store by the keep step, and
         # each file is compared with the manifest immediately before it is deleted. One that cannot
-        # be shown to be a worker clone is removed as any agent repository is, or not at all.
+        # be shown to be a worker clone is removed as any agent repository is, or not at all. So is
+        # one whose own table has no row for a clone (declared under table 1): the caller names the
+        # row the registry answered for the item, and with none the form alone picks nothing.
         shown = ctx['probe'].worker_clone(path, ((record.get('owner') or {}).get('run') or {}).get('id'),
                                           ctx['ledger'].state_root)
         saved = isinstance(shown, dict) and shown.get('clone') is True
@@ -1780,7 +1784,7 @@ REMOVERS = {
 
 
 def remove(ledger, probe, identity, record, action='remove', free=None, keep=None, run=None, proc=None,
-           review_check=None, trunk=None):
+           review_check=None, trunk=None, row=None):
     """Carry out one removal of the item `identity`, whose ledger record is `record`, by the remover
     of `action` and the item's kind, and return what it measured.
 
@@ -1795,7 +1799,9 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
     Returns {ok: True, ...} or the refusal {ok: False, reason, deferral, said, ...}, each with item,
     action, kind, method, bytes, bytes_source, pool, pool_free_before, pool_free_after, freed, host and
     commands. `trunk(repository)` names the declared trunk of a main repository, for the evidence
-    remover and nothing else; with none, only the store and the kept refs hold a copy."""
+    remover and nothing else; with none, only the store and the kept refs hold a copy. `row` is the
+    row the kind registry answered for the item from the table of the item's own version: a worker
+    clone is saved in the snapshot store and compared file by file only when it is CLONE_ROW."""
     commands, given = [], run or _run
 
     def logged(argv, cwd=None):
@@ -1803,7 +1809,7 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         return given(argv, cwd)
 
     ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc, 'action': action,
-           'commands': commands, 'review_check': review_check, 'trunk': trunk}
+           'commands': commands, 'review_check': review_check, 'trunk': trunk, 'row': row}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}
@@ -1826,10 +1832,11 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
     return dict(answer, ok=True)
 
 
-def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=None):
+def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=None, row=None):
     """The remover in the form rule 7 calls: tool(identity, record)."""
     def call(identity, record):
-        return remove(ledger, probe, identity, record, action=action, free=free, keep=keep, run=run, proc=proc)
+        return remove(ledger, probe, identity, record, action=action, free=free, keep=keep, run=run, proc=proc,
+                      row=row)
     return call
 
 
