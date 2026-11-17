@@ -47,3 +47,17 @@ suite 155's boundary rows; these replace the call and are judged by suite 142's 
 For the lead, under the lock: `python3 scripts/check_gate_mutations.py --finding N` for N in 47, 127, 129, 158,
 303, 306, 312, then the full stage in the gate. No teeth case has yet executed on this branch in a gate, so
 survivors of other tickets can still appear once the stage runs.
+
+## Gate fix 3: the case that did not compile (gate 99zzD)
+
+Gate 99zzD stopped its mutation stage at newproject143-take-on-not-due: its anchor still occurred once, but
+VELDO-0323 (e466bed0) had put the space consumer's lines inside the `if` the case replaced with `pass`, so the
+mutant left an indented orphan block (IndentationError at control_service.py:2251).
+
+| case | suite, module | moved by | re-anchored at | disposition |
+|---|---|---|---|---|
+| newproject143-take-on-not-due | 110 (110_veldo_0143_new_project), control_service.py | VELDO-0323 (e466bed0) | the `if self.watermark() > before:`, `self.projects_due = True` and the first consumer line; the defect replaces only the assignment and keeps the consumer block under the if | re-anchored, rejected: suite 110 unchanged 109 of 109; mutated, provision/handed-over false and 108 passed |
+
+Static check over every registered case after the change (each mutant applied in memory, every Python one parsed
+with ast): 3591 cases, 3473 Python mutants, 0 moved, 0 that do not parse. The case was executed by hand (suite 110
+run with nice in a scratch worktree holding the mutant, not the teeth runner); the stage itself runs under the lock.

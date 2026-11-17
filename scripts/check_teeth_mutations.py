@@ -11239,9 +11239,15 @@ def cases():
                 "        held = AD.hold(config, repository)\n",
                 "        held = os.open(os.devnull, os.O_RDONLY)  # defect: no lock is taken\n",
                 ['provision/interrupted'])
+    # Re-anchored 2026-11-17 (VELDO-0329b gate fix 3): VELDO-0323 put the space consumer's lines
+    # inside this if, so the anchor now carries the if and its first consumer line and the defect
+    # replaces only the assignment; the consumer block stays under the if and the mutant compiles.
     new_project('newproject143-take-on-not-due', 'control_service.py',
-                "        if self.watermark() > before:\n            self.projects_due = True\n",
-                "        pass  # defect: an advance of the journal does not make the new-project pass due\n",
+                "        if self.watermark() > before:\n            self.projects_due = True\n"
+                "            consumer = getattr(self, 'space_consumer', None)\n",
+                "        if self.watermark() > before:\n"
+                "            pass  # defect: an advance of the journal does not make the new-project pass due\n"
+                "            consumer = getattr(self, 'space_consumer', None)\n",
                 ['provision/handed-over'])
     new_project('newproject143-provisioner-end-unseen', 'control_service.py',
                 "        if self.projects_pass is not None and self.projects_pass.readable(fd):\n"

@@ -437,3 +437,12 @@ label, is one the rule has read (`PLAIN_WORDS`); any other word presents it (`wo
 its claim and falsifier are unchanged. Row proposal/adoption-pick-folds (new); proposal/adoption-visibility,
 presentation-interrupted and own-message-doubt (changed); finding 143 registers four more mutations, sixty-four in
 all. DECISIONS 34 to 36. Risk, readiness and approval requirements are unchanged.
+
+2026-11-17, VELDO-0329b gate fix 3: teeth case newproject143-take-on-not-due re-anchored. VELDO-0323 added
+the space consumer's lines inside `if self.watermark() > before:` in control_service.hint_after, so the case,
+which replaced the whole if with `pass`, left an indented orphan block and did not compile (IndentationError at
+control_service.py:2251; it stopped gate 99zzD's mutation stage as a driver error). The anchor now carries the
+if and its first consumer line, and the defect replaces only `self.projects_due = True`; the meaning is the
+same (an advance of the journal does not make the new-project pass due) and the 0323 lines stay under the if.
+Applied in memory the mutant parses; all 3591 registered cases: 0 moved, 0 that do not parse. Suite 110 by
+hand: unchanged 109 of 109; with the mutant provision/handed-over is false (108 passed), so the case is rejected.
