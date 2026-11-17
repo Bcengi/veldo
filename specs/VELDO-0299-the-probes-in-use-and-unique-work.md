@@ -192,3 +192,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   scripts/check_git_boundary.py allows the module as a funnel (FUNNELS); that file is not a protected
   path. New row closed/personal-excludes-is-work and falsifier space299-git-outside-the-boundary. Every
   registered case of this module now runs beside a copy of git_process.py (companions).
+
+- 2026-11-17: suite 136 in the gate's confinement (gate 99zz3 on the VELDO-0329 integration, 43 rows red).
+  Cause: the namesake child of ac1/helper-not-counted wrote its name to /proc/self/comm, and the gate
+  domain mounts /proc read only, so the child ended before it said ready and every later row was unreached.
+  The child now sets its name with prctl(PR_SET_NAME), reads it back, and ends if either fails. Suite only;
+  no row's meaning changed. What lies behind that call in a confined leg is measured by the lead's run.

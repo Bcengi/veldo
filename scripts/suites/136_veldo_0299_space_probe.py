@@ -241,7 +241,15 @@ def _v299_space_probe_suite():
               and all(set(entry) == {'name', 'exe', 'cgroup'} and os.path.isabs(entry['exe'])
                       and entry['cgroup'].startswith('/user.slice/user-{uid}.slice/user@{uid}.service/')
                       for entry in P.HELPERS))
-        namesake = child('import sys\nheld = open(sys.argv[1])\nopen("/proc/self/comm", "w").write("virtiofsd")',
+        # The name is set with prctl(PR_SET_NAME), which needs no writable /proc: the gate's confinement mounts
+        # /proc read only, so a write to /proc/self/comm is refused there. A refused call ends the child before
+        # it says ready, so the row cannot pass on a name that was not set.
+        namesake = child('import ctypes, os, sys\nheld = open(sys.argv[1])\n'
+                         'libc = ctypes.CDLL(None, use_errno=True)\n'
+                         'if libc.prctl(15, ctypes.c_char_p(b"virtiofsd"), 0, 0, 0) != 0:\n'
+                         '    raise OSError(ctypes.get_errno(), "prctl(PR_SET_NAME)")\n'
+                         'if open("/proc/self/comm").read().strip() != "virtiofsd":\n'
+                         '    raise RuntimeError("the name was not set")',
                          used / 'inner' / 'held.txt', cwd=elsewhere)
         named = P.in_use(used)
         check('ac1/helper-not-counted', 'a live process that names itself virtiofsd and holds a file beneath the '

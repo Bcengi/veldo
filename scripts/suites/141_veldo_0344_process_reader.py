@@ -9,7 +9,9 @@ gives the probe through the probe's seam, SEAM['reader']: the file's owner, grou
 owners, the capability attribute and the capability lines of the writer's status. Everything else is
 real: the processes (python children, each ending when its input closes; "undumpable" ones call
 prctl(PR_SET_DUMPABLE, 0), which is what makes a process of the owner's unreadable to the probe), their
-threads with a file system state or a descriptor table of their own (unshare), a unix socket the suite
+threads with a file system state or a descriptor table of their own (tasks a small C program the suite
+builds starts with clone(2), sharing the address space and the thread group but not that one thing; no
+unshare call, which the gate's confinement refuses), a unix socket the suite
 listens on the way the socket unit does (one program started per connection, the connection its
 standard output), the kernel's SO_PASSCRED and SO_PASSPIDFD records of who wrote each part, and the
 pidfd looks.
@@ -166,22 +168,10 @@ def _v344_process_reader_suite():
     # A live process: python that holds what its row asks for, says ready with the ids of the threads it
     # started, and ends when its input closes.
     CHILD = r'''
-import ctypes, mmap, os, sys, threading
+import ctypes, mmap, os, sys
 libc = ctypes.CDLL(None, use_errno=True)
 spec = dict(pair.split('=', 1) for pair in sys.argv[1:])
-keep, tids, done = [], [], threading.Event()
-def thread(flag, act):
-    def run():
-        if libc.unshare(flag) != 0:
-            raise OSError(ctypes.get_errno(), 'unshare')
-        act()
-        tids.append(threading.get_native_id())
-        done.set()
-        threading.Event().wait()
-    done.clear()
-    threading.Thread(target=run, daemon=True).start()
-    if not done.wait(20):
-        raise RuntimeError('the thread did not start')
+keep = []
 if 'open' in spec:
     keep.append(open(spec['open'], 'rb'))
 if 'dirfd' in spec:
@@ -189,14 +179,106 @@ if 'dirfd' in spec:
 if 'map' in spec:
     with open(spec['map'], 'rb') as mapped:
         keep.append(mmap.mmap(mapped.fileno(), 0, prot=mmap.PROT_READ))
-if 'thread_cwd' in spec:
-    thread(0x200, lambda: os.chdir(spec['thread_cwd']))  # CLONE_FS: a file system state of its own
-if 'thread_open' in spec:
-    thread(0x400, lambda: keep.append(open(spec['thread_open'], 'rb')))  # CLONE_FILES: its own table
 if spec.get('dumpable') == '0':
     libc.prctl(4, 0, 0, 0, 0)  # PR_SET_DUMPABLE: the probe may not read this process any more
-print('ready ' + ' '.join(str(tid) for tid in tids), flush=True)
+print('ready', flush=True)
 sys.stdin.read()
+'''
+
+    # The same live process with threads, as a C program: each thread is a task started with clone(2) in
+    # the same address space and thread group (CLONE_VM, CLONE_SIGHAND, CLONE_THREAD), which leaves out
+    # CLONE_FS (thread_cwd: a file system state of its own, where it changes directory) or CLONE_FILES
+    # (thread_open: a descriptor table of its own, where it opens the file). The kernel gives such a task
+    # its own copy at its start, so nothing calls unshare, which the gate's confinement refuses. A thread
+    # that cannot do its part ends the program before it says ready. The order is the python child's: the
+    # map (its descriptor kept open, as python keeps one), the threads, then undumpable.
+    THREADS = r'''
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <time.h>
+#include <unistd.h>
+
+struct task { const char *path; int own_files; volatile int said; };
+
+static int run(void *given)
+{
+    struct task *task = given;
+    int failed = task->own_files ? open(task->path, O_RDONLY) < 0 : chdir(task->path) != 0;
+    task->said = failed ? -1 : (int)syscall(SYS_gettid);
+    for (;;)
+        pause();
+    return 0;
+}
+
+static int start(const char *path, int own_files)
+{
+    static struct task tasks[2];
+    static int count;
+    struct task *task = &tasks[count++];
+    const size_t size = 1 << 20;
+    const struct timespec nap = {0, 1000000};
+    char *stack = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
+    int waited = 0;
+    if (stack == MAP_FAILED)
+        return -1;
+    task->path = path;
+    task->own_files = own_files;
+    task->said = 0;
+    if (clone(run, stack + size, CLONE_VM | CLONE_SIGHAND | CLONE_THREAD | (own_files ? CLONE_FS : CLONE_FILES),
+              task) < 0)
+        return -1;
+    while (task->said == 0 && waited++ < 20000)
+        nanosleep(&nap, NULL);
+    return task->said > 0 ? task->said : -1;
+}
+
+int main(int argc, char **argv)
+{
+    const char *thread_cwd = NULL, *thread_open = NULL, *map = NULL;
+    int undumpable = 0, tids[2], count = 0, at;
+    char byte;
+    for (at = 1; at < argc; at++) {
+        if (!strncmp(argv[at], "thread_cwd=", 11))
+            thread_cwd = argv[at] + 11;
+        else if (!strncmp(argv[at], "thread_open=", 12))
+            thread_open = argv[at] + 12;
+        else if (!strncmp(argv[at], "map=", 4))
+            map = argv[at] + 4;
+        else if (!strcmp(argv[at], "dumpable=0"))
+            undumpable = 1;
+        else
+            return 2;
+    }
+    if (map) {
+        struct stat found;
+        int descriptor = open(map, O_RDONLY);
+        if (descriptor < 0 || fstat(descriptor, &found) != 0
+            || mmap(NULL, (size_t)found.st_size, PROT_READ, MAP_SHARED, descriptor, 0) == MAP_FAILED)
+            return 3;
+    }
+    if (thread_cwd && (tids[count++] = start(thread_cwd, 0)) < 0)
+        return 4;
+    if (thread_open && (tids[count++] = start(thread_open, 1)) < 0)
+        return 5;
+    if (undumpable && prctl(PR_SET_DUMPABLE, 0, 0, 0, 0) != 0)
+        return 6;
+    printf("ready");
+    for (at = 0; at < count; at++)
+        printf(" %d", tids[at]);
+    printf("\n");
+    fflush(stdout);
+    while (read(0, &byte, 1) > 0)
+        ;
+    return 0;
+}
 '''
 
     # The stand-in: the reader's protocol, with the table the row wrote to a file.
@@ -280,12 +362,24 @@ P.SEAM['reader'] = {'path': path, 'pin': pin, 'file': lambda found: (0, os.getgi
 sys.exit(P.reader_exec())
 '''
 
-    children, spawned = [], []
+    children, spawned, threads_program = [], [], []
 
     def child(cwd, environ=None, **spec):
         """(the process, the ids of the threads it started). `environ`, when given, is its whole
-        environment."""
-        process = subprocess.Popen([sys.executable, '-c', CHILD] + ['%s=%s' % pair for pair in spec.items()],
+        environment. A process with threads is the C program, built at its first use; any other is python."""
+        program = [sys.executable, '-c', CHILD]
+        if any(name.startswith('thread_') for name in spec):
+            if not threads_program:
+                folder = Path(tempfile.mkdtemp(prefix='threads-', dir=str(temporary)))
+                (folder / 'threads.c').write_text(THREADS)
+                built = subprocess.run(BUILD + ['-o', 'threads', 'threads.c'], cwd=str(folder),
+                                       env={'PATH': '/usr/bin:/bin', 'TMPDIR': str(folder)}, stdin=subprocess.DEVNULL,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+                if built.returncode:
+                    raise RuntimeError('the threads program was not built: ' + built.stderr.decode()[-400:])
+                threads_program.append(str(folder / 'threads'))
+            program = threads_program[:]
+        process = subprocess.Popen(program + ['%s=%s' % pair for pair in spec.items()],
                                    cwd=str(cwd), stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=environ)
         children.append(process)
         said = process.stdout.readline().split()

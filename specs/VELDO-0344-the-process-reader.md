@@ -587,3 +587,17 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     empty. The right build with setcap failing, and with chown failing: exit 1, the install failed:
     nothing installed, the folder empty. The right build: sha256sum, then chown, then setcap, and
     the file in place with digest H. No sudo command was run and nothing is installed.
+
+- 2026-11-17: suite 141 in the gate's confinement (gate 99zz3 on the VELDO-0329 integration, 39 rows red;
+  lead ruling: the confinement stays and the suite is not listed in scripts/gate_unconfined.json).
+  Cause: the fixture gave a thread its own file system state or descriptor table with unshare(CLONE_FS /
+  CLONE_FILES), and the gate domain refuses the unshare call. A forked process cannot carry the property:
+  it is its own first thread, so the falsifiers "read the first thread's working directory only" and "read
+  the first thread's descriptors only" would still find it. The fixture's processes with threads are now a
+  C program the suite builds; each thread is a task started with clone(2) in the same address space and
+  thread group that leaves out CLONE_FS or CLONE_FILES, so the kernel gives it its own copy at its start
+  and nothing calls unshare. The rows and their conditions are unchanged. Off the gate the suite passes
+  every row but ac6/installed, which reads refused:no_pin on this host (the separate no_pin ruling).
+  The proof manifest's words "by unshare" describe the fixture before this entry. The production reader
+  check (control_space_probe.py) still makes its own thread with unshare; it runs under the authority
+  unit, not in the gate domain, and is not changed here.
