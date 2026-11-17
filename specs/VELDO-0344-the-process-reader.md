@@ -608,3 +608,8 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     folder, as the other builds do. Behind it, ac7/reproducible ran the setup text's first line, whose
     env -i drops TMPDIR: the suite now adds TMPDIR="$d" (the line's own folder) after that env -i when it
     runs the line, and fails the row if the line does not have exactly one. The setup text is unchanged.
+  - ac5/failed-write closed its 900 descriptors before it sent the byte after which the reader reads the
+    table, so the table was large only by the host's other processes; in the gate domain they are not
+    readable, the write succeeded and the reader ended 0. The descriptors now stay open until the reader
+    has ended, and a check says all 900 were held. Falsifier: case space344-goes-on-after-a-failed-write
+    applied, the row reads exit 0 and is red, off the gate and inside the gate domain.

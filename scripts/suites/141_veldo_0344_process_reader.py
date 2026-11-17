@@ -1358,8 +1358,6 @@ int main(int argc, char **argv)
         started = subprocess.Popen([str(reader)], stdin=subprocess.DEVNULL, stdout=theirs.fileno(), env={})
         spawned.append(started)
         theirs.close()
-        for descriptor in many:
-            os.close(descriptor)
         mine.settimeout(30)
         packets = [mine.recv(1 << 16)]
         mine.sendall(b'\n')
@@ -1375,6 +1373,13 @@ int main(int argc, char **argv)
             pass
         mine.close()
         ended = started.wait(timeout=30)
+        # The descriptors stay open until the reader has read the table and ended: they alone make
+        # it larger than one write, whatever other processes the host has or the probe may read.
+        held_open = len(many)
+        for descriptor in many:
+            os.close(descriptor)
+        check('ac5/failed-write', 'the row held its own 900 descriptors open until the reader had read them [%d]'
+              % held_open, held_open == 900)
         check('ac5/failed-write', 'the header was written and the table is larger than one write takes [%d packets]'
               % len(packets), packets[0] == b'veldo-procread 1 cap=0\n')
         check('ac5/failed-write', 'the reader ended with status 3 at the write that failed [%s]' % ended, ended == 3)
