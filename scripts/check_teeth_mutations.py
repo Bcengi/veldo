@@ -4035,9 +4035,9 @@ def cases():
             starts_on('ConnectionRefusedError'), 'unexpected-exit-waits-for-an-operator')
     # Observability: every refusal is observed by name and class.
     service('authority-refusal-not-observed', 'control_service.py',
-            "        self._count(observation)\n        return result\n",
+            "        self._count(observation)\n        self.space_pass()\n        return result\n",
             "        if ok:  # defect: a refused command leaves no observation\n"
-            "            self._count(observation)\n        return result\n", 'observations')
+            "            self._count(observation)\n        self.space_pass()\n        return result\n", 'observations')
     service('authority-request-refusal-not-observed', 'control_service.py',
             "        if isinstance(response, dict) and response.get('accepted') is False:\n",
             "        if False:  # defect: a request refused before apply leaves no observation\n", 'observations')
@@ -8969,8 +8969,8 @@ def cases():
         '    if build.get("artifact") is not None:',
         '    if False and build.get("artifact") is not None:', ['artifact/floor-binding'])
     add(129, 'worker129-worker-config-executed', '82_veldo_0129_worker_wiring.py', 'control_launch_work.py',
-        "        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:",
-        "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:", ['build/config-neutralization'])
+        "        with tempfile.TemporaryDirectory(prefix='import-') as directory:",
+        "        _git_process.run(['git', '-C', str(work), 'status', OPT + 'porcelain'], capture_output=True, timeout=30)\n        with tempfile.TemporaryDirectory(prefix='import-') as directory:", ['build/config-neutralization'])
     # VELDO-0166: each declared falsifier first, then the reported values carried beside it, the status
     # kept to the named window, a rejection in force kept, and a new profile kept private.
     def windows166(name, module, old, new, rows, suite='83_veldo_0166_usage_windows.py'):
@@ -9561,8 +9561,8 @@ def cases():
              ['delivery/own-server-only'])
     # AC1: the run's private directory left behind once it is reaped.
     delivery('run-directory-kept', 'control_launch.py',
-             '            shutil.rmtree(run, ignore_errors=True)\n',
-             '            pass  # defect: the run directory and its generated configuration stay\n',
+             "            found = _organ('control_space_remove').remove_standalone(run, 'folder')\n",
+             "            found = {'state': 'clear'}  # defect: the run directory and its generated configuration stay\n",
              ['delivery/private-dir-removed'])
     # The review fixes. A dead receiver's run directory left behind by its orphan release.
     delivery('orphan-run-kept', 'control_launch.py',
@@ -9876,8 +9876,10 @@ def cases():
                "        try:\n            if False:  # defect: the listing ran before the files it loads were written\n"),))
     # Staged role skills were unlinked only in the receiver's close(), which the runner's stop at the end races.
     add(127, 'role127-staged-skill-outlives-run', suite127, 'control_launch.py',
-        "            self._unstage_skills()\n            shutil.rmtree(run, ignore_errors=True)\n",
-        "            shutil.rmtree(run, ignore_errors=True)  # defect: links left for close() alone\n",
+        "            self._unstage_skills()\n"
+        "            found = _organ('control_space_remove').remove_standalone(run, 'folder')\n",
+        "            found = _organ('control_space_remove').remove_standalone(run, 'folder')"
+        "  # defect: links left for close() alone\n",
         ['review/skill-commit'])
     add(127, 'role127-context-line-every-run', '82_veldo_0141_execution_record.py', 'control_launch.py',
         "            if (metering is not None and metering.first_turn_context is not None\n"
@@ -13534,8 +13536,8 @@ def cases():
             "        except WorktreeError:\n            pass\n        if self.space is not None:\n",
             ['ac1/fleet-untracked-stays'])
     path303('space303-fleet-owner-of-another-worktree-signalled', 'fleet.py',
-            "                  if alone and identity not in live and record.get('state') not in SPACE_ENDED\n",
-            "                  if False and identity not in live and record.get('state') not in SPACE_ENDED\n",
+            "                      if record not in here and record.get('state') not in SPACE_ENDED\n",
+            "                      if False and record not in here and record.get('state') not in SPACE_ENDED\n",
             ['ac1/fleet-alone'])
     path303('space303-clone-teardown-direct-delete', 'control_clone.py',
             "        if self.space is not None:\n"
@@ -13544,8 +13546,8 @@ def cases():
             "            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.\n",
             ['ac2/open-file-stays'])
     path303('space303-clone-provision-direct-delete', 'control_clone.py',
-            '                if self.space is None:\n                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n',
-            '                if True:\n                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n',
+            '                if self.space is None:\n                    # No ledger: preserve the failed clone and its pins.\n',
+            '                if True:\n                    # No ledger: preserve the failed clone and its pins.\n',
             ['ac2/failed-provision'])
     path303('space303-pins-released-whatever-the-outcome', 'control_clone.py',
             "        if tree['state'] in SPACE_ENDED:\n", "        if True:\n",
@@ -13591,8 +13593,10 @@ def cases():
             "        kept = keep.keep(ledger, identity, record, event=event)\n",
             ['loss/fleet-nested-repository'])
     path303('space303-fleet-removes-without-the-keep-step', 'fleet.py',
-            "            entry = dict(space_standalone(path, \"worktree\", main=self.repo_root, event=\"worktree_abandoned\"),\n"
+            "            entry = dict(_load(\"veldo_space_remove_fl\", \".veldo/control_space_remove.py\").remove_standalone(\n"
+            "                path, \"worktree\", main=self.repo_root, event=\"worktree_abandoned\", worktree=_git_worktree),\n"
             "                         path=path)\n",
+            "            _git_worktree([\"remove\", path], cwd=self.repo_root)\n"
             "            entry = {\"path\": path, \"item\": None, \"state\": \"kept\", \"deferral\": None, \"refs\": {}}\n",
             ['loss/fleet-reset-commit'])
     path303('space303-clone-teardown-deletes-without-the-look', 'control_clone.py',
@@ -13601,19 +13605,26 @@ def cases():
             "        looked = [{'path': str(work), 'state': 'kept', 'refs': {}}, {'path': str(root), 'state': 'clear'}]\n",
             ['loss/clone-refused-build'])
     path303('space303-receiver-deletes-a-run-directory-without-the-look', 'control_launch.py',
-            "            found = space_standalone(run, 'folder')\n", "            found = {'state': 'clear'}\n",
+            "            found = _organ('control_space_remove').remove_standalone(run, 'folder')\n",
+            "            shutil.rmtree(run, ignore_errors=True)\n            found = {'state': 'clear'}\n",
             ['loss/run-directory-repository'])
     path303('space303-sweep-deletes-a-run-directory-without-the-look', 'control_launch.py',
-            "                found = space_standalone(place, 'folder')\n", "                found = {'state': 'clear'}\n",
+            "                found = _organ('control_space_remove').remove_standalone(place, 'folder')\n",
+            "                shutil.rmtree(place, ignore_errors=True)\n                found = {'state': 'clear'}\n",
             ['loss/run-directory-repository'])
     path303('space303-landing-line-deletes-a-candidate-without-the-look', 'control_launch_work.py',
-            "                found = space_standalone(directory, 'agent_repository', main=self.root)\n",
-            "                found = {'state': 'kept'}\n", ['loss/candidate-commits'])
-    # Re-anchored under the VELDO-0303 fix, unchanged in meaning: the look with the keep step is now what
-    # a candidate the first look did not clear is given, one level in.
+            "                found = organ('control_space_remove').remove_standalone(directory, 'agent_repository', main=self.root)\n",
+            "                shutil.rmtree(directory, ignore_errors=True)\n                found = {'state': 'kept'}\n",
+            ['loss/candidate-commits'])
+    # Re-anchored after VELDO-0304, unchanged in meaning (proof/0329b-gate-fix/teeth.md): both looks and the
+    # delete are the standalone remover's now, so the no-ledger cases of this block put their defect at the
+    # caller's call of it. Here: a workspace the remover did not answer for is deleted all the same.
     path303('space303-lander-deletes-a-workspace-without-the-look', 'lander.py',
-            "                found = space_standalone(c[\"workspace\"], \"agent_repository\", main=self.repo_root)\n",
-            "                found = {\"state\": \"kept\"}\n", ['loss/candidate-commits'])
+            "            if not found.get(\"removed\"):\n"
+            "                c.setdefault(\"space\", {})[c[\"workspace\"]] = dict(found, refusal=space_refusal(found))\n",
+            "            if not found.get(\"removed\"):\n"
+            "                shutil.rmtree(c[\"workspace\"], ignore_errors=True)\n",
+            ['loss/candidate-commits'])
     # VELDO-0303 fix (the review of 66b943b2, suite 67): a landing candidate goes with no kept ref
     # written only when nothing in it is the only copy. The lander keeps every candidate on kept refs
     # as it did (a refused land writes into the caller); the lander removes every candidate without
@@ -13622,13 +13633,16 @@ def cases():
     # parents than the record's next step, a file git does not track beside the lander's merge, a
     # merge of another commit, a changed tracked file, an ignored file that is work.
     path303('space303-lander-keeps-every-candidate', 'lander.py',
-            "            if found[\"state\"] != SPACE_REBUILDABLE:\n", "            if True:\n",
+            "                c[\"workspace\"], \"agent_repository\", main=self.repo_root, candidate=c,\n",
+            "                c[\"workspace\"], \"agent_repository\", main=self.repo_root, candidate=None,\n",
             ['fix/candidate-rebuildable'])
     # Re-anchored under fix 2, unchanged in meaning (the look's call names the remote's reader now).
     path303('space303-lander-removes-a-candidate-without-either-look', 'lander.py',
-            "            found = space_rebuildable(c[\"workspace\"], self.repo_root, c, REGEN_PATHS,\n"
-            "                                      self._remote_trunk if c.get(\"remote\") else None)\n",
-            "            found = {\"state\": SPACE_REBUILDABLE}\n",
+            "            found = _load(\"veldo_space_remove_ld\", \"control_space_remove.py\").remove_standalone(\n"
+            "                c[\"workspace\"], \"agent_repository\", main=self.repo_root, candidate=c,\n"
+            "                projected=REGEN_PATHS, remote=self._remote_trunk if c.get(\"remote\") else None)\n",
+            "            shutil.rmtree(c[\"workspace\"], ignore_errors=True)\n"
+            "            found = {\"state\": SPACE_REBUILDABLE, \"removed\": True}\n",
             ['fix/candidate-fail-closed', 'loss/candidate-commits'])
     # Re-anchored under fix 2, unchanged in meaning: the trunk, once the remote said it has it, holds nothing.
     path303('space303-candidate-fetched-trunk-holds-nothing', 'control_space_standalone.py',
@@ -13699,8 +13713,8 @@ def cases():
             "            tip = read(path, 'rev-parse', '--verify', 'refs/veldo/candidate/watermark^{commit}').strip()\n",
             ['fix2/remote-holds-trunk', 'fix2/trunk-from-record'])
     path303('space303-lander-gives-the-look-no-remote', 'lander.py',
-            "                                      self._remote_trunk if c.get(\"remote\") else None)\n",
-            "                                      None)\n",
+            "                projected=REGEN_PATHS, remote=self._remote_trunk if c.get(\"remote\") else None)\n",
+            "                projected=REGEN_PATHS, remote=None)\n",
             ['fix/candidate-rebuildable'])
     # The lander's side of decision 1, held by suite 67 (VELDO-0056: a refused land leaves the caller as
     # it was): the lander notes no commit of its own as its command returns, so a land refused by the
@@ -13876,8 +13890,10 @@ def cases():
         "        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:\n"
         "            return entry['type'] + ':' + entry['value'], 'compose_project'\n", ""]]
     docker306('space306-volumes-first',
-              "ORDER = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
-              "ORDER = ('scratch', 'build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
+              "ORDER = ('scratch', 'review_run_scratch', 'build_output', 'review_run_build_output', "
+              "'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
+              "ORDER = ('scratch', 'review_run_scratch', 'build_output', 'review_run_build_output', "
+              "'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
               ['ac3/order-and-non-forced'], module='control_space_kinds.py')
     docker306('space306-volume-made-again-not-seen-by-rule-1',
               "            if facts['said'] is None and made == locator['created_at'] and not other:\n",
@@ -15031,8 +15047,8 @@ def cases():
               "isinstance(subject, dict) and len(subject) == 1 and set(subject) <= {'run', 'gate'}\n",
               ['r2/runner-names-no-items'])
     ended312('space312-abandon-defaults-to-the-owners',
-             "    def space_abandon(self, item, version=None, by=None, *, cause):\n",
-             "    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):\n",
+             "    def space_abandon(self, item, version=None, by=None, *, cause, _retry=False):\n",
+             "    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON, _retry=False):\n",
              ['r2/abandon-names-its-cause'])
 
     # VELDO-0312 fix 3 (the triage of suite 86_veldo_0189_engine_upgrade). A Service built with no store
