@@ -148,3 +148,8 @@ false in 269 of 400 and 93 of 400 stressed runs, every one with the renew answer
 moved (at most 16 times, then the conflict is the answer), the fixture's own write rereads the same way,
 review-r3 asserts both outcomes of a forced race, a new mutation (review-r3-contention-as-answer) reds it,
 and a false row carries what it saw after its colon, which the mutation workers keep as failed_details.
+
+2026-11-17, VELDO-0329b gate fix 3 (lead ruling: no temporary folder outside the directory the runner
+gives). The git-failure fixture's base folder no longer falls back to /tmp or /var/tmp when TMPDIR lies
+in a repository: it is made under TMPDIR only, and a TMPDIR inside a repository is an error the row
+reports. Suite 58_veldo_0031_claims only; 3 of 3 rows pass.

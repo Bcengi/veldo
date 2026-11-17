@@ -198,3 +198,15 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   domain mounts /proc read only, so the child ended before it said ready and every later row was unreached.
   The child now sets its name with prctl(PR_SET_NAME), reads it back, and ends if either fails. Suite only;
   no row's meaning changed. What lies behind that call in a confined leg is measured by the lead's run.
+- 2026-11-17: gate fix 3 (gate 99zzD on the VELDO-0329 integration; lead ruling: the confinement stays
+  and every temporary folder is made under the directory the runner gives). Cause: row
+  reach/other-uid-let-through-counted made its open folder with mkdtemp(dir='/tmp'), which the gate domain
+  does not grant; the raise was booked on probe/facts-only and the 9 rows after it were unreached. The
+  folder is now made only under TMPDIR. Where the way to it is open to every user (off the gate) the row
+  is as before. Where it is not (the confined gate's scratch is 0700) the count of the other uid's and the
+  root-owned process is shown with in_use on the interpreter's own folder, which every user may pass
+  through and the row only reads, and the owner, group and other classes on the row's own folder through
+  _lets_through, the one step reach walks, with reach itself shutting both out on the closed way; the
+  count of a group's process through in_use is then made off the gate only. Measured: 46 of 46 rows off
+  the gate, 46 of 46 with TMPDIR under a 0700 folder, and 46 of 46 inside the gate domain
+  (gate_candidate.py). Suite only.

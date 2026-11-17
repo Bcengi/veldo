@@ -168,9 +168,11 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
         _v31_os = __import__('os')
         _v31_gp = importlib.util.module_from_spec(importlib.util.spec_from_file_location('v31_gp', str(_v31_modules / 'git_process.py')))
         _v31_gp.__spec__.loader.exec_module(_v31_gp)
-        _v31_bases = [b for b in (__import__('tempfile').gettempdir(), '/tmp', '/var/tmp')
-                      if _v31_os.path.isdir(b) and not _v31_gp.claims_a_repository(b)]
-        _v31_tmp = __import__('tempfile').mkdtemp(prefix='v31-authority-', dir=(_v31_bases or [None])[0])
+        # Only the directory the runner gives (TMPDIR): a confined gate grants no write in /tmp.
+        _v31_base = __import__('tempfile').gettempdir()
+        if _v31_gp.claims_a_repository(_v31_base):
+            raise RuntimeError('the temporary directory %s lies in a repository' % _v31_base)
+        _v31_tmp = __import__('tempfile').mkdtemp(prefix='v31-authority-', dir=_v31_base)
         _v31_broken = _v31_os.path.join(_v31_tmp, 'broken')
         _v31_sp.run(['git', 'init', '-q', _v31_broken], check=True, capture_output=True)
         _v31_os.mkdir(_v31_os.path.join(_v31_broken, 'sub'))
@@ -246,7 +248,7 @@ with _v31_temp.TemporaryDirectory(prefix='v31-') as _v31_dir:
             return run.returncode != 0 and ('claim stopped: ' + reason) in run.stderr
 
         _v31_check(1, 'git-failure-in-a-repository-stops',
-                   bool(_v31_bases) and _v31_stopped('broken', 'enrollment_unanswerable')
+                   _v31_stopped('broken', 'enrollment_unanswerable')
                    and _v31_stopped('broken-sub', 'enrollment_unanswerable')
                    and _v31_stopped('no-git', 'enrollment_unanswerable')
                    and _v31_runs['plain'].returncode != 0 and 'CalledProcessError' in _v31_runs['plain'].stderr

@@ -601,3 +601,10 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
   The proof manifest's words "by unshare" describe the fixture before this entry. The production reader
   check (control_space_probe.py) still makes its own thread with unshare; it runs under the authority
   unit, not in the gate domain, and is not changed here.
+- 2026-11-17: gate fix 3 (gate 99zzD on the VELDO-0329 integration; lead rulings: the confinement
+  stays, no gate_unconfined.json entry). Three suite changes, no change to the reader or the probe.
+  - The stub build of ac6/executes-the-checked-descriptor ran cc without TMPDIR, so cc wrote /tmp, which
+    the gate domain refuses, and aborted; the 11 rows after it were unreached. It now has TMPDIR, its own
+    folder, as the other builds do. Behind it, ac7/reproducible ran the setup text's first line, whose
+    env -i drops TMPDIR: the suite now adds TMPDIR="$d" (the line's own folder) after that env -i when it
+    runs the line, and fails the row if the line does not have exactly one. The setup text is unchanged.

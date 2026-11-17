@@ -69,7 +69,10 @@ the path), on a fixture process table whose entries cannot be read (their cwd is
 status files give the uid, the groups and the parent. reach/other-uid-shut-out-excluded (a process of
 another uid that the path's own permissions shut out is listed with reach None and the path is not in
 use; so is a root-owned one no login started, judged by the mode), reach/other-uid-let-through-counted (the same process
-on a path whose directories let it through, by the other bits or by its group, counts),
+on a path whose directories let it through, by the other bits or by its group, counts; its folder is
+made under the runner's TMPDIR only, and where the way to it is closed to other users, as in the
+confined gate, the count is shown on the interpreter's folder, read only, and the classes on its own
+folder through the one step reach walks),
 reach/root-with-container-mount-counted (a root-owned process the permissions shut out counts once a
 container has a bind mount above the path, or an engine cannot be read; a mount of another path changes
 nothing), reach/same-uid-and-inherited (a process of the probing uid, one whose parent or parent's
@@ -952,38 +955,62 @@ def _v299_space_probe_suite():
 
         def passable(folder):
             way = [Path(folder)] + list(Path(folder).parents)
-            return all(os.stat(str(step)).st_mode & 0o001 for step in way) and os.access(str(folder), os.W_OK)
+            return all(os.stat(str(step)).st_mode & 0o001 for step in way)
 
-        places = [place for place in dict.fromkeys(os.path.realpath(place) for place in (
-            tempfile.gettempdir(), '/tmp', '/dev/shm', '/var/tmp')) if os.path.isdir(place) and passable(place)]
-        check(ROW, 'this host has a temporary place every user may pass through [%s]' % places, bool(places))
-        if places:
-            reached = Path(tempfile.mkdtemp(prefix='veldo-0299-open-', dir=places[0]))
-            opened.append(reached)
-            reached.chmod(0o755)
-            facts = P.in_use(reached, proc=str(table))
-            check(ROW, 'the same process, on a path whose directories let every user through, counts [%s]'
-                  % unread_of(facts), unread_of(facts)[0] == (31, OTHER, 'permissions')
-                  and facts['in_use'] is True and facts['found'] is False and facts['unknown'] is True)
-            check(ROW, 'the root-owned one counts there as well', unread_of(facts)[1] == (32, OWNED_BY_ROOT, 'permissions'))
-            reached.chmod(0o750)
-            group = reached.stat().st_gid
+        # The open folder is made only under the directory the runner gives (TMPDIR), never in a
+        # system place such as /tmp: the gate's confinement grants writes in its own scratch alone. Where
+        # that directory lies under a folder closed to other users (the confined gate's scratch is 0700),
+        # the row shows the count on a folder every user may pass through that it only reads (the
+        # interpreter's own), and the classes on its folder through _lets_through, the one step reach
+        # walks; the count of a group's process is then made only where the runner's directory is open.
+        reached = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0299-open-', dir=tempfile.gettempdir())))
+        opened.append(reached)
+        reached.chmod(0o755)
+        shared = passable(reached)
+        through = next((place for place in dict.fromkeys(os.path.realpath(place) for place in (
+            os.path.dirname(os.path.realpath(sys.executable)), '/usr/bin', '/'))
+            if os.path.isdir(place) and passable(place)), None)
+        check(ROW, 'a folder is made under the directory the runner gives, and a folder every user may pass '
+              'through is at hand [%s open to all: %s; read only: %s]' % (reached, shared, through),
+              reached.parent == Path(os.path.realpath(tempfile.gettempdir())) and (shared or through is not None))
+        counted_at = reached if shared else Path(through or reached)
+        facts = P.in_use(counted_at, proc=str(table))
+        check(ROW, 'the same process, on a path whose directories let every user through, counts [%s %s]'
+              % (counted_at, unread_of(facts)), unread_of(facts)[0] == (31, OTHER, 'permissions')
+              and facts['in_use'] is True and facts['found'] is False and facts['unknown'] is True)
+        check(ROW, 'the root-owned one counts there as well', unread_of(facts)[1] == (32, OWNED_BY_ROOT, 'permissions'))
+        reached.chmod(0o750)
+        group = reached.stat().st_gid
+        if shared:
             check(ROW, 'closed to other users and open to its group, it lets a process of that group through',
                   P.reach(reached, OTHER, [OTHER, group]) == 'permissions' and P.reach(reached, OTHER, [OTHER]) is None)
-            fresh()
-            entry(33, uid=OTHER, gids=[OTHER, group])
-            entry(34, uid=OTHER, gids=[OTHER])
+        else:
+            check(ROW, 'closed to other users and open to its group, the folder lets a process of that group '
+                  'through and no other, while the closed way above it shuts out both',
+                  P._lets_through(str(reached), OTHER, [OTHER, group], True) is True
+                  and P._lets_through(str(reached), OTHER, [OTHER], True) is False
+                  and P.reach(reached, OTHER, [OTHER, group]) is None)
+        fresh()
+        entry(33, uid=OTHER, gids=[OTHER, group])
+        entry(34, uid=OTHER, gids=[OTHER])
+        if shared:
             facts = P.in_use(reached, proc=str(table))
             check(ROW, 'so the unread process in that group counts and the one outside it does not [%s]'
                   % unread_of(facts), unread_of(facts) == [(33, OTHER, 'permissions'), (34, OTHER, None)]
                   and facts['in_use'] is True)
-            reached.chmod(0o707)
+        reached.chmod(0o707)
+        if shared:
             check(ROW, 'the owner class decides for the owner and the group class for its group',
                   P.reach(reached, reached.stat().st_uid, []) == 'permissions'
                   and P.reach(reached, OTHER, [group]) is None and P.reach(reached, OTHER, []) == 'permissions')
-            reached.chmod(0o755)
-            check(ROW, 'a path that is not there cannot be judged, and counts',
-                  P.reach(reached / 'gone', OTHER, []) == 'special')
+        else:
+            check(ROW, 'the owner class decides for the owner and the group class for its group',
+                  P.reach(reached, reached.stat().st_uid, []) == 'permissions'
+                  and P._lets_through(str(reached), OTHER, [group], True) is False
+                  and P._lets_through(str(reached), OTHER, [], True) is True)
+        reached.chmod(0o755)
+        check(ROW, 'a path that is not there cannot be judged, and counts',
+              P.reach(counted_at / ('gone-' + os.urandom(4).hex()), OTHER, []) == 'special')
 
         ROW = 'reach/root-with-container-mount-counted'
         fresh()

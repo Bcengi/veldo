@@ -1551,7 +1551,8 @@ int main(int argc, char **argv)
         for name in ('checked', 'other'):
             folder = Path(tempfile.mkdtemp(prefix='stub-', dir=str(temporary)))
             (folder / 'stub.c').write_text(stub % name)
-            subprocess.run(BUILD + ['-o', name, 'stub.c'], cwd=str(folder), env={'PATH': '/usr/bin:/bin'},
+            subprocess.run(BUILD + ['-o', name, 'stub.c'], cwd=str(folder),
+                           env={'PATH': '/usr/bin:/bin', 'TMPDIR': str(folder)},
                            check=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                            timeout=300)
             programs[name] = folder / name
@@ -1656,7 +1657,14 @@ int main(int argc, char **argv)
             folder it built in)."""
             if len(first) != 1 or ' C:scripts/veldo_procread.c' not in first[0]:
                 return None, None
-            done = subprocess.run(['/bin/bash', '-c', first[0].replace(' C:scripts/', ' %s:scripts/' % approved)],
+            # The line's env -i drops TMPDIR, so cc would put its intermediate files in /tmp, which the
+            # gate's confinement does not grant; run here, they go to the line's own folder "$d". Only
+            # where cc keeps its intermediates changes; the program it writes does not.
+            line = first[0].replace(' C:scripts/', ' %s:scripts/' % approved)
+            if line.count('env -i PATH=/usr/bin:/bin ') != 1:
+                return 'failed: the line has not exactly one env -i PATH=/usr/bin:/bin', None
+            line = line.replace('env -i PATH=/usr/bin:/bin ', 'env -i PATH=/usr/bin:/bin TMPDIR="$d" ')
+            done = subprocess.run(['/bin/bash', '-c', line],
                                   cwd=str(checkout), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE, timeout=300,
                                   env={'PATH': path, 'TMPDIR': str(scratch), 'HOME': str(temporary),
