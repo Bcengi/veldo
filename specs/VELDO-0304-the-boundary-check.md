@@ -133,6 +133,14 @@ approval, bound to the commit and the proof, is required.
 
 ## History
 
+- 2026-11-17: VELDO-0329b gate fix 4 (lead ruling 1 on gate 99zzF). 19 falsifiers of VELDO-0303 (17) and
+  VELDO-0308 (2) survived the first full mutation stage because this ticket's removers now make the
+  deciding check themselves: remove_standalone makes the look with its own sibling file, and
+  remove_ref refuses an item that is not removed. Suites 142 and 146 now give the copy under test to
+  the removers as well, one case is re-anchored and one added at remove_ref's state test
+  (space308-remover-releases-for-an-item-not-removed). No file of this ticket changed. Each case and
+  its disposition: proof/0329b-gate-fix/teeth.md.
+
 - 2026-11-15: lead decision, a failed adoption's unheld commit is kept on a kept ref (design 0.2); suite 109 accepts the kept-ref namespace only
 
 - 2026-11-15: FIX ROUND 2 lead decision: failed-adoption scaffold commits with

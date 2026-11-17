@@ -61,3 +61,97 @@ mutant left an indented orphan block (IndentationError at control_service.py:225
 Static check over every registered case after the change (each mutant applied in memory, every Python one parsed
 with ast): 3591 cases, 3473 Python mutants, 0 moved, 0 that do not parse. The case was executed by hand (suite 110
 run with nice in a scratch worktree holding the mutant, not the teeth runner); the stage itself runs under the lock.
+
+## Gate fix 4: the 19 survivors of gate 99zzF (head 7aa9ea2a)
+
+Gate 99zzF ran the mutation stage to its end for the first time: 19 cases survived, 17 of suite 142 (finding
+303) and 2 of suite 146 (finding 308). All 19 were stale teeth of one cause, shown from the code and by running
+each mutant: VELDO-0304 moved the deciding check into the remover (control_space_remove.py), and the two suites
+still gave the copy under test only to the callers.
+
+From the code. With no ledger every delete goes through `remove_standalone`, which loads the look from the
+`control_space_standalone.py` beside itself and makes it there ("A caller cannot supply an earlier safe
+answer"). Suite 142 loaded the five callers from .veldo and handed them the mutated look only as their own
+earlier look (`module._SPACE['standalone'] = SA.standalone`), so the remover those callers reached looked with
+the unmutated file. A pin is released only by `Clones._release`, which is `remove_ref`, and that refuses any
+ledger item that is not removed; so a release the retirement asks too early is refused one layer down.
+
+By running. Every case of findings 303 and 308 was applied once through the driver's own `materialize()` and
+`worker()`, each in its own process under `nice -n 10`, before (7aa9ea2a) and after this round; a case counts
+as rejected only when every target row is false on the mutated copy, as the stage judges it. Before: 27 of 44
+and 36 of 38 rejected, and the 19 survivors are exactly the gate's. After: 44 of 44 and 39 of 39 rejected,
+the unchanged copy and the no-op copies green (64 of 64 observed rows). Every line is in gate4-cases.txt.
+Suites 142 and 146 alone through scripts/selftest.py: 38 rows, 64 passed, each. This is not the mutation
+stage, which runs only under the gate lock.
+
+No case is retired and no product check was missing. What changed:
+
+1. Suite 142 loads the modules under test from the folder of the copy under test (HOME: the whole copy of
+   .veldo the driver makes for a mutant, .veldo itself otherwise), so each finds its siblings, the remover and
+   through it the look, beside itself; fleet.py, which names its siblings from the repository root, has its
+   .veldo ones taken from HOME. No production file changed and no seam was added.
+2. Suite 146 does the same, and names control_space_remove.py as a module a case may mutate.
+3. One case is re-anchored, one is added, two rows gained checks, one fixture was made independent of the clock.
+
+| # | Case | Module | Target rows before (7aa9ea2a) | Target rows after | Disposition |
+| --- | --- | --- | --- | --- | --- |
+| 1 | space303-standalone-ignored-work-not-looked-for | control_space_standalone.py | loss/fleet-ignored-file true | false | rejected again, case unchanged: the remover looks with the copy under test |
+| 2 | space303-standalone-nested-repository-not-looked-for | control_space_standalone.py | loss/fleet-nested-repository true | false | same |
+| 3 | space303-candidate-fetched-trunk-holds-nothing | control_space_standalone.py | fix/candidate-rebuildable true | false | same |
+| 4 | space303-candidate-unaccounted-commit-goes | control_space_standalone.py | fix/candidate-fail-closed, loss/candidate-commits, fix2/unrecorded-commit-kept true | all false | same |
+| 5 | space303-candidate-any-head-commit-is-the-landers | control_space_standalone.py | fix/candidate-fail-closed, fix2/unrecorded-commit-kept true | all false | same |
+| 6 | space303-candidate-head-commit-by-its-parents | control_space_standalone.py | fix2/unrecorded-commit-kept true | false | same |
+| 7 | space303-candidate-noted-commit-not-the-landers | control_space_standalone.py | fix2/unrecorded-commit-kept true | false | same |
+| 8 | space303-candidate-record-commit-is-the-landers | control_space_standalone.py | fix3/generator-commit-kept true | false | same |
+| 9 | space303-candidate-untracked-file-goes | control_space_standalone.py | fix/candidate-fail-closed, fix2/step-in-progress-exact true | all false | same |
+| 10 | space303-candidate-step-in-progress-only-untracked-looked-at | control_space_standalone.py | fix2/step-in-progress-exact true | false | same |
+| 11 | space303-candidate-left-files-not-read | control_space_standalone.py | fix2/step-in-progress-exact true | false | same |
+| 12 | space303-candidate-trunk-read-from-the-workspace | control_space_standalone.py | fix2/trunk-from-record true | false | same |
+| 13 | space303-candidate-workspace-trunk-held-unasked | control_space_standalone.py | fix2/remote-holds-trunk false, fix2/trunk-from-record true | all false | same |
+| 14 | the space303-candidate-any-...-is-the-landers case registered after space303-lander-notes-no-commit-of-its-own (the lander's fifth git verb taken for its own) | control_space_standalone.py | fix/candidate-fail-closed true | false | same |
+| 15 | space303-candidate-changed-file-goes | control_space_standalone.py | fix/candidate-fail-closed, loss/candidate-commits true | all false | same, and its second row no longer depends on the clock (below) |
+| 16 | space303-candidate-ignored-work-goes | control_space_standalone.py | fix/candidate-fail-closed true | false | same |
+| 17 | space303-clone-teardown-deletes-without-the-look | control_clone.py | loss/clone-refused-build true | false | re-anchored at what the teardown's own look still decides (below) |
+| 18 | space308-pins-released-at-hand-over | control_retirement.py | ac4/pins-held-while-deferred true | false | rejected again, case unchanged: the row reads what the remover was asked (below) |
+| 19 | space308-pins-released-while-the-item-is-not-removed | control_retirement.py | ac4/pins-held-while-deferred true | false | same |
+
+Case 15, the clock. Its row loss/candidate-commits holds a workspace with a file in no commit. The workspace's
+own commit has the same bytes in every fixture workspace but git's time stamp, so it was already on a kept ref
+(put there for the workspace before it) only when git stamped the two in the same second; in any other second
+the look refused for the commit and never reached the file, and the mutant survived on that row. Seen: both
+target rows false in one run, the second true in five runs in a row, at the same code. The fixture's record now
+names that commit as the lander's own (`made`), so the file alone decides: six runs of six rejected. The row is
+unchanged on the unchanged copy. This was true before VELDO-0304 too; the case's rejection on 2026-11-14 was
+by the clock.
+
+Case 17, re-anchored. The planted defect was both looks of the teardown answered without looking. The work
+tree's look cannot be gone without any more: its delete is `remove_standalone`, which makes the look itself and
+refused under the old mutant (row true, the draft kept). What the teardown's own look still decides alone is
+the rest of the clone, before anything of it goes. The case now answers only the root's look as clear, and row
+loss/clone-refused-build gained a clone with a repository beside its work tree: unchanged, the clone stays
+whole (work tree, that repository, manifest, pin; space_deferred:in_use) and retires once that repository is
+gone; mutated, the work tree is kept and deleted and the pin released while the root stays.
+
+Cases 18 and 19. The retirement can no longer take a pin by asking early: `remove_ref` refuses. Asking early
+is still a defect of the retirement, and the suite already reads it that way elsewhere (pin_events in
+f4/clone-being-made-keeps-its-pin, which case 19 also turns false). Row ac4/pins-held-while-deferred now reads
+it too: through the hand-over, the sweeps and the work tree under its marked name the remover was asked for no
+release (`ref_outcomes` of the provisioner is empty). Both mutants ask, and the row is false.
+
+Added, the code that now decides: space308-remover-releases-for-an-item-not-removed (control_space_remove.py,
+the `state != 'removed'` test of `remove_ref` deleted), judged by the same row through a new check that asks
+the remover itself for the deferred work tree's own item: refused as not_in_ledger, the pin where it was.
+Rejected. What the row sees under this mutant is the refusal's name changing to keep_failed: the pin is still
+held there by the keep verification that follows the state test, since a deferred item has no verified keep.
+A fixture whose item has a verified keep and is not removed would show the pin itself going; that state is
+not made by this suite, and the case is recorded with that limit.
+
+Counts: finding 303 stays 44 cases; finding 308 is 39 (38 and the added one); the driver registers 3592.
+Static check over every registered case after the change (each mutant applied in memory, every Python one
+parsed with ast): 3592 cases, 3474 Python mutants, 0 moved, 0 that do not parse.
+
+Not touched, by ruling: VELDO-0344 ac6/installed (stays red until the owner pins the reader), VELDO-0127
+live/claude and live/codex (the lead recaptures), VELDO-0131 browser rows (host load).
+
+For the lead, under the lock: `python3 scripts/check_gate_mutations.py --finding 303`, then `--finding 308`,
+then the gate.
