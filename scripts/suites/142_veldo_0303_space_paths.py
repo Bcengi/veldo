@@ -74,7 +74,9 @@ only commit), loss/fleet-reset-commit (a commit made in a worktree and reset awa
 the worktree's HEAD log, is on a kept ref of the repository before git's remove runs, and its file is
 read from the repository alone), loss/clone-refused-build (the commits a worker made in a clone, one of
 them reset away, are read from the bound repository alone after the teardown; a clone with a file in no
-commit stays whole with its pin, refused as space_deferred:unique_work, and goes once the file is gone),
+commit stays whole with its pin, refused as space_deferred:unique_work, and goes once the file is gone;
+a clone with a repository beside its work tree stays whole, work tree and pin with it, and goes once
+that repository is gone),
 loss/run-directory-repository (a run directory that holds a repository stays at the receiver's end and
 at the sweep; one that holds none is removed as before), loss/candidate-commits (a candidate folder and
 a candidate workspace go only after their own commits are on kept refs of the repository; each stays
@@ -171,6 +173,13 @@ def _v303_space_paths_suite():
     }
     VELDO = ROOT / '.veldo'
     CHANGED = tuple(PRODUCTION)
+    # VELDO-0304: with no ledger every delete goes through control_space_remove.remove_standalone, which
+    # makes the look itself, with the control_space_standalone.py beside it; a caller's own earlier look
+    # decides nothing. So the copy under test has to be the one the remover finds. The driver gives a
+    # mutated module inside a whole copy of .veldo; the modules under test are loaded from that folder
+    # (HOME), where each finds its siblings, the remover among them, beside itself. Unmutated, HOME is .veldo itself.
+    HOME = next((Path(path).parent for path in PRODUCTION.values() if Path(path).parent != VELDO), VELDO)
+    PRODUCTION = {name: HOME / name for name in PRODUCTION}
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -184,6 +193,9 @@ def _v303_space_paths_suite():
         module = types.ModuleType('v303_fleet')
         module.__file__ = str(VELDO / 'fleet.py')
         exec(compile(Path(path).read_text(), str(path), 'exec'), module.__dict__)
+        inner = module._load
+        # Its siblings are named from the repository root; the ones in .veldo are taken from HOME.
+        module._load = lambda name, rel: inner(name, HOME / Path(rel).name if Path(rel).parent.name == '.veldo' else rel)
         return module
 
     ROWS = ('ac1/fleet-removed-through-signal', 'ac1/fleet-untracked-stays', 'ac1/fleet-commit-stays',
@@ -1031,6 +1043,24 @@ def _v303_space_paths_suite():
             refused = retire(BARE, clone_id)
             check(row, 'once the file is gone the next teardown keeps the commit and retires the clone [%s]' % (refused,),
                   refused is None and not os.path.lexists(root) and kept_in(REPOSITORY, built) != [])
+            # VELDO-0304: the work tree's delete is the standalone remover's, which looks at it itself. What
+            # the teardown's own look still decides alone is the rest of the clone, before anything of it
+            # goes: a repository beside the work tree keeps the clone whole, work tree and pin with it.
+            clone_id, root, work, head, _ = clone(BARE, 'beside-15', declare=False)
+            beside = root / 'beside'
+            beside.mkdir()
+            git(beside, 'init', '-q', '-b', 'main')
+            only = commit(beside, 'only.txt', 'in no other repository\n', 'made beside the work tree')
+            refused = retire(BARE, clone_id)
+            check(row, 'a clone with a repository beside its work tree stays whole: the work tree, that repository, '
+                       'the manifest and the pin [%s]' % (refused,),
+                  str(refused).startswith('space_deferred:') and (work / 'tracked.txt').is_file()
+                  and git(work, 'rev-parse', 'HEAD') == head and git(beside, 'rev-parse', 'HEAD') == only
+                  and (root / CL.MANIFEST).is_file() and len(BARE._pins_held(clone_id)) == 1)
+            shutil.rmtree(beside)
+            refused = retire(BARE, clone_id)
+            check(row, 'once that repository is gone the next teardown retires the clone [%s]' % (refused,),
+                  refused is None and not os.path.lexists(root) and BARE._pins_held(clone_id) == [])
 
             row = 'f3/consumer-holds-clone'
             C = provisioner(space())
@@ -1417,6 +1447,11 @@ def _v303_space_paths_suite():
             (place / 'conflict.txt').write_text('a resolution nobody committed\n')
             O = lander(None, place, observed)
             O.repo_root = str(REPOSITORY)
+            # The record names the workspace's commit as the lander's own, so the file is the one thing that
+            # keeps the workspace. Without this the commit was held or not by the clock: it has the bytes of
+            # the commit plain-07 put on a kept ref whenever git stamped the two in the same second, and a
+            # look that lets the file go was caught here only then.
+            O.candidate['made'] = [merged]
             O.discard()
             told = (O.candidate.get('space') or {}).get(str(place)) or {}
             check(row, 'a workspace with a file in no commit stays, and the candidate says so [%s]' % (told.get('refusal'),),

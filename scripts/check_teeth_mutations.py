@@ -13605,10 +13605,13 @@ def cases():
             "            _git_worktree([\"remove\", path], cwd=self.repo_root)\n"
             "            entry = {\"path\": path, \"item\": None, \"state\": \"kept\", \"deferral\": None, \"refs\": {}}\n",
             ['loss/fleet-reset-commit'])
+    # Re-anchored after VELDO-0304 (proof/0329b-gate-fix/teeth.md, gate fix 4): the work tree's delete is the
+    # standalone remover's, which looks at it itself whatever the teardown was told, so the look the teardown
+    # can still go without is the one at the rest of the clone. Here: the root is taken as clear unlooked-at,
+    # and a clone with a repository beside its work tree loses its work tree and its pin.
     path303('space303-clone-teardown-deletes-without-the-look', 'control_clone.py',
-            "        looked = [space_standalone(work, 'agent_repository', main=main, ticket=ticket),\n"
             "                  space_standalone(root, 'folder', skip=[work])]\n",
-            "        looked = [{'path': str(work), 'state': 'kept', 'refs': {}}, {'path': str(root), 'state': 'clear'}]\n",
+            "                  {'path': str(root), 'state': 'clear'}]\n",
             ['loss/clone-refused-build'])
     path303('space303-receiver-deletes-a-run-directory-without-the-look', 'control_launch.py',
             "            found = _organ('control_space_remove').remove_standalone(run, 'folder')\n",

@@ -352,3 +352,22 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - Not done here, outside this fix: the review's optional refusal in reconcile of a candidate
     whose head is neither the last step's commit nor the lander's projection commit, and its
     notes N1 and N3.
+- 2026-11-17: VELDO-0329b gate fix 4 (lead ruling 1 on gate 99zzF). 17 falsifiers of finding 303 survived
+  the first full mutation stage: 16 in control_space_standalone.py and
+  space303-clone-teardown-deletes-without-the-look. Stale teeth, not a product defect: since VELDO-0304
+  every delete with no ledger is the standalone remover's, which makes the look itself with the file
+  beside it, and suite 142 gave the copy under test only to the callers' own earlier look. No
+  acceptance criterion and no production file changed.
+  - Suite 142 loads the modules under test from the folder of the copy under test, where the remover
+    and through it the look are found; the 16 are rejected again unchanged.
+  - space303-clone-teardown-deletes-without-the-look is re-anchored at what the teardown's own look
+    still decides alone, the look at the rest of the clone before anything of it goes (the root taken
+    as clear), and loss/clone-refused-build gained its case: a clone with a repository beside its
+    work tree stays whole, work tree and pin with it.
+  - loss/candidate-commits: the workspace with a file in no commit now names its own commit in the
+    candidate's record. That commit was held or not by the second git stamped it in, so
+    space303-candidate-changed-file-goes was caught on this row by the clock only.
+  - Suite 142 is 38 rows, 64 passed. Finding 303 is 44 cases, each applied once through the driver's
+    materialize() and worker(): 44 rejected, the no-op copies green (27 before). The list and the
+    disposition of each are in proof/0329b-gate-fix/teeth.md, the runs in gate4-cases.txt there. The
+    mutation stage itself runs under the gate lock.
