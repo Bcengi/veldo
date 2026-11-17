@@ -58,7 +58,9 @@ released), ac4/pins-follow-the-removal (the slot is released while the work tree
 pin held; a removal made from outside the teardown removes the work tree; the next sweep releases the
 pin, once), ac4/pins-held-while-deferred (through the hand-over and two sweeps the pin is held, and
 after the cache was collected the work tree's commit is readable; a work tree that is not at its path
-while its item is not removed releases nothing), ac4/not-handed-over-keeps-the-slot (a clone no item
+while its item is not removed releases nothing; through all of it the remover was asked for no
+release, and asked itself for the deferred work tree's own item it refuses as not_in_ledger),
+ac4/not-handed-over-keeps-the-slot (a clone no item
 records, and an installation with no ledger: the obligation stays open and the slot held).
 
 Rows of the fix round (the review of this ticket, findings 1 and 3 to 5). f1/sweep-never-resends (the
@@ -177,9 +179,16 @@ def _v308_run_finished_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_retirement.py': ROOT / ".veldo" / "control_retirement.py",
         'control_clone.py': ROOT / ".veldo" / "control_clone.py",
+        'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
     }
     VELDO = ROOT / '.veldo'
-    CHANGED = tuple(PRODUCTION)
+    CHANGED = ('control_launch.py', 'control_retirement.py', 'control_clone.py')  # what VELDO-0308 changed
+    # VELDO-0304: a pin is released only by control_space_remove.remove_ref, which the clone module finds
+    # beside itself and which decides by the ledger's item. The driver gives a mutated module inside a
+    # whole copy of .veldo; the modules under test are loaded from that folder (HOME), so the remover a
+    # release reaches is the copy under test. Unmutated, HOME is .veldo itself.
+    HOME = next((Path(path).parent for path in PRODUCTION.values() if Path(path).parent != VELDO), VELDO)
+    PRODUCTION = {name: HOME / name for name in PRODUCTION}
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -1235,6 +1244,18 @@ def _v308_run_finished_suite():
             check(row, 'a work tree that is not at its path while its item is not removed releases nothing',
                   len(C2._pins_held(clone_id)) == 1)
             os.rename(marked, work)
+            # VELDO-0304: the release itself is the remover's now, and it refuses any item that is not
+            # removed. So a release asked too early no longer takes the pin; it is still a defect of the
+            # retirement, seen as what the remover was asked: nothing, from the hand-over to here.
+            check(row, 'and through the hand-over, the sweeps and the marked name the remover was asked for no release '
+                       '[%s]' % (sorted(getattr(C2, 'ref_outcomes', {})),), not getattr(C2, 'ref_outcomes', {}))
+            # And the remover itself, asked for the work tree's own item while it is deferred: refused as
+            # not the ledger's to release, the pin where it was.
+            asked = [C2._release(Path(pin['cache']), pin['ref'], identity=items['work']) for pin in C2._pins_held(clone_id)]
+            check(row, 'asked for the deferred work tree\'s own item the remover releases nothing: not_in_ledger [%s]'
+                  % ([(answer.get('ok'), answer.get('deferral'), answer.get('said')) for answer in asked],),
+                  [(answer.get('ok'), answer.get('deferral')) for answer in asked] == [(False, 'not_in_ledger')]
+                  and len(C2._pins_held(clone_id)) == 1 and state_of(items['work']) == 'deferred')
             shutil.rmtree(holder)
 
             row = 'ac4/not-handed-over-keeps-the-slot'

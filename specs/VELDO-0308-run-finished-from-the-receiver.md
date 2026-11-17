@@ -468,3 +468,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     rule, not as a refused send. Falsifier space308-teardown-names-a-kept-item (the exclusion deleted
     from the clone provisioner's names). Each falsifier was applied once to the copy the suite loads
     and seen red on its row, its no-op copy green. 38 cases are registered under finding 308.
+- 2026-11-17: VELDO-0329b gate fix 4 (lead ruling 1 on gate 99zzF). space308-pins-released-at-hand-over
+  and space308-pins-released-while-the-item-is-not-removed survived the first full mutation stage.
+  Stale teeth, not a product defect: since VELDO-0304 a pin is released only by the remover's
+  remove_ref, which refuses an item that is not removed, so a release the retirement asks too early
+  no longer takes the pin. No acceptance criterion and no production file changed.
+  - ac4/pins-held-while-deferred reads what the retirement still decides: through the hand-over, the
+    sweeps and the work tree under its marked name the remover was asked for no release. Both
+    falsifiers are rejected again, unchanged.
+  - The same row asks the remover itself for the deferred work tree's own item: refused as
+    not_in_ledger, the pin where it was. Falsifier added at the code that now decides,
+    space308-remover-releases-for-an-item-not-removed (the state test of remove_ref deleted), red on
+    that row by the refusal's name; the pin is still held under it by the keep verification that
+    follows. Suite 146 loads the modules under test from the folder of the copy under test, so the
+    remover a release reaches is that copy.
+  - Suite 146 is 38 rows, 64 passed. 39 cases are registered under finding 308, each applied once
+    through the driver's materialize() and worker(): 39 rejected, the no-op copies green (36 of 38
+    before). Dispositions in proof/0329b-gate-fix/teeth.md, the runs in gate4-cases.txt there.

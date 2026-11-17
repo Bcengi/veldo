@@ -14276,6 +14276,10 @@ def cases():
     finished308('space308-pins-released-while-the-item-is-not-removed', 'control_retirement.py',
                 "                    continue  # the ledger still holds the work tree: not before its removal\n",
                 "                    pass\n", ['ac4/pins-held-while-deferred'])
+    finished308('space308-remover-releases-for-an-item-not-removed', 'control_space_remove.py',
+                "                    or record.get('state') != 'removed' or not (record.get('due') or {}).get('event')):\n",
+                "                    or not (record.get('due') or {}).get('event')):\n",
+                ['ac4/pins-held-while-deferred'])
     finished308('space308-unrecorded-clone-taken-for-the-ledgers', 'control_retirement.py',
                 "        if found is None or found[1].get('state') not in SPACE_TRACKED:\n            return None\n",
                 "        if found is None:\n            return {'item': None, 'state': None}\n",
