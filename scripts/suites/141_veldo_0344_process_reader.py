@@ -66,11 +66,14 @@ before the read and after it, and reads the environment twice at most.
 
 The same program before and after (the review of the fix, finding 1). reader/same-program: a task of
 the row's helper that shares its parent's memory waits on a fifo and then executes the helper with the
-run label as its whole environment; the built reader runs under strace, which holds its read of that
-one environ entry back, and the row lets the task execute when strace shows the open. The kernel then
-returns the parent's environment, which has no label and is as long as the ends taken before are
-apart; the reader does not take it for the task's, reads once more and writes the task's own label.
-The row is added only where strace is on /usr/bin:/bin; elsewhere a SELFTEST SKIP line says so.
+run label as its whole environment. The parent's environment is about 960 KB, so the built reader reads
+that one environ entry in many reads. Without ptrace (the gate's confinement refuses it): the row
+watches the reader's own descriptors in /proc, stops it with SIGSTOP once it holds that entry open,
+reads the entry's position from its fdinfo while it is stopped, and only when that position is short
+of the end lets the task execute, then sends SIGCONT; a run where the stop came too late is not counted
+and the reader runs again (60 runs at most). The kernel then returns the rest of the parent's
+environment, which has no label and is as long as the ends taken before are apart; the reader does not
+take it for the task's, reads once more and writes the task's own label.
 
 A rewritten environment (the limit VELDO-0313 records). reader/rewritten-environment: a process started
 with the run label that writes over its environment area, as a program that sets its process title
@@ -1076,65 +1079,98 @@ int main(int argc, char **argv)
         # had when the entry was opened, which the parent keeps alive, so a read that falls across
         # the execution returns the parent's whole environment, as many bytes as the ends taken
         # before it are apart. Only what the task is, before and after, tells that read from the
-        # task's own. The reader's read of that one entry is held back by strace until the task has
-        # executed.
-        strace = shutil.which('strace', path='/usr/bin:/bin')
-        if strace:
-            HELD = 2.0  # how long the reader's read of that entry is held back
-            share_label = 'share:run-' + os.urandom(4).hex()
-            go = temporary / 'share.fifo'
-            os.mkfifo(str(go))
-            parent = helped({'OTHER': 'value'}, 'share', str(go), '%s=%s' % (NAME, share_label))
-            shared_pid = int(parent.stdout.readline())
-            program = os.stat(helper)
+        # task's own. No ptrace, which the gate's confinement refuses: the parent's environment is
+        # large, so the reader reads that one entry in many reads; the row watches the reader's own
+        # descriptors, stops it with SIGSTOP once it holds that entry open, and lets the task execute
+        # only when the entry's position, read from the reader's fdinfo while it is stopped, is short
+        # of the end: what the reader reads after SIGCONT is read after the execution. A run in which
+        # the stop came too late is not counted and the reader runs again.
+        HELD = 5.0  # how long the task is given to execute while the reader is stopped
+        share_label = 'share:run-' + os.urandom(4).hex()
+        go = temporary / 'share.fifo'
+        os.mkfifo(str(go))
+        bulk = dict(('FILL%d' % index, 'f' * 120000) for index in range(8))
+        parent = helped(dict(bulk, OTHER='value'), 'share', str(go), '%s=%s' % (NAME, share_label))
+        shared_pid = int(parent.stdout.readline())
+        program = os.stat(helper)
+        entry_path = '/proc/%d/task/%d/environ' % (shared_pid, shared_pid)
 
-            def executed():
-                try:
-                    found = os.stat('/proc/%d/exe' % shared_pid)
-                    carried = Path('/proc/%d/environ' % shared_pid).read_bytes()
-                except OSError:
-                    return False
-                return (found.st_dev, found.st_ino) == (program.st_dev, program.st_ino) \
-                    and carried == ('%s=%s' % (NAME, share_label)).encode() + b'\0'
-            before_bytes = Path('/proc/%d/environ' % shared_pid).read_bytes()
-            traced = subprocess.Popen(
-                [strace, '-qq', '-P', '%d/task/%d/environ' % (shared_pid, shared_pid), '-e', 'trace=openat,read',
-                 '-e', 'inject=read:delay_enter=%d' % int(HELD * 1000000), str(reader)],
-                cwd='/proc', stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={})
-            spawned.append(traced)
-            table_read = []
-            pump = threading.Thread(target=lambda: table_read.append(traced.stdout.read()), daemon=True)
+        def executed():
+            try:
+                found = os.stat('/proc/%d/exe' % shared_pid)
+                carried = Path('/proc/%d/environ' % shared_pid).read_bytes()
+            except OSError:
+                return False
+            return (found.st_dev, found.st_ino) == (program.st_dev, program.st_ino) \
+                and carried == ('%s=%s' % (NAME, share_label)).encode() + b'\0'
+
+        def holding(pid):
+            """The reader's descriptor on the task's environ entry and its position, or None."""
+            try:
+                for name in os.listdir('/proc/%d/fd' % pid):
+                    if os.readlink('/proc/%d/fd/%s' % (pid, name)) == entry_path:
+                        with open('/proc/%d/fdinfo/%s' % (pid, name)) as info:
+                            return name, int(info.readline().split()[1])
+            except (OSError, ValueError, IndexError):
+                pass
+            return None
+
+        def stopped(pid):
+            try:
+                return Path('/proc/%d/stat' % pid).read_bytes().rsplit(b')', 1)[1].split()[0] == b'T'
+            except (OSError, IndexError):
+                return False
+        before_bytes = Path('/proc/%d/environ' % shared_pid).read_bytes()
+        attempts, caught, share_out, share_exit = 0, None, b'', None
+        while caught is None and attempts < 60 and not executed():
+            attempts += 1
+            watched = subprocess.Popen([str(reader)], cwd='/proc', stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL, env={})
+            spawned.append(watched)
+            out = []
+            pump = threading.Thread(target=lambda: out.append(watched.stdout.read()), daemon=True)
             pump.start()
-            opened_at = executed_at = None
-            for line in traced.stderr:
-                if opened_at is None and line.startswith(b'openat(') and b'environ' in line:
-                    opened_at = time.monotonic()
+            while watched.poll() is None:
+                if holding(watched.pid) is None:
+                    continue
+                os.kill(watched.pid, signal.SIGSTOP)
+                limit = time.monotonic() + 10
+                while not stopped(watched.pid) and watched.poll() is None and time.monotonic() < limit:
+                    time.sleep(0.001)
+                held = holding(watched.pid) if stopped(watched.pid) else None
+                if held is not None and 0 <= held[1] < len(before_bytes):
                     with open(str(go), 'wb') as word:
                         word.write(b'x')
-                    while time.monotonic() - opened_at < HELD and not executed():
+                    limit = time.monotonic() + HELD
+                    while time.monotonic() < limit and not executed():
                         time.sleep(0.005)
-                    executed_at = time.monotonic() if executed() else None
-            traced.wait(timeout=120)
+                    after = holding(watched.pid)
+                    caught = (held, after, executed())
+                os.kill(watched.pid, signal.SIGCONT)
+                break
+            watched.wait(timeout=120)
             pump.join(timeout=120)
-            share_text = (table_read or [b''])[0].decode('ascii', 'replace')
-            share_blocks = P.reader_table((table_read or [b''])[0].split(b'\n', 1)[-1])[0] or {}
-            share_lines = label_lines(share_text, shared_pid) if '\np %d ' % shared_pid in share_text else ['no block']
-            in_time = opened_at is not None and executed_at is not None and executed_at - opened_at < HELD / 2
-            rows['reader/same-program'] = [(
-                'a task that shares its parent\'s memory and carries no label of its own until it executes a '
-                'program with the run label, which it does between the reader\'s open of its environ entry and '
-                'the read: the parent\'s environment, which holds no label, is not taken for the task\'s; the '
-                'reader reads once more and writes the task\'s own label [%s label %s; the parent carried %d bytes '
-                'and no label %s; executed in time %s; reader exit %s]'
-                % (share_lines, (share_blocks.get(shared_pid) or {}).get('label', '?'), len(before_bytes),
-                   NAME.encode() not in before_bytes, in_time, traced.returncode),
-                in_time and len(before_bytes) > 0 and NAME.encode() not in before_bytes and traced.returncode == 0
-                and share_lines == ['l =' + share_label.encode().hex()]
-                and (share_blocks.get(shared_pid) or {}).get('label') == [share_label.encode()])]
-            stop(parent)
-        else:
-            print('  SELFTEST SKIP: VELDO-0344 reader/same-program: strace is not on the path /usr/bin:/bin, and the '
-                  'row needs it to hold the reader\'s read of one environ entry back until the task has executed')
+            share_out, share_exit = (out or [b''])[0], watched.returncode
+        share_text = share_out.decode('ascii', 'replace')
+        share_blocks = P.reader_table(share_out.split(b'\n', 1)[-1])[0] or {}
+        share_lines = label_lines(share_text, shared_pid) if '\np %d ' % shared_pid in share_text else ['no block']
+        # In time: stopped with the entry open and short of its end, the task executed while the
+        # reader was stopped, and the same descriptor at the same position was still open after.
+        in_time = caught is not None and caught[2] is True and caught[1] == caught[0]
+        rows['reader/same-program'] = [(
+            'a task that shares its parent\'s memory and carries no label of its own until it executes a '
+            'program with the run label, which it does while the reader, stopped, holds its environ entry open '
+            'and short of the end: the parent\'s environment, which holds no label, is not taken for the '
+            'task\'s; the reader reads once more and writes the task\'s own label [%s label %s; the parent '
+            'carried %d bytes and no label %s; held at %s of %d, after %s, executed in time %s in %d runs; '
+            'reader exit %s]'
+            % (share_lines, (share_blocks.get(shared_pid) or {}).get('label', '?'), len(before_bytes),
+               NAME.encode() not in before_bytes, caught and caught[0], len(before_bytes), caught and caught[1],
+               in_time, attempts, share_exit),
+            in_time and len(before_bytes) > 65536 and NAME.encode() not in before_bytes and share_exit == 0
+            and share_lines == ['l =' + share_label.encode().hex()]
+            and (share_blocks.get(shared_pid) or {}).get('label') == [share_label.encode()])]
+        stop(parent)
 
         # A process that writes over its environment area (programs that set their process title that
         # way). Its label is gone for any reader; what it holds is not, and needs no label.

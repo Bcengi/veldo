@@ -613,3 +613,14 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     readable, the write succeeded and the reader ended 0. The descriptors now stay open until the reader
     has ended, and a check says all 900 were held. Falsifier: case space344-goes-on-after-a-failed-write
     applied, the row reads exit 0 and is red, off the gate and inside the gate domain.
+  - reader/same-program held the reader's read back with strace, which the gate domain's seccomp filter
+    refuses (ptrace). The row now uses no ptrace: the sharing parent's environment is about 960 KB, so
+    the reader reads that entry in 64 KiB reads; the row watches /proc/<reader>/fd, stops the reader with
+    SIGSTOP when it holds the entry open, reads the entry's position from its fdinfo while it is stopped,
+    and only when the position is short of the end lets the task execute, waits until it has, and sends
+    SIGCONT; a run where the stop came too late is not counted (60 runs at most). The row now always
+    runs; the SELFTEST SKIP for a missing strace is gone. Falsifier: case space344-identity-not-compared
+    applied, the row reads l - and a label of none (held at 65536 of 960068 bytes off the gate, 786432
+    inside the gate domain, caught in the first run) and is red; unchanged, it is green in both.
+  Measured: off the gate and inside the gate domain (gate_candidate.py) 64 of 65 rows, the one red
+  ac6/installed with refused:no_pin (the owner's pin, already ruled).
