@@ -145,3 +145,10 @@ occupied-root mapping and suite 127 lines 11 and 79 become a generic occupied po
 research reference and the message ids outside History go, and README line 3 follows. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
+
+2026-11-17: row rerun/pre-change-host restated (gate 99zz3 on the VELDO-0329 integration, lead ruling).
+Cause: the VELDO-0315 gate fix (ae0009b3) has the upgrade write the state root into the service record, so a
+re-run on a host laid down before this ticket adds `state_root` to service.json. The row required the record
+unchanged apart from its engine keys. It now requires the record to differ from before only by `state_root`
+equal to this host's root; `state_root` is not an engine key, so a record that already holds it is compared
+as before. Suite 127 passes.

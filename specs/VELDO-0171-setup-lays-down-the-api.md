@@ -341,3 +341,10 @@ in 10.31 seconds ordinarily and 10.30 seconds in the empty gate environment, wit
 Every existing check and kill loop is retained. Per-row timings, the runtime red record and the
 assertion audit are in proof/VELDO-0171/performance.json and its companion records. Finding 171
 mutations remain registered; their execution and the full gate are reserved to the reviewer.
+
+2026-11-17: row rerun/over-0139-host restated (gate 99zz3 on the VELDO-0329 integration, lead ruling).
+Cause: the VELDO-0315 gate fix (ae0009b3) has the upgrade write the state root into the service
+configuration, so the earlier host gains `state_root` beside `runtime_assets` and `work`. The row required
+every gained key to equal the fresh host's record, and the state root is each host's own path. It now
+requires `state_root` to be gained and to equal host b's own state root, and every other gained key still to
+equal host a's record. Suite 85 passes.

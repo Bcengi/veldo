@@ -1254,14 +1254,20 @@ def _v171_suite():
             now_config = json.loads((config_b / 'service.json').read_text())
             record_a = json.loads((install_a / home_a.name / 'config' / 'service.json').read_text())
             engine_keys = ('closure', 'runtime_assets', 'template')
+            # state_root is the one gained key that names this host: the upgrade writes the host's own state root
+            # (VELDO-0315), so it is compared with host b's root; every other gained key equals host a's record.
             check(OB, 'the service configuration kept every other value, names the current engine, gained the keys it '
-                  'lacked and names the API configuration in the api_service key it held as null [%s]'
+                  'lacked (state_root as this host\'s own state root, every other as the fresh host holds it) and '
+                  'names the API configuration in the api_service key it held as null [%s]'
                   % sorted(set(now_config) - set(before_config)),
                   'api_service' in before_config and before_config['api_service'] is None
                   and {k: v for k, v in now_config.items() if k in before_config and k not in engine_keys + ('api_service',)}
                   == {k: v for k, v in before_config.items() if k not in engine_keys + ('api_service',)}
                   and all(now_config.get(k) == record_a.get(k) for k in engine_keys)
-                  and all(now_config.get(k) == record_a.get(k) for k in set(now_config) - set(before_config))
+                  and 'state_root' in set(now_config) - set(before_config)
+                  and now_config.get('state_root') == os.path.realpath(str(root_b))
+                  and all(now_config.get(k) == record_a.get(k)
+                          for k in set(now_config) - set(before_config) - {'state_root'})
                   and now_config.get('api_service') == str(config_b / 'api-service.json'))
             expected = sorted(str(p) for p in (host_b / 'api-service.json', keys_b / E.edge_key_id('api'),
                                                keys_b / F.ADOPTION_KEY, keys_b / (F.ADOPTION_KEY + '.pub'),

@@ -412,9 +412,15 @@ def _v234_suite():
               % {k: (rerun.get('api') or {}).get(k) for k in ('https_port', 'origin', 'serve')},
               (rerun.get('api') or {}).get('https_port') == 443 and (rerun.get('api') or {}).get('origin') == 'https://' + NAME
               and ((rerun.get('api') or {}).get('serve') or {}).get('mapping') == 'already_done')
+        # VELDO-0315: the upgrade gives a record laid before it the host's own state root. That is the one
+        # difference allowed, with that exact value; state_root is not an engine key, so once held it is compared.
+        state_root_gained = ({} if 'state_root' in record_before[0]
+                             else {'state_root': os.path.realpath(str(root))})
         check(PC, 'every file outside the installed engine is byte for byte the same, the store\'s dump too, and the '
-              'service record apart from its engine keys [%s]' % (changed + added + removed)[:4],
-              not (changed or added or removed) and record_after == record_before)
+              'service record apart from its engine keys and the state root the upgrade adds as this host\'s root '
+              '[%s %s]' % ((changed + added + removed)[:4], sorted(set(record_after[0]) ^ set(record_before[0]))),
+              not (changed or added or removed) and record_after[1] == record_before[1]
+              and record_after[0] == dict(record_before[0], **state_root_gained))
         try:
             appended = [json.loads(line) for line in log_after[len(log_before):].decode().splitlines() if line.strip()]
         except ValueError:

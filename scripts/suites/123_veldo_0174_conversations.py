@@ -555,7 +555,8 @@ def _v174_suite():
         check('AC4/install-conversation-receiver', 'installation without work writes and names one conversation receiver',
               layout['config']['work'] is None and receiver.get('receiver_kind') == 'conversation'
               and conversation_path == os.path.join(layout['state'], CS.CONVERSATION_RECEIVER)
-              and 'conversations' not in layout['config']['receiver'] and 'state_root' not in layout['config']
+              and 'conversations' not in layout['config']['receiver']
+              and layout['config'].get('state_root') == str(f4['root'] / 'factory-state')
               and found == str(found_dir / CS.CONVERSATION_RECEIVER) and absent is None
               and receiver.get('state_root') == str(f4['root'] / 'factory-state')
               and all(receiver.get(field) == repository_receiver.get(field) for field in

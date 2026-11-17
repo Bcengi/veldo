@@ -239,6 +239,12 @@ VELDO-0185 (the receiver configuration's state root). Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
 
+2026-11-17: row AC4/install-conversation-receiver restated (gate 99zz3 on the VELDO-0329 integration, lead
+ruling). Cause: the VELDO-0315 gate fix (ae0009b3) has control_service.layout() name the state root in the
+service configuration, so that an upgraded host carries the same field a fresh installation writes. The row
+required `state_root` to be absent from the layout's configuration; it now requires it to equal that host's
+factory-state root, the value the row passes in. Nothing else in the row changed; suite 123 passes.
+
 ## Implementation follow-up boundaries
 
 Role-change and project-attach commands are versioned owner commands in VELDO-0174.
