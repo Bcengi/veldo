@@ -1,0 +1,32 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "python3 scripts/selftest.py --suite 82_veldo_0129_worker_wiring",
+  "environment": {
+    "commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b",
+    "python": "3.12.3",
+    "host": "dmitry-pc"
+  },
+  "discarded": [
+    {
+      "name": "green-after-82.stdout",
+      "bytes": 10052,
+      "sha256": "e6957be0522bb5e628e428b7a0a5e0691cf5631f640a51e03b3e8a1857bad0c3"
+    }
+  ],
+  "deciding": {
+    "status": "passed",
+    "exit_code": 2,
+    "counts": [
+      62,
+      0
+    ],
+    "failed_rows": [],
+    "expected_old_red": [],
+    "rows": [
+      "selftest (PARTIAL, 1 of 196 suites): 62 passed, 0 failed in 128.64s"
+    ],
+    "elapsed_seconds": 129.22
+  }
+}

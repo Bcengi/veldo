@@ -1,0 +1,32 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "python3 scripts/selftest.py --suite 72_veldo_0128_reports",
+  "environment": {
+    "commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b",
+    "python": "3.12.3",
+    "host": "dmitry-pc"
+  },
+  "discarded": [
+    {
+      "name": "green-after-72.stdout",
+      "bytes": 9545,
+      "sha256": "156a3e5cbba29dc76e1a5c7ea9236cca2619a6a347efa68c00017b7c3bfb5e63"
+    }
+  ],
+  "deciding": {
+    "status": "passed",
+    "exit_code": 2,
+    "counts": [
+      45,
+      0
+    ],
+    "failed_rows": [],
+    "expected_old_red": [],
+    "rows": [
+      "selftest (PARTIAL, 1 of 196 suites): 45 passed, 0 failed in 3.69s"
+    ],
+    "elapsed_seconds": 3.777
+  }
+}

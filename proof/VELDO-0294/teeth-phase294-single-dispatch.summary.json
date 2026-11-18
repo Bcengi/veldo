@@ -1,0 +1,30 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "python3 scripts/check_teeth_mutations.py --case phase294-single-dispatch --jobs 1 --summary proof/VELDO-0294/teeth-phase294-single-dispatch.receipt.summary.json",
+  "environment": {
+    "commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b",
+    "python": "3.12.3",
+    "host": "dmitry-pc"
+  },
+  "discarded": [
+    {
+      "name": "teeth-phase294-single-dispatch.stdout",
+      "bytes": 5651,
+      "sha256": "20cece5f66d30a969852287c2722e9bc7c015b55c9433354ee8c21e5124eb658"
+    }
+  ],
+  "deciding": {
+    "status": "failed",
+    "exit_code": 1,
+    "counts": null,
+    "failed_rows": [],
+    "expected_old_red": [],
+    "rows": [
+      "{\"budget_seconds\": 47760.0, \"case_deadlines\": {\"check_teeth_mutations.py:phase294-single-dispatch\": 389.6166579807177}, \"case_receipts\": [{\"identity\": \"check_teeth_mutations.py:phase294-single-dispatch\", \"key\": null, \"reason\": \"unconfined_leg\", \"source\": \"fresh\", \"validated\": false}], \"detail\": \"missing_target: missing_target: VELDO-0294 phase/fresh-dispatches\", \"drivers\": {\"check_review_mutations.py\": {\"executed\": 0, \"inventory_digest\": \"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\", \"registered\": 0, \"reused\": 0, \"wall_seconds\": 0, \"worker_seconds\": 0}, \"check_teeth_mutations.py\": {\"executed\": 1, \"inventory_digest\": \"14ab6f745f25393054b08e9291e71f7f6d77f264b2217966ec4be72d3a4cdf9e\", \"registered\": 1, \"reused\": 0, \"wall_seconds\": 384.0077648339793, \"worker_seconds\": 383.98645528545603}}, \"elapsed\": 386.8441366860643, \"error\": \"missing_target\", \"executed\": 1, \"force_fresh\": false, \"implementation_digest\": \"33bc8b41b69625e06696d19e91fddcd4566b9eeea3856f36972685b56b1a35",
+      "mutations: failed registered=1 executed=1 reused=0 rejected=0 workers=3 elapsed=386.844s"
+    ],
+    "elapsed_seconds": 386.963
+  }
+}

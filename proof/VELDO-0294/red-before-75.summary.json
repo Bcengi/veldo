@@ -1,0 +1,61 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "python3 scripts/selftest.py --suite 75_veldo_0062_accounts",
+  "environment": {
+    "commit": "6ee5bb5f",
+    "build_commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b",
+    "python": "3.12.3",
+    "host": "dmitry-pc"
+  },
+  "discarded": [
+    {
+      "name": "red-before-75.stdout",
+      "bytes": 15149,
+      "sha256": "720a7de60cc489315372864729e3f4f072ffdd333a49ea0b9b693456469ea618"
+    }
+  ],
+  "deciding": {
+    "status": "passed",
+    "exit_code": 1,
+    "counts": [
+      50,
+      2
+    ],
+    "failed_rows": [
+      "VELDO-0294 tokens/pruned",
+      "VELDO-0294 tokens/run-record"
+    ],
+    "expected_old_red": [],
+    "rows": [
+      "VELDO-0294 tokens/run-record detail: tokens294/completed: one private bounded record with committed fields",
+      "VELDO-0294 tokens/run-record detail: tokens294/capped: one private bounded record with committed fields",
+      "VELDO-0294 tokens/run-record detail: tokens294/unknown: one private bounded record with committed fields",
+      "VELDO-0294 tokens/run-record detail: unknown tokens are null and reader returns exactly three newest first",
+      "VELDO-0294 tokens/run-record detail: phase cap settles observed lower bounds",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses nonfinal: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses outcome: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses cause: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses duplicate: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses foreign: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses boolean: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses negative: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses missing-tokens: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses missing-messages: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses missing-invocations: TypeError",
+      "VELDO-0294 tokens/run-record detail: invalid settlement refuses missing-wall_seconds: TypeError",
+      "VELDO-0294 tokens/run-record detail: marked replay commits no further settlement",
+      "VELDO-0294 tokens/run-record detail: marked replay conflict changed",
+      "VELDO-0294 tokens/run-record detail: marked replay conflict dropped",
+      "VELDO-0294 tokens/run-record detail: zero: committed zero is recorded as zero",
+      "VELDO-0294 tokens/run-record detail: not-executed: committed zero is recorded as zero",
+      "VELDO-0294 tokens/run-record detail: committed-then-raised: committed zero is recorded as zero",
+      "VELDO-0294 tokens/run-record detail: the row ran to its end (it raised AttributeError: 'Meter' object has no attribute 'steps')",
+      "SELFTEST FAIL: VELDO-0294 tokens/run-record: tokens294/completed: one private bounded record with committed fields; tokens294/capped: one private bounded record with committed fields; tokens294/unknown: one private bounded record with committed fields; unknown tokens are null and reader returns exactly three newest first; phase cap settles observed lower bounds; invalid settlement refuses nonfinal: TypeError; invalid settlement refuses outcome: TypeError; invalid settlement refuses cause: TypeError; invalid settlement refuses duplicate: TypeError; invalid settlement refuses foreign: TypeError; invalid settlement refuses boolean: TypeError; invalid settlement refuses negative: TypeError; invalid settlement refuses missing-tokens: TypeError; invalid settlement refuses missing-messages: TypeError; invalid settlement refuses missing-invocations: TypeError; invalid settlement refuses missing-wall_seconds: TypeError; marked replay commits no further settlement; marked replay conflict changed",
+      "VELDO-0294 tokens/pruned detail: the row ran to its end (it raised AttributeError: 'Meter' object has no attribute 'steps')",
+      "SELFTEST FAIL: VELDO-0294 tokens/pruned: the row ran to its end (it raised AttributeError: 'Meter' object has no attribute 'steps')",
+      "selftest (PARTIAL, 1 of 196 suites): 50 passed, 2 failed in 37.36s"
+    ],
+    "elapsed_seconds": 37.698
+  }
+}

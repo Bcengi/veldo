@@ -1,0 +1,56 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "python3 scripts/selftest.py --suite 72_veldo_0128_reports",
+  "environment": {
+    "commit": "6ee5bb5f",
+    "build_commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+    "build_tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b",
+    "python": "3.12.3",
+    "host": "dmitry-pc"
+  },
+  "discarded": [
+    {
+      "name": "red-before-72.stdout",
+      "bytes": 11297,
+      "sha256": "d7e2b3fac94804b59a814bbc70644f4029c88de824b30839fc1986f4bb3fcd70"
+    }
+  ],
+  "deciding": {
+    "status": "passed",
+    "exit_code": 1,
+    "counts": [
+      41,
+      4
+    ],
+    "failed_rows": [
+      "VELDO-0128 registry/declared-set",
+      "VELDO-0128 registry/delivery",
+      "VELDO-0128 sources/real-writers",
+      "VELDO-0294 report/run-over-tokens"
+    ],
+    "expected_old_red": [
+      "VELDO-0128 registry/declared-set",
+      "VELDO-0128 registry/delivery",
+      "VELDO-0128 sources/real-writers"
+    ],
+    "rows": [
+      "VELDO-0128 registry/declared-set detail: the registry names exactly the declared event set [intake_routed, objective_accepted, decision_awaiting, work_progress, gate_result, stop, project_ready, completion]",
+      "SELFTEST FAIL: VELDO-0128 registry/declared-set",
+      "VELDO-0128 registry/delivery detail: run_over_tokens: a report for every committed source [[]]",
+      "VELDO-0128 registry/delivery detail: run_over_tokens: every report was sent, stored by the platform exactly as recorded, to the owner",
+      "VELDO-0128 registry/delivery detail: the registry-to-delivery comparison: the delivered events are the declared set",
+      "SELFTEST FAIL: VELDO-0128 registry/delivery",
+      "VELDO-0128 sources/real-writers detail: each registration listens to the kinds its real writer commits [{'intake_routed': ('intake_proposal',), 'objective_accepted': ('objective',), 'decision_awaiting': ('assignment',), 'work_progress': ('dispatch',), 'gate_result': ('gate_observation', 'floor_unit'), 'stop': ('andon_stop',), 'project_ready': ('new_project',), 'completion': ()}]",
+      "SELFTEST FAIL: VELDO-0128 sources/real-writers",
+      "VELDO-0294 report/run-over-tokens detail: the section ran to its end (it raised TypeError: Reservations.report() got an unexpected keyword argument 'settlement')",
+      "VELDO-0294 report/run-over-tokens detail: all seven settled examples and three boundary controls ran",
+      "VELDO-0294 report/run-over-tokens detail: over: one report with unit, dispatch, messages and threshold",
+      "VELDO-0294 report/run-over-tokens detail: over: settled amount",
+      "VELDO-0294 report/run-over-tokens detail: unknown: one report with unit, dispatch, messages and threshold",
+      "VELDO-0294 report/run-over-tokens detail: unknown: total unknown",
+      "SELFTEST FAIL: VELDO-0294 report/run-over-tokens",
+      "selftest (PARTIAL, 1 of 196 suites): 41 passed, 4 failed in 3.34s"
+    ],
+    "elapsed_seconds": 3.432
+  }
+}

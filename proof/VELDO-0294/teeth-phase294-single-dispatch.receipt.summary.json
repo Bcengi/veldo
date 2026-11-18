@@ -1,0 +1,45 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --case phase294-single-dispatch --jobs 1 --summary proof/VELDO-0294/teeth-phase294-single-dispatch.receipt.summary.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 386.8441366860643,
+   "error": "missing_target",
+   "executed": 1,
+   "registered": 1,
+   "rejected": 0,
+   "reused": 0,
+   "status": "failed",
+   "worker_invocations": 3
+  },
+  "results_count": 0,
+  "results_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "rows": [
+   {
+    "case": "phase294-single-dispatch",
+    "expected": "killed",
+    "observed": "missing_target",
+    "red": "missing_target: VELDO-0294 phase/fresh-dispatches"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 2,
+   "name": "mutation result array",
+   "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+ ],
+ "environment": {
+  "commit": "ae0fccbd3d4dd2cb10fe62a50a7f075cab995d87",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   1.18701171875,
+   3.56982421875,
+   12.0185546875
+  ],
+  "python": "3.12.3",
+  "tree": "30dded0b50fab358961a6ac1ebad9d589f764e4b"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
