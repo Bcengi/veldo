@@ -799,7 +799,24 @@ else:
                      and not loop.get('running') and not loop.get('orphans') and not loop.get('watched_trees'))
             return loop['passes'] if still else None
 
-        deadline, found, refused_ids, reruns, quiet = time.monotonic() + 90, [], [], [], None
+        # The records alone are not the journey's end. A receiver commits its run's exit and only then asks the
+        # manager for the ended scope's result and tells the service; the service returns the run's account slot
+        # in the pass that message wakes, and a service told to stop makes no further pass. Stopped in between
+        # (it happened once in 81 runs under load), the last review's slot stays held on the only Codex account
+        # and the reservation probe after the stop is refused no_account. So the wait also needs the store to
+        # show every worker slot of this domain returned: the service has then settled every run it launched.
+        def held():
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
+            try:
+                slots = [json.loads(d) for (d,) in conn.execute(
+                    "SELECT data FROM entities WHERE kind='subscription_reservation'").fetchall()]
+            finally:
+                conn.close()
+            return sorted('%s %s' % ((slot.get('context') or {}).get('account'), slot.get('dispatch')) for slot in slots
+                          if slot.get('type') == 'worker' and (slot.get('context') or {}).get('domain') == domain
+                          and not slot.get('retired'))
+
+        deadline, found, refused_ids, reruns, quiet, slots = time.monotonic() + 90, [], [], [], None, []
         while time.monotonic() < deadline:
             # Asked before the store is read, so the records judged are never older than a quiet reading.
             was, quiet = quiet, idle()
@@ -812,13 +829,17 @@ else:
                        and all(any(r['dispatch_id'] == o.get('dispatch_id')
                                    and r['contract']['reservation']['account'] != LOGGED_OUT for r in found)
                                for o in reruns))
-            if finished(found) and refused_ids and (violated or retried):
+            # Read after the records, so slots found returned belong to runs at least as late as those judged.
+            slots = held()
+            if finished(found) and refused_ids and (violated or retried) and not slots:
                 break
             if quiet is not None and quiet == was:
                 print('VELDO-0185 journey: the loop is idle after pass %d with the journey unfinished; '
                       'not waiting out the bound' % quiet)
                 break
             time.sleep(1)
+        if slots:
+            print('VELDO-0185 journey: the wait ended with worker slots still held: %s' % slots)
         by_account = {}
         for record in found:
             contract = record['contract']
