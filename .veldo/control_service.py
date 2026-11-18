@@ -2708,6 +2708,18 @@ class Service:
                            'refusal': 'unknown_outcome:' + type(error).__name__})
             return None
 
+    def space_keep(self, packet):
+        """VELDO-0319 (AC5 to AC7): the owner's Keep packet from the console's space.keep, handed to the
+        space Ledger as the one command it is. The Ledger verifies the owner's passkey itself, against
+        the relying party of the API this instance serves, and applies only a request settled as Keep.
+        Returns the Ledger's answer; with no ledger, {ok: False, reason: space_not_configured}."""
+        if getattr(self, 'space', None) is None:
+            return {'ok': False, 'reason': 'space_not_configured'}
+        ledger = self.space['ledger']
+        api = getattr(self, 'api', None)
+        ledger.passkeys = dict(api.passkeys) if api is not None else None
+        return ledger.disposition(packet, CM, time.time(), only='keep')
+
     # The space events (VELDO-0312).
 
     @staticmethod
@@ -2901,18 +2913,6 @@ class Service:
             if not _retry:
                 self._space_endings().record({'method': 'send', 'found': found}, out['raised'])
         return self._space_logged(out)
-
-    def space_keep(self, packet):
-        """VELDO-0319 (AC5 to AC7): the owner's Keep packet from the console's space.keep, handed to the
-        space Ledger as the one command it is. The Ledger verifies the owner's passkey itself, against
-        the relying party of the API this instance serves, and applies only a request settled as Keep.
-        Returns the Ledger's answer; with no ledger, {ok: False, reason: space_not_configured}."""
-        if getattr(self, 'space', None) is None:
-            return {'ok': False, 'reason': 'space_not_configured'}
-        ledger = self.space['ledger']
-        api = getattr(self, 'api', None)
-        ledger.passkeys = dict(api.passkeys) if api is not None else None
-        return ledger.disposition(packet, CM, time.time(), only='keep')
 
     def space_abandon(self, item, version=None, by=None, *, cause, _retry=False):
         """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE,
