@@ -782,8 +782,27 @@ else:
         # a mutant that never produces the evidence must fail here, inside the suite, so its cleanup runs;
         # a worker killed at the budget leaves its /dev/shm scratch behind and the stage goes red on that.
         # The journey takes about 12 s alone and well under a minute under gate load.
-        deadline, found, refused_ids, reruns = time.monotonic() + 90, [], [], []
+        #
+        # That bound alone left a journey that can never finish 15 s short of the worker budget: four teeth
+        # cases (work not installed, principals without their role, registration left out, a refused unit
+        # stranded) waited all 90 s and ended at 104 to 108 s of 120 in every gate, and one was killed at 120 s.
+        # So the wait also ends on the service's own word that nothing more will come. Its loop passes only
+        # when something wakes it (a journal advance, a run's end, a timer, a watched tree), and it answers
+        # this inspect in the same thread, before the pass of that turn: a loop that has passed since the
+        # submission, watches no run, no orphan and no tree and has no timer set, twice running with no pass
+        # between, has nothing left that could wake it. The rows below then judge what the store holds.
+        def idle():
+            answer = h['service_send'](root, {'operation': 'inspect', 'entity_ids': []})
+            loop = ((answer or {}).get('result') or {}).get('loop') or {}
+            still = (loop.get('available') is True and isinstance(loop.get('passes'), int) and loop['passes'] >= 1
+                     and loop.get('timer') is None
+                     and not loop.get('running') and not loop.get('orphans') and not loop.get('watched_trees'))
+            return loop['passes'] if still else None
+
+        deadline, found, refused_ids, reruns, quiet = time.monotonic() + 90, [], [], [], None
         while time.monotonic() < deadline:
+            # Asked before the store is read, so the records judged are never older than a quiet reading.
+            was, quiet = quiet, idle()
             found = dispatches()
             refused_ids, reruns = retries(found)
             out = [r for r in found if r['dispatch_id'] in refused_ids]
@@ -794,6 +813,10 @@ else:
                                    and r['contract']['reservation']['account'] != LOGGED_OUT for r in found)
                                for o in reruns))
             if finished(found) and refused_ids and (violated or retried):
+                break
+            if quiet is not None and quiet == was:
+                print('VELDO-0185 journey: the loop is idle after pass %d with the journey unfinished; '
+                      'not waiting out the bound' % quiet)
                 break
             time.sleep(1)
         by_account = {}

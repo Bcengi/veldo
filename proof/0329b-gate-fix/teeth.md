@@ -155,3 +155,52 @@ live/claude and live/codex (the lead recaptures), VELDO-0131 browser rows (host 
 
 For the lead, under the lock: `python3 scripts/check_gate_mutations.py --finding 303`, then `--finding 308`,
 then the gate.
+
+## Gate fix 7: the worker deadline of gate 99zzL (head 79d9c29c)
+
+Gate 99zzL ended its mutation stage at 9181 s of a 185654 s stage budget: registered 3597, executed 2620,
+rejected 2614, 0 survivors, 0 invalid baselines. The 6 executed and not rejected are one worker killed at its
+own deadline and five workers cancelled when the stage stopped on it; 977 cases were never started.
+
+| case | finding | what the gate recorded | after this round |
+|---|---|---|---|
+| v185-registration-left-out | 185 | worker deadline (120s), killed at 120.2 s with 8.8 s of CPU | rejected, 16.9 s |
+| v185-refused-unit-stranded | 185 | worker_cancelled at 110.7 s of 120 | rejected, 21.9 s |
+| identity153-finalize-event | 153 | worker_cancelled at 56.9 s of 195 | rejected, 91.1 s of 242 |
+| identity153-common-dir-reread | 153 | worker_cancelled at 53.6 s of 195 | rejected, 92.2 s of 242 |
+| adoption161-signer-agent | 161 | worker_cancelled at 33.7 s of 121 | rejected, 62.5 s of 165 |
+| adoption161-push-before-checks | 161 | worker_cancelled at 33.9 s of 120 | rejected, 62.3 s of 165 |
+
+Disposition: none is a survivor and no case, row or registry entry changed. The four cancelled cases of
+findings 153 and 161 needed nothing.
+
+The cause is in suite 106, not in the cases. Its journey waits for the installed service to build and review
+three units, with a 90 s failure bound written to stay under the driver's 120 s floor for a case with no
+recorded time. Four cases take away what the journey waits for (v185-work-not-installed,
+v185-principals-without-role, v185-registration-left-out, v185-refused-unit-stranded), so each waited the whole
+bound: 106.9 to 108.4 s at 7aa9ea2a, 104.4 to 107.5 s at c594c6e5, 108.8 s to the kill at 79d9c29c, and 103.4
+to 104.5 s alone on this host before the change, with 9 to 13 s of CPU each time. The other sixteen cases of
+the finding take 17 to 25 s. A case at 87 to 91 percent of its deadline on every run is killed by any 15 s of
+delay; the host gave that once in three gates.
+
+The journey now also ends on the service's own word. The loop passes only when something wakes it and answers
+`inspect` in the thread that runs the passes; when it has passed since the submission, watches no run, no
+orphan and no tree, has no timer, and says so twice with no pass between, nothing is left that could wake
+it, and the rows judge what the store holds. The 90 s bound stays for a service that is busy and slow. No
+row's condition changed, and the unchanged suite never takes the new exit (it is printed when taken).
+
+Runs (`nice -n 10 python3 scripts/check_gate_mutations.py --finding N`, no gate):
+- finding 185 before the change, the four cases alone: 4 of 4 rejected, 103.4 to 104.5 s each.
+- finding 185 after: registered 20, executed 20, rejected 20 in 66.9 s; the four at 16.8, 16.9, 16.9 and
+  21.9 s; each fails the same rows as before the change (compared row by row).
+- findings 153 and 161: registered 79, executed 79, rejected 79 in 367.5 s; no case past 43 percent of its
+  deadline.
+- suite 106 alone after the change: 20 rows pass; 76 runs of 76 clean in batches of four and eight at once.
+  One run of four, made while the driver ran findings 344 and 259 beside it, failed reservation/principals
+  once (authority refused no_account) with every journey row passing and the new exit not taken; not
+  reproduced, cause not established, recorded here and not fixed.
+
+Not fixed here, same shape in other suites, for the lead: dispatch-spawn-before-contract (102.2, 102.9 and
+104.8 s of 120 in the last three gates, 12 to 14 s of CPU) and dispatch-receiver-store-only-gate (97.8, 98.2,
+99.7 s) of suite 62, and owner-command-unrouted (82 s). The driver that sets the 120 s floor is a protected
+path and was not touched.
