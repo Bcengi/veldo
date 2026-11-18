@@ -229,6 +229,7 @@ _FILES = [
     ".veldo/control_space_spool.py",
     ".veldo/control_space_kinds.py",
     ".veldo/control_space_config.py",
+    ".veldo/control_space_admission.py",  # the service loads it for admission (VELDO-0316)
     # VELDO-0315: the startup comparison and its read-only discovery dependencies.
     ".veldo/control_space_reconcile.py",
     ".veldo/control_space_spool.py",
