@@ -55,6 +55,7 @@ def _v315_suite():
         CFG, YAML, GP = [load(name, mods / (name + '.py'))
                          for name in ('control_space_config', 'yamlish', 'git_process')]
         S, CM, AC = SV.S, SV.CM, SV.CM.AC
+        KEEP = load('owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         key = base / 'owner'
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(key)],
                        check=True, capture_output=True)
@@ -149,83 +150,13 @@ def _v315_suite():
                 self.service.sign = self.journal
                 self.service.space = self.space
 
-            def desk(self):
-                """The owner's desk on this store (VELDO-0318): the production inbox, presenter and
-                settlement, a requester and an API edge enrolled by the owner. Only the channel's send
-                is a fixture."""
-                if self.made:
-                    return self.made
-                I, V, PJ, ST, claims, contract = [load('desk_' + name, mods / (name + '.py')) for name in (
-                    'control_assignment', 'control_channel_presentation', 'control_channel_projection',
-                    'control_request_settlement', 'control_claim', 'entity_contract')]
-                # One store module and one membership module: the ones the store was opened with.
-                claims.S, claims.CM, claims.AC = S, CM, AC
-                signers = {}
-                for who in ('requester', 'api-edge'):
-                    path = self.root / ('key-' + who)
-                    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(path)],
-                                   check=True, capture_output=True)
-                    signers[who] = lambda message, path=path: subprocess.run(
-                        ['ssh-keygen', '-Y', 'sign', '-f', str(path), '-n', AC.SIGNATURE_NAMESPACE],
-                        input=message, capture_output=True, check=True).stdout.decode()
-                    command = {'command_id': 'enroll-' + who, 'operation': 'enroll_principal', 'target': 'authority',
-                        'parameters': {'principal': who, 'principal_type': 'service', 'roles': [],
-                            'public_key': Path(str(path) + '.pub').read_text().strip(), 'independence_group': who,
-                            'scope': '*'},
-                        'artifact_digests': [], 'expected_versions': {}}
-                    membership = CM.authority_state(S, self.conn)
-                    envelope = dict(self.ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'],
-                        principal='owner', request_revision=1, nonce='nonce-enroll-' + who, expires_at=1600,
-                        membership_version=membership['membership_version'],
-                        delegation_version=membership['delegation_version'],
-                        command_digest=AC.canonical_command_digest(command))
-                    answer = CM.admit(S, self.conn, envelope, command, sign(AC.canonical_envelope_bytes(envelope)),
-                        self.ids, 1000, journal_signer=('authority', self.journal),
-                        enrollee_signature=signers[who](AC.canonical_envelope_bytes(dict(envelope, principal=who))))
-                    assert answer['committed'], answer
-                self.put('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
-                         dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner',
-                              chat_id=31501, revoked_at=None))
-
-                class Transport:
-                    sent = []
-
-                    def send(self, chat, text, reply_to):
-                        self.sent.append(text)
-                        return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
-                                    reply_to_message_id=reply_to)
-
-                inbox = I.Inbox(S, CM, claims, contract, self.conn, self.ids, 'authority', self.journal)
-                presenter = V.Presenter(S, CM, PJ, inbox, Transport(), self.conn, 'authority', self.journal, assignment=I)
-                settlement = ST.Settlement(S, CM, inbox, presenter, self.conn, 'authority', self.journal,
-                                           assignment=I, presentation=V, api_edge='api-edge')
-                self.made.update(ST=ST, inbox=inbox, presenter=presenter, settlement=settlement, signers=signers)
-                return self.made
-
             def owner_keeps(self, identity):
-                """The owner answers Keep to the worktree's request and signs the disposition."""
-                made = self.desk()
-                published = self.L.publish_disposition(identity, made['settlement'], made['inbox'], made['presenter'],
-                                                       ('requester', made['signers']['requester']), 'owner')
-                assert published['ok'], published
-                rid = published['request']
-                made['presenter'].present(rid)
-                receipt = made['presenter'].current(rid)
-                assert receipt, published
-                self.serial += 1
-                body = dict(self.ids, schema=made['ST'].API_SCHEMA, edge='api-edge', answer_id='answer-%d' % self.serial,
-                            principal='owner', request_id=rid, request_version=receipt['request_version'],
-                            presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
-                            presentation_version=receipt['presentation_version'], choice='accept keep',
-                            rationale='Owner answer')
-                settled = made['settlement'].api_answer(
-                    dict(answer=body, signature=made['signers']['api-edge'](S.canonical_bytes(body))))
-                command = dict(operation='space_disposition', principal='owner', command_id='keep-%d' % self.serial,
-                               nonce='keep-nonce-%d' % self.serial,
-                               parameters=dict(item=identity, version=self.L._row(identity, SP.ITEM_KIND)[0], request=rid))
-                edge_alone = self.L.authorize_disposition(identity, rid)
-                signed = self.L.disposition({'command': command, 'signature': sign(S.canonical_bytes(command))}, CM, 1000)
-                return settled, edge_alone, signed
+                """The owner answers Keep to the worktree's request and signs the disposition: the
+                owner's desk of the space suites (support/space_owner_keep.py) on this store."""
+                if not self.made:
+                    self.made['desk'] = KEEP.Desk(mods, S, CM, AC, self.conn, self.ids, self.journal, sign,
+                                                  self.root, 1000, tag='v315_desk')
+                return self.made['desk'].owner_keeps(self.L, identity, SP.ITEM_KIND)
 
             def client(self, argv, cwd=None):
                 if argv[0] != 'docker':
