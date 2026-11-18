@@ -117,3 +117,44 @@ Two things to know:
   VELDO-0315).
 - scripts/suites/71_veldo_0130_api.py, control_api_assertion.py and control_service.py are in the
   widened footprint and did not change (sources.json holds their digests, equal to the base).
+
+## Amendment round, 2026-11-18: the console signs the owner's Keep (AC5 to AC7)
+
+Commits b1dfbf10 (the amendment filed in the specification, with VELDO-0332's dependency), 993e523e
+(the build) and a7f98bf3 (one fix), on a0e4bc10. Builder evidence, not independent review. The record
+is amendment-round.json. Everything above this section describes 5f3afd34 and was not run again.
+
+What was built. One owner route, space.keep (operation keep_worktree, action worktree_keep), carries
+every Keep packet: the Ledger's space_disposition command for one item, version and request, and the
+owner's passkey assertion whose challenge is SHA-256 of the command's canonical bytes. The answer path
+(decisions.answer, the settlement) is unchanged. The Ledger verifies the passkey itself, in
+_mode_signer, the one function behind set_mode and the disposition: a mapping is the passkey form (a
+credential current for the command's principal in the Ledger's own store, enrolled for this
+installation's origin and relying party, verified by control_api_webauthn unchanged), a text is the SSH
+form as before. space.keep applies only a request settled as Keep (the transition refuses
+space_disposition_choice). The service hands the Ledger the origin, the relying-party id and the
+verifier's folder from control_service_api. The pending read names each item's request id and marks a
+Keep that settled and was not applied. In the console the Decisions screen signs the Keep, sends the
+answer and then the packet, with no second press; the Space screen lists an answered, unsigned Keep
+with Sign Keep.
+
+Rows at the API (150_veldo_0319_space_screen): 33 green, 2 red. The eleven new rows are green
+(ac5/keep-applied, ac5/console-bytes, the seven ac6 rows, ac7/answered-not-signed,
+ac7/member-own-request). ac3/no-dead-route and ac3/routes-signed are restated as the properties they
+guard and are green. Suite 71 is green with space.keep among the bodies of session/forgery-refused.
+
+Red, and not from this round: cost/removed-index and cost/carried-index, the two rows of fix round F2.
+They are red on the base a0e4bc10 with the same numbers (2067 to 108563 SQL steps after 4096 more
+records). Every authority read judges its reader through control_membership.authority_state, which
+reads the whole store (control_store.materialized_state), so the steps of a read grow with the store
+whatever the view reads. Those two modules are outside this footprint. It needs a lead decision.
+
+Because of those two rows the teeth driver refuses all 18 API cases of finding 319 as
+invalid_baseline. Read from each mutant worker's own observation, every mutant turns its target rows
+red; that is recorded per case in amendment-round.json and is not a driver verdict.
+
+Not run here: the browser suite 150_veldo_0319_space_ui (now sixteen browser rows and unit/space; the
+new ones are ac5/keep-applied and ac7/sign-keep), its five browser teeth cases, and verify.sh. The UI
+was type-checked and its Vitest specs run in a scratch copy (59 tests), and the browser harness's Keep
+path was driven from Python through the real API edge, authority, settlement and WebAuthn verifier.
+The entry the protected scripts/gate_unconfined.json needs is in gate-unconfined-entry.md.
