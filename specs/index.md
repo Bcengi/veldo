@@ -248,15 +248,15 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0345 | The keep step: kept refs and the saved snapshot | ready | high | dmitry | required | VELDO-0345-the-keep-step-kept-refs-and-the-saved-snapshot.md |
 | VELDO-0346 | Getting removed work back: kept, restore and drop | ready | high | dmitry | required | VELDO-0346-getting-removed-work-back-kept-restore-and-drop.md |
 | VELDO-0347 | Work the first rules did not see: ignored files, repositories in any folder, evidence | ready | high | dmitry | required | VELDO-0347-work-the-first-rules-did-not-see-ignored-files-repositories-in-any-folder-evidence.md |
+| VELDO-0348 | The no-work-is-lost suite, and act mode | ready | high | dmitry | required | VELDO-0348-the-no-work-is-lost-suite-and-act-mode.md |
+| VELDO-0349 | The guard keeps hands off the kept store | ready | high | dmitry | required | VELDO-0349-the-guard-keeps-hands-off-the-kept-store.md |
+| VELDO-0350 | The end write survives the runner's stop record | ready | high | dmitry | required | VELDO-0350-the-end-write-survives-the-runners-stop-record.md |
 | VELDO-0351 | The console's Reports list and the owner's Adopt | ready | high | dmitry | required | VELDO-0351-the-consoles-reports-list-and-the-owners-adopt.md |
 | VELDO-0352 | The console's Protected section | ready | high | dmitry | required | VELDO-0352-the-consoles-protected-section.md |
 | VELDO-0353 | A pool's capacity and free space on the Space screen | ready | high | dmitry | required | VELDO-0353-a-pools-capacity-and-free-space-on-the-space-screen.md |
 | VELDO-0354 | Space requests from the You screen, and waiting runs in a group of their own | ready | standard | dmitry | required | VELDO-0354-space-requests-from-the-you-screen-and-waiting-runs-in-a-group-of-their-own.md |
 | VELDO-0355 | Save and Discard for a clone | ready | high | dmitry | required | VELDO-0355-save-and-discard-for-a-clone.md |
 | VELDO-0356 | Evidence whose only copy is on the trunk | ready | high | dmitry | required | VELDO-0356-evidence-whose-only-copy-is-on-the-trunk.md |
-| VELDO-0348 | The no-work-is-lost suite, and act mode | ready | high | dmitry | required | VELDO-0348-the-no-work-is-lost-suite-and-act-mode.md |
-| VELDO-0349 | The guard keeps hands off the kept store | ready | high | dmitry | required | VELDO-0349-the-guard-keeps-hands-off-the-kept-store.md |
-| VELDO-0350 | The end write survives the runner's stop record | ready | high | dmitry | required | VELDO-0350-the-end-write-survives-the-runners-stop-record.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a human decision must arrive as an attested record and never as an answer typed at a prompt | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning method just as unreachable as an instance one and neither wired site refuses it, the function that catches it already sits in the file wired to nothing, and wiring it also removes both known false positives (hardening of WARP-0623, from its own review's ranked notes) | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one | ready | high | dmitry | not_required | WARP-0714-compute-once.md |

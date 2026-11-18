@@ -8,7 +8,7 @@ owner: dmitry
 human_approval: required
 lane: standalone
 parent: VELDO-0295
-depends_on: [VELDO-0342]
+depends_on: [VELDO-0318, VELDO-0342]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -48,12 +48,20 @@ footprint:
   - "specs/VELDO-0319-the-consoles-space-screen.md"
   - "specs/index.md"
   - "proof/VELDO-0319/**"
+  - "engine/ui/src/views/DecisionsView.vue"
+  - "engine/ui/src/features/decisions/**"
+  - "engine/ui/src/features/signin/webauthn.ts"
+  - "engine/.veldo/control_service_api.py"
+  - ".veldo/control_service_api.py"
 behavior_bearing: true
 observability:
   logs: >
     Each owner action is a signed command in the journal. Reads write nothing.
   error_taxonomy: >
-    An owner action from a session without the owner's passkey is refused.
+    An owner action from a session without the owner's passkey is refused. not_authorized for a Keep
+    packet the owner's passkey or key did not sign; space_disposition_unsettled for a packet whose
+    request has no settled answer; space_disposition_choice for a packet sent to space.keep for a
+    request settled as Save or Discard.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -80,6 +88,47 @@ acceptance_criteria:
       the runs list and the Pools section, and the screen updates from the record stream without a reload
     falsified_by: >
       Poll on an interval; the row that stops the fixture clock sees no update and fails
+  - id: AC5
+    text: >
+      An accept keep that the owner answers in the console is applied with no second press. When the
+      owner picks a Keep answer to a space request on the Decisions screen, the console builds the Keep
+      command for that item, at the version space.pending shows, and that request; the owner's passkey
+      signs it; the answer is sent; and once the answer has settled the console sends the signed packet
+      on space.keep, a signed owner route. The Ledger then writes owner_keep by that owner and moves the
+      item from deferred to kept in one command
+    falsified_by: >
+      Leave out the space.keep call after the answer settles; the row's answer settles, the item stays
+      deferred, and the row fails
+  - id: AC6
+    text: >
+      The Ledger verifies a passkey-signed Keep itself. The one function that checks the owner behind a
+      signed space command (_mode_signer, used by set_mode and by the disposition) gains a passkey form
+      beside the SSH key form: the assertion must verify against an enrolled, unrevoked credential of the
+      command's principal in the Ledger's own store, with SHA-256 of the canonical command as its
+      challenge and the installation's origin and relying-party id. The principal must still be an
+      active person holding project_owner over the space scope and the one who answered. space.keep
+      applies only a request settled as Keep. A command with the API edge's signature alone, a credential
+      of another member, a revoked credential, an assertion made over another item, version or request,
+      and a request settled as Save or Discard are each refused with nothing written. A Keep signed with
+      the owner's SSH key is taken as before
+    falsified_by: >
+      Each of these turns a row of its own red. Take the edge's signature in place of the passkey's: the
+      row sends space.keep with no assertion and the item is kept. Skip the challenge comparison: the row
+      signs the Keep for one item, sends it naming another, and the other item is kept. Apply whatever
+      the settlement holds: the row sends a signed packet for a request settled as Discard and the item
+      is made due
+  - id: AC7
+    text: >
+      A Keep that settled and was not applied, because the item's version moved, the space.keep call did
+      not arrive, or the answer came over a channel that cannot sign (the phone's message channel), is
+      listed under Pending removal as answered and not signed, with a Sign Keep action. Sign Keep signs a
+      new packet at the item's current version and sends it on space.keep. For a member of a review group
+      the packet names that member's own request, the alias the member kept when the group moved on
+      (VELDO-0342), and not the group's current request
+    falsified_by: >
+      Each of these turns a row of its own red. List only items with an open request: the row's settled,
+      unsigned Keep is on no screen. Sign the group's current request for a member: the Ledger refuses
+      the packet and the member stays deferred
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the change. The console has no Space screen; the ledger and the CLI are unaffected.
@@ -109,6 +158,66 @@ the step before it in the build order.
 
 Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
+
+### The console signs the owner's Keep (AC5 to AC7, amendment of 2026-11-16)
+
+Keep is the one answer the settlement path cannot finish alone. VELDO-0318 AC4 (amended 2026-11-14)
+has the Ledger take Keep only as the owner's own signed packet: "an edge-signed answer alone writes no
+owner_keep". The service's dispositions task applies settled Save and Discard and skips Keep, so a Keep
+answered in the console settles and then waits for a packet nothing sends.
+
+The signature. Today the Ledger checks the owner's SSH signature under the owner's enrolled key. A
+browser does not hold that key; the console's owner has a passkey, and a console session proves only
+that the owner signed in. So each Keep gets a passkey ceremony of its own, whose challenge is SHA-256 of
+the Keep command's canonical bytes (control_store.canonical_bytes). The console builds the command:
+principal, operation space_disposition, a fresh command id and nonce, and parameters item, version and
+request. A unit row checks that the console's bytes equal the store's for the same command. The
+ceremony is the sign-in feature's assertPasskey, reused; it may move under src/api if the UI's house
+rules forbid one feature importing another.
+
+The check is built once. _mode_signer in control_space.py is the only place the Ledger verifies the
+owner behind a signed space command, and both set_mode and the disposition call it, inside the
+transaction as well as before it. It gains the passkey form here. The Ledger reads the credential from
+its own store (the api_credential records of control_api_credentials) and calls
+control_api_webauthn.assertion_problems with the origin and relying-party id the service already
+holds, passed to the Ledger when the service builds it (control_service.py, control_service_api.py).
+VELDO-0332 switches the mode from the console through the same function and builds no second check.
+
+The route. space.keep is a signed owner route like space.abandon: an operation in
+control_api_assertion.OPERATIONS whose parameters are the item, the version, the request and the packet;
+a branch in the authority that admits the owner only; an action in control_api_models.ACTIONS; a service
+entry that calls Ledger.disposition. The answer itself still goes through the settlement path, as design
+6.6 says answers do; space.keep carries the owner's signature for an answer that has already settled.
+One route serves both AC5 and AC7, so there is one way a Keep packet reaches the Ledger.
+
+Rows this amendment changes, all its own ticket's.
+
+- scripts/suites/150_veldo_0319_space_screen.py, ac3/no-dead-route. Today it pins two lists: the
+  published space routes (reconcile, abandon and the four reads) and the space actions (reconcile and
+  abandon), and it expects 404 for adopt, confirm, reject, mode, restore and kept. Six later tickets add
+  routes (VELDO-0320, 0332, 0339, 0346, 0351, 0352) and each would have to edit those lists. The row is
+  restated once, here, as the property it guards: every POST route named space.* carries an operation
+  in OPERATIONS, has an authority branch and an action in ACTIONS, and its command
+  (authority.commands()) is a Ledger operation that has a transition; and no owner action that the
+  Ledger names without a transition (control_space.OWNER_ACTIONS less the transition map) has a route,
+  while a POST to its name answers 404. space.keep passes it. A teeth case publishes a route whose
+  command has no transition and must turn the row red. No later ticket changes this row.
+- The same suite, ac3/routes-signed. The check "the four reads are GET routes that need a session and
+  take no field" keeps that property for every entry of SPACE_VIEWS and drops the exact list of four
+  names, so VELDO-0339, 0351 and 0352 add their reads without editing it.
+- scripts/suites/150_veldo_0319_space_ui.py: BROWSER gains the amendment's browser rows. ui/api-only
+  stays as written; it compares that tuple with the titles in e2e/space.spec.ts.
+- scripts/suites/71_veldo_0130_api.py, session/forgery-refused: bodies gains space.keep, as it gained
+  space.abandon.
+- The teeth cases of finding 319 keep their anchors. One whose anchor line this change moves
+  (space319-abandon-as-a-plain-read-route in control_api.py and space319-reconcile-for-any-member in
+  control_api_authority.py are the likely ones) is re-anchored on the same code with the same target
+  row, and the teeth of finding 319 are run.
+
+Rows that do not change. 150_veldo_0318_unique_work: ac4/signature sends SSH packets signed by the
+wrong principal and they stay refused; no row pins the packet's shape. 150_veldo_0342_member_picks:
+ac1/member-keep and next/settled-keep already prove, with SSH packets, that a member's packet under its
+own alias keeps that member alone; this amendment adds the console's way to send one.
 
 ## History
 
@@ -257,3 +366,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   rule, own queued jobs were cancelled before execution. F1 through F4 are committed but
   unverified; 0319, suites 121/122/123 twice, the remaining regressions, fast checks and teeth
   are pending. No gate or guard was bypassed. See proof/VELDO-0319/fix-round-blocked.json.
+
+- 2026-11-16: next round, from the review of VELDO-0342 (finding 1, answer b), the observation in the
+  review of VELDO-0318 and the lead's decisions of this day. AC5 to AC7 are added: the console signs
+  the owner's Keep with the owner's passkey and sends it on space.keep once the answer has settled, the
+  Ledger verifies the passkey itself in _mode_signer, which VELDO-0332 then uses for the mode switch,
+  and a Keep that settled and was not applied can be signed later. ac3/no-dead-route and
+  ac3/routes-signed are restated as properties so later tickets add routes without editing them. The
+  footprint gains the Decisions screen, the sign-in ceremony and control_service_api.py. Four criteria
+  became seven.
