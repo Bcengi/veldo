@@ -1,18 +1,24 @@
 {
- "command": "python3 scripts/check_teeth_mutations.py --finding 292 --summary proof/VELDO-0292/teeth-292.summary.json --worker-log-dir /tmp/veldo-0292-heavy-dQEesO/teeth-292-workers",
+ "command": "python3 scripts/check_teeth_mutations.py --finding 292 --summary proof/VELDO-0292/teeth-292.summary.json --worker-log-dir /tmp/veldo-0292-heavy-KPhDjb/teeth-292-workers",
  "deciding": {
   "counts": {
-   "elapsed": 473.6068229058292,
-   "executed": 34,
-   "registered": 34,
-   "rejected": 34,
+   "elapsed": 726.1692373901606,
+   "executed": 35,
+   "registered": 35,
+   "rejected": 35,
    "reused": 0,
    "status": "passed",
-   "worker_invocations": 36
+   "worker_invocations": 37
   },
-  "results_count": 34,
-  "results_sha256": "30c2f4b4ce90b3af3827d7472f3ac1ed61e0051279b1f72870962cdb470c88dc",
+  "results_count": 35,
+  "results_sha256": "e6ee37b311ee91c4ec9d72918cbd338effa00e0272d067e572d21743a09809c1",
   "rows": [
+   {
+    "case": "guard292-sort-runs-off",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
    {
     "case": "guard292-config-site-unread",
     "expected": "killed",
@@ -44,12 +50,6 @@
     "source": "fresh"
    },
    {
-    "case": "guard292-config-site-word",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
     "case": "guard292-runner-strings-data",
     "expected": "killed",
     "observed": "killed",
@@ -57,6 +57,12 @@
    },
    {
     "case": "guard292-heredoc-body-live",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "guard292-config-site-word",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -86,13 +92,13 @@
     "source": "fresh"
    },
    {
-    "case": "guard292-git-list-data",
+    "case": "guard292-construct-joined-line-off",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
-    "case": "guard292-construct-joined-line-off",
+    "case": "guard292-git-list-data",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -110,13 +116,13 @@
     "source": "fresh"
    },
    {
-    "case": "guard292-list-tail-data",
+    "case": "guard292-git-list-quoted",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
-    "case": "guard292-git-list-quoted",
+    "case": "guard292-list-tail-data",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -221,22 +227,22 @@
  },
  "discarded": [
   {
-   "bytes": 1529686,
+   "bytes": 1591683,
    "name": "mutation result array",
-   "sha256": "30c2f4b4ce90b3af3827d7472f3ac1ed61e0051279b1f72870962cdb470c88dc"
+   "sha256": "e6ee37b311ee91c4ec9d72918cbd338effa00e0272d067e572d21743a09809c1"
   }
  ],
  "environment": {
-  "commit": "0a2057f5cfc8bf2e921c2bdd48b23e67e542c609",
+  "commit": "35fcd755145e70449300336177284e79b5732e32",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   7.49609375,
-   9.40478515625,
-   6.51171875
+   11.43896484375,
+   26.564453125,
+   18.78955078125
   ],
   "python": "3.12.3",
-  "tree": "46062695d79c79a2577753da2a86265da7b0750c"
+  "tree": "a46b98ee4123cccc65bbf775b23ca63b58f85433"
  },
  "schema": "veldo.proof-summary/v1"
 }

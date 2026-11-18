@@ -4,12 +4,12 @@
   "exit_code": 2,
   "exit_code_note": "a run of one suite never exits 0; 2 with 0 failed is the partial run convention",
   "mutation_rows_veldo_0292": {
-   "bound": 37,
-   "present": 37
+   "bound": 38,
+   "present": 38
   },
   "red_reasons": {},
   "red_veldo_0292": {
-   "bound": "no row red, 19 VELDO-0292 rows and 37 VELDO-0292 mutation rows present, selftest reports 0 failed",
+   "bound": "no row red, 20 VELDO-0292 rows and 38 VELDO-0292 mutation rows present, selftest reports 0 failed",
    "expected": [],
    "observed": []
   },
@@ -19,29 +19,29 @@
    "red": []
   },
   "rows_veldo_0292": {
-   "bound": 19,
-   "present": 19
+   "bound": 20,
+   "present": 20
   },
   "run": "green-after",
   "selftest_lines": [
-   "141_veldo_0268_protected_refs                  140 passed   69.37s",
-   "selftest (PARTIAL, 1 of 196 suites): 166 passed, 0 failed in 69.37s"
+   "141_veldo_0268_protected_refs                  142 passed   89.88s",
+   "selftest (PARTIAL, 1 of 196 suites): 168 passed, 0 failed in 89.88s"
   ],
   "verdict": "pass"
  },
  "discarded": [
   {
-   "bytes": 124534,
+   "bytes": 126336,
    "name": "green-after.log",
-   "sha256": "1f5eca3813782047bd663409b0fb34eb6d18a947dd81990cb7771dbbfaa79307"
+   "sha256": "fd3f519fd6839da53d5186640519343be7e75b44940b9a7607d7755b93edbd69"
   }
  ],
  "environment": {
-  "commit": "0a2057f5cfc8bf2e921c2bdd48b23e67e542c609",
+  "commit": "35fcd755145e70449300336177284e79b5732e32",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "python": "3.12.3",
-  "tree": "46062695d79c79a2577753da2a86265da7b0750c"
+  "tree": "a46b98ee4123cccc65bbf775b23ca63b58f85433"
  },
  "schema": "veldo.proof-summary/v1",
  "tools": {

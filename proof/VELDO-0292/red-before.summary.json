@@ -11,6 +11,7 @@
    "live/mixed": "the line does not say what was found",
    "live/outside-subset": "the line does not say what was found",
    "live/pipeline": "the line does not say what was found",
+   "live/plain-runs": "the line does not say what was found",
    "live/quoted-command-word": "the guard exits 0",
    "live/remap": "the line does not say what was found",
    "live/shell-string": "the line does not say what was found",
@@ -24,17 +25,18 @@
    "text/quoted": "the guard exits 2"
   },
   "mutation_rows_veldo_0292": {
-   "bound": 37,
-   "present": 37
+   "bound": 38,
+   "present": 38
   },
   "red_reasons": {
-   "live/config-include": "main moved False; [(\"printf '[alias]\\\\n\\\\tp = !git push origin main\\\\n' > '/tmp/v268-ub33s4vk/\", 2, None, 'imple git or gh command, so it cannot be reproduced; ",
+   "live/config-include": "main moved False; [(\"printf '[alias]\\\\n\\\\tp = !git push origin main\\\\n' > '/tmp/v268-cx56ff8_/\", 2, None, 'imple git or gh command, so it cannot be reproduced; ",
    "live/config-write": "main moved False; [(\"printf '[alias]\\\\n\\\\tp = !git push origin main\\\\n' >> .git/config; git p\", 2, None, 'imple git or gh command, so it cannot be reproduced; t",
-   "live/construct": "main moved False; [(\"printf '[alias]\\\\n\\\\tp = !git push origin main\\\\n' > '/tmp/v268-ub33s4vk/\", 2, None, 'imple git or gh command, so it cannot be reproduced; ",
+   "live/construct": "main moved False; [(\"printf '[alias]\\\\n\\\\tp = !git push origin main\\\\n' > '/tmp/v268-cx56ff8_/\", 2, None, 'imple git or gh command, so it cannot be reproduced; ",
    "live/interpreter": "main moved False; [('python3 -c \\'import os; os.system(\"git push origin main\")\\'', 2, None, 'imple git or gh command, so it cannot be reproduced; treated as pro",
    "live/mixed": "main moved False; [(\"echo 'note: git push origin main'; cd . && git push origin main\", 2, None, 'imple git or gh command, so it cannot be reproduced; treated as",
    "live/outside-subset": "main moved False; [(\"C='git push origin main'; $C\", 2, None, 'imple git or gh command, so it cannot be reproduced; treated as protected; runs the gate stamp, re",
    "live/pipeline": "main moved False; [('true | git push origin main', 2, None, 'imple git or gh command, so it cannot be reproduced; treated as protected; runs the gate stamp, reu",
+   "live/plain-runs": "main moved False; [(\"printf '%300000s' '' | tr ' ' '\\\\n' > /tmp/v268-cx56ff8_/f064/d/big; ca\", 2, True, 'imple git or gh command, so it cannot be reproduced; tr",
    "live/quoted-command-word": "main moved False; [(\"true && 'git' push origin main\", 0, None, None), ('true && g\\\\it push origin main', 0, None, None)]",
    "live/remap": "main moved False; [(\"hash -p /bin/sh cat; cat -c 'git push origin main'\", 2, True, 'imple git or gh command, so it cannot be reproduced; treated as protected; r",
    "live/shell-string": "main moved False; [(\"sh -c 'git push origin main'\", 2, None, 'imple git or gh command, so it cannot be reproduced; treated as protected; runs the gate stamp, re",
@@ -73,6 +75,7 @@
    "mutation/guard292-runner-strings-data": "anchor not found exactly once in veldo-guard.sh",
    "mutation/guard292-runner-strings-data+live-pipeline": "anchor not found exactly once in veldo-guard.sh",
    "mutation/guard292-single-quote-escape": "anchor not found exactly once in veldo-guard.sh",
+   "mutation/guard292-sort-runs-off": "anchor not found exactly once in veldo-guard.sh",
    "mutation/guard292-tool-by-last-component": "anchor not found exactly once in veldo-guard.sh",
    "mutation/guard292-unparsed-is-data": "anchor not found exactly once in veldo-guard.sh",
    "mutation/guard292-unparsed-is-data+live-stored": "anchor not found exactly once in veldo-guard.sh",
@@ -84,7 +87,7 @@
    "text/quoted": "main moved False; [('echo \"note: git push origin main\"', 2, None), ('printf \"note: git push origin main\\\\n\"', 2, None), (\"grep 'git push' notes.txt\", 2, None), "
   },
   "red_veldo_0292": {
-   "bound": "exactly the 17 named rows and every mutation row of VELDO-0292 red; live/scanner-edges and live/git-args green; every VELDO-0268 row green",
+   "bound": "exactly the 18 named rows and every mutation row of VELDO-0292 red; live/scanner-edges and live/git-args green; every VELDO-0268 row green",
    "expected": [
     "live/config-include",
     "live/config-write",
@@ -93,6 +96,7 @@
     "live/mixed",
     "live/outside-subset",
     "live/pipeline",
+    "live/plain-runs",
     "live/quoted-command-word",
     "live/remap",
     "live/shell-string",
@@ -131,6 +135,7 @@
     "mutation/guard292-runner-strings-data",
     "mutation/guard292-runner-strings-data+live-pipeline",
     "mutation/guard292-single-quote-escape",
+    "mutation/guard292-sort-runs-off",
     "mutation/guard292-tool-by-last-component",
     "mutation/guard292-unparsed-is-data",
     "mutation/guard292-unparsed-is-data+live-stored",
@@ -149,6 +154,7 @@
     "live/mixed",
     "live/outside-subset",
     "live/pipeline",
+    "live/plain-runs",
     "live/quoted-command-word",
     "live/remap",
     "live/shell-string",
@@ -187,6 +193,7 @@
     "mutation/guard292-runner-strings-data",
     "mutation/guard292-runner-strings-data+live-pipeline",
     "mutation/guard292-single-quote-escape",
+    "mutation/guard292-sort-runs-off",
     "mutation/guard292-tool-by-last-component",
     "mutation/guard292-unparsed-is-data",
     "mutation/guard292-unparsed-is-data+live-stored",
@@ -204,29 +211,29 @@
    "red": []
   },
   "rows_veldo_0292": {
-   "bound": 19,
-   "present": 19
+   "bound": 20,
+   "present": 20
   },
   "run": "red-before",
   "selftest_lines": [
-   "141_veldo_0268_protected_refs                   86 passed   40.75s",
-   "selftest (PARTIAL, 1 of 196 suites): 112 passed, 54 failed in 40.75s"
+   "141_veldo_0268_protected_refs                   86 passed   51.04s",
+   "selftest (PARTIAL, 1 of 196 suites): 112 passed, 56 failed in 51.04s"
   ],
   "verdict": "pass"
  },
  "discarded": [
   {
-   "bytes": 75216,
+   "bytes": 76788,
    "name": "red-before.log",
-   "sha256": "2a405bcd157896403fcd4e59958acd542d1401182ff8a3ff496ce2a42b9b44fe"
+   "sha256": "8d87a7bc24dbdc9495dab96627a2d8faa573d2ce1bcceb63be9546544b9bae65"
   }
  ],
  "environment": {
-  "commit": "0a2057f5cfc8bf2e921c2bdd48b23e67e542c609",
+  "commit": "35fcd755145e70449300336177284e79b5732e32",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "python": "3.12.3",
-  "tree": "46062695d79c79a2577753da2a86265da7b0750c"
+  "tree": "a46b98ee4123cccc65bbf775b23ca63b58f85433"
  },
  "schema": "veldo.proof-summary/v1",
  "tools": {

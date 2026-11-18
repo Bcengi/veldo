@@ -1,8 +1,8 @@
 {
- "command": "python3 scripts/check_teeth_mutations.py --finding 268 --summary proof/VELDO-0292/teeth-268.summary.json --worker-log-dir /tmp/veldo-0292-heavy-dQEesO/teeth-268-workers",
+ "command": "python3 scripts/check_teeth_mutations.py --finding 268 --summary proof/VELDO-0292/teeth-268.summary.json --worker-log-dir /tmp/veldo-0292-heavy-KPhDjb/teeth-268-workers",
  "deciding": {
   "counts": {
-   "elapsed": 464.8285687470343,
+   "elapsed": 719.5925237056799,
    "executed": 36,
    "registered": 36,
    "rejected": 36,
@@ -11,7 +11,7 @@
    "worker_invocations": 40
   },
   "results_count": 36,
-  "results_sha256": "ccc30ba826efbff501844e928f4679fbd7da67163c8b94bf4579582a0eff6b9d",
+  "results_sha256": "5d751b7dd4de7fca497b6264c7662c2cf88ccd27418a8b5ca7af656c480de756",
   "rows": [
    {
     "case": "guard268-unresolved-unprotected",
@@ -38,13 +38,13 @@
     "source": "fresh"
    },
    {
-    "case": "guard268-tags-skip-approval",
+    "case": "guard268-empty-answer-allowed",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
-    "case": "guard268-empty-answer-allowed",
+    "case": "refs268-missing-key-protects-nothing",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -56,7 +56,7 @@
     "source": "fresh"
    },
    {
-    "case": "refs268-missing-key-protects-nothing",
+    "case": "guard268-tags-skip-approval",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -92,12 +92,6 @@
     "source": "fresh"
    },
    {
-    "case": "guard268-environment-chooses-programs",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
     "case": "guard268-configured-receivepack-runs",
     "expected": "killed",
     "observed": "killed",
@@ -110,7 +104,7 @@
     "source": "fresh"
    },
    {
-    "case": "guard268-askpass-runs",
+    "case": "guard268-environment-chooses-programs",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -122,13 +116,19 @@
     "source": "fresh"
    },
    {
-    "case": "guard268-alias-not-expanded",
+    "case": "guard268-askpass-runs",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
     "case": "guard268-alias-in-text-ignored",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "guard268-alias-not-expanded",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -194,13 +194,13 @@
     "source": "fresh"
    },
    {
-    "case": "guard268-upstream-line-unread",
+    "case": "guard268-lookup-failure-is-no-alias",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
-    "case": "guard268-lookup-failure-is-no-alias",
+    "case": "guard268-upstream-line-unread",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -233,22 +233,22 @@
  },
  "discarded": [
   {
-   "bytes": 1634374,
+   "bytes": 1652272,
    "name": "mutation result array",
-   "sha256": "ccc30ba826efbff501844e928f4679fbd7da67163c8b94bf4579582a0eff6b9d"
+   "sha256": "5d751b7dd4de7fca497b6264c7662c2cf88ccd27418a8b5ca7af656c480de756"
   }
  ],
  "environment": {
-  "commit": "0a2057f5cfc8bf2e921c2bdd48b23e67e542c609",
+  "commit": "35fcd755145e70449300336177284e79b5732e32",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   6.32763671875,
-   8.15869140625,
-   7.076171875
+   14.07666015625,
+   28.89306640625,
+   25.97412109375
   ],
   "python": "3.12.3",
-  "tree": "46062695d79c79a2577753da2a86265da7b0750c"
+  "tree": "a46b98ee4123cccc65bbf775b23ca63b58f85433"
  },
  "schema": "veldo.proof-summary/v1"
 }
