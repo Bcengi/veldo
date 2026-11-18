@@ -481,3 +481,8 @@ own alias keeps that member alone; this amendment adds the console's way to send
     147, 151, 153_0302, 153_0309, 153_0328, 153_0337, 153_0341, 154. Not green, and not from here.
   - For the record, not fixed here: set_mode still accepts only a text signature before _mode_signer
     (VELDO-0332's work).
+  - Teeth, rerun on 6a16a155 with the baseline green: the 18 API cases of finding 319, registered 18,
+    executed 18, rejected 18, none invalid, none reused. Each baseline has no failed row and each
+    mutant turns its target rows red; space319-removed-restores-journal-scan turns
+    cost/removed-index red and space319-carried-restores-dispatch-scan turns cost/carried-index red.
+    The record is proof/VELDO-0319/teeth-authority-read-round.json. The browser cases were not run.
