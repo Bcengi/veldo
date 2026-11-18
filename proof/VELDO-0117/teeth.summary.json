@@ -1,0 +1,596 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 117 --jobs 3 --worker-log-dir <scratch> --diff-dir <scratch> --summary <scratch file>",
+ "deciding": {
+  "bound": "the stage passed, every mutant registered under finding 117 was run and killed on its target row, each kill quotes a false label of that row, and no target row was red because its section raised",
+  "cases": [
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-binding-comparison-removed",
+    "expected": "killed",
+    "module": "control_enrollment.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict",
+     "enrollment/domain-binding-survives-restart",
+     "enrollment/one-domain-one-winner"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "domain equal, uuid equal, location unequal is conflict: domain_store_conflict at admission and for the command, nothing written [admission []; registration domain_store_conflict; command accepted; transactions (2, 1)] | domain equal, uuid unequal, location equal is conflict: domain_store_conflict at admission and for the command, nothing written [admission []; registration None; command refused:coordinate_not_served; transactions (2, 0)] | domain equal, uuid unequal, location unequal is conflict"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-binding-path-spelling-conflicts",
+    "expected": "killed",
+    "module": "control_enrollment.py",
+    "mutant_red_rows": [
+     "enrollment/domain-binding-survives-restart"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "one after the other, a first, restarted matching first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [matching; refused:domain_store_conflict; 0 transaction(s)] | one after the other, a first, restarted conflicting first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [matching; refused:domain_store_conflict; 0 transaction(s)] | one after the oth"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/domain-binding-survives-restart"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-judge-path-spelling-refused",
+    "expected": "killed",
+    "module": "control_client.py",
+    "mutant_red_rows": [
+     "enrollment/domain-binding-survives-restart"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "one after the other, a first, restarted matching first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [matching; refused:coordinate_not_served; 0 transaction(s)] | one after the other, a first, restarted conflicting first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [matching; refused:coordinate_not_served; 0 transaction(s)] | one after the oth"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/domain-binding-survives-restart"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-judgment-skips-registry",
+    "expected": "killed",
+    "module": "control_client.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict",
+     "enrollment/domain-binding-survives-restart",
+     "enrollment/one-domain-one-winner"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "domain equal, uuid equal, location equal is matching: accepted into the committed store [admission []; registration None; command accepted; transactions (3, 0)] | domain equal, uuid equal, location unequal is conflict: domain_store_conflict at admission and for the command, nothing written [admission ['domain_store_conflict']; registration domain_store_conflict; command accepted; transactions (2, 1)] | domain equal, uuid unequal, location equal is conflict: domain_store_conflict at admission and"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-registration-comparison-removed",
+    "expected": "killed",
+    "module": "control_store.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict",
+     "enrollment/domain-binding-survives-restart",
+     "enrollment/one-domain-one-winner"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "domain equal, uuid equal, location unequal is conflict: domain_store_conflict at admission and for the command, nothing written [admission ['domain_store_conflict']; registration matching; command refused:domain_store_conflict; transactions (2, 0)] | domain equal, uuid unequal, location unequal is conflict: domain_store_conflict at admission and for the command, nothing written [admission ['domain_store_conflict']; registration matching; command refused:domain_store_conflict; transactions (2, 0)"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-registration-not-atomic",
+    "expected": "killed",
+    "module": "control_store.py",
+    "mutant_red_rows": [
+     "enrollment/one-domain-one-winner"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "overlapped, a first: the first store is registered and the second is told domain_store_conflict with the first's identity [registered, error: IntegrityError: UNIQUE constraint failed: domain_stores.domain_uuid] | overlapped, a first: the second attempt began before the first registration ended, got no further while it was open, and then read the first's commit [began before; ahead of the commit: yes; read something else] | overlapped, a first: read back through both clients, the winner's command"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/one-domain-one-winner"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-registry-empty-at-start",
+    "expected": "killed",
+    "module": "control_store.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict",
+     "enrollment/domain-binding-survives-restart",
+     "enrollment/one-domain-one-winner"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "one after the other, a first, restarted matching first, the matching store: the committed record is the winner's identity before and after the proposal [1 row(s) before, 1 after] | one after the other, a first, restarted matching first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [registered; accepted; 1 transaction(s)] | one after the other, a first, restarted matching first, the conflicting store: the committed recor"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/domain-binding-survives-restart"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-service-passes-no-registry",
+    "expected": "killed",
+    "module": "control_service.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "production: the committed store's own clone is accepted into the committed store [accepted; 1 transaction(s); None] | production: a clone bound to another store is refused domain_store_conflict by the running service, naming the committed and the proposed store, and neither store changes [accepted; committed None; stores unchanged False] | production: the refusal of a clone bound to another store is in the observations of b's instance with the domain, the committed and the proposed store [0 foun"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-service-registry-per-installation",
+    "expected": "killed",
+    "module": "control_service.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "production: the first instance of the domain registers its configured store in the install root's registry [[]] | production: the instance of another store is told domain_store_conflict at its start and the registry holds the committed store alone [['registered']; []] | production: a clone bound to another store is refused domain_store_conflict by the running service, naming the committed and the proposed store, and neither store changes [accepted; committed None; stores unchanged False]"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 29,
+    "case": "v117-unregistered-domain-served",
+    "expected": "killed",
+    "module": "control_client.py",
+    "mutant_red_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ],
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "with the domain's record removed from the registry, its own clone's command is refused, is not applied and registers nothing [accepted; 1 transaction(s); record None]"
+    ],
+    "target_row_raised": false,
+    "target_rows": [
+     "enrollment/authority-refuses-domain-store-conflict"
+    ]
+   }
+  ],
+  "counts": {
+   "elapsed": 155.37335514416918,
+   "executed": 10,
+   "registered": 10,
+   "rejected": 10,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 18
+  },
+  "diff_sha256": {
+   "v117-binding-comparison-removed.diff": "ed6f3fe7d2e14dc420cc8f835d54c0b35577ab6b4775d3af5195923e96b161b4",
+   "v117-binding-path-spelling-conflicts.diff": "bca62654eba39f7f663764c3cd041604744e44dde8562f3e36a3144a80913780",
+   "v117-judge-path-spelling-refused.diff": "373e35cc0127efdfc796f228a6af0881818f7634e0dde310fe35b810384af08a",
+   "v117-judgment-skips-registry.diff": "bca7c6bbdd86c10900db6e4333d23b3cc1df5ba9f5aa2fe3ba7a1373bc5a271f",
+   "v117-registration-comparison-removed.diff": "407d7e56369ce82233ab9a56db3ef919b9c80a16a4a5083db9359d53af6a8407",
+   "v117-registration-not-atomic.diff": "d6d9934cd8b55af74bcf6d14118d1e20419a4b575697e616800819823a89d486",
+   "v117-registry-empty-at-start.diff": "e511f8418717030048588c9f411b935e114d62e1528607aa4a4e5c973589a15d",
+   "v117-service-passes-no-registry.diff": "b1937c70b9732d593babd8a10c907727c07a322fb2d897ef726d94ba5943aa06",
+   "v117-service-registry-per-installation.diff": "9d8828c24a74ecf9edff3c8110b0fbc9be0fedad56a3f96ab97bdee8b51d9983",
+   "v117-unregistered-domain-served.diff": "2839abade53ac41e518905758011a48527f1cc4a217583586d62898597cd949c"
+  },
+  "registered": [
+   "v117-binding-comparison-removed",
+   "v117-binding-path-spelling-conflicts",
+   "v117-judge-path-spelling-refused",
+   "v117-judgment-skips-registry",
+   "v117-registration-comparison-removed",
+   "v117-registration-not-atomic",
+   "v117-registry-empty-at-start",
+   "v117-service-passes-no-registry",
+   "v117-service-registry-per-installation",
+   "v117-unregistered-domain-served"
+  ],
+  "returncode": 0,
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 110968,
+   "name": "teeth.log",
+   "sha256": "89b349d969ba94e207285b7a487ece6ddc85b3c4e47156f1f00121532ec2889f"
+  },
+  {
+   "bytes": 2367,
+   "name": "driver.summary.json",
+   "sha256": "a3abd82ca02d388c3987da7d304b78bd30a38be9714142c150324bd68faf0f55"
+  },
+  {
+   "bytes": 263,
+   "name": "diffs/v117-binding-comparison-removed.diff",
+   "sha256": "ed6f3fe7d2e14dc420cc8f835d54c0b35577ab6b4775d3af5195923e96b161b4"
+  },
+  {
+   "bytes": 310,
+   "name": "diffs/v117-binding-path-spelling-conflicts.diff",
+   "sha256": "bca62654eba39f7f663764c3cd041604744e44dde8562f3e36a3144a80913780"
+  },
+  {
+   "bytes": 260,
+   "name": "diffs/v117-judge-path-spelling-refused.diff",
+   "sha256": "373e35cc0127efdfc796f228a6af0881818f7634e0dde310fe35b810384af08a"
+  },
+  {
+   "bytes": 192,
+   "name": "diffs/v117-judgment-skips-registry.diff",
+   "sha256": "bca7c6bbdd86c10900db6e4333d23b3cc1df5ba9f5aa2fe3ba7a1373bc5a271f"
+  },
+  {
+   "bytes": 271,
+   "name": "diffs/v117-registration-comparison-removed.diff",
+   "sha256": "407d7e56369ce82233ab9a56db3ef919b9c80a16a4a5083db9359d53af6a8407"
+  },
+  {
+   "bytes": 296,
+   "name": "diffs/v117-registration-not-atomic.diff",
+   "sha256": "d6d9934cd8b55af74bcf6d14118d1e20419a4b575697e616800819823a89d486"
+  },
+  {
+   "bytes": 175,
+   "name": "diffs/v117-registry-empty-at-start.diff",
+   "sha256": "e511f8418717030048588c9f411b935e114d62e1528607aa4a4e5c973589a15d"
+  },
+  {
+   "bytes": 338,
+   "name": "diffs/v117-service-passes-no-registry.diff",
+   "sha256": "b1937c70b9732d593babd8a10c907727c07a322fb2d897ef726d94ba5943aa06"
+  },
+  {
+   "bytes": 246,
+   "name": "diffs/v117-service-registry-per-installation.diff",
+   "sha256": "9d8828c24a74ecf9edff3c8110b0fbc9be0fedad56a3f96ab97bdee8b51d9983"
+  },
+  {
+   "bytes": 184,
+   "name": "diffs/v117-unregistered-domain-served.diff",
+   "sha256": "2839abade53ac41e518905758011a48527f1cc4a217583586d62898597cd949c"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/0-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/0-stdout",
+   "sha256": "2ee0eb07d791591dda48e6d472168d517fc5c78c8ce151e8d5c250d79f02f2cc"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/1-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/1-stdout",
+   "sha256": "2ee0eb07d791591dda48e6d472168d517fc5c78c8ce151e8d5c250d79f02f2cc"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/10-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5218,
+   "name": "workers/10-stdout",
+   "sha256": "26caa5ac9e4524f50b837ea3c3368ce7e1c65f3236f3ff1d1815c124e088ff18"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/11-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2950,
+   "name": "workers/11-stdout",
+   "sha256": "d5e7faee17e5dae66286ad8d4148ed73b0c156e34e3f070ff37f1d772936ac8e"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/12-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3457,
+   "name": "workers/12-stdout",
+   "sha256": "2980204e9a7ac1b2b788e1d1a6abbd0699df98cf23696bfd703ac7de37b6da3f"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/13-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4899,
+   "name": "workers/13-stdout",
+   "sha256": "c1138e7b667becd31c43921c84590975f26830154d6695d713611d4fba45cbf1"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/14-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3480,
+   "name": "workers/14-stdout",
+   "sha256": "a3eb4b86982238d0566496ddf514eb68072d930650ce960343823514869bd8df"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/15-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3480,
+   "name": "workers/15-stdout",
+   "sha256": "5b3d60e139517a0754227fb2536c794aaf90b8672b35cdd4a1757bc6ef61b697"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/16-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3286,
+   "name": "workers/16-stdout",
+   "sha256": "d7d892249465e6f9f909164587ca4b5cd434b82c4df47ef0cde0c5729fdcadb8"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/17-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 3276,
+   "name": "workers/17-stdout",
+   "sha256": "e1319af3d1922737266d4824d79f59d7d021c62cfcf0f4c0f8b3b0938d775fdf"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/2-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/2-stdout",
+   "sha256": "07b7c6efffe58aecfec1e8cfcfc7d9a03dd50284936ce93bf688e2837ade80dc"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/3-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/3-stdout",
+   "sha256": "07b7c6efffe58aecfec1e8cfcfc7d9a03dd50284936ce93bf688e2837ade80dc"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/4-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/4-stdout",
+   "sha256": "49a520d240c1155bb55d05373158c186f49a7c1550fc699942a1e8aa958d173e"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/5-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/5-stdout",
+   "sha256": "49a520d240c1155bb55d05373158c186f49a7c1550fc699942a1e8aa958d173e"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/6-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/6-stdout",
+   "sha256": "175621487fb097e53ac1d83e912aff8b62bc5ecfc1f3044c9a3e8f99d4718809"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/7-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 2650,
+   "name": "workers/7-stdout",
+   "sha256": "175621487fb097e53ac1d83e912aff8b62bc5ecfc1f3044c9a3e8f99d4718809"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/8-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5253,
+   "name": "workers/8-stdout",
+   "sha256": "611a52de587e86022c290dd539152da5ffdce7ad3c7c99dcd90df07680369989"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/9-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5013,
+   "name": "workers/9-stdout",
+   "sha256": "abb8e27335988549d0118012e9abb6ff4cf43cc05fd1d3677ac77676b79e4020"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-0.jsonl",
+   "sha256": "1d883096131ddf1fa0bf3c09723061590e1f48719ebe40339695c19dd05e65d2"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-1.jsonl",
+   "sha256": "d64c011a791da6502c88f3f57e5d9fbe126ee4e50d158f62ed79a69d64346130"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-10.jsonl",
+   "sha256": "9cf1aa432d3757afcbbc2fcb092c6607bbc2f767dc1a83d9e503df11d21af0cd"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-11.jsonl",
+   "sha256": "988964f8505c184d7e55d0ad03c6887ff12d4d33dedccdd8ca073d25e2db2538"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-12.jsonl",
+   "sha256": "2dc4f914a74d667d18dff665af0bdbe9e6a27dfe383555dd4c3875724ac53b9b"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-13.jsonl",
+   "sha256": "f7f97a56dbdeb9c48416e81b95b34f6300d01b89247cd7f27e849813ea7ce122"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-14.jsonl",
+   "sha256": "1dee7de2dfad3f12feae400eca7186c1b8c74657f614f2ffa7cc64d5c5fec4d5"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-15.jsonl",
+   "sha256": "7ca498781374095bc1230ff23da2d69ba4d2d088f330d55d8f703a7dac4455dc"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-16.jsonl",
+   "sha256": "9a7b30dfdd7d8ccb55fd032812368793082ae60786ead0d2c503ef464b357d14"
+  },
+  {
+   "bytes": 967,
+   "name": "workers/ownership-17.jsonl",
+   "sha256": "d606033f531ede5c65d391972350ddacc01b7c4bde5989818c990884261c14d7"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-2.jsonl",
+   "sha256": "31620f99b715fc6b18b53f0ab0bf0ba6c8285dca974b5f5070cdf9cbc7a51017"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-3.jsonl",
+   "sha256": "32877a38c085b0332b332ab5946a359aeaaf2549ccc68d4d0cc6e605a5bccaa4"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-4.jsonl",
+   "sha256": "b2a9f469877a4c4aaa2f49797e30a7ba72e2803bad32dd09170c84387fbe558a"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-5.jsonl",
+   "sha256": "2a3b812337243f1beea8144b8625877d23d16582ccf614221445fe7f99af2c05"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-6.jsonl",
+   "sha256": "d1455013d7469c1e0985234730f8e2a2d1634f6ca881b44bcb93fd10e388a000"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-7.jsonl",
+   "sha256": "7ae8aa842443cd6293b5b7a50134a389324de681b01180b1a19e1633d7bcd318"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-8.jsonl",
+   "sha256": "20750d2fc9ba11dd9f51416a0cff90fdd611045c173043e6e8d48823375ca48e"
+  },
+  {
+   "bytes": 955,
+   "name": "workers/ownership-9.jsonl",
+   "sha256": "077dcaac9e1b9e83ac8d969857c23d8fb447c168f5c6da89601104ad0c60865a"
+  }
+ ],
+ "environment": {
+  "commit": "870b9e2764f06668cf8a8c2d2c62ca27ae4be645",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   2.46875,
+   2.80078125,
+   9.8173828125
+  ],
+  "python": "3.12.3",
+  "tree": "97a799ed3f99641507f881f3642d9d59754549cd"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
