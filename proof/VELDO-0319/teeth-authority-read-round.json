@@ -1,0 +1,231 @@
+{
+ "cases": [
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-pending-hides-deferred-items",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 21,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac2/in-use-folder"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-usage-sums-only-present-items",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 7,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac1/totals",
+    "space319/ac1/deferred-counts"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-abandon-as-a-plain-read-route",
+   "module": "control_api.py",
+   "mutant_failed_rows": 5,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac3/unsigned-refused"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-reconcile-for-any-member",
+   "module": "control_api_authority.py",
+   "mutant_failed_rows": 3,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac3/not-owner-refused"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-removed-oldest-first",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 1,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac2/removed"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-advised-holds-not-listed",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 12,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac4/pools-numbers"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-held-counts-a-waiting-hold",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 1,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac4/pools-numbers"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-locator-served-with-its-credential",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 1,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/redact/locator"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-removed-restores-journal-scan",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 2,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/cost/removed-index"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-carried-restores-dispatch-scan",
+   "module": "control_api_authority.py",
+   "mutant_failed_rows": 2,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/cost/carried-index"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-removal-without-ledger-stamp",
+   "module": "control_space.py",
+   "mutant_failed_rows": 2,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac2/removal-stamp"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-keep-route-without-a-transition",
+   "module": "control_api_authority.py",
+   "mutant_failed_rows": 1,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac3/no-dead-route"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-keep-takes-the-edge-signature",
+   "module": "control_space.py",
+   "mutant_failed_rows": 5,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac6/edge-alone-refused"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-keep-skips-the-challenge",
+   "module": "control_space.py",
+   "mutant_failed_rows": 2,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac6/other-command-refused"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-keep-applies-any-settled-choice",
+   "module": "control_space.py",
+   "mutant_failed_rows": 2,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac6/settled-keep-only"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-keep-takes-any-enrolled-credential",
+   "module": "control_space.py",
+   "mutant_failed_rows": 3,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac6/revoked-refused",
+    "space319/ac6/other-member-refused"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-pending-hides-an-answered-keep",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 3,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac7/answered-not-signed"
+   ],
+   "targets_red_in_mutant": true
+  },
+  {
+   "baseline_failed_rows": [],
+   "case": "space319-member-under-the-groups-current-request",
+   "module": "control_api_models.py",
+   "mutant_failed_rows": 1,
+   "noop_failed_rows": [],
+   "source": "fresh",
+   "target_rows": [
+    "space319/ac7/member-own-request"
+   ],
+   "targets_red_in_mutant": true
+  }
+ ],
+ "command": "nice -n 19 python3 scripts/check_teeth_mutations.py --finding 319 --case <each of the 18 API cases> --jobs 2 --worker-log-dir ... --diff-dir ...",
+ "commit": "6a16a155",
+ "every_baseline_green_and_every_target_red": true,
+ "exit_code": 0,
+ "invalid_results": [],
+ "not_run": "the browser cases of finding 319 (job 99zzP1 is held for the browser suite)",
+ "reuse_integrity_errors": [],
+ "status": "passed",
+ "summary": "mutations: passed registered=18 executed=18 reused=0 rejected=18 workers=26 elapsed=605.399s"
+}
