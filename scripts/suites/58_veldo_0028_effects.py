@@ -105,8 +105,10 @@ def _v28_run():
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
         # VELDO-0153: a publication resolves the repository's Git identity and pushes through the
         # identity transport, which resolves that identity's credential.
-        for name in ('control_git_identity', 'control_git_identity_transport', 'control_credential_keystore', 'secretref'):
+        for name in ('control_git_identity', 'control_credential_keystore', 'secretref'):
             _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
+        # Named whole, so a mutation case can replace this production copy.
+        _v28_shutil.copyfile(ROOT / ".veldo" / "control_git_identity_transport.py", modules / 'control_git_identity_transport.py')
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
         _v28_executor = _v28_import.module_from_spec(_v28_executor_spec)
         _v28_executor_spec.loader.exec_module(_v28_executor)
@@ -372,26 +374,31 @@ print(json.dumps(result))
             return pr, call(pr, env=env)
         def remote_main(bare):
             return git('-C', str(bare), 'rev-parse', 'refs/heads/main')
-        # P1: the clone's pre-push policy hook refuses; it runs and nothing is published.
+        # P1, superseded by VELDO-0153 AC3: a hook is code from the clone, and during an identity push
+        # it would run with the identity's credential, so no hook of the clone runs. The clone's
+        # pre-push hook would record that it ran and refuse; it never runs and the push lands.
         clone, bare = fresh('pre-push-hook')
         ran = root / 'pre-push-hook.ran'
         hook = clone / '.git' / 'hooks' / 'pre-push'
         hook.write_text('#!/bin/sh\ntouch ' + str(ran) + '\necho policy refuses this push >&2\nexit 1\n')
         hook.chmod(0o755)
         result = publish('pre-push-hook', clone, str(bare))
-        # VELDO-0153 GAP (kept, reported): the identity push disables the clone's hooks (0153
-        # History, 2026-10-10 review fixes); no 0153 criterion supersedes "hooks behave as configured".
-        row('publication-pre-push-hook', ran.exists() and result.get('completed') is False
-            and result.get('status') == 'unknown' and remote_main(bare) == old)
-        # P7: the clone rewrites an alias to the real remote with url.<real>.insteadOf.
+        row('publication-pre-push-hook', not ran.exists() and result.get('completed') is True
+            and result.get('status') == 'completed' and remote_main(bare) == tip)
+        # P7, superseded by VELDO-0153 AC3: the clone's own url.<decoy>.insteadOf would send the push,
+        # and the identity's credential, elsewhere, so the push is refused by name before any network
+        # write and nothing moves. Plain git from the clone is the control that the rewrite is live.
         clone, bare = fresh('url-rewrite')
-        alias = str(root / 'no-such-alias.git')
-        git('-C', str(clone), 'config', 'url.' + str(bare) + '.insteadOf', alias)
-        result = publish('url-rewrite', clone, alias)
-        # VELDO-0153 GAP (kept, reported): AC1 ignores global and system configuration only; the
-        # clone's own url.*.insteadOf routing is refused by the implementation with no 0153 criterion
-        # saying so.
-        row('publication-url-rewrite', result.get('completed') is True and remote_main(bare) == tip)
+        decoy = root / 'url-rewrite-elsewhere.git'
+        git('init', '-q', '--bare', str(decoy))
+        git('-C', str(repo), 'push', '-q', str(decoy), old + ':refs/heads/main')
+        checked = wired_url('url-rewrite', str(bare))
+        git('-C', str(clone), 'config', 'url.' + str(decoy) + '.insteadOf', checked)
+        live = git('-C', str(clone), 'ls-remote', '--get-url', checked) == str(decoy)
+        result = publish('url-rewrite', clone, checked)
+        row('publication-url-rewrite', live and result.get('status') == 'refused'
+            and result.get('refusal') == 'binding_mismatch:identity_transport_config'
+            and remote_main(bare) == old and remote_main(decoy) == old)
         # A smart-HTTP remote served by git http-backend.
         clone, bare = fresh('smart-http')
         git('-C', str(bare), 'config', 'http.receivepack', 'true')
@@ -474,22 +481,20 @@ print(json.dumps(result))
             return data.get('destination')
         def reached(*pairs):
             return [{'url': url, 'outcome': outcome} for url, outcome in pairs]
+        # VELDO-0153 AC3 supersedes R6 1 and R7's routing for the factory's publication: the push goes
+        # to the one checked URL. Each route is planted against that URL: the clone's own rewrites
+        # and the entries of the section named by the URL (a pushurl elsewhere, a fan-out, a pushurl
+        # holding a line break) are refused by name before any network write; a section of another
+        # name and the operator's global include are ignored; a nickname given only by a legacy
+        # remotes/ or branches/ file is not configured, so it resolves to no URL and is refused.
         routes = {}
         for name in ('control', 'insteadof', 'global-include-insteadof', 'remotes-file', 'branches-file',
-                     'push-instead-of', 'space-section-pushurl', 'fan-out-pushurls', 'fan-out-stale',
-                     'fan-out-unreachable', 'config-newline', 'path-newline'):
+                     'push-instead-of', 'url-section-pushurl', 'other-section', 'fan-out-pushurls', 'fan-out-stale',
+                     'fan-out-unreachable', 'config-newline'):
             clone, bare = fresh('route-' + name)
             other = elsewhere_for('route-' + name)
             env = None
-            if name == 'space-section-pushurl':
-                spaced = root / ('route ' + name + '.git')
-                bare.rename(spaced)
-                bare = spaced
-            if name == 'path-newline':
-                broken = root / ('route-path\nnewline.git')
-                bare.rename(broken)
-                bare = broken
-            url = 'file://' + str(bare)
+            url = wired_url('route-' + name, str(bare))
             if name == 'insteadof':
                 git('-C', str(clone), 'config', 'url.' + str(other) + '.insteadOf', url)
             elif name == 'global-include-insteadof':
@@ -497,17 +502,21 @@ print(json.dumps(result))
                 included.write_text('[url "%s"]\n\tinsteadOf = %s\n' % (other, url))
                 env = operator_home('route-' + name, '[includeIf "gitdir:%s/"]\n\tpath = %s\n' % (clone, included))
             elif name in ('remotes-file', 'branches-file'):
-                # A remote nickname: the legacy file of that name gives the listing and the push
-                # the decoy's URL.
+                # A remote nickname: the legacy file of that name would give the listing and the
+                # push the decoy's URL.
                 url = 'publish-target'
                 legacy = clone / '.git' / name.split('-')[0]
                 legacy.mkdir(exist_ok=True)
                 (legacy / url).write_text(('URL: %s\n' if name == 'remotes-file' else '%s\n') % other)
             elif name == 'push-instead-of':
                 git('-C', str(clone), 'config', 'url.' + str(other) + '.pushInsteadOf', url)
-            elif name == 'space-section-pushurl':
+            elif name == 'url-section-pushurl':
                 git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
                 git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other))
+            elif name == 'other-section':
+                # A remote of another name is never read for the checked URL.
+                git('-C', str(clone), 'config', 'remote.elsewhere.url', str(other))
+                git('-C', str(clone), 'config', 'remote.elsewhere.pushurl', str(other))
             elif name.startswith('fan-out'):
                 # Two pushurls: the authorized repository and a second one, which accepts, holds
                 # no old tip (the lease rejects there) or does not exist.
@@ -521,14 +530,15 @@ print(json.dumps(result))
                 git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
                 git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', second)
             elif name == 'config-newline':
-                # A configured pushurl holding a line break cannot be told apart from two URLs in
-                # git's one-per-line report, so it is refused before anything is pushed.
+                # A pushurl holding a line break in the URL's own section is refused before anything
+                # is pushed, like every other entry of that section that is not the URL itself.
                 git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
                 git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other) + '\n  Push  URL: ' + url)
             result = publish('route-' + name, clone, url, env=env)
             routes[name] = dict(result=result, url=url, bare=bare, other=other, destination=recorded('route-' + name),
                                 authorized_moved=remote_main(bare) == tip, decoy_moved=remote_main(other) == tip)
-            seen_result('route-' + name, result, authorized_moved=routes[name]['authorized_moved'],
+            seen_result('route-' + name, result, refusal=result.get('refusal'),
+                        authorized_moved=routes[name]['authorized_moved'],
                         decoy_moved=routes[name]['decoy_moved'], destination=routes[name]['destination'])
         def routed(name, completed, destinations, authorized_moved, decoy_moved):
             # `destinations` lists each repository the push was resolved to, with its outcome, and
@@ -544,21 +554,18 @@ print(json.dumps(result))
                                                 {'authorized_url': case['url'], 'destinations': destinations})
                     and case['result'].get('destination') == case['destination'])
         url_of, decoy_of = (lambda name: routes[name]['url']), (lambda name: str(routes[name]['other']))
-        # VELDO-0153 GAP (kept, reported): AC1 supersedes only the global-include case; the clone's
-        # own routes (insteadOf, pushInsteadOf, URL-named sections, legacy files, pushurl fan-out) and
-        # the destination resolution this row records are replaced by the implementation's literal
-        # URL binding (0153 History), which no 0153 criterion states.
+        # VELDO-0153 AC3 (AC1 for the global include): the record names the checked URL alone, every
+        # clone route against it is refused by name with nothing moved, and the routes Git never
+        # reads for the URL are ignored.
+        clone_route = 'binding_mismatch:identity_transport_config'
         row('publication-records-resolved-destination',
-            routed('control', True, reached((url_of('control'), 'at-tip')), True, False)
-            and all(routed(name, True, reached((decoy_of(name), 'at-tip')), False, True)
-                    for name in ('insteadof', 'global-include-insteadof', 'remotes-file', 'branches-file',
-                                 'push-instead-of', 'space-section-pushurl'))
-            and routed('fan-out-pushurls', True, reached((url_of('fan-out-pushurls'), 'at-tip'),
-                                                         (decoy_of('fan-out-pushurls'), 'at-tip')), True, True)
-            and routed('fan-out-stale', 'stale-subject', None, False, False)
-            and routed('fan-out-unreachable', 'stale-subject', None, False, False)
-            and routed('config-newline', 'invalid-input', None, False, False)
-            and routed('path-newline', 'invalid-input', None, False, False))
+            all(routed(name, True, reached((url_of(name), 'at-tip')), True, False)
+                for name in ('control', 'global-include-insteadof', 'other-section'))
+            and all(routed(name, clone_route, None, False, False)
+                    for name in ('insteadof', 'push-instead-of', 'url-section-pushurl', 'fan-out-pushurls',
+                                 'fan-out-stale', 'fan-out-unreachable', 'config-newline'))
+            and all(routed(name, 'invalid_input:push_destinations', None, False, False)
+                    for name in ('remotes-file', 'branches-file')))
         # R5 3: publication keeps what a plain git push from the same clone and the same operator
         # environment can do: global configuration and transport and credential variables.
         def fake_ssh(name):
@@ -670,91 +677,111 @@ print(json.dumps(result))
                             'for old, new, ref in cmds:\n' + body +
                             'out.write(b"0000"); out.flush()\n')
             path.chmod(0o755)
-        def routed_to_x(name):
+        # VELDO-0153 AC3 supersedes the three rows below as 0028 wrote them, routing the push to X
+        # with the clone's own pushurl and driving it with the clone's pre-push hook: neither exists
+        # for an identity push. Each case now publishes to the checked URL L, and X is the repository
+        # the clone's hook would have reached. Kept from R7 against L: the record names only L, and
+        # completion is read from L's state after the push, never from text a server prints.
+        def forged(lbare):
+            # A To block naming X for the authorized refspec, ending in a fragment that swallows
+            # git's own To line.
+            return 'printf "To file://%s\\n*\\t%s:refs/heads/main\\t[new branch]\\nx"\n' % (lbare, tip)
+        def text_target(name):
             clone, lbare = fresh(name)
             xbare = elsewhere_for(name)
-            git('-C', str(clone), 'config', 'remote.file://' + str(lbare) + '.pushurl', str(xbare))
-            return clone, lbare, xbare
-        def forged(lbare):
-            # A To block naming L for the authorized refspec, ending in a fragment that swallows
-            # git's own `To X` line.
-            return 'printf "To file://%s\\n*\\t%s:refs/heads/main\\t[new branch]\\nx"\n' % (lbare, tip)
+            return clone, lbare, xbare, root / (name + '.hook-ran')
         text_cases = {}
-        # 1b: the hook mirrors the commit to L and forges L; the push went to X.
-        clone, lbare, xbare = routed_to_x('text-mirrored')
-        hook(clone, 'git push -q --no-verify %s %s:refs/heads/main >/dev/null 2>&1\n' % (lbare, tip) + forged(lbare))
-        text_cases['mirrored'] = (publish('text-mirrored', clone, 'file://' + str(lbare)), recorded('text-mirrored'), lbare, xbare)
-        # 1c: X refuses the push; the hook forges L.
-        clone, lbare, xbare = routed_to_x('text-refused')
-        refuse = xbare / 'hooks' / 'pre-receive'
+        # 1b: the clone's hook would mirror the commit to X and forge X; it never runs, and the push
+        # lands at L alone.
+        clone, lbare, xbare, ran = text_target('text-mirrored')
+        hook(clone, 'touch %s\ngit push -q --no-verify %s %s:refs/heads/main >/dev/null 2>&1\n' % (ran, xbare, tip) + forged(xbare))
+        text_cases['mirrored'] = (publish('text-mirrored', clone, str(lbare)), recorded('text-mirrored'), lbare, xbare, ran)
+        # 1c: L refuses the push with its own pre-receive policy (the remote's hook, not the clone's);
+        # the clone's hook would forge success.
+        clone, lbare, xbare, ran = text_target('text-refused')
+        refuse = lbare / 'hooks' / 'pre-receive'
         refuse.write_text('#!/bin/sh\necho refused >&2\nexit 1\n')
         refuse.chmod(0o755)
-        hook(clone, forged(lbare))
-        text_cases['refused'] = (publish('text-refused', clone, 'file://' + str(lbare)), recorded('text-refused'), lbare, xbare)
-        # 1g: X's proc-receive reports success without updating X, mirrors the commit to L and
-        # reports an option refname carrying a newline and a forged To block for L.
-        clone, lbare, xbare = routed_to_x('text-proc-receive')
-        proc_receive(xbare, '    subprocess.run(["git", "push", "-q", %r, new + ":" + ref], capture_output=True)\n'
-                            '    wr("ok %%s\\n" %% ref)\n'
-                            '    wr("option refname x\\nTo file://%s\\n*\\t%%s:%%s\\n" %% (new, ref))\n' % (str(lbare), str(lbare)))
-        text_cases['proc-receive'] = (publish('text-proc-receive', clone, 'file://' + str(lbare)), recorded('text-proc-receive'), lbare, xbare)
-        for key, (result, destination, lbare, xbare) in text_cases.items():
+        hook(clone, 'touch %s\n' % ran + forged(lbare))
+        text_cases['refused'] = (publish('text-refused', clone, str(lbare)), recorded('text-refused'), lbare, xbare, ran)
+        # 1g: L's proc-receive reports success without updating L and reports an option refname
+        # carrying a newline and a forged To block for L.
+        clone, lbare, xbare, ran = text_target('text-proc-receive')
+        proc_receive(lbare, '    wr("ok %%s\\n" %% ref)\n'
+                            '    wr("option refname x\\nTo file://%s\\n*\\t%%s:%%s\\n" %% (new, ref))\n' % str(lbare))
+        text_cases['proc-receive'] = (publish('text-proc-receive', clone, str(lbare)), recorded('text-proc-receive'), lbare, xbare, ran)
+        for key, (result, destination, lbare, xbare, ran) in text_cases.items():
             seen_result('text-' + key, result, destination=destination, x_moved=remote_main(xbare) == tip,
-                        l_moved=remote_main(lbare) == tip)
-        def text_case(key, completed, outcome, l_moved):
-            result, destination, lbare, xbare = text_cases[key]
-            return (result.get('completed') is completed and remote_main(lbare) == (tip if l_moved else old)
-                    and remote_main(xbare) == (tip if outcome == 'at-tip' else old)
-                    and destination == {'authorized_url': 'file://' + str(lbare), 'destinations': reached((str(xbare), outcome))})
-        # VELDO-0153 GAP (kept, reported) for the three rows below: they route the push with the
-        # clone's own pushurl and drive it with a pre-push hook; no 0153 criterion supersedes either.
-        row('publication-destination-despite-hook-text', text_case('mirrored', True, 'at-tip', True))
-        row('publication-rejected-destination-recorded', text_case('refused', False, 'not-at-tip', False))
-        row('publication-completion-from-destination-state', text_case('proc-receive', False, 'not-at-tip', True))
+                        l_moved=remote_main(lbare) == tip, hook_ran=ran.exists())
+        def text_case(key, completed, outcome):
+            result, destination, lbare, xbare, ran = text_cases[key]
+            given = wired_url('text-' + key, str(lbare))
+            return (result.get('completed') is completed and not ran.exists()
+                    and remote_main(lbare) == (tip if outcome == 'at-tip' else old) and remote_main(xbare) == old
+                    and destination == {'authorized_url': given, 'destinations': reached((given, outcome))})
+        row('publication-destination-despite-hook-text', text_case('mirrored', True, 'at-tip'))
+        row('publication-rejected-destination-recorded', text_case('refused', False, 'not-at-tip'))
+        row('publication-completion-from-destination-state', text_case('proc-receive', False, 'not-at-tip'))
         # 1a: a benign hook prints a word without a trailing newline; the push is correct.
         clone, bare = fresh('text-no-newline')
         hook(clone, "printf 'checks passed'\n")
         # The record names the URL the factory was given, the identity's remote the wire carries to
-        # this bare repository. VELDO-0153 GAP (reported, not rewritten): the identity push no longer
-        # runs the clone's hooks, which no 0153 criterion states, so the hook text here is never
-        # printed and this row holds without exercising it.
+        # this bare repository. VELDO-0153 AC3 supersedes the hook leg: no hook of the clone runs, so
+        # its text is never printed; the record and the completion are still asserted.
         given = wired_url('text-no-newline', str(bare))
         result = publish('text-no-newline', clone, str(bare))
         seen_result('text-no-newline', result, destination=recorded('text-no-newline'))
         row('publication-hook-text-without-newline', result.get('completed') is True and remote_main(bare) == tip
             and recorded('text-no-newline') == {'authorized_url': given, 'destinations': reached((given, 'at-tip'))})
-        # 1h: a benign hook prints a Latin-1 byte, and the remote holds a ref whose name is not
-        # UTF-8; the push and both listings are read losslessly.
+        # 1h: the remote prints a Latin-1 byte, and holds a ref whose name is not UTF-8; the push
+        # and both listings are read losslessly. VELDO-0153 AC3 supersedes the clone hook that
+        # printed the byte: the remote's own proc-receive now reports it in the push's output, and
+        # updates the authorized ref itself.
         clone, bare = fresh('text-latin1')
         _v28_sp.run([b'git', b'-C', bytes(bare), b'update-ref', b'refs/heads/caf\xe9', old.encode()], check=True,
                     capture_output=True, timeout=20)
         hook(clone, "printf 'caf\\351 ok\\n'\n")
-        # As above: the record names the given URL, and the hook leg is the same reported gap; the
-        # non-UTF-8 ref name is still read losslessly in both listings.
+        proc_receive(bare, '    subprocess.run(["git", "update-ref", ref, new])\n'
+                           '    wr("ok %s\\n" % ref)\n'
+                           '    b = b"option refname refs/heads/caf\\xe9\\n"\n'
+                           '    out.write(b"%04x" % (len(b) + 4) + b)\n')
         given = wired_url('text-latin1', str(bare))
         result = publish('text-latin1', clone, str(bare))
         seen_result('text-latin1', result, destination=recorded('text-latin1'))
         row('publication-non-utf8-output', result.get('completed') is True and remote_main(bare) == tip
             and recorded('text-latin1') == {'authorized_url': given, 'destinations': reached((given, 'at-tip'))})
-        # 3e: two pushurls; the second is an AGit-style server that accepts the push under
-        # refs/changes/1 and leaves the authorized ref where it was, so it is not at the tip.
+        # 3e, superseded by VELDO-0153 AC3: the clone's two pushurls, the second an AGit-style server
+        # that accepts the push under refs/changes/1, are a fan-out the clone chooses, so the push is
+        # refused by name with nothing moved anywhere. Kept from 3e against the checked URL: when the
+        # checked repository is itself such a server, the push it reports as accepted leaves the
+        # authorized ref where it was, and the effect is not completed.
+        def agit_server(bare):
+            proc_receive(bare, '    subprocess.run(["git", "update-ref", "refs/changes/1", new])\n'
+                               '    wr("ok %s\\n" % ref)\n    wr("option refname refs/changes/1\\n")\n')
+        def changes_of(bare):
+            return G.run(['git', '-C', str(bare), 'rev-parse', '--verify', '-q', 'refs/changes/1'],
+                         capture_output=True, text=True, timeout=20).stdout.strip()
         clone, lbare = fresh('fan-out-agit')
         xbare = elsewhere_for('fan-out-agit')
-        proc_receive(xbare, '    subprocess.run(["git", "update-ref", "refs/changes/1", new])\n'
-                            '    wr("ok %s\\n" % ref)\n    wr("option refname refs/changes/1\\n")\n')
-        agit_url = 'file://' + str(lbare)
+        agit_server(xbare)
+        agit_url = wired_url('fan-out-agit', str(lbare))
         git('-C', str(clone), 'config', '--add', 'remote.' + agit_url + '.pushurl', agit_url)
         git('-C', str(clone), 'config', '--add', 'remote.' + agit_url + '.pushurl', str(xbare))
-        result = publish('fan-out-agit', clone, agit_url)
-        agit = recorded('fan-out-agit')
-        changes = G.run(['git', '-C', str(xbare), 'rev-parse', '--verify', '-q', 'refs/changes/1'],
-                        capture_output=True, text=True, timeout=20).stdout.strip()
-        seen_result('fan-out-agit', result, destination=agit, agit_ref_at_tip=changes == tip)
-        # VELDO-0153 GAP (kept, reported): pushurl fan-out from the clone's own configuration; no
-        # 0153 criterion supersedes it.
-        row('publication-fan-out-agit-report', result.get('completed') is False and changes == tip
-            and remote_main(lbare) == tip and remote_main(xbare) == old
-            and agit == {'authorized_url': agit_url, 'destinations': reached((agit_url, 'at-tip'), (str(xbare), 'not-at-tip'))})
+        fanned = publish('fan-out-agit', clone, agit_url)
+        fanned_ok = (fanned.get('status') == 'refused' and fanned.get('refusal') == 'binding_mismatch:identity_transport_config'
+                     and recorded('fan-out-agit') is None and remote_main(lbare) == old and remote_main(xbare) == old
+                     and changes_of(xbare) == '')
+        clone, abare = fresh('agit-checked')
+        agit_server(abare)
+        agit_url = wired_url('agit-checked', str(abare))
+        result = publish('agit-checked', clone, agit_url)
+        agit = recorded('agit-checked')
+        changes = changes_of(abare)
+        seen_result('fan-out-agit', fanned, refusal=fanned.get('refusal'), destination=recorded('fan-out-agit'))
+        seen_result('agit-checked', result, destination=agit, agit_ref_at_tip=changes == tip)
+        row('publication-fan-out-agit-report', fanned_ok and result.get('completed') is False
+            and result.get('status') == 'unknown' and changes == tip and remote_main(abare) == old
+            and agit == {'authorized_url': agit_url, 'destinations': reached((agit_url, 'not-at-tip'))})
         # R7 scrub: recorded URLs are scrubbed by parsing them, never by git's display. An
         # scp-style address's user information is everything before the LAST `@` ahead of the
         # host; a `<transport>::<address>` URL is scrubbed in its address; a scheme URL loses its
@@ -822,18 +849,16 @@ print(json.dumps(result))
         clone, bare = fresh('stale-single')
         held = moved_elsewhere(bare)
         stale['single'] = (publish_as('stale-single', clone, str(bare))[1], [(bare, held)])
+        # The checked URL's destination cannot be listed (VELDO-0153: the clone's own section can no
+        # longer make the listing fail, AC3 refuses it, so the destination itself is missing): the
+        # push is refused by name and never attempted.
         clone, bare = fresh('stale-unlisted')
-        unlisted_url = 'file://' + str(bare)
-        # The URL's own section makes its listing fail while a push would still reach it.
-        git('-C', str(clone), 'config', 'remote.' + unlisted_url + '.uploadpack', 'false')
+        unlisted_url = wire.remote('stale-unlisted', str(root / 'stale-unlisted-missing.git'))
         stale['unlisted'] = (publish_as('stale-unlisted', clone, unlisted_url)[1], [(bare, old)])
-        clone, bare = fresh('stale-fan-out')
-        second = elsewhere_for('stale-fan-out')
-        fan_url = 'file://' + str(bare)
-        git('-C', str(clone), 'config', '--add', 'remote.' + fan_url + '.pushurl', fan_url)
-        git('-C', str(clone), 'config', '--add', 'remote.' + fan_url + '.pushurl', str(second))
-        held = moved_elsewhere(second)
-        stale['fan-out'] = (publish_as('stale-fan-out', clone, fan_url)[1], [(bare, old), (second, held)])
+        unlisted_pushed = any('push' in argv and str(clone) in argv for argv in wire.invocations())
+        # 0028's fan-out case (a second pushurl not at the old tip) is a clone route AC3 refuses
+        # before any listing (row publication-records-resolved-destination, fan-out-stale); the
+        # identity push has the one checked destination, so every destination is the one above.
         for key, (answer, _) in stale.items():
             seen_result('stale-' + key, answer.get('result', {}), refusal=answer.get('refusal'), accepted=answer.get('accepted'))
         def refused_before_push(key, code='stale-subject'):
@@ -844,10 +869,8 @@ print(json.dumps(result))
                     and result.get('completed') is False and result.get('stop') is None
                     and 'destination' not in result
                     and all(remote_main(repository) == held for repository, held in repositories))
-        # VELDO-0153 GAP (kept, reported): the single-destination case holds; the unlisted case (a
-        # URL-named section of the clone) and the fan-out case use local routing that no 0153
-        # criterion supersedes.
-        row('publication-refused-when-not-at-old-tip', all(refused_before_push(key) for key in stale))
+        row('publication-refused-when-not-at-old-tip', all(refused_before_push(key) for key in stale)
+            and not unlisted_pushed)
         # The named refusal is the effect's recorded, conclusive outcome: the stored record says
         # refused, and the same request again returns the same refusal without another attempt.
         clone, bare = fresh('stale-replay')
@@ -867,11 +890,10 @@ print(json.dumps(result))
         # A ref creation: the expected old state is "absent" (the all-zero id), and it completes
         # when the ref was absent before and holds the tip after, at every destination.
         zero = '0' * len(old)
+        # VELDO-0153: at the one checked URL; 0028's second destination came from a clone pushurl
+        # fan-out, which AC3 refuses.
         clone, bare = fresh('create')
-        second = elsewhere_for('create')
-        create_url = 'file://' + str(bare)
-        git('-C', str(clone), 'config', '--add', 'remote.' + create_url + '.pushurl', create_url)
-        git('-C', str(clone), 'config', '--add', 'remote.' + create_url + '.pushurl', str(second))
+        create_url = wired_url('create', str(bare))
         created = publish_as('create', clone, create_url, ref='refs/heads/created', old_tip=zero)[1].get('result', {})
         def ref_of(bare, name):
             return G.run(['git', '-C', str(bare), 'rev-parse', '--verify', '-q', name], capture_output=True,
@@ -881,70 +903,65 @@ print(json.dumps(result))
         over = publish_as('create-existing', clone, str(existing), ref='refs/heads/created', old_tip=zero)[1]
         seen_result('create', created, destination=recorded('create'))
         seen_result('create-existing', over.get('result', {}), refusal=over.get('refusal'))
-        # VELDO-0153 GAP (kept, reported): ref creation itself holds; its second destination comes
-        # from the clone's pushurl fan-out, which no 0153 criterion supersedes.
         row('publication-ref-creation', created.get('completed') is True
-            and ref_of(bare, 'refs/heads/created') == tip and ref_of(second, 'refs/heads/created') == tip
-            and recorded('create') == {'authorized_url': create_url,
-                                       'destinations': reached((create_url, 'at-tip'), (str(second), 'at-tip'))}
+            and ref_of(bare, 'refs/heads/created') == tip
+            and recorded('create') == {'authorized_url': create_url, 'destinations': reached((create_url, 'at-tip'))}
             and over.get('refusal') == 'stale-subject' and ref_of(existing, 'refs/heads/created') == old)
         # R8 B2: each destination is listed by the URL git resolved, and `git ls-remote` resolves
         # that URL again through the whole remote lookup: a remote section named by it, a legacy
         # remotes/ file of that name, a further url.*.insteadOf. The listing would then read a
         # repository the push never reached, so a destination that does not resolve to itself
         # (`git ls-remote --get-url`, no network) is refused by name before anything is pushed.
+        # VELDO-0153: the identity push lists, pushes to and records the one checked URL, so the
+        # listing reads where the push goes when nothing in the clone can resolve that URL again.
+        # Each 0028 reroute is planted against the checked URL and refused by name before anything
+        # is listed or pushed: the URL's own section giving the listing another url (a fetch url
+        # differs from where the push goes), a rewrite chain, and a nickname whose only definition
+        # is a legacy remotes/ file (not configured, so it resolves to no URL). The refusal names
+        # are the identity path's (VELDO-0153's error taxonomy) in place of rerouted-destination.
         rerouted = {}
-        for name in ('section', 'legacy-file', 'insteadof-chain'):
+        for name, code in (('section', 'binding_mismatch:identity_transport_config'),
+                           ('legacy-file', 'invalid_input:push_destinations'),
+                           ('insteadof-chain', 'binding_mismatch:identity_transport_config')):
             clone, lbare = fresh('reroute-' + name)
             xbare = elsewhere_for('reroute-' + name)
             ybare = elsewhere_for('reroute-' + name + '-listed')
-            url = 'file://' + str(lbare)
+            url = wired_url('reroute-' + name, str(lbare))
             if name == 'section':
-                # The second destination, X's file URL, has a section of its own pointing at Y (git
-                # ignores a section named by a plain path, so the URL form is the one that reroutes).
-                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
-                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', 'file://' + str(xbare))
-                git('-C', str(clone), 'config', 'remote.file://' + str(xbare) + '.url', str(ybare))
+                git('-C', str(clone), 'config', 'remote.' + url + '.url', str(ybare))
             elif name == 'legacy-file':
-                # A relative pushurl that is also a remote nickname with a legacy remotes/ file.
-                nick = clone / 'nick-repo'
-                git('init', '-q', '--bare', str(nick))
-                git('-C', str(repo), 'push', '-q', str(nick), old + ':refs/heads/main')
-                xbare = nick
-                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', url)
-                git('-C', str(clone), 'config', '--add', 'remote.' + url + '.pushurl', 'nick-repo')
+                url = 'nick-repo'
                 (clone / '.git' / 'remotes').mkdir(exist_ok=True)
                 (clone / '.git' / 'remotes' / 'nick-repo').write_text('URL: %s\n' % ybare)
             else:
-                # The authorized alias is rewritten to X, and X is itself rewritten to Y.
-                url = 'alias:reroute-repo'
+                # The checked URL is rewritten to X, and X is itself rewritten to Y.
                 git('-C', str(clone), 'config', 'url.' + str(xbare) + '.insteadOf', url)
                 git('-C', str(clone), 'config', 'url.' + str(ybare) + '.insteadOf', str(xbare))
             _, answer = publish_as('reroute-' + name, clone, url)
-            rerouted[name] = (answer, [lbare, xbare, ybare])
+            rerouted[name] = (answer, [lbare, xbare, ybare], code)
             seen_result('reroute-' + name, answer.get('result', {}), refusal=answer.get('refusal'),
                         moved=[remote_main(b) == tip for b in (lbare, xbare, ybare)])
-        # VELDO-0153 GAP (kept, reported): the rerouted-destination refusal belongs to the
-        # destination rule the implementation removed; no 0153 criterion supersedes it.
         row('publication-destination-listed-as-resolved', all(
-            answer.get('refusal') == 'rerouted-destination' and answer.get('result', {}).get('status') == 'refused'
-            and all(remote_main(b) == old for b in repositories) for answer, repositories in rerouted.values()))
+            answer.get('refusal') == code and answer.get('result', {}).get('status') == 'refused'
+            and all(remote_main(b) == old for b in repositories) for answer, repositories, code in rerouted.values()))
         # R8 time limits: a slow push to many destinations is never killed after acceptance. Each git
         # step is bounded by the receiver's git_step_seconds and the push by that bound for each
         # destination; the supervisor's limit follows the windows the executor announces. Six
         # destinations each take a second to receive, with 1.5-second steps: the push needs six
         # seconds (a single step would kill it), and the whole call runs well past the 2-second
         # acceptance window the supervisor starts from.
+        # VELDO-0153: the identity push has the one checked destination (AC3 refuses a clone pushurl
+        # fan-out), so the call covers it: the destination's own pre-receive takes three seconds,
+        # within the 3.5-second step, and the whole call runs well past the 2-second acceptance
+        # window the supervisor starts from, so it lives only on the windows the executor announces.
         clone, lbare = fresh('slow-fan-out')
-        slow_url = 'file://' + str(lbare)
-        slow = [lbare] + [elsewhere_for('slow-fan-out-%d' % i) for i in range(5)]
-        for index, bare in enumerate(slow):
-            wait = bare / 'hooks' / 'pre-receive'
-            wait.write_text('#!/bin/sh\ncat >/dev/null\nsleep 1\n')
-            wait.chmod(0o755)
-            git('-C', str(clone), 'config', '--add', 'remote.' + slow_url + '.pushurl', slow_url if index == 0 else str(bare))
+        slow_url = wired_url('slow-fan-out', str(lbare))
+        slow = [lbare]
+        wait = lbare / 'hooks' / 'pre-receive'
+        wait.write_text('#!/bin/sh\ncat >/dev/null\nsleep 3\n')
+        wait.chmod(0o755)
         config['receivers']['git-slow-fan-out'] = {'kind': 'publication', 'repository': str(clone), 'remote': slow_url,
-                                                   'ref': 'refs/heads/main', 'git_step_seconds': 1.5}
+                                                   'ref': 'refs/heads/main', 'git_step_seconds': 3.5}
         config_path.write_text(_v28_json.dumps(config))
         slow_config = private / 'slow-fan-out-config.json'
         slow_config.write_text(_v28_json.dumps(dict(config, accept_seconds=2)))
@@ -958,13 +975,9 @@ print(json.dumps(result))
         slow_seconds = _v28_time.monotonic() - began
         seen_result('slow-fan-out', slow_answer.get('result', {}), seconds=round(slow_seconds, 1),
                     supervisor_refusal=slow_answer.get('supervisor_refusal'))
-        # VELDO-0153 GAP (kept, reported): six destinations by pushurl fan-out, and a receiver
-        # configured with a file URL rather than an identity remote; no 0153 criterion supersedes
-        # the per-destination time windows.
         row('publication-call-covers-every-destination', slow_answer.get('result', {}).get('completed') is True
-            and slow_seconds > 5 and all(remote_main(bare) == tip for bare in slow)
-            and recorded('slow-fan-out') == {'authorized_url': slow_url, 'destinations': reached(
-                *[(slow_url if index == 0 else str(bare), 'at-tip') for index, bare in enumerate(slow)])})
+            and slow_seconds > 3 and all(remote_main(bare) == tip for bare in slow)
+            and recorded('slow-fan-out') == {'authorized_url': slow_url, 'destinations': reached((slow_url, 'at-tip'))})
         # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed. An
         # scp-style address loses everything up to the last `@` before its path (user:password
         # included, and a scheme-looking `ssh:` user), an `ext::` command keeps no command text,
@@ -1008,88 +1021,96 @@ print(json.dumps(result))
         row('publication-scrub-malformed-address', ext_ok
             and all(scrub_seen[url] == want for url, want in scrub_table))
         # R8 rules each pinned by a row of its own. Completion requires the push to exit cleanly: a
-        # pre-push hook that publishes the tip itself and then fails the push leaves the
-        # destination exactly at the tip, and the effect must still not read completed.
+        # push that leaves the destination exactly at the tip and then fails must still not read
+        # completed. VELDO-0153: 0028 published the tip from the clone's pre-push hook and failed
+        # it there, and no identity push runs that hook (AC3); the checked destination's own
+        # proc-receive now updates the authorized ref itself and reports the push as failed, so the
+        # same rule is tested against the checked URL.
         clone, bare = fresh('hook-then-fail')
-        hook(clone, 'git push -q --no-verify %s %s:refs/heads/main >/dev/null 2>&1\nexit 1\n' % (bare, tip))
-        failed = publish('hook-then-fail', clone, str(bare))
+        given = wired_url('hook-then-fail', str(bare))
+        proc_receive(bare, '    subprocess.run(["git", "update-ref", ref, new])\n'
+                           '    wr("ng %s refused after the update\\n" % ref)\n')
+        failed = publish('hook-then-fail', clone, given)
         seen_result('hook-then-fail', failed, destination=recorded('hook-then-fail'))
-        # VELDO-0153 GAP (kept, reported): the failing pre-push hook no longer runs (hooks disabled,
-        # 0153 History only), so the push exits cleanly and nothing tests the clean-exit rule here.
         row('publication-requires-clean-push-exit', failed.get('completed') is False and failed.get('status') == 'unknown'
             and remote_main(bare) == tip
-            and recorded('hook-then-fail') == {'authorized_url': str(bare), 'destinations': reached((str(bare), 'at-tip'))})
+            and recorded('hook-then-fail') == {'authorized_url': given, 'destinations': reached((given, 'at-tip'))})
         # A line break in the receiver's URL, or in a configured URL, is refused by its own guard
-        # before git's one-per-line report is read. Each case below gets past the report's shape
-        # check without the guard: git would name three push URLs for the first, two for the second.
+        # before anything is listed or pushed. VELDO-0153: each case is planted against the checked
+        # URL, and the refusal names are the identity path's: the receiver's URL with a line break
+        # fails the owner check (registered with the wire, so without the guard it would publish),
+        # a pushurl with one in the URL's own section is a clone route AC3 refuses, and a named
+        # remote whose configured URL holds one resolves to two lines, not one URL.
         breaks = {}
         clone, bare = fresh('break-remote')
-        _, answer = publish_as('break-remote', clone, str(bare) + '\n  Push  URL: ' + str(bare))
-        breaks['remote'] = (answer, [bare])
+        _, answer = publish_as('break-remote', clone, wire.remote('break-remote\nx', str(bare)))
+        breaks['remote'] = (answer, [bare], 'invalid_input:remote')
         clone, bare = fresh('break-pushurl')
         other = elsewhere_for('break-pushurl')
-        break_url = 'file://' + str(bare)
+        break_url = wired_url('break-pushurl', str(bare))
         git('-C', str(clone), 'config', 'remote.' + break_url + '.url', break_url)
         git('-C', str(clone), 'config', 'remote.' + break_url + '.pushurl', str(other) + '\n  Push  URL: ' + break_url)
         _, answer = publish_as('break-pushurl', clone, break_url)
-        breaks['pushurl'] = (answer, [bare, other])
-        for key, (answer, _) in breaks.items():
+        breaks['pushurl'] = (answer, [bare, other], 'binding_mismatch:identity_transport_config')
+        clone, bare = fresh('break-named')
+        other = elsewhere_for('break-named')
+        git('-C', str(clone), 'config', 'remote.origin.url', wired_url('break-named', str(bare)) + '\n' + str(other))
+        _, answer = publish_as('break-named', clone, 'origin')
+        breaks['named'] = (answer, [bare, other], 'invalid_input:push_destinations')
+        for key, (answer, _, _) in breaks.items():
             seen_result('break-' + key, answer.get('result', {}), refusal=answer.get('refusal'))
-        # VELDO-0153 GAP (kept, reported): a receiver URL with a line break is now refused as
-        # invalid_input:push_destinations, not invalid-input, and a pushurl with one is no longer
-        # read; no 0153 criterion supersedes either.
-        row('publication-line-break-refused', all(answer.get('refusal') == 'invalid-input'
-            and all(remote_main(b) == old for b in repositories) for answer, repositories in breaks.values()))
-        # git's report is read only in the shape it has: the header naming this remote, the Fetch
-        # URL line, one or more Push URL lines, then the HEAD line; a failed `git remote show`
-        # or a failed configuration read refuses too. A wrapper ahead of git on PATH reshapes one
-        # output per case (a different git version, a localized one) and passes everything else to
-        # the real git. Each case pushes to two pushurls.
+        row('publication-line-break-refused', all(answer.get('refusal') == code
+            and all(remote_main(b) == old for b in repositories) for answer, repositories, code in breaks.values()))
+        # Git's answers are read only in the shape they have, and a failed read refuses. VELDO-0153:
+        # the identity path reads no `git remote show` report (the destination is the one checked
+        # URL), so the shapes are those of what it does read: the clone's configuration, which the
+        # identity guard inspects before every identity invocation, and a named receiver remote's
+        # resolution to exactly one URL. A wrapper ahead of git on PATH reshapes one answer per case
+        # and passes everything else to the real git: the configuration read failing, and the
+        # remote's pushurl read failing with its value printed, printed twice, or printed empty.
+        # Each failure refuses by name with nothing moved; the control resolves and lands.
         wrapper = root / 'git-wrapper'
         wrapper.mkdir()
         (wrapper / 'git').write_text("""#!/bin/sh
 real=%s
-if [ "$1" = -C ] && [ "$3" = remote ] && [ "$4" = show ]; then
-  out=$("$real" "$@"); rc=$?
-  loc=${LC_ALL:-${LC_MESSAGES:-${LANG:-C}}}
+if [ "$1" = -C ] && [ "$3" = config ]; then
   case "$V28_GIT_SHAPE" in
-    show-exit) printf '%%s\\n' "$out"; exit 1 ;;
-    header) printf '%%s\\n' "$out" | sed '1s/^.*$/* remote elsewhere/' ;;
-    fetch) printf '%%s\\n' "$out" | sed '/^  Fetch URL: /d' ;;
-    no-push) printf '%%s\\n' "$out" | sed '/^  Push  URL: /d' ;;
-    extra) printf '%%s\\n' "$out" | sed 's/^  HEAD branch/  Push  URL (unrecognized): elsewhere\\n&/' ;;
-    translated)
-      # As gettext does: a message catalog applies unless the effective locale is C or POSIX.
-      if [ "$loc" = C ] || [ "$loc" = POSIX ]; then printf '%%s\\n' "$out"
-      else printf '%%s\\n' "$out" | sed 's/^  Push  URL: /  URL zum Versenden: /; s/^  Fetch URL: /  URL zum Abholen: /'; fi ;;
-    *) printf '%%s\\n' "$out" ;;
+    config-exit) exit 3 ;;
   esac
-  exit $rc
+  if [ "$4" = --get-all ]; then
+    case "$V28_GIT_SHAPE:$5" in
+      resolve-exit:*.pushurl) "$real" "$@"; exit 3 ;;
+      resolve-extra:*.pushurl) out=$("$real" "$@"); rc=$?; printf '%%s\\n%%s\\n' "$out" "$out"; exit $rc ;;
+      resolve-empty:*) exit 0 ;;
+    esac
+  fi
 fi
-if [ "$1" = -C ] && [ "$3" = config ] && [ "$V28_GIT_SHAPE" = config-exit ]; then exit 3; fi
 exec "$real" "$@"
 """ % _v28_shutil.which('git'))
         (wrapper / 'git').chmod(0o755)
-        def reshaped(shape, env=None):
+        def reshaped(shape, env=None, named=True):
+            # A named receiver remote, `origin`, whose url and pushurl are the checked URL; the
+            # configuration-read case is given the checked URL itself.
             clone, bare = fresh('shape-' + shape)
-            other = elsewhere_for('shape-' + shape)
-            shape_url = 'file://' + str(bare)
-            git('-C', str(clone), 'config', '--add', 'remote.' + shape_url + '.pushurl', shape_url)
-            git('-C', str(clone), 'config', '--add', 'remote.' + shape_url + '.pushurl', str(other))
-            _, answer = publish_as('shape-' + shape, clone, shape_url, env=dict(
+            shape_url = wired_url('shape-' + shape, str(bare))
+            git('-C', str(clone), 'config', 'remote.origin.url', shape_url)
+            git('-C', str(clone), 'config', 'remote.origin.pushurl', shape_url)
+            _, answer = publish_as('shape-' + shape, clone, 'origin' if named else shape_url, env=dict(
                 {'PATH': str(wrapper) + _v28_os.pathsep + _v28_os.environ['PATH'], 'V28_GIT_SHAPE': shape}, **(env or {})))
             seen_result('shape-' + shape, answer.get('result', {}), refusal=answer.get('refusal'))
-            return answer, [bare, other]
-        shapes = {shape: reshaped(shape) for shape in ('show-exit', 'header', 'fetch', 'no-push', 'extra', 'config-exit')}
+            return answer, [bare]
+        shapes = {'config-exit': (reshaped('config-exit', named=False), 'binding_mismatch:identity_transport_config')}
+        shapes.update({shape: (reshaped(shape), 'invalid_input:push_destinations')
+                       for shape in ('resolve-exit', 'resolve-extra', 'resolve-empty')})
         control, repositories = reshaped('unchanged')
-        # VELDO-0153 GAP (kept, reported) for this row and the C-locale row: `git remote show -n`
-        # is no longer read (0153 History, literal URL binding); no 0153 criterion supersedes the
-        # destination rule.
         row('publication-resolution-output-checked', control.get('result', {}).get('completed') is True
             and all(remote_main(b) == tip for b in repositories)
-            and all(answer.get('refusal') == 'invalid-input' and all(remote_main(b) == old for b in repositories)
-                    for answer, repositories in shapes.values()))
-        # The report is read in the C locale, whatever the operator's locale is.
+            and all(answer.get('refusal') == code and all(remote_main(b) == old for b in repositories)
+                    for (answer, repositories), code in shapes.values()))
+        # The publication is read the same whatever the operator's locale is. VELDO-0153: what the
+        # identity path reads (the NUL-separated configuration list, configuration values and
+        # ls-remote listings) is never translated, so a non-C locale cannot reshape it; 0028's
+        # translated `git remote show` report is no longer read at all.
         localized, repositories = reshaped('translated', {'LC_ALL': 'de_DE.UTF-8', 'LANG': 'de_DE.UTF-8'})
         row('publication-resolution-in-c-locale', localized.get('result', {}).get('completed') is True
             and all(remote_main(b) == tip for b in repositories))

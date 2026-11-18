@@ -56,7 +56,8 @@ import threading
 import types
 
 OWNER = 'fixture'
-TOKEN = 'fixture-identity-token'
+# Built at run time, fresh for each load, so no committed line holds a credential-shaped literal.
+TOKEN = '-'.join(('fixture', 'identity', os.urandom(8).hex()))
 LOOPBACK = ('127.0.0.1', 'localhost', '::1')
 GUARD = Path(__file__).resolve().with_name('hermetic_git.py')
 

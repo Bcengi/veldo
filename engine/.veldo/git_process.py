@@ -36,12 +36,19 @@ from contextlib import nullcontext
 PROFILES = ("isolated", "network", "identity")
 
 
+_IDENTITY_TRANSPORT = []
+
+
 def identity_transport():
-    spec = importlib.util.spec_from_file_location('git_identity_transport',
-        Path(__file__).with_name('control_git_identity_transport.py'))
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    # Loaded once per copy of this module: a refusal raised inside _options must be an instance of
+    # the very Refused class every caller catches, never of a class from a fresh load.
+    if not _IDENTITY_TRANSPORT:
+        spec = importlib.util.spec_from_file_location('git_identity_transport',
+            Path(__file__).with_name('control_git_identity_transport.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _IDENTITY_TRANSPORT.append(module)
+    return _IDENTITY_TRANSPORT[0]
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.
