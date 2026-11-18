@@ -221,3 +221,43 @@ row. Hidden until now: the baseline of every 344 case was invalid on ac6/install
 The row is now in the list. A run that never reaches it prints it as failed, as it does every other row.
 Unchanged suite: 65 passed, as before. Finding 344 after: registered 41, executed 41, rejected 41 in 46.3 s;
 both cases 91 rows against 91, each false on its declared row. Finding 259: 11 of 11 rejected (the run above).
+
+### Gate fix 7, third cause: suite 62 waited ten seconds, nine times, for workers that would never start (finding 39)
+
+dispatch-spawn-before-contract and dispatch-receiver-store-only-gate make every dispatch refused. The suite's
+wait for a worker's marker had only its 10 s bound, so each of nine waits ran it out for a dispatch whose record
+already said refused: regions measured at 20.5, 20.7, 10.2, 20.3, 10.1 and 10.1 s, and the cases at 101.7 and
+97.6 s of the 120 s worker deadline (run here before the change, both rejected).
+
+The wait now also ends on the record of the dispatch: a worker is started only under a record that is
+prepared, accepted or running, so any other state ends the wait after one more reading of the markers. The
+packet wait is skipped when no marker names a worker. No row's condition and no bound changed (17eaba1f).
+
+Finding 39 after: registered 30, executed 30, rejected 30 in 72.9 s; the two cases at 12.6 and 8.3 s with the
+same failed rows as before. The slowest case is now dispatch-closed-output-late-deadline at 52.5 s, which is
+its own defect (a deadline 30 s late). Unchanged suite: 51 passed in 9.7 s.
+
+### Gate fix 7, fourth cause: suite 106 stopped the service before the last run's account slot was returned
+
+This replaces "cause not established" above. The stray failure of reservation/principals (authority refused
+no_account, once in 81 runs) is a race in the suite, not in the product.
+
+A receiver commits its run's exit, then asks the manager for the ended scope's result, and only then tells the
+service. The service returns the run's account slot in the loop pass that message wakes, and its loop makes
+no pass once it is told to stop. The journey ended on the committed records alone, so the suite could stop
+the service between the last review's commit and that pass; the slot then stayed held on codex-a, the only
+Codex account, and the probe made after the stop was refused (the pool passes codex-a over as
+account_concurrency, which the reservation reports as no_account).
+
+Shown, not inferred: in a scratch copy with that gap widened to 3 s the row fails on every run with the same
+message and that one slot held, and no other 0185 row fails; 144 loaded runs without the widening did not
+hit it. With the change the same widened run passes the row.
+
+The journey's wait now also needs the store to show no worker slot of the domain still held (4aa6752b). The
+90 s bound and the idle exit are unchanged; no row's condition changed.
+
+After: suite alone 46 passed; 96 runs of 96 clean, sixteen at once, load average 30. Finding 185: registered
+20, executed 20, rejected 20 in 62.1 s, slowest case 22.8 s, each case's failed rows the same as in the run
+recorded above.
+
+Still open, not touched: owner-command-unrouted (suite 71, about 82 s of 120).
