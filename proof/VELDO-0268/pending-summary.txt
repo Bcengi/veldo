@@ -1,0 +1,12 @@
+suite 141 at 52daa4bc: exit 1; 1 red rows; PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+teeth --finding 268 at 52daa4bc: exit 1; mutations: failed registered=10 executed=10 reused=0 rejected=0 workers=14 elapsed=22.536s
+suite 141 at c64edf0b: exit 2; red rows: none
+teeth --finding 268 at c64edf0b: exit 0; mutations: passed registered=10 executed=10 reused=0 rejected=10 workers=14 elapsed=21.836s
+suite 141 at 94f4cfc8: exit 2; red rows: none; 
+teeth --finding 268 at 94f4cfc8: exit 0; mutations: passed registered=21 executed=21 reused=0 rejected=21 workers=25 elapsed=59.185s
+suite 141 at 5cb5179c: exit 2; red rows: none; selftest (PARTIAL, 1 of 192 suites): 108 passed, 0 failed in 28.02s
+teeth --finding 268 at 5cb5179c: exit 0; mutations: passed registered=34 executed=34 reused=0 rejected=34 workers=38 elapsed=177.382s
+suite 141 at e28c912d: exit 1; red rows: mutation/fix4-alias-ignores-prefix ; selftest (PARTIAL, 1 of 192 suites): 109 passed, 1 failed in 32.41s
+teeth --finding 268 at e28c912d: exit 1; mutations: failed registered=36 executed=36 reused=0 rejected=0 workers=40 elapsed=205.366s
+suite 141 at 34b00424: exit 2; red rows: none; selftest (PARTIAL, 1 of 192 suites): 110 passed, 0 failed in 32.51s
+teeth --finding 268 at 34b00424: exit 0; mutations: passed registered=36 executed=36 reused=0 rejected=36 workers=40 elapsed=209.010s
