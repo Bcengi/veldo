@@ -68,7 +68,8 @@ def _v319_suite():
     }
     ROWS = ('ac1/per-project-ticket-kind', 'ac1/totals', 'ac1/deferred-counts', 'ac1/plain-and-no-project',
             'ac1/worktrees',
-            'cost/removed-index', 'cost/carried-index', 'ac2/removal-stamp', 'ac2/in-use-folder', 'ac2/every-pending', 'ac2/requests', 'ac2/removed',
+            'cost/removed-index', 'cost/carried-index', 'cost/flat-when-doubled', 'cost/same-answers',
+            'ac2/removal-stamp', 'ac2/in-use-folder', 'ac2/every-pending', 'ac2/requests', 'ac2/removed',
             'ac3/routes-signed', 'ac3/unsigned-refused', 'ac3/not-owner-refused', 'ac3/owner-accepted',
             'ac3/no-dead-route',
             'ac5/keep-applied', 'ac5/console-bytes',
@@ -842,6 +843,99 @@ def _v319_suite():
             finally:
                 conn.set_progress_handler(None, 0)
             return steps[0], answer
+        # One dispatch with a later hold stands before the first count. A lookup by a hold's exact name
+        # ends on the first later name in the index, one step, however many follow: with none at all
+        # the first count would be that one step short and the row would compare an edge, not growth.
+        put('dispatch:cost-edge', 'dispatch', {'contract': {'space': {'hold': 'unrelated-edge'},
+                                                            'reservation': {'project': ORCHARD}}})
+
+        def whole_store_state():
+            """authority_state as it was before this fix: every entity of the store read and parsed."""
+            st = S.materialized_state(conn)['entities']
+            membership, delegations, keyring = [], [], []
+            for eid, e in st.items():
+                if e['kind'] == 'membership':
+                    membership.append(dict(e['data'], principal=eid, entity_version=e['version']))
+                elif e['kind'] == 'delegation':
+                    delegations.append(dict(e['data'], id=eid, entity_version=e['version']))
+                elif e['kind'] == 'verification_key':
+                    keyring.append(dict(e['data'], key_id=eid))
+            versions = st.get(CM.VERSIONS_ENTITY, {}).get('data', {})
+            return {'membership': membership, 'delegations': delegations, 'keyring': keyring, 'entities': st,
+                    'membership_version': int(versions.get('membership_version', 0)),
+                    'delegation_version': int(versions.get('delegation_version', 0)),
+                    'versions_entity_version': st.get(CM.VERSIONS_ENTITY, {}).get('version', 0)}
+
+        R = 'cost/same-answers'
+        PARTS = ('membership', 'delegations', 'keyring', 'membership_version', 'delegation_version',
+                 'versions_entity_version')
+        old, new = whole_store_state(), CM.authority_state(S, conn)
+        check(R, 'the keys and the authority\'s own records are the ones a read of the whole store gave, in '
+                 'the same order [%d members, %d keys]' % (len(new['membership']), len(new['keyring'])),
+              list(old) == list(new) and all(old[part] == new[part] for part in PARTS)
+              and len(new['membership']) >= len(MEMBERS))
+        others = [eid for eid, e in old['entities'].items() if e['kind'] not in CM.AUTHORITY_KINDS]
+        steps = [0]
+        def count():
+            steps[0] += 1
+            return 0
+        conn.set_progress_handler(count, 1)
+        try:
+            one = [(eid in new['entities'], new['entities'].get(eid), new['entities'][eid]) for eid in others[:3]]
+        finally:
+            conn.set_progress_handler(None, 0)
+        check(R, 'a record that is not the authority\'s is read by its id when asked for, the same record '
+                 '[3 of %d in %d steps]' % (len(others), steps[0]),
+              len(others) >= 3 and 0 < steps[0] < 200
+              and one == [(True, old['entities'][eid], old['entities'][eid]) for eid in others[:3]])
+        check(R, 'a record the store never held is absent, by every way of asking',
+              'no-such-record' not in new['entities'] and new['entities'].get('no-such-record', 7) == 7
+              and new['entities'].get('no-such-record') is None)
+        fresh = CM.authority_state(S, conn)
+        check(R, 'every record by its id is the whole read\'s record [%d]' % len(old['entities']),
+              all(fresh['entities'].get(eid) == e for eid, e in old['entities'].items()))
+        check(R, 'asked whole, the map is the whole read\'s: equal, in the same order, the same length, the '
+                 'same canonical bytes, and a plain copy of it too',
+              new['entities'] == old['entities'] and list(new['entities']) == list(old['entities'])
+              and len(new['entities']) == len(old['entities'])
+              and list(new['entities'].items()) == list(old['entities'].items())
+              and S.canonical_bytes(new['entities']) == S.canonical_bytes(old['entities'])
+              and dict(CM.authority_state(S, conn)['entities']) == old['entities']
+              and json.dumps(CM.authority_state(S, conn)['entities'], sort_keys=True)
+              == json.dumps(old['entities'], sort_keys=True))
+        # The snapshot holds across a later commit: a record rewritten, and one created, after the read.
+        moved, born = others[0], 'dispatch:cost-born-later'
+        by_id, by_whole = CM.authority_state(S, conn), CM.authority_state(S, conn)
+        put(moved, old['entities'][moved]['kind'], dict(old['entities'][moved]['data'], rewritten_after_the_read=True))
+        put(born, 'dispatch', {'contract': {'space': {'hold': 'unrelated-born'}, 'reservation': {'project': ORCHARD}}})
+        check(R, 'a record rewritten after the read is still the record the read saw, and one created after '
+                 'it is absent: by its id',
+              by_id['entities'].get(moved) == old['entities'][moved] and born not in by_id['entities']
+              and by_id['entities'].get(born) is None)
+        check(R, 'and asked whole: the map is still the one the read saw',
+              by_whole['entities'] == old['entities'] and list(by_whole['entities']) == list(old['entities']))
+        after = whole_store_state()
+        check(R, 'a read made after the commit sees the commit',
+              CM.authority_state(S, conn)['entities'].get(moved) == after['entities'][moved]
+              and after['entities'][moved] != old['entities'][moved] and born in CM.authority_state(S, conn)['entities'])
+        put(moved, old['entities'][moved]['kind'], old['entities'][moved]['data'])
+        # Every space read, for every member, answered through the whole-store read and through this one.
+        def answers():
+            return {(who, view): get(who, view[len('space.'):]) for who in MEMBERS for view in MO.SPACE_VIEWS}
+        indexed, kept = answers(), CM.authority_state
+        CM.authority_state = lambda _store, _conn: whole_store_state()
+        try:
+            whole = answers()
+        finally:
+            CM.authority_state = kept
+        differing = sorted(key for key in whole if S.canonical_bytes(whole[key]) != S.canonical_bytes(indexed[key]))
+        check(R, 'every space read answers every member the same bytes through the whole-store read and through '
+                 'the indexed one [%d reads, %d served, differing %s]'
+                 % (len(whole), sum(1 for status, _body in whole.values() if status == 200), differing[:2]),
+              not differing and len(whole) == len(MEMBERS) * len(MO.SPACE_VIEWS)
+              and any(status == 200 for status, _body in whole.values())
+              and any(status != 200 for status, _body in whole.values()))
+
         small = {view: cost(view) for view in ('removed', 'pools')}
         for n in range(4096):
             put('dispatch:cost-%d' % n, 'dispatch',
@@ -856,6 +950,20 @@ def _v319_suite():
                   % (before_steps, after_steps), before_steps == after_steps)
             check(row, 'the full authority read still serves the same records',
                   before_answer[field] == after_answer[field])
+
+        R = 'cost/flat-when-doubled'
+        held = conn.execute('SELECT COUNT(*) FROM entities').fetchone()[0]
+        for n in range(held):
+            put('dispatch:cost-double-%d' % n, 'dispatch',
+                {'contract': {'space': {'hold': 'unrelated-double-%d' % n},
+                              'reservation': {'project': ORCHARD}}})
+        doubled = conn.execute('SELECT COUNT(*) FROM entities').fetchone()[0]
+        twice = {view: cost(view) for view in ('removed', 'pools')}
+        for view, field in (('removed', 'items'), ('pools', 'pools')):
+            check(R, 'space.%s costs the same SQL steps with the store doubled (%d to %d records): %d -> %d -> %d'
+                  % (view, held, doubled, small[view][0], large[view][0], twice[view][0]),
+                  doubled >= 2 * held > 8192 and small[view][0] == large[view][0] == twice[view][0])
+            check(R, 'and space.%s serves the same records' % view, twice[view][1][field] == large[view][1][field])
 
         R = 'canon/synced'
         check(R, 'the engine canon of the API and Ledger modules equals the repository\'s copy',
