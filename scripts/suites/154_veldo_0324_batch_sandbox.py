@@ -232,10 +232,31 @@ def _v324_suite():
                   and at(path)[1]['state'] == 'deferred')
         drive('safety/unsaved-batch', dirty)
 
+        KEEP = load('owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+        keep_desk = KEEP.Desk(mods, S, CM, AC, conn, ids, lambda data: 'stub:' + S.digest_of(data.decode()),
+                              sign, state, now, tag='v324_desk')
+
         def owner_keep(path):
+            # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318).
+            # The batch clone has a request of its own (VELDO-0347 AC3): it is kept through that
+            # request, the owner's settled answer and the owner's packet. The Ledger raises no
+            # request for a scratch folder, so the sandbox scratch's settled request is planted, and
+            # the signature, the membership check and the transition are the Ledger's.
             identity = at(path)[0]
             assert L.signal('run_finished', CL.space_named(L, 'run_finished', [str(path)]))['ok']
-            assert L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')['ok']
+            claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')
+            assert not claimed['ok'] and claimed.get('reason') == 'not_authorized', claimed
+            assert not L.item(identity).get('owner_keep') and L.item(identity)['state'] == 'due'
+            record = L.item(identity)
+            if record['kind'] == 'agent_repository' and L._clone_row(record):
+                asked = KEEP.reserve(L, RM, identity, probe=P)
+                assert asked['ok'], asked
+                settled, edge_alone, marked = keep_desk.owner_keeps(L, identity, SP.ITEM_KIND)
+                assert settled.get('outcome') == 'settled' and not edge_alone['ok'], (settled, edge_alone)
+            else:
+                assert record['kind'] == 'scratch', record['kind']
+                marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, identity, sign, now)
+            assert marked['ok'], marked
             return copy.deepcopy(L.item(identity))
 
         def kept_batch(row):
@@ -451,10 +472,14 @@ def _v324_suite():
                     observed.append(not Path(locator['path']).exists())
                 return original(kind, locator, *args, **kwargs)
             def prepare(path):
+                # Shut against writing, and listable: the reader sees all of it, and the remover has
+                # to open each folder to empty it. A folder nobody can list is the next row
+                # (VELDO-0347 AC2 holds such a scratch as unread; before it this row shut both
+                # folders with mode 0).
                 (path / 'shut/inner').mkdir(parents=True)
                 (path / 'shut/inner/output').write_text('disposable scratch')
-                (path / 'shut/inner').chmod(0)
-                (path / 'shut').chmod(0)
+                (path / 'shut/inner').chmod(0o500)
+                (path / 'shut').chmod(0o500)
             with patch.object(L, 'declare', declaration):
                 code, root, parent_item, seen = launch('recorded', prepare)
             path = seen[0]
@@ -466,6 +491,34 @@ def _v324_suite():
             check(row, 'run finished removes child and root, including shut directories',
                   not root.exists() and L.item(identity)['state'] == 'removed' and L.item(parent_item)['state'] == 'removed')
         drive('ac2/recorded', recorded)
+
+        def unlistable(row):
+            # VELDO-0347 AC2: a folder beneath the scratch that cannot be listed holds the item as
+            # unread. Nothing is removed, the run's end says why, and what is in it is whole.
+            def prepare(path):
+                (path / 'shut/inner').mkdir(parents=True)
+                (path / 'shut/inner/output').write_text('nobody read this')
+                (path / 'shut/inner').chmod(0)
+                (path / 'shut').chmod(0)
+            code, root, parent_item, seen = launch('unlistable', prepare)
+            path = seen[0]
+            identity = at(path)[0]
+            try:
+                finish([root])
+                held, parent = L.item(identity), L.item(parent_item)
+                check(row, 'a scratch the reader cannot list is held as unread, with its parent [%s %s %s]'
+                      % (held['state'], (held.get('deferral') or {}).get('found', {}).get('states'), parent['state']),
+                      code == 7 and held['state'] == 'deferred' and parent['state'] == 'deferred'
+                      and held['deferral'].get('refused_by') == 'children'
+                      and (held['deferral'].get('found') or {}).get('states') == {'path:' + str(path): 'unread'}
+                      and path.is_dir() and root.is_dir())
+            finally:
+                (path / 'shut').chmod(0o700)
+                (path / 'shut/inner').chmod(0o700)
+            check(row, 'the folder is as it was, and what is in it is whole',
+                  sorted(str(one.relative_to(path)) for one in path.rglob('*')) == ['shut', 'shut/inner', 'shut/inner/output']
+                  and (path / 'shut/inner/output').read_text() == 'nobody read this')
+        drive('ac2/unlistable-held', unlistable)
 
         def lock_and_login(row):
             attempts = []

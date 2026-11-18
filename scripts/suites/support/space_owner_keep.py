@@ -181,17 +181,19 @@ class Desk:
         return settled, edge_alone, signed
 
 
-def reserve(ledger, remover, identity, commits=(), rule='unique_work'):
-    """The deferral and the request Signal writes for a worktree with work in it, for a fixture
-    with no Signal carrying the item there: the item, which is due, is deferred by the rule, and its
-    request is reserved with the remover's own terms and the commit the worktree is at."""
+def reserve(ledger, remover, identity, commits=(), rule='unique_work', probe=None):
+    """The deferral and the request Signal writes for an item with work in it, for a fixture with
+    no Signal carrying the item there: the item, which is due, is deferred by the rule, and its
+    request is reserved with the remover's own terms and the commit the work tree is at. A
+    worktree gets the worktree's terms. With `probe`, the item is a clone its table gives a request
+    (VELDO-0347 AC3) and gets the clone's terms, which offer Keep alone."""
     deferred = ledger.outcome(identity, 'deferred', {'rule': rule})
     if not deferred.get('ok'):
         return deferred
     record = ledger.item(identity)
-    return ledger.request_disposition(
-        identity, remover.disposition_proposal(ledger, identity, record, list(commits)),
-        remover.disposition_head(record['locator']['path']))
+    proposal = (remover.clone_proposal(ledger, probe, identity, record) if probe is not None
+                else remover.disposition_proposal(ledger, identity, record, list(commits)))
+    return ledger.request_disposition(identity, proposal, remover.disposition_head(record['locator']['path']))
 
 
 _planted = [0]
