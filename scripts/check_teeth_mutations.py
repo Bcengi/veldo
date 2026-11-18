@@ -921,13 +921,13 @@ def cases():
         add(37, name, '59_veldo_0037_aliases.py', module, old, new, [row, *rows])
 
     aliases('owners37-different-owner-adds', 'control_store.py',
-            'if (prior[2] == row[2] and prior[4:] == row[4:]\n',
-            'if (prior[4:] == row[4:]\n', 'owners/different-owner/kinds', 'owners/different-owner/prefixes')
+            'if (prior[2] == row[2] and prior[5] == row[5]\n',
+            'if (prior[5] == row[5]\n', 'owners/different-owner/kinds', 'owners/different-owner/prefixes')
     aliases('owners37-removing-command-allowed', 'control_store.py',
             'and set(prior[3]) < set(row[3])):',
             'and set(prior[3]) != set(row[3])):', 'owners/remove-command/kinds', 'owners/remove-command/prefixes')
     aliases('owners37-bound-command-added', 'control_store.py',
-            'if bound.get(command, row[4:]) != row[4:]:',
+            'if bound.get(command, row[4:])[1] != row[5]:',
             'if False:  # defect: a command already bound elsewhere is accepted', 'owners/bound-elsewhere/kinds', 'owners/bound-elsewhere/prefixes')
     aliases('owners37-superset-refused', 'control_store.py',
             'and set(prior[3]) < set(row[3])):',
@@ -1069,7 +1069,7 @@ def cases():
     aliases('store-owner-outer-code-only', 'control_store.py',
             '        for cell in function.__closure__ or ():', '        for cell in ():', 'aliases/owned-by-code-not-name')
     aliases('owners-may-name-generic-commands', 'control_store.py',
-            '            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))', '            builtin = []',
+            '            builtin = sorted(set(commands) & GENERIC_OPERATIONS)', '            builtin = []',
             'aliases/owned-by-code-not-name')
     # Recorded numbers (2026-09-23): the floor reads what accept_revision recorded, and a revision
     # recorded before that rule whose commit is gone is refused by name, never skipped.
