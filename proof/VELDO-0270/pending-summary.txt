@@ -1,0 +1,25 @@
+suite-129 head=91523cc9 exit=2 seconds=7 log=/tmp/veldo-0270-pending-dJuXE1/suite-129.log last="selftest (PARTIAL, 1 of 192 suites): 59 passed, 0 failed in 6.47s"
+teeth-270 head=91523cc9 exit=1 seconds=2 log=/tmp/veldo-0270-pending-dJuXE1/teeth-270.log last="mutations: failed registered=5 executed=0 reused=0 rejected=0 workers=6 elapsed=2.745s"
+suite-45_veldo_0106_policyread head=91523cc9 exit=2 seconds=1 log=/tmp/veldo-0270-pending-dJuXE1/suite-45_veldo_0106_policyread.log last="selftest (PARTIAL, 1 of 192 suites): 35 passed, 0 failed in 0.61s"
+suite-51_parser_boundary head=91523cc9 exit=2 seconds=6 log=/tmp/veldo-0270-pending-dJuXE1/suite-51_parser_boundary.log last="selftest (PARTIAL, 1 of 192 suites): 51 passed, 0 failed in 5.54s"
+suite-52_writer_boundary head=91523cc9 exit=2 seconds=8 log=/tmp/veldo-0270-pending-dJuXE1/suite-52_writer_boundary.log last="selftest (PARTIAL, 1 of 192 suites): 38 passed, 0 failed in 7.69s"
+suite-86_veldo_0189_engine_upgrade head=91523cc9 exit=1 seconds=61 log=/tmp/veldo-0270-pending-dJuXE1/suite-86_veldo_0189_engine_upgrade.log last="selftest (PARTIAL, 1 of 192 suites): 59 passed, 1 failed in 60.99s"
+suite-93_veldo_0152_intake_routes head=91523cc9 exit=2 seconds=50 log=/tmp/veldo-0270-pending-dJuXE1/suite-93_veldo_0152_intake_routes.log last="selftest (PARTIAL, 1 of 192 suites): 50 passed, 0 failed in 49.60s"
+suite-06_capabilities_manifest_honesty_veldo head=91523cc9 exit=1 seconds=37 log=/tmp/veldo-0270-pending-dJuXE1/suite-06_capabilities_manifest_honesty_veldo.log last="selftest (PARTIAL, 4 of 192 suites): 1413 passed, 1 failed in 37.20s"
+suite-50_git_environment head=91523cc9 exit=2 seconds=3 log=/tmp/veldo-0270-pending-dJuXE1/suite-50_git_environment.log last="selftest (PARTIAL, 1 of 192 suites): 30 passed, 0 failed in 2.87s"
+suite-107_veldo_0153_identity_push head=91523cc9 exit=2 seconds=5 log=/tmp/veldo-0270-pending-dJuXE1/suite-107_veldo_0153_identity_push.log last="selftest (PARTIAL, 1 of 192 suites): 146 passed, 0 failed in 5.03s"
+suite-109_veldo_0161_adoption head=91523cc9 exit=2 seconds=27 log=/tmp/veldo-0270-pending-dJuXE1/suite-109_veldo_0161_adoption.log last="selftest (PARTIAL, 1 of 192 suites): 81 passed, 0 failed in 26.95s"
+suite-58_veldo_0028_effects head=91523cc9 exit=2 seconds=41 log=/tmp/veldo-0270-pending-dJuXE1/suite-58_veldo_0028_effects.log last="selftest (PARTIAL, 1 of 192 suites): 78 passed, 0 failed in 40.78s"
+suite-86_veldo_0148_re_land head=91523cc9 exit=2 seconds=70 log=/tmp/veldo-0270-pending-dJuXE1/suite-86_veldo_0148_re_land.log last="selftest (PARTIAL, 1 of 192 suites): 52 passed, 0 failed in 69.61s"
+contracts head=91523cc9 exit=0 seconds=10 log=/tmp/veldo-0270-pending-dJuXE1/contracts.log last="  /home/dmitry/projects/veldo-worktrees/veldo-small-proof/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification m"
+proof-files head=91523cc9 exit=0 seconds=4 log=/tmp/veldo-0270-pending-dJuXE1/proof-files.log last=""
+check-docs head=91523cc9 exit=0 seconds=1 log=/tmp/veldo-0270-pending-dJuXE1/check-docs.log last="docs hygiene: pass"
+template-sync head=91523cc9 exit=0 seconds=0 log=/tmp/veldo-0270-pending-dJuXE1/template-sync.log last="template sync: pass (303 pair(s) compared, 6 declared per-repo, 364 engine-only)"
+git-boundary head=91523cc9 exit=0 seconds=3 log=/tmp/veldo-0270-pending-dJuXE1/git-boundary.log last="Git subprocess boundary: pass"
+round2 suite-129 head=9c4cd91e exit=2 seconds=5 failing="" last="selftest (PARTIAL, 1 of 192 suites): 59 passed, 0 failed in 5.38s" log=/tmp/veldo-0270-pending-lrFEJQ/suite-129.log
+round2 teeth-270 head=9c4cd91e exit=1 seconds=3 failing="" last="mutations: failed registered=5 executed=0 reused=0 rejected=0 workers=6 elapsed=2.699s" log=/tmp/veldo-0270-pending-lrFEJQ/teeth-270.log
+round2 suite-86_veldo_0189_engine_upgrade head=9c4cd91e exit=2 seconds=62 failing="" last="selftest (PARTIAL, 1 of 192 suites): 60 passed, 0 failed in 61.55s" log=/tmp/veldo-0270-pending-lrFEJQ/suite-86_veldo_0189_engine_upgrade.log
+round2 suite-01_warp_0101_reviewer_notes head=9c4cd91e exit=2 seconds=10 failing="" last="selftest (PARTIAL, 1 of 192 suites): 637 passed, 0 failed in 10.47s" log=/tmp/veldo-0270-pending-lrFEJQ/suite-01_warp_0101_reviewer_notes.log
+round2 suite-06_capabilities_manifest_honesty_veldo head=9c4cd91e exit=2 seconds=35 failing="" last="selftest (PARTIAL, 4 of 192 suites): 1414 passed, 0 failed in 34.36s" log=/tmp/veldo-0270-pending-lrFEJQ/suite-06_capabilities_manifest_honesty_veldo.log
+round3 suite-129 head=a3e9c00c exit=2 seconds=6 failing="" last="selftest (PARTIAL, 1 of 192 suites): 59 passed, 0 failed in 5.92s" log=/tmp/veldo-0270-pending-1gNt20/suite-129.log
+round3 teeth-270 head=a3e9c00c exit=0 seconds=15 failing="" last="mutations: passed registered=5 executed=5 reused=0 rejected=5 workers=11 elapsed=14.928s" log=/tmp/veldo-0270-pending-1gNt20/teeth-270.log
