@@ -31,6 +31,13 @@ ui/states-360, -390, -1280, -1440
                        the primary action visible and 44 px on a phone, axe, no content security policy violation
 ui/api-only            every request of the screen is a published route of this origin; a member scoped to one
                        project sees that project only
+ac5/keep-applied       (AC5) a Keep answered on the Decisions screen: the passkey signs the Keep command, the answer
+                       is sent, and once it settled the packet goes on space.keep; the item is kept by that owner.
+                       The harness verifies the assertion with the API's own WebAuthn verifier over the command's
+                       canonical bytes. Falsifier (declared): leave out the space.keep call; this row turns red
+ac7/sign-keep          (AC7) a Keep that settled with no packet is listed as answered and not signed at the four
+                       widths; Sign Keep signs a packet for the item at the version shown, naming its own request,
+                       and the item is kept; a member who is not the owner is refused by name
 
 Needs node (the nvm toolchain), the npm cache or a checkout node_modules, and system Chrome; without them every
 row fails by name. Writes only temporary files.
@@ -57,6 +64,8 @@ def _v319_space_ui():
         'src/features/space/SpacePending.vue': ROOT / "engine/ui/src/features/space" / "SpacePending.vue",
         'src/features/run/runs.ts': ROOT / "engine/ui/src/features/run" / "runs.ts",
         'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
+        'src/features/space/keep.ts': ROOT / "engine/ui/src/features/space" / "keep.ts",
+        'src/features/decisions/DecisionDetail.vue': ROOT / "engine/ui/src/features/decisions" / "DecisionDetail.vue",
         'src/composables/useLiveRead.ts': ROOT / "engine/ui/src/composables" / "useLiveRead.ts",
     }
     # The API organs the harness loads (VELDO_ORGANS): the checkout's .veldo, with these production copies laid
@@ -67,7 +76,7 @@ def _v319_space_ui():
     }
     BROWSER = ('ac1/numeric-alignment-1440', 'ac1/usage-table-1280', 'ac1/usage-table-390', 'ac2/pending-removed', 'ac3/owner-commands',
                'ac3/answer-path', 'ac4/live-no-clock', 'ac4/runs-list', 'ui/states-360', 'ui/states-390',
-               'ui/states-1280', 'ui/states-1440', 'ui/api-only')
+               'ui/states-1280', 'ui/states-1440', 'ui/api-only', 'ac5/keep-applied', 'ac7/sign-keep')
     ROWS = ('unit/space',) + BROWSER
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
@@ -133,10 +142,12 @@ def _v319_space_ui():
         if code != 0 or not (dist / 'index.html').is_file():
             all_rows('the UI builds with its own build script (vue-tsc, then vite) [%s]' % tail(out))
             return
-        code, out = run(['npx', 'vitest', 'run', 'src/features/space', 'src/features/run/runs.spec.ts'], ui, timeout=600)
+        code, out = run(['npx', 'vitest', 'run', 'src/features/space', 'src/features/run/runs.spec.ts',
+                         'src/features/decisions/DecisionDetail.spec.ts'], ui, timeout=600)
         counted = re.search(r'Tests\s+(\d+) passed \((\d+)\)', out)
-        check('unit/space', 'the Space feature\'s and the runs list\'s Vitest specs pass [%s]' % tail(out, 4),
-              code == 0 and counted is not None and counted.group(1) == counted.group(2) and int(counted.group(1)) >= 20)
+        check('unit/space', 'the Space feature\'s (the Keep signing among them), the runs list\'s and the decision '
+                            'detail\'s Vitest specs pass [%s]' % tail(out, 4),
+              code == 0 and counted is not None and counted.group(1) == counted.group(2) and int(counted.group(1)) >= 45)
 
         e2e = base / 'e2e.json'
         code, out = run(['npx', 'playwright', 'test', 'e2e/space.spec.ts'], ui,

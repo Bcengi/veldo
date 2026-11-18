@@ -16953,10 +16953,12 @@ def cases():
         "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n"
         "          ('item', 'version'), (), None),",
         ['space319/ac3/unsigned-refused'],
-        also=[("        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})",
+        also=[("        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write,\n"
+               "                              'space.keep': self._write})",
                "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n"
                "            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n"
-               "                                              cause='owner_abandon')), 'space.reconcile': self._write})")])
+               "                                              cause='owner_abandon')), 'space.reconcile': self._write,\n"
+               "                              'space.keep': self._write})")])
     # The owner of a space command: a member who is not the owner reaches the service's reconcile.
     add(319, 'space319-reconcile-for-any-member', api319, 'control_api_authority.py',
         "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n"
@@ -17028,6 +17030,47 @@ def cases():
         "            record['removal'] = dict(facts)",
         ['space319/ac2/removal-stamp'])
 
+    # The amendment (AC5 to AC7): the console signs the owner's Keep. ac3/no-dead-route, restated as a property:
+    # a published route whose command the Ledger has no transition for.
+    add(319, 'space319-keep-route-without-a-transition', api319, 'control_api_authority.py',
+        "                'reconcile_space': 'space_reconcile', KEEP: SPACE_DISPOSITION}",
+        "                'reconcile_space': 'space_reconcile', KEEP: 'space_reject'}",
+        ['space319/ac3/no-dead-route'])
+    # AC6, declared: take the edge's signature in place of the passkey's.
+    add(319, 'space319-keep-takes-the-edge-signature', api319, 'control_space.py',
+        "            return state, member, self._passkey_signer(command, signature, now, state, principal)",
+        "            return state, member, {'key_id': principal}",
+        ['space319/ac6/edge-alone-refused'])
+    # AC6, declared: skip the challenge comparison (the assertion's own challenge is taken for the command's).
+    add(319, 'space319-keep-skips-the-challenge', api319, 'control_space.py',
+        "        challenge = credentials.W.b64url(hashlib.sha256(self.store.canonical_bytes(command)).digest())",
+        "        challenge = json.loads(credentials.W.unb64url(assertion.get('client_data_json')) or b'{}').get('challenge')",
+        ['space319/ac6/other-command-refused'])
+    # AC6, declared: apply whatever the settlement holds.
+    add(319, 'space319-keep-applies-any-settled-choice', api319, 'control_space.py',
+        "        if 'only' in params and _settlement().space_pick(effect['choice'])[0] != params['only']:",
+        "        if False and _settlement().space_pick(effect['choice'])[0] != params['only']:",
+        ['space319/ac6/settled-keep-only'])
+    # AC6: a revoked credential, and a credential of another member, are current for nobody's Keep.
+    add(319, 'space319-keep-takes-any-enrolled-credential', api319, 'control_space.py',
+        "        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)\n"
+        "        if why:",
+        "        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)\n"
+        "        record = record or {}\n"
+        "        if why and record.get('credential_id') is None:",
+        ['space319/ac6/revoked-refused', 'space319/ac6/other-member-refused'])
+    # AC7, declared: list only items with an open request (a settled, unsigned Keep is on no screen).
+    add(319, 'space319-pending-hides-an-answered-keep', api319, 'control_api_models.py',
+        "        keep = known.get('keep')",
+        "        keep = None",
+        ['space319/ac7/answered-not-signed'])
+    # AC7, declared: sign the group's current request for a member.
+    add(319, 'space319-member-under-the-groups-current-request', api319, 'control_api_models.py',
+        "        known = _mapping(asked.get(row['request'])) if open_request else {}",
+        "        known = _mapping(asked.get(_mapping(_mapping(records.get(row['group'])).get('request')).get('alias')\n"
+        "                                   or row['request'])) if open_request else {}",
+        ['space319/ac7/member-own-request'])
+
     def ui319(name, directory, module, old, new, rows):
         add(319, name, '150_veldo_0319_space_ui.py', module, old, new, rows)
         result[-1]['dir'] = directory
@@ -17047,6 +17090,17 @@ def cases():
           "    space: holds.get(dispatch) ?? null,",
           "    space: null,",
           ['space319ui/ac4/runs-list'])
+    # AC5, declared: leave out the space.keep call after the answer settles. The answer settles, the screen says
+    # the Keep is applied, and the item stays deferred.
+    ui319('space319-keep-answer-without-the-packet', 'engine/ui/src/features/decisions', 'DecisionDetail.vue',
+          "    const sent = await sendKeep(packet)",
+          "    const sent = packet",
+          ['space319ui/ac5/keep-applied'])
+    # AC7: Sign Keep that signs and sends nothing.
+    ui319('space319-sign-keep-sends-nothing', 'engine/ui/src/features/space', 'keep.ts',
+          "  const sent = await keepWorktree(packet, contractRoute)\n  return sent.sent ? sent.answer : null",
+          "  return { outcome: 'kept', api_request_id: packet.command.command_id, contractRoute } as KeepAnswer",
+          ['space319ui/ac7/sign-keep'])
 
     return result
 

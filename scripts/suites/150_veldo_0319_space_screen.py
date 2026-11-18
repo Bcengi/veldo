@@ -64,15 +64,21 @@ def _v319_suite():
         'control_api.py': ROOT / ".veldo" / "control_api.py",
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
         'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
+        'control_api_assertion.py': ROOT / ".veldo" / "control_api_assertion.py",
     }
     ROWS = ('ac1/per-project-ticket-kind', 'ac1/totals', 'ac1/deferred-counts', 'ac1/plain-and-no-project',
             'ac1/worktrees',
             'cost/removed-index', 'cost/carried-index', 'ac2/removal-stamp', 'ac2/in-use-folder', 'ac2/every-pending', 'ac2/requests', 'ac2/removed',
             'ac3/routes-signed', 'ac3/unsigned-refused', 'ac3/not-owner-refused', 'ac3/owner-accepted',
             'ac3/no-dead-route',
+            'ac5/keep-applied', 'ac5/console-bytes',
+            'ac6/edge-alone-refused', 'ac6/other-member-refused', 'ac6/revoked-refused', 'ac6/other-command-refused',
+            'ac6/settled-keep-only', 'ac6/ssh-as-before', 'ac6/owner-only',
+            'ac7/answered-not-signed', 'ac7/member-own-request',
             'ac4/pools-numbers', 'ac4/record-reaches-read',
             'scope/member', 'scope/digest', 'redact/locator', 'words/deferrals', 'canon/synced')
     rows = {name: [] for name in ROWS}
+    KEEP_ROWS = ('ac5/', 'ac6/', 'ac7/')
     started = time.monotonic()
 
     def check(row, label, condition):
@@ -519,10 +525,16 @@ def _v319_suite():
                   and routes[name].operation in AS.OPERATIONS for name in ('space.reconcile', 'space.abandon'))
               and routes['space.abandon'].required == ('item', 'version')
               and routes['space.reconcile'].required == ('project',))
-        check(R, 'the four reads are GET routes that need a session and take no field',
-              all(routes[name].method == 'GET' and routes[name].session is True and routes[name].operation is None
-                  and routes[name].required == () and routes[name].optional == () for name in MO.SPACE_VIEWS)
-              and list(MO.SPACE_VIEWS) == ['space.pools', 'space.usage', 'space.pending', 'space.removed'])
+        # Restated as the property it guards (the amendment of 2026-11-16): every space read, whichever
+        # ticket adds it, is a GET route that needs a session and takes no field. No list of names is pinned.
+        check(R, 'every space read (each entry of SPACE_VIEWS) is a GET route that needs a session and takes no '
+                 'field, and every GET route named space.* is one of them [%s]' % list(MO.SPACE_VIEWS),
+              len(MO.SPACE_VIEWS) >= 4 and all(
+                  name in routes and routes[name].method == 'GET' and routes[name].session is True
+                  and routes[name].operation is None and routes[name].required == ()
+                  and routes[name].optional == () for name in MO.SPACE_VIEWS)
+              and sorted(name for name in routes if name.startswith('space.') and routes[name].method == 'GET')
+              == sorted(MO.SPACE_VIEWS))
         check(R, 'every route has its handler and every handler its route [%s]' % api.route_problems()[:2],
               api.route_problems() == [])
         actions = {action.name: action for action in MO.ACTIONS}
@@ -600,16 +612,70 @@ def _v319_suite():
               and all(event.get('principal') in MEMBERS for event in observed))
 
         R = 'ac3/no-dead-route'
-        later = ('adopt', 'confirm', 'reject', 'mode', 'restore', 'kept')
-        check(R, 'no route is published for Adopt, Confirm, Wrong, the mode switch, restore or kept: each comes with '
-                 'its own ticket [%s]' % sorted(name for name in routes if name.startswith('space.')),
-              sorted(name for name in routes if name.startswith('space.')) == sorted(
-                  ['space.reconcile', 'space.abandon'] + list(MO.SPACE_VIEWS))
-              and all(post('olga', name, {})[0] == 404 for name in later))
+        # Restated as the property it guards (the amendment of 2026-11-16), so a later ticket adds its route
+        # without editing this row: every POST route named space.* reaches a Ledger command that has a
+        # transition, through an operation, an authority branch and an action; and no owner action the Ledger
+        # names without a transition has a route.
+        def dead(table, actions_now, commands, transitions, operations=AS.OPERATIONS):
+            found = []
+            for route in table:
+                if not route.name.startswith('space.') or route.method != 'POST':
+                    continue
+                command = commands.get(route.operation)
+                if route.operation not in operations:
+                    found.append(route.name + ': no operation')
+                elif command is None:
+                    found.append(route.name + ': no authority branch')
+                elif not any(action.route == route.name and action.operation == route.operation
+                             and action.module == 'control_space' for action in actions_now):
+                    found.append(route.name + ': no action')
+                elif command not in transitions:
+                    found.append(route.name + ': its command %s has no transition' % command)
+            return found
+        transitions = set(conn.command_registry) & set(SP.OWNER_ACTIONS + SP.OPERATIONS + (SP.MODE,))
+        posts = sorted(route.name for route in API.ROUTES if route.name.startswith('space.') and route.method == 'POST')
+        check(R, 'every POST route named space.* carries an operation, has an authority branch and an action, and its '
+                 'command is a Ledger operation that has a transition %s [%s]' % (posts, dead(
+                     API.ROUTES, MO.ACTIONS, authority.commands(), transitions)[:2]),
+              len(posts) >= 3 and 'space.keep' in posts
+              and dead(API.ROUTES, MO.ACTIONS, authority.commands(), transitions) == [])
+        handled = []
+        for route in API.ROUTES:
+            if route.name.startswith('space.') and route.method == 'POST':
+                # The authority has a branch when the owner's call is judged there, not answered as unknown.
+                status, answer = post('pavel', route.name.split('.', 1)[1], {field: None for field in route.required})
+                handled.append((route.name, status, answer.get('refusal')))
+        check(R, 'and the authority judges each: a person who is not the owner is refused by name, never served and '
+                 'never unknown [%s]' % handled,
+              all(status == 403 and refusal == 'unauthorized:not_owner' for _name, status, refusal in handled))
+        # An owner action the Ledger names and has no transition for (a later ticket's command, or one that is
+        # carried by another command, as the owner's Abandon is carried by the signal): no route's command is
+        # it, and its name answers 404 unless a published route of that name passed the check above.
+        unbuilt = [name for name in SP.OWNER_ACTIONS if name not in conn.command_registry]
+        words = {name: name[len('space_'):].replace('_group', '') for name in unbuilt}
+        absent = sorted(word for word in words.values() if 'space.' + word not in routes)
+        check(R, 'no owner action the Ledger names without a transition is the command of a route or of an action, and '
+                 'a POST to the name of each that has no route answers 404 %s' % absent,
+              bool(unbuilt) and all(command not in authority.commands().values() for command in unbuilt)
+              and not any(getattr(SP, str(action.command), None) in unbuilt for action in MO.ACTIONS
+                          if action.module == 'control_space')
+              and bool(absent) and all(post('olga', word, {})[0] == 404 for word in absent))
         check(R, 'the action contract offers no space action without a route',
-              sorted(action.name for action in MO.ACTIONS if action.module == 'control_space') == [
-                  'space_reconcile', 'worktree_abandon'] and all(
-                  action.route for action in MO.ACTIONS if action.module == 'control_space'))
+              all(action.route in routes for action in MO.ACTIONS if action.module == 'control_space'))
+        # The row has teeth: a published route whose command has no transition turns it red.
+        ghost = API.Route('space.ghost', 'POST', '/api/v1/domains/{domain}/space/ghost', 'work', True, ('item',), (),
+                          'ghost_space')
+        acted = MO.ACTIONS + (type(MO.ACTIONS[0])('ghost', 'space.ghost', 'ghost_space', 'control_space', 'REJECT',
+                                                  'VELDO-0319'),)
+        known = tuple(AS.OPERATIONS) + ('ghost_space',)
+        check(R, 'a route whose command has no transition is found, and so is one with no operation, no branch or '
+                 'no action',
+              dead(API.ROUTES + (ghost,), acted, dict(authority.commands(), ghost_space=unbuilt[0]), transitions, known)
+              == ['space.ghost: its command %s has no transition' % unbuilt[0]]
+              and dead(API.ROUTES + (ghost,), acted, authority.commands(), transitions, known) == ['space.ghost: no authority branch']
+              and dead(API.ROUTES + (ghost,), MO.ACTIONS, dict(authority.commands(), ghost_space=SP.SIGNAL), transitions,
+                       known) == ['space.ghost: no action']
+              and dead(API.ROUTES + (ghost,), acted, authority.commands(), transitions) == ['space.ghost: no operation'])
 
         # ---- AC4 -----------------------------------------------------------------------------------------
         R = 'ac4/pools-numbers'
@@ -800,13 +866,489 @@ def _v319_suite():
                  'modules that make them',
               not any(word in text for word in ('statvfs', 'disk_usage', 'os.walk', 'os.scandir', 'subprocess')))
 
+    def keep_world(base, wired):
+        """AC5 to AC7 (the amendment of 2026-11-16): the owner's Keep, signed by the owner's passkey and sent
+        on space.keep. A second store with members enrolled by the membership's own command, the real
+        settlement (inbox, presenter, Settlement), the real Ledger, authority and API edge. The passkey is a
+        local stand-in: an openssl P-256 key, with clientDataJSON and authenticatorData assembled as WebAuthn
+        lays them out (suite 71 exercises the browser's own ceremony). The service's entry is the one line
+        control_service.Service.space_keep is: the Ledger's disposition with only='keep'."""
+        import base64
+        import hashlib
+        mods = base / 'installed' / '.veldo'
+        mods.mkdir(parents=True)
+        for source in sorted((ROOT / '.veldo').glob('*.py')):
+            shutil.copyfile(source, mods / source.name)
+        for name, source in PRODUCTION.items():
+            shutil.copyfile(source, mods / name)
+        API = load('v319k_api', mods / 'control_api.py')
+        AUTH = load('v319k_api_authority', mods / 'control_api_authority.py')
+        claims = load('v319k_claim', mods / 'control_claim.py')
+        S, CM, AC = claims.S, claims.CM, claims.AC
+        I, V, P, ST, contract, SP, CFG, K = (load('v319k_' + name, mods / (name + '.py')) for name in (
+            'control_assignment', 'control_channel_presentation', 'control_channel_projection',
+            'control_request_settlement', 'entity_contract', 'control_space', 'control_space_config',
+            'control_space_kinds'))
+        AS, CRD, EN = AUTH.AS, AUTH.CR, AUTH.E
+        b64 = lambda data: base64.urlsafe_b64encode(data).rstrip(b'=').decode()  # noqa: E731
+        quiet = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+        keys, public = {}, {}
+        for who in ('steward', 'owner', 'second', 'plain', 'requester', 'api-edge'):
+            keys[who] = base / ('key-' + who)
+            subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])], check=True,
+                           capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+            public[who] = ' '.join(keys[who].with_suffix('.pub').read_text().split()[:2])
+
+        def sign(who, message, namespace='veldo-command'):
+            return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace], input=message,
+                                  capture_output=True, check=True, timeout=20, env=quiet).stdout.decode()
+
+        def journal_sign(message):
+            return sign('steward', message, 'veldo-journal')
+        serial = [0]
+
+        def next_id():
+            serial[0] += 1
+            return 'keep-fixture-%d' % serial[0]
+        ids = dict(domain_uuid='domain-319k', repository_uuid='repository-319k', store_uuid='store-319k')
+        db = base / 'authority' / 'control.sqlite3'
+        db.parent.mkdir()
+        conn = S.open_store(str(db))
+        wired.callback(conn.close)
+        CM.attach(S)
+
+        def member(who, principal_type, roles):
+            state = CM.authority_state(S, conn)
+            command = dict(command_id=next_id(), operation='enroll_principal', target='authority',
+                           parameters=dict(principal=who, principal_type=principal_type, roles=roles,
+                                           public_key=public[who], independence_group=who, scope='*'),
+                           artifact_digests=[], expected_versions={})
+            envelope = dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal='steward',
+                            request_revision=1, nonce=next_id(), expires_at=time.time() + 600,
+                            membership_version=state['membership_version'], delegation_version=state['delegation_version'],
+                            command_digest=AC.canonical_command_digest(command))
+            done = CM.admit(S, conn, envelope, command, sign('steward', AC.canonical_envelope_bytes(envelope)), ids,
+                            time.time(), enrollee_signature=None if who == 'steward' else
+                            sign(who, AC.canonical_envelope_bytes(dict(envelope, principal=who))),
+                            journal_signer=('steward', journal_sign))
+            if not done.get('ok', done.get('outcome') in ('accepted', 'admitted', None)) and done.get('reason'):
+                raise RuntimeError('the fixture member %s: %s' % (who, done))
+        member('steward', 'person', ['membership_steward', 'project_owner'])
+        owner_roles = ['project_owner', 'admission_authority', 'priority_authority', 'technical_authority']
+        member('owner', 'person', owner_roles)
+        member('second', 'person', owner_roles)
+        member('plain', 'person', [])
+        member('requester', 'service', [])
+        member('api-edge', 'service', [])
+
+        def put(identity, kind, data):
+            row = conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            return S.execute(conn, dict(command_id=next_id(), nonce=next_id(), principal='steward',
+                                        operation='upsert_entity', artifact_digests=[],
+                                        expected_versions={identity: row[0] if row else 0},
+                                        parameters=dict(entity_id=identity, kind=kind, data=data)),
+                             'steward', journal_sign, 1)
+        for who, chat in (('owner', 31901), ('second', 31902)):
+            put('channel-enrollment:telegram_chat:' + who, 'channel_enrollment', dict(
+                schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
+                revoked_at=None))
+        put(AC.edge_channel(AS.CHANNEL)['edge_key_id'], 'verification_key', {
+            'schema': EN.SCHEMA, 'channel': AS.CHANNEL, 'principal': 'api-edge', 'public_key': public['api-edge'],
+            'effective_at': 0, 'retired_at': None, 'revoked_at': None})
+
+        class Transport:
+            sent = []
+
+            def send(self, chat, text, reply_to):
+                self.sent.append(text)
+                return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                            reply_to_message_id=reply_to)
+        inbox = I.Inbox(S, CM, claims, contract, conn, ids, 'steward', journal_sign)
+        presenter = V.Presenter(S, CM, P, inbox, Transport(), conn, 'steward', journal_sign, assignment=I)
+        settlement = ST.Settlement(S, CM, inbox, presenter, conn, 'steward', journal_sign, assignment=I,
+                                   presentation=V, api_edge='api-edge')
+
+        # ---- the passkeys: one of the owner, a second of the owner that is then revoked, one of `second` ----
+        HOST = 'console.fixture.example'
+        ORIGIN = 'https://' + HOST
+
+        class Passkey:
+            def __init__(self, name, principal, revoked=False):
+                self.key = base / ('passkey-' + name + '.pem')
+                subprocess.run(['openssl', 'genpkey', '-algorithm', 'EC', '-pkeyopt', 'ec_paramgen_curve:P-256',
+                                '-out', str(self.key)], check=True, capture_output=True, timeout=20)
+                der = subprocess.run(['openssl', 'pkey', '-in', str(self.key), '-pubout', '-outform', 'DER'],
+                                     check=True, capture_output=True, timeout=20).stdout
+                self.credential_id, self.user_handle = b64(os.urandom(32)), b64(os.urandom(16))
+                put(CRD.entity_id(self.credential_id), CRD.KIND, {
+                    'schema': CRD.SCHEMA, 'principal': principal, 'credential_id': self.credential_id,
+                    'public_key': b64(der), 'algorithm': -7, 'user_handle': self.user_handle, 'rp_id': HOST,
+                    'origin': ORIGIN, 'label': name, 'effective_at': 0, 'revoked_at': 1 if revoked else None,
+                    'revoked_by': 'steward' if revoked else None, 'enrolled_by': 'steward', 'proof': None,
+                    'envelope': None, 'command_id': 'fixture'})
+
+            def assertion(self, command, origin=ORIGIN, rp_id=HOST):
+                """The ceremony the console runs: the challenge is SHA-256 of the command's canonical bytes."""
+                challenge = b64(hashlib.sha256(S.canonical_bytes(command)).digest())
+                client = json.dumps({'type': 'webauthn.get', 'challenge': challenge, 'origin': origin,
+                                     'crossOrigin': False}, separators=(',', ':')).encode()
+                data = hashlib.sha256(rp_id.encode()).digest() + bytes([0x05]) + b'\x00\x00\x00\x00'
+                signature = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(self.key)],
+                                           input=data + hashlib.sha256(client).digest(), check=True,
+                                           capture_output=True, timeout=20).stdout
+                return {'credential_id': self.credential_id, 'client_data_json': b64(client),
+                        'authenticator_data': b64(data), 'signature': b64(signature), 'user_handle': self.user_handle}
+        PASS = {'owner': Passkey('owner', 'owner'), 'owner-revoked': Passkey('owner-old', 'owner', revoked=True),
+                'second': Passkey('second', 'second'), 'plain': Passkey('plain', 'plain')}
+
+        # ---- the Ledger and its worktrees, each deferred with unique work by the Ledger's own commands --------
+        repo, trees, state = base / 'repo', base / 'trees', base / 'state'
+        for folder in (repo, trees, state):
+            folder.mkdir()
+        config = CFG.check({'enabled': True, 'time_zone': 'UTC',
+                            'pools': {'host': {'floor': 0, 'needs': {'build': 1, 'review': 1, 'gate': 1}}},
+                            'engines': ['fixture'],
+                            'scratch_roots': {'roots': [], 'session_pattern': 'sessions/{working_folder}/{session_id}'},
+                            'build_roots': [], 'plain_repositories': [{'repository': str(repo), 'worktree_root': str(trees)}],
+                            'client_accounts': [], 'protect': {'paths': [], 'volumes': [], 'containers': [], 'images': [],
+                                                               'networks': [], 'compose_projects': []}})
+        L = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture',
+                      lifecycle=K.LIFECYCLE, device=lambda path: 'dev-host')
+        L.passkeys = {'origin': ORIGIN, 'rp_id': HOST, 'state_dir': str(base / 'passkey-state')}
+        if not L.set_pool('host', 'filesystem', device='dev-host').get('ok'):
+            raise RuntimeError('the fixture pool')
+        scope = {'type': 'plain_repository', 'id': str(repo)}
+        requester = ('requester', lambda data: sign('requester', data))
+
+        def accepted(result):
+            if not result.get('ok'):
+                raise RuntimeError('a fixture command was refused: %s %s' % (result.get('reason'), result.get('detail')))
+            return result
+
+        def version(identity):
+            return conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
+
+        def deferred(label, review=False):
+            path = str(trees / label)
+            os.makedirs(path)
+            owner = ({'scope': scope, 'run': {'id': label, 'station': 'review'}} if review
+                     else {'scope': scope, 'ticket': 'VELDO-97' + label[-2:], 'run': {'id': 'run-' + label, 'station': 'build'}})
+            more = {} if review else {'branch': label, 'start': 'a' * 40}
+            item = accepted(L.declare('worktree', {'path': path}, owner, 'seam', **more))['item']
+            accepted(L.confirm(item))
+            accepted(L.measure(item, 1024, 'ticket_ended'))
+            accepted(L.signal('ticket_ended', {'items': [{'item': item, 'version': version(item)}]}))
+            accepted(L.outcome(item, 'deferred', {
+                'event': 'ticket_ended', 'emitter': {'process': 'fixture'}, 'action': 'remove', 'carrier': None,
+                'rule': 'unique_work', 'refused_by': 'unique_work', 'order': 5,
+                'retry': list(K.LIFECYCLE['ends_on']['worktree']),
+                'found': {'cases': [1, 3], 'branch': None, 'commit': 'd' * 40, 'modified': ['notes/a.md'], 'staged': [],
+                          'untracked': [], 'operation': None, 'unlanded': None,
+                          'more': {'modified': 0, 'staged': 0, 'untracked': 0}}}))
+            return item
+
+        def entry(item):
+            return {'item': item, 'path': L.item(item)['locator']['path'], 'branch': None, 'unheld_commits': False,
+                    'kept_branch': None, 'files': ['notes/a.md'], 'commits': [], 'restore': 'veldo space restore ' + item}
+
+        def asked(label):
+            item = deferred(label)
+            accepted(L.request_disposition(item, {'discard': ST.SPACE_DISCARD, 'worktrees': [entry(item)]}, None))
+            published = L.publish_disposition(item, settlement, inbox, presenter, requester, 'owner')
+            if not published.get('ok'):
+                raise RuntimeError('the fixture request: %s' % (published,))
+            return item, published['request']
+
+        def request_of(item):
+            return I.assignment_id(ids['repository_uuid'], L.item(item)['disposition']['alias'])
+
+        def settle(rid, choice, who='owner'):
+            presenter.present(rid)
+            receipt = presenter.current(rid)
+            body = dict(ids, schema=ST.API_SCHEMA, edge='api-edge', answer_id=next_id(), principal=who,
+                        request_id=rid, request_version=receipt['request_version'],
+                        presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
+                        presentation_version=receipt['presentation_version'], choice='accept ' + choice,
+                        rationale='Owner answer')
+            result = settlement.api_answer(dict(answer=body, signature=sign('api-edge', S.canonical_bytes(body))))
+            if result.get('outcome') != 'settled':
+                raise RuntimeError('the fixture answer: %s' % (result,))
+
+        # ---- the authority and the API edge, with the service's entry for the Keep packet ---------------------
+        lock_held = os.open(str(db.parent / AUTH.LOCK_NAME), os.O_RDWR | os.O_CREAT, 0o600)
+        wired.callback(os.close, lock_held)
+        fcntl.flock(lock_held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+        class Intake:
+            projects = ['orchard']
+        authority = AUTH.ApiAuthority(S, CM, conn, ids=ids, domain='orchard-factory', edge='api-edge', intake=Intake(),
+                                      settlement=settlement, credentials=None, authority_lock=lock_held)
+        reached = []
+
+        def space_keep(packet):
+            reached.append(packet)
+            return L.disposition(packet, CM, time.time(), only='keep')
+        authority.space_keep, authority.space_signing = space_keep, HOST
+        api = API.ControlApi({'origin': ORIGIN, 'rp_id': HOST, 'host': HOST, 'domain': 'orchard-factory', 'ids': ids,
+                              'edge': 'api-edge', 'state_dir': str(base / 'api-state')}, authority,
+                             lambda assertion: (sign('api-edge', S.canonical_bytes(assertion), AC.SIGNATURE_NAMESPACE), None))
+        sessions = {who: api.sessions.create(who, PASS[who].credential_id) for who in ('owner', 'second', 'plain')}
+        space = '/api/v1/domains/orchard-factory/space/'
+
+        def post(who, body, token=True):
+            headers = {'Host': HOST, 'Content-Type': 'application/json', 'Origin': ORIGIN}
+            if who:
+                headers['Cookie'] = '%s=%s' % (API.COOKIE, sessions[who][0])
+                if token:
+                    headers[API.TOKEN_HEADER] = sessions[who][1]['token']
+            try:
+                status, _headers, answer = api.handle('POST', space + 'keep', headers, json.dumps(body).encode())
+            except Exception as error:  # noqa: BLE001 - a request the edge could not judge is named, never a pass
+                return 'raised', {'refusal': '%s: %s' % (type(error).__name__, error)}
+            return status, answer
+
+        def pending():
+            headers = {'Host': HOST, 'Cookie': '%s=%s' % (API.COOKIE, sessions['owner'][0])}
+            status, _headers, body = api.handle('GET', space + 'pending', headers, b'')
+            if status != 200:
+                raise RuntimeError('the pending read: %s %s' % (status, body.get('refusal')))
+            return body
+
+        def command(item, rid, who='owner', at=None):
+            """The Keep command as the console builds it: the item at the version the pending read shows."""
+            return {'principal': who, 'operation': 'space_disposition', 'command_id': next_id(), 'nonce': next_id(),
+                    'parameters': {'item': item, 'version': version(item) if at is None else at, 'request': rid}}
+
+        def body_of(made, signature):
+            return dict(made['parameters'], packet={'command': made, 'signature': signature})
+
+        def keep(item, rid, who='owner', passkey=None, session=None, at=None):
+            made = command(item, rid, who, at)
+            return post(session or who, body_of(made, PASS[passkey or who].assertion(made)))
+
+        def untouched(item, was):
+            record = L.item(item)
+            return record['state'] == 'deferred' and not record.get('owner_keep') and version(item) == was
+
+        def said(answer):
+            return '%s %s' % (answer[0], answer[1].get('refusal') or answer[1].get('outcome'))
+
+        # ---- AC5: an answered Keep is applied by the one signed packet ------------------------------------
+        R = 'ac5/keep-applied'
+        a, rid_a = asked('tree-01')
+        settle(rid_a, 'keep')
+        row = next(one for one in pending()['items'] if one['id'] == a)
+        check(R, 'once the Keep answer has settled, the item is still deferred: the settlement applies no Keep, and '
+                 'the read names the request and says it is answered and not signed [%s %s]'
+                 % (row.get('answered'), row.get('request_id')),
+              L.item(a)['state'] == 'deferred' and row.get('answered') == 'keep' and row.get('request_id') == rid_a
+              and row.get('version') == version(a))
+        head = conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+        answer = keep(a, rid_a)
+        record = L.item(a)
+        written = [(seq, sorted(json.loads(transition)), principal) for seq, transition, principal in
+                   conn.execute('SELECT seq, transition, principal FROM journal WHERE seq>? ORDER BY seq', (head,))]
+        check(R, 'the owner\'s passkey-signed packet on space.keep is accepted and the Ledger writes owner_keep by that '
+                 'owner and moves the item from deferred to kept in one command, the owner\'s own on the journal [%s %s]'
+                 % (said(answer), [(seq, principal) for seq, _wrote, principal in written]),
+              answer[0] == 200 and answer[1].get('outcome') == 'kept' and answer[1].get('state') == 'kept'
+              and record['state'] == 'kept' and record.get('owner_keep') == {'by': 'owner'}
+              and [(wrote, principal) for _seq, wrote, principal in written] == [([a], 'owner')])
+        check(R, 'and it is no longer pending', not any(one['id'] == a for one in pending()['items']))
+        again = keep(a, rid_a)
+        check(R, 'a second packet for the kept item is refused by name and writes nothing [%s]' % said(again),
+              again[0] == 409 and L.item(a) == record)
+
+        R = 'ac5/console-bytes'
+        fixed = {'principal': 'owner', 'operation': 'space_disposition', 'command_id': 'keep-0001', 'nonce': 'nonce-0001',
+                 'parameters': {'item': 'space:item:\u00e9t\u00e9/"quoted"', 'version': 7, 'request': 'assignment:r:alias-1'}}
+        digest = b64(hashlib.sha256(S.canonical_bytes(fixed)).digest())
+        spec = (ROOT / 'engine' / 'ui' / 'src' / 'features' / 'space' / 'keep.spec.ts').read_text()
+        check(R, 'the console\'s unit row pins the store\'s canonical bytes and their digest for the same command '
+                 '[%s]' % digest,
+              json.dumps(S.canonical_bytes(fixed).decode()) in spec and "'%s'" % digest in spec)
+        check(R, 'the Ledger\'s challenge for a command is SHA-256 of those bytes, unpadded base64url',
+              json.loads(base64.urlsafe_b64decode(PASS['owner'].assertion(fixed)['client_data_json'] + '=='))['challenge']
+              == digest)
+
+        # ---- AC6: the Ledger verifies the passkey itself ---------------------------------------------------
+        R = 'ac6/edge-alone-refused'
+        b, rid_b = asked('tree-02')
+        settle(rid_b, 'keep')
+        was = version(b)
+        made = command(b, rid_b)
+        calls = len(reached)
+        bare = [post('owner', body_of(made, {'credential_id': PASS['owner'].credential_id})),
+                post('owner', body_of(made, {}))]
+        check(R, 'the owner\'s session and the edge\'s signature alone keep nothing: a packet with no assertion '
+                 'reaches the Ledger and is refused not_authorized [%s]' % [said(one) for one in bare],
+              all(one[0] == 403 and one[1].get('refusal') == 'unauthorized:not_authorized' for one in bare)
+              and len(reached) == calls + 2 and untouched(b, was))
+        shapes = [post('owner', body_of(made, None)), post('owner', body_of(made, 'edge')),
+                  post('owner', dict(made['parameters'], packet=None))]
+        check(R, 'a packet with no signature mapping is refused as invalid input before any entry is called [%s]'
+                 % [said(one) for one in shapes],
+              all(one[0] == 400 for one in shapes) and len(reached) == calls + 2 and untouched(b, was))
+        elsewhere = [post('owner', body_of(made, PASS['owner'].assertion(made, origin='https://evil.example'))),
+                     post('owner', body_of(made, PASS['owner'].assertion(made, rp_id='evil.example')))]
+        check(R, 'an assertion made for another origin or relying party is refused [%s]' % [said(one) for one in elsewhere],
+              all(one[0] == 403 and one[1].get('refusal') == 'unauthorized:not_authorized' for one in elsewhere)
+              and untouched(b, was))
+        held, L.passkeys = L.passkeys, None
+        none = post('owner', body_of(made, PASS['owner'].assertion(made)))
+        L.passkeys = held
+        check(R, 'a Ledger that was given no relying party takes no passkey [%s]' % said(none),
+              none[0] == 403 and untouched(b, was))
+
+        R = 'ac6/other-member-refused'
+        others = [keep(b, rid_b, passkey='second'),               # the owner's command under another member's passkey
+                  keep(b, rid_b, who='second', session='second')]  # another owner's own command: not the one who answered
+        check(R, 'a credential of another member signs no Keep for the owner, and another owner who did not answer '
+                 'signs none either [%s]' % [said(one) for one in others],
+              all(one[0] == 403 and one[1].get('refusal') == 'unauthorized:not_authorized' for one in others)
+              and untouched(b, was))
+        forged = command(b, rid_b)
+        swapped = post('second', body_of(forged, PASS['owner'].assertion(forged)))
+        check(R, 'a packet whose command names another principal than the session\'s is refused as invalid input '
+                 '[%s]' % said(swapped), swapped[0] == 400 and untouched(b, was))
+
+        R = 'ac6/revoked-refused'
+        revoked = keep(b, rid_b, passkey='owner-revoked')
+        check(R, 'a revoked credential of the owner signs no Keep [%s]' % said(revoked),
+              revoked[0] == 403 and revoked[1].get('refusal') == 'unauthorized:not_authorized' and untouched(b, was))
+
+        R = 'ac6/other-command-refused'
+        c, rid_c = asked('tree-03')
+        settle(rid_c, 'keep')
+        was_c = version(c)
+        signed = command(b, rid_b)
+        proof = PASS['owner'].assertion(signed)
+        moved = [('another item', dict(signed, parameters={'item': c, 'version': was_c, 'request': rid_c})),
+                 ('another request', dict(signed, parameters=dict(signed['parameters'], request=rid_c))),
+                 ('another version', dict(signed, parameters=dict(signed['parameters'], version=was + 1))),
+                 ('another command id', dict(signed, command_id=next_id()))]
+        answers = [(what, post('owner', body_of(other, proof))) for what, other in moved]
+        check(R, 'an assertion made over the Keep of one item keeps no other: sent naming another item, request, '
+                 'version or command it is refused [%s]' % [(what, said(one)) for what, one in answers],
+              all(one[0] == 403 and one[1].get('refusal') == 'unauthorized:not_authorized' for _what, one in answers)
+              and untouched(b, was) and untouched(c, was_c))
+        true = post('owner', body_of(signed, proof))
+        check(R, 'and the same assertion with its own command is accepted [%s]' % said(true),
+              true[0] == 200 and L.item(b)['state'] == 'kept' and untouched(c, was_c))
+
+        R = 'ac6/settled-keep-only'
+        d, rid_d = asked('tree-04')
+        settle(rid_d, 'discard')
+        e, rid_e = asked('tree-05')
+        was_d, was_e = version(d), version(e)
+        wrong, open_ = keep(d, rid_d), keep(e, rid_e)
+        check(R, 'space.keep applies only a request settled as Keep: a signed packet for a request settled as '
+                 'Discard is refused by name and the item is not made due [%s]' % said(wrong),
+              wrong[0] == 400 and wrong[1].get('refusal') == 'invalid_input:space_disposition_choice'
+              and untouched(d, was_d))
+        check(R, 'a signed packet for a request with no settled answer is refused by name [%s]' % said(open_),
+              open_[0] == 404 and open_[1].get('refusal') == 'missing_evidence:space_disposition_unsettled'
+              and untouched(e, was_e))
+        rows_now = {one['id']: one for one in pending()['items']}
+        check(R, 'the read says neither is an answered Keep',
+              rows_now[d].get('answered') is None and rows_now[e].get('answered') is None
+              and rows_now[e].get('request_id') == rid_e)
+
+        R = 'ac6/ssh-as-before'
+        made = command(c, rid_c)
+        taken = L.disposition({'command': made, 'signature': sign('owner', S.canonical_bytes(made))}, CM, time.time())
+        check(R, 'a Keep signed with the owner\'s SSH key is taken as before [%s]' % taken.get('reason'),
+              taken.get('ok') and L.item(c)['state'] == 'kept' and L.item(c).get('owner_keep') == {'by': 'owner'})
+        made = command(d, rid_d)
+        other = L.disposition({'command': made, 'signature': sign('second', S.canonical_bytes(made))}, CM, time.time())
+        check(R, 'and one signed with another member\'s key is refused as before [%s]' % other.get('reason'),
+              not other.get('ok') and other.get('reason') == 'not_authorized' and untouched(d, was_d))
+
+        R = 'ac6/owner-only'
+        made = command(e, rid_e)
+        full = body_of(made, PASS['owner'].assertion(made))
+        calls = len(reached)
+        refused = [post(None, full), post('owner', full, token=False),
+                   post('plain', body_of(dict(made, principal='plain'), PASS['plain'].assertion(dict(made, principal='plain'))))]
+        check(R, 'with no session space.keep is unauthenticated, without the anti-forgery token it is refused, and a '
+                 'person who is not the owner is refused by the authority; no entry is called [%s]'
+                 % [said(one) for one in refused],
+              [one[0] for one in refused] == [401, 403, 403] and refused[2][1].get('refusal') == 'unauthorized:not_owner'
+              and len(reached) == calls and untouched(e, was_e))
+
+        # ---- AC7: a Keep that settled and was not applied ---------------------------------------------------
+        R = 'ac7/answered-not-signed'
+        settle(rid_e, 'keep')
+        shown = next(one for one in pending()['items'] if one['id'] == e)
+        check(R, 'a settled Keep with no packet is listed under Pending removal as answered and not signed, with the '
+                 'request its packet names and the relying party it is signed for [%s]' % shown.get('answered'),
+              shown.get('answered') == 'keep' and shown.get('request_id') == rid_e and shown.get('state') == 'deferred'
+              and pending().get('signing') == HOST)
+        old = command(e, rid_e)
+        old_proof = PASS['owner'].assertion(old)
+        accepted(L.measure(e, 2048, 'reconcile'))
+        stale = post('owner', body_of(old, old_proof))
+        check(R, 'the packet signed before the item\'s version moved is refused as stale and keeps nothing [%s]'
+                 % said(stale),
+              stale[0] == 409 and stale[1].get('refusal') == 'stale_version:space_item' and L.item(e)['state'] == 'deferred')
+        fresh = next(one for one in pending()['items'] if one['id'] == e)
+        signed_now = keep(e, rid_e, at=fresh['version'])
+        check(R, 'Sign Keep signs a new packet at the version the read shows now, and it is applied [%s]'
+                 % said(signed_now),
+              fresh['version'] == shown['version'] + 1 and fresh.get('answered') == 'keep' and signed_now[0] == 200
+              and L.item(e)['state'] == 'kept' and L.item(e).get('owner_keep') == {'by': 'owner'})
+
+        R = 'ac7/member-own-request'
+        members = [deferred('review-%d' % n, review=True) for n in (1, 2, 3)]
+        gid = None
+        for item in members:
+            gid = accepted(L.request_group(item, entry(item), None, at=1794830000.0))['group']
+        published = L.publish_disposition(members[0], settlement, inbox, presenter, requester, 'owner')
+        first = request_of(members[0])
+        settle(first, 'keep w2')
+        raised = L.publish_disposition(members[0], settlement, inbox, presenter, requester, 'owner')
+        current = request_of(members[0])
+        listed = {one['id']: one for one in pending()['items']}
+        check(R, 'after the group moved on, the member answered Keep is listed under its own request, the alias it '
+                 'kept, as answered and not signed; the others are under the group\'s new request and are not [%s %s]'
+                 % (published.get('ok'), raised.get('ok')),
+              current != first and request_of(members[1]) == first and request_of(members[2]) == current
+              and L.group(gid)['request']['number'] == 2
+              and listed[members[1]].get('request_id') == first and listed[members[1]].get('answered') == 'keep'
+              and all(listed[item].get('request_id') == current and listed[item].get('answered') is None
+                      for item in (members[0], members[2])))
+        was_m = version(members[1])
+        wrong = keep(members[1], current)
+        check(R, 'a packet that names the group\'s current request for that member is refused and the member stays '
+                 'deferred [%s]' % said(wrong),
+              wrong[0] in (404, 409) and untouched(members[1], was_m))
+        other = keep(members[0], first)
+        check(R, 'a packet for a member the Keep did not name keeps nothing [%s]' % said(other),
+              other[0] in (404, 409) and L.item(members[0])['state'] == 'deferred')
+        own = keep(members[1], first)
+        check(R, 'the packet naming the member\'s own request keeps that member alone [%s]' % said(own),
+              own[0] == 200 and L.item(members[1])['state'] == 'kept'
+              and L.item(members[1]).get('owner_keep') == {'by': 'owner'}
+              and all(L.item(item)['state'] == 'deferred' and not L.item(item).get('owner_keep')
+                      for item in (members[0], members[2])))
+
     try:
         with contextlib.ExitStack() as wired:
             exercise(Path(wired.enter_context(tempfile.TemporaryDirectory(prefix='v319-'))).resolve(), wired)
     except Exception as error:  # noqa: BLE001
         for name in ROWS:
-            if not rows[name]:
+            if not rows[name] and not name.startswith(KEEP_ROWS):
                 check(name, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
+    try:
+        with contextlib.ExitStack() as wired:
+            keep_world(Path(wired.enter_context(tempfile.TemporaryDirectory(prefix='v319k-'))).resolve(), wired)
+    except Exception as error:  # noqa: BLE001
+        import traceback
+        where = traceback.extract_tb(error.__traceback__)[-1]
+        for name in ROWS:
+            if not rows[name] and name.startswith(KEEP_ROWS):
+                check(name, 'ran to its end (raised %s: %s at line %s)' % (type(error).__name__, str(error)[:300],
+                                                                          where.lineno), False)
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
         for label, one in observed:

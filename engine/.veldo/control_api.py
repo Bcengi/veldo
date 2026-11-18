@@ -210,6 +210,11 @@ ROUTES = (
           ('project',), (), 'reconcile_space'),
     Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,
           ('item', 'version'), (), 'abandon_worktree'),
+    # VELDO-0319 (AC5 to AC7): the owner's Keep packet for one worktree whose request settled as Keep. The
+    # packet is {command, signature}: the Ledger's space_disposition command for this item, version and
+    # request, and the owner's passkey assertion over its digest. The answer itself went through decisions.answer.
+    Route('space.keep', 'POST', '/api/v1/domains/{domain}/space/keep', 'work', True,
+          ('item', 'version', 'request', 'packet'), (), 'keep_worktree'),
 ) + tuple(Route(name, 'GET', '/api/v1/domains/{domain}/space/' + view, 'reads', True, (), (), None)
           # VELDO-0319 (design 6.6): the four reads of the console's Space screen, each one view of the space
           # ledger's records (control_api_models.SPACE_VIEWS), served by the authority for the session's member.
@@ -480,7 +485,8 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
-        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})
+        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write,
+                              'space.keep': self._write})
         self.handlers.update({name: self._space_read for name in MO.SPACE_VIEWS})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
@@ -785,7 +791,7 @@ class ControlApi:
             expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
         elif route.operation == 'set_account_cap':
             expected = {'account:' + str(parameters['account']): parameters['account_version']}
-        elif route.operation == 'abandon_worktree':
+        elif route.operation in ('abandon_worktree', 'keep_worktree'):
             expected = {str(parameters['item']): parameters['version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
@@ -794,7 +800,8 @@ class ControlApi:
                   'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
                   'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
                   'set_account_cap': 'account:' + str(parameters.get('account')),
-                  'abandon_worktree': str(parameters.get('item')), 'reconcile_space': 'space'}[route.operation]
+                  'abandon_worktree': str(parameters.get('item')), 'reconcile_space': 'space',
+                  'keep_worktree': str(parameters.get('item'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],

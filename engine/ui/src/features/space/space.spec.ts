@@ -120,6 +120,17 @@ describe('pending removal', () => {
     expect(memberPicks(pending.requests[1]!, null)).toEqual([])
     expect(pendingGroups(null, [])).toEqual({ requests: [], rest: [] })
   })
+  it('finds a request\'s decision by the request id its rows name when the decisions read served the alias redacted', () => {
+    const pending: PendingAnswer = {
+      ...meta, view: 'pending',
+      items: [item({ id: 'space:item:solo', request: 'space-disposition-0123', request_id: 'assignment:x:space-disposition-0123' })],
+      requests: [{ alias: 'space-disposition-0123', group: null, day: null, sequence: null, picks: [], members: [{ item: 'space:item:solo', index: null }] }],
+    }
+    const redacted = { requestId: 'assignment:x:space-disposition-0123', alias: '[redacted]', presentation: null } as unknown as PendingDecision
+    const other = { requestId: 'assignment:x:de1', alias: 'de1', presentation: null } as unknown as PendingDecision
+    expect(pendingGroups(pending, [other, redacted]).requests[0]!.decision?.requestId).toBe('assignment:x:space-disposition-0123')
+    expect(pendingGroups(pending, [other]).requests[0]!.decision).toBeNull()
+  })
 })
 
 describe('pools and runs', () => {

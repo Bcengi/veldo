@@ -169,6 +169,10 @@ class ServiceApi:
         principal, sign = IN.journal_signer(self.config['journal'])
         credentials_dir = Path(state_dir) / 'api-credentials'
         credentials_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # VELDO-0319 AC6: what the space Ledger verifies a passkey-signed owner command against: this
+        # installation's origin and relying-party id, and the private folder its verifier works in.
+        self.passkeys = {'origin': self.config['origin'], 'rp_id': self.config['rp_id'],
+                         'state_dir': str(credentials_dir)}
         self.credentials = CR.Credentials(self.S, self.conn, ids, principal, sign, rp_id=self.config['rp_id'],
                                           origin=self.config['origin'], state_dir=credentials_dir,
                                           authority_generation=generation, clock=clock)
