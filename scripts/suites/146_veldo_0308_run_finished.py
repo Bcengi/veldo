@@ -1999,12 +1999,21 @@ def _v308_run_finished_suite():
                   and states(clone_items) == ['removed'] * 3 and not os.path.lexists(root)
                   and C5._pins_held(clone_id) == [] and state_of(run_item) == 'present' and place.is_dir())
 
+            KEEP = load('v308_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+
             def owner_kept(identity):
                 """The owner marked the item Keep: it is made due by a signal that names it and written kept
                 with the owner's mark, as the owner (the owner's settled answer, in one command, is
                 VELDO-0318's). Returns its version afterwards."""
                 due = L.signal('run_finished', {'items': [{'item': identity, 'version': version_of(identity)}]})
-                marked = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+                # VELDO-0318 is built: the outcome that claims the mark is refused, and the mark is the
+                # owner's signed space_disposition packet. The items kept here are a sandbox's private
+                # repository and a clone's scratch folder, for which no request is raised, so the
+                # settled request is planted (support/space_owner_keep.py, keep_planted).
+                claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+                if claimed.get('ok') or claimed.get('reason') != 'not_authorized' or (L.item(identity) or {}).get('owner_keep'):
+                    raise RuntimeError('the outcome wrote the owner mark: %s' % (claimed,))
+                marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, identity, owner_sign, NOW)
                 if not (due.get('ok') and marked.get('ok')):
                     raise RuntimeError('the fixture could not mark Keep: %s %s' % (due.get('reason'), marked.get('reason')))
                 return version_of(identity)
