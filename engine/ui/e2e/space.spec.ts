@@ -24,6 +24,13 @@ import { expect, guard, routeOf, signIn, test, type SpaceFactory } from './space
  *   runs list at 360, 390, 1280 and 1440 px: no page-wide overflow, no overlapping controls, the primary action
  *   visible, unclipped, uncovered and 44 px on a phone, axe, and no content security policy violation.
  * ui/api-only: every request the screen makes is a published route of this origin.
+ * ac5/keep-applied (VELDO-0319 AC5): the owner answers Keep to a space request on the Decisions screen; the
+ *   passkey signs the Keep command, the answer is sent, and once it has settled the packet is sent on space.keep.
+ *   The item is kept by that owner with no second press. Falsifier (declared): leave out the space.keep call.
+ * ac7/sign-keep (VELDO-0319 AC7): a Keep that settled with no packet is listed under Pending removal as answered
+ *   and not signed at the four widths; Sign Keep signs a packet for the item at the version shown, naming the
+ *   item's own request, and the item is kept. A member who is not the owner is refused by name beside the button.
+ *   Falsifier (declared): list only items with an open request.
  * VELDO_0319_SCREENS=<directory> also writes a screenshot of each populated state, in light and in dark.
  */
 
@@ -339,6 +346,110 @@ test('ui/api-only: every request of the screen is a published route of this orig
   expect(top).toEqual(['project:project-b'])
   await expect(narrow.getByTestId('space-pending-none')).toBeVisible()
   await narrow.context().close()
+  await page.context().close()
+})
+
+// VELDO-0319 AC5 to AC7: the owner's Keep, signed by the passkey of the browser's virtual authenticator. The
+// harness verifies each assertion with the API's own WebAuthn verifier against the command's canonical bytes.
+
+/** The POSTs the page sent to the API, by route name, in order. */
+function posts(page: Page, domain: string) {
+  const sent: string[] = []
+  page.on('request', (request) => {
+    if (request.method() !== 'POST') return
+    const name = routeOf('POST', request.url().split('?')[0]!, domain)
+    if (name && !name.startsWith('auth.')) sent.push(name)
+  })
+  return sent
+}
+
+test('ac5/keep-applied: a Keep answered on the Decisions screen is signed by the passkey and applied with no second press', async ({ browser, keeps }) => {
+  test.setTimeout(120_000)
+  const ids = await keeps.ids()
+  const item = ids['keep-answer']!
+  const page = await pageAs(browser, keeps, 'owner', { width: 1280, height: 860 })
+  const watch = await guard(page)
+  const sent = posts(page, keeps.domain)
+  await openSpace(page, keeps)
+  const before = (await keeps.entity(item))!
+  expect(before.data.state).toBe('deferred')
+  // The open request links to the decision it is answered through, found by the request's id.
+  await page.getByTestId('space-pending').locator(`[data-request="${ids['keep-answer-alias']}"]`).getByTestId('space-answer').click()
+  await expect(page.getByTestId('decision')).toHaveAttribute('data-request', ids['keep-answer-request']!)
+  await page.locator('[data-choice="accept keep"]').click()
+  await page.getByTestId('rationale').fill('It holds notes I still need.')
+  await page.getByTestId('send-answer').click()
+  await expect(page.getByTestId('answer-result')).toBeVisible()
+  await expect(page.getByTestId('keep-applied')).toBeVisible()
+  await expect(page.getByTestId('keep-not-applied')).toHaveCount(0)
+  // The answer went through the settlement first, then the signed packet on space.keep: one press, two commands.
+  expect(sent).toEqual(['decisions.answer', 'space.keep'])
+  const after = (await keeps.entity(item))!
+  expect(after.data.state).toBe('kept')
+  expect(after.data.owner_keep).toEqual({ by: 'owner' })
+  expect(after.version).toBe(before.version + 1)
+  // The Space screen shows what the record holds: no longer pending, kept by the owner.
+  await openSpace(page, keeps)
+  await expect(page.getByTestId('space-pending').locator(`[data-item="${item}"]`)).toHaveCount(0)
+  await expect(page.getByTestId('space-worktrees').locator(`[data-worktree="${item}"]`)).toContainText('Kept by you')
+  expect(await watch.violations()).toEqual([])
+  await page.context().close()
+})
+
+test('ac7/sign-keep: a Keep that settled with no packet is listed as answered and not signed, and Sign Keep applies it', async ({ browser, keeps }) => {
+  test.setTimeout(240_000)
+  const ids = await keeps.ids()
+  const item = ids['keep-unsigned']!
+  const failures: string[] = []
+  // Answered and not signed, at the four widths: listed with its tag and its action, nothing out of the page.
+  for (const viewport of WIDTHS) {
+    const phone = viewport.width < 768
+    const view = await pageAs(browser, keeps, 'owner', viewport)
+    await openSpace(view, keeps)
+    const row = view.getByTestId('space-pending').locator(`[data-item="${item}"]`)
+    await row.scrollIntoViewIfNeeded()
+    await expect(row.getByTestId('keep-unsigned')).toHaveText('Answered Keep, not signed')
+    await expect(row.getByTestId('space-sign-keep')).toBeVisible()
+    await expect(view.getByTestId('space-pending').locator(`[data-request="${ids['keep-unsigned-alias']}"]`).getByTestId('space-answered')).toBeVisible()
+    const problems = await measure(view, `[data-item="${item}"] [data-testid="space-sign-keep"]`, phone)
+    if (problems.overflow > 1) failures.push(`${viewport.width}: page-wide overflow ${problems.overflow}px`)
+    if (problems.overlaps.length) failures.push(`${viewport.width}: ${problems.overlaps.slice(0, 3).join('; ')}`)
+    if (problems.primary) failures.push(`${viewport.width}: Sign Keep ${problems.primary}`)
+    if (viewport.width === 390 || viewport.width === 1440) await shoot(view, `${viewport.width}-space-keep-unsigned`)
+    await view.context().close()
+  }
+  expect(failures, failures.join('\n')).toEqual([])
+  const before = (await keeps.entity(item))!
+  // A project owner who is not the owner of the space is refused by name, beside the button; nothing is written.
+  const other = await pageAs(browser, keeps, 'owner2', { width: 1280, height: 860 })
+  await openSpace(other, keeps)
+  const theirs = other.getByTestId('space-pending').locator(`[data-item="${item}"]`)
+  await theirs.getByTestId('space-sign-keep').click()
+  await expect(theirs.getByTestId('space-sign-keep-result')).toHaveAttribute('data-refusal', 'unauthorized:not_owner')
+  expect((await keeps.entity(item))!.version).toBe(before.version)
+  await other.context().close()
+  // The owner signs: one ceremony, one packet on space.keep naming the item's own request at the version shown.
+  const page = await pageAs(browser, keeps, 'owner', { width: 1280, height: 860 })
+  const sent = posts(page, keeps.domain)
+  const bodies: Record<string, unknown>[] = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && request.url().endsWith('/space/keep')) bodies.push(request.postDataJSON())
+  })
+  await openSpace(page, keeps)
+  const row = page.getByTestId('space-pending').locator(`[data-item="${item}"]`)
+  await row.getByTestId('space-sign-keep').click()
+  await expect(page.getByTestId('space-pending').locator(`[data-item="${item}"]`)).toHaveCount(0)
+  expect(sent).toEqual(['space.keep'])
+  expect(bodies).toHaveLength(1)
+  expect(bodies[0]).toMatchObject({ item, version: before.version, request: ids['keep-unsigned-request'] })
+  const packet = bodies[0]!.packet as { command: { principal: string; operation: string; parameters: unknown } }
+  expect(packet.command.principal).toBe('owner')
+  expect(packet.command.operation).toBe('space_disposition')
+  expect(packet.command.parameters).toEqual({ item, version: before.version, request: ids['keep-unsigned-request'] })
+  const after = (await keeps.entity(item))!
+  expect(after.data.state).toBe('kept')
+  expect(after.data.owner_keep).toEqual({ by: 'owner' })
+  await expect(page.getByTestId('space-worktrees').locator(`[data-worktree="${item}"]`)).toContainText('Kept by you')
   await page.context().close()
 })
 

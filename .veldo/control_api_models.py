@@ -212,6 +212,8 @@ ACTIONS = (
     # VELDO-0312 (design 6.6): the owner's Abandon of one worktree, the space ledger's signal for that item.
     Action('space_reconcile', 'space.reconcile', 'reconcile_space', 'control_space', 'RECONCILE', 'VELDO-0315'),
     Action('worktree_abandon', 'space.abandon', 'abandon_worktree', 'control_space', 'SIGNAL', 'VELDO-0312'),
+    # VELDO-0319 (AC5 to AC7): the owner's Keep packet for a request settled as Keep, signed by the owner's passkey.
+    Action('worktree_keep', 'space.keep', 'keep_worktree', 'control_space', 'DISPOSITION', 'VELDO-0319'),
 )
 
 GAPS = (
@@ -539,10 +541,17 @@ def space_usage(items):
     return {'scopes': scopes, 'total': _sum(scopes), 'worktrees': worktrees}
 
 
-def space_pending(items, groups):
+def space_pending(items, groups, asked=None):
     """Every due and every deferred item (design 6.6 and 10) with its reason in words, the event it was
     refused at, the events that retry it and its decision request, and the requests: a single worktree's
-    own, and a review group's one request with the members it lists, each by its index."""
+    own, and a review group's one request with the members it lists, each by its index.
+
+    `asked` is {alias: {'id': the request's store id, 'keep': None, True or a member index}} as the
+    authority read it (VELDO-0319 AC7): each row names its request's id, which the owner's Keep command
+    names, and `answered` is 'keep' when that request has settled as Keep for this item and the item is
+    still deferred, so the Keep was answered and no signed packet has applied it. A group member's
+    request is the alias its own record holds, which stays the settled one when the group moves on."""
+    asked = asked or {}
     rows, requests = [], {}
     records = {group['id']: group['data'] for group in groups}
     for item in items:
@@ -563,6 +572,11 @@ def space_pending(items, groups):
                'request': disposition['alias'] if open_request else None,
                'group': disposition.get('group') if open_request else None,
                'index': disposition.get('index') if open_request else None}
+        known = _mapping(asked.get(row['request'])) if open_request else {}
+        keep = known.get('keep')
+        row['request_id'] = known.get('id')
+        row['answered'] = 'keep' if data.get('state') == 'deferred' and known.get('id') and (
+            keep is True or type(keep) is int and keep == row['index']) else None
         rows.append(row)
         if not open_request:
             continue
@@ -658,7 +672,7 @@ def space_pools(pools, holds, carried=None):
     return {'pools': out}
 
 
-def space_view(conn, view, answer, universal, carried=None):
+def space_view(conn, view, answer, universal, carried=None, asked=None, signing=None):
     """One space view from `answer`, the plain read of SPACE_MODEL at one watermark. A member whose scope is
     not universal is served the items, holds and groups of projects only: a plain repository and no
     project have no project a scope could cover. Every value is redacted like a read model's; the
@@ -672,7 +686,8 @@ def space_view(conn, view, answer, universal, carried=None):
     if view == 'usage':
         body = space_usage(items)
     elif view == 'pending':
-        body = space_pending(items, groups)
+        # `signing` is the relying-party id a Keep is signed for, None where no passkey-signed Keep is taken.
+        body = dict(space_pending(items, groups, asked), signing=signing)
     elif view == 'removed':
         body = space_removed(items, space_written(conn, items))
     elif view == 'pools':
@@ -693,7 +708,7 @@ def space_view(conn, view, answer, universal, carried=None):
                 redacted=sorted(set(paths) - named), watermark=answer['watermark'], freshness=answer['freshness'])
 
 
-_IDENTITY_FIELDS = ('id', 'item', 'request', 'alias', 'group', 'run', 'dispatch')
+_IDENTITY_FIELDS = ('id', 'item', 'request', 'request_id', 'signing', 'alias', 'group', 'run', 'dispatch')
 
 
 def _identities(value, path=(), fields=_IDENTITY_FIELDS):

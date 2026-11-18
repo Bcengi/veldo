@@ -64,6 +64,20 @@ serves the API: control_service.Service.space_abandon, with the cause owner_aban
 none, or with no space ledger, the answer is unavailable_service:space_ledger. Abandon removes no unique work:
 the answer names under discard_required each item that stays until the owner's Discard, which saves first.
 
+THE OWNER'S KEEP (VELDO-0319 AC5 to AC7). keep_worktree is the console's space.keep: the owner's Keep packet
+{command, signature} for one worktree whose request has settled as Keep. The answer itself is the settlement's
+answer_decision, unchanged; this carries the owner's signature for it. The verified principal must be the
+owner, as for Abandon (else unauthorized:not_owner), and the packet's command must be the Ledger's
+space_disposition command of that principal for exactly the item, version and request the route names (else
+invalid_input:packet). The edge's signature over the assertion is not the owner's signature: the service's
+entry (`space_keep`: control_service.Service.space_keep) hands the packet to the space Ledger, which verifies
+the passkey assertion over the command's digest itself, in its transaction, and applies only a request settled
+as Keep. Its refusals are served by name: unauthorized:not_authorized (no passkey of the owner signed this
+command), stale_version:space_item (the item's version moved), missing_evidence:space_disposition_unsettled,
+invalid_input:space_disposition_choice (settled as Save or Discard) and stale_version:space_disposition_state
+(already applied). The pending read names, for each open request, its store id and whether it settled as Keep
+for the item (`_asked`), and the relying-party id a Keep is signed for (`space_signing`, set with space_keep).
+
 THE SPACE READS (VELDO-0319, design 6.6). `read` also serves, by its route's name, one of the four views of the space ledger the console's
 Space screen shows (control_api_models.SPACE_VIEWS: pools, usage, pending, removed) for a principal judged as
 every reader is (`_answer`: a current person member whose scope covers a project of this domain), from one read
@@ -139,6 +153,13 @@ WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
 # SCOPE: the rule of the ledger's own mode switch), the ledger command the service sends for it
 # (control_space.SIGNAL), and what the service's refusals are called here.
 ABANDON = 'abandon_worktree'
+# VELDO-0319: the owner's Keep packet, the Ledger command it is, and what the Ledger's refusals are called here.
+KEEP, SPACE_DISPOSITION = 'keep_worktree', 'space_disposition'
+KEEP_REFUSALS = {'space_not_configured': 'unavailable_service:space_ledger', 'not_authorized': 'unauthorized:not_authorized',
+                 'stale_version': 'stale_version:space_item', 'space_no_item': 'missing_evidence:space_no_item',
+                 'space_disposition_unsettled': 'missing_evidence:space_disposition_unsettled',
+                 'space_disposition_choice': 'invalid_input:space_disposition_choice',
+                 'space_disposition_state': 'stale_version:space_disposition_state'}
 SPACE_OWNER_ROLE, SPACE_SCOPE, SPACE_SIGNAL = 'project_owner', 'space', 'space_signal'
 ABANDON_REFUSALS = {'no_ledger': 'unavailable_service:space_ledger', 'stale_version': 'stale_version:space_item',
                     'no_owner': 'unauthorized:not_owner', 'not_authorized': 'unauthorized:not_owner'}
@@ -248,6 +269,11 @@ class ApiAuthority:
         # (control_service.Service.space_abandon), which the instance that serves the API sets.
         self.space_abandon = None
         self.space_reconcile = None
+        # VELDO-0319: `space_keep(packet)`, the service's entry for the owner's Keep packet
+        # (control_service.Service.space_keep), and the relying-party id a Keep is signed for; both set by
+        # the instance that serves the API, and None where no passkey-signed Keep is taken.
+        self.space_keep = None
+        self.space_signing = None
 
     # the read the API's session checks use
 
@@ -351,10 +377,39 @@ class ApiAuthority:
             scope = self._read_scope(principal)
             answer = MO.read_model(self.S, self.conn, MO.SPACE_MODEL.name, scope=scope, plain=True)
             carried = self._carried(answer['items']['space_hold'], scope) if view == 'pools' else None
-            served = MO.space_view(self.conn, view, answer, scope.universal, carried)
+            asked = self._asked(answer['items']['space_item']) if view == 'pending' else None
+            signing = self.space_signing if self.space_keep is not None else None
+            served = MO.space_view(self.conn, view, answer, scope.universal, carried, asked, signing)
             self._observe_read(principal, 'space.' + view, scope, served)
             return served
         return self._answer(principal, produce)
+
+    def _asked(self, items):
+        """{alias: {'id', 'keep'}} for the open decision request of each deferred item (VELDO-0319 AC7): the
+        request's store id, and whether it has settled as Keep: True for every worktree it lists, a member's
+        index for a member pick, None while it is open or settled otherwise. Read from the assignment and
+        the settlement effect it names; the Ledger judges the settlement again when a packet arrives."""
+        found = {}
+        for item in items:
+            decision = item['data'].get('disposition') if isinstance(item['data'].get('disposition'), dict) else {}
+            alias = decision.get('alias')
+            if decision.get('state') != 'requested' or not isinstance(alias, str) or alias in found:
+                continue
+            rid = 'assignment:%s:%s' % (self.ids['repository_uuid'], alias)
+            row = self.conn.execute("SELECT data FROM entities WHERE id=? AND kind='assignment'", (rid,)).fetchone()
+            if row is None:
+                continue
+            assignment = json.loads(row[0])
+            keep, reference = None, assignment.get('settlement')
+            if assignment.get('state') == 'SATISFIED' and isinstance(reference, dict):
+                effect = self.conn.execute("SELECT data FROM entities WHERE id=? AND kind='settlement_effect'",
+                                           (str(reference.get('effect_id')),)).fetchone()
+                effect = json.loads(effect[0]) if effect else {}
+                picked = AS.ST.space_pick(effect.get('choice')) if effect.get('touchpoint') == SPACE_DISPOSITION else None
+                if picked and picked[0] == 'keep' and effect.get('ruling') == 'approve':
+                    keep = True if picked[1] is None else picked[1]
+            found[alias] = {'id': rid, 'keep': keep}
+        return found
 
     def _carried(self, holds, scope):
         """{hold: {dispatch, unit, station}} for each waiting or advised hold a dispatch record names in its
@@ -587,6 +642,8 @@ class ApiAuthority:
             return dict(done, outcome='reconciled' if done.get('ok') else 'refused')
         if a['operation'] == ABANDON:
             return self._abandon(a, person)
+        if a['operation'] == KEEP:
+            return self._keep(a, person)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
@@ -710,6 +767,39 @@ class ApiAuthority:
                              for one in done.get('deferred') or () if isinstance(one, dict) and one.get('item')],
                 'discard_required': list(done.get('discard_required') or ())}
 
+    def _keep(self, a, person):
+        """VELDO-0319: the owner's Keep packet for one worktree (the module's THE OWNER'S KEEP). The owner
+        is judged here as for Abandon; the signature is the Ledger's to verify, and only it writes."""
+        p = a['parameters']
+        if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'),
+                                                                                         SPACE_SCOPE):
+            raise Refused('unauthorized:not_owner', 'Keep is the owner\'s action')
+        if not isinstance(p['item'], str) or not p['item']:
+            return {'outcome': 'refused', 'reason': 'invalid_input:item'}
+        if type(p['version']) is not int or p['version'] < 1:
+            return {'outcome': 'refused', 'reason': 'invalid_input:version'}
+        if not isinstance(p['request'], str) or not p['request']:
+            return {'outcome': 'refused', 'reason': 'invalid_input:request'}
+        packet = p['packet'] if isinstance(p['packet'], dict) else {}
+        command = packet.get('command') if isinstance(packet.get('command'), dict) else {}
+        if (set(packet) != {'command', 'signature'} or not isinstance(packet['signature'], dict)
+                or command.get('principal') != a['principal'] or command.get('operation') != SPACE_DISPOSITION
+                or command.get('parameters') != {'item': p['item'], 'version': p['version'], 'request': p['request']}):
+            # The packet is the owner's passkey-signed command for exactly what the route names.
+            return {'outcome': 'refused', 'reason': 'invalid_input:packet'}
+        if self.space_keep is None:
+            return {'outcome': 'refused', 'reason': 'unavailable_service:space_ledger'}
+        done = self.space_keep(packet)
+        done = done if isinstance(done, dict) else {}
+        if done.get('ok') is not True:
+            reason = str(done.get('reason') or '')
+            if not reason:
+                return {'outcome': 'unknown_outcome', 'reason': 'unknown_outcome:space_keep'}
+            return {'outcome': 'refused', 'reason': KEEP_REFUSALS.get(reason, 'invalid_input:' + reason)}
+        row = self.conn.execute('SELECT version, data FROM entities WHERE id=?', (p['item'],)).fetchone()
+        return {'outcome': 'kept', 'item': p['item'], 'version': row[0] if row else None,
+                'state': json.loads(row[1]).get('state') if row else None}
+
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
         p = a['parameters']
@@ -736,7 +826,7 @@ class ApiAuthority:
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
                 'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION, ABANDON: SPACE_SIGNAL,
-                'reconcile_space': 'space_reconcile'}
+                'reconcile_space': 'space_reconcile', KEEP: SPACE_DISPOSITION}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

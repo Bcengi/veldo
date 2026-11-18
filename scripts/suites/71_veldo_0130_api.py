@@ -1239,6 +1239,10 @@ def _v130_checks(base):
             bodies.update({'space.abandon': {'item': 'space:item:none', 'version': 1}})
         if any(r.name == 'space.reconcile' for r in write_routes):
             bodies.update({'space.reconcile': {'project': None}})
+        if any(r.name == 'space.keep' for r in write_routes):
+            # VELDO-0319: the owner's Keep packet. The Ledger verifies its passkey assertion; here it is a body.
+            bodies.update({'space.keep': {'item': 'space:item:none', 'version': 1, 'request': 'assignment:none',
+                                          'packet': {'command': {}, 'signature': {}}}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)

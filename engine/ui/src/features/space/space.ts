@@ -116,6 +116,12 @@ export interface PendingItem {
   request: string | null
   group: string | null
   index: number | null
+  /** The store id of the item's own request: what the owner's Keep command names. For a member of a review group
+   * it is the request of the alias the member's own record holds, which stays the settled one when the group
+   * moves on (VELDO-0342). Null when the item has no open request or the request is not published yet. */
+  request_id?: string | null
+  /** 'keep' when that request settled as Keep for this item and no signed packet has applied it (VELDO-0319 AC7). */
+  answered?: 'keep' | null
 }
 export interface PendingRequest {
   alias: string
@@ -129,6 +135,8 @@ export interface PendingRequest {
 export interface PendingAnswer extends SpaceAnswer {
   items: PendingItem[]
   requests: PendingRequest[]
+  /** The relying-party id a Keep is signed for; null where this installation takes no passkey-signed Keep. */
+  signing?: string | null
 }
 
 export interface RemovedItem {
@@ -302,16 +310,18 @@ export interface RequestGroup {
 }
 
 /** Pending removal as the screen lists it: each open request with its worktrees under it, in index order, then
- * the items that have no request. A request's rows are found by the alias their own record names. */
+ * the items that have no request. A request's rows are found by the alias their own record names. Its decision is
+ * found by that alias, or by the request's store id the rows name: the decisions read can serve a long alias
+ * redacted, and the id is always served. */
 export function pendingGroups(pending: PendingAnswer | null, decisions: PendingDecision[]): { requests: RequestGroup[]; rest: PendingItem[] } {
   const items = pending?.items ?? []
-  const requests = (pending?.requests ?? []).map((request) => ({
-    request,
-    items: items
+  const requests = (pending?.requests ?? []).map((request) => {
+    const listed = items
       .filter((item) => item.request === request.alias)
-      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.locator.localeCompare(b.locator)),
-    decision: decisions.find((d) => d.alias === request.alias) ?? null,
-  }))
+      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0) || a.locator.localeCompare(b.locator))
+    const ids = new Set(listed.map((item) => item.request_id).filter((id): id is string => !!id))
+    return { request, items: listed, decision: decisions.find((d) => d.alias === request.alias || ids.has(d.requestId)) ?? null }
+  })
   const covered = new Set(requests.flatMap((group) => group.items.map((item) => item.id)))
   return { requests, rest: items.filter((item) => !covered.has(item.id)) }
 }

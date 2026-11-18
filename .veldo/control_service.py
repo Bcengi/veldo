@@ -2902,6 +2902,18 @@ class Service:
                 self._space_endings().record({'method': 'send', 'found': found}, out['raised'])
         return self._space_logged(out)
 
+    def space_keep(self, packet):
+        """VELDO-0319 (AC5 to AC7): the owner's Keep packet from the console's space.keep, handed to the
+        space Ledger as the one command it is. The Ledger verifies the owner's passkey itself, against
+        the relying party of the API this instance serves, and applies only a request settled as Keep.
+        Returns the Ledger's answer; with no ledger, {ok: False, reason: space_not_configured}."""
+        if getattr(self, 'space', None) is None:
+            return {'ok': False, 'reason': 'space_not_configured'}
+        ledger = self.space['ledger']
+        api = getattr(self, 'api', None)
+        ledger.passkeys = dict(api.passkeys) if api is not None else None
+        return ledger.disposition(packet, CM, time.time(), only='keep')
+
     def space_abandon(self, item, version=None, by=None, *, cause, _retry=False):
         """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE,
         BY ITEM). `cause` says why: the owner's Abandon, or the ticket's next run provisioned in another
@@ -4659,6 +4671,10 @@ def serve(config_path):
                 # VELDO-0312: the console's signed Abandon reaches this instance's space ledger, when it has one.
                 service.api.authority.space_abandon = service.space_abandon
                 service.api.authority.space_reconcile = service.space_reconcile
+                # VELDO-0319: the console's Keep packet reaches the space ledger, which verifies the
+                # owner's passkey against this installation's relying party (control_service_api).
+                service.api.authority.space_keep = service.space_keep
+                service.api.authority.space_signing = service.api.passkeys['rp_id']
             if service.loop_refusal:
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})

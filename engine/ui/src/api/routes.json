@@ -40,6 +40,7 @@
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},
     "space.abandon": {"method": "POST", "path": "/api/v1/domains/{domain}/space/abandon", "required": ["item", "version"], "optional": []},
     "space.reconcile": {"method": "POST", "path": "/api/v1/domains/{domain}/space/reconcile", "required": ["project"], "optional": []},
+    "space.keep": {"method": "POST", "path": "/api/v1/domains/{domain}/space/keep", "required": ["item", "version", "request", "packet"], "optional": []},
     "space.pools": {"method": "GET", "path": "/api/v1/domains/{domain}/space/pools", "required": [], "optional": []},
     "space.usage": {"method": "GET", "path": "/api/v1/domains/{domain}/space/usage", "required": [], "optional": []},
     "space.pending": {"method": "GET", "path": "/api/v1/domains/{domain}/space/pending", "required": [], "optional": []},

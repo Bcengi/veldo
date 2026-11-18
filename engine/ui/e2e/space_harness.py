@@ -26,10 +26,27 @@ WHAT IT ADDS, on the same store connection and authority thread:
   which it names under discard_required. The real entries are control_service.Service.space_reconcile and
   .space_abandon (suites 156_veldo_0315 and 149_veldo_0312).
 
+- THE OWNER'S KEEP (VELDO-0319 AC5 to AC7). The real authority judges space.keep and calls the service's entry
+  with the packet. The stand-in `keep` does what the Ledger's disposition does with it, by the same names: it
+  verifies the passkey assertion with the real control_api_webauthn against the principal's current credential
+  in this store, with SHA-256 of the command's canonical bytes as the challenge (so the bytes the console signs
+  are checked against the store's by the real verifier), refuses a version that is not the item's
+  (stale_version), a request with no settled answer (space_disposition_unsettled) and one settled as anything
+  but Keep (space_disposition_choice), and otherwise leaves the item kept with owner_keep by that owner. The
+  real entry is control_service.Service.space_keep over control_space.Ledger.disposition, which suite
+  150_veldo_0319_space_screen exercises with the real Ledger.
+- With VELDO_SPACE_SEED=keep, two more deferred worktrees, each with a request of its own published with the
+  space terms as control_space.publish_disposition publishes one (terms at the touchpoint space_disposition,
+  the inbox, the frame, the presentation): `keep-answer`, whose request is open, and `keep-unsigned`, whose
+  request the owner answered Keep through the settlement with no packet, as an answer over a channel that
+  cannot sign leaves it.
+
 With VELDO_SPACE_SEED=0 nothing of the space ledger is written, for the screen's empty state.
 
 THE CONTROL PORT adds:
-  /space/ids   {}   the identities the tests name: the items, holds, pools, the group and its request
+  /space/ids     {}               the identities the tests name: the items, holds, pools, the group and its request
+  /space/answer  {name, choice}   answer the request of the keep-seeded item `name` through the settlement,
+                                  with no packet (the phone's channel)
 
 Run: python3 -B engine/ui/e2e/space_harness.py --dist engine/ui/dist
 """
@@ -67,8 +84,13 @@ class SpaceUi(F.FactoryUi):
         self.space_ids = {}
         self.authority.space_reconcile = self._reconcile
         self.authority.space_abandon = self._abandon
-        if os.environ.get('VELDO_SPACE_SEED', '1') != '0':
+        self.authority.space_keep = self._keep
+        self.authority.space_signing = 'localhost'
+        seed = os.environ.get('VELDO_SPACE_SEED', '1')
+        if seed != '0':
             self._space_seed()
+            if seed == 'keep':
+                self._keep_seed()
             self.deliver()
 
     def _item(self, name, kind, path, owner, state, size=None, pool='main', **more):
@@ -216,6 +238,102 @@ class SpaceUi(F.FactoryUi):
         item('scratch', 'scratch', '/srv/veldo/scratch/session-41', {'scope': {'type': 'no_project'}, 'session': 'session-41'},
              'present', (64 * MIB, 'session_started'))
 
+    # The owner's Keep (VELDO-0319 AC5 to AC7; the module docstring).
+
+    def _settlement_module(self):
+        """The settlement module the harness loaded, for the space terms."""
+        import types
+        return types.SimpleNamespace(**type(self.settlement).terms.__globals__)
+
+    def _keep_seed(self):
+        st = self._settlement_module()
+        tree = ROOT + '/project-a/'
+        for name, ticket in (('keep-answer', 'VELDO-9155'), ('keep-unsigned', 'VELDO-9156')):
+            identity = 'space:item:e2e-' + name
+            path = tree + ticket
+            alias = 'space-disposition-' + hashlib.sha256(identity.encode()).hexdigest()[:32] + '-1'
+            entry = {'item': identity, 'path': path, 'branch': None, 'unheld_commits': False, 'kept_branch': None,
+                     'files': ['notes/file-0.md', 'notes/file-1.md'], 'commits': [], 'restore': 'veldo space restore ' + identity}
+            proposal = {'discard': st.SPACE_DISCARD, 'worktrees': [entry]}
+            self._item(name, 'worktree', path, {'scope': project('project-a'), 'ticket': ticket,
+                                                'run': {'id': 'run-' + ticket[-4:], 'station': 'build'}},
+                       'deferred', (700 * MIB, 'ticket_ended'), due={'event': 'ticket_ended'},
+                       branch='veldo-' + ticket[-4:], disposition_history=[],
+                       disposition={'number': 1, 'alias': alias, 'proposal': proposal, 'head': None, 'state': 'requested'},
+                       deferral={'event': 'ticket_ended', 'emitter': {'process': 'authority'}, 'action': 'remove',
+                                 'carrier': None, 'rule': 'unique_work', 'refused_by': 'unique_work', 'order': 5,
+                                 'retry': ENDS['worktree'], 'attempts': 1, 'decision_request': alias,
+                                 'found': {'cases': [1, 3], 'branch': None, 'commit': '6f1c2ab' * 5 + 'ab',
+                                           'modified': ['notes/file-0.md'], 'staged': [], 'untracked': ['notes/file-1.md'],
+                                           'operation': None, 'unlanded': None,
+                                           'more': {'modified': 0, 'staged': 0, 'untracked': 0}}})
+
+            def packet(operation, **fields):
+                return self.signed_command('pm', dict(self.ids, operation=operation, principal='pm',
+                                                      command_id=alias + ':' + operation, nonce=alias + ':' + operation,
+                                                      **fields))
+            recorded = self.settlement.terms(packet(
+                'terms', terms=alias, touchpoint='space_disposition',
+                target={'kind': 'space_item', 'ref': identity, 'digest': st.digest(proposal)}, proposal=proposal,
+                required_roles=[], quorum=None))
+            assert recorded.get('outcome') == 'recorded', recorded
+            tid = st.terms_id(self.ids['repository_uuid'], alias)
+            content = st.space_presentation(proposal)
+            content.update(owner='owner', scope=['project-a'], deadline='2099-01-01T00:00:00Z', budget={'owner_minutes': 1},
+                           subject={'kind': st.SUBJECT_KIND, 'ref': tid, 'digest': st.digest(self._row(tid)[1])})
+            opened = self.inbox.apply(packet('open', alias=alias, assignment=content))
+            assert opened.get('ok'), opened
+            framed = self.presenter.frame(packet('frame', alias=alias, request_version=1, risk_statement=st.SPACE_DISCARD))
+            assert framed.get('outcome') == 'accepted', framed
+            rid = self.I.assignment_id(self.ids['repository_uuid'], alias)
+            self.presenter.present(rid)
+            self.requests[alias] = rid
+            self.space_ids.update({name + '-alias': alias, name + '-request': rid})
+        self.space_answer('keep-unsigned', 'accept keep')
+
+    def space_answer(self, name, choice):
+        """Answer the request of a keep-seeded item through the settlement, with no packet."""
+        st = self._settlement_module()
+        rid = self.space_ids[name + '-request']
+        receipt = self.presenter.current(rid)
+        body = dict(self.ids, schema=st.API_SCHEMA, edge='api-edge', answer_id=self.next_id('space-answer'),
+                    principal='owner', request_id=rid, request_version=receipt['request_version'],
+                    presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
+                    presentation_version=receipt['presentation_version'], choice=choice, rationale='Answered away from the console')
+        result = self.settlement.api_answer({'answer': body, 'signature': self.sign_as('api-edge', self.S.canonical_bytes(body))})
+        assert result.get('outcome') == 'settled', result
+        return result
+
+    def _keep(self, packet):
+        command, assertion = packet['command'], packet['signature']
+        wanted, principal = command['parameters'], command['principal']
+        version, record = self._row(wanted['item'])
+        if record is None:
+            return {'ok': False, 'reason': 'space_no_item'}
+        web = self.CR.W
+        found, why = self.CR.current(self.CM.authority_state(self.S, self.conn), assertion.get('credential_id'),
+                                     time.time(), principal=principal)
+        challenge = web.b64url(hashlib.sha256(self.S.canonical_bytes(command)).digest())
+        if why or web.assertion_problems(found, assertion, challenge, self.origin, 'localhost',
+                                         str(self.base / 'keep-state')):
+            return {'ok': False, 'reason': 'not_authorized'}
+        if version != wanted['version']:
+            return {'ok': False, 'reason': 'stale_version'}
+        decision = record.get('disposition') or {}
+        rid = self.I.assignment_id(self.ids['repository_uuid'], str(decision.get('alias')))
+        if record.get('state') != 'deferred' or decision.get('state') != 'requested':
+            return {'ok': False, 'reason': 'space_disposition_state'}
+        assignment = self._row(rid)[1] or {}
+        effect = self._row(str((assignment.get('settlement') or {}).get('effect_id')))[1] or {}
+        if rid != wanted['request'] or assignment.get('state') != 'SATISFIED' or assignment.get('owner') != principal:
+            return {'ok': False, 'reason': 'space_disposition_unsettled'}
+        if effect.get('choice') != 'accept keep':
+            return {'ok': False, 'reason': 'space_disposition_choice'}
+        self.fixture(wanted['item'], 'space_item', dict(
+            record, state='kept', owner_keep={'by': principal},
+            disposition=dict(decision, state='kept', choice='keep', request=rid, by=principal)))
+        return {'ok': True}
+
     # The stand-ins of the service's two entries (the module docstring).
 
     def _row(self, identity):
@@ -268,6 +386,9 @@ def control_server(factory, stop):
     def extended(self, path, body):
         if path == '/space/ids':
             return {'ids': dict(factory.space_ids)}
+        if path == '/space/answer':
+            settled = factory.on_thread(factory.space_answer, body['name'], body['choice'])
+            return {'outcome': settled.get('outcome'), 'delivered': factory.deliver()}
         return route(self, path, body)
     handler.route = extended
     return server

@@ -21,7 +21,7 @@ import '@/features/space/space.css'
 /** Space (VELDO-0319, design 10): where the space is and what Veldo is about to do with it. The four space reads
  * (pools, usage, pending, removed) are loaded, then the committed journal is followed and every record re-reads
  * them (useLiveRead): no timer reads anything. The decisions waiting on the member are read beside them, so an
- * open request links to where it is answered. Reconcile and Abandon are the owner's signed commands; the screen
+ * open request links to where it is answered. Reconcile, Abandon and Sign Keep are the owner's signed commands; the screen
  * removes nothing itself and shows a change only when the ledger's record holds it. */
 const decisions = useDecisionsStore()
 const live = useLiveRead<SpaceRead>(
@@ -40,6 +40,7 @@ const live = useLiveRead<SpaceRead>(
 const { action } = useContract()
 const reconcile = computed(() => action('space_reconcile'))
 const abandon = computed(() => action('worktree_abandon'))
+const keep = computed(() => action('worktree_keep'))
 const projects = computed(() =>
   (live.data.value?.usage.scopes ?? []).filter((s) => s.scope.type === 'project' && s.scope.id).map((s) => s.scope.id as string),
 )
@@ -68,7 +69,7 @@ onMounted(() => void live.start())
       <div v-if="live.data.value" class="factory-grid" data-testid="space">
         <SpacePools :pools="live.data.value.pools.pools" />
         <SpaceUsage :usage="live.data.value.usage" />
-        <SpacePending :pending="live.data.value.pending" :decisions="decisions.pending" />
+        <SpacePending :pending="live.data.value.pending" :decisions="decisions.pending" :action="keep" />
         <SpaceWorktrees :worktrees="live.data.value.usage.worktrees" :action="abandon" />
         <SpaceRemoved :removed="live.data.value.removed.items" />
         <SpaceReconcile :projects="projects" :action="reconcile" />

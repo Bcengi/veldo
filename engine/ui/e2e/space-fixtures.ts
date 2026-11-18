@@ -9,9 +9,10 @@ export { expect, guard, routeOf, signIn } from './fixtures'
 export type { FactoryUi } from './factory-fixtures'
 
 /** VELDO-0319's browser tests run against e2e/space_harness.py: VELDO-0131's factory harness with the space
- * ledger's records and the stand-ins of the service's reconcile and abandon entries. `factory` is seeded; `bare`
- * is the same harness with no space record at all (VELDO_SPACE_SEED=0), for the screen's empty state, and is
- * started only by a test that asks for it. */
+ * ledger's records and the stand-ins of the service's reconcile, abandon and keep entries. `factory` is seeded; `bare`
+ * is the same harness with no space record at all (VELDO_SPACE_SEED=0), for the screen's empty state; `keeps` is
+ * the seeded harness with two more worktrees whose requests carry the space terms, one open and one answered Keep
+ * with no signed packet (VELDO_SPACE_SEED=keep). Each of the last two is started only by a test that asks for it. */
 const here = path.dirname(fileURLToPath(import.meta.url))
 const UI = path.resolve(here, '..')
 
@@ -22,19 +23,21 @@ export type SpaceIds = Record<
   | 'gone-build' | 'gone-tree' | 'gone-volume' | 'vanished' | 'b-tree' | 'plain' | 'scratch'
   | 'group' | 'request' | 'group_alias' | 'solo_alias',
   string
->
+> &
+  /** What VELDO_SPACE_SEED=keep adds: each item, its request's alias and its request's store id. */
+  Partial<Record<'keep-answer' | 'keep-answer-alias' | 'keep-answer-request' | 'keep-unsigned' | 'keep-unsigned-alias' | 'keep-unsigned-request', string>>
 
 export interface SpaceFactory extends FactoryUi {
   /** The identities the harness seeded, by the names of e2e/space_harness.py. */
   ids(): Promise<SpaceIds>
 }
 
-async function start(seed: boolean) {
+async function start(seed: '1' | '0' | 'keep') {
   const dist = process.env.VELDO_UI_DIST ?? path.join(UI, 'dist')
   if (!existsSync(path.join(dist, 'index.html'))) throw new Error(`build the UI first: no ${dist}/index.html`)
   const args = ['-B', path.join(here, 'space_harness.py'), '--dist', dist]
   if (process.env.VELDO_ORGANS) args.push('--organs', process.env.VELDO_ORGANS)
-  const child = spawn('python3', args, { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, VELDO_SPACE_SEED: seed ? '1' : '0' } })
+  const child = spawn('python3', args, { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, VELDO_SPACE_SEED: seed } })
   let errors = ''
   child.stderr.on('data', (chunk) => (errors += String(chunk)))
   const ready = await new Promise<{ origin: string; control: string; domain: string }>((resolve, reject) => {
@@ -85,10 +88,18 @@ async function start(seed: boolean) {
   return { factory, stop }
 }
 
-export const test = base.extend<object, { factory: SpaceFactory; bare: SpaceFactory }>({
+export const test = base.extend<object, { factory: SpaceFactory; bare: SpaceFactory; keeps: SpaceFactory }>({
   factory: [
     async ({}, use) => {
-      const { factory, stop } = await start(true)
+      const { factory, stop } = await start('1')
+      await use(factory)
+      await stop()
+    },
+    { scope: 'worker' },
+  ],
+  keeps: [
+    async ({}, use) => {
+      const { factory, stop } = await start('keep')
       await use(factory)
       await stop()
     },
@@ -96,7 +107,7 @@ export const test = base.extend<object, { factory: SpaceFactory; bare: SpaceFact
   ],
   bare: [
     async ({}, use) => {
-      const { factory, stop } = await start(false)
+      const { factory, stop } = await start('0')
       await use(factory)
       await stop()
     },

@@ -165,6 +165,22 @@ a signature of the owner over the command: the Abandon's signature is the API ed
 authority, and the owner's signed Keep is the disposition command of VELDO-0318 (its AC4), which is
 verified as set_mode verifies the mode switch.
 
+THE OWNER'S SIGNATURE HAS TWO FORMS (VELDO-0319 AC6), both checked by _mode_signer and by nothing else.
+The SSH form is a text signature under the owner's active enrolled key over the command's canonical
+bytes. The passkey form is a WebAuthn assertion (a mapping: credential_id, client_data_json,
+authenticator_data, signature, user_handle) by a credential that is current in this store for the
+command's principal (control_api_credentials.current: effective, not revoked, of that person), enrolled
+for this installation's origin and relying-party id, whose challenge is SHA-256 of the same canonical
+bytes, unpadded base64url. The origin, the relying-party id and the folder the verifier works in are
+`passkeys`, which the service that built the Ledger sets from its API configuration; with none, no
+passkey form is taken. A console session, and the API edge's signature over the request that carried
+the command, are neither form: a command with only those is refused not_authorized.
+
+A PACKET THAT MAY ONLY KEEP (VELDO-0319 AC6). disposition(..., only='keep') is the console's space.keep:
+the transition refuses space_disposition_choice, with nothing written, when the settled answer the
+packet names gives this item anything but Keep. Without `only` the packet applies whatever was settled,
+as before.
+
 A SIGNAL THAT NAMES ITEMS (VELDO-0312 fix round; a capability of the ledger, for every sender). The
 subject of a signal is either the parts of an owner, and then every item of that owner the event ends
 is made due, or a list of items: {items: [{item, version}, ...]}, each with the version its sender read.
@@ -981,6 +997,10 @@ class Ledger:
         # The command _send has given the store, while the store runs it: the mode transition reads who
         # sent it. The membership module beside this file, loaded when the mode transition first runs.
         self._outer, self._membership_module = None, None
+        # VELDO-0319 AC6: what a passkey-signed owner command is verified against, {origin, rp_id,
+        # state_dir}, set by the service from its API configuration; None takes no passkey form. The
+        # credential module beside this file, loaded when the first passkey form is checked.
+        self.passkeys, self._credentials_module = None, None
         transitions = {DECLARE: self._t_declare, CONFIRM: self._t_confirm, MEASURE: self._t_measure,
                        SIGNAL: self._t_signal, OUTCOME: self._t_outcome, ADOPT: self._t_adopt,
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
@@ -1674,11 +1694,13 @@ class Ledger:
         record['deferral'] = dict(record.get('deferral') or {}, decision_request=request['alias'])
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 
-    def disposition(self, packet, membership, now):
+    def disposition(self, packet, membership, now, only=None):
         """One owner-signed command: deferred to kept, or due for a settled Save/Discard.
 
         Neither a caller's principal string nor the authority's journal signature is
         the owner's signature. The transition verifies the packet again in the store.
+        `only`, when given, is the one action the packet may apply (VELDO-0319: 'keep' for the
+        console's space.keep); a request settled as anything else is refused in the transition.
         """
         command = packet.get('command') if isinstance(packet, dict) else None
         try:
@@ -1693,7 +1715,10 @@ class Ledger:
                 raise Refused('space_no_item', identity)
             if version != params['version']:
                 raise Refused('stale_version', identity)
-            return self._send(DISPOSITION, {'item': identity, 'packet': packet, 'at': now},
+            if only is not None and only not in ('save', 'keep', 'discard'):
+                raise _invalid('only', 'save, keep or discard')
+            return self._send(DISPOSITION, dict({'item': identity, 'packet': packet, 'at': now},
+                                                **({'only': only} if only is not None else {})),
                               dict(self._group_versions(record), **{identity: version}),
                               command['principal'], command['command_id'],
                               {'item': identity}, command['nonce'])
@@ -1797,6 +1822,9 @@ class Ledger:
         effect, owner = self.disposition_effect(identity, command['parameters']['request'])
         if owner != command['principal']:
             raise Refused('not_authorized', 'the answering owner signs the disposition')
+        if 'only' in params and _settlement().space_pick(effect['choice'])[0] != params['only']:
+            # VELDO-0319 AC6: space.keep carries a Keep and nothing else, whatever was settled.
+            raise Refused('space_disposition_choice', 'the request was not settled as ' + str(params['only']))
         return self._disposition_change(identity, record, effect, owner, command['parameters']['request'], before)
 
     def authorize_disposition(self, identity, request):
@@ -2344,25 +2372,56 @@ class Ledger:
             raise _invalid('command', 'the mode command: a principal, a scope and a mode, a command id and a nonce')
 
     def _mode_signer(self, command, signature, now, membership):
-        """The owner behind one mode command, read from this store: (authority state, member, key).
-        Refused not_authorized unless the command's principal is an active person member holding
-        project_owner whose scope covers the space scope, and `signature` is that principal's, under its
-        active key, over the command. set_mode calls this before it sends, and the transition calls it
-        again inside the transaction."""
+        """The owner behind one signed space command, read from this store: (authority state, member,
+        key). Refused not_authorized unless the command's principal is an active person member holding
+        project_owner whose scope covers the space scope, and `signature` is that principal's over the
+        command, in one of the two forms (the module's THE OWNER'S SIGNATURE HAS TWO FORMS): a text is
+        the SSH signature under the principal's active key, and `key` is that key; a mapping is a
+        passkey assertion, and `key` is the credential's record with its store id as key_id. set_mode
+        and disposition call this before they send, and each transition calls it again inside the
+        transaction."""
         contract, principal = membership.AC, command['principal']
         state = membership.authority_state(self.store, self.conn)
         member = contract.membership_entry(state['membership'], principal)
         active, why = contract.active_member(member, now)
-        key = contract.active_key(state['keyring'], principal, now) if active else None
-        if (not active or key is None or member.get('principal_type') != MODE_SIGNER_TYPE
+        if (not active or member.get('principal_type') != MODE_SIGNER_TYPE
                 or MODE_SIGNER_ROLE not in (member.get('roles') or [])
                 or not membership.scope_covers(member.get('scope'), SCOPE)):
             raise Refused('not_authorized', why or 'the mode switch is the owner\'s signed command')
+        if isinstance(signature, dict):
+            return state, member, self._passkey_signer(command, signature, now, state, principal)
+        key = contract.active_key(state['keyring'], principal, now)
+        if key is None:
+            raise Refused('not_authorized', 'the mode switch is the owner\'s signed command')
         if not isinstance(signature, str) or not signature.isascii() or not contract.ssh_keygen_verify(
                 self.store.canonical_bytes(command), signature,
                 contract.allowed_signers_line(principal, key['public_key'], NAMESPACE), principal, NAMESPACE)[0]:
             raise Refused('not_authorized', 'the command signature is not the owner\'s')
         return state, member, key
+
+    def _passkey_signer(self, command, assertion, now, state, principal):
+        """The passkey form of the owner's signature (VELDO-0319 AC6): the credential's record, with
+        key_id its store id. Refused not_authorized unless the assertion names a credential that is
+        current for `principal` in this store, enrolled for this installation's origin and
+        relying-party id, and verifies with SHA-256 of the command's canonical bytes as its
+        challenge. The verifier is control_api_webauthn's, unchanged."""
+        settings = self.passkeys if isinstance(self.passkeys, dict) else {}
+        origin, rp_id, state_dir = (settings.get(field) for field in ('origin', 'rp_id', 'state_dir'))
+        if not (_is_str(origin) and _is_str(rp_id) and _is_str(state_dir)):
+            raise Refused('not_authorized', 'this Ledger was given no relying party: it takes no passkey')
+        if self._credentials_module is None:
+            self._credentials_module = _sibling('control_api_credentials')
+        credentials = self._credentials_module
+        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)
+        if why:
+            raise Refused('not_authorized', 'the passkey is not the owner\'s current credential: ' + why)
+        if record.get('rp_id') != rp_id or record.get('origin') != origin:
+            raise Refused('not_authorized', 'the passkey was enrolled for another installation')
+        challenge = credentials.W.b64url(hashlib.sha256(self.store.canonical_bytes(command)).digest())
+        problems = credentials.W.assertion_problems(record, assertion, challenge, origin, rp_id, state_dir)
+        if problems:
+            raise Refused('not_authorized', 'the passkey assertion is not over this command: ' + problems[0])
+        return dict(record, key_id=credentials.entity_id(record['credential_id']))
 
     def _owner(self, params, at, what):
         """The owner behind the command the store is running, for the owner's Keep and the owner's Abandon
