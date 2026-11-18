@@ -90,6 +90,7 @@ def _v337_verdict_suite():
         RM = load('v301_control_space_remove', VELDO / 'control_space_remove.py')
         KP = load('v301_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
+        KEEP = load('v337_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         NOW = 1000.0
 
         # the owner's real key
@@ -615,7 +616,14 @@ def _v337_verdict_suite():
         f, other = planted('06'), planted('07')
         kept = f.items['scratch']
         L.signal('ticket_ended', {'items': [{'item': kept, 'version': versions([kept])[kept]}]})
-        marked = L.outcome(kept, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318). The
+        # Ledger raises no request for an item of this kind, so the settled request is planted; the
+        # owner's signature, the membership check and the one transition are the Ledger's own.
+        claimed = L.outcome(kept, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        check(row, 'an outcome that claims the owner mark is refused',
+              not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+              and not L.item(kept).get('owner_keep') and L.item(kept)['state'] == 'due')
+        marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, kept, owner_sign, NOW)
         at = versions([kept] + list(other.items.values()))
         before = len(signals)
         record(f)
