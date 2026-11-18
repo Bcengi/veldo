@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/v106-flake/scripts/reuse_worker.py", line 98, in <module>
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/v106-flake/scripts/reuse_worker.py", line 81, in main
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/v106-flake/scripts/reuse_worker.py", line 88, in observe
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/v106-flake/scripts/mutation_observer.py", line 104, in worker
+  File "/tmp/veldo-mutations-gpffw74u/input/scripts/suites/80_veldo_0155_claude_baseline.py", line 1135, in <module>
+    _v155_suite()
+  File "/tmp/veldo-mutations-gpffw74u/input/scripts/suites/80_veldo_0155_claude_baseline.py", line 181, in _v155_suite
+    base = Path(tempfile.mkdtemp(prefix='v155-', dir=runtime if os.path.isdir(runtime) else None))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/tempfile.py", line 523, in mkdtemp
+    _os.mkdir(file, 0o700)
+PermissionError: [Errno 13] Permission denied: '/run/user/1000/v155-tesw02zz'

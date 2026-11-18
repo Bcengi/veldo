@@ -1,0 +1,200 @@
+[
+  {
+    "label": "suite80",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "80_veldo_0155_claude_baseline"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite80.log"
+  },
+  {
+    "label": "suite86",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "86_veldo_0127_agent_configuration"
+    ],
+    "returncode": 1,
+    "passed": false,
+    "log": "proof/VELDO-0213/host/suite86.log"
+  },
+  {
+    "label": "suite106-load-01",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-01.log"
+  },
+  {
+    "label": "suite106-load-02",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-02.log"
+  },
+  {
+    "label": "suite106-load-03",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-03.log"
+  },
+  {
+    "label": "suite106-load-04",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-04.log"
+  },
+  {
+    "label": "suite106-load-05",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-05.log"
+  },
+  {
+    "label": "suite106-load-06",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-06.log"
+  },
+  {
+    "label": "suite106-load-07",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-07.log"
+  },
+  {
+    "label": "suite106-load-08",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-08.log"
+  },
+  {
+    "label": "suite106-load-09",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-09.log"
+  },
+  {
+    "label": "suite106-load-10",
+    "argv": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0185_dispatch_setup"
+    ],
+    "returncode": 2,
+    "passed": true,
+    "log": "proof/VELDO-0213/host/suite106-load-10.log"
+  },
+  {
+    "label": "prompt213-mark-after-write",
+    "argv": [
+      "python3",
+      "scripts/check_teeth_mutations.py",
+      "--case",
+      "prompt213-mark-after-write",
+      "--jobs",
+      "1",
+      "--worker-log-dir",
+      "proof/VELDO-0213/host/prompt213-mark-after-write-workers",
+      "--diff-dir",
+      "proof/VELDO-0213/host/prompt213-mark-after-write-diffs"
+    ],
+    "returncode": 1,
+    "passed": false,
+    "log": "proof/VELDO-0213/host/prompt213-mark-after-write.log"
+  },
+  {
+    "label": "role127-probe-is-terminal",
+    "argv": [
+      "python3",
+      "scripts/check_teeth_mutations.py",
+      "--case",
+      "role127-probe-is-terminal",
+      "--jobs",
+      "1",
+      "--worker-log-dir",
+      "proof/VELDO-0213/host/role127-probe-is-terminal-workers",
+      "--diff-dir",
+      "proof/VELDO-0213/host/role127-probe-is-terminal-diffs"
+    ],
+    "returncode": 1,
+    "passed": false,
+    "log": "proof/VELDO-0213/host/role127-probe-is-terminal.log"
+  },
+  {
+    "label": "role127-prompt-write-failure-swallowed",
+    "argv": [
+      "python3",
+      "scripts/check_teeth_mutations.py",
+      "--case",
+      "role127-prompt-write-failure-swallowed",
+      "--jobs",
+      "1",
+      "--worker-log-dir",
+      "proof/VELDO-0213/host/role127-prompt-write-failure-swallowed-workers",
+      "--diff-dir",
+      "proof/VELDO-0213/host/role127-prompt-write-failure-swallowed-diffs"
+    ],
+    "returncode": 1,
+    "passed": false,
+    "log": "proof/VELDO-0213/host/role127-prompt-write-failure-swallowed.log"
+  }
+]

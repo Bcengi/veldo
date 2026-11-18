@@ -1,0 +1,8 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -953,0 +954,2 @@
++    stdin.write(data)
++    stdin.flush()
+@@ -956,2 +957,0 @@
+-    stdin.write(data)
+-    stdin.flush()
