@@ -375,3 +375,66 @@ own alias keeps that member alone; this amendment adds the console's way to send
   ac3/routes-signed are restated as properties so later tickets add routes without editing them. The
   footprint gains the Decisions screen, the sign-in ceremony and control_service_api.py. Four criteria
   became seven.
+
+- 2026-11-18: the amendment BUILT, as 0319's next round, on a0e4bc10 (commits 993e523e and a7f98bf3).
+  Status stays ready until the lead's gate and the review. The record is
+  proof/VELDO-0319/amendment-round.json.
+  - The route. space.keep is one signed owner route (operation keep_worktree, action worktree_keep,
+    command space_disposition) and carries every Keep packet: {command, signature}, the Ledger's Keep
+    command for one item, version and request, and the owner's passkey assertion. The answer path is
+    unchanged: control_request_settlement.py and answer_decision's parameters were not touched. The
+    authority admits the owner only and requires the packet's command to be that principal's command
+    for exactly what the route names; the service's entry (Service.space_keep) hands it to the Ledger.
+  - AC6. _mode_signer takes two forms of the owner's signature: a text is the SSH form, as before, and
+    a mapping is the passkey form. The passkey form requires a credential that is current for the
+    command's principal in the Ledger's own store (control_api_credentials.current, called and not
+    changed), enrolled for this installation's origin and relying party, and an assertion that
+    control_api_webauthn.assertion_problems accepts with SHA-256 of the command's canonical bytes as
+    its challenge. The service gives the Ledger the origin, the relying-party id and the verifier's
+    folder (ServiceApi.passkeys in control_service_api.py); a Ledger given none takes no passkey.
+    space.keep applies only a request settled as Keep: Ledger.disposition takes only='keep' and the
+    transition refuses space_disposition_choice inside the transaction. Without `only` a signed
+    packet applies what was settled, as VELDO-0318 built it.
+  - AC5. On the Decisions screen a Keep answer to a space request signs first (one ceremony limited to
+    the session's credential), then sends the answer, then sends the packet once the answer settled.
+    A ceremony the owner closes sends nothing. A packet the Ledger refuses leaves the answer settled
+    and is named on the screen with a link to the Space screen.
+  - AC7. space.pending names each item's own request by its store id (request_id), marks an item whose
+    request settled as Keep and is still deferred (answered: keep), and names the relying-party id a
+    Keep is signed for (signing). The Space screen lists such an item as answered and not signed, with
+    Sign Keep, which signs a new packet at the version shown. A member of a review group is listed
+    under the alias its own record holds. The screen now finds a request's decision by that id too:
+    the decisions read serves a single worktree's alias redacted, so the link by alias never matched.
+  - The two shared rows. ac3/no-dead-route: every POST route named space.* has an operation, an
+    authority branch, an action, and a command the Ledger has a transition for; a person who is not
+    the owner is refused each by name. Read against the code, the second half of the amendment's
+    wording could not hold as written: space_abandon is an owner action with no transition of its own
+    (the signal carries it) and space.abandon is a published route. The row therefore says: no owner
+    action without a transition is the command of any route or action, and a POST to the name of each
+    that has no route answers 404. ac3/routes-signed: every entry of SPACE_VIEWS is a GET route with
+    a session and no field, and every GET route named space.* is one of them. Neither pins a list.
+  - For VELDO-0332. The passkey form is in _mode_signer and so in the mode transition. set_mode's own
+    packet check still takes the signature as text before it calls _mode_signer; that ticket opens it
+    when it adds the console's switch. No second check is needed.
+  - Rows. 150_veldo_0319_space_screen: 33 rows green, among them the eleven new ones (ac5/keep-applied,
+    ac5/console-bytes, seven ac6 rows, two ac7 rows) and the two restated ones. Suite 71 green with
+    space.keep in session/forgery-refused. The UI type-checks and its Vitest specs pass (59 tests) in
+    a scratch copy. Neighbouring suites: proof/VELDO-0319/amendment-round.json, each red one compared
+    with the base.
+  - RED, from fix round F2 and not from this round: cost/removed-index and cost/carried-index, on this
+    head and on the base a0e4bc10 with the same numbers. Every authority read judges its reader through
+    control_membership.authority_state, a read of the whole store, so the SQL steps of a read grow with
+    the store. control_membership.py and control_store.py are outside the footprint. Lead decision
+    needed. While they are red the teeth driver refuses every API case of finding 319 as
+    invalid_baseline; the 18 mutants each turn their target rows red in the worker logs, which is
+    builder evidence only.
+  - Teeth. Seven API cases added (the three declared falsifiers of AC6, both of AC7, a credential of
+    another member or a revoked one, and a route whose command has no transition) and two browser
+    cases (AC5's declared falsifier, and a Sign Keep that sends nothing).
+    space319-abandon-as-a-plain-read-route is re-anchored on the same code with the same target row.
+  - Not run: the browser suite 150_veldo_0319_space_ui (its new rows are ac5/keep-applied and
+    ac7/sign-keep), the five browser teeth cases, F1 to F4 under the lock, and verify.sh. The entry
+    scripts/gate_unconfined.json needs is written out in proof/VELDO-0319/gate-unconfined-entry.md;
+    that file was not edited.
+  - Open for the lead, from the amendment: a Keep answered over the phone's message channel waits for
+    Sign Keep in the console and is not refused on that channel.

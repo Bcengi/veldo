@@ -1,8 +1,10 @@
 {
  "artifacts": {
-  "README.md": "sha256:cedfd5c19f2d12c5ff52ba8ae681ef25d7933dad62a69008ab9a3d3857f789dd",
+  "README.md": "sha256:c86e16338320129bbc9fd297c3f9c5d09b786ee985bf2af734d6ecd29e58c21a",
+  "amendment-round.json": "sha256:9d7378ac8d6bba3af3d6bd8c78866ef731e97aa3d19c39b2e654558c5c2a6666",
   "checks.json": "sha256:c29e60268109000e848216e803011483c5805daf76a61555b53b8f8c4a25ab56",
   "falsifiers.json": "sha256:53926949a6a9b27deb03d33a9730a4ad99f488f15dbea94a6ea2b8febcac06c1",
+  "gate-unconfined-entry.md": "sha256:3db8a77170f877e3376d67ba85cd7a1f71f0f86c24d3ead726ee79e2c7a8839d",
   "rows.json": "sha256:39aa6b9d707a2fb3a0027d6be5a88a29c393f8e5f46ae74eb7959abc84517716",
   "screens.json": "sha256:f99a177102bed23d04b82c18ede879856aaec79117f36101a3fff572b81b56c0",
   "sources.json": "sha256:fc1be0a0826a8fd943dce431368aa8c9d6831ca88a101d9f255cc6fdd1adc52a",
@@ -16,7 +18,8 @@
   "A pool capacity and its free space now are in no ledger record and are not shown; the four numbers of a hold are those the Ledger recorded when it judged it.",
   "In the API suite the service entries for reconcile and abandon are recording functions, and the membership, credentials and edge key are fixture records; in the browser suite the harness is the VELDO-0131 factory harness with the space ledger records.",
   "The browser suite needs system Chrome and the npm registry and is not yet in scripts/gate_unconfined.json (a protected path): the lead adds the entry.",
-  "All criteria remain pending aggregate verification and independent review."
+  "All criteria remain pending aggregate verification and independent review.",
+  "Amendment round (AC5 to AC7), 2026-11-18: recorded in amendment-round.json at a7f98bf3; the commit and tree of this manifest are still those of the first proof, 5f3afd34, and nothing recorded for AC1 to AC4 was run again. The two F2 cost rows are red on this head and on its base."
  ],
  "checks": [
   {
@@ -103,6 +106,42 @@
     }
    ],
    "id": "AC4",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC5 rows green at the API (ac5/keep-applied, ac5/console-bytes) at a7f98bf3 and in the UI unit specs; the browser row ac5/keep-applied and the declared falsifier (leave out the space.keep call) are not run: they need the gate lock. Pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/amendment-round.json",
+     "sha256": "9d7378ac8d6bba3af3d6bd8c78866ef731e97aa3d19c39b2e654558c5c2a6666",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC5",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC6 rows green at the API at a7f98bf3 (the seven ac6 rows). Each declared falsifier turns its row red in the mutant worker (edge signature alone, challenge not compared, any settled choice applied), read from the worker logs: the teeth driver itself refuses the run as invalid_baseline on the two red F2 cost rows. Pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/amendment-round.json",
+     "sha256": "9d7378ac8d6bba3af3d6bd8c78866ef731e97aa3d19c39b2e654558c5c2a6666",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC6",
+   "status": "pending"
+  },
+  {
+   "evidence": [
+    {
+     "detail": "AC7 rows green at the API at a7f98bf3 (ac7/answered-not-signed, ac7/member-own-request) and both declared falsifiers red in the mutant worker, read from the worker logs; the browser row ac7/sign-keep is not run. Pending aggregate verification and review.",
+     "ref": "proof/VELDO-0319/amendment-round.json",
+     "sha256": "9d7378ac8d6bba3af3d6bd8c78866ef731e97aa3d19c39b2e654558c5c2a6666",
+     "type": "falsifier"
+    }
+   ],
+   "id": "AC7",
    "status": "pending"
   }
  ],
