@@ -373,6 +373,10 @@ def _v302_creators_suite():
                                    input=AC.canonical_envelope_bytes(envelope), capture_output=True, check=True).stdout.decode()
         CM.admit(S, conn, envelope, command, signature, ids, time.time(), enrollee_signature=None,
                  journal_signer=('authority', lambda data: 'stub:' + S.digest_of(data.decode())))
+        KEEP = load('owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+        RM = load('space_remove', mods / 'control_space_remove.py')
+        desk = KEEP.Desk(mods, S, CM, AC, conn, ids, lambda data: 'stub:' + S.digest_of(data.decode()),
+                         KEEP.signer(key, AC.SIGNATURE_NAMESPACE), state, time.time(), tag='v302_desk')
         for actor in ('fleet', 'sandbox'):
             kept_path = scratch / ('kept-' + actor)
             git(repo, 'worktree', 'add', '-q', '--detach', str(kept_path), head)
@@ -381,7 +385,18 @@ def _v302_creators_suite():
             original_confirm(identity)
             version = conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
             assert L.signal('worktree_abandoned', {'items': [{'item': identity, 'version': version}]})['ok']
-            kept = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')
+            # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318):
+            # the outcome that claims the mark is refused, and the Keep goes through the worktree's
+            # request, the owner's settled answer and the owner's packet (support/space_owner_keep.py).
+            claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')
+            check('safety/owner-keep-' + actor, 'an outcome that claims the owner mark is refused',
+                  not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+                  and not L.item(identity).get('owner_keep') and L.item(identity)['state'] == 'due')
+            asked = KEEP.reserve(L, RM, identity)
+            assert asked['ok'], asked
+            settled, edge_alone, kept = desk.owner_keeps(L, identity, SP.ITEM_KIND)
+            check('safety/owner-keep-' + actor, 'the settled answer alone marks nothing; the owner packet does',
+                  settled.get('outcome') == 'settled' and not edge_alone['ok'] and kept['ok'])
             assert kept['ok'], kept
             checkpoint = conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
             target = scratch / ('after-keep-' + actor)
