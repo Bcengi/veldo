@@ -204,3 +204,20 @@ Not fixed here, same shape in other suites, for the lead: dispatch-spawn-before-
 104.8 s of 120 in the last three gates, 12 to 14 s of CPU) and dispatch-receiver-store-only-gate (97.8, 98.2,
 99.7 s) of suite 62, and owner-command-unrouted (82 s). The driver that sets the 120 s floor is a protected
 path and was not touched.
+
+### Gate fix 7, second cause: a row of suite 141 that a raise removed (finding 344, not reached by the gate)
+
+All 52 cases gate 99zzI left unjudged (41 of finding 344, 11 of finding 259) were among the 977 that gate
+99zzL never started, so gate fixes 5 and 6 had not been seen by the mutation stage. Run here: findings 344 and
+259, registered 52, executed 52, rejected 50, and two refused as missing_target, "baseline rows removed":
+space344-probe-executes-the-reader and space344-reader-maps-not-read.
+
+Both mutants make suite 141 raise before the same-program read (the second one does not compile: read_maps
+is then unused under -Werror). Row reader/same-program, added on 2026-11-15 (f730283a), was written into the
+row table where it is judged and was missing from the list the table starts from, so a run that raised
+earlier printed 90 rows where the unchanged suite prints 91, and the driver refuses a mutant that removes a
+row. Hidden until now: the baseline of every 344 case was invalid on ac6/installed in gates 99zzF and 99zzI.
+
+The row is now in the list. A run that never reaches it prints it as failed, as it does every other row.
+Unchanged suite: 65 passed, as before. Finding 344 after: registered 41, executed 41, rejected 41 in 46.3 s;
+both cases 91 rows against 91, each false on its declared row. Finding 259: 11 of 11 rejected (the run above).
