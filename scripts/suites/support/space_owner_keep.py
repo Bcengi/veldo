@@ -27,16 +27,23 @@ membership, the authority's codec), so one store module serves the whole fixture
 
 import importlib.util
 import json
+import os
 import subprocess
 import time
 from pathlib import Path
 from unittest.mock import patch
 
 
+def _quiet():
+    """The environment without the owner's SSH agent: a fixture key is read from its file, and no
+    suite reaches the agent of whoever runs it."""
+    return {key: value for key, value in os.environ.items() if key not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+
+
 def keygen(path):
     """A new ed25519 key at `path`; its public half as text."""
     subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(path)],
-                   check=True, capture_output=True)
+                   check=True, capture_output=True, env=_quiet())
     return Path(str(path) + '.pub').read_text().strip()
 
 
@@ -44,7 +51,7 @@ def signer(path, namespace):
     """What signs a message with the key at `path` under the authority's namespace."""
     def sign(message):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(path), '-n', namespace],
-                              input=message, capture_output=True, check=True).stdout.decode()
+                              input=message, capture_output=True, check=True, env=_quiet()).stdout.decode()
     return sign
 
 
