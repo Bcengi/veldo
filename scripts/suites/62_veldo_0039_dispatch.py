@@ -280,13 +280,24 @@ sys.exit(child.wait())
             return found
 
         def marker_for(dispatch_id, timeout=10.0):
-            end = time.time() + timeout
-            while time.time() < end:
+            """The marker the worker of a dispatch wrote at its start, or {}. The wait ends on the marker, and
+            also on the dispatch's own record: a worker is started only under a record that is prepared, accepted
+            or running (D.STOPPABLE), so a record in any other state (refused, exited, unknown) says no worker is
+            still to start, and the markers are read once more after it and that reading is the answer. The
+            timeout bounds a record that stays open with no marker; it is not what a refused dispatch waits out."""
+            found = {}
+
+            def written():
+                # The state is read BEFORE the markers: a record that had ended by then has no later worker.
+                state = rec(dispatch_id).get('state')
                 for data in worker_markers():
                     if data.get('dispatch') == dispatch_id:
-                        return data
-                time.sleep(0.02)
-            return {}
+                        found.update(data)
+                        return True, {'state': state}
+                return state is not None and state not in D.STOPPABLE, {'state': state}
+            wait_for(written, (timeout, "this suite's bound on a worker's start"),
+                     'the marker of the worker of dispatch %s' % dispatch_id)
+            return found
 
         def attempt(fn):
             try:
@@ -403,7 +414,9 @@ sys.exit(child.wait())
                 claim = entity(CLM.claim_id(REPOSITORY, u1)) or {}
                 seen_record = seen.get('seen') or {}
                 packet_path = markers / ('%s.packet' % seen.get('pid'))
-                end = time.time() + 10
+                # The packet is the file of the worker the marker names; with no marker there is no worker whose
+                # packet could come, and nothing to wait for.
+                end = time.time() + (10 if seen.get('pid') else 0)
                 while not packet_path.exists() and time.time() < end:
                     time.sleep(0.02)
                 packet = json.loads(packet_path.read_text()) if packet_path.exists() else {}
