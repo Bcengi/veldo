@@ -97,7 +97,10 @@ ac6/refused-executes-nothing, ac6/reader-units, and ac6/installed, which runs on
 installed at its fixed path (the owner's host after docs/veldo-procread-setup.txt) and requires the
 check's six PASS lines, the fifth being a whole block for process 1, root's and closed to the probe
 itself, and the sixth the run label of a process whose environment the probe may not read: elsewhere it prints a SELFTEST SKIP line that says which condition skipped it (no reader, or a
-reader and no systemd-run) and adds no row.
+reader and no systemd-run, or a reader the installation records no pin for: owner ruling 2026-11-18)
+and adds no row. ac6/installed-pin holds the three outcomes of that last condition under the suite's
+seam: no pin is a skip and starts no check, a pin that is not the reader's digest fails, the reader's
+digest passes, and a pinned reader whose check has one failing line fails.
 
 AC7 rows: ac7/reproducible, ac7/recorded-digest, ac7/compiler-not-from-path, ac7/setcap-after-digest,
 ac7/no-replace-objects, ac7/digest-from-the-review-record.
@@ -153,7 +156,7 @@ def _v344_process_reader_suite():
             'ac4/no-argument', 'ac4/format', 'ac4/entries', 'ac4/filter', 'ac4/unread-without-capability',
             'ac5/cut', 'ac5/not-whole', 'ac5/exit-status', 'ac5/failed-write', 'ac5/waits-after-end',
             'ac6/units', 'ac6/reads-through-the-socket', 'ac6/executes-the-checked-descriptor',
-            'ac6/refused-executes-nothing', 'ac6/reader-units',
+            'ac6/refused-executes-nothing', 'ac6/reader-units', 'ac6/installed-pin',
             'ac7/reproducible', 'ac7/recorded-digest', 'ac7/compiler-not-from-path', 'ac7/setcap-after-digest',
             'ac7/no-replace-objects', 'ac7/digest-from-the-review-record',
             'ac8/second-thread-cwd', 'ac8/second-thread-descriptor', 'ac8/unreadable-task',
@@ -1639,26 +1642,94 @@ int main(int argc, char **argv)
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
         check('ac6/reader-units', 'an unknown command line is refused with status 2', usage.returncode == 2)
 
-        # The installed row: only where the owner has installed the reader.
-        present, runner = os.path.lexists(P.READER), shutil.which('systemd-run')
-        if present and runner:
+        # The installed row: only where the owner has installed the reader and the installation records
+        # a pin for it (owner ruling 2026-11-18: with no pin recorded the row is skipped by name; it is
+        # no pass, and nothing is run).
+        def installed_row(pin, run):
+            """What the installed row comes to: ('SKIP', why, None) while the installation records no
+            pin for the reader, without calling `run`; else ('PASS' or 'FAIL', the row's label, what the
+            check said), from the status and the output of the check that `run` starts."""
+            if pin is None:
+                return 'SKIP', ('the process reader is installed at %s, but the installation records no pin for it '
+                                '(the space section\'s key process_reader names no digest), so the check would '
+                                'refuse it as no_pin; the row runs once the owner has pinned the reader (owner '
+                                'ruling 2026-11-18)' % P.READER), None
+            status, said = run()
+            passed = (status == 0 and 'state used cap=1' in said and 'FAIL' not in said
+                      and said.count('PASS: ') == 6
+                      and 'PASS: process 1, root-owned and closed to the probe itself, has a whole '
+                          'block with its start time' in said
+                      and 'PASS: the run label of the undumpable process, whose environment is '
+                          'closed to the probe itself, is read' in said)
+            return 'PASS' if passed else 'FAIL', (
+                'under the authority unit\'s properties the reader check reports the state used '
+                'with cap=1, reads the undumpable process and its second thread, and finds a '
+                'whole block for process 1, which is root\'s and closed to the probe itself, '
+                'and reads the run label of the undumpable process and of process 1: '
+                'six PASS lines [%s %s]' % (status, said[-500:])), said
+
+        def under_the_unit():
             ran = subprocess.run(['systemd-run', '--user', '--wait', '--pipe', '--quiet', '-p', 'NoNewPrivileges=yes',
                                   '-p', 'UMask=0077', '-p', 'KillMode=mixed', os.path.realpath(sys.executable), '-I',
                                   str(PRODUCTION['control_space_probe.py'].resolve()), 'reader'],
                                  stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
-            said = ran.stdout.decode('utf-8', 'replace')
-            print('  VELDO-0344 ac6/installed: ' + said.split('\n')[0])
-            rows['ac6/installed'] = [('under the authority unit\'s properties the reader check reports the state used '
-                                      'with cap=1, reads the undumpable process and its second thread, and finds a '
-                                      'whole block for process 1, which is root\'s and closed to the probe itself, '
-                                      'and reads the run label of the undumpable process and of process 1: '
-                                      'six PASS lines [%s %s]' % (ran.returncode, said[-500:]),
-                                      ran.returncode == 0 and 'state used cap=1' in said and 'FAIL' not in said
-                                      and said.count('PASS: ') == 6
-                                      and 'PASS: process 1, root-owned and closed to the probe itself, has a whole '
-                                          'block with its start time' in said
-                                      and 'PASS: the run label of the undumpable process, whose environment is '
-                                          'closed to the probe itself, is read' in said)]
+            return ran.returncode, ran.stdout.decode('utf-8', 'replace')
+
+        # The three outcomes, under the suite's seam. The pin is the one the probe reads, and the state
+        # is the probe's own, read through the socket; the six lines stand for the check's rows, which no
+        # suite can earn without the capability.
+        CHECK_ROWS = ('the reader is used', 'the first thread of the undumpable process is read in its folder',
+                      'its second thread is read in the other folder',
+                      'it is not counted in a folder it does not hold',
+                      'process 1, root-owned and closed to the probe itself, has a whole block with its start time',
+                      'the run label of the undumpable process, whose environment is closed to the probe itself, is '
+                      'read and is the one it was started with, and the label of process 1 is read')
+        started_checks = []
+
+        def seam_check(spoiled=None):
+            started_checks.append(spoiled)
+            table_file.write_bytes(shown_in_item)
+            served.update(mode='honest', argv=None)
+            found = P.reader_read()['state']
+            passes = [found == 'used' and number != spoiled for number in range(len(CHECK_ROWS))]
+            lines = ['veldo-procread: state %s%s' % (found, ' cap=1' if found == 'used' else '')]
+            lines += ['%s: %s' % ('PASS' if passed else 'FAIL', label) for passed, label in zip(passes, CHECK_ROWS)]
+            return 0 if all(passes) else 1, '\n'.join(lines) + '\n'
+
+        def outcome_under(spoiled=None, **over):
+            seam(**over)
+            return installed_row(P._reader_pin(P._reader_seam()), lambda: seam_check(spoiled))
+
+        kept_seam = P.SEAM['reader']
+        outcome, why, said = outcome_under(pin='none')
+        check('ac6/installed-pin', 'with no pin recorded the row is skipped, not passed: the reason names the missing '
+              'pin and its key, and the check is not started [%s %r %s]' % (outcome, why, started_checks),
+              outcome == 'SKIP' and said is None and started_checks == []
+              and 'records no pin' in why and 'process_reader' in why and 'no_pin' in why)
+        check('ac6/installed-pin', 'the word none, no key and a digest of another form are all no pin',
+              [outcome_under(pin=value)[0] for value in ('none', False, digest(installed).upper())] == ['SKIP'] * 3
+              and started_checks == [])
+        outcome, why, said = outcome_under(pin=digest(impostor))
+        check('ac6/installed-pin', 'with a pin recorded that is not the installed reader\'s digest the check runs and '
+              'the row fails [%s %r]' % (outcome, (said or '').split('\n')[0]),
+              outcome == 'FAIL' and started_checks == [None] and 'state refused:digest' in said)
+        outcome, why, said = outcome_under()
+        check('ac6/installed-pin', 'with the installed reader\'s digest pinned the check runs and the row passes '
+              '[%s %r]' % (outcome, (said or '').split('\n')[0]),
+              outcome == 'PASS' and started_checks == [None, None] and 'state used cap=1' in said)
+        check('ac6/installed-pin', 'pinned, the row still fails when one line of the check fails, whichever it is [%s]'
+              % [outcome_under(spoiled=number)[0] for number in range(len(CHECK_ROWS))],
+              [outcome_under(spoiled=number)[0] for number in range(len(CHECK_ROWS))] == ['FAIL'] * len(CHECK_ROWS))
+        P.SEAM['reader'] = kept_seam
+
+        present, runner = os.path.lexists(P.READER), shutil.which('systemd-run')
+        if present and runner:
+            outcome, why, said = installed_row(P._reader_pin({}), under_the_unit)
+            if outcome == 'SKIP':
+                print('  SELFTEST SKIP: VELDO-0344 ac6/installed: ' + why)
+            else:
+                print('  VELDO-0344 ac6/installed: ' + said.split('\n')[0])
+                rows['ac6/installed'] = [(why, outcome == 'PASS')]
         elif present:
             print('  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is installed at %s, but systemd-run is '
                   'not on the path of this run, so the row cannot start the check under the authority unit\'s '

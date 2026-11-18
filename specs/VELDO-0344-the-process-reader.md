@@ -624,3 +624,27 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     inside the gate domain, caught in the first run) and is red; unchanged, it is green in both.
   Measured: off the gate and inside the gate domain (gate_candidate.py) 64 of 65 rows, the one red
   ac6/installed with refused:no_pin (the owner's pin, already ruled).
+- 2026-11-18: gate fix 6, the owner's ruling on ac6/installed (Telegram 42186/42187, 2026-11-18). The
+  ruling: the installed row is SKIPPED in the gate's confined leg while the installation records no pin
+  for the process reader, as it already is where the reader's file or systemd-run is absent; the owner
+  pins after landing. It replaces "stays red until the owner pins the reader"
+  (proof/0329b-gate-fix/teeth.md). One suite change, no change to the reader, the probe or the check.
+  - The row reads the pin the way the probe does (the space section's key process_reader, a digest of 64
+    lowercase hexadecimal digits; anything else, or an installation that cannot be read, is no pin).
+    With no pin it prints a SELFTEST SKIP line that names the missing pin and its key, adds no row and
+    starts no check: a skip is never a pass. With a pin recorded the row runs as before, with the same
+    conditions (status 0, state used cap=1, no FAIL, six PASS lines, the fifth and sixth by their text),
+    so a pin that is not the installed reader's digest is red (refused:digest), and so is a pinned
+    reader whose check fails.
+  - New row ac6/installed-pin, under the suite's seam: no pin (the word none, no key, a digest of another
+    form) is SKIP and the check is not started; a pin of another file's digest is FAIL with the state
+    refused:digest; the installed copy's digest is PASS; pinned, with any one of the six lines failing,
+    FAIL. The pin and the state are the probe's own (the pin check and the read through the socket); the
+    six lines stand for the check's rows, which no suite can earn without the capability. Falsifier,
+    run by hand: with the no-pin skip removed, ac6/installed-pin and ac6/installed are both red.
+  - NOT COVERED by the ruling, for the owner after the pin: in the gate's confined leg the row cannot
+    reach the systemd user manager (the leg blocks its socket), so a pinned reader that the confined leg
+    can read as pinned is red there until the row runs in the unconfined leg (a row-scoped entry in the
+    protected scripts/gate_unconfined.json) or another ruling is made.
+  Measured off the gate on this host (reader installed, no installation folder, so no pin): suite 141,
+  65 rows, 65 passed, ac6/installed skipped by the new line. Not run inside the gate domain.
