@@ -1313,11 +1313,15 @@ sys.exit(payload.get('code', 0))
                 after = C.status(MAIN)
                 observed['observations'] = {'taxonomy': classes, 'trace': trace, 'joined': joined,
                                             'pending_after': after.get('groups')}
-                check('containment/observations',
-                      classes == expected_classes and trace == ['accepted', 'running', 'exited'] and joined
-                      and after.get('qualified') is True and after.get('groups') == []
-                      and live_groups and all(g.get('description', '').startswith('Veldo dispatch dispatch/')
-                                              for g in live_groups))
+                _clauses = {'classes': classes == expected_classes, 'trace': trace == ['accepted', 'running', 'exited'],
+                            'joined': joined, 'qualified': after.get('qualified') is True,
+                            'groups_empty': after.get('groups') == [], 'live_groups': bool(live_groups),
+                            'descriptions': bool(live_groups) and all(g.get('description', '').startswith('Veldo dispatch dispatch/') for g in live_groups)}
+                _ok = all(_clauses.values())
+                if not _ok:
+                    import sys as _s
+                    _s.stderr.write('INV4 OBS ' + json.dumps({'clauses': _clauses, 'classes': classes, 'expected': expected_classes, 'trace': trace, 'after': after, 'live_groups': live_groups, 'events': {g.get('unit'): read(group_path((g.get('cgroup') or '')) / 'cgroup.events') for g in (after.get('groups') or [])}, 't': time.time()}, sort_keys=True, default=str) + '\n')
+                check('containment/observations', _ok, {'clauses': _clauses, 'after': after, 'trace': trace})
                 scaffold = load('v40_scaffold', mods / 'init_scaffold.py')
                 check('containment/installed-assets', '.veldo/control_containment.py' in scaffold._FILES
                       and '.veldo/control_launch.py' in scaffold._FILES)
