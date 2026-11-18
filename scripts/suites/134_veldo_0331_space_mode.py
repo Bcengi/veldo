@@ -211,6 +211,9 @@ def _v331_space_mode_suite():
                                    'roles': ['project_owner'], 'public_key': PUBLIC['local'],
                                    'independence_group': 'local', 'scope': ['repo-elsewhere']}, enrollee='local')
 
+        # The installation makes the state root before the service opens the Ledger (control_service.py,
+        # install); the Signal's item lock (VELDO-0315) opens that folder, so the fixture makes it too.
+        (temp / 'state').mkdir(mode=0o700)
         L = SP.Ledger(S, conn, 'authority', journal_sign, config=CONFIG, projects=[ORCHARD, MEADOW],
                       state_root=str(temp / 'state'), lifecycle=LIFECYCLE, host='fixture-host',
                       device=lambda path: 'dev-host')
