@@ -1300,15 +1300,64 @@ def _v307_space_docker_ownership_suite():
                      if isinstance(node, ast.Constant) and isinstance(node.value, str) and len(node.value) < 20}
             called = {node.func.attr for node in ast.walk(source)
                       if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
+            if name == 'control_space_reconcile.py':
+                # VELDO-0329 put the hook installer in this file. Its _put writes a file beside its
+                # target under a name it draws itself, creates it exclusively, and takes that one
+                # file away again when it was not moved into place. That one call, in that function,
+                # on that name, is the only delete this row lets pass: every delete call in the
+                # source is counted, and a second one, or this one on any other name, is red.
+                deletes = [(owner.name, ast.unparse(node)) for owner in ast.walk(source)
+                           if isinstance(owner, ast.FunctionDef) for node in ast.walk(owner)
+                           if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                           and node.func.attr in {'rmtree', 'unlink', 'rmdir', 'remove', 'removedirs'}]
+                everywhere = [node for node in ast.walk(source)
+                              if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                              and node.func.attr in {'rmtree', 'unlink', 'rmdir', 'remove', 'removedirs'}]
+                put = next((ast.unparse(node) for node in source.body
+                            if isinstance(node, ast.FunctionDef) and node.name == '_put'), '')
+                own = ("temporary = os.path.join(folder, '.' + name + '.veldo-' + os.urandom(6).hex())" in put
+                       and 'os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 384)' in put
+                       and put.count('temporary = ') == 2 and 'temporary = None' in put)
+                check(ROW, 'the one delete call of control_space_reconcile.py is the hook installer taking away '
+                      'the file it created itself, exclusively, under a name it drew [%s %s]' % (deletes, own),
+                      deletes == [('_put', 'os.unlink(temporary)')] and len(everywhere) == 1 and own)
+                called -= {'unlink'} if deletes == [('_put', 'os.unlink(temporary)')] and len(everywhere) == 1 and own else set()
             check(ROW, 'the source of %s names no remove, no prune, no kill and no force option, and calls no '
                   'delete [%s %s]' % (name, sorted(words & {'rm', 'remove', 'prune', 'kill', '--force', '-f'}),
                                       sorted(called & {'rmtree', 'unlink', 'rmdir', 'remove', 'removedirs'})),
                   not words & {'rm', 'remove', 'prune', 'kill', '--force', '-f'}
                   and not called & {'rmtree', 'unlink', 'rmdir', 'remove', 'removedirs'})
-        check(ROW, 'the reconciler runs no process and reads no clock',
-              not {'subprocess', 'time', 'shutil'} & {alias.name for node in ast.walk(
-                  ast.parse(Path(PRODUCTION['control_space_reconcile.py']).read_text()))
-                  if isinstance(node, ast.Import) for alias in node.names})
+        # VELDO-0329 put the hook installer in this file (fix rounds 1 and 5): it reads the owner's
+        # git configuration through the one git process module, with subprocess's constants and its
+        # error, and waits for the settings lock with the monotonic clock. The row holds what it
+        # held for everything else: outside those two functions the file names neither module, the
+        # two use exactly these names, none of which starts a process or reads the wall clock, and
+        # shutil is not imported.
+        source = ast.parse(Path(PRODUCTION['control_space_reconcile.py']).read_text())
+        used = {}
+        for owner in ast.walk(source):
+            if isinstance(owner, ast.FunctionDef):
+                for node in ast.walk(owner):
+                    if isinstance(node, ast.Name) and node.id in ('subprocess', 'time', 'shutil'):
+                        used.setdefault(owner.name, set())
+            if isinstance(owner, ast.FunctionDef):
+                for node in ast.walk(owner):
+                    if (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+                            and node.value.id in ('subprocess', 'time', 'shutil')):
+                        used[owner.name].add(ast.unparse(node))
+        names = [node for node in ast.walk(source)
+                 if isinstance(node, ast.Name) and node.id in ('subprocess', 'time', 'shutil')]
+        inside = [node for owner in source.body if isinstance(owner, ast.FunctionDef)
+                  and owner.name in ('_owner_git', '_settings_lock') for node in ast.walk(owner)
+                  if isinstance(node, ast.Name) and node.id in ('subprocess', 'time', 'shutil')]
+        check(ROW, 'the reconciler runs no process and reads no clock [%s]' % sorted(used.items()),
+              'shutil' not in {alias.name for node in ast.walk(source) if isinstance(node, ast.Import)
+                               for alias in node.names}
+              and not any(isinstance(node, ast.ImportFrom) and node.module in ('subprocess', 'time', 'shutil')
+                          for node in ast.walk(source))
+              and used == {'_owner_git': {'subprocess.DEVNULL', 'subprocess.PIPE', 'subprocess.SubprocessError'},
+                           '_settings_lock': {'time.monotonic', 'time.sleep'}}
+              and len(names) == len(inside) == 7)
 
         for name in sorted(PRODUCTION):
             check('ownership/canon', 'the engine canon engine/.veldo/%s equals this repository copy' % name,
