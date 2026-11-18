@@ -500,6 +500,9 @@ def _v336_suite():
                   (real / 'inner' / 'leaf').read_bytes() == b'behind a link')
         one('paths/parent-link-refused', linked_parent)
 
+        KEEP = load('v336_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+        keep_desk = KEEP.Desk(mods, S, CM, AC, conn, IDS, journal_sign, owner_sign, owner_keys, NOW, tag='v336_desk')
+
         def kept(row, child=False):
             given, path, identity = begin('kept-child' if child else 'kept')
             (path / 'notes').write_bytes(b'owner keeps this')
@@ -510,7 +513,22 @@ def _v336_suite():
                 L.confirm(picked)
             version = conn.execute('SELECT version FROM entities WHERE id=?', (picked,)).fetchone()[0]
             L.signal('run_finished', {'items': [{'item': picked, 'version': version}]})
-            marked = L.outcome(picked, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318).
+            # The worktree is kept through its request, the owner's settled answer and the owner's
+            # packet. The Ledger raises no request for the evidence child, so its settled request is
+            # planted, and the signature, the membership check and the transition are the Ledger's.
+            claimed = L.outcome(picked, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            check(row, 'an outcome that claims the owner mark is refused',
+                  not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+                  and not L.item(picked).get('owner_keep') and L.item(picked)['state'] == 'due')
+            if child:
+                marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, picked, owner_sign, NOW)
+            else:
+                asked = KEEP.reserve(L, RM, picked)
+                check(row, 'the worktree has its request [%s]' % (asked.get('reason'),), asked.get('ok'))
+                settled, edge_alone, marked = keep_desk.owner_keeps(L, picked, SP.ITEM_KIND)
+                check(row, 'the settled answer alone marks nothing', settled.get('outcome') == 'settled'
+                      and not edge_alone['ok'])
             check(row, 'owner mark accepted', marked['ok'])
             finish(given)
             check(row, 'owner work and mark survive', (path / 'notes').read_bytes() == b'owner keeps this'
