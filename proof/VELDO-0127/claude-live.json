@@ -213,7 +213,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-y3nkhpwq/factory/runs/6a8e6f53a43b3e9f4ebfa6658f07456b/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-y3nkhpwq/factory/runs/6a8e6f53a43b3e9f4ebfa6658f07456b/config/role-plugin",
       "source": "veldo-role@inline"
      },
      {
@@ -538,7 +538,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-y3nkhpwq/factory/runs/c9ac64f0c0033b91ca4bbf1da0039ea2/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-y3nkhpwq/factory/runs/c9ac64f0c0033b91ca4bbf1da0039ea2/config/role-plugin",
       "source": "veldo-role@inline"
      },
      {
@@ -865,7 +865,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-y3nkhpwq/factory/runs/0f1362ba40fc446cc9bf4321087fb053/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-y3nkhpwq/factory/runs/0f1362ba40fc446cc9bf4321087fb053/config/role-plugin",
       "source": "veldo-role@inline"
      },
      {
@@ -1203,7 +1203,7 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-y3nkhpwq/factory/runs/ad484d5af7cb63114b5d21d9054c28bb/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-y3nkhpwq/factory/runs/ad484d5af7cb63114b5d21d9054c28bb/config/role-plugin",
       "source": "veldo-role@inline"
      },
      {

@@ -192,8 +192,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-       "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+       "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+       "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -206,7 +206,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/ecee3900be51fb0ad37fb46269893bed/config/model-catalog.json",
+    "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/ecee3900be51fb0ad37fb46269893bed/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -215,7 +215,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -642,8 +642,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-        "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+        "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+        "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -656,7 +656,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/ecee3900be51fb0ad37fb46269893bed/config/model-catalog.json",
+     "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/ecee3900be51fb0ad37fb46269893bed/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -665,7 +665,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -1082,8 +1082,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-       "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+       "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+       "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1096,7 +1096,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/65e21920dc7ee2967bc7aee8bd3685bd/config/model-catalog.json",
+    "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/65e21920dc7ee2967bc7aee8bd3685bd/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1105,7 +1105,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -1532,8 +1532,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-        "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+        "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+        "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -1546,7 +1546,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/65e21920dc7ee2967bc7aee8bd3685bd/config/model-catalog.json",
+     "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/65e21920dc7ee2967bc7aee8bd3685bd/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -1555,7 +1555,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -1972,8 +1972,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-       "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+       "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+       "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1986,7 +1986,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/601885aa1103f0fffa0e6e18f2494096/config/model-catalog.json",
+    "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/601885aa1103f0fffa0e6e18f2494096/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1995,7 +1995,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -2433,8 +2433,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-        "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+        "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+        "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -2447,7 +2447,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/601885aa1103f0fffa0e6e18f2494096/config/model-catalog.json",
+     "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/601885aa1103f0fffa0e6e18f2494096/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -2456,7 +2456,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -2873,8 +2873,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-       "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+       "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+       "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -2887,7 +2887,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/873db7d58244a49e07fd3b262b7dcbba/config/model-catalog.json",
+    "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/873db7d58244a49e07fd3b262b7dcbba/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -2896,7 +2896,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -3334,8 +3334,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/1000/veldo0127-live-bywji2lf/server.py",
-        "/run/user/1000/veldo0127-live-bywji2lf/jira.value"
+        "/run/user/UID/veldo0127-live-bywji2lf/server.py",
+        "/run/user/UID/veldo0127-live-bywji2lf/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -3348,7 +3348,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/1000/veldo0127-live-bywji2lf/factory/runs/873db7d58244a49e07fd3b262b7dcbba/config/model-catalog.json",
+     "model_catalog_json": "/run/user/UID/veldo0127-live-bywji2lf/factory/runs/873db7d58244a49e07fd3b262b7dcbba/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -3357,7 +3357,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/1000/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/UID/veldo0127-live-bywji2lf/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
