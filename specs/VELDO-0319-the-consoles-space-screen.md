@@ -53,6 +53,8 @@ footprint:
   - "engine/ui/src/features/signin/webauthn.ts"
   - "engine/.veldo/control_service_api.py"
   - ".veldo/control_service_api.py"
+  - "engine/.veldo/control_membership.py"
+  - ".veldo/control_membership.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -438,3 +440,44 @@ own alias keeps that member alone; this amendment adds the console's way to send
     that file was not edited.
   - Open for the lead, from the amendment: a Keep answered over the phone's message channel waits for
     Sign Keep in the console and is not refused on that channel.
+
+- 2026-11-18: LEAD DECISION on the red F2 rows, and the round that built it: the cause is fixed, not
+  the rows. The footprint is widened to engine/.veldo/control_membership.py and its synced copy. An
+  authority read costs in proportion to what it reads, not to the size of the store. The record is
+  proof/VELDO-0319/authority-read-round.json.
+  - The cause. control_membership.authority_state read and parsed every entity of the store
+    (store.materialized_state) for each judgement of a reader, so a space read cost 2,067 SQL steps
+    on the fixture and 108,563 with 4096 more records.
+  - The fix. authority_state reads, in ONE statement, the journal head and the records of the
+    authority's own kinds (membership, delegation, verification_key, authority_versions) by kind,
+    through the Ledger's (kind, id) index. Its "entities" is the same snapshot read as it is asked
+    for: a record by its id when first asked, the whole map (in id order) only when the whole is
+    asked. The answers are the snapshot's: a record rewritten after the read is taken back from the
+    journal's transitions at or before the head the read saw, and one created after it is absent.
+    The keys, the lists and their order are unchanged, and no caller was changed.
+  - Rows, suite 150_veldo_0319_space_screen, 37 green. cost/removed-index 689 -> 689 and
+    cost/carried-index 693 -> 693 with 4096 more records. New cost/flat-when-doubled: the store
+    doubled again, 4135 to 8270 records, 689 -> 689 -> 689 and 693 -> 693 -> 693, the same records
+    served. New cost/same-answers: the indexed state against a read of the whole store over the
+    fixture (the authority's records, every record by id, the whole map, its order and canonical
+    bytes, the snapshot across a later commit), and every space read for every member answered
+    through both, the same bytes (16 reads, 12 served, 4 refused).
+  - ONE CHANGE TO THE FIXTURE OF THE TWO F2 ROWS, for the lead to confirm. With authority_state
+    fixed, cost/carried-index was still red by one step, 692 -> 693, in one statement: the lookup of
+    the dispatch that carries a hold, by the hold's exact name in the index. Such a lookup ends on
+    the first later name in the index, one step, however many follow; the fixture held no later
+    name before the first count. One dispatch with a later hold (dispatch:cost-edge) now stands
+    before the first count. The assertion is the same equality, and doubling the store shows the
+    count flat.
+  - Not the index's owner. The (kind, id) index is created by control_space.Ledger when it opens. On
+    a store no Ledger has opened, the read by kind walks the entities table (no record is parsed);
+    control_store.py is outside the footprint. membership.admit still reads every nonce through
+    store.materialized_state, and its touched_entities asks the whole map: administrative commands,
+    not reads, left as they are.
+  - Suites that import control_membership, each run alone: 25 green (38, 39, 56, 58, 59, 61, 64, 68,
+    74, 82_0141, 83, 86_0148, 95, 113, 127, 128, 129_0254, 129_0260, 140, 142, 148, 150_0329,
+    153_0314, 153_0336 and 71). 16 red, each with the same failing rows on 992090dc before this
+    change, and the same counts on the base a0e4bc10: 85_0158, 133, 134, 139, 143, 144, 145, 146,
+    147, 151, 153_0302, 153_0309, 153_0328, 153_0337, 153_0341, 154. Not green, and not from here.
+  - For the record, not fixed here: set_mode still accepts only a text signature before _mode_signer
+    (VELDO-0332's work).
