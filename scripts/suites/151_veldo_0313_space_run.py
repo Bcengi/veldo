@@ -1978,7 +1978,16 @@ def _v313_space_run_suite():
             kept = L.declare('scratch', {'path': str(kept_path)}, given['owner'], 'seam')['item']
             L.confirm(kept)
             due = L.signal('run_finished', {'items': [{'item': kept, 'version': version_of(kept)}]})
-            marked = L.outcome(kept, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318). The
+            # Ledger raises no request for a scratch folder, so the settled request is planted
+            # (support/space_owner_keep.py, keep_planted); the signature, the membership check and the
+            # one transition are the Ledger's own.
+            claimed = L.outcome(kept, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            check(row, 'an outcome that claims the owner mark is refused [%s]' % (claimed.get('reason'),),
+                  not claimed.get('ok') and claimed.get('reason') == 'not_authorized'
+                  and not (L.item(kept) or {}).get('owner_keep'))
+            KEEP = load('v313_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+            marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, kept, owner_sign, NOW)
             other_run = L.issue(SP.RUNNER, 'other', scope=A)['run']
             other_path = SCRATCH / 'other-run'
             other_path.mkdir()
