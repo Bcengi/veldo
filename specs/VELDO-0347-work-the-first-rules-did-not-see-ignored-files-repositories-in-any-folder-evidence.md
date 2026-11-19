@@ -171,6 +171,34 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-19: V1 preparation, the teeth of every finding whose suite the suite repair below changed
+  and that were not yet run: 304, 305, 306, 307, 308, 309, 310, 313, 315, 328, 331, 337 and 341, each
+  whole, alone, on the clean committed tree (proof/VELDO-0347/teeth-v1b.json). No rule, remover or
+  Ledger file changed, and no statement of any row was taken out or loosened.
+  - Lead decision, footprint: the product line of the entry below that was outside the footprint
+    (init_scaffold.py, both copies, lists control_space_admission.py, 87fce757, which 153_0323
+    compatibility/installed-closure needs) is accepted. It is a lead-authorized widening of the
+    footprint of 2026-11-19; the two files are in the footprint list above.
+  - Two anchors of the teeth registry that other tickets had moved, so that neither finding could
+    start: space306-volumes-first (the order of removal gained the review kinds in the VELDO-0337
+    fix, 8f99aeaa; fix round 2 had seen it and left it) and
+    space308-exit-without-releasing-the-hold (VELDO-0316, aa1c5560, gave the release its run). Each
+    names its line as it is now and makes the same defect; each is rejected by its row.
+  - Two cases of finding 308 survived, both on row 146 ac4/pins-held-while-deferred:
+    space308-pins-released-at-hand-over and space308-pins-released-while-the-item-is-not-removed.
+    Not caused by this ticket and not by the suite repair: since VELDO-0304 (fb5d0f89) a pin is
+    released through the ref remover, which refuses a pin whose item has not ended, so a release
+    asked for too early leaves the pin where it is and the row, which read only that the pin is
+    held, stayed green. The suite had three red rows until the repair, so nobody could see it. The
+    row keeps every statement and gains two: after the hand-over and the sweeps, and again after
+    the sweep over a work tree that is not at its path, the provisioner holds no answer for the pin
+    and the retirement observed no release, so nobody asked. Both cases, unchanged, now red the
+    row. This is a statement about a deletion: one was added, none weakened.
+  - The other twelve findings rejected every case on the first run. With the four of the entry
+    below (336, 324, 302, 323) all seventeen findings of the changed suites are whole.
+  - For the join of V1: scripts/suites/153_veldo_0336_run_worktree.py is taken from
+    veldo-space-0319 (lead decision), which repairs the same two rows on top of VELDO-0340.
+
 - 2026-11-18: suite repair for landing batch V1 (space stack 2: 0343, 0347, 0319), on the lead's
   decisions after the fix check of 837fa81a (fixcheck-veldo-0347.md). For this round the lead widened the
   footprint to suites 134, 141, 143, 144, 145, 146, 147, 151, 153_*, 154, 155 and 156 with their fixtures
