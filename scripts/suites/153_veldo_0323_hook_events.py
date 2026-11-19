@@ -538,6 +538,15 @@ def _v323_suite():
         event('session_ended', dict(session='scratch-repository', cwd=str(base), **dead))
         check('safety/session-work-kept', nested_path.is_dir()
               and git(nested_path, 'rev-parse', 'HEAD') == nested_tip)
+        # Since VELDO-0347 AC5 rule 6 holds a scratch folder that is a repository before the remover
+        # is reached, so the statement above no longer shows the remover's own stop at a repository.
+        # The remover is asked past the rules, as suite 138 asks it (work/repository-in-a-folder).
+        past = RM.remove(ledger, P, nested, ledger.item(nested), free=service.space['free'], proc=str(proc))
+        check('safety/session-work-kept', ledger.item(nested)['state'] == 'deferred'
+              and past.get('ok') is False and past.get('deferral') == 'remove_refused'
+              and 'git repository' in str(past.get('said')) and nested_path.is_dir()
+              and git(nested_path, 'rev-parse', 'HEAD') == nested_tip
+              and (nested_path / 'scratch').read_text() == 'scratch-repository')
         none, none_path = session('no-project', {'type': 'no_project'}, dead)
         other, other_path = session('other-project', {'type': 'project', 'id': 'other'}, dead)
         alive, alive_path = session('alive', scope, {'pid': live['pid'], 'started': live['start']})

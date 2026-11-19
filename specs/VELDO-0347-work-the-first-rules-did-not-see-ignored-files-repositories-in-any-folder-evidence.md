@@ -226,6 +226,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     reads, is held by the rules, and the remover asked past the rules (as suite 138 asks it in
     work/repository-in-a-folder) refuses it, remove_refused, for the repository, with its commit and
     file whole. The case is unchanged and reds the row.
+  - The same line of the remover has one more case, space323-session-repository-deleted, and it
+    survived for the same kind of reason: its row, 153_0323 safety/session-work-kept, plants a session
+    scratch that is a repository, which rule 6 holds since AC5 before the remover is reached. The row
+    keeps its statement and gains the remover asked past the rules, which refuses it for the
+    repository with its commit and file whole. The case is unchanged and reds the row; finding 323
+    was run whole for it.
 
 - 2026-11-16: fix round 2, on the independent review of 25f56001 (review-veldo-0347.md, verdict FIX, no
   path that loses work). Four findings, each fixed or decided, and two defects found on the way.
