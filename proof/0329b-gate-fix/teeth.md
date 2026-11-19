@@ -289,3 +289,54 @@ crashed ('Exit handler never called'), an invalid_baseline of the local run, not
 The gate log's "GATE: NOT JUDGED (space unread: pool free space unread)" is output of suite 153's row
 safe/unread-free (VELDO-0309), which gives classify an unreadable pool and expects exit 75; the real gate
 printed "space: no central installation" and judged RED on the mutation stage alone.
+
+### Gate 8 (412634ae): one row red, VELDO-0143 activation/name-taken. Cause not found; nothing is fixed
+
+Gate 8 failed one row of the unit stage's unconfined leg, suite 110_veldo_0143_new_project, row
+activation/name-taken, on its third part ("its report tells him it could not be set up, and why"). The row
+passed in gate 7 (04113d81). This record says what was measured. It does not claim a fix.
+
+Not 412634ae. That commit changed engine/ui/e2e/harness.py and this file. Suite 110 and the fixture it runs
+on (proof/VELDO-0152/fixture.py) use neither; their two HTTP stand-ins bind port 0 themselves and keep
+listening for the whole suite, so the port the harness now holds is never one of theirs.
+
+What the red is. The part needs both reports of that region (the refused second tidepool and the mussel
+decision that found its name taken) to come back `sent`. Every input of the part is decided before the
+reports are made, and the row's first two parts, which read those inputs, passed. So one report came back
+other than `sent`: its exchange with the fixture's Bot API stand-in failed, or one of its two store writes was
+refused. Shown: in a scratch copy where the first report's exchange meets a closed port, the suite fails
+exactly this row on exactly this part and passes the other 134, as gate 8 did. The same holds for the only
+other red this suite has in the 30 gate logs kept (landing-c 39ddd9e5, provision/adoption-path,
+no_settled_decision:not_answered): one presentation or one answer lost.
+
+Not reproduced. Row activation/name-taken, unmutated code:
+- suite alone on this host, at ef06ee39: 1 run, then 60 runs twelve at once (load 13 to 15), then 180 runs
+  eighteen at once (load 23 to 26): 0 failures of 241.
+- pc2, at ef06ee39: 30 runs six at once (load 10 to 14): 0 of 30. (pc2 has no graph runtime; the three PM
+  rows are red there for that reason alone.)
+- as the gate runs it, one process for the leg: the 35 suites before it and then suite 110, five runs
+  (selftest --suite, 1216 rows each), and the whole unconfined unit leg through scripts/gate_legs.py once
+  (1131 passed, 0 failed, 1252 s): 0 failures of 6.
+- at 2b76ff36: 2 runs alone and 24 runs eight at once: 26 of 26, 135 rows each.
+
+Measured at the row, in the gate-like runs, and found clean: the suite's store connection holds no read
+snapshot another connection's commit could make stale (a commit from a second connection followed by BEGIN
+IMMEDIATE, at the start of every region and before the reports: accepted every time); 12 to 15 open
+descriptors against a limit of 1048576; socket, urllib, http.client, http.server, sqlite3, subprocess and
+time are the library's own functions; no signal handler and no timer is set; the main process made no close
+call that failed (strace, close calls only); no provisioner process of the pass is running.
+
+Seen, and not shown to matter: threads earlier suites leave behind are alive while suite 110 runs, in some
+runs and not others: two from 66_veldo_0042_clones (a TCP listener closed while its thread is in accept;
+the thread answers nothing to whatever it accepts) and two from 86_veldo_0189_engine_upgrade (Bridge.serve).
+
+One other row of this suite failed once in the 241 runs, only with twelve copies at once:
+service/pm-settled-due ('push_refused:remote', 'not_taken_on:authority_unavailable'). It is a different
+part of the suite and was not looked into.
+
+Change (ef06ee39, 2b76ff36), in the suite only, no condition touched: the part's detail now carries each
+report made with its outcome and reason, and what the edge raised when a send failed. The scratch run above
+prints: ('unknown_outcome', 'unknown_outcome'), EdgeRefused 'no readable platform answer (URLError)' and
+the URLError's own cause. The next red of this row names which of the two it was.
+
+Open: the cause. The row can go red again.
