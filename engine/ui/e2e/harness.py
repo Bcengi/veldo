@@ -66,10 +66,18 @@ def b64url(data):
     return base64.urlsafe_b64encode(data).rstrip(b'=').decode('ascii')
 
 
-def free_port():
-    with socket.socket() as s:
-        s.bind(('127.0.0.1', 0))
-        return s.getsockname()[1]
+def reserve_port():
+    """A loopback port held until the API server binds it. The origin names the port before the factory is
+    built, so it is chosen first; closing the socket at once (as this did) left the port free for the whole
+    build, and under a loaded gate another listener's bind to port 0 could take it, so the API server's bind
+    failed with EADDRINUSE and the row failed on the unmutated code (gate 7 of space-0329b, case
+    ui131-decision-action-hidden-360). The reservation stays bound, not listening, with SO_REUSEADDR, as
+    http.server's own bind sets it: the kernel never hands a bound port to a bind to port 0, and the API
+    server's bind to it succeeds because neither socket listens yet. main() closes it once the server is up."""
+    s = socket.socket()
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(('127.0.0.1', 0))
+    return s
 
 
 class OnThread:
@@ -227,7 +235,8 @@ class Factory:
         self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix='authority')
         self.ident = [None]
         self.pool.submit(lambda: self.ident.__setitem__(0, threading.get_ident())).result()
-        self.port = free_port()
+        self.reservation = reserve_port()
+        self.port = self.reservation.getsockname()[1]
         self.host = 'localhost:%d' % self.port
         self.origin = 'http://' + self.host
         self.offset = [0.0]
@@ -865,6 +874,7 @@ def main():
             return original(stream, guarded, idle)
         API.serve_stream = serve_stream
         server = API.listen(factory.api, '127.0.0.1', factory.port)
+        factory.reservation.close()
         server.daemon_threads = True
         threading.Thread(target=server.serve_forever, daemon=True).start()
         control = control_server(factory, stop)

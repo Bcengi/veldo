@@ -261,3 +261,31 @@ After: suite alone 46 passed; 96 runs of 96 clean, sixteen at once, load average
 recorded above.
 
 Still open, not touched: owner-command-unrouted (suite 71, about 82 s of 120).
+
+### Gate 7 (04113d81): the one case not rejected was an unmeasured baseline, not a surviving mutant
+
+Mutation: registered 3597, executed 3597, rejected 3596. The one case is check_teeth_mutations.py
+ui131-decision-action-hidden-360 (finding 131, suite 121_veldo_0131_factory_screens_narrow, row
+ac1/screens-360): it adds v-show="!hideAt360" with useMedia('(max-width: 360px)') to the send-answer block of
+DecisionDetail.vue, hiding the inline answer on a 360 px phone. The stage ended invalid_baseline: the control
+run on the unmutated code failed row ac1/screens-360 in its browser test at http.server server_bind, so the
+mutant was never judged. No row misses a defect and the mutant is not equivalent.
+
+Cause, in the e2e harness (engine/ui/e2e/harness.py): free_port() bound port 0, read the number and closed
+the socket; the factory was then built (seconds, with its own listeners on port 0) before API.listen bound
+that number. Under the gate's load another bind to port 0 could take it in between and the API server's bind
+failed EADDRINUSE. Shown: a port released the old way and taken by another socket makes ThreadingHTTPServer
+raise [Errno 98] Address already in use.
+
+Change: the harness holds the port's socket bound (SO_REUSEADDR, not listening) from the factory's start until
+API.listen has bound it, then closes it. In 20,000 binds to port 0 the held port was handed out 0 times, and
+ThreadingHTTPServer (allow_reuse_address) binds the held port. No row's condition changed.
+
+After: suite 121 alone (nice -n 19), unmutated: 2 rows passed. With the case's three edits applied: row
+ac1/screens-360 fails ('primary action [data-testid="send-answer"] not visible'), ac1/screens-390 passes;
+restored. The standalone driver (--case) could not judge it here: its sandbox has no node_modules and npm ci
+crashed ('Exit handler never called'), an invalid_baseline of the local run, not of the gate.
+
+The gate log's "GATE: NOT JUDGED (space unread: pool free space unread)" is output of suite 153's row
+safe/unread-free (VELDO-0309), which gives classify an unreadable pool and expects exit 75; the real gate
+printed "space: no central installation" and judged RED on the mutation stage alone.
