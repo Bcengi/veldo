@@ -1,0 +1,230 @@
+{
+ "note": "Each suite run alone with nice -n 19 python3 scripts/selftest.py --suite NAME, before the repair (at 76bae88d, with the one uncommitted line of the interrupted run in suite 151) and after it (at 16e841a9; 154 and 153_0323 at their last change). before null: the suite stopped on an assertion before its summary. Suite 151 after is the run inside the gate's confinement (gate_candidate.py), twice 63 and 0; outside it on this shared host its reds follow the process table (5, 10 and 10 rows in three runs). Suite 141: the one red row is ac6/installed, refused:no_pin, left for the owner's pin after landing. Partial runs: not verification; the gate is the lead's.",
+ "suites": [
+  {
+   "after": {
+    "failed": 0,
+    "passed": 42
+   },
+   "before": {
+    "failed": 14,
+    "passed": 28
+   },
+   "suite": "134_veldo_0331_space_mode"
+  },
+  {
+   "after": {
+    "failed": 1,
+    "passed": 90
+   },
+   "before": {
+    "failed": 1,
+    "passed": 90
+   },
+   "suite": "141_veldo_0344_process_reader"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 52
+   },
+   "before": {
+    "failed": 1,
+    "passed": 51
+   },
+   "suite": "143_veldo_0305_space_census"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 55
+   },
+   "before": {
+    "failed": 1,
+    "passed": 54
+   },
+   "suite": "144_veldo_0306_space_docker"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 51
+   },
+   "before": {
+    "failed": 1,
+    "passed": 50
+   },
+   "suite": "145_veldo_0307_space_docker_ownership"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 64
+   },
+   "before": {
+    "failed": 3,
+    "passed": 61
+   },
+   "suite": "146_veldo_0308_run_finished"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 59
+   },
+   "before": {
+    "failed": 1,
+    "passed": 58
+   },
+   "suite": "147_veldo_0310_landed_contained"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 63
+   },
+   "before": {
+    "failed": 5,
+    "passed": 58
+   },
+   "suite": "151_veldo_0313_space_run"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 68
+   },
+   "before": null,
+   "suite": "153_veldo_0302_space_creators"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 50
+   },
+   "before": {
+    "failed": 1,
+    "passed": 41
+   },
+   "suite": "153_veldo_0309_gate_space"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 54
+   },
+   "before": {
+    "failed": 0,
+    "passed": 54
+   },
+   "suite": "153_veldo_0314_session_hooks"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 66
+   },
+   "before": null,
+   "suite": "153_veldo_0323_hook_events"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 43
+   },
+   "before": {
+    "failed": 1,
+    "passed": 42
+   },
+   "suite": "153_veldo_0328_images"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 39
+   },
+   "before": {
+    "failed": 0,
+    "passed": 39
+   },
+   "suite": "153_veldo_0333_leg_time_store"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 47
+   },
+   "before": {
+    "failed": 2,
+    "passed": 45
+   },
+   "suite": "153_veldo_0336_run_worktree"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 47
+   },
+   "before": {
+    "failed": 1,
+    "passed": 46
+   },
+   "suite": "153_veldo_0337_verdict_recorded"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 47
+   },
+   "before": {
+    "failed": 1,
+    "passed": 46
+   },
+   "suite": "153_veldo_0341_docker_protection"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 56
+   },
+   "before": {
+    "failed": 3,
+    "passed": 52
+   },
+   "suite": "154_veldo_0324_batch_sandbox"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 58
+   },
+   "before": {
+    "failed": 0,
+    "passed": 58
+   },
+   "suite": "154_veldo_0335_released"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 77
+   },
+   "before": {
+    "failed": 1,
+    "passed": 76
+   },
+   "suite": "155_veldo_0304_space_boundary"
+  },
+  {
+   "after": {
+    "failed": 0,
+    "passed": 61
+   },
+   "before": {
+    "failed": 0,
+    "passed": 61
+   },
+   "suite": "156_veldo_0315_reconcile"
+  }
+ ]
+}

@@ -1,14 +1,16 @@
 {
  "artifacts": {
-  "README.md": "sha256:19ee2dedbf78ce91821bcbc42c7ec4c423f361776deeff73d5937a6a595ec599",
+  "README.md": "sha256:02d5a50d9bb008232fee5866d78a898ffb1f095be0cddff965dd968bea8875c2",
   "checks.json": "sha256:aca42d2884846ba3677b8447d90af7200e727f2a51bcfe58a503e64cd12c4794",
   "falsifiers.json": "sha256:b1147ffb9bf2d8417ef12b834427c3608fa88c4358a0487612171a777a31738e",
   "keep-step-0345.json": "sha256:27365934d07f6922a41dc703008763e3877772f2864ffb1d0213d81092086ffa",
   "rows.json": "sha256:d3f1d7defbc5eb1f1d85d6622188139f6f5b3af3f92c7f85499090999112980f",
   "sources.json": "sha256:b6d442384bca8e9918582232d9714a1fc9b53999405167ab6a518f5a11150af6",
+  "suites-v1.json": "sha256:fbbc3b7b72fb87d81724c19b423d3e2c420748817b6299a3978d74a323721d78",
   "teeth-301.json": "sha256:9292dfa802fbcac887fb9a536f028f4b35f625a3499cebf55a9d258aea74df9b",
   "teeth-receipt.json": "sha256:16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
-  "teeth-run.json": "sha256:47dcbf898dd7d2478204c7faae552f0f9b8f34349e21727d72789b1de26edfb2"
+  "teeth-run.json": "sha256:47dcbf898dd7d2478204c7faae552f0f9b8f34349e21727d72789b1de26edfb2",
+  "teeth-v1.json": "sha256:d4df3e1a45a1489cee598561eab8244e328228a36a58e02fa7f9c7ce70120a82"
  },
  "assumptions": [
   "Fix round: the accepted rows in suites 135, 138, 139 and 140 that pinned what AC1, AC5 and table 2 replace were changed on the lead decision, row by row, and are green. No production file changed in the fix round. In suite 140 the remover is handed the keeper module the suite loaded, the same file, so the failing disk and the kill seams the rows plant are in the keep step that runs; keep-step-0345.json counts that step row by row against the base.",
@@ -25,7 +27,8 @@
   "The four creator modules of the footprint did not change: they declare the form since VELDO-0302.",
   "For a remote on another host the remote-tracking ref is all that is read (design 0.9).",
   "Fixture process table and pool space do not establish host-reader readiness.",
-  "Suites 151 and up and scripts/verify.sh were not run. All criteria remain pending aggregate verification and independent review."
+  "In fix round 2, suites 151 and up were not run; scripts/verify.sh was not run in any round. All criteria remain pending aggregate verification and independent review.",
+  "V1 suite repair, 2026-11-18: suites-v1.json and teeth-v1.json are partial runs on the commits they name, later than the commit of this manifest; they are no aggregate evidence and the gate is the lead's."
  ],
  "checks": [
   {
