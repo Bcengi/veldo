@@ -39,6 +39,21 @@ footprint:
   - "scripts/suites/139_veldo_0301_space_signal.py"
   - "scripts/suites/140_veldo_0345_space_keep.py"
   - "scripts/suites/142_veldo_0303_space_paths.py"
+  - "scripts/suites/134_veldo_0331_space_mode.py"
+  - "scripts/suites/141_veldo_0344_process_reader.py"
+  - "scripts/suites/143_veldo_0305_space_census.py"
+  - "scripts/suites/144_veldo_0306_space_docker.py"
+  - "scripts/suites/145_veldo_0307_space_docker_ownership.py"
+  - "scripts/suites/146_veldo_0308_run_finished.py"
+  - "scripts/suites/147_veldo_0310_landed_contained.py"
+  - "scripts/suites/151_veldo_0313_space_run.py"
+  - "scripts/suites/153_veldo_*.py"
+  - "scripts/suites/154_veldo_*.py"
+  - "scripts/suites/155_veldo_0304_space_boundary.py"
+  - "scripts/suites/156_veldo_0315_reconcile.py"
+  - "scripts/suites/support/space_owner_keep.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -155,6 +170,62 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-18: suite repair for landing batch V1 (space stack 2: 0343, 0347, 0319), on the lead's
+  decisions after the fix check of 837fa81a (fixcheck-veldo-0347.md). For this round the lead widened the
+  footprint to suites 134, 141, 143, 144, 145, 146, 147, 151, 153_*, 154, 155 and 156 with their fixtures
+  and support modules. No rule, remover or Ledger file changed. No assertion that guards the owner's
+  authority or a deletion was weakened: every row that marked Keep the old way now also requires the
+  Ledger's refusal of it.
+  - Superseded by AC2 of this ticket: scripts/suites/154_veldo_0324_batch_sandbox.py row ac2/recorded
+    pinned that a run's scratch holding a mode 0 folder is removed with its parent. AC2 holds an item
+    with a folder that cannot be listed as unread. The row keeps its point with folders shut against
+    writing that the reader can list, which are removed; new row ac2/unlistable-held: the mode 0 folder
+    holds the scratch and its parent, deferred by rule 6 as unread, and what is in it is whole.
+  - Left stale by VELDO-0318 (a9628b86: the owner's Keep is the signed space_disposition command and
+    nothing else): the fixtures of 0302, 0323, 0328, 0336, 0337, 0341, 0324 and 0315, and the same
+    kind in 0308 (suite 146, three rows), 0310 (147 keep/kept-item-not-named), 0309 (153
+    suite/completed) and 0313 (151 ac1/only-the-runs-own-items). The owner's desk VELDO-0343 fix 3
+    built inside suite 156 moved, unchanged in what it does, to
+    scripts/suites/support/space_owner_keep.py, and every one of these calls it: the whole production
+    path (request, settled answer, the owner's packet) for a worktree or a clone its table gives a
+    request, and the owner's packet over a planted request for a kind the Ledger raises no request
+    for, as VELDO-0318 did for suites 149 and 154_0335. Suites 153_0302 and 153_0323, which stopped at
+    that Keep, run whole.
+  - Fixtures other tickets left behind, each repaired where it broke: 134 (VELDO-0315's item lock
+    opens the state root, which the fixture never made: 14 rows); 143
+    review/scratch-apart-from-run-directory (since VELDO-0302 the receiver declares the run directory
+    for the owner its contract names; the row's contract had none); 144 ac4/poll-set (VELDO-0323 put
+    the space spool's listener in the service's poll set); 145 ownership/removes-nothing (VELDO-0329
+    put the hook installer in the reconciler's file; the row passes exactly its one delete of the
+    file it made itself, and nothing more); 155 service/unique-work (since VELDO-0315 the shutdown
+    block stops the space workers; the stand-in service had no such call). 156 ac3/startup was
+    repaired by VELDO-0343 fix 3, which this branch is built on.
+  - One product line outside that footprint, for the lead to confirm: init_scaffold.py (both copies)
+    lists control_space_admission.py, which the service loads since VELDO-0316. Row 153_0323
+    compatibility/installed-closure was hidden while its suite stopped on the owner's Keep, and is red
+    without the line: an installed repository would lack a module its service loads. The same kind
+    of line as 75f78d5f for control_space_docker.py.
+  - Suite 151, the rows called timing rows: not stale rows and not timing. Outside the gate's
+    confinement, on a host other sessions share, processes of other accounts that this account cannot
+    read start after a run began and hold it, fail closed, as the wrapper must without the process
+    reader; which rows go red follows that process table from run to run (5, 10 and 10 rows in three
+    runs, different sets). In a process table of its own, as the gate's confined leg runs it, the
+    suite is 63 passed, 0 failed, twice. Nothing in the suite was changed for this but the Keep row
+    above. On a shared host it stays so until the owner pins the process reader.
+  - Left as it is, known: 141 ac6/installed, refused:no_pin. The owner pins the reader after landing.
+  - The teeth of findings 336, 324 and 302, which fix round 2 could not run, now have green baselines
+    and were run whole; the four anchors fix round 2 repaired each match and each red their rows. The
+    counts are in proof/VELDO-0347/teeth-v1.json.
+  - Found by that run, superseded by AC2 of this ticket: teeth case space324-nested-repository-deleted
+    (the remover's walk no longer stops at a repository) survived. Its row, 154
+    safety/sandbox-repository, plants a repository beneath a launcher scratch; since AC2 the look
+    beneath a scratch holds that item before the remover's walk is reached, in Signal and in the
+    remover alike, so the row stayed green with the walk's stop taken out. The row keeps its
+    statement and gains two: a launcher scratch that is a repository itself, which no look beneath it
+    reads, is held by the rules, and the remover asked past the rules (as suite 138 asks it in
+    work/repository-in-a-folder) refuses it, remove_refused, for the repository, with its commit and
+    file whole. The case is unchanged and reds the row.
 
 - 2026-11-16: fix round 2, on the independent review of 25f56001 (review-veldo-0347.md, verdict FIX, no
   path that loses work). Four findings, each fixed or decided, and two defects found on the way.
