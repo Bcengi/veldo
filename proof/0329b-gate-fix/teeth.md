@@ -340,3 +340,47 @@ prints: ('unknown_outcome', 'unknown_outcome'), EdgeRefused 'no readable platfor
 the URLError's own cause. The next red of this row names which of the two it was.
 
 Open: the cause. The row can go red again.
+
+### Gate 9 (7f3604f8): five cases voided, no survivor. Cause: a torn reading of /proc/locks in suite 66. Fixed
+
+Gate 9 printed "mutations: failed registered=3597 executed=3597 rejected=3592". No mutant survived. The five
+were not judged: all five are init_scaffold.py cases of 66_veldo_0047_authority (target row
+authority/installed-assets), and the receipt holds each as invalid_baseline because the one no-op control
+they share (66_veldo_0047_authority.py:init_scaffold.py:False:noop, worker 471) failed a row of the
+unmutated suite, authority/one-instance-under-the-lock:
+authority-service-not-installed, authority-unit-template-not-installed, authority-supervisor-not-installed,
+role127-scaffold-omits-role-modules, newproject143-scaffold-not-laid.
+
+Not the three commits since gate 8 (they touch suite 110 and this file), and not a thread left alive: the
+mutation stage runs each suite in a process of its own.
+
+Cause. The row asks who holds a flock on the authority's lock file, before and after a second instance is
+refused, and read /proc/locks for it. Reproduced through the driver's own worker
+(check_teeth_mutations.py --worker authority-service-not-installed, no mutant), 24 at once: 1 run of 48 failed
+this row and no other, and the detail the row now carries showed every part right except
+holders_during == [('WRITE', pid), ('WRITE', pid)]: the first instance's one exclusive lock, listed twice. Two
+exclusive flocks on one file cannot both be held, so the table was misread, not the lock. /proc/locks is
+handed out a page per read call and each call resumes by position; a lock taken or dropped by any other
+process between two calls shifts the positions. Measured with one lock held throughout: 0 wrong of 129674
+readings on a quiet table; with six processes taking and dropping locks, 4093 wrong of 134967 (listed twice
+2700, three times 477, not at all 916). The mutation stage runs up to 40 workers at once, each with
+services taking locks.
+
+Fix (1b65e546), in the suite only. flock_holders now takes the locks from the fdinfo record of every
+descriptor open on the file, in every process: one record, written whole under the file's own lock, naming
+the lock in the same words as the table. The row's condition is unchanged: holders_before and
+holders_during must still equal [('WRITE', pid)]. Tried first and dropped: accepting what three readings of
+the table in a row agree on was still wrong 3 times in 28235. The row's failure now carries what it saw.
+
+Runs, all with no gate holding /home/dmitry/.local/state/core-gates/.gate.lock:
+- the reader alone under the same churn: 4080 answers of 4080 right; an unlocked file reads [].
+- the driver's worker, unmutated suite: 96 runs 24 at once with the churn running (load 22), then 128 runs
+  16 at once with the churn: 0 failed rows of 224.
+- the five cases through scripts/check_gate_mutations.py --case (unconfined leg, as the gate runs them):
+  three runs, each "passed registered=5 executed=5 rejected=5".
+- loaded, beside 16 copies of the suite and the churn: the five plus the lock row's own two falsifiers
+  (authority-two-schedulers, authority-lock-file-replaced): "passed registered=7 executed=7 rejected=7".
+- scripts/selftest.py --suite 66_veldo_0047_authority: 56 passed, 0 failed. scripts/check_lint.sh: pass.
+
+Seen and not changed: scripts/gate_host.py (and its engine/ canon) reads /proc/locks once to name the holders
+of a gate lock, so the same tear can show it a held lock as unheld or held twice.
