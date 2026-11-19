@@ -13887,8 +13887,8 @@ def cases():
         "        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:\n"
         "            return entry['type'] + ':' + entry['value'], 'compose_project'\n", ""]]
     docker306('space306-volumes-first',
-              "ORDER = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
-              "ORDER = ('scratch', 'build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
+              "ORDER = ('scratch', 'review_run_scratch', 'build_output', 'review_run_build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
+              "ORDER = ('scratch', 'review_run_scratch', 'build_output', 'review_run_build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
               ['ac3/order-and-non-forced'], module='control_space_kinds.py')
     docker306('space306-volume-made-again-not-seen-by-rule-1',
               "            if facts['said'] is None and made == locator['created_at'] and not other:\n",
@@ -14219,7 +14219,7 @@ def cases():
                 "    if getattr(receiver, 'space', None) is not None and hasattr(receiver, '_space_end'):\n",
                 ['ac1/removal-before-the-report'])
     finished308('space308-exit-without-releasing-the-hold', 'control_launch.py',
-                "        end['hold'] = space_release(space, named or dispatch_id)\n", "        end['hold'] = None\n",
+                "        end['hold'] = space_release(space, named or dispatch_id, run=dispatch_id)\n", "        end['hold'] = None\n",
                 ['ac2/waiting-unit'])
     finished308('space308-hold-released-before-signal', 'control_launch.py',
                 "        self.run_sent = False\n        self._remove_run()\n",
