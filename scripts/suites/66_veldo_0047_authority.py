@@ -67,9 +67,10 @@ def _v47_suite():
 
     emitted, raised, regions, observed = set(), [], [], {}
 
-    def check(label, condition):
+    def check(label, condition, detail=None):
+        # A failing row may say what it saw: the text after the colon is its detail, never its name.
         emitted.add(label)
-        expect('VELDO-0047 ' + label, bool(condition))
+        expect('VELDO-0047 ' + label + ('' if condition or detail is None else ': %s' % (detail,)), bool(condition))
 
     @contextlib.contextmanager
     def region(*labels):
@@ -275,20 +276,43 @@ def _v47_suite():
             return [line for line in text.splitlines()[1:] if line.split() and line.split()[-1] == str(address)]
 
         def flock_holders(path):
-            """Every flock on the file, from the kernel's own lock table: (mode, pid), matched by device
-            and inode."""
+            """Every flock on the file, as the kernel tells it of each descriptor open on the file: the
+            distinct (mode, pid), matched by device and inode.
+
+            /proc/locks is not read for this. That table comes a page per read call and each call resumes
+            by position, so while other processes take and drop locks between the calls a lock that is
+            held throughout is listed twice, three times or not at all (measured: 4093 of 134967 readings
+            of one held lock, six processes churning; 0 of 129674 with none), and the gate's mutation
+            stage runs this suite beside dozens of such processes. Readings that agree do not settle it:
+            three alike in a row were still wrong. A descriptor's fdinfo is one record, written whole
+            under the file's own lock, and it names the same lock in the same words. An exclusive flock
+            has one holder, so [('WRITE', pid)] here is what one such line in the table would say; a
+            descriptor this user cannot read adds nothing, which leaves the answer short, never right."""
             try:
                 info = os.stat(str(path))
-                text = Path('/proc/locks').read_text()
+                processes = [name for name in os.listdir('/proc') if name.isdigit()]
             except OSError:
                 return None
             identity = '%02x:%02x:%d' % (os.major(info.st_dev), os.minor(info.st_dev), info.st_ino)
-            holders = []
-            for line in text.splitlines():
-                parts = line.split()
-                if len(parts) >= 6 and parts[1] == 'FLOCK' and parts[5] == identity:
-                    holders.append((parts[3], int(parts[4])))
-            return holders
+            holders = set()
+            for process in processes:
+                try:
+                    descriptors = os.listdir('/proc/%s/fd' % process)
+                except OSError:
+                    continue
+                for descriptor in descriptors:
+                    try:
+                        opened = os.stat('/proc/%s/fd/%s' % (process, descriptor))
+                        if (opened.st_dev, opened.st_ino) != (info.st_dev, info.st_ino):
+                            continue
+                        text = Path('/proc/%s/fdinfo/%s' % (process, descriptor)).read_text()
+                    except OSError:
+                        continue
+                    for line in text.splitlines():
+                        parts = line.split()
+                        if len(parts) >= 7 and parts[0] == 'lock:' and parts[2] == 'FLOCK' and parts[6] == identity:
+                            holders.add((parts[4], int(parts[5])))
+            return sorted(holders)
 
         def mode(path):
             try:
@@ -677,7 +701,8 @@ def _v47_suite():
                       and holders_before == [('WRITE', pid)] and holders_during == [('WRITE', pid)]
                       and observed['lock']['lock_inode_stable'] and observed['lock']['socket_inode_stable']
                       and after.get('ActiveState') == 'active' and int(after.get('MainPID') or 0) == pid
-                      and live.get('stale') is False)
+                      and live.get('stale') is False,
+                      detail=dict(observed['lock'], first_state=after.get('ActiveState'), live=live, stderr=err[-300:]))
 
             # AC2, declared falsifier: a signed mutation through production IPC changes the configured
             # store itself, read back through a connection of this suite's own
