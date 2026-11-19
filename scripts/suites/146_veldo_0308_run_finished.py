@@ -58,7 +58,8 @@ released), ac4/pins-follow-the-removal (the slot is released while the work tree
 pin held; a removal made from outside the teardown removes the work tree; the next sweep releases the
 pin, once), ac4/pins-held-while-deferred (through the hand-over and two sweeps the pin is held, and
 after the cache was collected the work tree's commit is readable; a work tree that is not at its path
-while its item is not removed releases nothing), ac4/not-handed-over-keeps-the-slot (a clone no item
+while its item is not removed releases nothing; and, since VELDO-0304 has the ref remover refuse such
+a pin whoever asks, the release is not asked for at either point), ac4/not-handed-over-keeps-the-slot (a clone no item
 records, and an installation with no ledger: the obligation stays open and the slot held).
 
 Rows of the fix round (the review of this ticket, findings 1 and 3 to 5). f1/sweep-never-resends (the
@@ -1225,6 +1226,13 @@ def _v308_run_finished_suite():
             check(row, 'its pin is held through the hand-over and the sweeps [%s]' % (C2._pins_held(clone_id),),
                   len(C2._pins_held(clone_id)) == 1 and not [event for event in N.observations
                                                              if event.get('operation') == 'release_pins'])
+            # Since VELDO-0304 (fb5d0f89) a pin is released through the ref remover, which refuses a pin
+            # whose item has not ended. A release asked for too early therefore leaves the pin where it
+            # is, and the pin being held no longer says that nobody asked. The provisioner records every
+            # answer it was given for a ref (ref_outcomes); none is recorded for this pin.
+            check(row, 'and nobody asked for its release: the pin is not held by the remover\'s refusal alone [%s]'
+                  % (sorted(getattr(C2, 'ref_outcomes', {})),),
+                  not getattr(C2, 'ref_outcomes', {}))
             check(row, 'after the cache was collected the work tree\'s commit is still readable through it',
                   readable(work, head) and git(work, 'rev-parse', 'HEAD') == head
                   and git(work, 'show', 'HEAD:tracked.txt') == 'base')
@@ -1234,6 +1242,11 @@ def _v308_run_finished_suite():
             N.sweep()
             check(row, 'a work tree that is not at its path while its item is not removed releases nothing',
                   len(C2._pins_held(clone_id)) == 1)
+            check(row, 'and its release is not asked for either: no answer for the pin, no release observed [%s %s]'
+                  % (sorted(getattr(C2, 'ref_outcomes', {})),
+                     [event for event in N.observations if event.get('operation') == 'release_pins']),
+                  not getattr(C2, 'ref_outcomes', {})
+                  and not [event for event in N.observations if event.get('operation') == 'release_pins'])
             os.rename(marked, work)
             shutil.rmtree(holder)
 
