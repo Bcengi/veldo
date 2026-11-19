@@ -1500,7 +1500,17 @@ def _v143_suite():
             # The owner's progress reports (VELDO-0128), through the reporter's one rendered send, as suite 93 runs it.
             TRP = load('v143_report', mods / 'control_telegram_report.py')
             report_gate = SimpleNamespace(conn=conn, channel='telegram_chat')
-            report_edge = SimpleNamespace(activation=report_gate, send=presenter.edge.send)
+            # A report's send that raised, as the edge named it: the reporter records only `unknown_outcome` for a
+            # transport failure, so a red report row could not say what the exchange met. Raised again unchanged.
+            report_faults = []
+
+            def report_send(chat, text, reply_to=None):
+                try:
+                    return presenter.edge.send(chat, text, reply_to)
+                except Exception as error:
+                    report_faults.append('%s %s <- %r' % (type(error).__name__, error.args, error.__context__))
+                    raise
+            report_edge = SimpleNamespace(activation=report_gate, send=report_send)
             reporter = TRP.Reporter(SimpleNamespace(conn=conn, inbox=inbox, gate=report_gate, presenter=SimpleNamespace(
                 conn=conn, P=f['P'], edge=report_edge, current=presenter.current)), owner=OWNER)
 
@@ -1644,7 +1654,8 @@ def _v143_suite():
                 mussel_again = service.new_project_pass()
                 seen_m = len(reporter.observations)
                 told_m = reported()
-                came_m = [(o.get('outcome'), o.get('reason')) for o in reporter.observations[seen_m:]]
+                came_m = [(o.get('outcome'), o.get('reason')) for o in reporter.observations[seen_m:]
+                          if o.get('outcome') != 'already_reported']
                 check('activation/name-taken', [
                     ('a new project named like an existing project is refused before he is asked [%s]' % again_t.get('reason'),
                      again_t.get('reason') == 'stale_subject:project_exists'
@@ -1657,7 +1668,7 @@ def _v143_suite():
                      and (PP.read(conn, decision_m) or {}).get('reason') == 'already_exists'
                      and any(e.get('decision') == decision_m and e.get('outcome') == 'failed' for e in mussel_pass)
                      and not any(e.get('decision') == decision_m for e in mussel_again)),
-                    ('its report tells him it could not be set up, and why [%s; %s]' % (told_m, came_m),
+                    ('its report tells him it could not be set up, and why [%s; %s; %s]' % (told_m, came_m, report_faults),
                      (decision_m, 'sent', 'mussel could not be set up.') in told_m
                      and (PP.decision_id(pid_t), 'sent', 'tidepool could not be set up.') in told_m
                      and any('already_exists' in t for _c, _m, _r, t in bot_messages()))])
