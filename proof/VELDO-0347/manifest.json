@@ -1,6 +1,6 @@
 {
  "artifacts": {
-  "README.md": "sha256:02d5a50d9bb008232fee5866d78a898ffb1f095be0cddff965dd968bea8875c2",
+  "README.md": "sha256:7502f62384d00ceaeed06fea6bd6fdcb449d79bde62d90281f7e3f8a0ef65331",
   "checks.json": "sha256:aca42d2884846ba3677b8447d90af7200e727f2a51bcfe58a503e64cd12c4794",
   "falsifiers.json": "sha256:b1147ffb9bf2d8417ef12b834427c3608fa88c4358a0487612171a777a31738e",
   "keep-step-0345.json": "sha256:27365934d07f6922a41dc703008763e3877772f2864ffb1d0213d81092086ffa",
@@ -10,7 +10,8 @@
   "teeth-301.json": "sha256:9292dfa802fbcac887fb9a536f028f4b35f625a3499cebf55a9d258aea74df9b",
   "teeth-receipt.json": "sha256:16c44d671dd52ef28c18d5a16084dbf109869b812dd5674a3e5eb2543e0c9ebe",
   "teeth-run.json": "sha256:47dcbf898dd7d2478204c7faae552f0f9b8f34349e21727d72789b1de26edfb2",
-  "teeth-v1.json": "sha256:d4df3e1a45a1489cee598561eab8244e328228a36a58e02fa7f9c7ce70120a82"
+  "teeth-v1.json": "sha256:d4df3e1a45a1489cee598561eab8244e328228a36a58e02fa7f9c7ce70120a82",
+  "teeth-v1b.json": "sha256:2b7150f0cfd6a632ee73e1f5135bd762ee4765147c20226a1dcc4eb9c5251586"
  },
  "assumptions": [
   "Fix round: the accepted rows in suites 135, 138, 139 and 140 that pinned what AC1, AC5 and table 2 replace were changed on the lead decision, row by row, and are green. No production file changed in the fix round. In suite 140 the remover is handed the keeper module the suite loaded, the same file, so the failing disk and the kill seams the rows plant are in the keep step that runs; keep-step-0345.json counts that step row by row against the base.",
@@ -28,7 +29,8 @@
   "For a remote on another host the remote-tracking ref is all that is read (design 0.9).",
   "Fixture process table and pool space do not establish host-reader readiness.",
   "In fix round 2, suites 151 and up were not run; scripts/verify.sh was not run in any round. All criteria remain pending aggregate verification and independent review.",
-  "V1 suite repair, 2026-11-18: suites-v1.json and teeth-v1.json are partial runs on the commits they name, later than the commit of this manifest; they are no aggregate evidence and the gate is the lead's."
+  "V1 suite repair, 2026-11-18: suites-v1.json and teeth-v1.json are partial runs on the commits they name, later than the commit of this manifest; they are no aggregate evidence and the gate is the lead's.",
+  "V1 preparation, 2026-11-19: teeth-v1b.json holds partial runs on the commits it names, later than the commit of this manifest; it is no aggregate evidence and the gate is the lead's. The scaffold line of the suite repair (init_scaffold.py, both copies) is in the footprint by the lead's decision."
  ],
  "checks": [
   {

@@ -198,6 +198,44 @@ done is in the spec History of that date. The numbers:
   the gate is the lead's. The commit and tree of the manifest are those of fix round 2; the two files
   above name their own commits.
 
+## V1 preparation, the remaining teeth, 2026-11-19
+
+teeth-v1b.json: the teeth of the thirteen other findings whose suites the suite repair changed (304, 305,
+306, 307, 308, 309, 310, 313, 315, 328, 331, 337, 341), each whole, alone, two workers, on the clean
+committed tree: 340 cases registered, 340 executed, 340 rejected, no reuse, every baseline and no-op run
+green. With teeth-v1.json that is all seventeen findings of the changed suites.
+
+| Finding | Suite | Commit | Registered | Rejected |
+| :- | :- | :- | :- | :- |
+| 304 | 155 | 704becba | 44 | 44 |
+| 305 | 143 | 704becba | 20 | 20 |
+| 306 | 144 | 704becba | 29 | 29 |
+| 307 | 145 | 704becba | 37 | 37 |
+| 308 | 146 | 7aaf2fab | 38 | 38 |
+| 309 | 153_0309 | 704becba | 20 | 20 |
+| 310 | 147 | 704becba | 22 | 22 |
+| 313 | 151 | 704becba | 43 | 43 |
+| 315 | 156 | 704becba | 25 | 25 |
+| 328 | 153_0328 | 704becba | 14 | 14 |
+| 331 | 134 | 704becba | 11 | 11 |
+| 337 | 153_0337 | 704becba | 22 | 22 |
+| 341 | 153_0341 | 704becba | 15 | 15 |
+
+- Two anchors other tickets had moved kept findings 306 and 308 from starting: space306-volumes-first
+  (VELDO-0337 fix, 8f99aeaa) and space308-exit-without-releasing-the-hold (VELDO-0316, aa1c5560). Each
+  names its line as it is now, makes the same defect and is rejected.
+- Finding 308 at 704becba rejected 36 of 38. The survivors, space308-pins-released-at-hand-over and
+  space308-pins-released-while-the-item-is-not-removed, both aim at 146 ac4/pins-held-while-deferred.
+  Since VELDO-0304 a pin is released through the ref remover, which refuses a pin whose item has not
+  ended, so under both the pin stayed held and the row stayed green. The row keeps its statements and
+  gains two, that nobody asked for the release (no answer recorded for the pin, no release observed).
+  Both cases, unchanged, red the row; the run in the table is the whole rerun.
+- The worker runs of finding 313 are confined by the driver, so suite 151's baseline is green there.
+- Lead decisions recorded in the spec History: the scaffold line (init_scaffold.py, both copies) is an
+  accepted widening of the footprint; at the join, 153_veldo_0336_run_worktree.py is taken from
+  veldo-space-0319.
+- Partial runs, as above: no aggregate evidence, scripts/verify.sh not run, the gate is the lead's.
+
 ## Not built, not run
 
 - No Save and no Discard remover for a batch clone or a candidate workspace: no criterion asks for one,
