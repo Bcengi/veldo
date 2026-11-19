@@ -108,7 +108,10 @@ def _v309_fixture(base, source, create=False, mode='act'):
             return (0, '') if argv[3:5] == ['container', 'ls'] else (1, 'fixture engine refuses')
         return probe._run(argv, cwd)
     space = {'ledger': ledger, 'probe': probe, 'kinds': kinds, 'remover': remover, 'free': free, 'run': client,
-             'keep': lambda identity, record: keeper.keep(ledger, identity, record), 'proc': str(base / 'proc')}
+             'keep': lambda identity, record: keeper.keep(ledger, identity, record), 'proc': str(base / 'proc'),
+             # The fixture's own hands, for a row that signs as the owner: the store and membership
+             # modules the store was opened with, the item kind and the owner's signer.
+             'fixture': {'store': store, 'membership': cm, 'item_kind': sp.ITEM_KIND, 'owner_sign': sign}}
     return space, root, conn
 
 
@@ -458,8 +461,17 @@ def _v309_suite():
         assert made['ok'], made
         ledger.confirm(made['item'])
         assert ledger.signal('verdict_recorded', {'ticket': owner['ticket']})['ok']
-        marked = ledger.outcome(made['item'], 'kept', {'owner_keep': {'at': 1000, 'answer': 'keep'}}, principal='owner')
-        assert marked['ok'], marked
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318). The
+        # Ledger raises no request for build output, so the settled request is planted
+        # (support/space_owner_keep.py, keep_planted); the owner's signature, the membership check
+        # and the one transition are the Ledger's own.
+        claimed = ledger.outcome(made['item'], 'kept', {'owner_keep': {'at': 1000, 'answer': 'keep'}}, principal='owner')
+        check('safe/owner-keep', not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+              and not ledger.item(made['item']).get('owner_keep'), 'the outcome took the owner mark: ' + str(claimed))
+        hands = space['fixture']
+        marked = _v309_load('v309_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py').keep_planted(
+            ledger, hands['store'], hands['membership'], conn, hands['item_kind'], made['item'], hands['owner_sign'], 1000)
+        assert marked['ok'] and ledger.item(made['item']).get('owner_keep'), marked
         before = conn.execute('SELECT version FROM entities WHERE id=?', (made['item'],)).fetchone()[0]
         check('safe/owner-keep', g.run('verdict', *args, space=space) == 0 and (root / 'build/binary').exists()
               and conn.execute('SELECT version FROM entities WHERE id=?', (made['item'],)).fetchone()[0] == before)
