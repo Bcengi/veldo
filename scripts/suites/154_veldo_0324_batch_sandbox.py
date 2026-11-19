@@ -574,6 +574,26 @@ def _v324_suite():
             check(row, 'a repository beneath launcher scratch holds the scratch and its parent',
                   nested.is_dir() and git(nested, 'rev-parse', 'HEAD') == tip
                   and at(path)[1]['state'] == 'deferred' and root.exists())
+            # Since VELDO-0347 AC2 the look beneath a scratch holds it before the remover is reached,
+            # so the statement above no longer shows the remover's own stop at a repository. The
+            # remover is asked past the rules, as suite 138 asks it (work/repository-in-a-folder), for
+            # a launcher scratch that is a repository itself, which no look beneath it reads.
+            code, root, parent_item, seen = launch('own-repository')
+            top = seen[0]
+            git(top, 'init', '-q', '-b', 'main')
+            (top / 'notes').write_text('only committed copy')
+            git(top, 'add', '.')
+            git(top, 'commit', '-q', '-m', 'work')
+            tip = git(top, 'rev-parse', 'HEAD')
+            finish([root])
+            identity, record = at(top)
+            check(row, 'a launcher scratch that is a repository is held by the rules',
+                  record.get('state') == 'deferred' and git(top, 'rev-parse', 'HEAD') == tip)
+            said = RM.remove(L, P, identity, record, free=space['free'], run=space['run'], proc=space['proc'])
+            check(row, 'the remover, asked past the rules, refuses it for the repository and removes nothing',
+                  said.get('ok') is False and said.get('deferral') == 'remove_refused'
+                  and 'git repository' in str(said.get('said')) and top.is_dir()
+                  and git(top, 'rev-parse', 'HEAD') == tip and (top / 'notes').read_text() == 'only committed copy')
         drive('safety/sandbox-repository', sandbox_work)
 
         def kept_sandbox(row):
