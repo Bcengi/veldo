@@ -1,0 +1,6114 @@
+{
+ "findings": {
+  "304": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0304 ref/keep-before-delete",
+      "VELDO-0304 ref/standalone-unheld",
+      "VELDO-0304 ref/ledger-unheld",
+      "VELDO-0304 clone/unique-work",
+      "VELDO-0304 scaffold/unique-work",
+      "VELDO-0304 scaffold/keep-failure"
+     ],
+     "name": "space304-ref-skip-keep",
+     "noop_failed": [],
+     "targets": [
+      "ref/keep-before-delete"
+     ],
+     "targets_red": [
+      "VELDO-0304 ref/keep-before-delete"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "fleet.py",
+     "mutant_failed": [
+      "VELDO-0304 fleet/unique-work",
+      "VELDO-0304 fleet/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-fleet-direct-remove",
+     "noop_failed": [],
+     "targets": [
+      "fleet/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 fleet/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_clone.py",
+     "mutant_failed": [
+      "VELDO-0304 clone/unique-work",
+      "VELDO-0304 clone/boundary",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-clone-direct-ref",
+     "noop_failed": [],
+     "targets": [
+      "clone/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 clone/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_clone.py",
+     "mutant_failed": [
+      "VELDO-0304 clone/unique-work",
+      "VELDO-0304 clone/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-clone-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "clone/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 clone/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_batch.py",
+     "mutant_failed": [
+      "VELDO-0304 batch/boundary",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-batch-direct-ref",
+     "noop_failed": [],
+     "targets": [
+      "batch/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 batch/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_repository_provisioner.py",
+     "mutant_failed": [
+      "VELDO-0304 scaffold/unique-work",
+      "VELDO-0304 scaffold/keep-failure",
+      "VELDO-0304 scaffold/boundary",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-scaffold-direct-ref",
+     "noop_failed": [],
+     "targets": [
+      "scaffold/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 scaffold/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0304 launch/unique-work",
+      "VELDO-0304 launch/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-launch-direct-sweep",
+     "noop_failed": [],
+     "targets": [
+      "launch/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 launch/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0304 launch/unique-work",
+      "VELDO-0304 launch/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-launch-direct-receiver",
+     "noop_failed": [],
+     "targets": [
+      "launch/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 launch/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch_work.py",
+     "mutant_failed": [
+      "VELDO-0304 runtime/unique-work",
+      "VELDO-0304 runtime/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-runtime-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "runtime/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 runtime/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "lander.py",
+     "mutant_failed": [
+      "VELDO-0304 lander/unique-work",
+      "VELDO-0304 lander/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-lander-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "lander/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 lander/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "migrate_to_veldo.py",
+     "mutant_failed": [
+      "VELDO-0304 migration/unique-work",
+      "VELDO-0304 migration/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-migration-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "migration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 migration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "publish.py",
+     "mutant_failed": [
+      "VELDO-0304 publish/unique-work",
+      "VELDO-0304 publish/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-publish-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "publish/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 publish/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "rename_migration.py",
+     "mutant_failed": [
+      "VELDO-0304 rename/unique-work",
+      "VELDO-0304 rename/boundary",
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-rename-direct-tree",
+     "noop_failed": [],
+     "targets": [
+      "rename/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 rename/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_memory_check.py",
+     "mutant_failed": [
+      "VELDO-0304 memory/unique-work",
+      "VELDO-0304 memory/boundary",
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-memory-time-delete",
+     "noop_failed": [],
+     "targets": [
+      "memory/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 memory/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_spool.py",
+     "mutant_failed": [
+      "VELDO-0304 spool/boundary",
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-spool-time-delete",
+     "noop_failed": [],
+     "targets": [
+      "spool/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 spool/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "VELDO-0304 service/unique-work",
+      "VELDO-0304 service/boundary",
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-service-time-delete",
+     "noop_failed": [],
+     "targets": [
+      "service/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 service/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "mutation_ownership.py",
+     "mutant_failed": [
+      "VELDO-0304 mutation/boundary",
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-mutation-time-delete",
+     "noop_failed": [],
+     "targets": [
+      "mutation/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 mutation/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "render_pdfs.py",
+     "mutant_failed": [
+      "VELDO-0304 render/boundary",
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-render-time-delete",
+     "noop_failed": [],
+     "targets": [
+      "render/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 render/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "fleet.py",
+     "mutant_failed": [
+      "VELDO-0304 ac1/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-boundary-new-creator",
+     "noop_failed": [],
+     "targets": [
+      "ac1/repository"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac1/repository"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac3/stale-entries"
+     ],
+     "name": "space304-boundary-stale-accepted",
+     "noop_failed": [],
+     "targets": [
+      "ac3/stale-entries"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac3/stale-entries"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_legs.py",
+     "mutant_failed": [
+      "VELDO-0304 ac4/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-boundary-age-restored",
+     "noop_failed": [],
+     "targets": [
+      "ac4/repository"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac4/repository"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0304 integration/gate-wired"
+     ],
+     "name": "space304-boundary-gate-unwired",
+     "noop_failed": [],
+     "targets": [
+      "integration/gate-wired"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/gate-wired"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "action_executor.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-action_executor",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_agent_config_handoff.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-control_agent_config_handoff",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_api_webauthn.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-control_api_webauthn",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_batch.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-control_batch",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_memory_check.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-control_memory_check",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch_work.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-control_launch_work",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "lander.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-lander",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "pack_conformance.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-pack_conformance",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 mutation/boundary",
+      "VELDO-0304 ac2/recursive-walk",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-walk-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/recursive-walk"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/recursive-walk"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "parser_corpus_audit.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/repository",
+      "VELDO-0304 integration/boundary"
+     ],
+     "name": "space304-temporary-parser_corpus_audit",
+     "noop_failed": [],
+     "targets": [
+      "integration/boundary"
+     ],
+     "targets_red": [
+      "VELDO-0304 integration/boundary"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/ref-stdin"
+     ],
+     "name": "space304-stdin-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/ref-stdin"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/ref-stdin"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-overwrite",
+      "VELDO-0304 ac2/kept-fetch-force",
+      "VELDO-0304 ac2/kept-fetch-f",
+      "VELDO-0304 ac2/kept-forced-send"
+     ],
+     "name": "space304-forced-ref-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-overwrite"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-overwrite"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-overwrite",
+      "VELDO-0304 ac2/kept-concatenated"
+     ],
+     "name": "space304-kept-value-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-overwrite"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-overwrite"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/recursive-walk"
+     ],
+     "name": "space304-getattr-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/recursive-walk"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/recursive-walk"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_repository_provisioner.py",
+     "mutant_failed": [
+      "VELDO-0304 scaffold/no-overwrite"
+     ],
+     "name": "space304-scaffold-overwrite",
+     "noop_failed": [],
+     "targets": [
+      "scaffold/no-overwrite"
+     ],
+     "targets_red": [
+      "VELDO-0304 scaffold/no-overwrite"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_keep.py",
+     "mutant_failed": [
+      "VELDO-0304 scaffold/unique-work"
+     ],
+     "name": "space304-scaffold-skip-keep",
+     "noop_failed": [],
+     "targets": [
+      "scaffold/unique-work"
+     ],
+     "targets_red": [
+      "VELDO-0304 scaffold/unique-work"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0304 ref/standalone-unheld",
+      "VELDO-0304 ref/ledger-unheld"
+     ],
+     "name": "space304-ref-reachability-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ref/standalone-unheld",
+      "ref/ledger-unheld"
+     ],
+     "targets_red": [
+      "VELDO-0304 ref/standalone-unheld",
+      "VELDO-0304 ref/ledger-unheld"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-concatenated"
+     ],
+     "name": "space304-kept-concatenation-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-concatenated"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-concatenated"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-fetch-force"
+     ],
+     "name": "space304-kept-fetch-force-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-fetch-force"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-fetch-force"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-fetch-f"
+     ],
+     "name": "space304-kept-fetch-f-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-fetch-f"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-fetch-f"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "check_space_boundary.py",
+     "mutant_failed": [
+      "VELDO-0304 ac2/kept-forced-send"
+     ],
+     "name": "space304-kept-send-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac2/kept-forced-send"
+     ],
+     "targets_red": [
+      "VELDO-0304 ac2/kept-forced-send"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0161 adoption/signer-enrolled",
+      "VELDO-0161 adoption/repository-commands",
+      "VELDO-0161 adoption/transport-config",
+      "VELDO-0161 adoption/interrupted",
+      "VELDO-0161 adoption/store-checks-before-push"
+     ],
+     "name": "space304-adoption-commit-lost",
+     "noop_failed": [],
+     "targets": [
+      "adoption/signer-enrolled",
+      "adoption/repository-commands",
+      "adoption/transport-config",
+      "adoption/interrupted"
+     ],
+     "targets_red": [
+      "VELDO-0161 adoption/signer-enrolled",
+      "VELDO-0161 adoption/repository-commands",
+      "VELDO-0161 adoption/transport-config",
+      "VELDO-0161 adoption/interrupted"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "304",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 44,
+   "invalid_results": 0,
+   "registered": 44,
+   "rejected": 44,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=44 executed=44 reused=0 rejected=44 workers=96 elapsed=429.267s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "305": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/any-ignored-folder",
+      "VELDO-0305 ac1/declared-pattern",
+      "VELDO-0305 ac1/keep-entry",
+      "VELDO-0305 ac1/each-event",
+      "VELDO-0305 ac2/untracked-never-recorded",
+      "VELDO-0305 ac2/ignored-uncovered",
+      "VELDO-0305 ac2/repository-in-build-output",
+      "VELDO-0305 ac3/run-end",
+      "VELDO-0305 ac4/adopted-patterns-only",
+      "VELDO-0305 review/run-commits-ignore-rule",
+      "VELDO-0305 review/negation-in-info-exclude",
+      "VELDO-0305 review/negation-in-nested-ignore-file",
+      "VELDO-0305 review/local-excludes-file"
+     ],
+     "name": "space305-match-the-name-target",
+     "noop_failed": [],
+     "targets": [
+      "ac1/any-ignored-folder"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac1/any-ignored-folder"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/personal-rule",
+      "VELDO-0305 ac2/untracked-never-recorded",
+      "VELDO-0305 review/run-commits-ignore-rule",
+      "VELDO-0305 review/local-excludes-file"
+     ],
+     "name": "space305-record-every-untracked-folder",
+     "noop_failed": [],
+     "targets": [
+      "ac2/untracked-never-recorded"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac2/untracked-never-recorded"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac3/declared-before-worker",
+      "VELDO-0305 ac3/run-end"
+     ],
+     "name": "space305-variables-without-declaring",
+     "noop_failed": [],
+     "targets": [
+      "ac3/declared-before-worker"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac3/declared-before-worker"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac4/adopted-patterns-only"
+     ],
+     "name": "space305-ignored-folder-rule-for-adopted",
+     "noop_failed": [],
+     "targets": [
+      "ac4/adopted-patterns-only"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac4/adopted-patterns-only"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/keep-entry"
+     ],
+     "name": "space305-keep-entry-not-read",
+     "noop_failed": [],
+     "targets": [
+      "ac1/keep-entry"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac1/keep-entry"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/uncommitted-rule"
+     ],
+     "name": "space305-uncommitted-ignore-rule-counts",
+     "noop_failed": [],
+     "targets": [
+      "ac1/uncommitted-rule"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac1/uncommitted-rule"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/personal-rule",
+      "VELDO-0305 ac1/uncommitted-rule",
+      "VELDO-0305 ac2/ignored-uncovered",
+      "VELDO-0305 ac4/adopted-patterns-only",
+      "VELDO-0305 review/run-commits-ignore-rule",
+      "VELDO-0305 review/local-excludes-file"
+     ],
+     "name": "space305-every-ignored-folder-is-build-output",
+     "noop_failed": [],
+     "targets": [
+      "ac1/personal-rule",
+      "ac2/ignored-uncovered"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac1/personal-rule",
+      "VELDO-0305 ac2/ignored-uncovered"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac3/run-end"
+     ],
+     "name": "space305-no-census-at-the-receivers-end",
+     "noop_failed": [],
+     "targets": [
+      "ac3/run-end"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac3/run-end"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac3/engine-strip"
+     ],
+     "name": "space305-values-lost-at-the-strip",
+     "noop_failed": [],
+     "targets": [
+      "ac3/engine-strip"
+     ],
+     "targets_red": [
+      "VELDO-0305 ac3/engine-strip"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac1/uncommitted-rule",
+      "VELDO-0305 review/run-commits-ignore-rule"
+     ],
+     "name": "space305-review-start-commit-not-asked",
+     "noop_failed": [],
+     "targets": [
+      "review/run-commits-ignore-rule"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/run-commits-ignore-rule"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/negation-keeps-folder",
+      "VELDO-0305 review/negation-in-info-exclude",
+      "VELDO-0305 review/negation-in-nested-ignore-file"
+     ],
+     "name": "space305-review-negation-not-read",
+     "noop_failed": [],
+     "targets": [
+      "review/negation-keeps-folder"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/negation-keeps-folder"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/local-excludes-file"
+     ],
+     "name": "space305-review-excludes-file-read",
+     "noop_failed": [],
+     "targets": [
+      "review/local-excludes-file"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/local-excludes-file"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 ac3/refused-not-pointed",
+      "VELDO-0305 review/refusal-names-the-folder"
+     ],
+     "name": "space305-review-refusal-says-unavailable",
+     "noop_failed": [],
+     "targets": [
+      "review/refusal-names-the-folder"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/refusal-names-the-folder"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/local-excludes-file"
+     ],
+     "name": "space305-review-rule-of-another-directory",
+     "noop_failed": [],
+     "targets": [
+      "review/local-excludes-file"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/local-excludes-file"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/refusal-names-the-folder"
+     ],
+     "name": "space305-review-refused-event-without-path",
+     "noop_failed": [],
+     "targets": [
+      "review/refusal-names-the-folder"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/refusal-names-the-folder"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/scratch-apart-from-run-directory"
+     ],
+     "name": "space305-review-scratch-named-runs",
+     "noop_failed": [],
+     "targets": [
+      "review/scratch-apart-from-run-directory"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/scratch-apart-from-run-directory"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/scratch-apart-from-run-directory"
+     ],
+     "name": "space305-review-run-directory-not-looked-at",
+     "noop_failed": [],
+     "targets": [
+      "review/scratch-apart-from-run-directory"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/scratch-apart-from-run-directory"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/negation-in-info-exclude"
+     ],
+     "name": "space305-review2-info-exclude-not-read",
+     "noop_failed": [],
+     "targets": [
+      "review/negation-in-info-exclude"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/negation-in-info-exclude"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/negation-in-info-exclude"
+     ],
+     "name": "space305-review2-info-exclude-of-the-worktree-only",
+     "noop_failed": [],
+     "targets": [
+      "review/negation-in-info-exclude"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/negation-in-info-exclude"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0305 review/negation-in-nested-ignore-file"
+     ],
+     "name": "space305-review2-nested-ignore-file-not-read",
+     "noop_failed": [],
+     "targets": [
+      "review/negation-in-nested-ignore-file"
+     ],
+     "targets_red": [
+      "VELDO-0305 review/negation-in-nested-ignore-file"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "305",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 20,
+   "invalid_results": 0,
+   "registered": 20,
+   "rejected": 20,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=20 executed=20 reused=0 rejected=20 workers=22 elapsed=36.307s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "306": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac1/label-and-compose-name",
+      "VELDO-0306 ac4/event-with-the-clock-stopped",
+      "VELDO-0306 ac4/poll-set",
+      "VELDO-0306 ac4/end-of-file",
+      "VELDO-0306 ac4/events",
+      "VELDO-0306 ac4/broken-engine",
+      "VELDO-0306 loss/engine-unreadable",
+      "VELDO-0306 docker/canon",
+      "VELDO-0306 review/events-since-the-snapshot",
+      "VELDO-0306 review/engine-down-reported",
+      "VELDO-0306 review/own-row-on-a-stand-in",
+      "VELDO-0306 review/host-object-untouched",
+      "VELDO-0306 review/never-under-a-mutant"
+     ],
+     "name": "space306-read-one-context-only",
+     "noop_failed": [],
+     "targets": [
+      "ac1/label-and-compose-name"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac1/label-and-compose-name"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac2/one-live-run",
+      "VELDO-0306 ac2/unattributable-is-a-report",
+      "VELDO-0306 ac2/never-removed",
+      "VELDO-0306 ac3/order-and-non-forced",
+      "VELDO-0306 loss/volume-made-again",
+      "VELDO-0306 review/own-row-on-a-stand-in"
+     ],
+     "name": "space306-given-to-a-live-run",
+     "noop_failed": [],
+     "targets": [
+      "ac2/unattributable-is-a-report"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac2/unattributable-is-a-report"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac2/one-live-run",
+      "VELDO-0306 ac2/never-removed"
+     ],
+     "name": "space306-given-to-the-only-live-run",
+     "noop_failed": [],
+     "targets": [
+      "ac2/one-live-run"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac2/one-live-run"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac2/unknown-run-and-two-runs",
+      "VELDO-0306 ac2/never-removed",
+      "VELDO-0306 ac3/order-and-non-forced"
+     ],
+     "name": "space306-two-runs-given-to-the-label",
+     "noop_failed": [],
+     "targets": [
+      "ac2/unknown-run-and-two-runs"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac2/unknown-run-and-two-runs"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac1/identity-recorded",
+      "VELDO-0306 ac2/never-removed"
+     ],
+     "name": "space306-no-identity-still-an-item",
+     "noop_failed": [],
+     "targets": [
+      "ac1/identity-recorded"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac1/identity-recorded"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac1/label-and-compose-name",
+      "VELDO-0306 ac1/identity-recorded",
+      "VELDO-0306 ac1/protected",
+      "VELDO-0306 ac2/unknown-run-and-two-runs",
+      "VELDO-0306 ac2/never-removed",
+      "VELDO-0306 ac3/order-and-non-forced"
+     ],
+     "name": "space306-compose-project-not-in-the-locator",
+     "noop_failed": [],
+     "targets": [
+      "ac1/protected"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac1/protected"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_kinds.py",
+     "mutant_failed": [
+      "VELDO-0306 ac3/order-and-non-forced",
+      "VELDO-0306 review/own-row-on-a-stand-in"
+     ],
+     "name": "space306-volumes-first",
+     "noop_failed": [],
+     "targets": [
+      "ac3/order-and-non-forced"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac3/order-and-non-forced"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0306 loss/volume-made-again",
+      "VELDO-0306 review/volume-labels-rule-1"
+     ],
+     "name": "space306-volume-made-again-not-seen-by-rule-1",
+     "noop_failed": [],
+     "targets": [
+      "loss/volume-made-again"
+     ],
+     "targets_red": [
+      "VELDO-0306 loss/volume-made-again"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 loss/volume-made-again"
+     ],
+     "name": "space306-volume-made-again-not-seen-by-the-snapshot",
+     "noop_failed": [],
+     "targets": [
+      "loss/volume-made-again"
+     ],
+     "targets_red": [
+      "VELDO-0306 loss/volume-made-again"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac4/end-of-file",
+      "VELDO-0306 ac4/broken-engine",
+      "VELDO-0306 review/events-since-the-snapshot",
+      "VELDO-0306 review/engine-down-reported"
+     ],
+     "name": "space306-subscribe-before-the-snapshot",
+     "noop_failed": [],
+     "targets": [
+      "ac4/end-of-file"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac4/end-of-file"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac1/label-and-compose-name",
+      "VELDO-0306 ac4/event-with-the-clock-stopped",
+      "VELDO-0306 ac4/end-of-file",
+      "VELDO-0306 ac4/events",
+      "VELDO-0306 ac4/broken-engine",
+      "VELDO-0306 docker/canon",
+      "VELDO-0306 review/events-since-the-snapshot",
+      "VELDO-0306 review/engine-down-reported",
+      "VELDO-0306 review/own-row-on-a-stand-in",
+      "VELDO-0306 review/host-object-untouched",
+      "VELDO-0306 review/never-under-a-mutant"
+     ],
+     "name": "space306-stream-read-on-an-interval",
+     "noop_failed": [],
+     "targets": [
+      "ac4/event-with-the-clock-stopped"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac4/event-with-the-clock-stopped"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac4/end-of-file",
+      "VELDO-0306 review/events-since-the-snapshot"
+     ],
+     "name": "space306-no-snapshot-at-end-of-file",
+     "noop_failed": [],
+     "targets": [
+      "ac4/end-of-file"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac4/end-of-file"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 ac4/broken-engine",
+      "VELDO-0306 review/engine-down-reported"
+     ],
+     "name": "space306-broken-engine-asked-without-end",
+     "noop_failed": [],
+     "targets": [
+      "ac4/broken-engine"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac4/broken-engine"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 loss/engine-unreadable"
+     ],
+     "name": "space306-gone-without-the-engines-answer",
+     "noop_failed": [],
+     "targets": [
+      "loss/engine-unreadable"
+     ],
+     "targets_red": [
+      "VELDO-0306 loss/engine-unreadable"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "VELDO-0306 ac4/poll-set"
+     ],
+     "name": "space306-pipes-not-in-the-poll-set",
+     "noop_failed": [],
+     "targets": [
+      "ac4/poll-set"
+     ],
+     "targets_red": [
+      "VELDO-0306 ac4/poll-set"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/protected-mount",
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ],
+     "name": "space306-review-protected-mount-adopted",
+     "noop_failed": [],
+     "targets": [
+      "review/protected-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/protected-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/protected-mount"
+     ],
+     "name": "space306-review-unread-mounts-adopted",
+     "noop_failed": [],
+     "targets": [
+      "review/protected-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/protected-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0306 review/protected-mount",
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ],
+     "name": "space306-review-mounts-not-read-at-removal",
+     "noop_failed": [],
+     "targets": [
+      "review/protected-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/protected-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0306 review/protected-mount"
+     ],
+     "name": "space306-review-unread-mounts-removed",
+     "noop_failed": [],
+     "targets": [
+      "review/protected-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/protected-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ],
+     "name": "space306-rereview-store-mount-adopted",
+     "noop_failed": [],
+     "targets": [
+      "rereview/snapshot-store-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ],
+     "name": "space306-rereview-store-mount-removed",
+     "noop_failed": [],
+     "targets": [
+      "rereview/snapshot-store-mount"
+     ],
+     "targets_red": [
+      "VELDO-0306 rereview/snapshot-store-mount"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/events-since-the-snapshot"
+     ],
+     "name": "space306-review-start-without-since",
+     "noop_failed": [],
+     "targets": [
+      "review/events-since-the-snapshot"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/events-since-the-snapshot"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/events-since-the-snapshot"
+     ],
+     "name": "space306-review-end-of-file-without-since",
+     "noop_failed": [],
+     "targets": [
+      "review/events-since-the-snapshot"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/events-since-the-snapshot"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/engine-down-reported"
+     ],
+     "name": "space306-review-down-not-in-the-answer",
+     "noop_failed": [],
+     "targets": [
+      "review/engine-down-reported"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/engine-down-reported"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "VELDO-0306 review/engine-down-reported"
+     ],
+     "name": "space306-review-down-not-logged",
+     "noop_failed": [],
+     "targets": [
+      "review/engine-down-reported"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/engine-down-reported"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0306 review/volume-labels-rule-1"
+     ],
+     "name": "space306-review-rule-1-labels-not-compared",
+     "noop_failed": [],
+     "targets": [
+      "review/volume-labels-rule-1"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/volume-labels-rule-1"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "144_veldo_0306_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/host-object-untouched"
+     ],
+     "name": "space306-review-row-client-lets-everything-through",
+     "noop_failed": [],
+     "targets": [
+      "review/host-object-untouched"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/host-object-untouched"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "144_veldo_0306_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/host-object-untouched"
+     ],
+     "name": "space306-review-row-client-takes-any-object",
+     "noop_failed": [],
+     "targets": [
+      "review/host-object-untouched"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/host-object-untouched"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "144_veldo_0306_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0306 review/own-row-on-a-stand-in"
+     ],
+     "name": "space306-review-row-events-not-filtered",
+     "noop_failed": [],
+     "targets": [
+      "review/own-row-on-a-stand-in"
+     ],
+     "targets_red": [
+      "VELDO-0306 review/own-row-on-a-stand-in"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "306",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 29,
+   "invalid_results": 0,
+   "registered": 29,
+   "rejected": 29,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=29 executed=29 reused=0 rejected=29 workers=41 elapsed=92.069s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "307": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree",
+      "VELDO-0307 ac1/by-where-the-path-leads",
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 ac2/report-then-act",
+      "VELDO-0307 ac3/covered-later",
+      "VELDO-0307 split/every-path-inside-places"
+     ],
+     "name": "space307-adopts-in-report",
+     "noop_failed": [],
+     "targets": [
+      "ac2/report-mode"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac2/report-mode"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree",
+      "VELDO-0307 ac2/report-then-act",
+      "VELDO-0307 loss/nothing-of-theirs-touched"
+     ],
+     "name": "space307-folder-name-only",
+     "noop_failed": [],
+     "targets": [
+      "ac1/inside-a-recorded-worktree"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac3/protected-volume",
+      "VELDO-0307 ac3/protected-container",
+      "VELDO-0307 ac3/covered-later"
+     ],
+     "name": "space307-adoption-before-the-protect-list",
+     "noop_failed": [],
+     "targets": [
+      "ac3/protected-container"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac3/protected-container"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/by-where-the-path-leads"
+     ],
+     "name": "space307-link-not-followed",
+     "noop_failed": [],
+     "targets": [
+      "ac1/by-where-the-path-leads"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/by-where-the-path-leads"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 review/split-owner-is-a-conflict"
+     ],
+     "name": "space307-parent-segment-read",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-proposal-when-undecided"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/no-proposal-when-undecided"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 split/two-worktrees"
+     ],
+     "name": "space307-two-worktrees-one-taken",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-proposal-when-undecided",
+      "split/two-worktrees"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 split/two-worktrees"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/by-where-the-path-leads",
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 ac2/report-mode"
+     ],
+     "name": "space307-gone-worktree-still-recorded",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-proposal-when-undecided"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/no-proposal-when-undecided"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/a-run-label-comes-first"
+     ],
+     "name": "space307-run-label-ignored",
+     "noop_failed": [],
+     "targets": [
+      "ac1/a-run-label-comes-first"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/a-run-label-comes-first"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/no-proposal-when-undecided"
+     ],
+     "name": "space307-no-identity-still-proposed",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-proposal-when-undecided"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/no-proposal-when-undecided"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree",
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 ac2/act-mode",
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/folder-inside-bind-outside",
+      "VELDO-0307 split/bind-inside-bind-outside",
+      "VELDO-0307 split/two-worktrees"
+     ],
+     "name": "space307-bind-source-not-read",
+     "noop_failed": [],
+     "targets": [
+      "ac1/inside-a-recorded-worktree"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 ac3/protected-volume",
+      "VELDO-0307 ac3/protected-container",
+      "VELDO-0307 ac3/protected-image",
+      "VELDO-0307 ac3/covered-later",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-labelled-path-not-protected",
+     "noop_failed": [],
+     "targets": [
+      "ac3/protected-volume",
+      "ac3/protected-container",
+      "ac3/protected-image"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac3/protected-volume",
+      "VELDO-0307 ac3/protected-container",
+      "VELDO-0307 ac3/protected-image"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree",
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 ac3/protected-container",
+      "VELDO-0307 ac3/protected-image",
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused",
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside",
+      "VELDO-0307 split/two-worktrees"
+     ],
+     "name": "space307-configuration-files-not-read",
+     "noop_failed": [],
+     "targets": [
+      "ac1/inside-a-recorded-worktree"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac3/protected-volume",
+      "VELDO-0307 ac3/protected-container",
+      "VELDO-0307 ac3/protected-image"
+     ],
+     "name": "space307-compose-project-not-protected",
+     "noop_failed": [],
+     "targets": [
+      "ac3/protected-image"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac3/protected-image"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac3/protected-image",
+      "VELDO-0307 review/digest-pattern-listed"
+     ],
+     "name": "space307-image-known-by-its-tag-alone",
+     "noop_failed": [],
+     "targets": [
+      "ac3/protected-image"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac3/protected-image"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac3/covered-later"
+     ],
+     "name": "space307-covered-report-stays",
+     "noop_failed": [],
+     "targets": [
+      "ac3/covered-later"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac3/covered-later"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac2/report-then-act"
+     ],
+     "name": "space307-proposal-never-adopted",
+     "noop_failed": [],
+     "targets": [
+      "ac2/report-then-act"
+     ],
+     "targets_red": [
+      "VELDO-0307 ac2/report-then-act"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ],
+     "name": "space307-ledger-digest-read-as-a-tag",
+     "noop_failed": [],
+     "targets": [
+      "protect/image-pattern-every-tag"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ],
+     "name": "space307-ledger-image-pattern-by-the-full-tag",
+     "noop_failed": [],
+     "targets": [
+      "protect/image-pattern-every-tag"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/image-pattern-every-tag",
+      "VELDO-0307 review/digest-pattern-listed"
+     ],
+     "name": "space307-ledger-tagged-pattern-covers-every-tag",
+     "noop_failed": [],
+     "targets": [
+      "protect/image-pattern-every-tag"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ],
+     "name": "space307-rule-2-image-pattern-by-the-full-tag",
+     "noop_failed": [],
+     "targets": [
+      "protect/image-pattern-every-tag"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/image-pattern-every-tag",
+      "VELDO-0307 review/digest-pattern-listed"
+     ],
+     "name": "space307-rule-2-tagged-pattern-covers-every-tag",
+     "noop_failed": [],
+     "targets": [
+      "protect/image-pattern-every-tag"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/image-pattern-every-tag"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ],
+     "name": "space307-rule-2-reads-no-labelled-path",
+     "noop_failed": [],
+     "targets": [
+      "protect/covered-after-adoption"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-rule-2-unread-labels-pass",
+     "noop_failed": [],
+     "targets": [
+      "protect/covered-after-adoption"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-rule-2-labelled-paths-not-read",
+     "noop_failed": [],
+     "targets": [
+      "protect/covered-after-adoption"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-rule-2-configuration-files-not-split",
+     "noop_failed": [],
+     "targets": [
+      "protect/covered-after-adoption"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-rule-2-labelled-path-beneath-only",
+     "noop_failed": [],
+     "targets": [
+      "protect/covered-after-adoption"
+     ],
+     "targets_red": [
+      "VELDO-0307 protect/covered-after-adoption"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-relative-label-passes-rule-2",
+     "noop_failed": [],
+     "targets": [
+      "review/relative-label-refused"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/relative-label-refused"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 review/relative-label-refused"
+     ],
+     "name": "space307-relative-label-passes-the-adapter",
+     "noop_failed": [],
+     "targets": [
+      "review/relative-label-refused"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/relative-label-refused"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside",
+      "VELDO-0307 split/folder-inside-bind-outside",
+      "VELDO-0307 split/bind-inside-bind-outside"
+     ],
+     "name": "space307-split-placed-by-the-path-inside",
+     "noop_failed": [],
+     "targets": [
+      "review/split-owner-is-a-conflict",
+      "split/file-inside-folder-outside",
+      "split/folder-inside-file-outside",
+      "split/folder-inside-bind-outside",
+      "split/bind-inside-bind-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside",
+      "VELDO-0307 split/folder-inside-bind-outside",
+      "VELDO-0307 split/bind-inside-bind-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside",
+      "VELDO-0307 split/folder-inside-bind-outside"
+     ],
+     "name": "space307-compose-label-inside-places-a-split",
+     "noop_failed": [],
+     "targets": [
+      "split/file-inside-folder-outside",
+      "split/folder-inside-file-outside",
+      "split/folder-inside-bind-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside",
+      "VELDO-0307 split/folder-inside-bind-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside"
+     ],
+     "name": "space307-working-folder-outside-not-seen",
+     "noop_failed": [],
+     "targets": [
+      "split/file-inside-folder-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 split/file-inside-folder-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/folder-inside-file-outside"
+     ],
+     "name": "space307-configuration-file-outside-not-seen",
+     "noop_failed": [],
+     "targets": [
+      "review/split-owner-is-a-conflict",
+      "split/folder-inside-file-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/folder-inside-file-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 split/folder-inside-bind-outside",
+      "VELDO-0307 split/bind-inside-bind-outside"
+     ],
+     "name": "space307-bind-source-outside-not-seen",
+     "noop_failed": [],
+     "targets": [
+      "split/folder-inside-bind-outside",
+      "split/bind-inside-bind-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 split/folder-inside-bind-outside",
+      "VELDO-0307 split/bind-inside-bind-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside"
+     ],
+     "name": "space307-compose-label-outside-not-seen",
+     "noop_failed": [],
+     "targets": [
+      "review/split-owner-is-a-conflict",
+      "split/file-inside-folder-outside",
+      "split/folder-inside-file-outside"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/file-inside-folder-outside",
+      "VELDO-0307 split/folder-inside-file-outside"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0307 ac1/inside-a-recorded-worktree",
+      "VELDO-0307 ac1/by-where-the-path-leads",
+      "VELDO-0307 ac1/no-proposal-when-undecided",
+      "VELDO-0307 ac2/report-mode",
+      "VELDO-0307 ac2/act-mode",
+      "VELDO-0307 ac2/report-then-act",
+      "VELDO-0307 ac3/covered-later",
+      "VELDO-0307 loss/nothing-of-theirs-touched",
+      "VELDO-0307 protect/covered-after-adoption",
+      "VELDO-0307 review/relative-label-refused",
+      "VELDO-0307 review/split-owner-is-a-conflict",
+      "VELDO-0307 split/every-path-inside-places"
+     ],
+     "name": "space307-every-placed-object-a-conflict",
+     "noop_failed": [],
+     "targets": [
+      "split/every-path-inside-places"
+     ],
+     "targets_red": [
+      "VELDO-0307 split/every-path-inside-places"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 ac3/protected-image",
+      "VELDO-0307 review/digest-pattern-listed"
+     ],
+     "name": "space307-digest-name-not-listed",
+     "noop_failed": [],
+     "targets": [
+      "review/digest-pattern-listed"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/digest-pattern-listed"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0307 review/digest-pattern-listed"
+     ],
+     "name": "space307-uncovered-image-unlists-its-namesake",
+     "noop_failed": [],
+     "targets": [
+      "review/digest-pattern-listed"
+     ],
+     "targets_red": [
+      "VELDO-0307 review/digest-pattern-listed"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "307",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 37,
+   "invalid_results": 0,
+   "registered": 37,
+   "rejected": 37,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=37 executed=37 reused=0 rejected=37 workers=47 elapsed=45.112s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "308": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac1/surviving-child",
+      "VELDO-0308 f3/unread-group-sends-nothing"
+     ],
+     "name": "space308-sent-when-the-worker-exits",
+     "noop_failed": [],
+     "targets": [
+      "ac1/surviving-child"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac1/surviving-child"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac1/not-before-the-record",
+      "VELDO-0308 ac1/removal-before-the-report"
+     ],
+     "name": "space308-sent-before-the-record",
+     "noop_failed": [],
+     "targets": [
+      "ac1/not-before-the-record"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac1/not-before-the-record"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac1/removal-before-the-report"
+     ],
+     "name": "space308-judged-before-the-record",
+     "noop_failed": [],
+     "targets": [
+      "ac1/removal-before-the-report"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac1/removal-before-the-report"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac1/removal-before-the-report"
+     ],
+     "name": "space308-reported-before-the-space-end",
+     "noop_failed": [],
+     "targets": [
+      "ac1/removal-before-the-report"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac1/removal-before-the-report"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac1/surviving-child",
+      "VELDO-0308 ac1/removal-before-the-report",
+      "VELDO-0308 ac1/refused-never-started",
+      "VELDO-0308 ac2/census-signal-release",
+      "VELDO-0308 ac2/waiting-unit",
+      "VELDO-0308 ac2/hold-named-by-the-contract",
+      "VELDO-0308 f5/refused-before-spawn",
+      "VELDO-0308 f5/spawn-failed"
+     ],
+     "name": "space308-exit-without-releasing-the-hold",
+     "noop_failed": [],
+     "targets": [
+      "ac2/waiting-unit"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac2/waiting-unit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac2/census-signal-release",
+      "VELDO-0308 ac2/waiting-unit"
+     ],
+     "name": "space308-hold-released-before-signal",
+     "noop_failed": [],
+     "targets": [
+      "ac2/census-signal-release"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac2/census-signal-release"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac3/not-for-a-run-not-ended"
+     ],
+     "name": "space308-retry-answers-for-a-run-not-ended",
+     "noop_failed": [],
+     "targets": [
+      "ac3/not-for-a-run-not-ended"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac3/not-for-a-run-not-ended"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 ac3/not-under-a-consumer"
+     ],
+     "name": "space308-retry-under-a-consumer",
+     "noop_failed": [],
+     "targets": [
+      "ac3/not-under-a-consumer"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac3/not-under-a-consumer"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac3/retried-when-carried-out",
+      "VELDO-0308 ac3/only-a-pending-retirement",
+      "VELDO-0308 ac4/one-run-finished-per-clone"
+     ],
+     "name": "space308-no-retry-when-carried-out",
+     "noop_failed": [],
+     "targets": [
+      "ac3/retried-when-carried-out"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac3/retried-when-carried-out"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac3/unchanged-sweeps-retry-nothing",
+      "VELDO-0308 ac3/retried-when-carried-out",
+      "VELDO-0308 ac3/only-a-pending-retirement",
+      "VELDO-0308 ac4/one-run-finished-per-clone"
+     ],
+     "name": "space308-retry-on-every-sweep",
+     "noop_failed": [],
+     "targets": [
+      "ac3/unchanged-sweeps-retry-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac3/unchanged-sweeps-retry-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac3/only-a-pending-retirement",
+      "VELDO-0308 n1/handed-over-clone-untouched"
+     ],
+     "name": "space308-retry-at-every-release",
+     "noop_failed": [],
+     "targets": [
+      "ac3/only-a-pending-retirement"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac3/only-a-pending-retirement"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/deferred-releases-the-slot",
+      "VELDO-0308 ac4/one-run-finished-per-clone",
+      "VELDO-0308 ac4/handed-over-for-every-user",
+      "VELDO-0308 ac4/pins-follow-the-removal",
+      "VELDO-0308 ac4/pins-held-while-deferred",
+      "VELDO-0308 f1/sweep-never-resends",
+      "VELDO-0308 f4/pins-followed-after-a-restart",
+      "VELDO-0308 n1/handed-over-clone-untouched"
+     ],
+     "name": "space308-obligation-open-on-space-deferred",
+     "noop_failed": [],
+     "targets": [
+      "ac4/deferred-releases-the-slot"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/deferred-releases-the-slot"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/pins-follow-the-removal",
+      "VELDO-0308 f4/pins-followed-after-a-restart"
+     ],
+     "name": "space308-pins-released-at-the-teardown-only",
+     "noop_failed": [],
+     "targets": [
+      "ac4/pins-follow-the-removal"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/pins-follow-the-removal"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/one-run-finished-per-clone"
+     ],
+     "name": "space308-teardown-on-every-sweep",
+     "noop_failed": [],
+     "targets": [
+      "ac4/one-run-finished-per-clone"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/one-run-finished-per-clone"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/pins-held-while-deferred"
+     ],
+     "name": "space308-pins-released-at-hand-over",
+     "noop_failed": [],
+     "targets": [
+      "ac4/pins-held-while-deferred"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/pins-held-while-deferred"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/pins-held-while-deferred",
+      "VELDO-0308 f4/clone-being-made-keeps-its-pin"
+     ],
+     "name": "space308-pins-released-while-the-item-is-not-removed",
+     "noop_failed": [],
+     "targets": [
+      "ac4/pins-held-while-deferred"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/pins-held-while-deferred"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 ac4/not-handed-over-keeps-the-slot"
+     ],
+     "name": "space308-unrecorded-clone-taken-for-the-ledgers",
+     "noop_failed": [],
+     "targets": [
+      "ac4/not-handed-over-keeps-the-slot"
+     ],
+     "targets_red": [
+      "VELDO-0308 ac4/not-handed-over-keeps-the-slot"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sweep-never-resends",
+      "VELDO-0308 f1/sent-once-and-alone",
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/changed-between-judge-and-send",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 keep/run-kept-item-not-named",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-sweep-resends-for-a-handed-over-run",
+     "noop_failed": [],
+     "targets": [
+      "f1/sweep-never-resends"
+     ],
+     "targets_red": [
+      "VELDO-0308 f1/sweep-never-resends"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sent-once-and-alone",
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/changed-between-judge-and-send",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 keep/run-kept-item-not-named",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-sweep-event-reaches-the-clone",
+     "noop_failed": [],
+     "targets": [
+      "n1/live-clone-holds-nothing-back"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/live-clone-holds-nothing-back"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sent-once-and-alone",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-sweep-sends-at-every-sweep",
+     "noop_failed": [],
+     "targets": [
+      "f1/sent-once-and-alone"
+     ],
+     "targets_red": [
+      "VELDO-0308 f1/sent-once-and-alone"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/start-sweep-applies-the-rule"
+     ],
+     "name": "space308-start-sweep-without-the-rule",
+     "noop_failed": [],
+     "targets": [
+      "f1/start-sweep-applies-the-rule"
+     ],
+     "targets_red": [
+      "VELDO-0308 f1/start-sweep-applies-the-rule"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/changed-between-judge-and-send",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 n1/teardown-names-its-clone-only",
+      "VELDO-0308 keep/run-kept-item-not-named"
+     ],
+     "name": "space308-receiver-event-reaches-the-clone",
+     "noop_failed": [],
+     "targets": [
+      "n1/live-clone-holds-nothing-back"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/live-clone-holds-nothing-back"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 f4/pins-followed-after-a-restart"
+     ],
+     "name": "space308-pins-followed-from-memory",
+     "noop_failed": [],
+     "targets": [
+      "f4/pins-followed-after-a-restart"
+     ],
+     "targets_red": [
+      "VELDO-0308 f4/pins-followed-after-a-restart"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f3/unread-group-sends-nothing"
+     ],
+     "name": "space308-unread-group-sent",
+     "noop_failed": [],
+     "targets": [
+      "f3/unread-group-sends-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0308 f3/unread-group-sends-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f5/refused-before-spawn"
+     ],
+     "name": "space308-refusal-reported-before-the-space-end",
+     "noop_failed": [],
+     "targets": [
+      "f5/refused-before-spawn"
+     ],
+     "targets_red": [
+      "VELDO-0308 f5/refused-before-spawn"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_retirement.py",
+     "mutant_failed": [
+      "VELDO-0308 f4/clone-being-made-keeps-its-pin"
+     ],
+     "name": "space308-pins-released-with-no-item",
+     "noop_failed": [],
+     "targets": [
+      "f4/clone-being-made-keeps-its-pin"
+     ],
+     "targets_red": [
+      "VELDO-0308 f4/clone-being-made-keeps-its-pin"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sweep-never-resends",
+      "VELDO-0308 f1/start-sweep-applies-the-rule",
+      "VELDO-0308 n1/own-items-ended",
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/changed-between-judge-and-send",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 n1/teardown-names-its-clone-only",
+      "VELDO-0308 keep/run-kept-item-not-named",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-any-repository-of-the-owner-holds-the-event-back",
+     "noop_failed": [],
+     "targets": [
+      "n1/own-items-ended"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/own-items-ended"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f5/spawn-failed"
+     ],
+     "name": "space308-spawn-failure-reported-before-the-space-end",
+     "noop_failed": [],
+     "targets": [
+      "f5/spawn-failed"
+     ],
+     "targets_red": [
+      "VELDO-0308 f5/spawn-failed"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-event-reaches-a-handed-over-clone",
+     "noop_failed": [],
+     "targets": [
+      "n1/handed-over-clone-untouched"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/handed-over-clone-untouched"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-observation-at-every-sweep",
+     "noop_failed": [],
+     "targets": [
+      "n2/observations-bounded"
+     ],
+     "targets_red": [
+      "VELDO-0308 n2/observations-bounded"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sent-once-and-alone",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-sent-leftover-stays-in-memory",
+     "noop_failed": [],
+     "targets": [
+      "n2/observations-bounded"
+     ],
+     "targets_red": [
+      "VELDO-0308 n2/observations-bounded"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sent-once-and-alone",
+      "VELDO-0308 n1/handed-over-clone-untouched",
+      "VELDO-0308 n1/changed-between-judge-and-send",
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 n1/teardown-names-its-clone-only",
+      "VELDO-0308 keep/run-kept-item-not-named",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-run-finished-names-the-owner",
+     "noop_failed": [],
+     "targets": [
+      "n1/handed-over-clone-untouched"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/handed-over-clone-untouched"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 n1/changed-between-judge-and-send"
+     ],
+     "name": "space308-refused-send-falls-back-to-the-owner",
+     "noop_failed": [],
+     "targets": [
+      "n1/changed-between-judge-and-send"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/changed-between-judge-and-send"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 n1/live-clone-holds-nothing-back",
+      "VELDO-0308 n2/observations-bounded"
+     ],
+     "name": "space308-live-clone-holds-the-send-back",
+     "noop_failed": [],
+     "targets": [
+      "n1/live-clone-holds-nothing-back"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/live-clone-holds-nothing-back"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_clone.py",
+     "mutant_failed": [
+      "VELDO-0308 f1/sweep-never-resends",
+      "VELDO-0308 n1/teardown-names-its-clone-only",
+      "VELDO-0308 n1/teardown-changed-between-judge-and-send"
+     ],
+     "name": "space308-teardown-names-the-owner",
+     "noop_failed": [],
+     "targets": [
+      "n1/teardown-names-its-clone-only"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/teardown-names-its-clone-only"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_clone.py",
+     "mutant_failed": [
+      "VELDO-0308 n1/teardown-changed-between-judge-and-send"
+     ],
+     "name": "space308-teardown-refused-send-falls-back-to-the-owner",
+     "noop_failed": [],
+     "targets": [
+      "n1/teardown-changed-between-judge-and-send"
+     ],
+     "targets_red": [
+      "VELDO-0308 n1/teardown-changed-between-judge-and-send"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0308 keep/run-kept-item-not-named"
+     ],
+     "name": "space308-run-names-a-kept-item",
+     "noop_failed": [],
+     "targets": [
+      "keep/run-kept-item-not-named"
+     ],
+     "targets_red": [
+      "VELDO-0308 keep/run-kept-item-not-named"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_clone.py",
+     "mutant_failed": [
+      "VELDO-0308 keep/teardown-kept-item-not-named"
+     ],
+     "name": "space308-teardown-names-a-kept-item",
+     "noop_failed": [],
+     "targets": [
+      "keep/teardown-kept-item-not-named"
+     ],
+     "targets_red": [
+      "VELDO-0308 keep/teardown-kept-item-not-named"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "308",
+    "--jobs",
+    "2"
+   ],
+   "commit": "7aaf2fab5e75b76d70cc99dff6720e9dff24903b",
+   "executed": 38,
+   "invalid_results": 0,
+   "registered": 38,
+   "rejected": 38,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=38 executed=38 reused=0 rejected=38 workers=44 elapsed=130.236s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "309": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 ac1/no-host-waits",
+      "VELDO-0309 ac1/report-runs",
+      "VELDO-0309 ac2/no-stamp-no-event",
+      "VELDO-0309 ac3/stamp-then-cleanup",
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 ac4/adopter-unchanged",
+      "VELDO-0309 ac4/no-helper-unchanged",
+      "VELDO-0309 hold/killed-gate-does-not-block",
+      "VELDO-0309 hold/live-holder-blocks",
+      "VELDO-0309 hold/released-on-every-exit",
+      "VELDO-0309 exit/group-ended",
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ],
+     "name": "space309-need-only-with-host-local",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-host-waits"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac1/no-host-waits"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 ac2/no-stamp-no-event",
+      "VELDO-0309 hold/released-on-every-exit"
+     ],
+     "name": "space309-classify-after-stamp-local",
+     "noop_failed": [],
+     "targets": [
+      "ac2/no-stamp-no-event"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac2/no-stamp-no-event"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 ac3/killed-before-stamp"
+     ],
+     "name": "space309-verdict-before-stamp-local",
+     "noop_failed": [],
+     "targets": [
+      "ac3/killed-before-stamp"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac3/killed-before-stamp"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 hold/released-on-every-exit"
+     ],
+     "name": "space309-exit-keeps-hold-local",
+     "noop_failed": [],
+     "targets": [
+      "hold/released-on-every-exit"
+     ],
+     "targets_red": [
+      "VELDO-0309 hold/released-on-every-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 exit/group-ended"
+     ],
+     "name": "space309-group-left-running-local",
+     "noop_failed": [],
+     "targets": [
+      "exit/group-ended"
+     ],
+     "targets_red": [
+      "VELDO-0309 exit/group-ended"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate",
+      "VELDO-0309 exit/group-ended"
+     ],
+     "name": "space309-copy-waits-for-end-of-file-local",
+     "noop_failed": [],
+     "targets": [
+      "exit/leftover-does-not-hold-gate"
+     ],
+     "targets_red": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 ac1/no-host-waits",
+      "VELDO-0309 ac1/report-runs",
+      "VELDO-0309 ac2/no-stamp-no-event",
+      "VELDO-0309 ac3/stamp-then-cleanup",
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 ac4/adopter-unchanged",
+      "VELDO-0309 ac4/no-helper-unchanged",
+      "VELDO-0309 hold/killed-gate-does-not-block",
+      "VELDO-0309 hold/live-holder-blocks",
+      "VELDO-0309 hold/released-on-every-exit",
+      "VELDO-0309 exit/group-ended",
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ],
+     "name": "space309-need-only-with-host-template",
+     "noop_failed": [],
+     "targets": [
+      "ac1/no-host-waits"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac1/no-host-waits"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ],
+     "name": "space309-review-events-after-refused-graph-local",
+     "noop_failed": [],
+     "targets": [
+      "graph/refused-runs-no-review-events"
+     ],
+     "targets_red": [
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 ac2/no-stamp-no-event",
+      "VELDO-0309 hold/released-on-every-exit"
+     ],
+     "name": "space309-classify-after-stamp-template",
+     "noop_failed": [],
+     "targets": [
+      "ac2/no-stamp-no-event"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac2/no-stamp-no-event"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 ac3/killed-before-stamp"
+     ],
+     "name": "space309-verdict-before-stamp-template",
+     "noop_failed": [],
+     "targets": [
+      "ac3/killed-before-stamp"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac3/killed-before-stamp"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 hold/released-on-every-exit"
+     ],
+     "name": "space309-exit-keeps-hold-template",
+     "noop_failed": [],
+     "targets": [
+      "hold/released-on-every-exit"
+     ],
+     "targets_red": [
+      "VELDO-0309 hold/released-on-every-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate",
+      "VELDO-0309 exit/group-ended"
+     ],
+     "name": "space309-copy-waits-for-end-of-file-template",
+     "noop_failed": [],
+     "targets": [
+      "exit/leftover-does-not-hold-gate"
+     ],
+     "targets_red": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 exit/group-ended"
+     ],
+     "name": "space309-group-left-running-template",
+     "noop_failed": [],
+     "targets": [
+      "exit/group-ended"
+     ],
+     "targets_red": [
+      "VELDO-0309 exit/group-ended"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "verify.sh",
+     "mutant_failed": [
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ],
+     "name": "space309-review-events-after-refused-graph-template",
+     "noop_failed": [],
+     "targets": [
+      "graph/refused-runs-no-review-events"
+     ],
+     "targets_red": [
+      "VELDO-0309 graph/refused-runs-no-review-events"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict",
+      "VELDO-0309 hold/killed-gate-does-not-block",
+      "VELDO-0309 hold/pid-reused-is-gone"
+     ],
+     "name": "space309-dead-holder-kept",
+     "noop_failed": [],
+     "targets": [
+      "hold/killed-gate-does-not-block"
+     ],
+     "targets_red": [
+      "VELDO-0309 hold/killed-gate-does-not-block"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 hold/live-holder-blocks"
+     ],
+     "name": "space309-live-holder-taken-for-gone",
+     "noop_failed": [],
+     "targets": [
+      "hold/live-holder-blocks"
+     ],
+     "targets_red": [
+      "VELDO-0309 hold/live-holder-blocks"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 hold/pid-reused-is-gone"
+     ],
+     "name": "space309-start-time-not-compared",
+     "noop_failed": [],
+     "targets": [
+      "hold/pid-reused-is-gone"
+     ],
+     "targets_red": [
+      "VELDO-0309 hold/pid-reused-is-gone"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 log/removed-at-verdict"
+     ],
+     "name": "space309-log-not-named",
+     "noop_failed": [],
+     "targets": [
+      "log/removed-at-verdict"
+     ],
+     "targets_red": [
+      "VELDO-0309 log/removed-at-verdict"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 ac4/adopter-unchanged"
+     ],
+     "name": "space309-requires-ledger",
+     "noop_failed": [],
+     "targets": [
+      "ac4/adopter-unchanged"
+     ],
+     "targets_red": [
+      "VELDO-0309 ac4/adopter-unchanged"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "gate_space.py",
+     "mutant_failed": [
+      "VELDO-0309 safe/owner-keep"
+     ],
+     "name": "space309-kept-child-measured",
+     "noop_failed": [],
+     "targets": [
+      "safe/owner-keep"
+     ],
+     "targets_red": [
+      "VELDO-0309 safe/owner-keep"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "309",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 20,
+   "invalid_results": 0,
+   "registered": 20,
+   "rejected": 20,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=20 executed=20 reused=0 rejected=20 workers=24 elapsed=616.289s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "310": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_landing_station.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/after-the-receipt",
+      "VELDO-0310 ac1/failed-landing-sends-nothing",
+      "VELDO-0310 ac1/no-receipt-no-event",
+      "VELDO-0310 ac1/undone-landing-sends-nothing",
+      "VELDO-0310 ac1/no-ledger-sends-nothing",
+      "VELDO-0310 ac2/worktree-after-build-output",
+      "VELDO-0310 ac2/branch-kept-and-marked",
+      "VELDO-0310 ac2/image-tags-go",
+      "VELDO-0310 ac2/record-joined-to-receipt",
+      "VELDO-0310 ac2/unlanded-work-stays",
+      "VELDO-0310 ac2/uncommitted-work-stays",
+      "VELDO-0310 ac3/contained-worktree-removed",
+      "VELDO-0310 ac3/fresh-branch-left",
+      "VELDO-0310 ac3/no-start-left",
+      "VELDO-0310 ac3/not-in-trunk-left",
+      "VELDO-0310 ac3/work-in-contained-worktree-stays",
+      "VELDO-0310 ac3/not-alone-left",
+      "VELDO-0310 ac3/moved-after-the-check",
+      "VELDO-0310 ac3/other-project-untouched",
+      "VELDO-0310 ac3/marked-once",
+      "VELDO-0310 f1/remote-trunk-put-back",
+      "VELDO-0310 f1/remote-unit-landed",
+      "VELDO-0310 f1/remote-branch-contained",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f2/trunk-read-at-the-attempt",
+      "VELDO-0310 f3/declared-after-the-check",
+      "VELDO-0310 f3/changed-after-the-check",
+      "VELDO-0310 keep/kept-item-not-named",
+      "VELDO-0310 f4/squash-landing",
+      "VELDO-0310 f4/one-landed-one-unlanded",
+      "VELDO-0310 f4/detached-worktree-at-landed",
+      "VELDO-0310 f5/space-step-failed",
+      "VELDO-0310 paths/no-delete-and-canon"
+     ],
+     "name": "space310-sent-when-the-landing-starts",
+     "noop_failed": [],
+     "targets": [
+      "ac1/failed-landing-sends-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac1/failed-landing-sends-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/failed-landing-sends-nothing",
+      "VELDO-0310 ac2/branch-kept-and-marked",
+      "VELDO-0310 ac2/uncommitted-work-stays",
+      "VELDO-0310 ac3/contained-worktree-removed",
+      "VELDO-0310 ac3/work-in-contained-worktree-stays",
+      "VELDO-0310 ac3/moved-after-the-check",
+      "VELDO-0310 f1/remote-unit-landed",
+      "VELDO-0310 f1/remote-branch-contained",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f2/trunk-read-at-the-attempt",
+      "VELDO-0310 f3/declared-after-the-check",
+      "VELDO-0310 f3/changed-after-the-check",
+      "VELDO-0310 keep/kept-item-not-named",
+      "VELDO-0310 f4/squash-landing",
+      "VELDO-0310 f4/detached-worktree-at-landed",
+      "VELDO-0310 paths/no-delete-and-canon"
+     ],
+     "name": "space310-branch-removed-with-the-worktree",
+     "noop_failed": [],
+     "targets": [
+      "ac2/branch-kept-and-marked"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac2/branch-kept-and-marked"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac3/fresh-branch-left",
+      "VELDO-0310 f3/changed-after-the-check"
+     ],
+     "name": "space310-start-commit-test-dropped",
+     "noop_failed": [],
+     "targets": [
+      "ac3/fresh-branch-left"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/fresh-branch-left"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/undone-landing-sends-nothing",
+      "VELDO-0310 ac2/uncommitted-work-stays",
+      "VELDO-0310 f1/remote-trunk-put-back",
+      "VELDO-0310 f1/remote-unit-landed",
+      "VELDO-0310 f1/remote-branch-contained"
+     ],
+     "name": "space310-sent-with-the-trunk-put-back",
+     "noop_failed": [],
+     "targets": [
+      "ac1/undone-landing-sends-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac1/undone-landing-sends-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac2/unlanded-work-stays",
+      "VELDO-0310 f4/one-landed-one-unlanded"
+     ],
+     "name": "space310-landed-for-a-branch-built-on",
+     "noop_failed": [],
+     "targets": [
+      "ac2/unlanded-work-stays"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac2/unlanded-work-stays"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac3/no-start-left"
+     ],
+     "name": "space310-no-start-taken-for-contained",
+     "noop_failed": [],
+     "targets": [
+      "ac3/no-start-left"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/no-start-left"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac3/not-alone-left",
+      "VELDO-0310 f3/changed-after-the-check"
+     ],
+     "name": "space310-contained-for-an-owner-not-alone",
+     "noop_failed": [],
+     "targets": [
+      "ac3/not-alone-left"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/not-alone-left"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/failed-landing-sends-nothing",
+      "VELDO-0310 ac1/no-receipt-no-event",
+      "VELDO-0310 ac1/undone-landing-sends-nothing",
+      "VELDO-0310 ac1/no-ledger-sends-nothing",
+      "VELDO-0310 ac2/unlanded-work-stays",
+      "VELDO-0310 ac2/uncommitted-work-stays",
+      "VELDO-0310 ac3/not-in-trunk-left",
+      "VELDO-0310 ac3/not-alone-left"
+     ],
+     "name": "space310-not-in-trunk-taken-for-contained",
+     "noop_failed": [],
+     "targets": [
+      "ac3/not-in-trunk-left"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/not-in-trunk-left"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac3/moved-after-the-check"
+     ],
+     "name": "space310-moved-branch-named-marked",
+     "noop_failed": [],
+     "targets": [
+      "ac3/moved-after-the-check"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/moved-after-the-check"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac3/marked-once"
+     ],
+     "name": "space310-marked-branch-sent-again",
+     "noop_failed": [],
+     "targets": [
+      "ac3/marked-once"
+     ],
+     "targets_red": [
+      "VELDO-0310 ac3/marked-once"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f1/remote-trunk-put-back",
+      "VELDO-0310 f1/remote-unit-landed",
+      "VELDO-0310 f1/remote-branch-contained"
+     ],
+     "name": "space310-remote-trunk-not-read",
+     "noop_failed": [],
+     "targets": [
+      "f1/remote-trunk-put-back"
+     ],
+     "targets_red": [
+      "VELDO-0310 f1/remote-trunk-put-back"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f1/remote-branch-contained",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f3/declared-after-the-check",
+      "VELDO-0310 f3/changed-after-the-check",
+      "VELDO-0310 keep/kept-item-not-named"
+     ],
+     "name": "space310-candidate-not-brought",
+     "noop_failed": [],
+     "targets": [
+      "f1/remote-branch-contained"
+     ],
+     "targets_red": [
+      "VELDO-0310 f1/remote-branch-contained"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f1/remote-branch-contained",
+      "VELDO-0310 f1/project-repository-brought"
+     ],
+     "name": "space310-transfer-writes-a-ref",
+     "noop_failed": [],
+     "targets": [
+      "f1/remote-branch-contained"
+     ],
+     "targets_red": [
+      "VELDO-0310 f1/remote-branch-contained"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/after-the-receipt",
+      "VELDO-0310 f1/remote-unit-landed",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f2/trunk-read-at-the-attempt"
+     ],
+     "name": "space310-candidate-given-to-rule-5",
+     "noop_failed": [],
+     "targets": [
+      "f2/trunk-read-at-the-attempt"
+     ],
+     "targets_red": [
+      "VELDO-0310 f2/trunk-read-at-the-attempt"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f4/squash-landing"
+     ],
+     "name": "space310-source-commit-not-counted",
+     "noop_failed": [],
+     "targets": [
+      "f4/squash-landing"
+     ],
+     "targets_red": [
+      "VELDO-0310 f4/squash-landing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f4/one-landed-one-unlanded"
+     ],
+     "name": "space310-first-branch-judged-alone",
+     "noop_failed": [],
+     "targets": [
+      "f4/one-landed-one-unlanded"
+     ],
+     "targets_red": [
+      "VELDO-0310 f4/one-landed-one-unlanded"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f4/detached-worktree-at-landed",
+      "VELDO-0310 f5/space-step-failed"
+     ],
+     "name": "space310-detached-refused-at-landed",
+     "noop_failed": [],
+     "targets": [
+      "f4/detached-worktree-at-landed"
+     ],
+     "targets_red": [
+      "VELDO-0310 f4/detached-worktree-at-landed"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing_station.py",
+     "mutant_failed": [
+      "VELDO-0310 ac1/after-the-receipt",
+      "VELDO-0310 ac1/failed-landing-sends-nothing",
+      "VELDO-0310 ac2/worktree-after-build-output",
+      "VELDO-0310 ac2/image-tags-go",
+      "VELDO-0310 ac2/record-joined-to-receipt",
+      "VELDO-0310 ac3/contained-worktree-removed",
+      "VELDO-0310 ac3/work-in-contained-worktree-stays",
+      "VELDO-0310 ac3/moved-after-the-check",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f4/detached-worktree-at-landed",
+      "VELDO-0310 f5/space-step-failed"
+     ],
+     "name": "space310-space-step-inside-the-running-window",
+     "noop_failed": [],
+     "targets": [
+      "f5/space-step-failed"
+     ],
+     "targets_red": [
+      "VELDO-0310 f5/space-step-failed"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f1/remote-branch-contained",
+      "VELDO-0310 f1/project-repository-brought",
+      "VELDO-0310 f3/declared-after-the-check",
+      "VELDO-0310 f3/changed-after-the-check",
+      "VELDO-0310 keep/kept-item-not-named"
+     ],
+     "name": "space310-project-repository-left-to-the-discard",
+     "noop_failed": [],
+     "targets": [
+      "f1/project-repository-brought"
+     ],
+     "targets_red": [
+      "VELDO-0310 f1/project-repository-brought"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f3/declared-after-the-check",
+      "VELDO-0310 f3/changed-after-the-check",
+      "VELDO-0310 keep/kept-item-not-named"
+     ],
+     "name": "space310-owner-signalled-after-the-check",
+     "noop_failed": [],
+     "targets": [
+      "f3/declared-after-the-check"
+     ],
+     "targets_red": [
+      "VELDO-0310 f3/declared-after-the-check"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 f3/changed-after-the-check"
+     ],
+     "name": "space310-refused-event-sent-for-the-owner",
+     "noop_failed": [],
+     "targets": [
+      "f3/changed-after-the-check"
+     ],
+     "targets_red": [
+      "VELDO-0310 f3/changed-after-the-check"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_landing.py",
+     "mutant_failed": [
+      "VELDO-0310 keep/kept-item-not-named"
+     ],
+     "name": "space310-names-a-kept-item",
+     "noop_failed": [],
+     "targets": [
+      "keep/kept-item-not-named"
+     ],
+     "targets_red": [
+      "VELDO-0310 keep/kept-item-not-named"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "310",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 22,
+   "invalid_results": 0,
+   "registered": 22,
+   "rejected": 22,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=26 elapsed=454.901s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "313": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac1/declared-started-ended",
+      "VELDO-0313 ac1/build-output-has-item-and-goes",
+      "VELDO-0313 fix3/rewritten-environment-open-file-in-worktree"
+     ],
+     "name": "space313-census-skipped",
+     "noop_failed": [],
+     "targets": [
+      "ac1/build-output-has-item-and-goes"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac1/build-output-has-item-and-goes"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac1/unread-group-sends-nothing"
+     ],
+     "name": "space313-unread-group-sent",
+     "noop_failed": [],
+     "targets": [
+      "ac1/unread-group-sends-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac1/unread-group-sends-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac1/declared-started-ended",
+      "VELDO-0313 ac1/only-the-runs-own-items",
+      "VELDO-0313 fix4/docker-objects-are-items"
+     ],
+     "name": "space313-signal-not-through-the-runners-rule",
+     "noop_failed": [],
+     "targets": [
+      "ac1/only-the-runs-own-items"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac1/only-the-runs-own-items"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac2/act-waits-75"
+     ],
+     "name": "space313-started-anyway-in-act",
+     "noop_failed": [],
+     "targets": [
+      "ac2/act-waits-75"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac2/act-waits-75"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/captured-output-ends-at-return",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing",
+      "VELDO-0313 ac2/command-status",
+      "VELDO-0313 ac2/report-starts"
+     ],
+     "name": "space313-status-lost",
+     "noop_failed": [],
+     "targets": [
+      "ac2/command-status"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac2/command-status"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac2/act-waits-75"
+     ],
+     "name": "space313-waiting-hold-left-behind",
+     "noop_failed": [],
+     "targets": [
+      "ac2/act-waits-75"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac2/act-waits-75"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 ac3/event-types"
+     ],
+     "name": "space313-any-path-accepted",
+     "noop_failed": [],
+     "targets": [
+      "ac3/record-refusals",
+      "ac3/event-types"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 ac3/event-types"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/record-refusals"
+     ],
+     "name": "space313-any-kind-accepted",
+     "noop_failed": [],
+     "targets": [
+      "ac3/record-refusals"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac3/record-refusals"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/event-types"
+     ],
+     "name": "space313-any-event-type-accepted",
+     "noop_failed": [],
+     "targets": [
+      "ac3/event-types"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac3/event-types"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac4/no-installation-runs-unchanged",
+      "VELDO-0313 ac4/each-verb-says-so"
+     ],
+     "name": "space313-refuses-with-no-installation",
+     "noop_failed": [],
+     "targets": [
+      "ac4/no-installation-runs-unchanged"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac4/no-installation-runs-unchanged"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 fix1/existing-work-is-never-scratch",
+      "VELDO-0313 ac3/record-accepted"
+     ],
+     "name": "space313-existing-folder-accepted-as-session-scratch",
+     "noop_failed": [],
+     "targets": [
+      "fix1/existing-work-is-never-scratch"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix1/existing-work-is-never-scratch"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 fix1/existing-work-is-never-scratch",
+      "VELDO-0313 ac3/record-accepted"
+     ],
+     "name": "space313-existing-path-recorded",
+     "noop_failed": [],
+     "targets": [
+      "fix1/existing-work-is-never-scratch",
+      "ac3/record-refusals"
+     ],
+     "targets_red": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 fix1/existing-work-is-never-scratch"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac3/record-refusals",
+      "VELDO-0313 fix1/existing-work-is-never-scratch"
+     ],
+     "name": "space313-scratch-recorded-by-the-verb",
+     "noop_failed": [],
+     "targets": [
+      "fix1/existing-work-is-never-scratch"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix1/existing-work-is-never-scratch"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit",
+      "VELDO-0313 fix2/captured-output-ends-at-return",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing",
+      "VELDO-0313 supervise/stop-after-the-command-end-is-made",
+      "VELDO-0313 fix3/handed-outside-the-tree"
+     ],
+     "name": "space313-waits-for-what-the-command-left",
+     "noop_failed": [],
+     "targets": [
+      "fix2/returns-at-the-commands-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit",
+      "VELDO-0313 fix2/captured-output-ends-at-return",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing",
+      "VELDO-0313 fix3/handed-outside-the-tree",
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-sent-while-a-process-it-left-lives",
+     "noop_failed": [],
+     "targets": [
+      "fix2/returns-at-the-commands-exit",
+      "fix2/end-follows-their-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit",
+      "VELDO-0313 fix2/captured-output-ends-at-return",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing",
+      "VELDO-0313 supervise/stop-after-the-command-end-is-made",
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit",
+      "VELDO-0313 fix3/handed-outside-the-tree",
+      "VELDO-0313 paths/canon"
+     ],
+     "name": "space313-what-the-command-left-is-killed",
+     "noop_failed": [],
+     "targets": [
+      "fix2/end-follows-their-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/end-follows-their-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 paths/canon"
+     ],
+     "name": "space313-end-waits-on-a-timer",
+     "noop_failed": [],
+     "targets": [
+      "paths/canon"
+     ],
+     "targets_red": [
+      "VELDO-0313 paths/canon"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/report-loss-keeps-supervising",
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 supervise/wrapper-gone-the-follower-makes-the-end"
+     ],
+     "name": "space313-report-loss-cancels-the-supervision",
+     "noop_failed": [],
+     "targets": [
+      "supervise/report-loss-keeps-supervising"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/report-loss-keeps-supervising"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing"
+     ],
+     "name": "space313-stop-after-the-command-ends-the-supervisor",
+     "noop_failed": [],
+     "targets": [
+      "supervise/stop-after-the-command-ends-nothing"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit"
+     ],
+     "name": "space313-table-read-at-every-exit",
+     "noop_failed": [],
+     "targets": [
+      "supervise/staying-is-idle"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/staying-is-idle"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 ac1/declared-started-ended",
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing"
+     ],
+     "name": "space313-scratch-records-no-process",
+     "noop_failed": [],
+     "targets": [
+      "fix2/returns-at-the-commands-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/handed-outside-the-tree",
+      "VELDO-0313 fix3/environment-not-whole-holds",
+      "VELDO-0313 fix3/same-program-holds"
+     ],
+     "name": "space313-label-not-read",
+     "noop_failed": [],
+     "targets": [
+      "fix3/handed-outside-the-tree"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/handed-outside-the-tree"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 fix3/unread-process-holds",
+      "VELDO-0313 fix3/environment-not-whole-holds"
+     ],
+     "name": "space313-unread-process-not-counted",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 fix3/unread-process-holds",
+      "VELDO-0313 fix3/environment-not-whole-holds"
+     ],
+     "name": "space313-unread-bounded-by-a-read-parent",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-unread-started-after-the-run-left-out",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-reader-block-taken-as-label-read",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-reader-block-not-checked",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-reader-not-used-taken-as-used",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ],
+     "name": "space313-readers-label-of-the-run-not-counted",
+     "noop_failed": [],
+     "targets": [
+      "fix3/unread-process-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/unread-process-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/environment-not-whole-holds",
+      "VELDO-0313 fix3/same-program-holds"
+     ],
+     "name": "space313-environment-taken-as-it-was-read",
+     "noop_failed": [],
+     "targets": [
+      "fix3/environment-not-whole-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/environment-not-whole-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/environment-not-whole-holds"
+     ],
+     "name": "space313-empty-environment-taken-as-read",
+     "noop_failed": [],
+     "targets": [
+      "fix3/environment-not-whole-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/environment-not-whole-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/same-program-holds"
+     ],
+     "name": "space313-identity-not-compared",
+     "noop_failed": [],
+     "targets": [
+      "fix3/same-program-holds"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/same-program-holds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/captured-output-ends-at-return"
+     ],
+     "name": "space313-supervisor-keeps-the-callers-output",
+     "noop_failed": [],
+     "targets": [
+      "fix2/captured-output-ends-at-return"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/captured-output-ends-at-return"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit",
+      "VELDO-0313 fix2/end-follows-their-exit",
+      "VELDO-0313 fix2/captured-output-ends-at-return",
+      "VELDO-0313 supervise/stop-after-the-command-ends-nothing",
+      "VELDO-0313 supervise/stop-after-the-command-end-is-made",
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 supervise/wrapper-gone-the-follower-makes-the-end",
+      "VELDO-0313 ac2/act-waits-75",
+      "VELDO-0313 ac2/report-starts"
+     ],
+     "name": "space313-supervisor-does-not-stay",
+     "noop_failed": [],
+     "targets": [
+      "fix2/returns-at-the-commands-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix2/returns-at-the-commands-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit"
+     ],
+     "name": "space313-wait-sleeps-on-what-holds-nothing",
+     "noop_failed": [],
+     "targets": [
+      "supervise/wait-reads-again-at-a-read-holders-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/staying-is-idle",
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit"
+     ],
+     "name": "space313-wait-reads-at-every-unread-exit",
+     "noop_failed": [],
+     "targets": [
+      "supervise/wait-reads-again-at-a-read-holders-exit"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/wait-reads-again-at-a-read-holders-exit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/rule-3-reads-the-kernel"
+     ],
+     "name": "space313-rule-three-answered-without-a-read",
+     "noop_failed": [],
+     "targets": [
+      "fix3/rule-3-reads-the-kernel"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/rule-3-reads-the-kernel"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 supervise/wrapper-gone-the-follower-makes-the-end"
+     ],
+     "name": "space313-wrapper-gone-nobody-makes-the-end",
+     "noop_failed": [],
+     "targets": [
+      "supervise/wrapper-gone-the-follower-makes-the-end"
+     ],
+     "targets_red": [
+      "VELDO-0313 supervise/wrapper-gone-the-follower-makes-the-end"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix3/rule-3-reads-the-kernel"
+     ],
+     "name": "space313-hold-released-for-a-run-that-is-not-over",
+     "noop_failed": [],
+     "targets": [
+      "fix3/rule-3-reads-the-kernel"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix3/rule-3-reads-the-kernel"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix4/docker-objects-are-items"
+     ],
+     "name": "space313-docker-step-skipped",
+     "noop_failed": [],
+     "targets": [
+      "fix4/docker-objects-are-items"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix4/docker-objects-are-items"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix4/docker-objects-are-items"
+     ],
+     "name": "space313-another-runs-container-taken",
+     "noop_failed": [],
+     "targets": [
+      "fix4/docker-objects-are-items"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix4/docker-objects-are-items"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix5/no-issuer-no-run",
+      "VELDO-0313 paths/canon"
+     ],
+     "name": "space313-issues-its-own-run",
+     "noop_failed": [],
+     "targets": [
+      "fix5/no-issuer-no-run"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix5/no-issuer-no-run"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "VELDO-0313 fix6/scratch-not-made",
+      "VELDO-0313 paths/canon"
+     ],
+     "name": "space313-gone-sent-as-space-runner",
+     "noop_failed": [],
+     "targets": [
+      "fix6/scratch-not-made"
+     ],
+     "targets_red": [
+      "VELDO-0313 fix6/scratch-not-made"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "313",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 43,
+   "invalid_results": 0,
+   "registered": 43,
+   "rejected": 43,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=43 executed=43 reused=0 rejected=43 workers=45 elapsed=1063.419s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "315": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac1/no-owner"
+     ],
+     "name": "space315-adopt-unowned",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac1/no-owner"
+     ],
+     "targets_red": [
+      "space315/ac1/no-owner"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac1/private-forms"
+     ],
+     "name": "space315-batch-as-scratch",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac1/private-forms"
+     ],
+     "targets_red": [
+      "space315/ac1/private-forms"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac1/no-owner",
+      "space315/ac1/private-forms",
+      "space315/ac2/keep-failure",
+      "space315/f3/first-not-behind-second",
+      "space315/ac3/reconcile-responsive",
+      "space315/cli/slow-client",
+      "space315/ac8/retry-events"
+     ],
+     "name": "space315-remove-reports",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac2/keep-failure"
+     ],
+     "targets_red": [
+      "space315/ac2/keep-failure"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac2/marked-not-gone"
+     ],
+     "name": "space315-locator-alone",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac2/marked-not-gone"
+     ],
+     "targets_red": [
+      "space315/ac2/marked-not-gone"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac3/startup",
+      "space315/ac4/no-schedule",
+      "space315/ac3/docker-retry",
+      "space315/ac7/serve-order",
+      "space315/ac8/retry-events"
+     ],
+     "name": "space315-background-start",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac3/startup"
+     ],
+     "targets_red": [
+      "space315/ac3/startup"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac4/no-schedule",
+      "space315/cli/non-owner"
+     ],
+     "name": "space315-periodic-call",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac4/no-schedule"
+     ],
+     "targets_red": [
+      "space315/ac4/no-schedule"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac5/live-carrier",
+      "space315/ac5/stale-read"
+     ],
+     "name": "space315-ignore-carrier",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac5/live-carrier"
+     ],
+     "targets_red": [
+      "space315/ac5/live-carrier"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac5/unread-path"
+     ],
+     "name": "space315-unread-is-missing",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac5/unread-path"
+     ],
+     "targets_red": [
+      "space315/ac5/unread-path"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac2/completion",
+      "space315/ac5/live-carrier",
+      "space315/ac5/shared-lock",
+      "space315/ac6/due",
+      "space315/ac6/concurrent",
+      "space315/loss/owner-keep",
+      "space315/cli/service-project",
+      "space315/cli/foreign-child",
+      "space315/api/service-project"
+     ],
+     "name": "space315-ignore-due",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac6/due"
+     ],
+     "targets_red": [
+      "space315/ac6/due"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac7/bootstrap"
+     ],
+     "name": "space315-no-bootstrap",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac7/bootstrap"
+     ],
+     "targets_red": [
+      "space315/ac7/bootstrap"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac8/retry-events"
+     ],
+     "name": "space315-drop-ending",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac8/retry-events"
+     ],
+     "targets_red": [
+      "space315/ac8/retry-events"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac8/retry-events"
+     ],
+     "name": "space315-stop-retries",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac8/retry-events"
+     ],
+     "targets_red": [
+      "space315/ac8/retry-events"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac2/missing-keep"
+     ],
+     "name": "space315-complete-without-keep",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac2/missing-keep"
+     ],
+     "targets_red": [
+      "space315/ac2/missing-keep"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac5/stale-read"
+     ],
+     "name": "space315-stale-read",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac5/stale-read"
+     ],
+     "targets_red": [
+      "space315/ac5/stale-read"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "space315/ac5/shared-lock"
+     ],
+     "name": "space315-reconcile-unlocked",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac5/shared-lock"
+     ],
+     "targets_red": [
+      "space315/ac5/shared-lock"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "space315/ac5/shared-lock"
+     ],
+     "name": "space315-signal-unlocked",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac5/shared-lock"
+     ],
+     "targets_red": [
+      "space315/ac5/shared-lock"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac7/serve-order"
+     ],
+     "name": "space315-no-worker-start",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac7/serve-order"
+     ],
+     "targets_red": [
+      "space315/ac7/serve-order"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac7/serve-order"
+     ],
+     "name": "space315-no-worker-stop",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac7/serve-order"
+     ],
+     "targets_red": [
+      "space315/ac7/serve-order"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_consumer.py",
+     "mutant_failed": [
+      "space315/ac7/received-hook"
+     ],
+     "name": "space315-no-received-hook",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac7/received-hook"
+     ],
+     "targets_red": [
+      "space315/ac7/received-hook"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/ac3/docker-retry",
+      "space315/ac3/retry-coalesced"
+     ],
+     "name": "space315-docker-no-event-retry",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac3/docker-retry"
+     ],
+     "targets_red": [
+      "space315/ac3/docker-retry"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "veldo",
+     "mutant_failed": [
+      "space315/cli/service-project",
+      "space315/cli/non-owner"
+     ],
+     "name": "space315-cli-no-service",
+     "noop_failed": [],
+     "targets": [
+      "space315/cli/service-project"
+     ],
+     "targets_red": [
+      "space315/cli/service-project"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_consumer.py",
+     "mutant_failed": [
+      "space315/ac3/failed-task-advances"
+     ],
+     "name": "space315-failed-task-stops-the-dispatcher",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac3/failed-task-advances"
+     ],
+     "targets_red": [
+      "space315/ac3/failed-task-advances"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/f3/first-not-behind-second",
+      "space315/ac3/reconcile-responsive",
+      "space315/cli/slow-client"
+     ],
+     "name": "space315-reconcile-waited-inside-the-request",
+     "noop_failed": [],
+     "targets": [
+      "space315/ac3/reconcile-responsive",
+      "space315/cli/slow-client"
+     ],
+     "targets_red": [
+      "space315/ac3/reconcile-responsive",
+      "space315/cli/slow-client"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "space315/f3/first-not-behind-second"
+     ],
+     "name": "space315-reconcile-wait-nested-in-the-request",
+     "noop_failed": [],
+     "targets": [
+      "space315/f3/first-not-behind-second"
+     ],
+     "targets_red": [
+      "space315/f3/first-not-behind-second"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "space315/cli/foreign-child"
+     ],
+     "name": "space315-filter-hides-children",
+     "noop_failed": [],
+     "targets": [
+      "space315/cli/foreign-child"
+     ],
+     "targets_red": [
+      "space315/cli/foreign-child"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "315",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 25,
+   "invalid_results": 0,
+   "registered": 25,
+   "rejected": 25,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=25 executed=25 reused=0 rejected=25 workers=35 elapsed=592.779s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "328": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac2/pulled-kept",
+      "VELDO-0328 ac2/restart",
+      "VELDO-0328 ac2/pull-after-build"
+     ],
+     "name": "space328-pull-owned-by-run",
+     "noop_failed": [],
+     "targets": [
+      "ac2/pulled-kept"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac2/pulled-kept"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0328 ac1/two-tags",
+      "VELDO-0328 ac1/owner-keep",
+      "VELDO-0328 ac1/untagged-parent"
+     ],
+     "name": "space328-remove-by-image-id",
+     "noop_failed": [],
+     "targets": [
+      "ac1/two-tags"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac1/two-tags"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac3/both-engines",
+      "VELDO-0328 ac3/other-name"
+     ],
+     "name": "space328-protect-first-context-only",
+     "noop_failed": [],
+     "targets": [
+      "ac3/other-name"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac3/other-name"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0328 ac2/pull-after-build",
+      "VELDO-0328 safety/unread"
+     ],
+     "name": "space328-pull-after-build-not-kept",
+     "noop_failed": [],
+     "targets": [
+      "ac2/pull-after-build"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac2/pull-after-build"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac2/pulled-kept"
+     ],
+     "name": "space328-no-image-subscription",
+     "noop_failed": [],
+     "targets": [
+      "ac2/pulled-kept"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac2/pulled-kept"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 safety/unread"
+     ],
+     "name": "space328-unread-image-names-pass",
+     "noop_failed": [],
+     "targets": [
+      "safety/unread"
+     ],
+     "targets_red": [
+      "VELDO-0328 safety/unread"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac1/provenance",
+      "VELDO-0328 ac1/owner-keep"
+     ],
+     "name": "space328-build-id-not-compared",
+     "noop_failed": [],
+     "targets": [
+      "ac1/provenance"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac1/provenance"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac2/restart"
+     ],
+     "name": "space328-pulled-image-becomes-built",
+     "noop_failed": [],
+     "targets": [
+      "ac2/restart"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac2/restart"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac2/restart"
+     ],
+     "name": "space328-pull-replay-written-again",
+     "noop_failed": [],
+     "targets": [
+      "ac2/restart"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac2/restart"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac3/both-engines",
+      "VELDO-0328 ac3/other-name"
+     ],
+     "name": "space328-protect-only-requested-tag",
+     "noop_failed": [],
+     "targets": [
+      "ac3/other-name"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac3/other-name"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0328 ac1/two-tags",
+      "VELDO-0328 ac1/untagged-parent"
+     ],
+     "name": "space328-remove-prunes-parents",
+     "noop_failed": [],
+     "targets": [
+      "ac1/untagged-parent"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac1/untagged-parent"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0328 safety/unread"
+     ],
+     "name": "space328-pull-inventory-fails-open",
+     "noop_failed": [],
+     "targets": [
+      "safety/unread"
+     ],
+     "targets_red": [
+      "VELDO-0328 safety/unread"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 ac1/unknown-run"
+     ],
+     "name": "space328-unknown-run-borrows-owner",
+     "noop_failed": [],
+     "targets": [
+      "ac1/unknown-run"
+     ],
+     "targets_red": [
+      "VELDO-0328 ac1/unknown-run"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0328 safety/option-name"
+     ],
+     "name": "space328-option-name-passes",
+     "noop_failed": [],
+     "targets": [
+      "safety/option-name"
+     ],
+     "targets_red": [
+      "VELDO-0328 safety/option-name"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "328",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 14,
+   "invalid_results": 0,
+   "registered": 14,
+   "rejected": 14,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=14 executed=14 reused=0 rejected=14 workers=18 elapsed=16.400s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "331": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/no-record-is-report",
+      "VELDO-0331 ac1/own-record-per-scope",
+      "VELDO-0331 ac1/act-beside-report",
+      "VELDO-0331 ac1/history",
+      "VELDO-0331 ac1/owner-signs",
+      "VELDO-0331 ac1/ledger-checks-signature",
+      "VELDO-0331 ac1/ledger-checks-sender",
+      "VELDO-0331 ac2/admission-by-scope",
+      "VELDO-0331 ac2/advised-counts-as-held",
+      "VELDO-0331 ac2/hold-keeps-its-scope",
+      "VELDO-0331 ac2/signal-by-scope",
+      "VELDO-0331 ac2/adoption-by-scope",
+      "VELDO-0331 ac3/switch-back-accepted",
+      "VELDO-0331 ac3/then-due-and-nothing-removed",
+      "VELDO-0331 mode/canon"
+     ],
+     "name": "space331-one-mode-for-installation",
+     "noop_failed": [],
+     "targets": [
+      "ac1/act-beside-report"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac1/act-beside-report"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_admission.py",
+     "mutant_failed": [
+      "VELDO-0331 ac2/admission-by-scope",
+      "VELDO-0331 ac2/advised-counts-as-held"
+     ],
+     "name": "space331-advised-not-held",
+     "noop_failed": [],
+     "targets": [
+      "ac2/advised-counts-as-held"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac2/advised-counts-as-held"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/own-record-per-scope",
+      "VELDO-0331 ac1/history",
+      "VELDO-0331 ac1/owner-signs",
+      "VELDO-0331 ac1/ledger-checks-signature",
+      "VELDO-0331 ac1/ledger-checks-sender",
+      "VELDO-0331 ac2/admission-by-scope",
+      "VELDO-0331 ac2/advised-counts-as-held",
+      "VELDO-0331 ac2/hold-keeps-its-scope",
+      "VELDO-0331 ac2/signal-by-scope",
+      "VELDO-0331 ac2/adoption-by-scope",
+      "VELDO-0331 ac3/switch-back-accepted",
+      "VELDO-0331 ac3/then-due-and-nothing-removed"
+     ],
+     "name": "space331-switch-back-refused",
+     "noop_failed": [],
+     "targets": [
+      "ac3/switch-back-accepted"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac3/switch-back-accepted"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/act-beside-report",
+      "VELDO-0331 ac2/signal-by-scope",
+      "VELDO-0331 ac3/then-due-and-nothing-removed"
+     ],
+     "name": "space331-signal-reads-no-mode",
+     "noop_failed": [],
+     "targets": [
+      "ac2/signal-by-scope"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac2/signal-by-scope"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_admission.py",
+     "mutant_failed": [
+      "VELDO-0331 ac2/admission-by-scope",
+      "VELDO-0331 ac2/advised-counts-as-held",
+      "VELDO-0331 ac3/then-due-and-nothing-removed"
+     ],
+     "name": "space331-admission-reads-no-mode",
+     "noop_failed": [],
+     "targets": [
+      "ac2/admission-by-scope"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac2/admission-by-scope"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0331 ac2/adoption-by-scope",
+      "VELDO-0331 ac3/then-due-and-nothing-removed"
+     ],
+     "name": "space331-adopts-in-report",
+     "noop_failed": [],
+     "targets": [
+      "ac2/adoption-by-scope"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac2/adoption-by-scope"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/owner-signs",
+      "VELDO-0331 ac1/ledger-checks-signature",
+      "VELDO-0331 ac1/ledger-checks-sender"
+     ],
+     "name": "space331-mode-signature-unchecked",
+     "noop_failed": [],
+     "targets": [
+      "ac1/owner-signs"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac1/owner-signs"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/ledger-checks-signature",
+      "VELDO-0331 ac1/ledger-checks-sender"
+     ],
+     "name": "space331-transition-trusts-signature",
+     "noop_failed": [],
+     "targets": [
+      "ac1/ledger-checks-signature"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac1/ledger-checks-signature"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/ledger-checks-sender"
+     ],
+     "name": "space331-transition-trusts-sender",
+     "noop_failed": [],
+     "targets": [
+      "ac1/ledger-checks-sender"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac1/ledger-checks-sender"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac2/hold-keeps-its-scope"
+     ],
+     "name": "space331-advised-for-act-hold",
+     "noop_failed": [],
+     "targets": [
+      "ac2/hold-keeps-its-scope"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac2/hold-keeps-its-scope"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0331 ac1/act-refused-until-built",
+      "VELDO-0331 ac1/own-record-per-scope",
+      "VELDO-0331 ac3/switch-back-accepted"
+     ],
+     "name": "space331-act-with-no-check-built",
+     "noop_failed": [],
+     "targets": [
+      "ac1/act-refused-until-built"
+     ],
+     "targets_red": [
+      "VELDO-0331 ac1/act-refused-until-built"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "331",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 11,
+   "invalid_results": 0,
+   "registered": 11,
+   "rejected": 11,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=11 executed=11 reused=0 rejected=11 workers=19 elapsed=19.574s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "337": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/both-callers",
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/declared-at-creation",
+      "VELDO-0337 ac3/killed-no-verdict",
+      "VELDO-0337 ac3/keep-before-removal"
+     ],
+     "name": "space337-receiver-emits-verdict",
+     "noop_failed": [],
+     "targets": [
+      "ac1/both-callers",
+      "ac3/killed-no-verdict"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/both-callers",
+      "VELDO-0337 ac3/killed-no-verdict"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac1/rejected-or-unstored",
+      "VELDO-0337 ac1/both-callers",
+      "VELDO-0337 ac2/owner-and-keep",
+      "VELDO-0337 ac2/stale-version",
+      "VELDO-0337 ac3/killed-no-verdict",
+      "VELDO-0337 ac2/second-attempt",
+      "VELDO-0337 ac2/error-after-commit",
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-before-commit",
+     "noop_failed": [],
+     "targets": [
+      "ac1/after-commit",
+      "ac1/rejected-or-unstored"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac1/rejected-or-unstored"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0337 ac2/output-and-evidence",
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ],
+     "name": "space337-evidence-removed-with-caches",
+     "noop_failed": [],
+     "targets": [
+      "ac2/output-and-evidence"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/output-and-evidence"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac2/owner-and-keep",
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-owner-keep-named",
+     "noop_failed": [],
+     "targets": [
+      "ac2/owner-and-keep"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/owner-and-keep"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac2/stale-version",
+      "VELDO-0337 ac2/second-attempt",
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ],
+     "name": "space337-owner-instead-of-items",
+     "noop_failed": [],
+     "targets": [
+      "ac1/after-commit",
+      "ac2/stale-version"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac2/stale-version"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac2/owner-and-keep",
+      "VELDO-0337 ac2/second-attempt",
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ],
+     "name": "space337-other-run-named",
+     "noop_failed": [],
+     "targets": [
+      "ac2/owner-and-keep"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/owner-and-keep"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch_work.py",
+     "mutant_failed": [
+      "VELDO-0337 paths/wiring-and-canon"
+     ],
+     "name": "space337-runtime-space-not-wired",
+     "noop_failed": [],
+     "targets": [
+      "paths/wiring-and-canon"
+     ],
+     "targets_red": [
+      "VELDO-0337 paths/wiring-and-canon"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_remove.py",
+     "mutant_failed": [
+      "VELDO-0337 ac3/keep-before-removal",
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ],
+     "name": "space337-keep-skipped",
+     "noop_failed": [],
+     "targets": [
+      "ac3/keep-before-removal"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac3/keep-before-removal"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/declared-at-creation",
+      "VELDO-0337 ac1/build-root-passes-between-kinds",
+      "VELDO-0337 ac3/killed-no-verdict",
+      "VELDO-0337 safety/review-scratch-in-use"
+     ],
+     "name": "space337-run-finished-takes-review-folders",
+     "noop_failed": [],
+     "targets": [
+      "ac1/real-ordering",
+      "ac1/declared-at-creation"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/declared-at-creation"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_kinds.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/declared-at-creation",
+      "VELDO-0337 ac3/killed-no-verdict"
+     ],
+     "name": "space337-review-kinds-end-at-run-finished",
+     "noop_failed": [],
+     "targets": [
+      "ac1/real-ordering",
+      "ac1/declared-at-creation"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/real-ordering",
+      "VELDO-0337 ac1/declared-at-creation"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/build-root-passes-between-kinds"
+     ],
+     "name": "space337-build-root-own-kind-only",
+     "noop_failed": [],
+     "targets": [
+      "ac1/build-root-passes-between-kinds"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/build-root-passes-between-kinds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_launch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/build-root-passes-between-kinds"
+     ],
+     "name": "space337-build-root-plain-kind-only",
+     "noop_failed": [],
+     "targets": [
+      "ac1/build-root-passes-between-kinds"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/build-root-passes-between-kinds"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_signal.py",
+     "mutant_failed": [
+      "VELDO-0337 safety/review-scratch-in-use"
+     ],
+     "name": "space337-review-scratch-in-use-skipped",
+     "noop_failed": [],
+     "targets": [
+      "safety/review-scratch-in-use"
+     ],
+     "targets_red": [
+      "VELDO-0337 safety/review-scratch-in-use"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac2/second-attempt"
+     ],
+     "name": "space337-first-review-named",
+     "noop_failed": [],
+     "targets": [
+      "ac2/second-attempt"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/second-attempt"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac2/error-after-commit"
+     ],
+     "name": "space337-error-after-commit-raised",
+     "noop_failed": [],
+     "targets": [
+      "ac2/error-after-commit"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/error-after-commit"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac2/ends-on-the-event",
+      "VELDO-0337 ac1/after-commit",
+      "VELDO-0337 ac2/output-and-evidence",
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-not-ending-item-named",
+     "noop_failed": [],
+     "targets": [
+      "ac2/ends-on-the-event"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac2/ends-on-the-event"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ],
+     "name": "space337-lost-send-not-reconciled",
+     "noop_failed": [],
+     "targets": [
+      "ac1/lost-send-reconciled"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_reconcile.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-reconcile-not-at-start",
+     "noop_failed": [],
+     "targets": [
+      "ac1/lost-send-reconciled"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_service.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-service-omits-verdicts",
+     "noop_failed": [],
+     "targets": [
+      "ac1/lost-send-reconciled"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/lost-send-reconciled",
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-reconcile-sends-again",
+     "noop_failed": [],
+     "targets": [
+      "ac1/lost-send-reconciled"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/lost-send-reconciled"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "dispatch.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ],
+     "name": "space337-reconcile-foreign-scope",
+     "noop_failed": [],
+     "targets": [
+      "ac1/reconcile-domain-and-repository"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/reconcile-domain-and-repository"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space.py",
+     "mutant_failed": [
+      "VELDO-0337 ac1/adopt-refuses-ends"
+     ],
+     "name": "space337-adopt-accepts-ends",
+     "noop_failed": [],
+     "targets": [
+      "ac1/adopt-refuses-ends"
+     ],
+     "targets_red": [
+      "VELDO-0337 ac1/adopt-refuses-ends"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "337",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 22,
+   "invalid_results": 0,
+   "registered": 22,
+   "rejected": 22,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=40 elapsed=149.624s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  },
+  "341": {
+   "cases": [
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac1/name-or-label-two-contexts",
+      "VELDO-0341 ac3/no-record",
+      "VELDO-0341 ac2/container-image-network",
+      "VELDO-0341 ac1/adapter-label",
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image",
+      "VELDO-0341 fix1/connect-event",
+      "VELDO-0341 fix1/disconnect-event",
+      "VELDO-0341 fix2/one-read-per-pass"
+     ],
+     "name": "space341-name-only",
+     "noop_failed": [],
+     "targets": [
+      "ac1/adapter-label"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac1/adapter-label"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac2/image-does-not-protect-container",
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix2/one-read-per-pass"
+     ],
+     "name": "space341-image-protects-container",
+     "noop_failed": [],
+     "targets": [
+      "ac2/image-does-not-protect-container"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac2/image-does-not-protect-container"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac1/name-or-label-two-contexts",
+      "VELDO-0341 ac3/no-record",
+      "VELDO-0341 ac2/container-image-network",
+      "VELDO-0341 ac1/adapter-label",
+      "VELDO-0341 ac3/discovery-before-proposal",
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image"
+     ],
+     "name": "space341-protect-at-removal-only",
+     "noop_failed": [],
+     "targets": [
+      "ac3/discovery-before-proposal"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac3/discovery-before-proposal"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac3/no-record",
+      "VELDO-0341 ac2/container-image-network",
+      "VELDO-0341 ac2/unread-refuses",
+      "VELDO-0341 ac2/immutable-image",
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image",
+      "VELDO-0341 fix1/connect-event",
+      "VELDO-0341 fix1/disconnect-event",
+      "VELDO-0341 fix2/one-read-per-pass",
+      "VELDO-0341 fix2/unreadable-refuses"
+     ],
+     "name": "space341-no-inherited-protection",
+     "noop_failed": [],
+     "targets": [
+      "ac2/container-image-network"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac2/container-image-network"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_probe.py",
+     "mutant_failed": [
+      "VELDO-0341 ac3/removal-purposes",
+      "VELDO-0341 ac3/released-keeps-work"
+     ],
+     "name": "space341-removal-no-relations",
+     "noop_failed": [],
+     "targets": [
+      "ac3/removal-purposes",
+      "ac3/released-keeps-work"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac3/removal-purposes",
+      "VELDO-0341 ac3/released-keeps-work"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac2/unread-refuses"
+     ],
+     "name": "space341-unread-list-free",
+     "noop_failed": [],
+     "targets": [
+      "ac2/unread-refuses"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac2/unread-refuses"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac3/withdraw-mount-report"
+     ],
+     "name": "space341-mount-report-stays",
+     "noop_failed": [],
+     "targets": [
+      "ac3/withdraw-mount-report"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac3/withdraw-mount-report"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac2/container-image-network",
+      "VELDO-0341 ac2/immutable-image",
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image",
+      "VELDO-0341 fix2/one-read-per-pass"
+     ],
+     "name": "space341-image-by-movable-tag",
+     "noop_failed": [],
+     "targets": [
+      "ac2/container-image-network",
+      "ac2/immutable-image"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac2/container-image-network",
+      "VELDO-0341 ac2/immutable-image"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image"
+     ],
+     "name": "space341-mounting-container-no-recheck",
+     "noop_failed": [],
+     "targets": [
+      "fix1/compose-order"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix1/compose-order"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image"
+     ],
+     "name": "space341-covered-container-no-recheck",
+     "noop_failed": [],
+     "targets": [
+      "fix1/compose-order",
+      "fix1/snapshot-image"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix1/snapshot-image"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix1/connect-event",
+      "VELDO-0341 fix1/disconnect-event"
+     ],
+     "name": "space341-connect-event-ignored",
+     "noop_failed": [],
+     "targets": [
+      "fix1/connect-event"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix1/connect-event"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix1/disconnect-event"
+     ],
+     "name": "space341-disconnect-event-ignored",
+     "noop_failed": [],
+     "targets": [
+      "fix1/disconnect-event"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix1/disconnect-event"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix1/compose-order",
+      "VELDO-0341 fix2/one-read-per-pass"
+     ],
+     "name": "space341-containers-read-for-each-image",
+     "noop_failed": [],
+     "targets": [
+      "fix2/one-read-per-pass"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix2/one-read-per-pass"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 fix2/one-read-per-pass"
+     ],
+     "name": "space341-snapshot-reads-containers-for-each-network",
+     "noop_failed": [],
+     "targets": [
+      "fix2/one-read-per-pass"
+     ],
+     "targets_red": [
+      "VELDO-0341 fix2/one-read-per-pass"
+     ]
+    },
+    {
+     "baseline_failed": [],
+     "module": "control_space_docker.py",
+     "mutant_failed": [
+      "VELDO-0341 ac2/unread-refuses",
+      "VELDO-0341 fix2/unreadable-refuses"
+     ],
+     "name": "space341-unreadable-container-free",
+     "noop_failed": [],
+     "targets": [
+      "fix2/unreadable-refuses",
+      "ac2/unread-refuses"
+     ],
+     "targets_red": [
+      "VELDO-0341 ac2/unread-refuses",
+      "VELDO-0341 fix2/unreadable-refuses"
+     ]
+    }
+   ],
+   "command": [
+    "nice",
+    "-n",
+    "19",
+    "python3",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "341",
+    "--jobs",
+    "2"
+   ],
+   "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+   "executed": 15,
+   "invalid_results": 0,
+   "registered": 15,
+   "rejected": 15,
+   "reused": 0,
+   "status": "passed",
+   "summary": "mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=19 elapsed=16.904s",
+   "surviving_workers": 0,
+   "tree_clean": true
+  }
+ },
+ "first_run_308": {
+  "commit": "704becba604230f9ee8c4f062d02169ec21e842d",
+  "executed": 38,
+  "registered": 38,
+  "rejected": 36,
+  "status": "failed",
+  "survived": [
+   {
+    "detail": "mutation_survived: ac4/pins-held-while-deferred",
+    "module": "control_retirement.py",
+    "name": "space308-pins-released-at-hand-over",
+    "targets": [
+     "ac4/pins-held-while-deferred"
+    ]
+   },
+   {
+    "detail": "mutation_survived: ac4/pins-held-while-deferred",
+    "module": "control_retirement.py",
+    "name": "space308-pins-released-while-the-item-is-not-removed",
+    "targets": [
+     "ac4/pins-held-while-deferred"
+    ]
+   }
+  ]
+ },
+ "note": "Teeth of the thirteen findings whose suites the V1 suite repair changed and that teeth-v1.json does not hold (304, 305, 306, 307, 308, 309, 310, 313, 315, 328, 331, 337, 341), each run whole, alone, two workers, nice 19, on the clean committed tree named. Every baseline and every no-op run is green; every case is rejected by its target rows. Twelve findings rejected every case on their first run, at 704becba. Finding 308 at 704becba rejected 36 of 38 (first_run_308): two cases survived on row ac4/pins-held-while-deferred of suite 146, because since VELDO-0304 the ref remover refuses a pin whose item has not ended, so the pin stayed held under both; the row was given two statements that nobody asked for the release, and the run in findings.308 is the whole rerun at 7aaf2fab, 38 of 38. With teeth-v1.json (336, 324, 302, 323) all seventeen findings of the changed suites are whole.",
+ "repaired_anchors": {
+  "space306-volumes-first": "control_space_kinds.py ORDER gained the review kinds in the VELDO-0337 fix (8f99aeaa); the case names the line as it is and swaps the same two kinds",
+  "space308-exit-without-releasing-the-hold": "control_launch.py, VELDO-0316 (aa1c5560) gave space_release its run; the case names the line as it is"
+ }
+}
