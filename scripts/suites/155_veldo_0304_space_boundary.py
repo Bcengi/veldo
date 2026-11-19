@@ -501,15 +501,18 @@ def _v304_suite():
         with tempfile.TemporaryDirectory(prefix='v304-service-') as temporary:
             path = Path(temporary) / 'socket'
             path.write_bytes(b'work now at the socket path\n')
-            closed = []
+            closed, stopped = [], []
             # Execute the production shutdown block. No service or host socket is started.
             exec(compile(ast.Module(body=block, type_ignores=[]), '<service shutdown>', 'exec'),
                  {'notify': lambda message: None, 'listener': SimpleNamespace(close=lambda: closed.append(True)),
-                  'service': SimpleNamespace(channel=None), 'contextlib': contextlib, 'os': os,
+                  # Since VELDO-0315 (361211d5) the block stops the space workers first; the stand-in
+                  # service has that call, and the row reads that it was made once.
+                  'service': SimpleNamespace(channel=None, space_stop=lambda: stopped.append(True)),
+                  'contextlib': contextlib, 'os': os,
                   'space_listener': None,  # VELDO-0323's space socket, absent here (assembly)
                   'config': {'socket': str(path)}, 'socket_identity': (path.stat().st_dev, path.stat().st_ino),
                   'close_socket': namespace['close_socket']})
-            assert closed == [True] and path.read_bytes() == b'work now at the socket path\n'
+            assert closed == [True] and stopped == [True] and path.read_bytes() == b'work now at the socket path\n'
             own = Path(temporary) / 'own-socket'
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
                 listener.bind(str(own))
