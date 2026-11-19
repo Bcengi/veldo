@@ -181,6 +181,23 @@ Runs, all on %s, the clean committed tree, nice -n 10 (checks.json, rows.json):
 Not recounted: keep-step-0345.json is the count of the first fix round. Suite 140 changed in one line of
 its fixture since (the row handed to the remover) and its 31 rows are green.
 
+## V1 suite repair, 2026-11-18
+
+After the fix check of 837fa81a the lead widened the footprint to suites 134, 141, 143 to 147, 151, 153,
+154, 155 and 156, their fixtures and support modules, for landing batch V1. What was red, why, and what was
+done is in the spec History of that date. The numbers:
+
+- suites-v1.json: every suite of the round alone, before and after. After: all green but 141, whose one red
+  row is ac6/installed, refused:no_pin, left for the owner's pin after landing. Suite 151 is green inside
+  the gate's confinement, 63 and 0, twice; outside it on a shared host its reds follow the process table.
+- teeth-v1.json: the teeth of findings 336 (11 of 11), 324 (20 of 20), 302 (12 of 12) and 323 (16 of 16),
+  whole, on the clean committed tree, every baseline green. The four anchors fix round 2 repaired and
+  could not run each red their rows. Two cases survived their first whole run and are rejected now, by a
+  statement added to their rows; the file says which and why.
+- Partial runs, as everywhere in this proof: no aggregate unit evidence. scripts/verify.sh was not run;
+  the gate is the lead's. The commit and tree of the manifest are those of fix round 2; the two files
+  above name their own commits.
+
 ## Not built, not run
 
 - No Save and no Discard remover for a batch clone or a candidate workspace: no criterion asks for one,
@@ -189,9 +206,8 @@ its fixture since (the row handed to the remover) and its 31 rows are green.
   evidence goes only on a copy in the store or on a kept ref.
 - With no ledger there is no snapshot store: the standalone path leaves a worker clone with uncommitted
   files in place, as before.
-- Not run: scripts/verify.sh and suites 151 and up, so the rows of 0302 (suite 153) and 0324 (suite 154)
-  were not run, and neither was 156_veldo_0315_reconcile. They may pin the same things, and the teeth of
-  findings 336, 302 and 324 were not run.
+- Not run: scripts/verify.sh. Suites 151 and up and the teeth of findings 336, 302 and 324, not run in
+  fix round 2, were run in the V1 suite repair above.
 - A clone declared under table 1 keeps table 1's handling for good: a dirty one stays, keep_failed, with
   no request, as before this ticket. The Ledger is given one table, so a table 3 must give it what it
   needs to go on asking about table 2 clones.
