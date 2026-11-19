@@ -1642,7 +1642,9 @@ def _v143_suite():
                     {'command': body_m, 'signature': sign_as(OWNER, S.canonical_bytes(body_m))})
                 mussel_pass = service.new_project_pass()
                 mussel_again = service.new_project_pass()
+                seen_m = len(reporter.observations)
                 told_m = reported()
+                came_m = [(o.get('outcome'), o.get('reason')) for o in reporter.observations[seen_m:]]
                 check('activation/name-taken', [
                     ('a new project named like an existing project is refused before he is asked [%s]' % again_t.get('reason'),
                      again_t.get('reason') == 'stale_subject:project_exists'
@@ -1655,7 +1657,7 @@ def _v143_suite():
                      and (PP.read(conn, decision_m) or {}).get('reason') == 'already_exists'
                      and any(e.get('decision') == decision_m and e.get('outcome') == 'failed' for e in mussel_pass)
                      and not any(e.get('decision') == decision_m for e in mussel_again)),
-                    ('its report tells him it could not be set up, and why',
+                    ('its report tells him it could not be set up, and why [%s; %s]' % (told_m, came_m),
                      (decision_m, 'sent', 'mussel could not be set up.') in told_m
                      and (PP.decision_id(pid_t), 'sent', 'tidepool could not be set up.') in told_m
                      and any('already_exists' in t for _c, _m, _r, t in bot_messages()))])
