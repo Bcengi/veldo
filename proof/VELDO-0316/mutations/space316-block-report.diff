@@ -1,11 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -86,7 +86,7 @@
-         return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
-     scope = hold.get('scope')
-     reason = judge(ledger, identity, free)
+@@ -89 +89 @@
 -    answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
 +    answer = 'admitted' if reason is None else 'waiting'
-     result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id)
-     return dict(result, answer=answer, reason=reason) if result['ok'] else result
- 

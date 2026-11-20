@@ -1,11 +1,5 @@
 --- a/.veldo/control_dispatch.py
 +++ b/.veldo/control_dispatch.py
-@@ -548,7 +548,7 @@
-             raise Refused('deadline_passed')
-         _reservation_bound(conn, contract)
-         _claim_bound(conn, contract)
+@@ -551 +551 @@
 -        _space_bound(conn, contract)
 +        # defect: acceptance never rechecks the hold
-         if _identity_problems(params.get('receiver'), ('principal',)) or params['receiver']['principal'] != params['principal']:
-             raise Refused('invalid_input', 'the receiver names its own process identity and principal')
-         record['receiver'] = params['receiver']

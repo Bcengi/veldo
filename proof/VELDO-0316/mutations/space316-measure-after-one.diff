@@ -1,11 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -147,7 +147,7 @@
-     for pool, config in sorted(ledger.config['pools'].items()):
-         if pool in declared:
-             values[pool], sources[pool] = declared[pool], 'declared'
+@@ -150 +150 @@
 -        elif len(history) == 5 and all(pool in run for run in history):
 +        elif len(history) >= 1 and all(pool in run for run in history):
-             values[pool], sources[pool] = max(run[pool] for run in history), 'measured'
-         else:
-             # Coordination is project work and uses the build default until it declares a station need.

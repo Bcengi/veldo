@@ -1,21 +1,9 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1733,8 +1733,7 @@
-             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
-             data = json.loads(row[0]) if row else {}
-             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
+@@ -1736,2 +1736 @@
 -        space = _organ('control_space_admission').prepare(
 -            self.space, self.dispatches, unit, station, project, source)
 +        space = None  # defect: defer admission until the dispatch holds its reservation
-         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
-         reserved = False
-         try:
-@@ -1854,6 +1853,8 @@
-     def submit(self, unit, station, **kwargs):
-         """Prepare the complete contract, then invoke the receiver: the one launch path."""
-         contract = self.prepare(unit, station, **kwargs)
+@@ -1856,0 +1856,2 @@
 +        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,
 +            contract['reservation']['project'], kwargs['source'])
-         launch = self.receiver(contract)
-         self.launches[contract['dispatch_id']] = launch
-         if launch.owned and (launch.record or {}).get('state') == 'refused':

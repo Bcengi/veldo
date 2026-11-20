@@ -66,3 +66,6 @@ independent review or landing approval is claimed. Acceptance statuses remain pe
 - engine/.veldo/control_service.py:3623: Line.offer, wired service ledger and waiting report.
 - scripts/suites/157_veldo_0316_space_admission.py: the independent fragment and its fixture boundaries.
 - scripts/check_teeth_mutations.py: finding 316 and the adjusted existing 0308 release-call anchor.
+
+Saved diagnostic logs trim trailing whitespace. Mutation diffs use zero context; the exact before/after
+content digests and all control and mutant observations remain in the unchanged coordinator receipts.
