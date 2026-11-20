@@ -266,6 +266,21 @@ async function measure(page: Page, primary: string | null, phone: boolean): Prom
   )
 }
 
+/** Count, in the page itself, the requests it has sent and the API has not yet answered. The returned wait
+ * ends when there is none: what a screen shows next is then what the API said before, never after. */
+async function unanswered(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __unanswered: number }
+    const send = window.fetch.bind(window)
+    w.__unanswered = 0
+    window.fetch = (...args: Parameters<typeof fetch>) => {
+      w.__unanswered += 1
+      return send(...args).finally(() => (w.__unanswered -= 1))
+    }
+  })
+  return () => page.waitForFunction(() => (window as unknown as { __unanswered: number }).__unanswered === 0)
+}
+
 async function pageAs(browser: Browser, factory: FactoryUi, who: string, viewport: { width: number; height: number }) {
   const phone = viewport.width < 768
   const context = await browser.newContext({ viewport, hasTouch: phone, isMobile: phone })
@@ -425,8 +440,13 @@ test('ac2/refusals: an answer from a member outside the project\'s scope is refu
   const alias = `rf${Date.now() % 100000}`
   const { request } = await factory.control<{ request: string }>('/request/open', { alias, owner: 'mover' })
   const page = await pageAs(browser, factory, 'mover', { width: 390, height: 844 })
+  const answered = await unanswered(page)
   await page.goto(factory.origin + '/decisions/' + request)
   await expect(page.getByTestId('decision')).toBeVisible()
+  // The page reads the inbox twice as it opens (the shell for its badge, then this screen), and the decision
+  // is on screen from the first answer. A read answered after the scope has moved no longer lists it, and the
+  // screen then rightly takes it away. So the scope moves once every read the page has sent is answered.
+  await answered()
   await factory.control('/member/scope', { principal: 'mover', scope: ['project-b'] })
   await page.locator('[data-choice="accept"]').click()
   await page.getByTestId('rationale').fill('Answering after my scope moved.')
