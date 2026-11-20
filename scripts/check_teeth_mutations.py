@@ -16529,6 +16529,60 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # ==== VELDO-0358 BRIEF B: the wall-clock census (AC6, AC7) and the end of VELDO-0223 (AC14) ====
+    # Each case is a criterion's falsifier, word for word from the specification.
+    census358 = '158_veldo_0358_census.py'
+
+    def wall358(name, old, new, rows):
+        add(358, name, census358, 'check_wallclock.py', old, new, rows)
+        result[-1]['dir'] = 'scripts'
+
+    reported358 = "def site(found, rel, rule, line, text, function, form, cls):\n"
+    for name, rule in (('sleep', 'R1'), ('clock', 'R2'), ('timeout', 'R3'), ('duration-bound', 'R4')):
+        wall358('wall358-%s-admitted' % name, reported358,
+                reported358 + "    if rule == %r:\n        return  # defect: this rule's sites are not reported\n" % rule,
+                ['census/each-rule'])
+    wall358('wall358-positional-ignored',
+            "        for position, value, form, strict in self.positional(node, resolved):\n",
+            "        for position, value, form, strict in ():  # defect: only the keyword timeout is read\n",
+            ['census/each-rule'])
+    wall358('wall358-scope-inferred',
+            "        for paths in record.values():\n"
+            "            for rel in paths:\n"
+            "                rel = os.path.normpath(rel)\n"
+            "                if rel.startswith(tuple(tree + '/' for tree in SCOPE_TREES)):\n"
+            "                    take(rel)\n",
+            "        for name in record:  # defect: the scope is what each suite's import statements name\n"
+            "            rel = 'scripts/suites/%s.py' % name\n"
+            "            take(rel)\n"
+            "            source = (root / rel).read_text() if (root / rel).is_file() else ''\n"
+            "            for module in re.findall(r'(?m)^\\s*(?:from|import)\\s+([\\w.]+)', source):\n"
+            "                take('scripts/suites/' + module.replace('.', '/') + '.py')\n",
+            ['census/each-rule'])
+    wall358('wall358-baseline-from-candidate',
+            "        authority_baseline = load_list(baseline_path, False)[0]\n",
+            "        authority_baseline = load_list(root / BASELINE, False)[0]  # defect: the candidate's is trusted\n",
+            ['census/lists-from-authority'])
+    wall358('wall358-stale-entry-tolerated',
+            "        if recorded != required:\n",
+            "        if recorded < required:  # defect: a count above the sites is accepted\n",
+            ['census/lists-from-authority'])
+    wall358('wall358-count-ignored',
+            "        if have > allowed:\n",
+            "        if have and not allowed:  # defect: a key matches whatever its count\n",
+            ['census/lists-from-authority'])
+    # AC14. The first is applied to the index generator's input in the row's fixture: the row copies
+    # the specification beside a fixture index and regenerates it.
+    add(358, 'supersede358-0223-ready', census358,
+        'VELDO-0223-a-red-under-others-load-is-rerun-quietly-before-it-counts.md',
+        "\nstatus: blocked\n", "\nstatus: ready\n", ['supersede/0223-not-claimable'])
+    result[-1]['dir'] = 'specs'
+    add(358, 'supersede358-invalid-word', census358, 'verify.sh',
+        '  echo "GATE: RED (${COMMIT})"\n', '  echo "GATE: INVALID (${COMMIT})"\n',
+        ['supersede/result-words-closed'])
+    result[-1]['dir'] = 'scripts'
+    # ==== end of VELDO-0358 brief B ====
+
     return result
 
 
