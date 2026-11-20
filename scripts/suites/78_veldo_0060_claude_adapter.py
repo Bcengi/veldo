@@ -98,8 +98,14 @@ def _v60_suite():
         try:
             yield
         except Exception as exc:  # noqa: BLE001 - a raise reds its rows, never skips them
+            # Where in this suite it raised: one raise reds every row of its region, and the type alone
+            # (a JSON that could not be read, say) does not say which of the region's reads it was.
+            import traceback
+            at = [frame.lineno for frame in traceback.extract_tb(exc.__traceback__) if frame.name != 'region'
+                  and frame.filename.endswith('78_veldo_0060_claude_adapter.py')]
             for row in names:
-                check(row, 'the row ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
+                check(row, 'the row ran to its end (it raised %s at line %s: %s)'
+                      % (type(exc).__name__, at[-1] if at else '?', str(exc)[:300]), False)
 
     def attempt(fn):
         try:
@@ -358,7 +364,10 @@ for step in payload.get('script') or []:
         while not ready.exists() and time.monotonic() < until:
             time.sleep(0.01)
         children.append({'pid': child.pid, 'start': start(child.pid), 'escape': bool(step.get('escape'))})
-        (markers / ('%%d.children' %% os.getpid())).write_text(json.dumps(children))
+        # Written whole, as the engine's own marker is: the suite reads this file while it waits for the
+        # descendant, and a file opened for writing is empty before it is written.
+        (markers / ('%%d.children-tmp' %% os.getpid())).write_text(json.dumps(children))
+        (markers / ('%%d.children-tmp' %% os.getpid())).rename(markers / ('%%d.children' %% os.getpid()))
     elif 'signal' in step:
         out.close()
         os.kill(os.getpid(), step['signal'])
@@ -1456,9 +1465,24 @@ sys.exit(payload.get('code', 0))
                   (markers / ('swapped-' + unit)).exists() and record.get('state') == 'exited'
                   and termination.get('returncode') == 70 and not engine_markers(launch.dispatch_id)
                   and spawned(launch.dispatch_id) == 1)
+            # What the receiver reported and what is in the file it names, for a red: a report with no path is
+            # an artifact the receiver could not keep, and an absent report is one it never sent.
+            report = getattr(launch, 'artifact', None)
+            kept = Path((report or {}).get('path') or '/nonexistent')
+            seen = {'report': report, 'file_bytes': kept.stat().st_size if kept.is_file() else None,
+                    'file_digest': file_sha(kept) if kept.is_file() else None,
+                    'slot': slot_outcome(account, launch.dispatch_id), 'restored': file_sha(target) == sha256,
+                    'events': [m.get('event') for m in getattr(launch, 'messages', []) if isinstance(m, dict)],
+                    'receiver': {k: getattr(launch, k, None) for k in ('closed', 'lost', 'returncode', 'ended')},
+                    'receiver_log': (Path(launch.receiver_log).read_text(errors='replace')[-1500:]
+                                     if getattr(launch, 'receiver_log', None)
+                                     and Path(launch.receiver_log).is_file() else None),
+                    'record_history': [(h.get('state'), h.get('at')) for h in record.get('history', [])],
+                    'checked_at': time.time()}
             check(row, '%s: never a completion: its artifact is not complete, its invocation and slot failed, and the '
-                  'file is back at its qualified bytes [%s, %s]' % (label, found.get('verdict'),
-                                                                   invocation(launch.dispatch_id).get('outcome')),
+                  'file is back at its qualified bytes [%s, %s, %s]' % (label, found.get('verdict'),
+                                                                       invocation(launch.dispatch_id).get('outcome'),
+                                                                       json.dumps(seen, sort_keys=True, default=str)),
                   found.get('complete') is False and invocation(launch.dispatch_id).get('outcome') == 'failed'
                   and slot_outcome(account, launch.dispatch_id) == 'failed' and file_sha(target) == sha256)
 
@@ -1693,7 +1717,10 @@ sys.exit(payload.get('code', 0))
                     print('  VELDO-0060 %s detail: %s' % (name, label))
             if not observed:
                 print('  VELDO-0060 %s detail: no check ran' % name)
-        expect('VELDO-0060 ' + name, ok)
+        # A red row carries its failed checks after the colon: the mutation stage keeps a row's words, not
+        # what the suite printed, and a row red there with no words cannot be read afterwards.
+        failed = [label for label, one in observed if not one] or ['no check ran']
+        expect('VELDO-0060 ' + name + ('' if ok else ': ' + ' | '.join(failed)[:1500]), ok)
     for line in conform_formats.describe('0060_claude_adapter', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0060_claude_adapter', bool(fake_capture[1]) and not fake_capture[0])
