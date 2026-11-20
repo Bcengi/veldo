@@ -1,0 +1,16 @@
+status=passed registered=11 executed=11 rejected=11 reused=0 surviving_workers=0
+space316-accept-released: baseline green, no-op green; mutant red: space316/accept/released-hold
+space316-admission-at-acceptance: baseline green, no-op green; mutant red: space316/ac2/pre-reservation
+space316-block-report: baseline green, no-op green; mutant red: space316/ac3/started-advised
+space316-declared-ignored: baseline green, no-op green; mutant red: space316/ac4/declared-first
+space316-digest-omits-space: baseline green, no-op green; mutant red: space316/ac4/digest
+space316-first-five: baseline green, no-op green; mutant red: space316/ac4/last-five
+space316-ignore-floor: baseline green, no-op green; mutant red: space316/ac1/boundaries
+space316-ignore-others: baseline green, no-op green; mutant red: space316/ac1/boundaries
+space316-measure-after-one: baseline green, no-op green; mutant red: space316/ac4/five-before-measured
+space316-no-measurement-at-end: baseline green, no-op green; mutant red: space316/release/measurements
+space316-wait-is-refused: baseline green, no-op green; mutant red: space316/ac2/waiting-pass
+status=passed registered=3 executed=3 rejected=3 reused=0 surviving_workers=0
+space308-exit-without-releasing-the-hold: baseline green, no-op green; mutant red: ac2/waiting-unit
+space308-hold-released-before-signal: baseline green, no-op green; mutant red: ac2/census-signal-release
+space331-advised-not-held: baseline green, no-op green; mutant red: ac2/advised-counts-as-held

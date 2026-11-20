@@ -32,3 +32,37 @@ hold identity across offers and does not implement that later ticket's retry sch
 Validation logs will be recorded here. Selected selftest runs are diagnostics, not a full-gate verdict.
 The canonical gate and independent review belong to the lead and are not run or claimed here.
 The shared host-heavy wrapper is supplied by the build-queue repository; this worktree has no copy.
+
+## Results
+
+Implementation commit: b2105d64f8b21ac5f1fbf2b9715e0e7df9941c0e.
+All six selected suites have zero failing rows: admission (20 ticket rows), dispatch (25), factory
+loop (14), space mode (16), run finished (38) and end write (11). Each diagnostic exits 2 by the
+selftest dispatcher's partial-run contract; the shared preamble adds 26 checks to each printed total.
+The logs and checks.json preserve both the counts and the exit codes.
+
+The gate-mutation coordinator executed finding 316: 11 registered, 11 executed, 11 rejected, zero
+reuse, zero surviving workers. Every baseline and no-op control is green and the complete row
+inventory survives every mutant. Three existing mutations were also rejected: exit without releasing
+the hold, release before Signal, and omitting advised holds from held bytes. mutations.json and
+regression-mutations.json are the exact coordinator receipts; mutations/ holds the exact 0316 diffs.
+The new cases cover each declared falsifier plus other-held bytes, the waiting pass, oldest instead
+of newest runs, declared needs, digest coverage, acceptance after release, and run-end measurements.
+
+Lint passes (1247 Python, 40 shell files); template sync passes (325 pairs). All 410 existing and new
+mutation anchors in the four changed modules resolve exactly once. Generated-file freshness passes.
+Spec and proof validators pass. The personal-setup check against the starting commit finds zero;
+its diagnostic paths are replaced by <home> in the saved output. The gate is not run and no
+independent review or landing approval is claimed. Acceptance statuses remain pending that gate.
+
+## Code map
+
+- engine/.veldo/control_space_admission.py:63: pool boundary arithmetic; :75 serialized admission;
+  :94 measured item totals; :111 finished-run order; :142 need precedence; :158 preparation; :203 metrics.
+- engine/.veldo/control_launch.py:1707: Runner.prepare, admission before reservation; :1502: refused
+  dispatch release; :2412: Receiver._space_end, measured bytes saved with hold release.
+- engine/.veldo/control_dispatch.py:217: space validation with legacy compatibility; :361: transactional
+  hold recheck; :548: its acceptance call. The existing digest covers the entire contract unchanged.
+- engine/.veldo/control_service.py:3623: Line.offer, wired service ledger and waiting report.
+- scripts/suites/157_veldo_0316_space_admission.py: the independent fragment and its fixture boundaries.
+- scripts/check_teeth_mutations.py: finding 316 and the adjusted existing 0308 release-call anchor.

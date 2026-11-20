@@ -1,0 +1,62 @@
+[
+  {
+    "suite": "157_veldo_0316_space_admission",
+    "exit": 2,
+    "passed": 46,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "suite": "62_veldo_0039_dispatch",
+    "exit": 2,
+    "passed": 51,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "suite": "83_veldo_0154_factory_loop",
+    "exit": 2,
+    "passed": 40,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "suite": "134_veldo_0331_space_mode",
+    "exit": 2,
+    "passed": 42,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "suite": "146_veldo_0308_run_finished",
+    "exit": 2,
+    "passed": 64,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "suite": "150_veldo_0350_end_write",
+    "exit": 2,
+    "passed": 37,
+    "failed": 0,
+    "scope": "partial diagnostic",
+    "status": "zero_failing_rows"
+  },
+  {
+    "check": "lint",
+    "exit": 0
+  },
+  {
+    "check": "personal-setup",
+    "exit": 0
+  },
+  {
+    "check": "template-sync",
+    "exit": 0
+  }
+]
