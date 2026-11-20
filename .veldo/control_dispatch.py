@@ -139,7 +139,7 @@ END_RETRIES = 8
 STOP = 'dispatch-outcome-unknown'
 
 CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'station', 'attempt', 'source',
-                   'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation')
+                   'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation', 'space')
 SUBJECT_KINDS = ('project', 'conversation')
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
 # VELDO-0131: the owner's stop request and the runner's record of its ask, outside TRANSITIONS (no state moves).
@@ -165,7 +165,8 @@ TAXONOMY = {
     'no_stop_request': 'stale_subject',
     'unresolved_dependency': 'missing_evidence', 'missing_evidence': 'missing_evidence',
     'unavailable_service': 'unavailable_service', 'receiver_unavailable': 'unavailable_service',
-    'spawn_failed': 'unavailable_service',
+    'spawn_failed': 'unavailable_service', 'space_wait': 'unavailable_service',
+    'space_hold_state': 'stale_subject',
     'clock_uncertain': 'unknown_outcome', 'dispatch_outcome_unknown': 'unknown_outcome',
     'launch_evidence_missing': 'unknown_outcome', 'outcome_unknown': 'unknown_outcome',
     'process_identity_unreadable': 'unknown_outcome',
@@ -218,7 +219,8 @@ def contract_problems(contract):
     complete only when every binding is present and each digest it carries recomputes."""
     if not isinstance(contract, dict):
         return ['contract']
-    missing = [f for f in CONTRACT_FIELDS if f not in contract]
+    # Legacy contracts have no space field; never rewrite their stored digest.
+    missing = [f for f in CONTRACT_FIELDS if f not in contract and f != 'space']
     if missing:
         return missing
     problems = ['unexpected:' + f for f in sorted(set(contract) - set(CONTRACT_FIELDS) - {'subject_kind'})]
@@ -280,6 +282,11 @@ def contract_problems(contract):
         problems.append('deadline')
     if not _count(contract['authority_generation']):
         problems.append('authority_generation')
+    space = contract.get('space')
+    if space is not None and (not isinstance(space, dict) or set(space) != {'hold', 'needs'}
+            or not _text(space.get('hold')) or not isinstance(space.get('needs'), dict)
+            or not space['needs'] or not all(_text(p) and _count(n, 0) for p, n in space['needs'].items())):
+        problems.append('space')
     return problems
 
 
@@ -349,6 +356,22 @@ def _authorize(conn, principal, repository, now, subject_kind='project'):
     if (not active or entry.get('principal_type') not in AC.BOUNDARIES['dispatch_acceptance']
             or (subject_kind == 'project' and not CM.scope_covers(entry.get('scope'), repository))):
         raise Refused('missing_authority', why or 'not an active service member for this repository')
+
+
+def _space_bound(conn, contract):
+    """Re-read the hold and its scope mode inside dispatch acceptance's transaction."""
+    binding = contract.get('space')
+    if binding is None:
+        return
+    SP = _organ('control_space')
+    row = _entity(conn, SP.hold_id(binding['hold']))
+    hold = row['data'] if row and row['kind'] == SP.HOLD_KIND else {}
+    if hold.get('needs') != binding['needs']:
+        raise Refused('binding_mismatch:space')
+    mode = _entity(conn, SP.mode_id(hold['scope']))
+    acting = mode and mode['data'].get('mode') == 'act'
+    if hold.get('state') not in (('admitted',) if acting else ('admitted', 'advised')):
+        raise Refused('space_hold_state:' + str(hold.get('state')))
 
 
 def _reservation_bound(conn, contract):
@@ -525,6 +548,7 @@ def transition(conn, params, before):
             raise Refused('deadline_passed')
         _reservation_bound(conn, contract)
         _claim_bound(conn, contract)
+        _space_bound(conn, contract)
         if _identity_problems(params.get('receiver'), ('principal',)) or params['receiver']['principal'] != params['principal']:
             raise Refused('invalid_input', 'the receiver names its own process identity and principal')
         record['receiver'] = params['receiver']

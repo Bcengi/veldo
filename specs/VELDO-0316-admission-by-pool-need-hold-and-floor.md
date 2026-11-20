@@ -18,6 +18,8 @@ footprint:
   - ".veldo/control_launch.py"
   - "engine/.veldo/control_dispatch.py"
   - ".veldo/control_dispatch.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
   - "scripts/suites/*_veldo_0316_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"

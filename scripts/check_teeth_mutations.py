@@ -14244,7 +14244,7 @@ def cases():
                 "    if getattr(receiver, 'space', None) is not None and hasattr(receiver, '_space_end'):\n",
                 ['ac1/removal-before-the-report'])
     finished308('space308-exit-without-releasing-the-hold', 'control_launch.py',
-                "        end['hold'] = space_release(space, named or dispatch_id)\n", "        end['hold'] = None\n",
+                "        end['hold'] = space_release(space, named or dispatch_id, used=sizes)\n", "        end['hold'] = None\n",
                 ['ac2/waiting-unit'])
     finished308('space308-hold-released-before-signal', 'control_launch.py',
                 "        self.run_sent = False\n        self._remove_run()\n",
@@ -16438,6 +16438,51 @@ def cases():
 
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
+
+    # VELDO-0316: each stated falsifier reaches a behavioral row through production copies.
+    space316 = '157_veldo_0316_space_admission.py'
+    add(316, 'space316-ignore-floor', space316, 'control_space_admission.py',
+        "        if free_now - others < need + record['floor']:\n",
+        "        if free_now - others < need:\n", ['space316/ac1/boundaries'])
+    add(316, 'space316-admission-at-acceptance', space316, 'control_launch.py',
+        "        space = _organ('control_space_admission').prepare(\n"
+        "            self.space, self.dispatches, unit, station, project, source)\n",
+        "        space = None  # defect: defer admission until the dispatch holds its reservation\n",
+        ['space316/ac2/pre-reservation'], also=[(
+            "        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)\n",
+            "        contract = self.prepare(unit, station, **kwargs)\n"
+            "        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,\n"
+            "            contract['reservation']['project'], kwargs['source'])\n"
+            "        launch = self.receiver(contract)\n")])
+    add(316, 'space316-block-report', space316, 'control_space_admission.py',
+        "    answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'\n",
+        "    answer = 'admitted' if reason is None else 'waiting'\n", ['space316/ac3/started-advised'])
+    add(316, 'space316-measure-after-one', space316, 'control_space_admission.py',
+        "        elif len(history) == 5 and all(pool in run for run in history):\n",
+        "        elif len(history) >= 1 and all(pool in run for run in history):\n",
+        ['space316/ac4/five-before-measured'])
+    add(316, 'space316-wait-is-refused', space316, 'control_service.py',
+        "            if code.startswith('space_wait:'):\n",
+        "            if False:  # defect: a space wait goes to refused\n", ['space316/ac2/waiting-pass'])
+    add(316, 'space316-first-five', space316, 'control_space_admission.py',
+        "WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC",
+        "WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq ASC", ['space316/ac4/last-five'])
+    add(316, 'space316-declared-ignored', space316, 'control_space_admission.py',
+        "        if pool in declared:\n", "        if False:\n", ['space316/ac4/declared-first'])
+    add(316, 'space316-accept-released', space316, 'control_dispatch.py',
+        "        _space_bound(conn, contract)\n", "        # defect: acceptance never rechecks the hold\n",
+        ['space316/accept/released-hold'])
+
+    add(316, 'space316-digest-omits-space', space316, 'control_dispatch.py',
+        "    return S.digest_of(value)\n",
+        "    return S.digest_of({k: v for k, v in value.items() if k != 'space'}\n"
+        "                       if isinstance(value, dict) else value)\n", ['space316/ac4/digest'])
+    add(316, 'space316-ignore-others', space316, 'control_space_admission.py',
+        "        if free_now - others < need + record['floor']:\n",
+        "        if free_now < need + record['floor']:\n", ['space316/ac1/boundaries'])
+    add(316, 'space316-no-measurement-at-end', space316, 'control_launch.py',
+        "        sizes = _organ('control_space_admission').measured(space['ledger'], dispatch_id) if named else None\n",
+        "        sizes = None\n", ['space316/release/measurements'])
 
     # VELDO-0329: installing the hooks and reporting a missing one. The first three are the spec's
     # falsifiers word for word; the rest are the owner's rule (an existing hook is kept, chained or

@@ -3641,6 +3641,7 @@ class Line:
             # VELDO-0241: the station records the workflow revision the unit is bound to and the node it runs.
             payload = dict(payload, workflow=workflow)
         try:
+            self.runner.space = getattr(self.service, 'space', None)
             launch = self.runner.submit(unit, station, holder=holder, source=self.workspace, revision=revision,
                                         payload=payload, adapter=adapter,
                                         configuration=role['configuration'] if configuration is None else configuration,
@@ -3648,7 +3649,9 @@ class Line:
                                         **({'exclude': list(exclude)} if exclude else {}))
         except Exception as error:  # noqa: BLE001 - a refused offer is named in the pass, never the end of the service
             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
-            if code.startswith('no_account'):
+            if code.startswith('space_wait:'):
+                report['waiting'].append(dict(entry, refusal=code, space=dict(error.space)))
+            elif code.startswith('no_account'):
                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
                 report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
             else:
