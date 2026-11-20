@@ -33,7 +33,10 @@ Validation on `f8c3a898`:
 - Finding 60: all 36 mutants freshly executed and rejected, with no reuse.
   The old-condition mutant fails exactly the two new regression rows; baseline
   and no-op controls pass all 63 observations. `teeth-summary.json` contains
-  those results; `teeth.txt.gz` preserves the complete receipt and its hash.
+  those results. The complete receipt (gzip, sha256 b3e2521c187202a513969c5c1f894a0edfe128de2ca5ac362998c3c95c932a69,
+  uncompressed sha256 174e2b3c289f0d4d830789a659020d674ae60a9101c0f26a5bef257afa3ed58d) is not kept in the
+  repository: the lead removed it on 2026-11-20 because scripts/check_personal_setup.py refuses a binary
+  added file. teeth-summary.json keeps every result.
 - Loaded suite 78: 1,000 runs, 40 concurrent workers, 1,321 seconds. **0 red
   rehash rows out of 3,000**, all 2,000 regression rows green, no failed runs,
   failed rows or worker errors. Samples show 40 active workers on 20 CPUs,
