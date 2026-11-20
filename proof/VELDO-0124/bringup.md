@@ -91,6 +91,16 @@ sha256 as on that branch:
 - Suite 103 spells its synthetic Mac paths in two parts, and the two historical qualification
   drivers no longer name a home directory, so the personal-setup check finds nothing.
 
+## Needs review: one space-boundary entry
+
+The line's VELDO-0304 check (`scripts/check_space_boundary.py`) refuses a recursive removal outside
+a reviewed boundary, and `Run.release` in `project_runner_macos.py` removes the run's own
+per-dispatch TMPDIR with `shutil.rmtree`. The rule did not exist when the ticket was built. The
+bring-up added `REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')]` with its
+reason, marked in the file as not yet reviewed with design 6.10. The Mac worker host has no space
+ledger; whether its folders should be declared to one is for the reviewer and the owner. With the
+entry the check passes and suite 155_veldo_0304_space_boundary passes 51 rows.
+
 ## Results on the new base
 
 bringup-2026-11-20/results.txt: suite 103 29 rows, suite 104 7 rows, all passed; 15 of 15

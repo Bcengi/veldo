@@ -246,10 +246,16 @@
         "status": "passed",
         "detail": "15 of 15 single-change falsifiers rejected on their named rows; patches identical to round3-2026-10-29/falsifiers",
         "ref": "proof/VELDO-0124/bringup-2026-11-20/negative-controls.json"
+      },
+      {
+        "check": "python3 scripts/check_space_boundary.py; python3 scripts/selftest.py --suite 155_veldo_0304_space_boundary",
+        "status": "passed",
+        "detail": "Space boundary: pass, and suite 155 51 rows passed, after one reviewed entry was added for project_runner_macos.py Run.release (see needs_review)"
       }
     ],
     "not_rerun": "Native macOS rows and real engine qualification: they need the Mac and a Claude login, as OPEN.md says. Criteria statuses are unchanged (pending).",
     "artifact_digests_note": "artifact_digests are the source branch's. Files whose home-directory paths were rewritten for the line, and the files listed in bringup.md as not carried, no longer match them.",
-    "evidence_form_note": "Each criterion's evidence was a bare path on the source branch; the line's validator reads an evidence entry as an object, so each is {\"ref\": path} here. No type is claimed for them: the criteria stay pending."
+    "evidence_form_note": "Each criterion's evidence was a bare path on the source branch; the line's validator reads an evidence entry as an object, so each is {\"ref\": path} here. No type is claimed for them: the criteria stay pending.",
+    "needs_review": "scripts/check_space_boundary.py: the line's VELDO-0304 check refused Run.release, which removes the run's per-dispatch TMPDIR with shutil.rmtree. The entry REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')] was added by the bring-up, not by a design 6.10 review. The Mac worker host has no space ledger; whether its folders should be declared to one is undecided."
   }
 }
