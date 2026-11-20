@@ -1,0 +1,67 @@
+[
+  {
+    "suite": "132_veldo_0297_space_ledger",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 57 passed, 0 failed in 1.40s"
+  },
+  {
+    "suite": "134_veldo_0331_space_mode",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 42 passed, 0 failed in 1.40s"
+  },
+  {
+    "suite": "135_veldo_0298_space_kinds",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 168 passed, 0 failed in 0.01s"
+  },
+  {
+    "suite": "138_veldo_0300_space_remove",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 65 passed, 0 failed in 3.04s"
+  },
+  {
+    "suite": "139_veldo_0301_space_signal",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 44 passed, 0 failed in 1.63s"
+  },
+  {
+    "suite": "149_veldo_0312_ticket_ended",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 67 passed, 0 failed in 3.62s"
+  },
+  {
+    "suite": "153_veldo_0309_gate_space",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 50 passed, 0 failed in 30.92s"
+  },
+  {
+    "suite": "156_veldo_0315_reconcile",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 61 passed, 0 failed in 20.04s"
+  },
+  {
+    "suite": "157_veldo_0316_space_admission",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 46 passed, 0 failed in 4.59s"
+  },
+  {
+    "suite": "83_veldo_0154_factory_loop",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 40 passed, 0 failed in 37.49s"
+  },
+  {
+    "suite": "146_veldo_0308_run_finished",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 64 passed, 0 failed in 6.45s"
+  },
+  {
+    "suite": "150_veldo_0350_end_write",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 37 passed, 0 failed in 1.90s"
+  },
+  {
+    "suite": "158_veldo_0334_space_freed",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 40 passed, 0 failed in 2.74s"
+  }
+]

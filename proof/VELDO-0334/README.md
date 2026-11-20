@@ -29,4 +29,29 @@ synchronize the integration rows; 120-second deadlines only detect hung subproce
 
 Selected selftest exit 2 means all selected rows passed, but is deliberately not a full
 unit-gate success. The first diagnostic caught a fixture syntax error; the final suite
-log records its correction. Mutation results will supply the criterion evidence.
+log records its correction. The mutation controls supply the criterion evidence; all criteria remain pending the lead gate.
+
+Final diagnostics: 13 affected suites have zero failed rows, including the installed factory
+loop, reconcile, gate admission, run end, ledger, mode, Signal and removal suites. These
+selected selftest runs are diagnostics only, never aggregate unit verification.
+
+The final mutation run rejected 21/21 cases (finding 334 and all of finding 316). Three
+older cases were rejected in regression-mutations.json; that stage also correctly reported
+one invalid no-op control because an isolated admission copy lacked its new sibling modules.
+Registering siblings for both affected mode cases resolved that: mode-mutations.json rejects
+both with green baseline and no-op controls. Thus 26 distinct cases have valid red/green
+results, itemized in mutation-summary.json. No surviving workers and no reused results.
+Every recorded mutation source digest was compared with the final production file.
+
+Corrections during verification: the first suite diagnostic caught a fixture syntax error;
+the first mutation attempt caught two incorrectly quoted production-copy anchors; the installed
+factory-loop suite caught dynamically composed import names that the closure scanner cannot
+resolve. Literal imports fix the installation, whose suite then passes. The ticket-ending
+suite's exact call count now includes the additional journal-hint entry point. Existing
+new-project and Signal mutation anchors were updated without changing their target defects.
+
+Proof paths in captured output are redacted to <checkout> and <home>. Structured receipts
+keep all observations and source digests; their duplicate JSON lines are omitted from text
+logs. The shared host-heavy wrapper serialized every test and mutation run. No test in the
+new suite sleeps or asserts a speed bound; all hang detectors are at least 120 seconds.
+The canonical gate was not run and no independent review is claimed.

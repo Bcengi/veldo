@@ -1,0 +1,375 @@
+[
+  {
+    "case": "space316-admission-at-acceptance",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac2/pre-reservation": [
+        false
+      ]
+    },
+    "source": ".veldo/control_launch.py",
+    "sha256": "913b4f226fe6b6ef882b1271e34fce10cf52c3e1ec0fb0eff8652cd11c5d2bb0"
+  },
+  {
+    "case": "space316-ignore-floor",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac1/boundaries": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-wait-is-refused",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac2/waiting-pass": [
+        false
+      ]
+    },
+    "source": ".veldo/control_service.py",
+    "sha256": "15cf81916b1cb09f1008dc2dab1f64c96cad8b37c7c2c2a47a6c60687d8d8348"
+  },
+  {
+    "case": "space316-block-report",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac3/started-advised": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-measure-after-one",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac4/five-before-measured": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-first-five",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac4/last-five": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space334-mark-without-wake",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac3/reconcile-wakes": [
+        false
+      ],
+      "space334/ac3/release-wakes": [
+        false
+      ],
+      "space334/ac3/removal-wakes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_service.py",
+    "sha256": "15cf81916b1cb09f1008dc2dab1f64c96cad8b37c7c2c2a47a6c60687d8d8348"
+  },
+  {
+    "case": "space334-removal-without-mark",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac3/removal-wakes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "space334-release-without-mark",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac3/release-wakes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "space334-reconcile-without-mark",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac3/reconcile-wakes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "space334-retry-without-ending-action",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac1/retry-removes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_signal.py",
+    "sha256": "49abed18f473a7fa0573bfd0c13bada211290c6290df9b484c7a5059ffa6975a"
+  },
+  {
+    "case": "space334-worker-without-space-pass",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac3/worker-wakes": [
+        false
+      ]
+    },
+    "source": ".veldo/control_service.py",
+    "sha256": "15cf81916b1cb09f1008dc2dab1f64c96cad8b37c7c2c2a47a6c60687d8d8348"
+  },
+  {
+    "case": "space334-never-clear-mark",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac2/clear-after-judgment": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "space334-clear-newer-mark",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/race/freeing-during-judgment": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "space334-read-every-offer",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac2/no-read-write": [
+        false
+      ],
+      "space334/ac2/timer-still-waits": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space334-retry-every-offer",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space334/ac1/one-signal": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-declared-ignored",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac4/declared-first": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-accept-released",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/accept/released-hold": [
+        false
+      ]
+    },
+    "source": ".veldo/control_dispatch.py",
+    "sha256": "76ce8a9b7c3e21a6ff8d9e5495e28dde92606c4e9625377a063c11adf16993ee"
+  },
+  {
+    "case": "space316-ignore-others",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac1/boundaries": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space316-no-measurement-at-end",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/release/measurements": [
+        false
+      ]
+    },
+    "source": ".veldo/control_launch.py",
+    "sha256": "913b4f226fe6b6ef882b1271e34fce10cf52c3e1ec0fb0eff8652cd11c5d2bb0"
+  },
+  {
+    "case": "space316-digest-omits-space",
+    "receipt": "mutations-final.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "space316/ac4/digest": [
+        false
+      ]
+    },
+    "source": ".veldo/control_dispatch.py",
+    "sha256": "76ce8a9b7c3e21a6ff8d9e5495e28dde92606c4e9625377a063c11adf16993ee"
+  },
+  {
+    "case": "space301-returns-after-marking-due",
+    "receipt": "regression-mutations.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "ac1/removes-before-return": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_signal.py",
+    "sha256": "49abed18f473a7fa0573bfd0c13bada211290c6290df9b484c7a5059ffa6975a"
+  },
+  {
+    "case": "space331-advised-for-act-hold",
+    "receipt": "regression-mutations.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "ac2/hold-keeps-its-scope": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space.py",
+    "sha256": "7eccd5617b6aa86a6214bc48a52d6645369b91cc0f1edb198d6426ceb0f9ab6f"
+  },
+  {
+    "case": "newproject143-take-on-not-due",
+    "receipt": "regression-mutations.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "provision/handed-over": [
+        false
+      ]
+    },
+    "source": ".veldo/control_service.py",
+    "sha256": "15cf81916b1cb09f1008dc2dab1f64c96cad8b37c7c2c2a47a6c60687d8d8348"
+  },
+  {
+    "case": "space331-admission-reads-no-mode",
+    "receipt": "mode-mutations.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "ac2/admission-by-scope": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  },
+  {
+    "case": "space331-advised-not-held",
+    "receipt": "mode-mutations.json",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "target_rows": {
+      "ac2/advised-counts-as-held": [
+        false
+      ]
+    },
+    "source": ".veldo/control_space_admission.py",
+    "sha256": "bc5f78b52ad262594a4fe7102ebdd2eeb2bf970e1b8f08b3f133073c819cd526"
+  }
+]
