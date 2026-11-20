@@ -512,3 +512,19 @@ fields. The selected Jira definition now appears directly when search is disable
 No resource-reader case (c) remains after Telegram 29400/29401. Earlier captures,
 switch investigations and other review repairs remain in this proof directory;
 none is treated as fresh live qualification of this tree.
+
+## Live recapture, 2026-11-20 (owner approval, Telegram 42786)
+
+Gate 12 found `live/claude` and `live/codex` "missing or stale": the launch-wait change moved the
+`control_launch.py` digest that each capture binds (see proof/0329b-gate-fix/teeth.md, Gate 12, item 3).
+The owner approved the refresh in Telegram 42786 ("approve capture runs", answering 42785): up to 5 tiny
+Claude Code runs and up to 5 tiny Codex runs, "reply with the word ready", each in an empty scratch
+folder, no MCP servers. The approval was asked while the CLIs on PATH were codex-cli 0.154.0 and
+Claude Code 2.1.326. `live.py` runs the binaries the engines record instead (`.veldo/runtime/engines.json`):
+Claude Code 2.1.317 (claude-haiku-4-5-20251001) and Codex 0.166.0 (gpt-6-astra), subscription logins.
+
+Real runs used: Claude Code 5 of 5 (four factory runs, always and deferred, control and planted, plus the
+instruction-discovery debug control); Codex 4 of 5 (the same four factory runs; the wire capture runs the
+pinned binary against the 127.0.0.1 loopback, not a provider). One earlier `--only claude` attempt was
+refused at the login lease before any launch and used no run. Both captures judged "captured"; both
+logins still hold a refresh token after. The run directory uid is written as UID.
