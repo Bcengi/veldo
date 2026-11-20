@@ -1,0 +1,36 @@
+CENSUS FIRST RUN (VELDO-0358 brief B), tree at e3451130 plus brief B, no opened-files record yet
+command: python3 scripts/check_wallclock.py
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 692 file(s) read, 432 with a site
+wallclock: sites: 3051 (R1 296, R2 1449, R3 1250, R4 56); by class: A 56, D1 1121, D2 90, P 238, S1 36, S2 98, S3 11, ST 151, T 1250; excepted by the authority: 36
+wallclock: baseline: 2869 entry(ies), 3015 site(s) in 431 file(s); by rule: R1 261, R2 1449, R3 1250, R4 55
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+
+COUNTS BY SCOPE, against design section 4.1 (design figure in brackets; "-" where the design gives none)
+scope                                                files read   with a site  R1 calls     R1 in text   R2           R3           R4
+engine/.veldo (the 12 files of design 4.8, R3 only)  12 [-]       7 [-]        0 [-]        0 [-]        0 [-]        27 [-]       0
+engine/ui                                            15 [-]       12 [-]       7 [-]        0 [-]        29 [-]       29 [-]       0
+proof                                                352 [346]    202 [199]    18 [17]      5 [-]        341 [341]    221 [218]    6
+scripts (other folders)                              7 [-]        4 [-]        0 [-]        0 [-]        13 [-]       7 [-]        1
+scripts (top level)                                  56 [49]      18 [15]      9 [9]        3 [-]        64 [64]      38 [26]      0
+scripts/suites                                       250 [249]    189 [183]    122 [119]    132 [112]    1002 [914]   928 [890]    49
+
+scripts/suites, R3 by form (design 4.1: 761 keyword, 33 joins, 32 waits, 30 settimeout, 24 select, 8 wait_for, 2 Timer):
+  Event.wait                               5
+  Thread.join                              15
+  keyword                                  778
+  method.join                              20
+  method.poll                              2
+  method.settimeout                        17
+  method.wait                              27
+  poll.poll                                2
+  select.select                            33
+  signal.alarm                             1
+  socket.create_connection                 5
+  socket.settimeout                        13
+  threading.Timer                          2
+  value not numeric                        34
+  wait_for                                 8
+scripts/suites, by class (design 4.1: S1 28, S2 83, S3 7, F 1, P 201, D1 628, D2 85, T 890):
+  A 49, D1 724, D2 76, P 202, S1 27, S2 86, S3 9, ST 132, T 928
+
+notes from the run:

@@ -1,0 +1,18 @@
+VELDO-0358 brief B: the suites that read the gate's catalog, graph, policy or stage scripts, and this brief's own suite
+$ nice -n 19 python3 scripts/selftest.py --suite 158_veldo_0358_census --suite 113_veldo_0220_gate_host --suite 114_veldo_0220_gate_scope --suite 114_veldo_0216_concurrent_stages --suite 127_veldo_0259_installation --suite 64_veldo_0050_proof --suite 155_veldo_0304_space_boundary --suite 24_veldo_0007_install_and_run --suite 29_veldo_0016_policy_boundaries --suite 69_veldo_0058_gate_output --suite 153_veldo_0309_gate_space
+(a selector run always exits 2; the counts are the result)
+  24_veldo_0007_install_and_run                  105 passed  106.43s
+  29_veldo_0016_policy_boundaries                299 passed    2.58s
+  64_veldo_0050_proof                             14 passed   15.71s
+  69_veldo_0058_gate_output                       16 passed   39.42s
+  113_veldo_0220_gate_host                         3 passed    5.88s
+  114_veldo_0220_gate_scope                        1 passed    2.96s
+  114_veldo_0216_concurrent_stages                26 passed   26.33s
+  127_veldo_0259_installation                     20 passed   20.77s
+  155_veldo_0304_space_boundary                   51 passed    7.26s
+  153_veldo_0309_gate_space                       24 passed   25.94s
+  158_veldo_0358_census                            5 passed    8.14s
+selftest (PARTIAL, 11 of 237 suites): 590 passed, 0 failed in 261.44s
+exit 2
+
+The full selftest (python3 scripts/selftest.py) was queued under the shared host lock behind a gate and seven other jobs and had not started when this log was written. It is not evidence here.
