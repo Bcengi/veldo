@@ -1213,11 +1213,28 @@ def space_supervise(rest):
         return status  # nobody serves the ledger to this process: the items and the hold stay as they are
     # The run's end is made by a process that follows this one: the scratch root records this
     # process, and rule 3 holds the item while the kernel shows it.
+    #
+    # THE FOLLOWER WAITS FOR THE EXIT AS THE KERNEL RECORDS IT, on a pidfd of this process opened
+    # before the fork. The pipe alone is not that: a process that exits has its descriptors closed
+    # before its exit is recorded, and between the two the table still shows it as running. A
+    # follower woken there finds the supervisor among the run's holders and makes no end.
+    # Under load, 40 at once, the follower read state R in 105 and in 109 runs of 200.
+    # The pidfd is readable only once the exit is recorded. On a kernel with no pidfd the pipe is
+    # what is left.
     reading, writing = os.pipe()
+    try:
+        above = os.pidfd_open(os.getpid())
+    except (AttributeError, OSError):
+        above = None
     if os.fork():
         return status
     os.close(writing)
-    os.read(reading, 1)  # returns when the process above has ended
+    os.read(reading, 1)  # returns when the process above has closed its end, as it does when it exits
+    if above is not None:
+        import select
+        ended = select.poll()
+        ended.register(above, select.POLLIN)
+        ended.poll()  # returns when the kernel has recorded the exit of the process above
     _space_finish(space, dict(given, run=run, status=status, group=group, supervisor=me))
     os._exit(0)
 

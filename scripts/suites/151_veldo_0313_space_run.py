@@ -1203,9 +1203,13 @@ def _v313_space_run_suite():
             # The real space_supervise of the production file, in a process of its own, with two
             # stand-ins and nothing else changed: a process this account cannot read is no holder
             # (as with the process reader), and the run's end records what it was given in a file
-            # instead of asking a ledger.
+            # instead of asking a ledger. A third makes what the kernel does at every exit last half a
+            # second: a process that exits has its descriptors closed before its exit is recorded,
+            # and here the supervisor's are closed as soon as it has a follower. A follower that
+            # takes the closed pipe for the exit makes the end while the table still shows the
+            # supervisor (gate 11: once in a loaded run; on the real ledger that end is refused).
             stand_in.write_text(
-                'import importlib.machinery, importlib.util, json, os, sys\n'
+                'import importlib.machinery, importlib.util, json, os, sys, time\n'
                 'path, marker = sys.argv[1], sys.argv[2]\n'
                 'loader = importlib.machinery.SourceFileLoader("veldo_cli", path)\n'
                 'spec = importlib.util.spec_from_loader("veldo_cli", loader)\n'
@@ -1233,6 +1237,14 @@ def _v313_space_run_suite():
                 '                   "by": os.getpid()}, out)\n'
                 '    os.rename(marker + ".part", marker)\n'
                 'V._space_finish = finish\n'
+                'fork = os.fork\n'
+                'def forked():\n'
+                '    made = fork()\n'
+                '    if made:\n'
+                '        os.closerange(3, 1024)\n'
+                '        time.sleep(0.5)\n'
+                '    return made\n'
+                'os.fork = forked\n'
                 'sys.exit(V.space_supervise(sys.argv[3:]))\n')
             reading, writing = os.pipe()
             heard, told = os.pipe()

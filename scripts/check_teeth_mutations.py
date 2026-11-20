@@ -15345,6 +15345,11 @@ def cases():
     run313('space313-wrapper-gone-nobody-makes-the-end',
            "    if not seen[\"holders\"] and heard[\"reader\"]:\n", "    if not seen[\"holders\"]:\n",
            ['supervise/wrapper-gone-the-follower-makes-the-end'])
+    # Gate 11: the follower took the supervisor's closed pipe for its exit, and made the end while
+    # the table still showed the supervisor.
+    run313('space313-follower-takes-the-closed-pipe-for-the-exit',
+           "    if above is not None:\n        import select\n", "    if False:\n        import select\n",
+           ['supervise/wrapper-gone-the-follower-makes-the-end'])
     run313('space313-rule-three-answered-without-a-read',
            "            {\"conclusive\": True, \"group_empty\": held() is None}\n",
            "            {\"conclusive\": True, \"group_empty\": True}\n",
