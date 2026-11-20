@@ -1,0 +1,11 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -337,7 +337,7 @@
+                     if 'sha256:' + hashlib.sha256(raw).hexdigest() != reference['digest']:
+                         raise ValueError('evidence digest')
+                     document = json.loads(raw)
+-                    if (document.get('schema') != 'veldo.macos_worker_evidence/v1'
++                    if (False
+                             or document.get('kind') != 'native'
+                             or any(document.get(field) != evidence[field]
+                                    for field in ('host', 'os_version', 'profile_digest'))):

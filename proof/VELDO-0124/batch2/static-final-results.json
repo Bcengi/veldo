@@ -1,0 +1,71 @@
+[
+  {
+    "name": "lint",
+    "command": [
+      "bash",
+      "scripts/check_lint.sh"
+    ],
+    "exit_code": 0,
+    "log": "lint-final.log"
+  },
+  {
+    "name": "security",
+    "command": [
+      "python3",
+      "scripts/secret_inventory.py"
+    ],
+    "exit_code": 0,
+    "log": "security-final.log"
+  },
+  {
+    "name": "generated",
+    "command": [
+      "bash",
+      "scripts/check_generated.sh"
+    ],
+    "exit_code": 0,
+    "log": "generated-final.log"
+  },
+  {
+    "name": "docs",
+    "command": [
+      "bash",
+      "scripts/check_docs.sh"
+    ],
+    "exit_code": 0,
+    "log": "docs-final.log"
+  },
+  {
+    "name": "template-sync",
+    "command": [
+      "bash",
+      "scripts/check_template_sync.sh"
+    ],
+    "exit_code": 0,
+    "log": "template-sync-final.log"
+  },
+  {
+    "name": "contracts",
+    "command": [
+      "python3",
+      ".veldo/validate.py",
+      "all"
+    ],
+    "exit_code": 0,
+    "log": "contracts-final.log"
+  },
+  {
+    "name": "shape",
+    "command": [
+      "python3",
+      ".veldo/shape_gate.py"
+    ],
+    "exit_code": 0,
+    "log": "shape-after-cleanup.log",
+    "prior_attempt": {
+      "exit_code": 1,
+      "log": "shape-final.log",
+      "reason": "Temporary inspection files outside the footprint; removed before retry."
+    }
+  }
+]

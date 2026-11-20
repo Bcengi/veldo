@@ -1,0 +1,5 @@
+--- a/project_runner_macos_control.py
++++ b/project_runner_macos_control.py
+@@ -127 +127 @@
+-            if not seen['outcome_known']:
++            if False:

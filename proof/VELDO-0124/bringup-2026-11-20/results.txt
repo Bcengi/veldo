@@ -1,0 +1,9 @@
+Suites alone on the line after the port (python3 scripts/selftest.py --suite <name>; exit 2 is a passed partial run):
+  103_veldo_0124_macos                            29 passed    1.93s
+selftest (PARTIAL, 1 of 240 suites): 55 passed, 0 failed in 1.93s
+  104_veldo_0124_control                           7 passed    5.40s
+selftest (PARTIAL, 1 of 240 suites): 33 passed, 0 failed in 5.40s
+
+Falsifiers (python3 -B proof/VELDO-0124/negative_controls.py --output <scratch>): 15 of 15 rejected, each on its named row;
+negative-controls.json beside this file is that run's record. Patches and logs stayed in scratch; the patches are the
+same single changes as round3-2026-10-29/falsifiers/*.patch.

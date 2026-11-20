@@ -1,0 +1,8 @@
+Darwin
+arm64
+dmitrys-mini.lan
+ProductName:		macOS
+ProductVersion:		26.5.1
+BuildVersion:		25F80
+{ sec = 1791866372, usec = 996311 } Tue Oct 13 00:39:32 2026
+Python 3.12.13

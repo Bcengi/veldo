@@ -1,0 +1,12 @@
+[
+  {
+    "phase": "red",
+    "exit": 1,
+    "profile_sha256": "7bf6b37af186a12993b142fc408ff75a649b54b99b57c391519246f0b0e7df26"
+  },
+  {
+    "phase": "green",
+    "exit": 0,
+    "profile_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+  }
+]

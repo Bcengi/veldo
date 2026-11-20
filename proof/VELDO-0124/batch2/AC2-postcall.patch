@@ -1,0 +1,5 @@
+--- a/project_runner_macos_control.py
++++ b/project_runner_macos_control.py
+@@ -92 +92 @@
+-            receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),
++            started.append(self.host.start(request)); receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),

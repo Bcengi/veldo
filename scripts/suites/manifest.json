@@ -2195,6 +2195,24 @@
    ],
    "regions": "Kernel process and socket events, observer isolation and census failure propagation.",
    "requires_note": "Only ROOT and expect. Repository-only ptrace fixture with independently acknowledged tracees and private scratch output. Full host qualification remains explicitly incomplete."
+  },
+  {
+   "name": "103_veldo_0124_macos",
+   "file": "103_veldo_0124_macos.py",
+   "requires": [
+    "103_veldo_0124_macos"
+   ],
+   "regions": "Mac lifecycle logic and Apple interface models.",
+   "requires_note": "Only ROOT and expect; no native Mac qualification."
+  },
+  {
+   "name": "104_veldo_0124_control",
+   "file": "104_veldo_0124_control.py",
+   "requires": [
+    "104_veldo_0124_control"
+   ],
+   "regions": "Mac authority contract over signed store records.",
+   "requires_note": "Only ROOT and expect."
   }
  ],
  "resource_capacities": {

@@ -1,0 +1,19 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1785738141, usec = 72609 } Mon Aug  3 06:22:21 2026",
+    "tools": true
+  },
+  "rows": [
+    {
+      "row": "native/claude_code/natural",
+      "status": "failed"
+    }
+  ],
+  "status": "failed",
+  "error": "Refused: unknown_outcome:launch"
+}

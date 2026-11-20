@@ -1,0 +1,9 @@
+AC1-qualification REJECTED AC1/qualification
+AC1-session-type REJECTED AC1/apple-interfaces
+AC1-claude-sandbox REJECTED AC1/claude-sandbox-refused
+AC2-deadline REJECTED AC2/deadline
+AC2-capacity REJECTED AC2/capacity
+AC3-parent-only REJECTED AC3/descendant
+AC3-group-only REJECTED AC3/descendant
+AC2-postcall REJECTED AC2/precall-caps
+AC3-unknown-retire REJECTED AC3/unknown-charge

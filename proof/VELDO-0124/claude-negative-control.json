@@ -1,0 +1,42 @@
+{
+  "status": "Partial diagnostic runs only; no gate, native qualification or landing claim.",
+  "implementation_commit": "a5fc50ba",
+  "base": "7b70d125",
+  "normal": [
+    {
+      "suite": "103_veldo_0124_macos",
+      "suite_rows": 28,
+      "total_passed": 54,
+      "failed": 0,
+      "exit_code": 2,
+      "log": "claude-suite-103.log"
+    },
+    {
+      "suite": "104_veldo_0124_control",
+      "suite_rows": 7,
+      "total_passed": 33,
+      "failed": 0,
+      "exit_code": 2,
+      "log": "claude-suite-104.log"
+    }
+  ],
+  "falsifier": {
+    "change": "Remove only the sandbox.enabled refusal from claude_document in an isolated copy of .veldo.",
+    "patch": "claude-sandbox-check-removed.patch",
+    "suite": "103_veldo_0124_macos",
+    "modules_override": "VELDO_0124_MODULES points to that copy",
+    "exit_code": 1,
+    "total_passed": 49,
+    "failed": 5,
+    "required_failed_row": "VELDO-0124 AC1/claude-sandbox-refused",
+    "failed_rows": [
+      "VELDO-0124 AC1/claude-sandbox-refused",
+      "VELDO-0124 AC1/claude-settings-sources",
+      "VELDO-0124 AC1/claude-invocation",
+      "VELDO-0124 AC1/claude-settings-unreadable",
+      "VELDO-0124 AC1/claude-wrapper-recheck"
+    ],
+    "log": "claude-negative-control.log"
+  },
+  "scope": "Normal partial runs intentionally exit 2, even with zero failures. The mutant exits 1. No engine login or native execution was used."
+}

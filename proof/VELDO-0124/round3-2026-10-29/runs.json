@@ -1,0 +1,41 @@
+[
+  {
+    "name": "falsifiers",
+    "command": [
+      "flock",
+      "~/.local/state/core-gates/.gate.lock",
+      "python3",
+      "proof/VELDO-0124/negative_controls.py",
+      "--output",
+      "proof/VELDO-0124/round3-2026-10-29/falsifiers"
+    ],
+    "exit": 0,
+    "expected_exit": 0
+  },
+  {
+    "name": "suite-103",
+    "command": [
+      "flock",
+      "~/.local/state/core-gates/.gate.lock",
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "103_veldo_0124_macos"
+    ],
+    "exit": 2,
+    "expected_exit": 2
+  },
+  {
+    "name": "suite-104",
+    "command": [
+      "flock",
+      "~/.local/state/core-gates/.gate.lock",
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "104_veldo_0124_control"
+    ],
+    "exit": 2,
+    "expected_exit": 2
+  }
+]
