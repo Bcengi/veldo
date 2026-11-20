@@ -359,6 +359,10 @@ def _v317_suite():
                     observed.feed('engine', b'No space left ')
                     observed.feed('stderr', b'on device')
                     check('classify/streams', not observed.found)
+                    for message in (b'write: ENOSPC', b'[Errno 28]'):
+                        token = ADM.Output()
+                        token.feed('stderr', message)
+                        check('classify/streams', token.found)
                     observed.feed('engine', b'on device')
                     check('classify/streams', observed.found and len(observed.tails['engine']) <= 64)
                     f.space['free'] = lambda pool: (_ for _ in ()).throw(OSError('unread'))
