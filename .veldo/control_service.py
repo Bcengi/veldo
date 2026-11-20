@@ -2312,6 +2312,7 @@ class Service:
         (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
         new-project pass due (VELDO-0143)."""
         if self.watermark() > before:
+            self.space_pass()
             self.projects_due = True
             consumer = getattr(self, 'space_consumer', None)
             if consumer is not None and consume:
@@ -2751,6 +2752,11 @@ class Service:
             head = self.watermark()
             records = self.space_committed(head) if head > self.space_seen else []
             for record in records:
+                # The freeing transaction journals its marked holds, including worker writes.
+                if self.loop is not None and any(
+                        entry.get('kind') == 'space_hold' and (entry.get('data') or {}).get('freed') is True
+                        for entry in (record.get('transition') or {}).values()):
+                    self.loop.wake('space', record['seq'])
                 for found in self.space_events([record]):
                     sent.append(self.space_send(found))
                 self.space_seen = max(self.space_seen, record['seq'])

@@ -23,8 +23,9 @@ working folder is inside, else no project; design 6.7). The ledger checks the an
 again when it writes it, and refuses advised for a hold of a scope in act mode. Two projects on one pool
 can be in different modes; the numbers are the same for both.
 
-The admission requested event and the freed mark that lets a waiting hold be judged again
-are VELDO-0334. Runner preparation and need selection are VELDO-0316. `free(pool)` is given: it returns the free bytes of one
+Admission requested is sent once per hold. A recorded wait is read again only after a freeing
+ledger write sets its mark (VELDO-0334). Runner preparation and need selection are VELDO-0316.
+`free(pool)` is given: it returns the free bytes of one
 pool record at the moment of the call. No clock is read here.
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
@@ -72,22 +73,42 @@ def judge(ledger, identity, free):
     return None
 
 
-def admit(ledger, identity, free, principal=None, command_id=None):
+def admit(ledger, identity, free, principal=None, command_id=None, **given):
     """Judge a waiting hold and write the answer: admitted, or with the reason waiting for a run of a
     scope in act mode and advised for a run of a scope in report mode. The scope is the one the hold
     records. Returns the ledger's answer with the answer and the reason added."""
     with ledger.item_lock('admission:' + ledger.host):
-        return _admit(ledger, identity, free, principal, command_id)
+        return _admit(ledger, identity, free, principal, command_id, given)
 
 
-def _admit(ledger, identity, free, principal, command_id):
+def _admit(ledger, identity, free, principal, command_id, given):
     hold = ledger.hold(identity)
     if hold is None:
         return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
+    if hold['state'] != 'waiting':
+        return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
+    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:
+        return {'ok': True, 'state': 'waiting', 'answer': 'waiting', 'reason': hold['reason']}
     scope = hold.get('scope')
+    version = ledger._row('space:hold:' + identity, 'space_hold')[0]
     reason = judge(ledger, identity, free)
+    if reason is not None and not hold['retry_asked']:
+        # Reserve this hold's one request before Signal can commit any removal outcomes.
+        asked = ledger.admit(identity, 'waiting', reason, retry_asked=True, principal=principal,
+                             expected_version=version)
+        if not asked['ok']:
+            return asked
+        for key in ('probe', 'kinds', 'remover'):
+            given.setdefault(key, organ('control_space_' + ('remove' if key == 'remover' else key)))
+        sent = organ('control_space_signal').signal(
+            ledger, 'admission_requested', {'pool': reason['pool']}, free=free, **given)
+        if not sent['ok']:
+            return sent
+        version = ledger._row('space:hold:' + identity, 'space_hold')[0]
+        reason = judge(ledger, identity, free)
     answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
-    result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id)
+    result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id,
+                          expected_version=version)
     return dict(result, answer=answer, reason=reason) if result['ok'] else result
 
 
@@ -160,8 +181,8 @@ def needs(ledger, dispatches, project, station, declarations):
 def prepare(space, dispatches, unit, station, project, repository):
     """Place and judge a stable unit/station/attempt hold before any reservation.
 
-    An already waiting hold keeps its identity on subsequent offers. VELDO-0334
-    owns the event policy for judging it again. Serialized across pools so two
+    An already waiting hold keeps its identity and recorded answer until space is freed.
+    Serialized across pools so two
     concurrent preparations cannot both promise the same free bytes.
     """
     if space is None or space['ledger'].config.get('enabled') is not True:
@@ -192,7 +213,8 @@ def prepare(space, dispatches, unit, station, project, repository):
             hold = ledger.hold(identity)
         if hold['state'] != 'waiting':
             raise D.Refused('space_hold_state:' + hold['state'], 'another preparation owns this hold')
-        answer = admit(ledger, identity, space['free'])
+        answer = admit(ledger, identity, space['free'],
+                       **{key: value for key, value in space.items() if key not in ('ledger', 'free')})
         if not answer['ok']:
             raise D.Refused(answer['reason'], answer.get('detail', ''))
         if answer['answer'] == 'waiting':
