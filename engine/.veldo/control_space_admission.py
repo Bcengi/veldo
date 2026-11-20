@@ -250,7 +250,7 @@ UNCONFIRMED = 'unknown_outcome:no_space_unconfirmed'
 
 class Output:
     """Bounded streaming search of both output pipes, including split error text."""
-    pattern = re.compile(rb'no space left on device|\bENOSPC\b', re.I)
+    pattern = re.compile(rb'no space left on device|\bENOSPC\b|\[Errno 28\]', re.I)
 
     def __init__(self):
         self.tails, self.found = {}, False
@@ -288,7 +288,7 @@ def classify(space, contract, unsuccessful, found, worktree=None):
             free = space['free'](pool)
             if type(free) is not int or free < 0:
                 free = None
-        except (OSError, ValueError, KeyError, StopIteration):
+        except (OSError, ValueError, TypeError, KeyError, StopIteration):
             free = None
         pools.append({'pool': name, 'free': free, 'floor': pool['floor'] if pool else None})
     return {'classification': classification(pools), 'pools': pools, 'worktree': worktree}
