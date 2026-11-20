@@ -1,11 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -145,7 +145,7 @@
-     declared = (declarations.get('needs') or {}).get(station) or {}
-     values, sources = {}, {}
-     for pool, config in sorted(ledger.config['pools'].items()):
+@@ -148 +148 @@
 -        if pool in declared:
 +        if False:
-             values[pool], sources[pool] = declared[pool], 'declared'
-         elif len(history) == 5 and all(pool in run for run in history):
-             values[pool], sources[pool] = max(run[pool] for run in history), 'measured'

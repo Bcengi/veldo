@@ -1,11 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -2455,7 +2455,7 @@
-         if not self.run_sent:
-             end['reason'] = ((self.run_removal or {}).get('deferral') if self.run_removal else None) or 'nothing_recorded'
-         named = ((contract or {}).get('space') or {}).get('hold') if isinstance((contract or {}).get('space'), dict) else None
+@@ -2458 +2458 @@
 -        sizes = _organ('control_space_admission').measured(space['ledger'], dispatch_id) if named else None
 +        sizes = None
-         end['hold'] = space_release(space, named or dispatch_id, used=sizes)
-         return end
- 

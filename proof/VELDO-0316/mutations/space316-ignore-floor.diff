@@ -1,11 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -67,7 +67,7 @@
-     for pool in sorted(hold['needs']):
-         record = ledger.pool(pool)
-         need, free_now, others = hold['needs'][pool], free(record), held(ledger, pool, identity)
+@@ -70 +70 @@
 -        if free_now - others < need + record['floor']:
 +        if free_now - others < need:
-             return {'pool': pool, 'need': need, 'free': free_now, 'held': others, 'floor': record['floor']}
-     return None
- 

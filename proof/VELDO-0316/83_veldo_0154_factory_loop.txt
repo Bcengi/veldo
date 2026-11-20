@@ -37,8 +37,8 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  VELDO-0154 service b stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | 
-  VELDO-0154 service a stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | 
+  VELDO-0154 service b stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) |
+  VELDO-0154 service a stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) |
 VELDO-0172 fake/capture:0154_factory_loop: 3 fake lines compared, events ['codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
 VELDO-0154 suite seconds: 23.482 (the first instance's rows ended at 22.3 s, the reset came at 13.8 s)
   83_veldo_0154_factory_loop                      14 passed   23.50s
