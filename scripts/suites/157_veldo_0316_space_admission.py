@@ -27,7 +27,7 @@ def _v316_suite():
         'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     # A mutant must retain the complete row inventory, including checks after a refused launch.
-    rows = {name: [] for name in ('ac1/boundaries', 'ac1/metrics', 'ac1/numbers', 'ac1/second-pool', 'ac2/pre-reservation', 'ac2/stable-hold', 'ac2/waiting-pass', 'ac3/advised-counts', 'ac3/started-advised', 'ac4/declared-first', 'ac4/digest', 'ac4/five-before-measured', 'ac4/last-five', 'ac4/legacy', 'ac4/project-station', 'accept/released-hold', 'disabled/no-hold', 'release/cancelled', 'release/measurements', 'release/preparation-failed')}
+    rows = {name: [] for name in ('ac1/boundaries', 'ac1/metrics', 'ac1/numbers', 'ac1/second-pool', 'ac2/pre-reservation', 'ac2/stable-hold', 'ac2/waiting-pass', 'ac3/advised-counts', 'ac3/started-advised', 'ac4/declared-first', 'ac4/digest', 'ac4/five-before-measured', 'ac4/last-five', 'ac4/legacy', 'ac4/legacy-history', 'ac4/measured-at-five', 'metrics/exposed', 'recovery/next-offer', 'recovery/orphan-released', 'ac4/project-station', 'accept/released-hold', 'disabled/no-hold', 'release/cancelled', 'release/measurements', 'release/preparation-failed')}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -201,6 +201,15 @@ def _v316_suite():
                     'pools': {'host': {'free': 1000, 'floor': 20, 'held': 30},
                               'image': {'free': 35, 'floor': 5, 'held': 0}},
                     'holds': {'admitted': 1, 'waiting': 1, 'advised': 0}})
+                # The same metrics are exposed on the factory loop's status, which the service reports.
+                loop = object.__new__(SV.FactoryLoop)
+                loop.passes, loop.timer, loop.counts, loop.trees, loop.lines, loop.last = 0, None, {}, set(), {}, None
+                loop.refused_lines, loop.line_counts, loop.conversation = {}, {}, None
+                loop.service = types.SimpleNamespace(space=f.space)
+                check('metrics/exposed', SV.FactoryLoop.status(loop).get('space_admission') == ADM.status(
+                    f.ledger, f.space['free']) and SV.FactoryLoop.status(loop)['space_admission']['holds']['admitted'] == 1)
+                loop.service = types.SimpleNamespace(space=None)
+                check('metrics/exposed', SV.FactoryLoop.status(loop).get('space_admission', 'absent') is None)
             finally:
                 f.close()
         run('ac1/boundaries', boundaries)
@@ -248,7 +257,9 @@ def _v316_suite():
         def history():
             f = Fixture('history')
             try:
-                for number, size in enumerate((10, 900, 11, 12, 13, 14, 15)):
+                # The first five are small, so a need measured after one or after four runs admits early;
+                # the outlier is among the newest five and not among the oldest five.
+                for number, size in enumerate((10, 11, 12, 13, 14, 900, 15)):
                     contract = f.prepare('past-' + str(number))
                     f.finish(contract, {'host': size, 'image': 2})
                     if number in (0, 3):
@@ -260,8 +271,12 @@ def _v316_suite():
                             code = getattr(error, 'code', None)
                         check('ac4/five-before-measured', code == 'space_wait:host')
                         f.free['host'] = 1000
+                    if number == 4:
+                        values, sources = ADM.needs(f.ledger, f.dispatches, 'project', 'build', {})
+                        check('ac4/measured-at-five', values == {'host': 14, 'image': 2}
+                              and sources == {'host': 'measured', 'image': 'measured'})
                 values, sources = ADM.needs(f.ledger, f.dispatches, 'project', 'build', {})
-                check('ac4/last-five', values == {'host': 15, 'image': 2}
+                check('ac4/last-five', values == {'host': 900, 'image': 2}
                       and sources == {'host': 'measured', 'image': 'measured'})
                 for project, station in [('another-project', 'build'), ('project', 'review')]:
                     values, sources = ADM.needs(f.ledger, f.dispatches, project, station, {})
@@ -295,6 +310,80 @@ def _v316_suite():
             finally:
                 f.close()
         run('ac4/five-before-measured', history)
+
+        def legacy_history():
+            f = Fixture('legacy')
+            try:
+                # Runs that exited without a space binding (the ledger disabled, or before admission) give the
+                # last measurements of their own items.
+                for number in range(5):
+                    f.config['enabled'] = False
+                    contract = f.prepare('legacy-' + str(number))
+                    f.config['enabled'] = True
+                    assert contract['space'] is None
+                    launch = f.receive(contract)
+                    f.now += 1
+                    f.dispatches.exit(contract['dispatch_id'], D.digest(contract), launch.record['process'],
+                        dict(returncode=0, signal=None, output_digest=D.digest(''), output_bytes=0, deadline_stop=False), now=f.now)
+                    path = f.root / ('legacy-' + str(number))
+                    path.mkdir()
+                    (path / 'output').write_bytes(b'output')
+                    owner = {'scope': f.scope, 'run': {'station': 'build', 'id': contract['dispatch_id']}}
+                    placed = f.ledger.declare('scratch', {'path': str(path)}, owner, 'seam')
+                    assert placed['ok'], placed
+                    assert f.ledger.confirm(placed['item'])['ok']
+                    assert f.ledger.measure(placed['item'], 40 + number, 'run_finished')['ok']
+                    values, sources = ADM.needs(f.ledger, f.dispatches, 'project', 'build', {})
+                    if number < 4:
+                        check('ac4/legacy-history', sources == {'host': 'default', 'image': 'default'})
+                check('ac4/legacy-history', values == {'host': 44, 'image': 30}
+                      and sources == {'host': 'measured', 'image': 'default'})
+            finally:
+                f.close()
+        run('ac4/legacy-history', legacy_history)
+
+        def recovery():
+            f = Fixture('recovery')
+            try:
+                bound = f.prepare('bound')
+                # A service that died after admission and before the dispatch was written: the answer is
+                # committed and nothing else names the hold.
+                orphan = ADM.prepare(f.space, f.dispatches, 'unit', 'build', 'project', str(f.repo))['hold']
+                f.free['host'] = 300
+                try:
+                    f.prepare('waits')
+                except Exception as error:
+                    assert getattr(error, 'code', None) == 'space_wait:host', error
+                f.free['host'] = 1000
+                waits = [i for i, hold in f.ledger.holds().items() if hold['state'] == 'waiting']
+                code = None
+                try:
+                    f.prepare('unit')
+                except Exception as error:
+                    code = getattr(error, 'code', None)
+                assert code == 'space_hold_state:admitted' and ADM.held(f.ledger, 'host') == 200, code
+                logs = []
+                loop = object.__new__(SV.FactoryLoop)
+                loop.conversation, loop.started_lines = None, []
+                loop.provision = lambda report, caller: None
+                f.runner.space = None  # as a line's Runner before its first offer: the service gives the ledger
+                loop.lines = {'repository': types.SimpleNamespace(runner=f.runner)}
+                loop.service = types.SimpleNamespace(space=f.space, domain='domain', _log=logs.append)
+                SV.FactoryLoop.start(loop)
+                f.runner.space = f.space
+                check('recovery/orphan-released', f.ledger.hold(orphan)['state'] == 'released'
+                      and f.ledger.hold(bound['space']['hold'])['state'] == 'admitted'
+                      and len(waits) == 1 and f.ledger.hold(waits[0])['state'] == 'waiting'
+                      and ADM.held(f.ledger, 'host') == 100
+                      and logs[-1]['holds_recovered'] == {'repository': [
+                          {'hold': orphan, 'state': 'admitted', 'released': True, 'refusal': None}]})
+                contract = f.prepare('unit')
+                check('recovery/next-offer', contract['space']['hold'] == orphan + '/1'
+                      and f.ledger.hold(orphan + '/1')['state'] == 'admitted'
+                      and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared')
+            finally:
+                f.close()
+        run('recovery/orphan-released', recovery)
 
         def disabled_and_failure():
             f = Fixture('disabled')

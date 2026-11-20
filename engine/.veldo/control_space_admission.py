@@ -111,8 +111,10 @@ def measured(ledger, dispatch_id):
 def finished(ledger, dispatches, project, station):
     """Last five exited runs, in durable exit order, including failed runs, never refusals.
 
-    Read the release's saved measurements, not surviving files or a promised need.
-    A run missing a measurement keeps that pool on its default.
+    A run with a space binding gives the measurements its release saved, never a promised need. A legacy
+    run, exited without a binding (before admission existed, or while the ledger was disabled), gives
+    the last measurements of its own items in the ledger. A run missing a pool's measurement keeps
+    that pool on its default.
     """
     runs = []
     seen = set()
@@ -198,6 +200,49 @@ def prepare(space, dispatches, unit, station, project, repository):
             error.space = dict(answer['reason'])
             raise error
         return {'hold': identity, 'needs': dict(hold['needs'])}
+
+
+def runner_hold(identity, dispatches):
+    """Whether `identity` is a hold prepare() places for this domain and repository: the JSON list
+    [domain, repository, unit, station, attempt], with a '/generation' suffix after a released one."""
+    try:
+        value, end = json.JSONDecoder().raw_decode(identity)
+    except (TypeError, ValueError):
+        return False
+    rest = identity[end:]
+    return (isinstance(value, list) and len(value) == 5 and value[:2] == [dispatches.domain, dispatches.repository]
+            and (rest == '' or (rest[:1] == '/' and rest[1:].isdigit())))
+
+
+def recover(space, dispatches):
+    """Start recovery: release every admitted or advised hold of this domain and repository that no
+    dispatch record binds.
+
+    prepare() commits the answer before the Runner reserves a slot and writes the dispatch. A service
+    that dies between the two leaves a counted hold that nothing else names: its unit is refused with
+    space_hold_state on every later offer and its need stays held on every pool. Run at service start,
+    before any offer, under the admission lock, it reads the dispatch records and releases each such
+    orphan; the unit's next preparation places a fresh generation and is judged again. A waiting hold
+    is never released here: it is the stable identity a waiting unit keeps (VELDO-0334). Returns
+    [{hold, state, released, refusal}], one per orphan."""
+    if space is None or space['ledger'].config.get('enabled') is not True:
+        return []
+    ledger = space['ledger']
+    D = organ('control_dispatch')
+    with ledger.item_lock('admission:' + ledger.host):
+        bound = set()
+        for (data,) in dispatches.conn.execute('SELECT data FROM entities WHERE kind=?', (D.RECORD_KIND,)):
+            binding = (json.loads(data).get('contract') or {}).get('space')
+            if isinstance(binding, dict) and isinstance(binding.get('hold'), str):
+                bound.add(binding['hold'])
+        out = []
+        for identity, hold in sorted(ledger.holds().items()):
+            if hold.get('state') not in COUNTED or identity in bound or not runner_hold(identity, dispatches):
+                continue
+            result = ledger.release(identity)
+            out.append({'hold': identity, 'state': hold['state'], 'released': bool(result.get('ok')),
+                        'refusal': None if result.get('ok') else str(result.get('reason'))})
+        return out
 
 
 def status(ledger, free):

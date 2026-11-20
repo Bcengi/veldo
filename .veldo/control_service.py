@@ -4209,6 +4209,13 @@ class FactoryLoop:
                 swept[repository] = line.runner.sweep_runs()
             except Exception as error:  # noqa: BLE001 - a sweep that fails keeps the directories, by name
                 swept[repository] = {'refusal': 'unknown_outcome:' + type(error).__name__}
+        # VELDO-0316: holds admitted before a dispatch was written by a service that then died are released.
+        holds = {}
+        for repository, line in sorted(self.lines.items()):
+            try:
+                holds[repository] = line.runner.recover_holds(getattr(self.service, 'space', None))
+            except Exception as error:  # noqa: BLE001 - a recovery that fails releases nothing, by name
+                holds[repository] = {'refusal': 'unknown_outcome:' + type(error).__name__}
         # VELDO-0204: the accounts and projects added while the service was stopped have their policies now; a
         # provisioning that fails is named in this record and the loop still opens.
         started = {'provisioning': []}
@@ -4217,7 +4224,7 @@ class FactoryLoop:
             self.service._log({'kind': 'loop', 'operation': 'runs_swept', 'at': time.time(),
                                'domain_uuid': self.service.domain, 'swept': swept,
                                'provisioning': started['provisioning'], 'faults': started.get('faults', []),
-                               'lines': self.started_lines})
+                               'lines': self.started_lines, 'holds_recovered': holds})
         return swept
 
     def provision(self, report, caller):
@@ -4352,7 +4359,20 @@ class FactoryLoop:
                 'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())
                           if line.station is not None},
                 'conversations': self.service.conversations().status() if self.conversation is not None else None,
-                'conversation_running': sorted(self.conversation.runner.launches) if self.conversation else []}
+                'conversation_running': sorted(self.conversation.runner.launches) if self.conversation else [],
+                # VELDO-0316: per pool free, floor and held bytes, and the holds admitted, waiting and advised.
+                'space_admission': self.space_admission()}
+
+    def space_admission(self):
+        """VELDO-0316's admission metrics (control_space_admission.status) over the service's space ledger;
+        None where the installation has no enabled ledger, and a named refusal where they cannot be read."""
+        space = getattr(self.service, 'space', None)
+        if space is None or space['ledger'].config.get('enabled') is not True:
+            return None
+        try:
+            return _organ('control_space_admission').status(space['ledger'], space['free'])
+        except Exception as error:  # noqa: BLE001 - a status that cannot be read is named, never the end of status
+            return {'refusal': 'unknown_outcome:' + type(error).__name__}
 
 
 def landing_names(loop):
