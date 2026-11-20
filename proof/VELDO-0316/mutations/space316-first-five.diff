@@ -1,0 +1,11 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -117,7 +117,7 @@
+     runs = []
+     seen = set()
+     for (raw,) in dispatches.conn.execute(
+-            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC"):
++            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq ASC"):
+         for entry in json.loads(raw).values():
+             record = entry.get('data') or {}
+             contract = record.get('contract') or {}

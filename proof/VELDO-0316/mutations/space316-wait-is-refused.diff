@@ -1,0 +1,11 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -3649,7 +3649,7 @@
+                                         **({'exclude': list(exclude)} if exclude else {}))
+         except Exception as error:  # noqa: BLE001 - a refused offer is named in the pass, never the end of the service
+             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
+-            if code.startswith('space_wait:'):
++            if False:  # defect: a space wait goes to refused
+                 report['waiting'].append(dict(entry, refusal=code, space=dict(error.space)))
+             elif code.startswith('no_account'):
+                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''

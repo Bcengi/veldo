@@ -1,0 +1,12 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -195,7 +195,8 @@
+ 
+ 
+ def digest(value):
+-    return S.digest_of(value)
++    return S.digest_of({k: v for k, v in value.items() if k != 'space'}
++                       if isinstance(value, dict) else value)
+ 
+ 
+ def _text(value):

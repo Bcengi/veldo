@@ -1,0 +1,181 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0316",
+  "commit": "b2105d64f8b21ac5f1fbf2b9715e0e7df9941c0e",
+  "tree": "ff36943cf33fcf35d6de01be8943df6a0a2b9d16",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-20T21:11:11.505527+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0316_space_admission.py",
+          "detail": "ac1/boundaries: both sides of need + held + floor, and a second engine-image pool"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0316/mutations.json",
+          "sha256": "077f0e73ff3a52e6d295cbf0399efefd840d1948f7f83562644003389012beae",
+          "detail": "Registered case space316-ignore-floor has green baseline and no-op controls and a red mutant target; every suite row retained. Criteria await the lead gate."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0316/mutations/space316-ignore-floor.diff",
+          "detail": "Exact applied production mutation."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0316_space_admission.py",
+          "detail": "ac2/pre-reservation and waiting-pass: a wait has no dispatch, slot, reservation or deadline; the Line lists its numbers under waiting"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0316/mutations.json",
+          "sha256": "077f0e73ff3a52e6d295cbf0399efefd840d1948f7f83562644003389012beae",
+          "detail": "Registered case space316-admission-at-acceptance has green baseline and no-op controls and a red mutant target; every suite row retained. Criteria await the lead gate."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0316/mutations/space316-admission-at-acceptance.diff",
+          "detail": "Exact applied production mutation."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0316_space_admission.py",
+          "detail": "ac3/started-advised: the same low-free-space run starts a real child after committed acceptance, with an advised hold and its numbers"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0316/mutations.json",
+          "sha256": "077f0e73ff3a52e6d295cbf0399efefd840d1948f7f83562644003389012beae",
+          "detail": "Registered case space316-block-report has green baseline and no-op controls and a red mutant target; every suite row retained. Criteria await the lead gate."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0316/mutations/space316-block-report.diff",
+          "detail": "Exact applied production mutation."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0316_space_admission.py",
+          "detail": "ac4/five-before-measured, last-five, project-station, declared-first and digest: declared needs, then maximum of the last five finished runs, then pool default; digest changes with needs"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0316/mutations.json",
+          "sha256": "077f0e73ff3a52e6d295cbf0399efefd840d1948f7f83562644003389012beae",
+          "detail": "Registered case space316-measure-after-one has green baseline and no-op controls and a red mutant target; every suite row retained. Criteria await the lead gate."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0316/mutations/space316-measure-after-one.diff",
+          "detail": "Exact applied production mutation."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "reason": "No aggregate unit gate; selected selftests are diagnostics recorded in checks.json."
+    },
+    {
+      "name": "integration",
+      "status": "pending",
+      "reason": "Real-store integration rows pass in mutation controls; full gate remains with the lead."
+    },
+    {
+      "name": "falsifiers",
+      "status": "passed",
+      "detail": "Finding 316: 11/11 rejected. Existing hold-release/advised-hold regressions: 3/3 rejected. Zero reuse and no surviving workers."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "ref": "proof/VELDO-0316/lint.txt"
+    },
+    {
+      "name": "template sync",
+      "status": "passed",
+      "ref": "proof/VELDO-0316/template-sync.txt"
+    },
+    {
+      "name": "personal setup",
+      "status": "passed",
+      "ref": "proof/VELDO-0316/personal-setup.txt"
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Reserved for the lead; independent review not performed."
+    },
+    {
+      "name": "generated files",
+      "status": "passed",
+      "ref": "proof/VELDO-0316/generated.txt"
+    },
+    {
+      "name": "spec and proof contracts",
+      "status": "passed",
+      "ref": "proof/VELDO-0316/validation.txt"
+    }
+  ],
+  "assumptions": [
+    "Free-byte readings, eligibility/claim checks and act prerequisites are fixture seams; no live Docker qualification.",
+    "Admission-requested events and freed-mark retries belong to VELDO-0334.",
+    "Criteria remain pending the lead gate; selected diagnostics do not claim full verification."
+  ],
+  "rollback": "Revert the implementation. Existing stored contract digests are unchanged.",
+  "artifacts": {
+    "134_veldo_0331_space_mode.txt": "sha256:bfe922caabba2e65e486502ff81d05fb55d79d42e138a03f43dad34effb30226",
+    "146_veldo_0308_run_finished.txt": "sha256:9c62f003b76142ecef7a74fdc18d8bdb7e2845b42c146f539a7db9b51ba4cf87",
+    "150_veldo_0350_end_write.txt": "sha256:02ee6a466568fdf6a203014781684fdc11b9f6da2473e758a596178c64d8f4c2",
+    "157_veldo_0316_space_admission.txt": "sha256:31f541c618066654e3b402f2afdcfdbeb22026df97b8dd11c99bfb1573b09b4c",
+    "62_veldo_0039_dispatch.txt": "sha256:70d65177255d23bee9cf196469f3c3eedcbdeff81ad6d62bcfc6259ce85bf1cd",
+    "83_veldo_0154_factory_loop.txt": "sha256:36878c71dd93f0d3135230c6fe82ad86c867ff2f0c15e28dd00dbcc5d426c958",
+    "README.md": "sha256:18daf32d02f39906eaffd54c6000fd2186aaaa571be1c14b10018a45cc8d7d2e",
+    "checks.json": "sha256:60fd1f4fc729a94d4801639630bca022a03bacd85aef01ccc9a8db7d066504de",
+    "generated.txt": "sha256:f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
+    "lint.txt": "sha256:0c347449ccec91146efa644e02551b8ec4de6c585f819bf10c32493e6d6ab2ae",
+    "mutations/space316-accept-released.diff": "sha256:dbdcc7e27a59ab33444319035a7b67d69a63095b0f5c6c3386f45f928833e468",
+    "mutations/space316-admission-at-acceptance.diff": "sha256:ff3235a73314fdbb87fd3083d3fdb9108b64be0ef1da223dca9f49faf7ca9f79",
+    "mutations/space316-block-report.diff": "sha256:fae09f6c9e1c2cc9d308ec24df86611417bd9a5dbf09007209704350f4240534",
+    "mutations/space316-declared-ignored.diff": "sha256:bc2f492af05326314fbf8fd3b357ce52ad46da374414bc45cf69cbc1841bbf0c",
+    "mutations/space316-digest-omits-space.diff": "sha256:992777c038cf088cb6abca55cf35ddcfa9275fc2ac75afa6efa2f5a1c1e8ae66",
+    "mutations/space316-first-five.diff": "sha256:691451f06db37d550a233ed4bde1c0f6979140bad7a93185f7c7928630f46e01",
+    "mutations/space316-ignore-floor.diff": "sha256:bc42ec29ade589653108fdd0970e3beacf51bfc36748b50925b758d583e25045",
+    "mutations/space316-ignore-others.diff": "sha256:dd5b2b33b3333ff7c33790a425a1464449d0ebbf3f8a51c8cfbcce46d93366d7",
+    "mutations/space316-measure-after-one.diff": "sha256:d505928d8f64b46b0be7760e397aca3a297e0fe97ec6872ce1d3a654dc7e8434",
+    "mutations/space316-no-measurement-at-end.diff": "sha256:1694478bd0844e09d33144db2a3e16f8153f15ec45502458727c1b746aa81e7c",
+    "mutations/space316-wait-is-refused.diff": "sha256:a7fbca04c0fd87cb631a2fd5b15f264e741164475c4d4f48eaa2abe7d2262b5d",
+    "mutations.json": "sha256:077f0e73ff3a52e6d295cbf0399efefd840d1948f7f83562644003389012beae",
+    "mutations.txt": "sha256:00f409cb7728b831ca0ee1e706579dc9524db68339aa0a9c6b1cad69246b4cc9",
+    "personal-setup.txt": "sha256:29bcda4c225cfaf46d74d1637c2e8d8f55247be560bf35083840471369b7f5a8",
+    "regression-mutations.json": "sha256:6835c5e962acd0c08bbcb55d42d1532dc54cb90de95cb3638d5edbd3f3043bc1",
+    "template-sync.txt": "sha256:343656aa06130084b2ad5f7413fa5a24a3d061491382915c77913de03fde19ab",
+    "unit-first.txt": "sha256:3684dbba7dd0ae43391246396a310bc0ddfab06ecbf3466a4eafdabcce0dd730",
+    "validation.txt": "sha256:02a796cda74e33ce0f75c1e95961dc757bed6a28e522930096b688b26985fbe1"
+  }
+}

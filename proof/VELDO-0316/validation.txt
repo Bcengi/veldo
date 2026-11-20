@@ -1,0 +1,6 @@
+python3 .veldo/validate.py spec specs/VELDO-0316-admission-by-pool-need-hold-and-floor.md
+exit=0
+
+python3 .veldo/validate.py proof proof/VELDO-0316/manifest.json
+exit=0
+  proof/VELDO-0316/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
