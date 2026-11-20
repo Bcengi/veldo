@@ -122,9 +122,9 @@ def _v317_suite():
                                            account='account', clock=lambda: self.now, space=self.space)
                     self.runner.sweep = lambda: None  # no old workers in this fixture
                     original = self.runner.prepare
-                    self.next_id = 999999
+                    self.next_id = 0
                     def ordered(*args, **kwargs):
-                        self.next_id -= 1
+                        self.next_id += 1
                         with patch.object(L.uuid, 'uuid4', return_value=types.SimpleNamespace(hex='%032x' % self.next_id)):
                             return original(*args, **kwargs)
                     self.runner.prepare = ordered
