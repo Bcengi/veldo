@@ -372,7 +372,7 @@ the lock in the same words as the table. The row's condition is unchanged: holde
 holders_during must still equal [('WRITE', pid)]. Tried first and dropped: accepting what three readings of
 the table in a row agree on was still wrong 3 times in 28235. The row's failure now carries what it saw.
 
-Runs, all with no gate holding /home/dmitry/.local/state/core-gates/.gate.lock:
+Runs, all with no gate holding ~/.local/state/core-gates/.gate.lock:
 - the reader alone under the same churn: 4080 answers of 4080 right; an unlocked file reads [].
 - the driver's worker, unmutated suite: 96 runs 24 at once with the churn running (load 22), then 128 runs
   16 at once with the churn: 0 failed rows of 224.
