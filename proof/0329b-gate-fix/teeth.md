@@ -489,3 +489,125 @@ Seen and not changed. At twice the gate's load (80 suite processes on 20 cores) 
 containment/cooperative-stop in 5 runs of 280 and containment/runtime-cap in 1 of 280; the first carries no
 detail, the second showed a worker that had not started its descendant when its 1.2 s cap ended it. Neither
 was red in gate 10 and neither was seen at 40 at once (0 of 80).
+
+### Gate 11 (5430e77a): 45 cases voided, no survivor, and one first-use red. A race of the product, fixed; a browser test whose cause was not reproduced, which now waits on the page and names what it shows; and a third flaky row found while proving, fixed
+
+Gate 11 was red in two stages. integration.confined: the first-use check, family spend_recorded, 9394 passed and
+1 failed, VELDO-0313 supervise/wrapper-gone-the-follower-makes-the-end with supervisor_ended False; the untouched
+tree passed 9395 of 9395. mutation: registered 3597, executed 3597, rejected 3552. The 45 not rejected are all
+invalid_baseline, none is a surviving mutant, and they have two causes:
+
+- 43 cases of finding 313 (the space313 cases of suite 151), on the same row as the first-use red, in the
+  control of their suite: supervisor_ended False.
+- 2 cases of suite 124, ui131-catalog-first-server-only and ui131-credential-metadata-dropped, on the one
+  control run they share: the browser test ac2/priority-save, "toBeVisible getByTestId('backlog') ...
+  element(s) not found" after 10000 ms. The gate's summary line names the first of the two.
+
+All teeth findings passed.
+
+**The row of suite 151.** The spend records are not the cause. The first-use check reads a row that is red
+with the records and green without them as a row that requires the corpus to be empty; this row is red at
+random, and was red once, in the run that happened to carry the records. The row alone (the real
+space_supervise with the row's stand-ins), 40 at once beside 20 busy loops, 200 runs each time:
+
+- the untouched tree: 105 failed, then 109 failed.
+- the same tree with the two records of the check's "Reproduce by hand" written through .veldo/spend.py: 112
+  failed, then 97 failed.
+- the tree with the fix below: 0 failed, then 0 failed.
+
+Every failure is the gate's: status 0, the run, the supervisor, made by another process, supervisor_ended
+False; the supervisor's state in the table read R. On an idle host the untouched tree failed 4 runs of 40 and
+33 of 60, 20 at once. No emptiness arm is made conditional, since no assertion here depends on the records.
+
+Cause. The supervisor's follower slept on the read end of a pipe whose write end the supervisor held, and took
+the end of that read for the supervisor's exit. A process that exits has its descriptors closed before its exit
+is recorded; between the two the table still shows it as running. A follower woken there makes the end while
+the kernel shows the supervisor. In the row the end is a stand-in that records what it saw. In the product it
+is _space_finish, which reads the table again, finds the supervisor and makes no end (reason group_not_empty):
+the run's items and its hold stay. The row was right to be red; the code was wrong.
+
+Fix, in bin/veldo (engine/bin/veldo and its synced copy). The supervisor opens a pidfd of itself before the
+fork; the follower, after the pipe, waits on it. A pidfd is readable once the exit is recorded. On a kernel
+with no pidfd the pipe is what is left, as before. This is a change of the product's verb, made here because
+the row that guards it was red in the gate; it has no specification of its own.
+
+The row keeps every condition it had. Its stand-ins change in two things:
+
+- the supervisor's descriptors are closed half a second before it exits, as the kernel closes them at every
+  exit, only earlier, so the race is not left to the host. With that, the untouched code failed 200 runs of
+  200 under the same load, and the fixed code 0 of 200. Falsifier added:
+  space313-follower-takes-the-closed-pipe-for-the-exit (the wait on the pidfd removed).
+- "ended" is what the product's own reader takes for it: no entry, Z, or X. X is the state of a process its
+  parent is reaping, and the follower now wakes at the exit, which is when the suite reaps the supervisor. A
+  process read through its pidfd beside a reaping parent read X in 2 of 20000 reads. With the stand-in that
+  took only Z, the fixed code failed 0 runs of 2000 under load: this was not seen to redden the row, and is
+  changed because the reading is wrong.
+
+**The browser test of suite 124.** The cause was not reproduced. What was measured:
+
+- It is not a page that is slow on a loaded host. With 6 browsers at once beside 30 busy loops the backlog was
+  shown 0.57 s after the page was opened at the median and 1.8 s at the worst of 198 opens, against the ten
+  seconds the test gave it.
+- In the gate the failing control took 99.7 s against 81.4 s for the control that ran beside it, with the
+  same processor time (54.7 s and 51.3 s): ten seconds of waiting and a restarted worker, not a slow run. The
+  log of another branch's gate (landing-c, gate 16) has the same failure, again on a control of suite 124,
+  where the other controls took 42 s: 56.2 s against 43.3 s.
+- It did not come back in 244 runs of the suite's eight browser rows under processor load (up to 150 busy
+  loops), 32 under a disk storm (twelve loops copying, flushing and removing a tree; I/O pressure 25
+  percent), 150 opens of the backlog one after another in one browser, 63 runs of the suite through the
+  mutation driver (its nine cases, three times) and 116 runs of the browser suites together (24 cases,
+  twice, on the changed test).
+
+So the page was without the backlog for ten seconds for a reason the failure did not give: it said
+"element(s) not found" and nothing of what the page showed. Two things are changed in the test
+(engine/ui/e2e/factory.spec.ts), and nothing in what it asserts:
+
+- It waits on what the page itself says. The backlog screen's panel is "loading" until its read is answered,
+  then ready, empty or error. The test waits for the panel to leave "loading", or the page to leave the
+  backlog, for as long as the read takes (120 s at most, inside the test's 180), and then judges what is
+  shown with the usual ten seconds. Shown by holding each answer of the work read 12 s: the old wait fails
+  with the gate's own error, the panel "loading"; the new one passes. A read that fails is red as before
+  (the work read reset: red, panel "error", unavailable:network).
+- A backlog that is not shown says which of the test's three opens it was, where the page was, each panel's
+  state and words, what the page logged, and every request with its answer or its failure, in order.
+
+This covers an answer that comes late, which is what the failure looks like from the test, and it makes any
+other cause name itself the next time. It is not a claim that a late answer is what happened in gate 11.
+
+**A third row, not red in gate 11.** scripts/check_gate_mutations.py --finding 313 (44 cases: 16 runs of
+suite 151 at once) was refused invalid_baseline in three runs of four while the fix above was being proved.
+Two of the three kept their detail: supervise/stop-after-the-command-ends-nothing, in one control; the first
+was run without keeping it. proof/VELDO-0315/README.md has the same row red in a control, cause not found.
+
+Cause, in the suite's fixture. The command that "leaves a process" forks twice and ends at the first fork. The
+process between the two lives for an instant, and on a loaded host the supervisor's read at the command's exit
+listed it beside the one that stays: two descendants, started one tick apart. The row asks a second and a half
+later whether what was listed is still there, and the one between was gone. First the row was given its words
+(whether the supervisor stayed, whether what was left is there, its last line, how long the wrapper took):
+the wrapper had returned in 0.1 s, so the fixture's ten-second limit was not it. Then shown: with the process
+between made to live 0.4 s, the row is red in both controls with the same words.
+
+Fix, in the fixture only: the command collects the process between before it ends, so what it leaves is one
+process whenever it is read. With the 0.4 s still in place the row is green and its falsifier
+(space313-stop-after-the-command-ends-the-supervisor) is rejected. The row's conditions are unchanged.
+
+Runs, holding the gate lock so that no gate ran beside them, except where said:
+
+- on ae49d608 (the last change to code or tests): the row of suite 151 alone, 40 at once beside 20 busy
+  loops, 0 failed of 200. --finding 313 beside 20 busy loops, six times: "passed registered=44 executed=44
+  rejected=44" each time (the new falsifier and space313-wrapper-gone-nobody-makes-the-end among them).
+  --case ui131-catalog-first-server-only --case ui131-credential-metadata-dropped: "passed registered=2
+  executed=2 rejected=2".
+- on f30acbe3 (the browser test as it is now): ac2/priority-save alone, 6 at once beside 30 busy loops, 0
+  failed of 204; with the suite's other seven rows, 0 failed of 60; the 24 cases of the browser suites,
+  twice: "passed registered=24 executed=24 rejected=24".
+- without the lock, one case at a time: the two demonstrations of the third row.
+- scripts/check_lint.sh: pass. vue-tsc on engine/ui with the changed test: no error.
+  scripts/check_template_sync.sh: pass (325 pairs). scripts/check_space_boundary.py: pass.
+  scripts/check_personal_setup.py: 0 findings. Every registered case of bin/veldo (57) finds its anchor once.
+- scripts/selftest.py --suite 151_veldo_0313_space_run outside the gate's confinement is red here on the
+  untouched tree too (7 rows, processes of other accounts read as holders), so suite 151 was run through the
+  mutation driver, which confines its workers: its controls are the suite, unmutated.
+
+Not done. scripts/verify.sh was not run. The new case has no measured time in .veldo/gate-schedule.json; the
+authority measures it.
