@@ -174,3 +174,4 @@ Landing requires separate commit-bound human approval. The implementing agent au
 ## History
 
 - 2026-11-16: GATE FIX ROUND 2 lead ruling: VELDO-0304 and the owner rule that no work is ever lost (Telegram 41209) supersede AC4 and Design age-based store pruning; case-deadlines/store-pruned retains old live, pending and foreign files and removes only a gone authority entry. Removal is governed by VELDO-0304 through the removers.
+- 2026-11-20: VELDO-0358 AC9 (owner, Telegram 42829): the worker deadline of this specification is no longer a verdict. No mutation worker is ended because it was slow: every worker runs under its progress watchdog, and the stage has no combined deadline. The times this specification measures stay and are used to order admission and to estimate the stage. mutation_budget_exceeded is retired with the deadline, and suite 112_veldo_0215_case_deadlines is restated to that effect by VELDO-0358.
