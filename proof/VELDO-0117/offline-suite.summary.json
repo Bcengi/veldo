@@ -1,0 +1,73 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0117/heavy_summary.py green-after --runs 1 --name offline-suite; per run: VELDO_0117_REPORT=<scratch file> python3 scripts/selftest.py --suite 113_veldo_0117_domain_store",
+ "deciding": {
+  "bound": "every run: the suite reports no failed row and its report shows each of the three rows true, with the number of checks each made. selftest --suite exits 2 by design (a partial run)",
+  "runs": [
+   {
+    "authority_module_sha256": {
+     "control_client.py": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+     "control_enrollment.py": "7f471f7c68dd6e6933d6f85aa8db597c2583480ae0f6992cc9b2c1213cea365c",
+     "control_service.py": "3e28f897063eb5dc6c5872c431856a6838211100e9eb366521f1da957b92f1e6",
+     "control_store.py": "ba827ad4b3b46817f6db9835623799addf9e48c7f7d18e9fdab93cb052473afc"
+    },
+    "cases": {
+     "enrollment/authority-refuses-domain-store-conflict": 11,
+     "enrollment/domain-binding-survives-restart": 16,
+     "enrollment/one-domain-one-winner": 4
+    },
+    "checks_made_and_true": {
+     "enrollment/authority-refuses-domain-store-conflict": [
+      45,
+      45
+     ],
+     "enrollment/domain-binding-survives-restart": [
+      64,
+      64
+     ],
+     "enrollment/one-domain-one-winner": [
+      30,
+      30
+     ]
+    },
+    "fixture_version": "veldo.authority_store_fixture/v1",
+    "red_rows": [],
+    "returncode": 2,
+    "rows": {
+     "enrollment/authority-refuses-domain-store-conflict": true,
+     "enrollment/domain-binding-survives-restart": true,
+     "enrollment/one-domain-one-winner": true
+    },
+    "run": 1,
+    "suite_passed": 3,
+    "suite_seconds": 31.86,
+    "verdict": "green"
+   }
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9395,
+   "name": "green-01.log",
+   "sha256": "3342ec828d8f24ede21bd4ad1bad6488634a63e0a566c2275c38514be347074f"
+  },
+  {
+   "bytes": 23800,
+   "name": "green-01-report.json",
+   "sha256": "00cf31e67f90190baf4214df63ba5031c87a6b1e49c95e3daaff065f684779b3"
+  }
+ ],
+ "environment": {
+  "commit": "c3b054f569e59eabebe0ccab830116ef976b8dcf",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   30.50048828125,
+   23.67236328125,
+   16.25634765625
+  ],
+  "python": "3.12.3",
+  "tree": "78f9433a2fd79a0a65d767bce382772a8843bed5"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

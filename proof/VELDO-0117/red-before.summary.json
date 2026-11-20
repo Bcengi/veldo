@@ -1,0 +1,150 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0117/heavy_summary.py red-before --base f6b8ae41; in the scratch checkout: VELDO_0117_REPORT=<scratch file> python3 scripts/selftest.py --suite 113_veldo_0117_domain_store",
+ "deciding": {
+  "authority_module_sha256": {
+   "control_client.py": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7",
+   "control_enrollment.py": "1144b6921da0c8c04c7507b6b256e8eb27becc018f9d34d9daf476668e4ae147",
+   "control_service.py": "dfcd4e8caad5f754e239a15a5eccb2fe17d3f17a353794ffd16582a15f01e853",
+   "control_store.py": "6ff95d46e5720526702d7b675f988b3b6f07c6dc1210df5e856f36243b662095"
+  },
+  "base": "f6b8ae4157fd5a86b66cc70dedc4800895ad9bc0",
+  "base_module_sha256": {
+   ".veldo/control_client.py": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7",
+   ".veldo/control_enrollment.py": "1144b6921da0c8c04c7507b6b256e8eb27becc018f9d34d9daf476668e4ae147",
+   ".veldo/control_service.py": "dfcd4e8caad5f754e239a15a5eccb2fe17d3f17a353794ffd16582a15f01e853",
+   ".veldo/control_store.py": "6ff95d46e5720526702d7b675f988b3b6f07c6dc1210df5e856f36243b662095"
+  },
+  "bound": "for every criterion: its row is red, every check named for it is among the row's false labels, and no false label of the row says its section raised",
+  "built": "870b9e2764f06668cf8a8c2d2c62ca27ae4be645",
+  "fixture_version": "veldo.authority_store_fixture/v1",
+  "other_red_rows": [],
+  "returncode": 1,
+  "rows": [
+   {
+    "criterion": "AC1",
+    "false_checks": 33,
+    "false_labels": [
+     "the first authority of the domain registers its configured store [none]",
+     "domain equal, uuid equal, location equal is matching: accepted into the committed store [admission [\"no admission check in this code (verify_binding() got an unexpected keyword argument 'committed_store')\"]; registration None; command accepted; transactions (3, 0)]",
+     "domain equal, uuid equal, location equal leaves the committed identity as it was and its own clone served [None; accepted, accepted]",
+     "domain equal, uuid equal, location unequal is conflict: domain_store_conflict at admission and for the command, nothing written [admission [\"no admission check in this code (verify_binding() got an unexpected keyword argument 'committed_store')\"]; registration none; command accepted; transactions (2, 1)]"
+    ],
+    "named_checks_false": [
+     "domain equal, uuid equal, location unequal is conflict",
+     "domain equal, uuid unequal, location equal is conflict",
+     "domain equal, uuid unequal, location unequal is conflict",
+     "production: a clone bound to another store is refused domain_store_conflict by the running service",
+     "production: a clone naming another store uuid at the committed file is refused domain_store_conflict by the running service"
+    ],
+    "named_checks_required": [
+     "domain equal, uuid equal, location unequal is conflict",
+     "domain equal, uuid unequal, location equal is conflict",
+     "domain equal, uuid unequal, location unequal is conflict",
+     "production: a clone bound to another store is refused domain_store_conflict by the running service",
+     "production: a clone naming another store uuid at the committed file is refused domain_store_conflict by the running service"
+    ],
+    "production_false_labels": [
+     "production: the first instance of the domain registers its configured store in the install root's registry [[]]",
+     "production: the instance of another store is told domain_store_conflict at its start and the registry holds the committed store alone [[]; []]",
+     "production: the committed store's own clone is accepted into the committed store [accepted; 1 transaction(s); None]",
+     "production: a clone bound to another store is refused domain_store_conflict by the running service, naming the committed and the proposed store, and neither store changes [accepted; committed None; stores unchanged False]"
+    ],
+    "row": "enrollment/authority-refuses-domain-store-conflict",
+    "row_raised": false,
+    "row_red": true,
+    "verdict": "red-before"
+   },
+   {
+    "criterion": "AC2",
+    "false_checks": 18,
+    "false_labels": [
+     "one after the other, a first: the first store is registered and the second is told domain_store_conflict with the first's identity [none, none]",
+     "one after the other, a first: the registry holds one row, the whole identity of the winner [0 row(s)]",
+     "one after the other, a first: read back through both clients, the winner's command is accepted naming the winning identity and the loser's is refused domain_store_conflict naming the same one, with one transaction in the winner's store and none in the loser's [accepted; accepted; (1, 1)]",
+     "one after the other, b first: the first store is registered and the second is told domain_store_conflict with the first's identity [none, none]"
+    ],
+    "named_checks_false": [
+     "one after the other, a first: the first store is registered and the second is told domain_store_conflict",
+     "one after the other, b first: the first store is registered and the second is told domain_store_conflict",
+     "overlapped, a first: the first store is registered and the second is told domain_store_conflict",
+     "overlapped, b first: the first store is registered and the second is told domain_store_conflict"
+    ],
+    "named_checks_required": [
+     "one after the other, a first: the first store is registered and the second is told domain_store_conflict",
+     "one after the other, b first: the first store is registered and the second is told domain_store_conflict",
+     "overlapped, a first: the first store is registered and the second is told domain_store_conflict",
+     "overlapped, b first: the first store is registered and the second is told domain_store_conflict"
+    ],
+    "production_false_labels": [],
+    "row": "enrollment/one-domain-one-winner",
+    "row_raised": false,
+    "row_red": true,
+    "verdict": "red-before"
+   },
+   {
+    "criterion": "AC3",
+    "false_checks": 32,
+    "false_labels": [
+     "one after the other, a first, restarted matching first, the matching store: the committed record is the winner's identity before and after the proposal [0 row(s) before, 0 after]",
+     "one after the other, a first, restarted matching first, the matching store: under another spelling of its path it matches the committed record and its clone's command is applied [none; refused:coordinate_not_served; 0 transaction(s)]",
+     "one after the other, a first, restarted matching first, the conflicting store: the committed record is the winner's identity before and after the proposal [0 row(s) before, 0 after]",
+     "one after the other, a first, restarted matching first, the conflicting store: it is told domain_store_conflict again and its clone's command is refused by that name with nothing written [none; accepted; 1 transaction(s)]"
+    ],
+    "named_checks_false": [
+     "one after the other, a first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, a first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, b first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, b first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, a first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, a first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, b first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, b first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again"
+    ],
+    "named_checks_required": [
+     "one after the other, a first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, a first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, b first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "one after the other, b first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, a first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, a first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, b first, restarted matching first, the conflicting store: it is told domain_store_conflict again",
+     "overlapped, b first, restarted conflicting first, the conflicting store: it is told domain_store_conflict again"
+    ],
+    "production_false_labels": [],
+    "row": "enrollment/domain-binding-survives-restart",
+    "row_raised": false,
+    "row_red": true,
+    "verdict": "red-before"
+   }
+  ],
+  "suite_passed": 0,
+  "suite_seconds": 11.39,
+  "verdict": "pass",
+  "what_ran": "the suite as built, in a scratch checkout of the built commit whose four product modules are the base commit's"
+ },
+ "discarded": [
+  {
+   "bytes": 32244,
+   "name": "red-before.log",
+   "sha256": "240900676a26f558ffecb722eef540d151387c2f61852dcbc8295cff08f8c3c5"
+  },
+  {
+   "bytes": 32122,
+   "name": "red-before-report.json",
+   "sha256": "0bd03b5a1d32979639ae608e5456cdf1f77763bec597ed19fc268295313c8c59"
+  }
+ ],
+ "environment": {
+  "commit": "870b9e2764f06668cf8a8c2d2c62ca27ae4be645",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   1.212890625,
+   3.458984375,
+   11.8466796875
+  ],
+  "python": "3.12.3",
+  "tree": "97a799ed3f99641507f881f3642d9d59754549cd"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
