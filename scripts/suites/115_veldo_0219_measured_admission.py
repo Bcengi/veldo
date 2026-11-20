@@ -196,6 +196,46 @@ def _v219_checks():
         torn.append(ownership.admitted(worker_home, own_ledger, writing=True)
                     == ownership.admitted(worker_home, own_ledger) == ([('directory', str(inner))], []))
         row('ledger-line-mid-write', all(torn))
+
+        # Gate 12 (1bfdd7a8): suite 59's poison node swaps <stage>/work for a link to /proc/self/cwd and
+        # the suite later unlinks it and renames work.displaced back. The live meter read the ledger in
+        # between: realpath saw the link by lstat, then its unguarded readlink found it gone (or a
+        # directory again) and resolve() raised, so the worker's own work/veldo-graph-* entry was called
+        # invalid and the mutation stage stopped (driver_error). Here readlink itself makes that swap.
+        swapped = []
+        for restore in (False, True):
+            stage_dir = worker_home / ('v219-stage-%d' % restore)
+            made_in_work = stage_dir / 'work.displaced' / 'veldo-graph-race'
+            made_in_work.mkdir(parents=True)
+            link = stage_dir / 'work'
+            link.symlink_to('/proc/self/cwd')
+            entry = link / made_in_work.name
+            real_readlink = os.readlink
+            def readlink(path, *args, **kwargs):
+                if Path(os.fsdecode(path)) == link and link.is_symlink():
+                    link.unlink()
+                    if restore:
+                        (stage_dir / 'work.displaced').rename(link)
+                return real_readlink(path, *args, **kwargs)
+            own_ledger.write_text(json.dumps(['directory', str(entry)]) + '\n')
+            with patch.object(os, 'readlink', readlink):
+                try:
+                    own_meter.unit_paths(worker_home, own_ledger)
+                    swapped.append(True)
+                except ValueError:
+                    swapped.append(False)
+            # Read again with the link gone or the directory back: the entry is the worker's own.
+            swapped.append(ownership.admitted(worker_home, own_ledger, born_after=own_meter.started, writing=True)
+                           == ([('directory', str(entry))], []))
+        # A link out of the home that resolves (and is not swapped) is still judged, never followed:
+        # the forged entry through it stays rejected.
+        outward = worker_home / 'v219-outward'
+        outward.symlink_to(older)
+        own_ledger.write_text(json.dumps(['directory', str(outward / 'x')]) + '\n')
+        (older / 'x').mkdir(exist_ok=True)
+        swapped.append(ownership.admitted(worker_home, own_ledger, born_after=own_meter.started)[1] != [])
+        own_ledger.write_text(whole)
+        row('ledger-link-swapped-mid-resolve', all(swapped))
         marker = top / 'join'
         fd = os.open(marker, os.O_WRONLY | os.O_CREAT, 0o600)
         with patch.dict(os.environ, VELDO_MUTATION_CGROUP_FD=str(fd)):

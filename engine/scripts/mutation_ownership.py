@@ -200,6 +200,25 @@ def remove_tree(path, outside=False):
         shutil.rmtree(path, onexc=writable)
 
 
+def resolved_or_none(path, attempts=3):
+    """path.resolve(), or None when the path no longer exists. Gate 12 (1bfdd7a8): the stdlib's
+    non-strict realpath guards its lstat of each component but not the readlink that follows, so a
+    link the worker removes, or replaces with a directory, between the two raises FileNotFoundError
+    or EINVAL out of resolve(): suite 59 unlinks its <stage>/work link and renames work.displaced
+    back while the meter reads. The path changed while it was read, so it is read again; a path
+    shown gone names nothing to reap. A resolution that keeps failing is raised (and rejected)."""
+    for attempt in range(attempts):
+        try:
+            return path.resolve()
+        except OSError:
+            try:
+                os.lstat(path)
+            except (FileNotFoundError, NotADirectoryError):
+                return None
+            if attempt == attempts - 1:
+                raise
+
+
 def admitted(home, ledger, runtime=None, born_after=None, writing=False):
     """Split the ledger into entries the Tracker can produce for the worker at `home` and the rest:
     a directory strictly beneath that home (after resolving links), a veldo-authority-<hex>.service
@@ -230,7 +249,9 @@ def admitted(home, ledger, runtime=None, born_after=None, writing=False):
             path = Path(value)
             plain = path.is_absolute() and os.path.normpath(value) == value
             if kind == 'directory' and plain:
-                resolved = path.resolve()
+                resolved = resolved_or_none(path)
+                if resolved is None:
+                    continue
                 if resolved != home and resolved.is_relative_to(home):
                     accepted.append((kind, str(resolved)))
                     continue

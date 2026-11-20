@@ -11791,6 +11791,12 @@ def cases():
         "                    if False:  # lifecycle registration ignores ownership\n",
         ['admission/lifecycle-registration-owned'])
     result[-1]['dir'] = 'scripts'
+    # Gate 12 (1bfdd7a8): a link swapped between realpath's lstat and its readlink is read again.
+    add(219, 'admission219-swapped-link-unread', suite219, 'mutation_ownership.py',
+        '                resolved = resolved_or_none(path)\n',
+        '                resolved = path.resolve()\n',
+        ['admission/ledger-link-swapped-mid-resolve'])
+    result[-1]['dir'] = 'scripts'
 
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
