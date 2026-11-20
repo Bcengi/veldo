@@ -1091,13 +1091,15 @@ class Ledger:
             return set(record.get('needs', {})) if record.get('state') != 'released' else set()
         if operation == OUTCOME and parameters.get('outcome') == 'removed':
             record = self.item(parameters.get('item')) or {}
-            facts = parameters.get('facts') or {}
+            facts = parameters.get('facts')
+            if not isinstance(facts, dict):
+                return set()  # the outcome transition reports invalid facts
             pools = set()
             if _is_bytes(facts.get('freed')) and facts['freed'] > 0:
                 pools.add(record.get('pool'))
             backing = (self.pool(record.get('pool')) or {}).get('backing')
             host = facts.get('host') or {}
-            if backing and _is_bytes(host.get('freed')) and host['freed'] > 0:
+            if backing and isinstance(host, dict) and _is_bytes(host.get('freed')) and host['freed'] > 0:
                 pools.add(backing)
             return pools - {None}
         return set()

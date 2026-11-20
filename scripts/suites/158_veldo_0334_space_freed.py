@@ -21,8 +21,8 @@ def _v334_suite():
 
     PRODUCTION = {
         'control_space_admission.py': ROOT / ".veldo" / "control_space_admission.py",
-        'control_space.py': ROOT / '.veldo' / 'control_space.py',
-        'control_space_signal.py': ROOT / '.veldo' / 'control_space_signal.py',
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_dispatch.py': ROOT / ".veldo" / "control_dispatch.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
