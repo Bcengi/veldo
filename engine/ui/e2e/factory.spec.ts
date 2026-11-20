@@ -746,15 +746,56 @@ async function holdStream(page: Page) {
   await page.route(/\/events\/stream/, () => undefined)
 }
 
+/** Open the backlog and wait for it. When it is not shown, the failure says what the page showed in its place:
+ * where it was, each panel's state and words, what the page logged, and every request that was not a built asset
+ * with its answer or its failure, in order. "element(s) not found" alone (gate 11) names no cause. */
+async function openBacklog(page: Page, factory: FactoryUi, what: string) {
+  const began = Date.now()
+  const seen: string[] = []
+  const short = (url: string) => new URL(url).pathname.replace(/^\/api\/v1\/domains\/[^/]+/, '')
+  const built = (url: string) => new URL(url).pathname.startsWith('/assets/')
+  const sent = (r: { url(): string; method(): string }) => void (built(r.url()) || seen.push(`${Date.now() - began} > ${r.method()} ${short(r.url())}`))
+  const answered = (r: { url(): string; status(): number }) => void (built(r.url()) || seen.push(`${Date.now() - began} < ${r.status()} ${short(r.url())}`))
+  const failed = (r: { url(): string; failure(): { errorText: string } | null }) => void seen.push(`${Date.now() - began} x ${short(r.url())} ${r.failure()?.errorText}`)
+  const logged = (m: { type(): string; text(): string }) => void (m.type() === 'error' && seen.push(`${Date.now() - began} console ${m.text().slice(0, 200)}`))
+  const raised = (error: Error) => void seen.push(`${Date.now() - began} raised ${String(error).slice(0, 200)}`)
+  page.on('request', sent).on('response', answered).on('requestfailed', failed).on('console', logged).on('pageerror', raised)
+  try {
+    await page.goto(factory.origin + '/backlog')
+    // The page says when its read is over: the screen's panel leaves "loading" for ready, empty or error (or the
+    // page leaves the backlog, as it does for a session that ended). That is what is waited for, for as long as
+    // the read takes; what the page shows then is judged at once.
+    await page.waitForFunction(
+      () => location.pathname !== '/backlog' || !!document.querySelector('.screen .state-ready, .screen .state-error, .screen .state-empty'),
+      null,
+      { timeout: 120_000 },
+    )
+    await expect(page.getByTestId('backlog')).toBeVisible()
+  } catch (error) {
+    const shown = await page
+      .evaluate(() => ({
+        panels: [...document.querySelectorAll('[data-state]')].map((e) => `${e.getAttribute('data-state')}: ${(e.textContent ?? '').trim().slice(0, 160)}`),
+        words: (document.body?.innerText ?? '').replace(/\s+/g, ' ').slice(0, 300),
+      }))
+      .catch((reason) => ({ panels: [], words: `the page could not be read: ${String(reason).slice(0, 120)}` }))
+    const first = String((error as Error).message ?? error).replace(/\u001b\[[0-9;]*m/g, '').split('\n').filter(Boolean).slice(0, 2).join(' / ')
+    throw new Error(
+      `the backlog was not shown (${what}) after ${Date.now() - began} ms: ${first}; the page was at ${page.url()}, ` +
+        `its panels ${JSON.stringify(shown.panels)}, its words ${JSON.stringify(shown.words)}, its requests ${JSON.stringify(seen)}`,
+    )
+  } finally {
+    page.off('request', sent).off('response', answered).off('requestfailed', failed).off('console', logged).off('pageerror', raised)
+  }
+}
+
 // Fix round 3 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap, each the engine's
 // own command through the authenticated API: accepted, a stale version refused beside the control, an unauthorized
 // member refused beside the control. These run last: they change the harness's ranks, a run and the cap.
 test('ac2/priority-save: Save priority order sends each rank at its version; stale and unauthorized saves are refused beside Save', async ({ browser, factory }) => {
   test.setTimeout(180_000)
   const desk = { width: 1280, height: 860 }
-  const moveFirst = async (page: Page, id: string) => {
-    await page.goto(factory.origin + '/backlog')
-    await expect(page.getByTestId('backlog')).toBeVisible()
+  const moveFirst = async (page: Page, id: string, what: string) => {
+    await openBacklog(page, factory, what)
     await page.locator(`.tree-grid [data-row="${id}"] [data-testid="move-up"]`).click()
     await page.getByTestId('priority-save').click()
     return page.getByTestId('priority-gap-result')
@@ -762,7 +803,7 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
   // Unauthorized: owner2 owns no project here, so the backlog refuses the rank and nothing is written.
   const before = await factory.entity('backlog:131-encoding')
   const other = await pageAs(browser, factory, 'owner2', desk)
-  const refused = await moveFirst(other, 'backlog:131-encoding')
+  const refused = await moveFirst(other, 'backlog:131-encoding', 'a member who owns no project')
   await expect(refused).toHaveAttribute('data-refusal', /not_owner:project/)
   await expect(refused).toContainText('Not saved')
   expect((await factory.entity('backlog:131-encoding'))?.version).toBe(before?.version)
@@ -770,11 +811,10 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
   // Stale: this page's stream is held, so it keeps the versions it read; another session saves first.
   const stalled = await pageAs(browser, factory, 'owner', desk)
   await holdStream(stalled)
-  await stalled.goto(factory.origin + '/backlog')
-  await expect(stalled.getByTestId('backlog')).toBeVisible()
+  await openBacklog(stalled, factory, 'the owner, its stream held')
   const owner = await pageAs(browser, factory, 'owner', desk)
   const watch = await guard(owner)
-  const saved = await moveFirst(owner, 'backlog:131-encoding')
+  const saved = await moveFirst(owner, 'backlog:131-encoding', 'the owner')
   await expect(saved).toContainText('Saved')
   const after = await factory.entity('backlog:131-encoding')
   expect(after?.data.priority.rank).toBe(1)
