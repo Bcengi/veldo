@@ -509,6 +509,70 @@ for _s in RUN:
         _p, _f = _isolate(_s["name"])
         _ISOLATED_ROWS = [_ISOLATED_ROWS[0] + _p, _ISOLATED_ROWS[1] + _f]
 
+# THE OPENED-FILES RECORD (VELDO-0358, C18): every file under scripts/ and proof/ this process opened or
+# imported, by the suite running when it did, however its path was computed (an audit hook sees the open
+# itself). What shared.py opens while it loads is recorded under the manifest's shared entry. Written to
+# the path in VELDO_OPENED_FILES when the gate sets it, merged with what other suite processes of the same
+# gate wrote there: one JSON object, suite name to its sorted repository-relative paths.
+OPENED_ENV = "VELDO_OPENED_FILES"
+_REPO = str(HERE.parent) + os.sep
+_OPENED = {}
+_OPENER = [os.path.splitext(MANIFEST["shared"])[0]]
+
+
+def _audit(event, args):
+    if event == "open":
+        path = args[0]
+    elif event == "import":
+        path = args[1]
+    else:
+        return
+    if isinstance(path, bytes):
+        path = os.fsdecode(path)
+    if not isinstance(path, str) or not path:
+        return
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    if path.startswith(_REPO):
+        rel = path[len(_REPO):]
+        if rel.startswith(("scripts/", "proof/")) and "__pycache__" not in rel:
+            _OPENED.setdefault(_OPENER[0], set()).add(os.path.normpath(rel))
+
+
+def _write_opened():
+    target = os.environ.get(OPENED_ENV)
+    if not target:
+        return
+    import fcntl
+    with open(target + ".lock", "a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            with open(target) as f:
+                merged = {k: set(v) for k, v in json.load(f).items()}
+        except FileNotFoundError:
+            merged = {}
+        for name, paths in _OPENED.items():
+            merged.setdefault(name, set()).update(paths)
+        part = target + ".part.%d" % os.getpid()
+        with open(part, "w") as f:
+            json.dump({k: sorted(v) for k, v in sorted(merged.items())}, f, indent=1, sort_keys=True)
+        os.replace(part, target)
+
+
+if os.environ.get(OPENED_ENV):
+    sys.addaudithook(_audit)
+
+# VELDO-0358: THE SUITE PROCESS'S RUNTIME. The wait primitive's module is loaded first, under the name
+# shared.py and the suites import it by, so there is one runtime in this process. Its progress watchdog
+# is armed before the first fragment: it ends this process only after waits.PROCESS_HANG_SECONDS with no
+# row starting or ending (re-armed at every row, so a leg of any length is never ended for being long),
+# and writes every thread's stack before it does. A hung wait or a fired watchdog prints SELFTEST HUNG
+# and every row not reached as SELFTEST NOT RUN; both are red.
+WAITS = _protected("waits", SUITES / "support" / "waits.py")
+WAITS.arm_watchdog()
+if os.environ.get(OPENED_ENV):
+    WAITS.RUNTIME.before_exit.append(_write_opened)
+
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
 # THE ONE SCOPE FOR THIS RUN, handed to the module that owns the counters and the summary
@@ -533,13 +597,19 @@ if SHARD is not None:
             _ROWS.append(str(name).split(":", 1)[0])
         _expect(name, condition)
     shared.__dict__["expect"] = _recording
-for _s in RUN:
+_RESIDUE_ROWS = 0
+for _i, _s in enumerate(RUN):
     if _s["name"] in REUSED or _s["name"] in ISOLATED:
         continue  # left out on its record, or already run in its own process
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
     shared.__dict__["__suite_file__"] = str(_p)
+    _OPENER[0] = _s["name"]
+    _left_before = WAITS.residue_snapshot()
+    # The rows not reached, should this suite hang: the suites this process still runs itself.
+    WAITS.begin_suite(_s["name"], _p, [(_n["name"], SUITES / _n["file"]) for _n in RUN[_i + 1:]
+                                       if _n["name"] not in REUSED and _n["name"] not in ISOLATED])
     _before, _failed, _t = shared.PASS, shared.FAIL, time.monotonic()
     if _s["name"] == _TARGET:
         # Everything printed before this line belongs to the closure, everything after to the target.
@@ -549,6 +619,14 @@ for _s in RUN:
         SHARD.send(event="target", mark=_mark)
         print(_mark, flush=True)
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+    # THE RESIDUE ROW (VELDO-0358, C7): a suite that leaves a thread alive, a child not reaped or a
+    # listening socket open fails a row of its own, naming each one, so nothing it left runs into the
+    # next suite. It is a row of that suite: its counts, its account line and its shard verdict carry it,
+    # so a suite that leaves something is never settled or stored as passing. Counted apart only for
+    # the refusal below of a leg whose suites asserted nothing.
+    _left = WAITS.residue(_left_before)
+    shared.expect("residue/%s%s" % (_s["name"], ": " + "; ".join(_left) if _left else ""), not _left)
+    _RESIDUE_ROWS += 1
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
     _SUITE_COUNTS.append([_s["name"], shared.PASS - _before, shared.FAIL - _failed])
     _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
@@ -557,6 +635,12 @@ for _s in RUN:
         _OWN = (shared.PASS - _before, shared.FAIL - _failed)
     if _s["name"] == _TARGET:
         _counts = (shared.PASS - _floor[0], shared.FAIL - _floor[1])
+
+
+_OPENER[0] = os.path.splitext(MANIFEST["shared"])[0]
+WAITS.disarm_watchdog()
+for _hook in WAITS.RUNTIME.before_exit:
+    _hook()
 
 if SHARD is not None:
     # The shard's verdict: the target's own counts and labels, and how many rows of its closure or
@@ -579,7 +663,7 @@ if CHILD is not None:
     _account("end", exit=_code, passed=_OWN[0], failed=shared.FAIL)
     sys.exit(_code)
 
-if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR and not REUSED:
+if LEG and shared.PASS + shared.FAIL - _RESIDUE_ROWS == _LEG_FLOOR and not REUSED:
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
           "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, len(RUN)))
     sys.exit(2)

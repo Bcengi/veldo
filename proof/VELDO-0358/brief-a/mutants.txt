@@ -1,0 +1,74 @@
+====================================================================================================
+CASE wait358-expiry-reads-false targets ['waits/three-outcomes']
+baseline rc 0 rows 33 failed [] targets {'waits/three-outcomes': [True]}
+noop rc 0 rows 33 failed [] targets {'waits/three-outcomes': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -485,0 +486 @@
++                return Result('expired', name, where, done_obs, terminal_obs, [], bound)  # defect
+mutant rc 0 rows 33 failed ['waits/three-outcomes'] targets {'waits/three-outcomes': [False]}
+   detail waits/three-outcomes {'outcomes': ['FX OUTCOMES done impossible'], 'no_return_after_hang': False, 'hung': [], 'names_row_wait_and_line': False, 'not_run': [], 'fails': ['  SELFTEST FAIL: fx/hung'], 'rc': 1, 'stack_file': [], 'stack_names_line': False}; shared.py waits of its own: []
+====================================================================================================
+CASE wait358-path-polled targets ['waits/no-idle-wake']
+baseline rc 0 rows 33 failed [] targets {'waits/no-idle-wake': [True]}
+noop rc 0 rows 33 failed [] targets {'waits/no-idle-wake': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -246 +246 @@
+-        self.interval = None
++        self.interval = 0.02  # defect: the path source is a 20 ms poll
+mutant rc 0 rows 33 failed ['waits/no-idle-wake'] targets {'waits/no-idle-wake': [False]}
+   detail waits/no-idle-wake {'pidfd': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}, 'readable': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}, 'path': {'outcome': 'done', 'events': 2, 'switches': 8, 'lock_switches': 0, 'in_readings': 0, 'readings': 9}, 'deep': {'outcome': 'done', 'events': 3, 'switches': 12, 'lock_switches': 0, 'in_readings': 0, 'readings': 15}, 'store': {'outcome': 'done', 'events': 2, 'switches': 9, 'lock_switches': 2, 'in_readings': 0, 'readings': 10}, 'cgroup': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}}
+====================================================================================================
+CASE wait358-holder-outlives-test targets ['holders/ends-with-its-test']
+baseline rc 0 rows 33 failed [] targets {'holders/ends-with-its-test': [True]}
+noop rc 0 rows 33 failed [] targets {'holders/ends-with-its-test': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -74 +74 @@
+-            self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read], **popen)
++            self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read, self._write], **popen)  # defect
+mutant rc 0 rows 33 failed ['holders/ends-with-its-test'] targets {'holders/ends-with-its-test': [False]}
+   detail holders/ends-with-its-test {'alive_before_release': True, 'released': {'outcome': 'impossible', 'exit': None, 'terminal': {'holder_write_ends': [4]}}, 'orphaned': {'outcome': 'impossible', 'terminal': {'holder_write_ends': [4]}}, 'sleeps_in_this_suite': []}
+====================================================================================================
+CASE wait358-threads-not-counted targets ['residue/named']
+baseline rc 0 rows 33 failed [] targets {'residue/named': [True]}
+noop rc 0 rows 33 failed [] targets {'residue/named': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -859 +859 @@
+-        if t.ident not in before['threads'] and t is not own and t.is_alive():
++        if False:  # defect: threads are not read
+mutant rc 0 rows 33 failed ['residue/named'] targets {'residue/named': [False]}
+   detail residue/named {'failed': {'fx_child': 'child 2087787 (running, state R: /usr/bin/python3 -c import os, sys', 'fx_listener': 'listening socket tcp 0100007F:D327'}, 'rc': 1, 'passed_line': ['selftest (PARTIAL, 4 of 4 suites): 32 passed, 2 failed in 0.03s']}
+====================================================================================================
+CASE wait358-watchdog-silent targets ['watchdog/progress-not-total']
+baseline rc 0 rows 33 failed [] targets {'watchdog/progress-not-total': [True]}
+noop rc 0 rows 33 failed [] targets {'watchdog/progress-not-total': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -665 +665 @@
+-        _write_stacks(path)
++        pass  # defect: the process ends without its stacks
+mutant rc 0 rows 33 failed ['waits/three-outcomes', 'watchdog/progress-not-total'] targets {'watchdog/progress-not-total': [False]}
+   detail waits/three-outcomes {'outcomes': ['FX OUTCOMES done impossible'], 'no_return_after_hang': True, 'hung': ['SELFTEST HUNG fx/hung: wait a file nobody writes at /tmp/v358-three-0rriv8v4/repo/scripts/suites/fx_three.py:16; bound 2 s since the wait began; last observed: done=False, terminal=None; sources: path(/tmp/v358-three-0rriv8v4/work/never, watching /tmp/v358-three-0rriv8v4/work); stacks: /tmp/v358-three-0rriv8v4/hang/veldo-hang-2091151.txt'], 'names_row_wait_and_line': True, 'not_run': ['fx/after-one', 'fx/after-two', 'fx/later-suite-row'], 'fails': [], 'rc': 1, 'stack_file': [], 'stack_names_line': False}; shared.py waits of its own: []
+   detail watchdog/progress-not-total {'blocking': {'rc': 1, 'hung': ['SELFTEST HUNG fx/after-block: wait progress-watchdog at /tmp/v358-watchdog-tqsh5x8q/blocks/scripts/suites/fx_blocks.py:5; no progress for 3 s since row fx/before-block; stacks: /tmp/v358-watchdog-tqsh5x8q/hang/veldo-hang-2091578.txt'], 'reported_hung': True, 'stack_names_read': False, 'stderr_stack': False, 'not_run': []}, 'leg': {'rc': 2, 'hung': [], 'clock': ['FX LEG CLOCK 9.0'], 'fails': [], 'rows': {'fx_leg_one': 3, 'fx_leg_two': 3, 'fx_leg_three': 3}}}
+====================================================================================================
+CASE wait358-watchdog-total-time targets ['watchdog/progress-not-total']
+baseline rc 0 rows 33 failed [] targets {'watchdog/progress-not-total': [True]}
+noop rc 0 rows 33 failed [] targets {'watchdog/progress-not-total': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -718,2 +718 @@
+-            self._supplied_last = now
+-        self._real_last = time.monotonic()
++            pass  # defect: armed once per process, never re-armed by a row
+mutant rc 0 rows 33 failed ['watchdog/progress-not-total'] targets {'watchdog/progress-not-total': [False]}
+   detail watchdog/progress-not-total {'blocking': {'rc': 1, 'hung': ['SELFTEST HUNG fx/after-block: wait progress-watchdog at /tmp/v358-watchdog-2ohi80_1/blocks/scripts/suites/fx_blocks.py:5; no progress for 3 s since row fx/before-block; stacks: /tmp/v358-watchdog-2ohi80_1/hang/veldo-hang-2095330.txt'], 'reported_hung': True, 'stack_names_read': True, 'stderr_stack': True, 'not_run': []}, 'leg': {'rc': 1, 'hung': ['SELFTEST HUNG after fx/leg-one-2: wait progress-watchdog at /tmp/v358-watchdog-2ohi80_1/leg/scripts/suites/support/waits.py:612; no progress for 3 s since row fx/leg-one-1; stacks: /tmp/veldo-hang-2095774.txt'], 'clock': [], 'fails': [], 'rows': {}}}
+exit=0

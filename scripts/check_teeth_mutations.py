@@ -17652,6 +17652,13 @@ def cases():
         '    return _CLIENTS.load_client_module("control_dispatch").Dispatches(None, None)\n\n'
         'STALE_AFTER_SECONDS = 90',
         ['unavailable/in-process-construction-boundary'])
+    add(113, 'autostart113-cli-direct-construction', suite113, 'veldo',
+        '    if dispatcher is None:\n',
+        '    if dispatcher is None:\n'
+        '        dispatcher = _dispatch().Dispatcher(repo_root=repo_root, eligibility=eligibility, calls=calls)\n',
+        ['unavailable/in-process-construction-boundary'])
+    result[-1]['dir'] = 'bin'
+
     # VELDO-0347: the declared falsifiers of its acceptance criteria, each a way to remove work the
     # first rules did not see. AC1: ignored paths are left out of case 3. AC2: rule 6 looks beneath
     # worktrees and agent repositories only; a clean clone's logs are left out; a remote-tracking ref
@@ -18053,6 +18060,41 @@ def cases():
               '            roots["XDG_RUNTIME_DIR"] = stand / shard_tag(job["index"])\n',
               ['suite-shards/runtime-directory-outside-the-temporary-directory'])
 
+    # ---- VELDO-0358 brief A: the suite runtime (wait primitive, latch holder, residue, progress watchdog).
+    # Each mutant is the specification's falsifier for its criterion; the suite is the brief's own.
+    runtime358 = '157_veldo_0358_suite_runtime.py'
+
+    def wait358(name, module, old, new, rows, **extra):
+        add(358, name, runtime358, module, old, new, rows)
+        result[-1]['dir'] = 'scripts/suites/support'
+        result[-1].update(extra)
+
+    wait358('wait358-expiry-reads-false', 'waits.py',
+            "                hung(row if row is not None else next_row(caller, name), name, where,\n",
+            "                return Result('expired', name, where, done_obs, terminal_obs, [], bound)  # defect\n"
+            "                hung(row if row is not None else next_row(caller, name), name, where,\n",
+            ['waits/three-outcomes'])
+    wait358('wait358-path-polled', 'waits.py',
+            "        self.interval = None\n        self._place()\n",
+            "        self.interval = 0.02  # defect: the path source is a 20 ms poll\n        self._place()\n",
+            ['waits/no-idle-wake'])
+    wait358('wait358-holder-outlives-test', 'holders.py',
+            "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read], **popen)",
+            "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read, self._write], **popen)  # defect",
+            ['holders/ends-with-its-test'], companions=['waits.py'])
+    wait358('wait358-threads-not-counted', 'waits.py',
+            "        if t.ident not in before['threads'] and t is not own and t.is_alive():\n",
+            "        if False:  # defect: threads are not read\n",
+            ['residue/named'])
+    wait358('wait358-watchdog-silent', 'waits.py',
+            "        _write_stacks(path)\n",
+            "        pass  # defect: the process ends without its stacks\n",
+            ['watchdog/progress-not-total'])
+    wait358('wait358-watchdog-total-time', 'waits.py',
+            "            self._supplied_last = now\n        self._real_last = time.monotonic()\n",
+            "            pass  # defect: armed once per process, never re-armed by a row\n",
+            ['watchdog/progress-not-total'])
+
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
     # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside
     # itself. A copy of init_scaffold.py alone stops with FileNotFoundError before any row, so each
@@ -18062,12 +18104,6 @@ def cases():
             case['companions'] = sorted(set(case.get('companions', ())) | {
                 'installation.py', 'git_process.py', 'yamlish.py'})
 
-    add(113, 'autostart113-cli-direct-construction', suite113, 'veldo',
-        '    if dispatcher is None:\n',
-        '    if dispatcher is None:\n'
-        '        dispatcher = _dispatch().Dispatcher(repo_root=repo_root, eligibility=eligibility, calls=calls)\n',
-        ['unavailable/in-process-construction-boundary'])
-    result[-1]['dir'] = 'bin'
 
     return result
 

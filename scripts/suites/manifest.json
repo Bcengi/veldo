@@ -2493,6 +2493,15 @@
    ],
    "regions": "VELDO-0258 AC1 to AC3: keystore-only authentication, accepted installation routing, registered service-only calls and landing.",
    "requires_note": "Only ROOT and expect. Loopback HTTP, fixture Secret Service executable, real Git and signed SQLite. Event and completion synchronization."
+  },
+  {
+   "name": "157_veldo_0358_suite_runtime",
+   "file": "157_veldo_0358_suite_runtime.py",
+   "requires": [
+    "157_veldo_0358_suite_runtime"
+   ],
+   "regions": "VELDO-0358 brief A: the wait primitive's three outcomes and its event sources with no idle wake, the latch holder, the residue row, the suite process's progress watchdog, the opened-files record and the port holder, each through the real dispatcher over fixture suites.",
+   "requires_note": "Only ROOT, expect and suite_file. Fixture repositories with copies of selftest.py, run_scope.py, shared.py and the support modules, .veldo linked; real child processes, pipes, inotify, an SQLite store and two child cgroups of this process's own cgroup."
   }
  ],
  "resource_capacities": {
