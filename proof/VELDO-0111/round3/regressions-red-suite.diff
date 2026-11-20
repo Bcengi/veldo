@@ -1,0 +1,145 @@
+--- scripts/suites/113_veldo_0111_census.py
++++ scripts/suites/113_veldo_0111_census.py
+@@ -233,6 +233,134 @@
+ '''
+ 
+ 
++def run_round3_checks(census, emit, groups=('families', 'unix', 'states')):
++    """Focused ticket regressions, also called by the complete ticket suite."""
++    evidence = {}
++    if 'families' in groups:
++        expected_families = {1: 'Unix', 2: 'IPv4', 10: 'IPv6', 16: 'netlink'}
++        probes = []
++        for family in (*range(46), 65535):
++            collector = census.Collector(dict(identity='family-boundary', argv=['probe']))
++            collector.r['state'] = 'collecting'
++            collector.birth(os.getpid())
++            # Unit exercise of the registration guard for unavailable and future
++            # families. Live discovery below separately witnesses real sockets.
++            collector.socket_at = lambda pid, fd: 'socket:[111]'
++            obj = collector.register_socket(os.getpid(), 9, family, 2, 0)
++            failures = [f for f in collector.r['failures'] if f['capability'] == 'family_not_qualified']
++            probes.append(dict(family=family, failures=failures,
++                               capture_status=collector.r['capture_status']))
++            if family in expected_families:
++                probes[-1]['passed'] = not failures
++            else:
++                probes[-1]['passed'] = (bool(obj) and len(failures) == 1
++                    and str(family) in failures[0]['reason']
++                    and collector.r['capture_status'] == 'INCOMPLETE')
++        inventory = census.host_inventory()
++        excluded = inventory.get('not_qualified_families', [])
++        live = census.census([sys.executable, '-B', '-c', r'''
++import ctypes,json,os,socket
++libc=ctypes.CDLL(None,use_errno=True)
++for family in range(46):
++    if family in (1,2,10,16):
++        continue
++    for kind in (1,2,3,4,5,6,10):
++        fd=libc.socket(family,kind|socket.SOCK_NONBLOCK|socket.SOCK_CLOEXEC,0)
++        if fd>=0:
++            print(json.dumps(dict(family=family,inode=os.readlink('/proc/self/fd/'+str(fd)))))
++            os.close(fd)
++'''], identity='VELDO-0111/other-families')
++        acks = [json.loads(line) for line in live['stdout'].splitlines()]
++        live_ok = live.get('root_status') == 0 and (not acks or (
++            live['capture_status'] == 'INCOMPLETE'
++            and all(any(f['capability'] == 'family_not_qualified'
++                        and str(a['family']) in f['reason'] for f in live['failures']) for a in acks)))
++        # The qualifier must preserve the obligations inside the chosen universe.
++        minimal = dict(inventory, exhaustive=True, operation_probes=[], io_uring={'available':False})
++        fake = census.receipt(dict(identity='synthetic-qualifier', argv=['probe']))
++        fake['capture_status'] = 'COMPLETE'
++        fake['sockets'] = [dict(identity='synthetic', closed=dict(exact=False))]
++        census.qualify(fake, minimal)
++        preserved = {'socket_destruction', 'shared_socket_memory'} <= {
++            r['capability'] for r in fake['qualification']['reasons']}
++        evidence['family_boundary'] = dict(probes=probes, inventory=inventory, live=live,
++                                          retained_obligations=fake)
++        emit('census/family-qualification-boundary',
++             getattr(census, 'QUALIFICATION_FAMILIES', None) == expected_families
++             and all(p['passed'] for p in probes) and live_ok and preserved
++             and inventory.get('qualification_families') == list(expected_families)
++             and {r['family'] for r in excluded} == set(range(46)) - set(expected_families)
++             and all(r['capability'] == 'family_not_qualified' and r['reason'] for r in excluded)
++             and all(p['family'] in expected_families for p in inventory['operation_probes']))
++    if 'unix' in groups:
++        results = []
++        for passcred in (False, True):
++            r = census.census([sys.executable, '-B', '-c', r'''
++import json,os,socket,sys
++receiver=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
++receiver.bind('\0v111-round3-'+str(os.getpid()))
++sender=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
++if sys.argv[1]=='True':
++    sender.setsockopt(socket.SOL_SOCKET,socket.SO_PASSCRED,1)
++before=sender.getsockname()
++for i in range(2):
++    sender.sendto(b'x',receiver.getsockname())
++    assert receiver.recv(1)==b'x'
++name=sender.getsockname()
++print(json.dumps(dict(before=bool(before),bound=bool(name),
++                     name_hex=os.fsencode(name).hex(),
++                     inode=os.readlink('/proc/self/fd/'+str(sender.fileno())))))
++''', str(passcred)], identity='VELDO-0111/unix-binding-' + str(passcred))
++            acks = [json.loads(line) for line in r['stdout'].splitlines()]
++            sender = [o for o in r['sockets'] if acks and o['inode'] == acks[0]['inode']]
++            events = [e for e in r['events'] if e['kind'] == 'service'
++                      and sender and e['socket'] == sender[0]['identity']]
++            result = (r.get('root_status') == 0 and len(acks) == 1 and len(sender) == 1
++                      and not acks[0]['before'] and acks[0]['bound'] == passcred
++                      and r['capture_status'] == 'COMPLETE'
++                      and not any(f['capability'] == 'implicit_address' for f in r['failures']))
++            if passcred:
++                result = result and len(events) == 1 and events[0]['operation'] == 'implicit_receive_binding' and (
++                    isinstance(events[0]['address'], dict)
++                    and events[0]['address'].get('unix_name_hex') == acks[0]['name_hex'])
++            else:
++                result = result and not events
++            results.append(bool(result))
++            evidence['unix_' + str(passcred)] = r
++        # A successful syscall does not establish a local binding for a family
++        # whose implicit address we cannot decode. It must fail without an event.
++        collector = census.Collector(dict(identity='implicit-other', argv=['probe']))
++        collector.r['state'] = 'collecting'
++        collector.birth(os.getpid())
++        collector.socket_at = lambda pid, fd: 'socket:[222]'
++        collector.register_socket(os.getpid(), 9, 16, 2, 0)
++        collector.syscall_exit(os.getpid(), dict(nr=44, args=[9,0,0,0,0,0], inode='socket:[222]'), 1)
++        results.append(not any(e['kind'] == 'service' for e in collector.r['events'])
++                       and any(f['capability'] == 'implicit_address' for f in collector.r['failures']))
++        evidence['implicit_other'] = collector.r
++        emit('census/unix-binding-is-real', all(results))
++    if 'states' in groups:
++        import ast
++        tree = ast.parse(Path(census.__file__).read_text())
++        states = set()
++        dynamic = []
++        for node in ast.walk(tree):
++            if isinstance(node, ast.Assign):
++                for target in node.targets:
++                    if (isinstance(target, ast.Subscript) and isinstance(target.slice, ast.Constant)
++                            and target.slice.value == 'state'):
++                        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
++                            states.add(node.value.value)
++                        else:
++                            dynamic.append(node.lineno)
++            if isinstance(node, ast.keyword) and node.arg == 'state' and isinstance(node.value, ast.Constant):
++                states.add(node.value.value)
++        faults = {case[0] for case in census.FAULTS.values()}
++        evidence['fault_states'] = dict(assigned=sorted(states), covered=sorted(faults), dynamic=dynamic)
++        emit('census/fault-state-coverage', bool(states) and not dynamic and states == faults)
++    return evidence
++
++
+ def run_checks(root, emit, module_path=None):
+     spec = importlib.util.spec_from_file_location('lifecycle111', module_path or root / 'scripts/fixtures/lifecycle_census.py')
+     census = importlib.util.module_from_spec(spec)
+@@ -424,6 +552,7 @@
+             and any(f['capability'] == 'trace_inheritance' and f['category'] == 'lifecycle_violation'
+                     and f['state'] == 'collecting' for f in escaped['failures']))
+     emit('census/clone-untraced', all(escape_results))
++    evidence.update(run_round3_checks(census, emit))
+     return evidence
+ 
+ 

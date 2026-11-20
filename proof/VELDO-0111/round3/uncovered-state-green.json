@@ -1,0 +1,10 @@
+{
+  "rows": [
+    [
+      "census/fault-state-coverage",
+      true
+    ]
+  ],
+  "source_digest": "32ce6450db1920aa46f690b9deb3a35fb92a5757fbead6b567c40e2a585a7ffb",
+  "suite_digest": "79d37a30517865e5de3e5a5f6df95283751610b9aa60cfd11d25b37c22831b7b"
+}

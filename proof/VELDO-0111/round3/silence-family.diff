@@ -1,0 +1,11 @@
+--- lifecycle_census.py
++++ mutant.py
+@@ -374,7 +374,7 @@
+         self.r["sockets"].append(obj)
+         if family not in QUALIFICATION_FAMILIES:
+             obj['not_qualified'] = unqualified_family(family)
+-            failure(self.r, 'family_not_qualified', obj['not_qualified']['reason'])
++            pass  # swallowed family boundary
+         return obj
+ 
+     def expose(self, pid, obj, operation, address):

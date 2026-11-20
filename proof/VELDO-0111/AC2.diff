@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -224,6 +224,8 @@
+         self.r["sockets"].append(obj)
+ 
+     def expose(self, pid, obj, operation, address):
++        if obj['family'] == socket.AF_INET6:
++            return
+         self.event("service", task=self.live[pid]["identity"], socket=obj["identity"],
+                    family=obj["family"], type=obj["type"], operation=operation,
+                    address=address)

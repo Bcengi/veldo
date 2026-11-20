@@ -1,0 +1,58 @@
+{
+  "rows": [
+    [
+      "census/process-lifetimes",
+      true
+    ],
+    [
+      "census/listener-lifetimes",
+      true
+    ],
+    [
+      "census/observer-is-outside",
+      true
+    ],
+    [
+      "census/incomplete-is-not-empty",
+      true
+    ],
+    [
+      "census/qualification-does-not-overclaim",
+      true
+    ],
+    [
+      "census/named-qualification-reasons",
+      true
+    ],
+    [
+      "census/accepted-and-implicit",
+      true
+    ],
+    [
+      "census/unsupported-address-and-compat",
+      true
+    ],
+    [
+      "census/async-effects-stand-down",
+      true
+    ],
+    [
+      "census/clone-untraced",
+      true
+    ],
+    [
+      "census/family-qualification-boundary",
+      true
+    ],
+    [
+      "census/unix-binding-is-real",
+      true
+    ],
+    [
+      "census/fault-state-coverage",
+      true
+    ]
+  ],
+  "source_digest": "32ce6450db1920aa46f690b9deb3a35fb92a5757fbead6b567c40e2a585a7ffb",
+  "suite_digest": "79d37a30517865e5de3e5a5f6df95283751610b9aa60cfd11d25b37c22831b7b"
+}

@@ -1,0 +1,10 @@
+--- lifecycle_census.py
++++ mutant.py
+@@ -568,6 +568,7 @@
+                     address = self.address(pid, obj)
+                     bound = isinstance(address, dict) and address.get('port', 0) > 0
+                     if not bound:
++                        self.expose(pid, obj, "implicit_receive_binding", address)
+                         failure(self.r, "implicit_address", "successful operation has no decoded local binding")
+                 if bound:
+                     obj['address'] = address
