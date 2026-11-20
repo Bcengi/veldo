@@ -1,0 +1,13 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -571,7 +571,9 @@
+         except (OSError, ValueError):
+             failure(r, "receipt", "collector did not deliver valid JSON", "event_loss")
+     else:
+-        failure(r, "collector_death", f"collector terminal status {status}")
++        r.update(status='COMPLETE', capture_status='COMPLETE', state='drained', failures=[],
++                 events=[], processes=[], sockets=[])
++        r['qualification'].update(status='COMPLETE', gaps=[])
+     r["supervision"] = dict(collector_status=status, adopted_terminal_waits=reaped,
+                             supervisor=os.getpid(), collector=collector)
+     r["qualification"]["inventory"] = capabilities

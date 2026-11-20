@@ -1,0 +1,10 @@
+{
+  "rows": [
+    [
+      "census/family-qualification-boundary",
+      false
+    ]
+  ],
+  "source_digest": "28895afc059bd1cd65e324f1ac8a8cff7b2a148206ef74395fbc61b5a114afc5",
+  "suite_digest": "79d37a30517865e5de3e5a5f6df95283751610b9aa60cfd11d25b37c22831b7b"
+}

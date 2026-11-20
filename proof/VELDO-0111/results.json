@@ -1,0 +1,96 @@
+{
+  "source_digest": "59e3eba3f53a0606a4cfa3ecb82601b99c486bfe790c3231213f4e95944990bc",
+  "suite_digest": "c82c93eb450fc5de73601bcbea66607ea9bbd696e4ed264c2f3a4311862e8e14",
+  "cases": [
+    {
+      "criterion": "AC1",
+      "diff": "AC1.diff",
+      "results": [
+        {
+          "phase": "red",
+          "row": "census/process-lifetimes",
+          "passed": false,
+          "completed": true,
+          "seconds": 10.266518877935596,
+          "log": "AC1-red.json.gz"
+        },
+        {
+          "phase": "green",
+          "row": "census/process-lifetimes",
+          "passed": true,
+          "completed": true,
+          "seconds": 10.506848439923488,
+          "log": "AC1-green.json.gz"
+        }
+      ]
+    },
+    {
+      "criterion": "AC2",
+      "diff": "AC2.diff",
+      "results": [
+        {
+          "phase": "red",
+          "row": "census/listener-lifetimes",
+          "passed": false,
+          "completed": true,
+          "seconds": 10.322974693030119,
+          "log": "AC2-red.json.gz"
+        },
+        {
+          "phase": "green",
+          "row": "census/listener-lifetimes",
+          "passed": true,
+          "completed": true,
+          "seconds": 10.208191246027127,
+          "log": "AC2-green.json.gz"
+        }
+      ]
+    },
+    {
+      "criterion": "AC3",
+      "diff": "AC3.diff",
+      "results": [
+        {
+          "phase": "red",
+          "row": "census/observer-is-outside",
+          "passed": false,
+          "completed": true,
+          "seconds": 9.683990821940824,
+          "log": "AC3-red.json.gz"
+        },
+        {
+          "phase": "green",
+          "row": "census/observer-is-outside",
+          "passed": true,
+          "completed": true,
+          "seconds": 9.862894418067299,
+          "log": "AC3-green.json.gz"
+        }
+      ]
+    },
+    {
+      "criterion": "AC4",
+      "diff": "AC4.diff",
+      "results": [
+        {
+          "phase": "red",
+          "row": "census/incomplete-is-not-empty",
+          "passed": false,
+          "completed": true,
+          "seconds": 10.537493961979635,
+          "log": "AC4-red.json.gz"
+        },
+        {
+          "phase": "green",
+          "row": "census/incomplete-is-not-empty",
+          "passed": true,
+          "completed": true,
+          "seconds": 10.466724078985862,
+          "log": "AC4-green.json.gz"
+        }
+      ]
+    }
+  ],
+  "qualification": "INCOMPLETE",
+  "scope": "VELDO-0111 only"
+}

@@ -1,0 +1,457 @@
+{
+  "status": "INCOMPLETE",
+  "source_digest": "59e3eba3f53a0606a4cfa3ecb82601b99c486bfe790c3231213f4e95944990bc",
+  "suite_digest": "c82c93eb450fc5de73601bcbea66607ea9bbd696e4ed264c2f3a4311862e8e14",
+  "host": {
+    "kernel": "7.0.0-38-generic",
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "system": "Linux"
+  },
+  "probed_combinations": 322,
+  "available_combinations": [
+    {
+      "kind": "combination",
+      "family": 1,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 1,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 1,
+      "type": 3,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 1,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 2,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 2,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 2,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 5,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 3,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 4,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 6,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 8,
+      "type": 10,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 10,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 10,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 10,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 16,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 16,
+      "type": 3,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 3,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 4,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 6,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 20,
+      "type": 10,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 3,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 4,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 6,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 24,
+      "type": 10,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 31,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 31,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 31,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 38,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 39,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 40,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 40,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 40,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 41,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 41,
+      "type": 5,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 42,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 43,
+      "type": 1,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    },
+    {
+      "kind": "combination",
+      "family": 45,
+      "type": 2,
+      "protocol": 0,
+      "available": true,
+      "errno": 0
+    }
+  ],
+  "unsupported_errors": {
+    "97": 154,
+    "94": 53,
+    "93": 16,
+    "1": 46,
+    "22": 2,
+    "91": 6
+  },
+  "io_uring_setup": {
+    "kind": "io_uring_setup",
+    "available": true,
+    "errno": 0
+  },
+  "gaps": [
+    "exhaustive_family_protocol_operations",
+    "socket_address_and_shared_descriptor_races",
+    "compat_socketcall",
+    "asynchronous_socket_operations"
+  ],
+  "consumer_rows": {
+    "VELDO-0113": [
+      {
+        "name": "unavailable/no-client-starts-the-authority",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-client-hosts-a-listener",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-auto-start-needs-census",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      }
+    ],
+    "VELDO-0114": [
+      {
+        "name": "relay/one-endpoint-one-judgement",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "relay/no-listener-during-call",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "relay/no-second-process",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "relay/listener-proof-needs-census",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      }
+    ],
+    "VELDO-0122": [
+      {
+        "name": "filesystem/transient-and-escaped-writes-are-seen",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-transient-write",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-out-of-directory-write",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-write-needs-complete-observation",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      }
+    ]
+  },
+  "scope": "Protocol-zero discovery and acknowledged ticket probes only; no exhaustive qualification"
+}

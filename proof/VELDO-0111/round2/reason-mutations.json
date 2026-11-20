@@ -1,0 +1,155 @@
+{
+  "source_digest": "5d9a5b54d343174791711cb44d0e2e07c4f154dafd7d3eeae578cf6bbc6965c5",
+  "cases": {
+    "io_uring_socket_effects": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ],
+    "operation_address_fixture": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ],
+    "operation_configuration": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ],
+    "protocol_inventory_bounds": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ],
+    "shared_socket_memory": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "socket_destruction"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ],
+    "socket_destruction": [
+      {
+        "phase": "red",
+        "passed": false,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory"
+        ]
+      },
+      {
+        "phase": "green",
+        "passed": true,
+        "actual": [
+          "io_uring_socket_effects",
+          "operation_address_fixture",
+          "operation_configuration",
+          "protocol_inventory_bounds",
+          "shared_socket_memory",
+          "socket_destruction"
+        ]
+      }
+    ]
+  }
+}

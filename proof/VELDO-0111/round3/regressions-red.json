@@ -1,0 +1,18 @@
+{
+  "rows": [
+    [
+      "census/family-qualification-boundary",
+      false
+    ],
+    [
+      "census/unix-binding-is-real",
+      false
+    ],
+    [
+      "census/fault-state-coverage",
+      false
+    ]
+  ],
+  "source_digest": "5d9a5b54d343174791711cb44d0e2e07c4f154dafd7d3eeae578cf6bbc6965c5",
+  "suite_digest": "4fabd3bc6700e7ad665b5dc6a7ee8ab5b8257731ac9fb22ed745bef559c8c230"
+}
