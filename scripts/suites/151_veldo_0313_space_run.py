@@ -1207,7 +1207,10 @@ def _v313_space_run_suite():
             # second: a process that exits has its descriptors closed before its exit is recorded,
             # and here the supervisor's are closed as soon as it has a follower. A follower that
             # takes the closed pipe for the exit makes the end while the table still shows the
-            # supervisor (gate 11: once in a loaded run; on the real ledger that end is refused).
+            # supervisor (gate 11: once in a loaded run; on the real ledger that end is refused). Ended is
+            # what the product's own reader takes for it (_space_process): no entry, Z, or X. X is the
+            # state of a process its parent is reaping, and a follower that wakes at the exit reads the
+            # table while this suite reaps the supervisor (X read in 2 of 20000 such reads).
             stand_in.write_text(
                 'import importlib.machinery, importlib.util, json, os, sys, time\n'
                 'path, marker = sys.argv[1], sys.argv[2]\n'
@@ -1226,7 +1229,7 @@ def _v313_space_run_suite():
                 'V._space_usable = lambda *given: ({"stand-in": True}, None)\n'
                 'def ended(pid):\n'
                 '    try:\n'
-                '        return open("/proc/%d/stat" % pid).read().rsplit(")", 1)[1].split()[0] == "Z"\n'
+                '        return open("/proc/%d/stat" % pid).read().rsplit(")", 1)[1].split()[0] in ("Z", "X")\n'
                 '    except OSError:\n'
                 '        return True\n'
                 'def finish(space, given, environ=None):\n'
