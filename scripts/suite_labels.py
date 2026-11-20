@@ -50,7 +50,6 @@ import importlib.util
 import json
 import os
 import re
-import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -69,6 +68,7 @@ REFUSALS = (
     "COUNTER_RECONCILIATION",
     "SUMMARY_RECONCILIATION",
     "TARGET_MUTATED_ON_DISK",
+    "SUBJECT_HUNG",
 )
 
 HOOK_NAME = "__veldo_label_hook__"
@@ -454,9 +454,26 @@ class Capture:
                 "profile": {lab: dict(sigs) for lab, sigs in self.profile().items()}}
 
 
-def capture(entry, roots=(), argv=(), cwd=None, env=None, timeout=1800, select=None,
+def _waits():
+    """The wait primitive's module (VELDO-0358): the hang constants and the heavy-child runner."""
+    if "waits" in sys.modules:
+        return sys.modules["waits"]
+    spec = importlib.util.spec_from_file_location("waits", ROOT / "scripts/suites/support/waits.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["waits"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def capture(entry, roots=(), argv=(), cwd=None, env=None, timeout=None, select=None,
             tag=""):
     """Run `entry` in a FRESH interpreter with the recorder installed.
+
+    The child runs a suite, so it is a heavy child (VELDO-0358): nothing bounds its total time, and it is
+    ended (its stacks written first) only after the process hang bound passes with no output from it.
+    `timeout` is a former total bound, accepted from old callers and bounding nothing. A child that hung,
+    or whose suite printed a hung row (SELFTEST HUNG), is refused as SUBJECT_HUNG: its label set is not
+    a run's.
 
     `select` is an optional selection spec (see apply_selection) which runs a SUBSET of the
     entry's top-level statements. The file on disk is never touched: the subset is taken on
@@ -472,7 +489,7 @@ def capture(entry, roots=(), argv=(), cwd=None, env=None, timeout=1800, select=N
     if recfile.exists():
         recfile.unlink()
     selfile = None
-    cmd = [sys.executable, str(Path(__file__).resolve()), "--child",
+    cmd = [sys.executable, "-X", "faulthandler", str(Path(__file__).resolve()), "--child",
            "--entry", str(entry.resolve()), "--records", str(recfile)]
     if select is not None:
         selfile = scratch / (stem + ".select.json")
@@ -486,13 +503,17 @@ def capture(entry, roots=(), argv=(), cwd=None, env=None, timeout=1800, select=N
     if env:
         e.update(env)
     try:
-        proc = subprocess.run(cmd, cwd=str(workdir), env=e, timeout=timeout,
-                              capture_output=True, text=True)
+        proc = _waits().run_heavy(cmd, "suite", cwd=str(workdir), env=e)
     finally:
         if selfile is not None and selfile.exists():
             selfile.unlink()
     if sha256(entry) != digest_before:
         raise LabelRefusal("TARGET_MUTATED_ON_DISK", str(entry))
+    hung = [line for line in proc.stdout.splitlines() if line.startswith("SELFTEST HUNG")]
+    if proc.hung or hung:
+        raise LabelRefusal("SUBJECT_HUNG", "%s: %s" % (
+            entry, hung[0] if hung else "no output for the process hang bound; stacks: "
+            + proc.stderr[-400:]))
     if not recfile.exists():
         raise LabelRefusal("SUBJECT_CRASHED",
                            "no records from %s (rc=%d): %s"

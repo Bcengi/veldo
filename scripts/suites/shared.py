@@ -82,6 +82,26 @@ def leg_runs(rows=None):
     return _rs.leg_runs(suite_file().stem, rows)
 
 
+def _support(name):
+    """A module of scripts/suites/support, loaded once per process under its own name, so that a suite's
+    `import waits` and this module share one instance (one runtime, one watchdog)."""
+    if name in sys.modules:
+        return sys.modules[name]
+    path = Path(__file__).resolve().parent / "support" / (name + ".py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# VELDO-0358: THE ONE PLACE A SUITE MAY BLOCK (waits), the latch holder (holders) and the port holder
+# (ports). Upper-case names in this namespace, because every fragment runs in it and a lower-case
+# `waits` or `ports` is a local name in several suites.
+WAITS = _support("waits")
+HOLDERS = _support("holders")
+PORTS = _support("ports")
+
 PASS = 0
 FAIL = 0
 
@@ -93,29 +113,20 @@ def expect(name, condition):
     else:
         FAIL += 1
         print(f"  SELFTEST FAIL: {name}")
+    WAITS.row_event(name)
 
 
-def wait_for(condition, bound, what):
-    """VELDO-0261: wait on an observable condition, never on the clock alone.
+def wait_for(condition, bound, what, sources=None, terminal=None):
+    """VELDO-0261, now a call into the wait primitive (VELDO-0358, scripts/suites/support/waits.py).
 
-    `condition()` returns (holds, observation). It is polled until it holds, and wait_for returns
-    None as soon as it does. `bound` is (seconds, source): the most it waits and where that bound
-    comes from. When the bound runs out it returns the report a row carries: `what` it waited for,
-    the bound and its source, the seconds it waited and the last observation. It never sleeps a
-    fixed time (each pause is the shorter of a poll interval and what is left of the bound) and it
-    never repeats the action under test: it only reads."""
-    import time as _time
-    seconds, source = bound
-    began = _time.monotonic()
-    while True:
-        holds, observation = condition()
-        if holds:
-            return None
-        waited = _time.monotonic() - began
-        if waited >= seconds:
-            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'
-                    % (waited, what, seconds, source, observation))
-        _time.sleep(min(0.02, seconds - waited))
+    `condition()` returns (holds, observation); `terminal()`, when given, the same for the event that
+    proves the condition can no longer come; `sources` are the kernel events that can change either. It
+    returns None as soon as the condition holds and the report when the terminal condition holds. `bound`
+    is the caller's former (seconds, source): kept in the report as data, it bounds nothing. A wait is
+    bounded by the wait hang bound alone, and past it the row is hung and the suite's process ends: an
+    expired wait is never read as false. A caller that names no source yet is read again on an interval
+    (waits.LegacyInterval) until its wave converts it."""
+    return WAITS.wait_for(condition, bound, what, sources=sources, terminal=terminal, _depth=3)
 
 
 _FAST_TEMP = []
@@ -147,11 +158,16 @@ class ForkFlag:
         os.write(self._w, b'.')
 
     def wait(self, timeout=None):
-        import select
-        return bool(select.select([self._r], [], [], timeout)[0])
+        """True once set. `timeout` 0 only asks; any other value is a former bound and bounds nothing: the
+        wait is the wait primitive's, on the pipe becoming readable."""
+        if timeout == 0:
+            return self.is_set()
+        return WAITS.wait("a ForkFlag to be set", self.is_set, sources=[WAITS.Readable(self._r, drain=False)],
+                          _depth=2).done
 
     def is_set(self):
-        return self.wait(0)
+        import select
+        return bool(select.select([self._r], [], [], 0)[0])
 
 
 class ForkLock:
@@ -173,8 +189,8 @@ class ForkLock:
 class ForkBarrier:
     """multiprocessing's Barrier across a fork, on one pipe per party (see ForkFlag). A party names
     its own index: wait() returns once every other party has arrived, and raises
-    threading.BrokenBarrierError when one aborted or the timeout passed first (which breaks it for
-    the others too, as a Barrier's does)."""
+    threading.BrokenBarrierError when one aborted (which breaks it for the others too, as a
+    Barrier's does). It waits on the wait primitive, so it has no timeout of its own."""
 
     def __init__(self, parties):
         self._pipes = [os.pipe() for _ in range(parties)]
@@ -185,19 +201,29 @@ class ForkBarrier:
                 os.write(writer, byte)
 
     def wait(self, index, timeout=None):
-        import select
+        """Arrive and wait for every other party, on the wait primitive. `timeout` is a former bound and
+        bounds nothing; a party that aborted is the terminal condition (BrokenBarrierError)."""
         import threading
-        import time
         self._tell(index, b'.')
         reader = self._pipes[index][0]
-        deadline = None if timeout is None else time.monotonic() + timeout
-        for _ in range(len(self._pipes) - 1):
-            left = None if deadline is None else max(0.0, deadline - time.monotonic())
-            if not select.select([reader], [], [], left)[0]:
-                self.abort(index)
-                raise threading.BrokenBarrierError
-            if os.read(reader, 1) != b'.':
-                raise threading.BrokenBarrierError
+        need = len(self._pipes) - 1
+        arrived = []
+
+        def take():
+            import select
+            while len(arrived) < need and b'!' not in arrived and select.select([reader], [], [], 0)[0]:
+                arrived.append(os.read(reader, 1))
+
+        def everyone():
+            take()
+            return arrived.count(b'.') >= need, b''.join(arrived)
+
+        def aborted():
+            return b'!' in arrived, b''.join(arrived)
+        source = WAITS.Readable(reader, drain=False, persistent=True)
+        result = WAITS.wait("every party of a ForkBarrier", everyone, aborted, [source], _depth=2)
+        if not result.done:
+            raise threading.BrokenBarrierError
 
     def abort(self, index):
         self._tell(index, b'!')

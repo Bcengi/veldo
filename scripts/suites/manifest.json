@@ -2176,6 +2176,15 @@
    ],
    "regions": "VELDO-0329 AC1 to AC3: both git hooks installed in the shared or the configured hooks folder with an existing hook's lines kept, the session hooks installed in every named client account folder, reconcile's report of a missing hook, and the install at the service's start. Fix round rows: a hooks path set outside the repository's local configuration, a hooks folder that is linked, relative or inside a work tree, a git that does not run, two installations naming one folder, a settings file with a key written twice or written meanwhile, and a CLI that blocks or ignores TERM. Second fix round rows: a hooks path in a linked worktree's own configuration file, and a local hooks path that comes from an included file.",
    "requires_note": "Only ROOT and expect. Temporary git repositories whose installed hooks git itself runs, SQLite, a real Ledger with signed observer packets over the spool socket, real settings files. The CLI the git hooks start is a fixture script that writes down what it was given."
+  },
+  {
+   "name": "157_veldo_0358_suite_runtime",
+   "file": "157_veldo_0358_suite_runtime.py",
+   "requires": [
+    "157_veldo_0358_suite_runtime"
+   ],
+   "regions": "VELDO-0358 brief A: the wait primitive's three outcomes and its event sources with no idle wake, the latch holder, the residue row, the suite process's progress watchdog, the opened-files record and the port holder, each through the real dispatcher over fixture suites.",
+   "requires_note": "Only ROOT, expect and suite_file. Fixture repositories with copies of selftest.py, run_scope.py, shared.py and the support modules, .veldo linked; real child processes, pipes, inotify, an SQLite store and two child cgroups of this process's own cgroup."
   }
  ],
  "resource_capacities": {

@@ -1,0 +1,4 @@
+  selector    --suite 157_veldo_0358_suite_runtime
+  running     1 of 237 suites: 157_veldo_0358_suite_runtime
+  157_veldo_0358_suite_runtime                     7 passed    6.83s
+selftest (PARTIAL, 1 of 237 suites): 34 passed, 0 failed in 6.83s
