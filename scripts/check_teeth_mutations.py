@@ -7790,6 +7790,11 @@ def cases():
     def claude(name, module, old, new, row, also=()):
         add(60, name, '78_veldo_0060_claude_adapter.py', module, old, new, [row], also)
 
+    add(60, 'claude-launch-wait-skips-exited', '78_veldo_0060_claude_adapter.py', 'control_launch.py',
+        "        if self.result == 'accepted' and (self.record or {}).get('state') in ('running', 'exited'):",
+        "        if self.result == 'accepted' and (self.record or {}).get('state') == 'running':",
+        ['launch/exited-before-settle', 'launch/record-before-report'])
+
     # AC1 (declared falsifier): executable binding skipped after the pinned copy's digest changes.
     claude('claude-pin-digest-unchecked', 'control_engine_claude.py',
            "    if _file_digest(path) != entry['sha256']:\n"

@@ -2155,7 +2155,9 @@ class Launch:
         ends_by = max(self.contract['deadline'], self.ends_by or 0)
         deadline = time.monotonic() + (timeout if timeout is not None else
                                        max(1.0, ends_by - time.time() + ACCEPT_SECONDS))
-        if self.result == 'accepted' and (self.record or {}).get('state') == 'running':
+        # The record can reach exited before start settles. Its commit precedes the run-end scan,
+        # space end and final pipe message: take those messages before stopping the receiver.
+        if self.result == 'accepted' and (self.record or {}).get('state') in ('running', 'exited'):
             while True:
                 message = self._message(deadline)
                 if message is None or message.get('event') in ('exited', 'unknown'):

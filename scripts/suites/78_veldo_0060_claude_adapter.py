@@ -79,6 +79,7 @@ def _v60_suite():
     ROWS = ('lifecycle/registration', 'lifecycle/pinned-launch',
             'pin/unexpected-launch', 'pin/copy', 'pin/shipped-qualification', 'pin/argv-binds-what-runs',
             'pin/rehash-before-exec', 'pin/entrance-interpreter', 'pin/rehash-dot-dot',
+            'launch/exited-before-settle', 'launch/record-before-report',
             'artifact/complete', 'artifact/missing-result', 'artifact/exits', 'artifact/malformed-output',
             'artifact/missing-usage', 'artifact/exit-record', 'floor/missing-result',
             'stop/requested', 'stop/descendant-alive',
@@ -1491,6 +1492,100 @@ sys.exit(payload.get('code', 0))
             launch, record = swapped_run('acct-60a', unit, 'claude-swap', pinned, normal())
             swap_checks('pin/rehash-before-exec', 'claude, exec\'d by the transport\'s wrapper', launch, record, unit,
                         'acct-60a', pinned, FAKE_SHA)
+
+        # Hold start's existing settle seam until a real re-hash refusal has ended. No elapsed-time
+        # guess or production probe: the first case waits for the receiver process itself to exit;
+        # the second holds it between the exit record and report_end until wait reads its pipe.
+        for phase, row in (('finished', 'launch/exited-before-settle'),
+                           ('recorded', 'launch/record-before-report')):
+            with region(row):
+                ready, release = base / 'end-recorded', base / 'end-release'
+                scanned, spaced = base / 'end-scanned', base / 'end-spaced'
+                for path in (ready, release, scanned, spaced):
+                    path.unlink(missing_ok=True)
+                receiver = base / 'held_receiver.py'
+                receiver.write_text('''import json, sys, time
+from pathlib import Path
+sys.path.insert(0, %r)
+import control_launch as L
+ready, release, scanned, spaced = map(Path, %r)
+report_end, run_end_scan = L.report_end, L.run_end_scan
+def scan(*args, **kwargs):
+    run_end_scan(*args, **kwargs)
+    receiver, dispatch_id, _contract = args
+    entries = [json.loads(line) for line in Path(L.secret_scan_log(receiver.config)).read_text().splitlines()]
+    assert any(e.get('event') == 'secret_scan' and e.get('trigger') == 'run_end'
+               and e.get('dispatch') == dispatch_id for e in entries)
+    scanned.write_text('scanned')
+def space_end(dispatch_id, contract):
+    assert scanned.is_file()
+    spaced.write_text(dispatch_id)
+    return {'sent': True, 'reason': None, 'items': {}, 'hold': {'state': 'released'}}
+def held_end(receiver, contract, event):
+    if event.get('event') == 'exited':
+        # The space lifecycle is an observer here; its ledger effects have their own suite 146.
+        # The actual report_end must reach both the real scan and this space callback before emit.
+        receiver.space = object()
+        receiver._space_end = space_end
+        ready.write_text(contract['dispatch_id'])
+        deadline = time.monotonic() + 30
+        while not release.is_file():
+            if time.monotonic() >= deadline:
+                raise TimeoutError('test did not release report_end')
+            time.sleep(.01)
+    report_end(receiver, contract, event)
+L.run_end_scan, L.report_end = scan, held_end
+L.main()
+''' % (str(mods), [str(p) for p in (ready, release, scanned, spaced)]))
+                settle, message, entrance = L.Launch._settle, L.Launch._message, L.RECEIVER
+                settled = []
+
+                def after_end(launch, lost):
+                    if not lost:
+                        if phase == 'finished':
+                            launch.child.wait(timeout=30)
+                        else:
+                            deadline = time.monotonic() + 30
+                            while not ready.is_file():
+                                if launch.child.poll() is not None or time.monotonic() >= deadline:
+                                    raise AssertionError('receiver never reached its exit record')
+                                time.sleep(.01)
+                            check(row, 'the receiver is alive between record and scan/space end',
+                                  launch.child.poll() is None and not scanned.exists() and not spaced.exists())
+                        settle(launch, lost)
+                        settled.append((launch.dispatch_id, (launch.record or {}).get('state')))
+                    else:
+                        settle(launch, lost)
+
+                def release_on_read(launch, deadline):
+                    if settled and phase == 'recorded':
+                        release.write_text('wait is reading')
+                    return message(launch, deadline)
+
+                try:
+                    L.Launch._settle, L.Launch._message = after_end, release_on_read
+                    if phase == 'recorded':
+                        L.RECEIVER = str(receiver)
+                    unit = 'VELDO-6014-settle-' + phase
+                    launch, record = swapped_run('acct-60a', unit, 'claude-swap', pinned, normal())
+                finally:
+                    L.Launch._settle, L.Launch._message, L.RECEIVER = settle, message, entrance
+                    release.write_text('test cleanup')
+                check(row, 'start settled from the already exited record',
+                      settled == [(launch.dispatch_id, 'exited')] and launch.result == 'accepted')
+                swap_checks(row, phase, launch, record, unit, 'acct-60a', pinned, FAKE_SHA)
+                events = [m.get('event') for m in launch.messages if isinstance(m, dict)]
+                check(row, 'wait took the artifact and end messages in order: %s' % events,
+                      events.count('artifact') == 1 and events.count('exited') == 1
+                      and events.index('artifact') < events.index('exited'))
+                if phase == 'finished':
+                    check(row, 'the already finished receiver was reaped cleanly', launch.returncode == 0)
+                else:
+                    ends = [m for m in launch.messages if m.get('event') == 'exited']
+                    check(row, 'scan and space end completed before wait stopped the receiver',
+                          scanned.is_file() and spaced.is_file() and spaced.read_text() == launch.dispatch_id
+                          and len(ends) == 1 and ends[0].get('space') == {
+                              'sent': True, 'reason': None, 'items': {}, 'hold': 'released'})
 
         # The entrance's interpreter: a local adapter's entrance is run by this receiver's own Python, so the
         # program that execs the pinned engine is one that re-hashes it.
