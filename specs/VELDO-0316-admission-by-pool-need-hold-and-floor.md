@@ -103,3 +103,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-20: implementation footprint includes control_service.py and its synced copy: AC2's factory
   pass must classify space_wait under waiting and carry its numbers. Acceptance criteria unchanged.
+
+- 2026-11-20: review fix round 1. The service's start recovery releases an admitted or advised hold that
+  no dispatch record binds (a crash after admission and before the dispatch was written), so the unit
+  is judged again and its bytes are no longer held. The admission metrics are on the factory loop's
+  status. Acceptance criteria unchanged.

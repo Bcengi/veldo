@@ -1713,6 +1713,14 @@ class Runner:
                 self._left(record['dispatch_id'], process=record.get('process'))
         return self.clear_runs()
 
+    def recover_holds(self, space=None):
+        """VELDO-0316: the start recovery of admission. Each admitted or advised hold of this Runner's domain
+        and repository that no dispatch record binds was left by a service that died after admission and
+        before the dispatch was written; it is released (control_space_admission.recover), so the unit is
+        judged again on its next offer and its bytes are no longer held. `space` is the installation's
+        when the Runner has not been given one yet."""
+        return _organ('control_space_admission').recover(space or self.space, self.dispatches)
+
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
                 deadline, context=None, exclude=()):
         """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract. `exclude`

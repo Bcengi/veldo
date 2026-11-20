@@ -16995,6 +16995,25 @@ def cases():
     add(316, 'space316-no-measurement-at-end', space316, 'control_launch.py',
         "        sizes = _organ('control_space_admission').measured(space['ledger'], dispatch_id) if named else None\n",
         "        sizes = None\n", ['space316/release/measurements'])
+    # VELDO-0316 fix round 1: the review's surviving mutants, start recovery of orphan holds, exposed metrics.
+    add(316, 'space316-measure-after-four', space316, 'control_space_admission.py',
+        "        elif len(history) == 5 and all(pool in run for run in history):\n",
+        "        elif len(history) >= 4 and all(pool in run for run in history):\n",
+        ['space316/ac4/five-before-measured'])
+    add(316, 'space316-legacy-history-ignored', space316, 'control_space_admission.py',
+        "            if not contract.get('space'):\n                sizes = measured(ledger, identity)\n", "",
+        ['space316/ac4/legacy-history'])
+    add(316, 'space316-start-keeps-orphan-holds', space316, 'control_service.py',
+        "                holds[repository] = line.runner.recover_holds(getattr(self.service, 'space', None))\n",
+        "                holds[repository] = []  # defect: a hold admitted before a crash is never recovered\n",
+        ['space316/recovery/orphan-released', 'space316/recovery/next-offer'])
+    add(316, 'space316-recover-releases-bound', space316, 'control_space_admission.py',
+        "            if hold.get('state') not in COUNTED or identity in bound or not runner_hold(identity, dispatches):\n",
+        "            if hold.get('state') not in COUNTED or not runner_hold(identity, dispatches):\n",
+        ['space316/recovery/orphan-released'])
+    add(316, 'space316-metrics-unexposed', space316, 'control_service.py',
+        "                'space_admission': self.space_admission()}\n",
+        "                'space_admission': None}\n", ['space316/metrics/exposed'])
 
     # VELDO-0329: installing the hooks and reporting a missing one. The first three are the spec's
     # falsifiers word for word; the rest are the owner's rule (an existing hook is kept, chained or
