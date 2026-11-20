@@ -102,6 +102,12 @@ repository_binding_conflict, so every service on every connection to this store 
 repository for one uuid. Transitions read it back inside their own transaction with
 bound_repository. Neither table is part of the journal.
 
+ONE DOMAIN, ONE STORE (VELDO-0117). Which store a domain writes to is kept outside every store, in
+the domain registry: a database at a path the operator configures, shared by the authority
+instances of the host (open_domain_registry, register_domain_store, DomainRegistry). The first
+store registered for a domain is committed; the same store again is matching and any other is
+domain_store_conflict, decided in one transaction, so two instances cannot both win.
+
 CRASH POINTS. For the SIGKILL matrix the spec requires, a writer process may be told through the
 environment to kill itself at a durable boundary (before COMMIT, inside COMMIT through the
 progress handler, or after COMMIT before replying). The hooks act only when
@@ -1039,6 +1045,133 @@ def bind_repositories(conn, domain_uuid, repositories):
             conn.execute("ROLLBACK")
         raise
     return targets
+
+
+# ---------------------------------------------------------------------------------------------
+# The domain registry (VELDO-0117): one coordination domain has one store.
+# ---------------------------------------------------------------------------------------------
+#
+# A signed enrollment binding says which store a clone writes to, and two clones of one domain can
+# each carry a valid binding naming a different store. Nothing a clone holds can settle that, so
+# the answer is kept here: a small database at a path the operator configures, shared by every
+# authority instance of the host, with one row per domain naming its store uuid and the store's
+# canonical location. An authority instance registers the identity the operator configured it with
+# when it starts. The first registration of a domain is committed and every later one is compared
+# with it: the same store again is matching, any other is domain_store_conflict and changes nothing.
+# A clone never writes here; presenting a signature registers nothing.
+#
+# The location is compared canonically (resolved_target), so two spellings of one file are the
+# same store, and one store uuid at two files is a conflict. Rebinding a domain to another store
+# is not offered.
+
+DOMAIN_STORES_TABLE = "domain_stores"
+_DOMAIN_STORES_DDL = ("CREATE TABLE IF NOT EXISTS domain_stores (domain_uuid TEXT PRIMARY KEY, store_uuid TEXT NOT NULL, "
+                      "store_path TEXT NOT NULL)")
+DOMAIN_STORE_DECISIONS = ("registered", "matching", "domain_store_conflict")
+
+
+def open_domain_registry(path, mode="rw", mounts_text=None):
+    """A connection to the domain registry at an explicit path. A write-mode open qualifies the
+    filesystem at the resolved target as open_store does, sets WAL and FULL synchronous, reads the
+    latter back and creates the one table; it never clears a row that is there. A read-mode open
+    is a read-only handle and creates nothing."""
+    if mode not in ("r", "rw"):
+        raise ValueError("mode is r or rw")
+    target = resolved_target(path)
+    if mode == "r":
+        if not os.path.exists(target):
+            raise StoreRefused("incomplete_transaction", "no domain registry at %s to read" % path)
+        return sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30)
+    problems = filesystem_problems(os.path.dirname(target) or ".", mounts_text)
+    if problems:
+        raise StoreRefused("unsupported_filesystem", "; ".join(problems))
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    conn = sqlite3.connect(target, isolation_level=None, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=FULL")
+    conn.execute(_DOMAIN_STORES_DDL)
+    sync = conn.execute("PRAGMA synchronous").fetchone()[0]
+    if sync != 2:
+        conn.close()
+        raise StoreRefused("durability_not_enabled", "synchronous=%r after opening; the domain registry refuses to run without it" % sync)
+    return conn
+
+
+def store_identity(domain_uuid, store_uuid, store_path):
+    """A store identity as the registry holds and compares it: the domain, the store uuid and the
+    store's canonical location."""
+    if not (_is_str(domain_uuid) and _is_str(store_uuid) and _is_str(store_path)):
+        raise StoreRefused("malformed_command", "a store identity names its domain, its store uuid and its store path")
+    return {"domain_uuid": domain_uuid, "store_uuid": store_uuid, "store_path": resolved_target(store_path)}
+
+
+def committed_domain_store(conn, domain_uuid):
+    """The store identity committed for a domain, or None when the domain has none."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (DOMAIN_STORES_TABLE,)).fetchone():
+        return None
+    row = conn.execute("SELECT store_uuid, store_path FROM domain_stores WHERE domain_uuid=?", (domain_uuid,)).fetchone()
+    return None if row is None else {"domain_uuid": domain_uuid, "store_uuid": row[0], "store_path": row[1]}
+
+
+def domain_store_conflict(committed, proposed):
+    """Why `proposed` is not the store its domain is committed to, or None when it is that store."""
+    differing = [field for field in ("store_uuid", "store_path") if committed[field] != proposed[field]]
+    if not differing:
+        return None
+    return ("domain %s is bound to store %s at %s; the proposal names store %s at %s (%s differ%s)"
+            % (committed["domain_uuid"], committed["store_uuid"], committed["store_path"], proposed["store_uuid"],
+               proposed["store_path"], " and ".join(differing), "s" if len(differing) == 1 else ""))
+
+
+def register_domain_store(conn, domain_uuid, store_uuid, store_path, observe=None):
+    """Register a store for a domain, or compare the proposal with the store already committed.
+
+    One BEGIN IMMEDIATE transaction reads the committed identity and, when there is none, inserts
+    the proposed one, so of two instances proposing different stores for an unbound domain exactly
+    one commits and the other reads that commit. Returns the decision as a mapping: `decision` is
+    registered (this call committed the proposal), matching (the proposal is the committed store)
+    or domain_store_conflict (it is another store; nothing was written), with the domain, the
+    proposed and the committed identity and, for a conflict, the detail. `observe(committed)` is
+    called inside the transaction after the read and before the write."""
+    proposed = store_identity(domain_uuid, store_uuid, store_path)
+    _begin(conn, "this handle cannot register a domain's store (%s)")
+    try:
+        committed = committed_domain_store(conn, domain_uuid)
+        if observe is not None:
+            observe(committed)
+        detail = None
+        if committed is None:
+            conn.execute("INSERT INTO domain_stores (domain_uuid, store_uuid, store_path) VALUES (?,?,?)",
+                         (domain_uuid, proposed["store_uuid"], proposed["store_path"]))
+            decision, committed = "registered", dict(proposed)
+        else:
+            detail = domain_store_conflict(committed, proposed)
+            decision = "matching" if detail is None else "domain_store_conflict"
+        conn.execute("COMMIT")
+    except BaseException:
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
+        raise
+    return {"decision": decision, "domain_uuid": domain_uuid, "proposed": proposed, "committed": committed, "detail": detail}
+
+
+class DomainRegistry:
+    """One open handle on the domain registry, for an authority instance the operator configured
+    with the registry's path. `observe` is passed to every registration."""
+
+    def __init__(self, path, mounts_text=None, observe=None):
+        self.path = resolved_target(path)
+        self.conn = open_domain_registry(path, mounts_text=mounts_text)
+        self.observe = observe
+
+    def register(self, domain_uuid, store_uuid, store_path):
+        return register_domain_store(self.conn, domain_uuid, store_uuid, store_path, observe=self.observe)
+
+    def committed(self, domain_uuid):
+        return committed_domain_store(self.conn, domain_uuid)
+
+    def close(self):
+        self.conn.close()
 
 
 # ---------------------------------------------------------------------------------------------

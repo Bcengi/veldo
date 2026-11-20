@@ -1,0 +1,171 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0117/heavy_summary.py green-after --runs 3 --name green-after; per run: VELDO_0117_REPORT=<scratch file> python3 scripts/selftest.py --suite 113_veldo_0117_domain_store",
+ "deciding": {
+  "bound": "every run: the suite reports no failed row and its report shows each of the three rows true, with the number of checks each made. selftest --suite exits 2 by design (a partial run)",
+  "runs": [
+   {
+    "authority_module_sha256": {
+     "control_client.py": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+     "control_enrollment.py": "7f471f7c68dd6e6933d6f85aa8db597c2583480ae0f6992cc9b2c1213cea365c",
+     "control_service.py": "3e28f897063eb5dc6c5872c431856a6838211100e9eb366521f1da957b92f1e6",
+     "control_store.py": "ba827ad4b3b46817f6db9835623799addf9e48c7f7d18e9fdab93cb052473afc"
+    },
+    "cases": {
+     "enrollment/authority-refuses-domain-store-conflict": 11,
+     "enrollment/domain-binding-survives-restart": 16,
+     "enrollment/one-domain-one-winner": 4
+    },
+    "checks_made_and_true": {
+     "enrollment/authority-refuses-domain-store-conflict": [
+      45,
+      45
+     ],
+     "enrollment/domain-binding-survives-restart": [
+      64,
+      64
+     ],
+     "enrollment/one-domain-one-winner": [
+      30,
+      30
+     ]
+    },
+    "fixture_version": "veldo.authority_store_fixture/v1",
+    "red_rows": [],
+    "returncode": 2,
+    "rows": {
+     "enrollment/authority-refuses-domain-store-conflict": true,
+     "enrollment/domain-binding-survives-restart": true,
+     "enrollment/one-domain-one-winner": true
+    },
+    "run": 1,
+    "suite_passed": 3,
+    "suite_seconds": 21.08,
+    "verdict": "green"
+   },
+   {
+    "authority_module_sha256": {
+     "control_client.py": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+     "control_enrollment.py": "7f471f7c68dd6e6933d6f85aa8db597c2583480ae0f6992cc9b2c1213cea365c",
+     "control_service.py": "3e28f897063eb5dc6c5872c431856a6838211100e9eb366521f1da957b92f1e6",
+     "control_store.py": "ba827ad4b3b46817f6db9835623799addf9e48c7f7d18e9fdab93cb052473afc"
+    },
+    "cases": {
+     "enrollment/authority-refuses-domain-store-conflict": 11,
+     "enrollment/domain-binding-survives-restart": 16,
+     "enrollment/one-domain-one-winner": 4
+    },
+    "checks_made_and_true": {
+     "enrollment/authority-refuses-domain-store-conflict": [
+      45,
+      45
+     ],
+     "enrollment/domain-binding-survives-restart": [
+      64,
+      64
+     ],
+     "enrollment/one-domain-one-winner": [
+      30,
+      30
+     ]
+    },
+    "fixture_version": "veldo.authority_store_fixture/v1",
+    "red_rows": [],
+    "returncode": 2,
+    "rows": {
+     "enrollment/authority-refuses-domain-store-conflict": true,
+     "enrollment/domain-binding-survives-restart": true,
+     "enrollment/one-domain-one-winner": true
+    },
+    "run": 2,
+    "suite_passed": 3,
+    "suite_seconds": 21.18,
+    "verdict": "green"
+   },
+   {
+    "authority_module_sha256": {
+     "control_client.py": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+     "control_enrollment.py": "7f471f7c68dd6e6933d6f85aa8db597c2583480ae0f6992cc9b2c1213cea365c",
+     "control_service.py": "3e28f897063eb5dc6c5872c431856a6838211100e9eb366521f1da957b92f1e6",
+     "control_store.py": "ba827ad4b3b46817f6db9835623799addf9e48c7f7d18e9fdab93cb052473afc"
+    },
+    "cases": {
+     "enrollment/authority-refuses-domain-store-conflict": 11,
+     "enrollment/domain-binding-survives-restart": 16,
+     "enrollment/one-domain-one-winner": 4
+    },
+    "checks_made_and_true": {
+     "enrollment/authority-refuses-domain-store-conflict": [
+      45,
+      45
+     ],
+     "enrollment/domain-binding-survives-restart": [
+      64,
+      64
+     ],
+     "enrollment/one-domain-one-winner": [
+      30,
+      30
+     ]
+    },
+    "fixture_version": "veldo.authority_store_fixture/v1",
+    "red_rows": [],
+    "returncode": 2,
+    "rows": {
+     "enrollment/authority-refuses-domain-store-conflict": true,
+     "enrollment/domain-binding-survives-restart": true,
+     "enrollment/one-domain-one-winner": true
+    },
+    "run": 3,
+    "suite_passed": 3,
+    "suite_seconds": 21.16,
+    "verdict": "green"
+   }
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9395,
+   "name": "green-01.log",
+   "sha256": "0529516286ed19c9ae8b2ad99ee26726b19371625b0f39e392b896c0b90b8087"
+  },
+  {
+   "bytes": 23448,
+   "name": "green-01-report.json",
+   "sha256": "32a197846ccc1bc363344fa7388be9f3c3c00d3b7cab2582c733558e17823472"
+  },
+  {
+   "bytes": 9395,
+   "name": "green-02.log",
+   "sha256": "932df02fdea943895966b3f0eba78f99eb4bf8901ed47db88d7fc8393b86bb13"
+  },
+  {
+   "bytes": 23448,
+   "name": "green-02-report.json",
+   "sha256": "c8ea2ed715db4d53f6b1d0ad9190353d9f75af25a8f289804352022a213b1328"
+  },
+  {
+   "bytes": 9395,
+   "name": "green-03.log",
+   "sha256": "cfff0ac5142f9c7550c89beea50dd2ec96660b9e317d541799206cd1c2523ab4"
+  },
+  {
+   "bytes": 23448,
+   "name": "green-03-report.json",
+   "sha256": "2040c77c573fffdb1cbacad06dc0d0e9d3cd1b68c008dd2b2f77c8bc4d6be25d"
+  }
+ ],
+ "environment": {
+  "commit": "870b9e2764f06668cf8a8c2d2c62ca27ae4be645",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   0.9912109375,
+   2.9794921875,
+   11.154296875
+  ],
+  "python": "3.12.3",
+  "tree": "97a799ed3f99641507f881f3642d9d59754549cd"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

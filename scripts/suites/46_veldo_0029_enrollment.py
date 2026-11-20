@@ -298,7 +298,15 @@ else:
         "cross_domain": _v29_resolve(EN29, _v29_A, domain_uuid=DOMAIN_B),
         "store_uuid_mismatch": _v29_resolve(EN29, _v29_A, store_uuid=STORE_B),
         "generation_behind": _v29_resolve(EN29, _v29_A, minimum_generation=9),
+        # VELDO-0117: the store an authority's registry holds for this binding's domain is another one.
+        "domain_store_conflict": _v29_resolve(EN29, _v29_A, committed_store={
+            "domain_uuid": DOMAIN, "store_uuid": STORE_B, "store_path": _v29_STORE_Bp}),
     }
+    # The same record naming the binding's own store, and one of another domain, refuse nothing.
+    _v29_committed_same = _v29_resolve(EN29, _v29_A, committed_store={
+        "domain_uuid": DOMAIN, "store_uuid": STORE, "store_path": _v29_STORE_A})
+    _v29_committed_other = _v29_resolve(EN29, _v29_A, committed_store={
+        "domain_uuid": DOMAIN_B, "store_uuid": STORE_B, "store_path": _v29_STORE_Bp})
     _v29_named = {k: v == ("refused", k) for k, v in _v29_seen.items()}
     _v29_exhausted = sorted(_v29_seen) == sorted(EN29.REFUSALS)
     # The refusal carries the coordinates it judged, so a person reading it knows which directory
@@ -313,13 +321,16 @@ else:
         (REFUSE_29, '        return binding["store_path"]\n        raise EnrollmentRefused(reason, text + (')])
     _v29_handsback = _v29_resolve(_v29_M_handsback, _v29_A, host="another-machine")
 
-    expect("VELDO-0029 AC4 enrollment/a-refusal-hands-back-no-path: every one of the ten reasons in the "
+    expect("VELDO-0029 AC4 enrollment/a-refusal-hands-back-no-path: every one of the eleven reasons in the "
            "module's own closed list is produced by a REAL binding and a real workspace rather than a "
            "hand-built record, each refusal names its own reason, and the list is EXHAUSTED, so a reason added "
            "later without a case fails this row. The refusal carries the workspace and the binding path it "
-           "judged and the value it objected to. DRIVEN: a copy that returns the store alongside the problems "
+           "judged and the value it objected to. The eleventh, domain_store_conflict (VELDO-0117), comes from the "
+           "store an authority's registry holds for the binding's domain: another store refuses, the binding's own "
+           "store and a record of another domain do not. DRIVEN: a copy that returns the store alongside the problems "
            "hands a caller a path it may not use, which is worse than no answer because it looks like one",
            all(_v29_named.values()) and _v29_exhausted and _v29_carried
+           and _v29_committed_same == _v29_committed_other == ("store", _v29_STORE_A)
            and _v29_handsback == ("store", _v29_STORE_A))
 
     # ---- the negative control --------------------------------------------------------------------
