@@ -30,7 +30,7 @@ def _v317_suite():
         'ac2/repeated-once', 'ac2/repeat-red', 'ac3/edit-kept', 'ac3/next-brief',
         'ac4/two-stop', 'ac4/restart-stop', 'ac4/owner-request',
         'classify/controls', 'classify/streams', 'classify/unread', 'history/reset',
-        'history/latest', 'artifact/no-verdict')}
+        'history/latest', 'artifact/no-verdict', 'wiring/installed-receiver')}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -364,6 +364,29 @@ def _v317_suite():
             finally:
                 f.close()
         row('history/reset', reset)
+
+        def installed_receiver():
+            f = Fixture('installed-receiver')
+            try:
+                (f.root / 'service.json').write_text(json.dumps({'store_path': str(f.state / 'store.sqlite3'),
+                    'domain_uuid': 'domain', 'repositories': {'repository': [str(f.repo)]},
+                    'host_identity': 'fixture', 'installation': str(f.root / 'installation')}))
+                r = object.__new__(L.Receiver)
+                r.space, r.conn, r.sign = None, f.conn, f.sign
+                r.configuration_path = str(f.root / 'receiver.json')
+                r.config = {'store': str(f.state / 'store.sqlite3'), 'domain': 'domain', 'repository': 'repository',
+                            'state_root': str(f.state), 'principal': 'runner'}
+                r.dispatches, r.emit = types.SimpleNamespace(record=lambda identity: None), lambda event: None
+                organ = L._organ
+                with patch.object(CFG, 'read', return_value=f.config), patch.object(
+                        L, '_organ', side_effect=lambda name: CFG if name == 'control_space_config' else organ(name)):
+                    r.launch({'dispatch_id': 'not-prepared'})
+                check('wiring/installed-receiver', r.space is not None and r.space['ledger'].conn is f.conn
+                      and r.space['ledger'].pool('host')['floor'] == 20
+                      and type(r.space['free'](r.space['ledger'].pool('host'))) is int)
+            finally:
+                f.close()
+        row('wiring/installed-receiver', installed_receiver)
 
         def artifacts():
             # The metering seam owns artifact publication; unjudged ends still settle usage.

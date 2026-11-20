@@ -322,6 +322,6 @@ def brief(conn, contract, payload):
             retained.append(path)
     if not retained:
         return payload
-    return dict(payload, retained_worktrees=sorted(retained),
+    return dict(payload if isinstance(payload, dict) else {'payload': payload}, retained_worktrees=sorted(retained),
                 space_recovery='These worktrees were kept after a no-space end and hold uncommitted changes: '
                                + ', '.join(sorted(retained)))
