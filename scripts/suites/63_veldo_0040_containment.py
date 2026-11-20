@@ -318,6 +318,10 @@ sys.exit(payload.get('code', 0))
 
         MAIN = profile()
         config('main', MAIN)
+        # The idle receiver's profile: MAIN with a heartbeat that is not due again in the worker's life (its
+        # 60 s deadline). The wrapper's heartbeat is a notification the receiver wakes for by right, and at
+        # the shipped ten seconds one landed inside every watched window that load had stretched.
+        config('idle', profile(heartbeat_seconds=120, heartbeat_window_seconds=240))
         config('memory', profile(memory_bytes=64 << 20))
         config('cpu', profile(cpu_percent=30))
         config('runtime', profile(runtime_seconds=1.2, kill_grace_seconds=0.5))
@@ -900,8 +904,9 @@ sys.exit(payload.get('code', 0))
                 started['runtime'] = (time.time(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
                 # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
-                # worker that ended by itself inside the watched window would wake its receiver by right.
-                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
+                # worker that ended by itself inside the watched window would wake its receiver by right. So
+                # would a heartbeat: its profile sends one at the start and none after.
+                started['idle'] = runner('idle').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
 
             # AC1: the worker and its ordinary descendants in the dispatch's own group
             with region('containment/dedicated-group', 'containment/ordinary-exit'):
@@ -976,7 +981,7 @@ sys.exit(payload.get('code', 0))
             with region('containment/unqualified-profile-refused', 'containment/required-settings-refused'):
                 idle = started.get('idle')
                 idle_facts = marker(idle, 'worker') if idle else {}
-                counted = [(time.time(), wakes_of(idle.child.pid))] if idle else []
+                counted = [(time.time(), wakes_of(idle.child.pid), time.monotonic())] if idle else []
                 u3 = admitted('VELDO-9403')
                 cases = {
                     'absent': (None, 'invalid_input:profile:absent'),
@@ -1003,7 +1008,7 @@ sys.exit(payload.get('code', 0))
                 if idle:
                     # The idle receiver is watched for at least 1.5 s, longer than any periodic wake of 1 s.
                     time.sleep(max(0.0, counted[0][0] + 1.5 - time.time()))
-                    counted.append((time.time(), wakes_of(idle.child.pid)))
+                    counted.append((time.time(), wakes_of(idle.child.pid), time.monotonic()))
                 observed['unqualified'] = refusals
                 check('containment/unqualified-profile-refused',
                       all(r['refusal'] == r['expected'] and r.get('states') == ['prepared', 'refused'] and not r.get('worker')
@@ -1037,13 +1042,21 @@ sys.exit(payload.get('code', 0))
             with region('containment/exit-notified'):
                 idle = started['idle']
                 release(idle)
-                ended = runner('main').wait(idle) or {}
+                ended = runner('idle').wait(idle) or {}
                 exit_at = marker(idle, 'exit').get('at')
                 recorded_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'exited'), None)
                 window = counted[-1][0] - counted[0][0] if len(counted) == 2 else 0
                 wakes = (counted[-1][1] - counted[0][1] if len(counted) == 2 and None not in (counted[0][1], counted[-1][1])
                          else None)
+                # The heartbeats the receiver itself recorded taking inside the watched window: each is an OS
+                # notification on its channel, and it wakes for one by right. The row requires there were none,
+                # so its zero wakes are measured over a window in which nothing was sent to the receiver.
+                beats = ((getattr(idle, 'supervision', None) or {}).get('heartbeat') or {})
+                in_window = ([round(b['taken'] - counted[0][2], 2) for b in beats.get('recent', [])
+                              if counted[0][2] <= b['taken'] <= counted[-1][2]] if len(counted) == 2 else None)
                 observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
+                                             'heartbeats_in_window': in_window,
+                                             'heartbeat_seconds': beats.get('interval_seconds'),
                                              'exit_at': exit_at, 'recorded_at': recorded_at,
                                              'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
                                              'idle_worker_alive_in_window': bool(idle_facts),
@@ -1051,7 +1064,7 @@ sys.exit(payload.get('code', 0))
                                                                          and exit_at > counted[-1][0])}
                 check('containment/exit-notified',
                       ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
-                      and observed['exit_notified']['exited_after_window']
+                      and observed['exit_notified']['exited_after_window'] and in_window == []
                       and exit_at is not None and recorded_at is not None
                       and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
 
