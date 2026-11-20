@@ -2502,6 +2502,15 @@
    ],
    "regions": "VELDO-0358 brief A: the wait primitive's three outcomes and its event sources with no idle wake, the latch holder, the residue row, the suite process's progress watchdog, the opened-files record and the port holder, each through the real dispatcher over fixture suites.",
    "requires_note": "Only ROOT, expect and suite_file. Fixture repositories with copies of selftest.py, run_scope.py, shared.py and the support modules, .veldo linked; real child processes, pipes, inotify, an SQLite store and two child cgroups of this process's own cgroup."
+  },
+  {
+   "name": "158_veldo_0358_census",
+   "file": "158_veldo_0358_census.py",
+   "requires": [
+    "158_veldo_0358_census"
+   ],
+   "regions": "VELDO-0358 brief B, AC6, AC7 and AC14: the wall-clock census finds each rule's site and each positional form, leaves the allowed forms alone, takes its scope from the opened-files record, and reads its exceptions from the authority and its baseline from both; the stage is declared in the gate; VELDO-0223 is not claimable and the gate's result words are a closed list.",
+   "requires_note": "Only ROOT and expect. The real scripts/check_wallclock.py as a child over fixture trees in a temporary directory, the real index generator over a fixture specs folder, and the gate's own files read as text."
   }
  ],
  "resource_capacities": {

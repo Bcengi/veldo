@@ -67,6 +67,14 @@ protected_paths:
   - {path: "scripts/gate_host.json", floor: high}
   - {path: "scripts/gate_host.py", floor: high}
   - {path: "engine/scripts/gate_host.py", floor: high}
+  # VELDO-0358 (owner, Telegram 42829, 2026-11-20): the wall-clock census and its two lists. The
+  # exceptions are what a suite may keep and the baseline is what it has not converted yet; adding to
+  # either is this protected change, never a step an agent takes on its own behalf. Lowering a
+  # baseline entry with the change that converts its site is required by the stage itself.
+  - {path: "scripts/check_wallclock.py", floor: high}
+  - {path: "engine/scripts/check_wallclock.py", floor: high}
+  - {path: "scripts/suites/wallclock.json", floor: high}
+  - {path: "scripts/suites/wallclock_baseline.json", floor: high}
   # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
   # and suites/shared.py (leg_runs) pick the rows. check_first_use.py is the integration stage's
   # command: in the unconfined leg it runs whole outside the confinement and hands its environment,

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0223
 title: A result under someone else's load is rerun quietly before it counts, and an unconfirmed red is invalid
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -145,3 +145,14 @@ cannot set the classification: it is computed by the authority from counters out
 write grants, and an unconfined leg that forged load could only turn its own red into a rerun or
 INVALID, neither of which lands. Out of review scope: load that shows in no sampled counter (for
 example disk input and output without CPU or memory pressure).
+
+## History
+
+- 2026-11-20: SUPERSEDED by VELDO-0358 (a gate's verdict does not depend on how busy the machine is) and
+  never built. Status blocked, and not to be claimed. The owner rejected what this specification proposes:
+  no quiet window, no quiet rerun and no result that depends on a sample of the machine's load (Telegram
+  42171 of 2026-11-18), and "stop failing veldo gates due to performance caused by machine load" (Telegram
+  42829 of 2026-11-20). VELDO-0358 removes the dependency at its source, in the suites and the product
+  timers on their paths, and adds no INVALID result: the gate's result words stay GREEN, RED, NOT JUDGED
+  and NOT STARTED. The specification vocabulary has no superseded status, so blocked with this entry is
+  the record.

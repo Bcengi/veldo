@@ -283,6 +283,15 @@ CHECK_packaging="required:python3 scripts/check_install_and_run.py"
 # runs those alone and says so. scripts/publish.py runs the same code over the produced tree.
 CHECK_personal_setup="required:python3 scripts/check_personal_setup.py"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
+# VELDO-0358 AC6, AC7: the wall-clock census. It reads source and runs nothing: a sleep, a clock read,
+# a timeout that is no named hang bound, or an upper bound on a duration, in a suite or in a file a
+# suite opens, is RED unless the authority's baseline or exceptions hold it. The exceptions
+# (scripts/suites/wallclock.json) are read from the authority alone; the baseline
+# (scripts/suites/wallclock_baseline.json) from the authority and the candidate, and the candidate's
+# must be the authority's less what the candidate converted. The stage is told where the authority
+# is by the one variable below; with no authority baseline it reports and judges nothing.
+export VELDO_GATE_AUTHORITY="$VELDO_AUTHORITY"
+CHECK_wallclock="required:python3 scripts/check_wallclock.py"
 # VELDO-0205: mutation receipts distinguish fresh and reused results.
 # Landing permits authenticated reuse; VELDO_GATE_FORCE_FRESH=1 explicitly bypasses it.
 # VELDO-0206: the suite stage reuses only explicitly qualified suites (see veldo_suites above).
@@ -315,7 +324,7 @@ CHECK_mutation="required:authority mutation stage"
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
 token_lint visual_baselines build dependency_audit licenses security migration \
-generated docs performance coverage packaging personal_setup deploy_dry_run extra mutation"
+generated docs performance coverage packaging personal_setup deploy_dry_run wallclock extra mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)

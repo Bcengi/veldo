@@ -195,6 +195,15 @@ CHECK_performance="na:no performance thresholds declared"
 CHECK_coverage="na:no coverage floor declared"
 CHECK_packaging="na:not packaged"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
+# VELDO-0358 AC6, AC7: the wall-clock census. It reads source and runs nothing: a sleep, a clock read,
+# a timeout that is no named hang bound, or an upper bound on a duration, in a suite or in a file a
+# suite opens, is RED unless the authority's baseline or exceptions hold it. The exceptions
+# (scripts/suites/wallclock.json) are read from the authority alone; the baseline
+# (scripts/suites/wallclock_baseline.json) from the authority and the candidate, and the candidate's
+# must be the authority's less what the candidate converted. The stage is told where the authority
+# is by the one variable below; with no authority baseline it reports and judges nothing.
+export VELDO_GATE_AUTHORITY="$VELDO_AUTHORITY"
+CHECK_wallclock="na:no wall-clock census adopted yet (scripts/check_wallclock.py and its baseline)"
 CHECK_extra="na:none"
 # NOTE for init: the na defaults above are STARTING HYPOTHESES an agent must
 # confirm or replace with the human during /veldo:init. Blank entries (unit and
@@ -204,7 +213,7 @@ CHECK_extra="na:none"
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
 token_lint visual_baselines build dependency_audit licenses security migration \
-generated docs performance coverage packaging deploy_dry_run extra"
+generated docs performance coverage packaging deploy_dry_run wallclock extra"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0
 TODAY=$(date -u +%Y-%m-%d)
