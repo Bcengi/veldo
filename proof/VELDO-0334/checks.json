@@ -1,0 +1,22 @@
+[
+  {
+    "name": "space boundary",
+    "exit": 0,
+    "ref": "proof/VELDO-0334/space-boundary.txt"
+  },
+  {
+    "name": "spec contract",
+    "exit": 0,
+    "ref": "proof/VELDO-0334/spec-validation.txt"
+  },
+  {
+    "name": "proof contract",
+    "exit": 0,
+    "ref": "proof/VELDO-0334/validation.txt"
+  },
+  {
+    "name": "personal setup",
+    "exit": 0,
+    "ref": "proof/VELDO-0334/personal-setup.txt"
+  }
+]

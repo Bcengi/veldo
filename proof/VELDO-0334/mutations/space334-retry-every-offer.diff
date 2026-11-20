@@ -1,0 +1,8 @@
+--- .veldo/control_space_admission.py
++++ .veldo/control_space_admission.py
+@@ -90 +90 @@
+-    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:
++    if False:  # defect: every offer retries deferred items
+@@ -95 +95 @@
+-    if reason is not None and not hold['retry_asked']:
++    if reason is not None:  # defect: forget the one request

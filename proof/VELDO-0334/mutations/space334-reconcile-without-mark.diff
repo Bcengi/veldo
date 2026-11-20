@@ -1,0 +1,5 @@
+--- .veldo/control_space.py
++++ .veldo/control_space.py
+@@ -2409 +2409 @@
+-        changes = self._freed_changes(set(self.config['pools']))
++        changes = {}  # defect: reconcile never marks waiters

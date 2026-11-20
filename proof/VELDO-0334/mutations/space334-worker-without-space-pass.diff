@@ -1,0 +1,5 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -2251 +2251 @@
+-            self.space_pass()
++            pass  # defect: ignore worker freeing commits
