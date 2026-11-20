@@ -357,7 +357,7 @@ def receiver_space(receiver):
     by the worker packet. Both use the same central store, host and declarations.
     """
     path = getattr(receiver, 'configuration_path', None)
-    if not path:
+    if not path or receiver.config.get('repository') is None:
         return None
     service_path = Path(path).with_name('service.json')
     if not service_path.is_file():
