@@ -37,6 +37,7 @@ Standard library only. The ledger is the control_space.Ledger the caller passes 
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 
 
@@ -240,3 +241,87 @@ def status(ledger, free):
                                     'held': held(ledger, pool['name'])} for pool in ledger._pools()},
             'holds': {state: sum(h['state'] == state for h in holds)
                       for state in ('admitted', 'waiting', 'advised')}}
+
+
+# VELDO-0317: observations are taken before census/Signal can free any bytes.
+NO_SPACE = 'environment_failure:no_space'
+UNCONFIRMED = 'unknown_outcome:no_space_unconfirmed'
+
+
+class Output:
+    """Bounded streaming search of both output pipes, including split error text."""
+    pattern = re.compile(rb'no space left on device|\bENOSPC\b', re.I)
+
+    def __init__(self):
+        self.tails, self.found = {}, False
+
+    def feed(self, stream, chunk):
+        data = self.tails.get(stream, b'') + chunk
+        self.found = self.found or self.pattern.search(data) is not None
+        self.tails[stream] = data[-64:]
+
+
+def previous(conn, contract, station=None):
+    """Last exited run of this unit in journal order, across restarts and refunded attempts."""
+    for (raw,) in conn.execute(
+            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC"):
+        for entry in json.loads(raw).values():
+            record = entry.get('data') or {}
+            other = record.get('contract') or {}
+            if (entry.get('kind') == 'dispatch' and record.get('state') == 'exited'
+                    and all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
+                    and (station is None or other.get('station') == station)):
+                return record
+    return {}
+
+
+def classify(space, contract, unsuccessful, found, worktree=None):
+    """Text plus a measured short pool confirms an environment failure, in either mode."""
+    if (space is None or space['ledger'].config.get('enabled') is not True
+            or not unsuccessful or not found):
+        return None
+    ledger = space['ledger']
+    pools = []
+    for name in sorted((contract.get('space') or {}).get('needs') or ledger.config['pools']):
+        pool = ledger.pool(name)
+        try:
+            free = space['free'](pool)
+            if type(free) is not int or free < 0:
+                free = None
+        except (OSError, ValueError, KeyError, StopIteration):
+            free = None
+        pools.append({'pool': name, 'free': free, 'floor': pool['floor'] if pool else None})
+    return {'classification': classification(pools), 'pools': pools, 'worktree': worktree}
+
+
+def classification(pools):
+    short = any(p['free'] is not None and p['floor'] is not None and p['free'] < p['floor'] for p in pools)
+    return NO_SPACE if short else UNCONFIRMED
+
+
+def disposition(conn, contract, observation):
+    """Derive the retry bounds from committed ends, never a process-local counter."""
+    classification = observation['classification']
+    prior = previous(conn, contract, None if classification == NO_SPACE else contract['station'])
+    prior = prior.get('space_failure') or {}
+    consecutive = prior.get('consecutive', 0) + 1 if prior.get('classification') == classification else 1
+    return dict(observation, consecutive=consecutive, retry=consecutive < 2,
+                andon=classification == NO_SPACE and consecutive >= 2,
+                taxonomy='unavailable_service' if classification == NO_SPACE else 'unknown_outcome')
+
+
+def brief(conn, contract, payload):
+    """Carry retained work into the next packet, including a later station of the ticket."""
+    retained = []
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch'"):
+        record = json.loads(raw)
+        other, failure = record.get('contract') or {}, record.get('space_failure') or {}
+        path = failure.get('worktree')
+        if (path and all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
+                and path not in retained):
+            retained.append(path)
+    if not retained:
+        return payload
+    return dict(payload, retained_worktrees=sorted(retained),
+                space_recovery='These worktrees were kept after a no-space end and hold uncommitted changes: '
+                               + ', '.join(sorted(retained)))

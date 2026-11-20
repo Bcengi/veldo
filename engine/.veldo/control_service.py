@@ -3176,7 +3176,8 @@ class Line:
             workflow = payload.get('workflow') if isinstance(payload, dict) else None
             node = workflow.get('node') if isinstance(workflow, dict) else None
             for key in [key] + ([key + (node,)] if isinstance(node, str) else []):
-                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
+                if key not in found or record.get('ordinal', contract.get('attempt', 0)) > found[key].get(
+                        'ordinal', found[key]['contract'].get('attempt', 0)):
                     found[key] = record
         return found
 
@@ -3686,6 +3687,13 @@ class Line:
             return self.another_account(record, report)
         if record.get('state') != 'exited':
             return None
+        failure = record.get('space_failure') or {}
+        if failure.get('andon'):
+            return self.space_andon(record, report)
+        if failure.get('retry'):
+            return self.rerun(record, report)
+        if failure:
+            return None  # the unconfirmed repeat stands as its actual unsuccessful end
         invocation = self.invocation(record['dispatch_id']) or {}
         if invocation.get('outcome') != L.ACC.LIMIT_OUTCOME:
             return None
@@ -3703,6 +3711,30 @@ class Line:
         if decision['decision'] == LIM.RERUN:
             return self.rerun(record, report)
         return self.ask(record, decision, invocation, report)
+
+    def space_andon(self, record, report):
+        """A durable stop and one owner request after two confirmed full-pool ends.
+
+        The dispatch record stops preparation even before this request can be delivered.
+        Repeated passes and service restarts find the same inbox request.
+        """
+        contract, failure = record['contract'], record['space_failure']
+        alias = 'space-andon-' + hashlib.sha256(record['dispatch_id'].encode()).hexdigest()[:24]
+        inbox = self.service.inbox(self.repository)
+        aid = I.assignment_id(self.repository, alias)
+        entry = {'repository': self.repository, 'unit': contract['unit'], 'station': contract['station'],
+                 'dispatch_id': record['dispatch_id'], 'reason': 'environment_failure:no_space', 'andon': True}
+        report['stopped'].append(entry)
+        if inbox.read(aid) is None:
+            brief = ('Andon: two consecutive environment failures for unit %s. Automatic repeats have stopped. '
+                     'The worktree %s holds its uncommitted changes. Pool readings: %s.'
+                     % (contract['unit'], failure.get('worktree'), json.dumps(failure['pools'], sort_keys=True)))
+            owner, opened = self.open_question(inbox, alias, contract['unit'], brief, ['acknowledge'],
+                {'kind': 'space_andon', 'ref': record['dispatch_id'], 'digest': S.digest_of(failure)},
+                'space-andon/' + record['dispatch_id'])
+            report['asked'].append(dict(entry, owner=owner, outcome=opened.get('ok') is True,
+                                        refusal=None if opened.get('ok') else opened.get('reason')))
+        return None
 
     def another_account(self, record, report):
         """VELDO-0185 AC4: the unit's station again (a re-run) after its receiver refused the dispatch before spawn

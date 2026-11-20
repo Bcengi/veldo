@@ -16441,6 +16441,42 @@ def cases():
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
 
+    # VELDO-0317: each stated falsifier runs the same real dispatch/cleanup suite.
+    space317 = '159_veldo_0317_no_space.py'
+    add(317, 'space317-charge-attempt', space317, 'control_dispatch.py',
+        "                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))\n",
+        "                index = dict(index)  # defect: charge the environment failure\n",
+        ['space317/ac1/not-charged'])
+    add(317, 'space317-text-alone', space317, 'control_space_admission.py',
+        "    return NO_SPACE if short else UNCONFIRMED\n",
+        "    return NO_SPACE  # defect: text alone forgives the test's own red\n",
+        ['space317/ac2/repeat-red'])
+    add(317, 'space317-remove-worktree', space317, 'control_launch.py',
+        "        self.run_sent = False\n        self._remove_run()\n",
+        "        self.run_sent = False\n"
+        "        shutil.rmtree(self.space_run['worktree'])  # defect: lose the unfinished edit\n"
+        "        self._remove_run()\n", ['space317/ac3/edit-kept'])
+    add(317, 'space317-third-attempt', space317, 'control_space_admission.py',
+        "consecutive=consecutive, retry=consecutive < 2,\n"
+        "                andon=classification == NO_SPACE and consecutive >= 2,\n",
+        "consecutive=consecutive, retry=consecutive < 3,\n"
+        "                andon=classification == NO_SPACE and consecutive >= 3,\n",
+        ['space317/ac4/two-stop'])
+    add(317, 'space317-omit-next-brief', space317, 'control_launch.py',
+        "        payload = admission.brief(self.dispatches.conn, coordinates, payload)\n",
+        "        # defect: next run never learns where the work is\n", ['space317/ac3/next-brief'])
+    add(317, 'space317-write-verdict', space317, 'control_launch.py',
+        "            self.report = None if unjudged else self._artifact(termination, cause)\n",
+        "            self.report = self._artifact(termination, cause)\n", ['space317/artifact/no-verdict'])
+    add(317, 'space317-no-owner-request', space317, 'control_service.py',
+        "        if inbox.read(aid) is None:\n            brief = ('Andon:",
+        "        if False:\n            brief = ('Andon:", ['space317/ac4/owner-request'])
+    add(317, 'space317-refund-hides-latest', space317, 'control_service.py',
+        "if key not in found or record.get('ordinal', contract.get('attempt', 0)) > found[key].get(\n"
+        "                        'ordinal', found[key]['contract'].get('attempt', 0)):",
+        "if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):",
+        ['space317/history/latest'])
+
     # VELDO-0334: the three stated falsifiers and the ledger/Signal boundaries they need.
     space334 = '158_veldo_0334_space_freed.py'
     cached334 = "    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:\n"
