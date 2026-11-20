@@ -350,6 +350,52 @@ def run_end_scan(receiver, dispatch_id, contract):
         SS.failed('run_end', _project(contract), error, _failure_log(config), dispatch=dispatch_id)
 
 
+def receiver_space(receiver):
+    """Load the installed service's space wiring in its separate trusted receiver process.
+
+    The adjacent service configuration is installed with the receiver, never supplied
+    by the worker packet. Both use the same central store, host and declarations.
+    """
+    path = getattr(receiver, 'configuration_path', None)
+    if not path:
+        return None
+    service_path = Path(path).with_name('service.json')
+    if not service_path.is_file():
+        return None
+    service = json.loads(service_path.read_text())
+    config = receiver.config
+    if (service.get('store_path') != config['store'] or service.get('domain_uuid') != config['domain']
+            or config.get('repository') not in service.get('repositories', {})):
+        raise D.Refused('binding_mismatch:space_service')
+    declarations = _organ('control_space_config')
+    section = declarations.read(environ=_organ('installation').child_environment(service.get('installation')))
+    if not section.get('present'):
+        return None
+    projects = []
+    for paths in service['repositories'].values():
+        if paths:
+            repository = os.path.realpath(paths[0])
+            projects.append(dict(declarations.read_project(repository, _organ('yamlish').read, config=section),
+                                 repository=repository))
+    kinds = _organ('control_space_kinds')
+    ledger = _organ('control_space').Ledger(S, receiver.conn, config['principal'], receiver.sign,
+        config=section, state_root=config.get('state_root') or os.path.dirname(config['store']),
+        projects=projects, host=service['host_identity'], lifecycle=kinds.LIFECYCLE,
+        authority_generation=config.get('authority_generation', 1))
+
+    def free(pool):
+        if pool is None or pool['type'] != 'filesystem':
+            raise ValueError('pool free space unread')
+        path = next(path for path in ledger.roots['roots'] + ledger.roots['repositories']
+                    if os.path.exists(path) and ledger.device(path) == pool['device'])
+        info = os.statvfs(path)
+        return info.f_bavail * info.f_frsize
+
+    return {'ledger': ledger, 'free': free, 'probe': _organ('control_space_probe'),
+            'kinds': kinds, 'remover': _organ('control_space_remove'),
+            'keep': _organ('control_space_keep').keeper(ledger, event={'process': 'receiver'})}
+
+
 def report_end(receiver, contract, event):
     """VELDO-0254 AC2: a run whose end is recorded has the files it changed scanned now, so the scan neither delays
     the record nor re-reads what was there before; then its end is reported. VELDO-0308: with a space ledger the
@@ -2752,6 +2798,8 @@ class Receiver:
         return self.qualification['refusal']
 
     def launch(self, contract):
+        if self.space is None:
+            self.space = receiver_space(self)
         dispatch_id = contract['dispatch_id']
         record = self.dispatches.record(dispatch_id)
         self.contract = contract

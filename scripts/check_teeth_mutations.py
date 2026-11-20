@@ -16989,6 +16989,11 @@ def cases():
         "if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):",
         ['space317/history/latest'])
 
+    add(317, 'space317-unwired-receiver', space317, 'control_launch.py',
+        "            self.space = receiver_space(self)\n",
+        "            self.space = None  # defect: installed receivers never classify\n",
+        ['space317/wiring/installed-receiver'])
+
     # VELDO-0334: the three stated falsifiers and the ledger/Signal boundaries they need.
     space334 = '158_veldo_0334_space_freed.py'
     cached334 = "    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:\n"
