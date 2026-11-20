@@ -10,13 +10,27 @@
       "id": "AC1",
       "status": "pending",
       "evidence": [
-        "proof/VELDO-0124/round2-2026-10-28/qualification-red-green.json",
-        "proof/VELDO-0124/round2-2026-10-28/qualification-red.log",
-        "proof/VELDO-0124/round2-2026-10-28/qualification-green.log",
-        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
-        "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json",
-        "proof/VELDO-0124/round3-2026-10-29/qualification-red-green.json",
-        "proof/VELDO-0124/round3-2026-10-29/falsifiers/negative-controls.json"
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/qualification-red-green.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/qualification-red.log"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/qualification-green.log"
+        },
+        {
+          "ref": "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round3-2026-10-29/qualification-red-green.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round3-2026-10-29/falsifiers/negative-controls.json"
+        }
       ],
       "detail": "Round 3 proves independent refusals for protected storage, a complete row map with one blocked row, schema, native kind and absolute paths. Each corresponding single change mutant fails AC1/forged-qualification for its expected missing refusal; the restored suite passes all cases. Prior native observations remain historical. Complete both-engine qualification and independent review remain pending."
     },
@@ -24,10 +38,18 @@
       "id": "AC2",
       "status": "pending",
       "evidence": [
-        "proof/VELDO-0124/native-2026-10-28/native-lifecycle-restored.json",
-        "proof/VELDO-0124/native-2026-10-28/native-falsifiers-red-green.json",
-        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
-        "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+        {
+          "ref": "proof/VELDO-0124/native-2026-10-28/native-lifecycle-restored.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/native-2026-10-28/native-falsifiers-red-green.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+        }
       ],
       "detail": "Prior native capacity and real Codex deadline observations passed. The new Codex child call has a pre-call reservation, a finite accepted deadline and a two-worker profile cap. Selected suite diagnostics are not full acceptance evidence; complete native qualification and reviewer gate remain pending."
     },
@@ -35,9 +57,15 @@
       "id": "AC3",
       "status": "pending",
       "evidence": [
-        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
-        "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json",
-        "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+        {
+          "ref": "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json"
+        },
+        {
+          "ref": "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+        }
       ],
       "detail": "Real Codex signal ignoring child passed: SIGTERM observed and ignored, kill escalation, OS exit and empty coalition before lifecycle slot release in 3.137 seconds. Prior Codex natural and cooperative rows passed. The prepared real Claude child row and prior Claude rows remain blocked on sandbox login. Interrupted provider accounting retains unknown exposure; no authority retirement or complete qualification is claimed."
     }
@@ -221,6 +249,7 @@
       }
     ],
     "not_rerun": "Native macOS rows and real engine qualification: they need the Mac and a Claude login, as OPEN.md says. Criteria statuses are unchanged (pending).",
-    "artifact_digests_note": "artifact_digests are the source branch's. Files whose home-directory paths were rewritten for the line, and the files listed in bringup.md as not carried, no longer match them."
+    "artifact_digests_note": "artifact_digests are the source branch's. Files whose home-directory paths were rewritten for the line, and the files listed in bringup.md as not carried, no longer match them.",
+    "evidence_form_note": "Each criterion's evidence was a bare path on the source branch; the line's validator reads an evidence entry as an object, so each is {\"ref\": path} here. No type is claimed for them: the criteria stay pending."
   }
 }
