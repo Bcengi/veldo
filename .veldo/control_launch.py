@@ -1923,7 +1923,9 @@ class Runner:
                 # VELDO-0308: a run directory its receiver sent nothing for (a group it could not read, a work
                 # tree of the same owner elsewhere) is the sweep's: it reads the kernel again (clear_runs).
                 self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
-            self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
+            failure = record.get('space_failure') or {}
+            outcome = 'cancelled' if failure.get('retry') or failure.get('andon') else 'completed' if clean else 'failed'
+            self._retire(record['dispatch_id'], outcome, 'worker_reaped')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
             # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
