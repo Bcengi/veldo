@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_space_admission.py"
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
   - "scripts/suites/*_veldo_0334_*.py"

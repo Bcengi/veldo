@@ -2185,6 +2185,15 @@
    ],
    "regions": "VELDO-0316 AC1-AC4 admission, waiting, advised startup, need selection and digest binding.",
    "requires_note": "Only ROOT and expect; real SQLite ledger, reservations and dispatches, temporary Git and signed mode commands; fixture eligibility and containment."
+  },
+  {
+   "name": "158_veldo_0334_space_freed",
+   "file": "158_veldo_0334_space_freed.py",
+   "requires": [
+    "158_veldo_0334_space_freed"
+   ],
+   "regions": "VELDO-0334 AC1-AC3: one admission Signal, cached waits, freeing marks and journal space wakes; real worker completion and optimistic concurrency.",
+   "requires_note": "Only ROOT and expect. Real SQLite, signed mode commands, Git, Runner, FactoryLoop, Signal and removers. Frozen clock, eligibility seam and fixture free-byte reader; worker pipe completion, no sleeps."
   }
  ],
  "resource_capacities": {

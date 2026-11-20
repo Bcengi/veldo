@@ -16439,6 +16439,49 @@ def cases():
     add(315, 'space315-filter-hides-children', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "    ledger = getattr(ledger, 'removal_ledger', ledger)\n", '', ['space315/cli/foreign-child'])
 
+    # VELDO-0334: the three stated falsifiers and the ledger/Signal boundaries they need.
+    space334 = '158_veldo_0334_space_freed.py'
+    cached334 = "    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:\n"
+    add(334, 'space334-retry-every-offer', space334, 'control_space_admission.py',
+        cached334, "    if False:  # defect: every offer retries deferred items\n",
+        ['space334/ac1/one-signal'], also=[(
+            "    if reason is not None and not hold['retry_asked']:\n",
+            "    if reason is not None:  # defect: forget the one request\n")])
+    add(334, 'space334-read-every-offer', space334, 'control_space_admission.py',
+        cached334, "    if False:  # defect: a timer reads free space again\n",
+        ['space334/ac2/timer-still-waits', 'space334/ac2/no-read-write'])
+    add(334, 'space334-mark-without-wake', space334, 'control_service.py',
+        "                    self.loop.wake('space', record['seq'])\n",
+        "                    pass  # defect: mark without a space wake\n",
+        ['space334/ac3/removal-wakes', 'space334/ac3/release-wakes', 'space334/ac3/reconcile-wakes'])
+    add(334, 'space334-removal-without-mark', space334, 'control_space.py',
+        "        changes = self._freed_changes(self._freeing_pools(OUTCOME, params))\n",
+        "        changes = {}  # defect: removed bytes never mark a waiting hold\n",
+        ['space334/ac3/removal-wakes'])
+    add(334, 'space334-release-without-mark', space334, 'control_space.py',
+        "        changes = self._freed_changes(set(record['needs']), but=identity)\n",
+        "        changes = {}  # defect: a released promise never marks waiters\n",
+        ['space334/ac3/release-wakes'])
+    add(334, 'space334-reconcile-without-mark', space334, 'control_space.py',
+        "        changes = self._freed_changes(set(self.config['pools']))\n",
+        "        changes = {}  # defect: reconcile never marks waiters\n",
+        ['space334/ac3/reconcile-wakes'])
+    add(334, 'space334-never-clear-mark', space334, 'control_space.py',
+        "        record['freed'] = False\n", "        # defect: a judgment leaves the mark set\n",
+        ['space334/ac2/clear-after-judgment'])
+    add(334, 'space334-retry-without-ending-action', space334, 'control_space_signal.py',
+        "            ending = (ledger.item(identity).get('due') or {}).get('event')\n",
+        "            ending = event  # defect: lose the deferred item's ending action\n",
+        ['space334/ac1/retry-removes'])
+    add(334, 'space334-worker-without-space-pass', space334, 'control_service.py',
+        "        if self.watermark() > before:\n            self.space_pass()\n",
+        "        if self.watermark() > before:\n            pass  # defect: ignore worker freeing commits\n",
+        ['space334/ac3/worker-wakes'])
+    add(334, 'space334-clear-newer-mark', space334, 'control_space.py',
+        "        version = self._row(entity, HOLD_KIND)[0] if expected_version is None else expected_version\n",
+        "        version = self._row(entity, HOLD_KIND)[0]  # defect: clear a newer freeing write\n",
+        ['space334/race/freeing-during-judgment'])
+
     # VELDO-0316: each stated falsifier reaches a behavioral row through production copies.
     space316 = '157_veldo_0316_space_admission.py'
     add(316, 'space316-ignore-floor', space316, 'control_space_admission.py',
