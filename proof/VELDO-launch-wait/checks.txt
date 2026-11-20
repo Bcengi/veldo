@@ -1,0 +1,2 @@
+Focused selftests exit=2 (2 means partial run passed)
+mutations: passed registered=36 executed=36 reused=0 rejected=36 workers=48 elapsed=137.196s

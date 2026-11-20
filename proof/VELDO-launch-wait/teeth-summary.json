@@ -1,0 +1,130 @@
+{
+  "cases": [
+    "claude-argv-position-unchecked",
+    "claude-artifact-unreturned",
+    "claude-binding-skipped",
+    "claude-cap-checked-after-launch",
+    "claude-completion-gate-exit-only",
+    "claude-engines-unprotected",
+    "claude-entrance-interpreter-unchecked",
+    "claude-entrance-rehash-skipped",
+    "claude-error-result-complete",
+    "claude-exit-artifact-unbound",
+    "claude-floor-exit-code-completes",
+    "claude-invocation-completed-on-exit",
+    "claude-launch-wait-skips-exited",
+    "claude-lifecycle-stop-unregistered",
+    "claude-link-followed",
+    "claude-malformed-ignored",
+    "claude-missing-result-complete",
+    "claude-mode-unchecked",
+    "claude-nonzero-ignored",
+    "claude-parent-link-followed",
+    "claude-pin-digest-unchecked",
+    "claude-pin-unverified",
+    "claude-qualification-not-installed",
+    "claude-signal-ignored",
+    "claude-slot-completed-on-exit",
+    "claude-stop-leaves-descendant",
+    "claude-stop-recorded-ended",
+    "claude-stopped-invocation-released",
+    "claude-terminal-main-loop-usage",
+    "claude-unknown-version-accepted",
+    "claude-updater-configured-accepted",
+    "claude-updater-left-on",
+    "claude-usage-cap-stop-ignored",
+    "claude-wrapper-entrance-unforwarded",
+    "claude-wrapper-path-unresolved",
+    "claude-wrapper-rehash-skipped"
+  ],
+  "elapsed": 137.1964088762179,
+  "executed": 36,
+  "implementation_commit": "f8c3a898ca17d283f887fdb13e2ef211cc540fe0",
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "6ad2c5e1884dc86c7ce0163777a09182845954040072efc2bc781c554af473c3",
+  "invalid_results": [],
+  "new_falsifier": {
+    "baseline": {
+      "count": 63,
+      "failed_details": [],
+      "failed_rows": [],
+      "targets": {
+        "launch/exited-before-settle": [
+          true
+        ],
+        "launch/record-before-report": [
+          true
+        ]
+      }
+    },
+    "case": {
+      "driver": "check_teeth_mutations.py",
+      "finding": 60,
+      "identity": "check_teeth_mutations.py:claude-launch-wait-skips-exited",
+      "module": "control_launch.py",
+      "name": "claude-launch-wait-skips-exited",
+      "new": "        if self.result == 'accepted' and (self.record or {}).get('state') == 'running':",
+      "old": "        if self.result == 'accepted' and (self.record or {}).get('state') in ('running', 'exited'):",
+      "rows": [
+        "launch/exited-before-settle",
+        "launch/record-before-report"
+      ],
+      "suite": "78_veldo_0060_claude_adapter.py"
+    },
+    "mutant": {
+      "count": 63,
+      "failed_details": [
+        [
+          "VELDO-0060 launch/exited-before-settle",
+          "finished: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed, {\"checked_at\": 1795154702.956202, \"events\": [\"accepted\", \"baseline\", \"running\"], \"file_bytes\": null, \"file_digest\": null, \"receiver\": {\"closed\": false, \"ended\": false, \"lost\": false, \"returncode\": 0}, \"receiver_log\": \"\", \"record_history\": [[\"prepared\", 1795154702.4993443], [\"accepted\", 1795154702.6347494], [\"running\", 1795154702.875742], [\"exited\", 1795154702.8889751]], \"report\": null, \"restored\": true, \"slot\": \"failed\"}] | wait took the artifact and end messages in order: ['accepted', 'baseline', 'running']"
+        ],
+        [
+          "VELDO-0060 launch/record-before-report",
+          "recorded: never a completion: its artifact is not complete, its invocation and slot failed, and the file is back at its qualified bytes [None, failed, {\"checked_at\": 1795154703.6017203, \"events\": [\"accepted\", \"baseline\", \"running\"], \"file_bytes\": null, \"file_digest\": null, \"receiver\": {\"closed\": false, \"ended\": false, \"lost\": false, \"returncode\": -9}, \"receiver_log\": \"\", \"record_history\": [[\"prepared\", 1795154702.980217], [\"accepted\", 1795154703.2980058], [\"running\", 1795154703.5406818], [\"exited\", 1795154703.5752409]], \"report\": null, \"restored\": true, \"slot\": \"failed\"}] | wait took the artifact and end messages in order: ['accepted', 'baseline', 'running'] | scan and space end completed before wait stopped the receiver"
+        ]
+      ],
+      "failed_rows": [
+        "VELDO-0060 launch/exited-before-settle",
+        "VELDO-0060 launch/record-before-report"
+      ],
+      "targets": {
+        "launch/exited-before-settle": [
+          false
+        ],
+        "launch/record-before-report": [
+          false
+        ]
+      }
+    },
+    "new_digest": "0e290e82da662feae18d6d46be801dad89c073810290f338fbc928213ad4259f",
+    "noop": {
+      "count": 63,
+      "failed_details": [],
+      "failed_rows": [],
+      "targets": {
+        "launch/exited-before-settle": [
+          true
+        ],
+        "launch/record-before-report": [
+          true
+        ]
+      }
+    },
+    "old_digest": "741aa71e2cad8c83c923b6f1a8575c7a0cbbc46044ea5a078aa4f51e96aa14a5",
+    "replacement_count": 1,
+    "reuse_reason": "unconfined_leg",
+    "source": "fresh"
+  },
+  "receipt": {
+    "path": "teeth.txt.gz",
+    "uncompressed_sha256": "174e2b3c289f0d4d830789a659020d674ae60a9101c0f26a5bef257afa3ed58d"
+  },
+  "registered": 36,
+  "rejected": 36,
+  "reuse_integrity_errors": [],
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "worker_invocations": 48
+}
