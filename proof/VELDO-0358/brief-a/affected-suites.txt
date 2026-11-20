@@ -1,0 +1,17 @@
+# Suites that call shared.wait_for, ForkFlag or ForkBarrier, run on this branch
+## 58, 59, 82 (ForkFlag, ForkBarrier): python3 scripts/selftest.py --suite 58_veldo_0031_claims --suite 59_veldo_0031_review --suite 82_veldo_0085_decomposition
+  58_veldo_0031_claims                             3 passed    3.43s
+  59_veldo_0031_review                             6 passed    3.60s
+  82_veldo_0085_decomposition                     15 passed    2.72s
+selftest (PARTIAL, 3 of 237 suites): 53 passed, 0 failed in 9.77s
+
+## 38 (shared.wait_for, row VELDO-0261 AC2 wait/expiry-report): crashes, see README section 'Reported to the lead'
+Traceback (most recent call last):
+  File "<checkout>/scripts/selftest.py", line 324, in <module>
+    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+  File "<checkout>/scripts/suites/38_veldo_0025_membership.py", line 512, in <module>
+    _v25_wf_report = _v25_wf_ns["wait_for"](_v25_never, (0.3, "the row's own short bound"), "a condition that never holds")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<checkout>/scripts/suites/shared.py", line 129, in wait_for
+    return WAITS.wait_for(condition, bound, what, sources=sources, terminal=terminal, _depth=3)
+           ^^^^^
