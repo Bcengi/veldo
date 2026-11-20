@@ -16529,6 +16529,41 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # ---- VELDO-0358 brief A: the suite runtime (wait primitive, latch holder, residue, progress watchdog).
+    # Each mutant is the specification's falsifier for its criterion; the suite is the brief's own.
+    runtime358 = '157_veldo_0358_suite_runtime.py'
+
+    def wait358(name, module, old, new, rows, **extra):
+        add(358, name, runtime358, module, old, new, rows)
+        result[-1]['dir'] = 'scripts/suites/support'
+        result[-1].update(extra)
+
+    wait358('wait358-expiry-reads-false', 'waits.py',
+            "                hung(row if row is not None else next_row(caller, name), name, where,\n",
+            "                return Result('expired', name, where, done_obs, terminal_obs, [], bound)  # defect\n"
+            "                hung(row if row is not None else next_row(caller, name), name, where,\n",
+            ['waits/three-outcomes'])
+    wait358('wait358-path-polled', 'waits.py',
+            "        self.interval = None\n        self._place()\n",
+            "        self.interval = 0.02  # defect: the path source is a 20 ms poll\n        self._place()\n",
+            ['waits/no-idle-wake'])
+    wait358('wait358-holder-outlives-test', 'holders.py',
+            "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read], **popen)",
+            "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read, self._write], **popen)  # defect",
+            ['holders/ends-with-its-test'], companions=['waits.py'])
+    wait358('wait358-threads-not-counted', 'waits.py',
+            "        if t.ident not in before['threads'] and t is not own and t.is_alive():\n",
+            "        if False:  # defect: threads are not read\n",
+            ['residue/named'])
+    wait358('wait358-watchdog-silent', 'waits.py',
+            "        _write_stacks(path)\n",
+            "        pass  # defect: the process ends without its stacks\n",
+            ['watchdog/progress-not-total'])
+    wait358('wait358-watchdog-total-time', 'waits.py',
+            "            self._supplied_last = now\n        self._real_last = time.monotonic()\n",
+            "            pass  # defect: armed once per process, never re-armed by a row\n",
+            ['watchdog/progress-not-total'])
+
     return result
 
 
