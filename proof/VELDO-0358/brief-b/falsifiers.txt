@@ -1,0 +1,170 @@
+VELDO-0358 brief B falsifiers: 11 registered cases, suite 158_veldo_0358_census.py
+CONTROL (unmutated): 31 rows, failed rows: none
+
+====================================================================================================
+CASE wall358-sleep-admitted   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-sleep-admitted)
+@@ -143,2 +143,4 @@
+ def site(found, rel, rule, line, text, function, form, cls):
++    if rule == 'R1':
++        return  # defect: this rule's sites are not reported
+     found.append({'file': rel, 'rule': rule, 'line': line, 'text': normalized(text), 'function': function,
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule', 'VELDO-0358 census/lists-from-authority'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/rule_sleep.py', 'scripts/fx/rule_sleep_aliased.py', 'scripts/fx/rule_sleep_imported_inline.py', 'scripts/fx/rule_sleep_source.py', 'scripts/fx/rule_sleep_page.spec.ts', 'scripts/fx/position_sleep_command.py'], 'spurious': [], 'counted': [10, 16], 'exit': 1, 'baselined': [0, 10], 'computed': [0, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 0 with a site\nwallclock: sites: 0 (R1 0, R2 0, R3 0, R4 0); by class: none; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n'], 'changed': [0, 'wallclock: scope: the opened-files record of 1 suite(s), 1 changed file(s); 3 file(s) read, 0 with a site\nwallclock: sites: 0 (R1 0, R2 0, R3 0, R4 0); by class: none; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n'], 'repository': [1, 'ites/85_veldo_0158_credential_delivery.py in _v158_suite.killing: the baseline says 1, required 0 (0 site(s)): time.sleep(0.02)\nwallclock: baseline_stale R1 (no site left) scripts/suites/85_veldo_0158_credential_delivery.py in _v158_suite: the baseline says 1, requ
+RED BECAUSE: VELDO-0358 census/lists-from-authority: {'verdicts': {'unchanged': False, 'removed-and-lowered': False, 'added-with-own-entry': False, 'removed-entry-left': True, 'duplicated-baselined-line': False, 'copied-excepted-line': False, 'unknown-kind': True, 'report-mode': False}, 'outputs': {'unchanged': [1, 'wallclock: sites: 0 (R1 0, R2 0, R3 0, R4 0); by class: none; excepted by the authority: 0\nwallclock: baseline: 2 entry(ies), 2 site(s) in 1 file(s); by rule: R1 2, R2 0, R3 0, R4 0\nwallclock: baseline_stale R1 (no site left) scripts/fx/legacy.py in poll: the baseline says 1, required 0 (0 site(s)): time.sleep(1)\nwallclock: baseline_stale R1 (no site left) scripts/fx/legacy.py in poll: the baseline says 1, required 0 (0 site(s)): time.sleep(3)\nwallclock: RED (0 wallclock_site, 2 baseline_stale)\n'], 'removed-and-lowered': [1, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 2 file(s) read, 0 with a site\nwallclock: sites: 0 (R1 0, R2 0, R3 0, R4 0); by class: none; excepted by the authority: 0\nwallclock: baseline: 1 entry(ies), 1 site(s) in 1 file(s); by rule: R1 1, R2 0, R3 0, R4 0\nwallclock: baseline_stale R1 (no site left) scripts/fx/legacy.py in poll: the baseline says 1, required 0 (0 site(s)): time.sleep(3)\nwallclock: RED (0 wallclock_site, 1 baseline_stale)\n'], 'added-with-own-entry': [1, '(s) in 2 file(s); by rule: R1 3, R2 0, R3 0, R4 0\nwallclock: baseline_stale R1 (no
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-clock-admitted   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-clock-admitted)
+@@ -143,2 +143,4 @@
+ def site(found, rel, rule, line, text, function, form, cls):
++    if rule == 'R2':
++        return  # defect: this rule's sites are not reported
+     found.append({'file': rel, 'rule': rule, 'line': line, 'text': normalized(text), 'function': function,
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/rule_clock.py'], 'spurious': [], 'counted': [15, 16], 'exit': 1, 'baselined': [0, 15], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/unopened.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(8)\nwallclock: RED (2 wallclock_site, 0 baseline_stale)\n'], 'repository': [1, "ually: the baseline says 1, required 0 (0 site(s)): while time.monotonic() < until:\nwallclock: baseline_stale R2 (no site left) scripts/suites/support/v174_journey.py in project_line: the baseline says 1, required 0 (0 site(s)): {'capacity':4,'invocations':20,'wall_seconds':300},now=time.time())\nwallclock: baseline_stale R2 (no site left) script
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-timeout-admitted   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-timeout-admitted)
+@@ -143,2 +143,4 @@
+ def site(found, rel, rule, line, text, function, form, cls):
++    if rule == 'R3':
++        return  # defect: this rule's sites are not reported
+     found.append({'file': rel, 'rule': rule, 'line': line, 'text': normalized(text), 'function': function,
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/rule_timeout.py', 'scripts/fx/rule_timeout_light_child.py', 'scripts/fx/position_select.py', 'scripts/fx/position_queue_get.py', 'scripts/fx/position_condition_wait_for.py', 'scripts/fx/position_timer.py', 'scripts/fx/position_thread_join.py', 'scripts/fx/position_unknown_receiver.py'], 'spurious': [], 'counted': [8, 16], 'exit': 1, 'baselined': [0, 8], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/unopened.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(8)\nwallclock: RED (2 wallclock_site, 0 baseline_stale)\n'], 'repository': [1, "uired 0 (0 site(s)): wake.settimeout(0.2)\nwallclock: baseline_stale R3 (no site
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-duration-bound-admitted   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-duration-bound-admitted)
+@@ -143,2 +143,4 @@
+ def site(found, rel, rule, line, text, function, form, cls):
++    if rule == 'R4':
++        return  # defect: this rule's sites are not reported
+     found.append({'file': rel, 'rule': rule, 'line': line, 'text': normalized(text), 'function': function,
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/rule_bound.py'], 'spurious': [], 'counted': [15, 16], 'exit': 1, 'baselined': [0, 15], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/unopened.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(8)\nwallclock: RED (2 wallclock_site, 0 baseline_stale)\n'], 'repository': [1, "claude_adapter.py in _v60_suite: the baseline says 1, required 0 (0 site(s)): and 2 * GRACE - 0.1 <= seen['took'] <= 2 * GRACE + 4.0)\nwallclock: baseline_stale R4 (no site left) scripts/suites/78_veldo_0060_claude_adapter.py in _v60_suite: the baseline says 1, required 0 (0 site(s)): len(own) == 1 and own[0]['done'] is False and elapsed < 20\nwal
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-positional-ignored   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-positional-ignored)
+@@ -321,3 +321,3 @@
+                 self.timeout(node, keyword.value, 'keyword timeout', True)
+-        for position, value, form, strict in self.positional(node, resolved):
++        for position, value, form, strict in ():  # defect: only the keyword timeout is read
+             self.timeout(node, value, form, strict)
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/position_select.py', 'scripts/fx/position_queue_get.py', 'scripts/fx/position_condition_wait_for.py', 'scripts/fx/position_timer.py', 'scripts/fx/position_thread_join.py', 'scripts/fx/position_unknown_receiver.py'], 'spurious': [], 'counted': [10, 16], 'exit': 1, 'baselined': [0, 10], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/unopened.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(8)\nwallclock: RED (2 wallclock_site, 0 baseline_stale)\n'], 'repository': [1, '/suites/94_veldo_0162_configuration_routes.py in _v162_suite: the baseline says 2, required 0 (0 site(s)): listener.bind(str(hint_path)); listener.lis
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-scope-inferred   target row(s): census/each-rule
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-scope-inferred)
+@@ -631,7 +631,8 @@
+         how = 'the opened-files record of %d suite(s)' % len(record)
+-        for paths in record.values():
+-            for rel in paths:
+-                rel = os.path.normpath(rel)
+-                if rel.startswith(tuple(tree + '/' for tree in SCOPE_TREES)):
+-                    take(rel)
++        for name in record:  # defect: the scope is what each suite's import statements name
++            rel = 'scripts/suites/%s.py' % name
++            take(rel)
++            source = (root / rel).read_text() if (root / rel).is_file() else ''
++            for module in re.findall(r'(?m)^\s*(?:from|import)\s+([\w.]+)', source):
++                take('scripts/suites/' + module.replace('.', '/') + '.py')
+         if root.resolve() != authority.resolve():
+NO-OP COPY : census/each-rule=[True] (31 rows, failed: none)
+MUTANT     : census/each-rule=[False] (31 rows, failed: ['VELDO-0358 census/each-rule'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': [], 'spurious': [], 'counted': [16, 16], 'exit': 1, 'baselined': [0, 16], 'computed': [0, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 1 file(s) read, 0 with a site\nwallclock: sites: 0 (R1 0, R2 0, R3 0, R4 0); by class: none; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n'], 'changed': [1, '); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/unopened.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(8)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'repository': [0, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 692 file(s) read, 432 with a site\nwallclock: sites: 3051 (R1 296, R2 1449, R3 1250, R4 56); by class: A 56, D1 1121, D2 90, P 238, S1 36, S2 98, S3 11, ST 151, T 1250; excepted by the authority: 36\nwallclock: baseline: 2869 entry(ies), 3015 site(s) in 431 file(s); by rule: R1 261, R2 1449, R3 1250, R4 55\nwallclock: pass (no site over its allowed count, every baseline entry at its
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-baseline-from-candidate   target row(s): census/lists-from-authority
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-baseline-from-candidate)
+@@ -806,3 +806,3 @@
+             return 0
+-        authority_baseline = load_list(baseline_path, False)[0]
++        authority_baseline = load_list(root / BASELINE, False)[0]  # defect: the candidate's is trusted
+         candidate_path = root / BASELINE
+NO-OP COPY : census/lists-from-authority=[True] (31 rows, failed: none)
+MUTANT     : census/lists-from-authority=[False] (31 rows, failed: ['VELDO-0358 census/each-rule', 'VELDO-0358 census/lists-from-authority'])
+RED BECAUSE: VELDO-0358 census/each-rule: {'missed': ['scripts/fx/rule_sleep.py', 'scripts/fx/rule_sleep_aliased.py', 'scripts/fx/rule_sleep_imported_inline.py', 'scripts/fx/rule_sleep_source.py', 'scripts/fx/rule_sleep_page.spec.ts', 'scripts/fx/rule_clock.py', 'scripts/fx/rule_timeout.py', 'scripts/fx/rule_timeout_light_child.py', 'scripts/fx/rule_bound.py', 'scripts/fx/position_select.py', 'scripts/fx/position_queue_get.py', 'scripts/fx/position_condition_wait_for.py', 'scripts/fx/position_timer.py', 'scripts/fx/position_sleep_command.py', 'scripts/fx/position_thread_join.py', 'scripts/fx/position_unknown_receiver.py'], 'spurious': [], 'counted': [0, 16], 'exit': 1, 'baselined': [0, 16], 'computed': [1, "wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: list_refused: baseline /tmp/v358-census-7lskqzll/scope/candidate/scripts/suites/wallclock_baseline.json is not readable JSON: [Errno 2] No such file or directory: '/tmp/v358-census-7lskqzll/scope/candidate/scripts/suites/wallclock_baseline.json'\nwallclock: RED (a list or the record is refused)\n"], 'changed': [1, "te\nwallclock: sites: 2 (R1 2, R2 0, R3 0, R4 0); by class: S1 2; excepted by the authority: 0\nwallclock: list_refused: baseline /tmp/v358-census-7lskqzll/scope/candidate/scripts/suites/wallclock_b
+RED BECAUSE: VELDO-0358 census/lists-from-authority: {'verdicts': {'unchanged': True, 'removed-and-lowered': True, 'added-with-own-entry': False, 'removed-entry-left': True, 'duplicated-baselined-line': True, 'copied-excepted-line': True, 'unknown-kind': True, 'report-mode': True}, 'outputs': {'added-with-own-entry': [0, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 3 file(s) read, 3 with a site\nwallclock: sites: 4 (R1 4, R2 0, R3 0, R4 0); by class: S1 4; excepted by the authority: 1\nwallclock: baseline: 3 entry(ies), 3 site(s) in 2 file(s); by rule: R1 3, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n']}}
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-stale-entry-tolerated   target row(s): census/lists-from-authority
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-stale-entry-tolerated)
+@@ -730,3 +730,3 @@
+             required = base  # a file outside the scope is the authority's own: its entry is carried
+-        if recorded != required:
++        if recorded < required:  # defect: a count above the sites is accepted
+             problems.append(('baseline_stale', key, have, required, recorded))
+NO-OP COPY : census/lists-from-authority=[True] (31 rows, failed: none)
+MUTANT     : census/lists-from-authority=[False] (31 rows, failed: ['VELDO-0358 census/lists-from-authority'])
+RED BECAUSE: VELDO-0358 census/lists-from-authority: {'verdicts': {'unchanged': True, 'removed-and-lowered': True, 'added-with-own-entry': True, 'removed-entry-left': False, 'duplicated-baselined-line': True, 'copied-excepted-line': True, 'unknown-kind': True, 'report-mode': True}, 'outputs': {'removed-entry-left': [0, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 2 file(s) read, 2 with a site\nwallclock: sites: 2 (R1 2, R2 0, R3 0, R4 0); by class: S1 2; excepted by the authority: 1\nwallclock: baseline: 2 entry(ies), 2 site(s) in 1 file(s); by rule: R1 2, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n']}}
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE wall358-count-ignored   target row(s): census/lists-from-authority
+--- a/scripts/check_wallclock.py
++++ b/scripts/check_wallclock.py (mutant wall358-count-ignored)
+@@ -724,3 +724,3 @@
+         allowed = base + excepted
+-        if have > allowed:
++        if have and not allowed:  # defect: a key matches whatever its count
+             problems.append(('wallclock_site', key, have, allowed, recorded))
+NO-OP COPY : census/lists-from-authority=[True] (31 rows, failed: none)
+MUTANT     : census/lists-from-authority=[False] (31 rows, failed: ['VELDO-0358 census/lists-from-authority'])
+RED BECAUSE: VELDO-0358 census/lists-from-authority: {'verdicts': {'unchanged': True, 'removed-and-lowered': True, 'added-with-own-entry': True, 'removed-entry-left': True, 'duplicated-baselined-line': False, 'copied-excepted-line': False, 'unknown-kind': True, 'report-mode': True}, 'outputs': {'duplicated-baselined-line': [0, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 2 file(s) read, 2 with a site\nwallclock: sites: 4 (R1 4, R2 0, R3 0, R4 0); by class: S1 4; excepted by the authority: 1\nwallclock: baseline: 2 entry(ies), 2 site(s) in 1 file(s); by rule: R1 2, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n'], 'copied-excepted-line': [0, 'wallclock: scope: no opened-files record: every file under scripts/ and proof/; 2 file(s) read, 2 with a site\nwallclock: sites: 4 (R1 4, R2 0, R3 0, R4 0); by class: S1 4; excepted by the authority: 1\nwallclock: baseline: 2 entry(ies), 2 site(s) in 1 file(s); by rule: R1 2, R2 0, R3 0, R4 0\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n']}}
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE supersede358-0223-ready   target row(s): supersede/0223-not-claimable
+--- a/specs/VELDO-0223-a-red-under-others-load-is-rerun-quietly-before-it-counts.md
++++ b/specs/VELDO-0223-a-red-under-others-load-is-rerun-quietly-before-it-counts.md (mutant supersede358-0223-ready)
+@@ -4,3 +4,3 @@
+ title: A result under someone else's load is rerun quietly before it counts, and an unconfirmed red is invalid
+-status: blocked
++status: ready
+ risk: high
+NO-OP COPY : supersede/0223-not-claimable=[True] (31 rows, failed: none)
+MUTANT     : supersede/0223-not-claimable=[False] (31 rows, failed: ['VELDO-0358 supersede/0223-not-claimable'])
+RED BECAUSE: VELDO-0358 supersede/0223-not-claimable: {'derived': 'ready', 'committed': 'blocked', 'history': "\n\n- 2026-11-20: SUPERSEDED by VELDO-0358 (a gate's verdict does not depend on how busy the machine is) and\n  never built. Status blocked, and not to be claimed. The owner rejected what this specification proposes:\n  no quiet window, no quiet rerun and no result that depends on a sample of the machin"}
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+====================================================================================================
+CASE supersede358-invalid-word   target row(s): supersede/result-words-closed
+--- a/scripts/verify.sh
++++ b/scripts/verify.sh (mutant supersede358-invalid-word)
+@@ -558,3 +558,3 @@
+ else
+-  echo "GATE: RED (${COMMIT})"
++  echo "GATE: INVALID (${COMMIT})"
+   exit 1
+NO-OP COPY : supersede/result-words-closed=[True] (31 rows, failed: none)
+MUTANT     : supersede/result-words-closed=[False] (31 rows, failed: ['VELDO-0358 supersede/result-words-closed'])
+RED BECAUSE: VELDO-0358 supersede/result-words-closed: {'words': ['GREEN', 'INVALID', 'NOT JUDGED', 'NOT STARTED', 'RED'], 'reasons': ['gate output could not be captured']}
+VERDICT    : REJECTED (the target row is red under the mutant, green without it)
+
+SUMMARY: 11 of 11 falsifiers rejected
+exit 0

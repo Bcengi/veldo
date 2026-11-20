@@ -1,0 +1,57 @@
+VELDO-0358 brief B: quick checks on the committed tree (none of these is the gate; scripts/verify.sh was not run)
+
+$ bash -n scripts/verify.sh
+exit 0
+
+$ bash -n engine/scripts/verify.sh
+exit 0
+
+$ bash scripts/check_lint.sh
+lint: pass (1249 python, 40 shell, 2.57s)
+exit 0
+
+$ bash scripts/check_template_sync.sh
+template sync: pass (326 pair(s) compared, 6 declared per-repo, 367 engine-only)
+exit 0
+
+$ bash scripts/check_generated.sh
+generated: pass (specs/index.md)
+generated: pass (proof/WARP-0716/crossing-state.md)
+generated: pass (proof/WARP-0712/order-dependence.md)
+generated: pass (proof/WARP-0712/split-plan.md)
+generated: pass (scripts/suites/requires.json)
+generated: pass
+exit 0
+
+$ python3 scripts/check_personal_setup.py
+veldo installation: none found (looked at ~/.config/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+exit 0
+
+$ python3 scripts/check_wallclock.py
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 692 file(s) read, 432 with a site
+wallclock: sites: 3051 (R1 296, R2 1449, R3 1250, R4 56); by class: A 56, D1 1121, D2 90, P 238, S1 36, S2 98, S3 11, ST 151, T 1250; excepted by the authority: 36
+wallclock: baseline: 2869 entry(ies), 3015 site(s) in 431 file(s); by rule: R1 261, R2 1449, R3 1250, R4 55
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+exit 0
+
+$ python3 .veldo/shape_gate.py
+   shape (review lane, non-blocking): dependencies: .veldo/pack_conformance.py (area distribution) references .veldo/policy_check.py (area enforcement) over an edge dependencies.allow does not model
+   shape (review lane, non-blocking): pattern stdlib_only_enforcement (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): pattern reuse_one_parser (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant no_detached_processes (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant gate_is_the_only_done (review lane): reviewer guidance, not gate-enforced
+   shape gate: pass (mechanizable rules enforced; review-lane rules are reviewer guidance)
+exit 0
+
+$ python3 .veldo/validate.py all   (last line and exit)
+  <repo>/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no revie
+exit 0
+
+$ python3 .veldo/policy_check.py   (expected: blocked until the owner approves the protected paths)
+VELDO policy: blocked. Protected path touched with no valid path-scoped approval.
+  .veldo/policy.yaml  (protected by .veldo/policy.yaml)
+  Required: an approved, unexpired veldo.approval/v1 whose scope.commit is a
+  commit in this push, whose scope.paths covers .veldo/policy.yaml, and whose approver
+  is not the proof producer (no self-approval).
