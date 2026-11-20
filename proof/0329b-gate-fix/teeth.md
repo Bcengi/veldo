@@ -611,3 +611,69 @@ Runs, holding the gate lock so that no gate ran beside them, except where said:
 
 Not done. scripts/verify.sh was not run. The new case has no measured time in .veldo/gate-schedule.json; the
 authority measures it.
+
+### Gate 12 (1bfdd7a8): three non-live reds, two fixed; the two live rows are left to the lead
+
+The teeth findings all passed. Reds: VELDO-0230 qualify/reproduces, the mutation stage (driver_error),
+and VELDO-0127 live/claude and live/codex, which are not touched here.
+
+**1. VELDO-0230 qualify/reproduces (four VELDO-0127 resources-* fixtures differ).** The model catalog
+was not the cause. The row runs `.veldo/qualify.py` on the binaries the engines record names, Codex
+0.166.0 and Claude Code 2.1.317, both still installed. The CLIs on PATH (Codex 0.154.0, Claude Code
+2.1.326) are never read by it. The four fixtures bind the sha256 of five production modules
+(proof/VELDO-0127/evidence.py:11-16, `production`). The launch-wait change (f8c3a898) changed
+.veldo/control_launch.py, so only that digest moved. These files are meant to be regenerated, and
+VELDO-0230 AC2 documents how: `python3 .veldo/qualify.py --codex <recorded vendor binary> --claude
+<recorded version>` (precedent: 58ed6611). Rerun that way on 1bfdd7a8 with exit 0. Every other file it
+wrote was byte-identical. The four fixtures changed by one line each (the control_launch.py digest).
+Commit fe9eb598.
+
+**2. Mutation stage: "ownership ledger contains invalid resource entries: [directory,
+.../1395/graph-43-*/stage-runtime/work/veldo-graph-*]".** Case 1395 was the confined mutant
+graph-child-inherits-caller-environment running suite 59. That suite's poison-work node replaces
+<stage>/work with a link to /proc/self/cwd. Later the suite unlinks the link and renames
+work.displaced back. In between, the coordinator's live meter (WorkerMeter.unit_paths -> admitted)
+resolves each ledger path. Python 3.12's non-strict realpath guards its lstat of each component.
+It does not guard the os.readlink that follows (/usr/lib/python3.12/posixpath.py:476-499). A link
+removed between the two makes readlink raise FileNotFoundError. A directory renamed back raises
+EINVAL. admitted() caught that OSError as a forged entry. Only one entry was named, which fits a
+microsecond window. The entry is the worker's own child working directory, recorded while work was
+still a real directory. The scratch directory never entered the ledger wrongly. Its line was
+misjudged while a link on its path was swapped. Not reproduced by polling (four harness runs of
+suite 59 and three link mutants, no rejection). Reproduced deterministically by making readlink
+perform the suite's swap.
+
+Fix (scripts/mutation_ownership.py, engine copy in sync): `resolved_or_none`. A resolve() that raises
+is read again, up to 3 times. A path shown gone names nothing and is dropped, as an absent directory
+already was. One that keeps failing is raised and rejected as before. Paths that resolve are judged
+exactly as before, so a forged entry through a link out of the home stays rejected (asserted in the
+new row). Test: suite 115 row admission/ledger-link-swapped-mid-resolve (unlink only, and unlink plus
+rename back), red on the module of 1bfdd7a8 and green after. Falsifier: admission219-swapped-link-unread
+(the bare resolve() restored). Commit 0b767d26.
+
+**3. VELDO-0127 live/claude and live/codex ("missing or stale live capture"): not touched.** "Stale"
+is neither an age limit nor a CLI version check. It is a digest binding: proof/VELDO-0127/evidence.py:55-59
+(`problems`) reports it when the record's schema or engine is wrong, or when `record['production']` differs
+from `production(root)`. That is the sha256 of the five modules in MODULES (evidence.py:11-12):
+control_agent_config.py, control_agent_config_handoff.py, control_launch.py, control_engine_claude.py,
+control_engine_codex.py. On 1bfdd7a8 both claude-live.json and codex-live.json differ in
+control_launch.py alone (the launch-wait change), the same cause as item 1. The binary is checked
+separately (evidence.py:66-68: each run's executable_digest against the qualified sha256) and did not
+fail. Refreshing these needs real Claude and Codex runs: the owner's approval, the lead's step.
+
+Runs, under scripts/host_heavy.sh (holding the gate lock) with 16 busy loops beside them, on 0b767d26:
+
+- suite 126_veldo_0230_qualify_reproduces: 4 passed (qualify/reproduces among them), 109 s. Load 30.6.
+- suite 115_veldo_0219_measured_admission, five times in a row: 31 passed each time (the new row
+  admission/ledger-link-swapped-mid-resolve among them).
+- suite 59_veldo_0043_graph (the suite of case 1395): 21 passed.
+- the mutation driver with --case admission219-swapped-link-unread --case
+  graph-child-inherits-caller-environment --case graph-stage-links-unchecked --case
+  graph-stage-link-checks-off: "passed registered=4 executed=4 reused=0 rejected=4". Case 1395's mutant
+  is rejected without a driver_error, and the new falsifier is rejected.
+
+scripts/check_personal_setup.py on the new head: 0 findings. scripts/check_template_sync.sh: pass.
+Nothing added carries a home path or a binary file.
+
+Not done: scripts/verify.sh was not run. The live captures (item 3) are left to the lead. The new
+falsifier has no measured time in .veldo/gate-schedule.json; the authority measures it.
