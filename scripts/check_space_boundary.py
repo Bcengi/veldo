@@ -133,6 +133,11 @@ REMOVERS = {
 CREATORS[('engine/scripts/verify.sh', '<module>')] = 'The gate creates its own schedule folder.'
 REVIEWED[('engine/scripts/verify.sh', '<EXIT trap>')] = 'The gate removes its own schedule folder at exit; design 6.10.'
 REVIEWED[('engine/.veldo/control_graph_install.py', 'install')] = 'The install owns its freshly built staging and temporary folders; design 6.10.'
+# VELDO-0124, added when the ticket was brought onto the line (2026-11-20) and not yet reviewed with design 6.10:
+# the Mac worker host has no space ledger, and retirement removes the one TMPDIR its Supervisor made for the dispatch.
+REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')] = (
+    'Retirement removes the run\'s own per-dispatch TMPDIR (veldo-<label> under the Mac user temp folder), '
+    'which Supervisor.start created for that dispatch; pending review with design 6.10.')
 
 
 def canonical(path):
