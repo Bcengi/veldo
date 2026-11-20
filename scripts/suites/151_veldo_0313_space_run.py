@@ -513,12 +513,20 @@ def _v313_space_run_suite():
             """The source of a command that ends at once with `code` and leaves a process that left its
             session and its parent. That process holds a file under the command's temporary folder
             and lives until the suite makes `latch` (never by the clock, short of LINGER); at its last
-            line it writes to `late` what it sees. `shown`, when given, gets the command's cgroup."""
+            line it writes to `late` what it sees. `shown`, when given, gets the command's cgroup.
+
+            The command ends only when the process between it and the one it leaves has ended and is
+            collected. That one lives for an instant, and a supervisor that reads the table at the
+            command's exit listed it on a loaded host beside the one that stays (gate fix 11: two
+            descendants, started in the same tick); a row that then asks whether what was listed is
+            still there found it gone. What the command leaves is now one process, whenever it is read."""
             return ('import json, os, sys, time\n'
                     'held = os.path.join(os.environ["TMPDIR"], "held.txt")\n'
                     'open(held, "w").write("in use\\n")\n'
                     + ('open(%r, "w").write(open("/proc/self/cgroup").read())\n' % str(shown) if shown else '')
-                    + 'if os.fork():\n'
+                    + 'between = os.fork()\n'
+                    'if between:\n'
+                    '    os.waitpid(between, 0)\n'
                     '    os._exit(%d)\n'
                     'os.setsid()\n'
                     'if os.fork():\n'
@@ -998,8 +1006,10 @@ def _v313_space_run_suite():
             late, latch = temp / 'late-stop-after.json', temp / 'latch-stop-after'
             wiring = space()
             since = seq()
+            began = time.monotonic()
             status, said, report = run(['--label', 'stop-after', '--', sys.executable, '-c',
                                         lingering(5, latch, late)], W17, wiring)
+            took = time.monotonic() - began
             given, first = report.get('given') or {}, report.get('end') or {}
             process = given.get('supervisor') or {}
             left = alive(first.get('holders'), 'descendant')
@@ -1007,11 +1017,17 @@ def _v313_space_run_suite():
             # command ended they reach nothing and end nothing.
             for number in (signal.SIGTERM, signal.SIGHUP):
                 os.kill(process['pid'], number)
+            stayed = there(process, 1.5)
+            still, word = alive(first.get('holders'), 'descendant'), text_of(late)
             check(row, 'the command left a process and the supervisor said it stays; SIGTERM and SIGHUP after the '
                        'command ended leave it there a second and a half later, and the process the command left '
-                       'was sent nothing [%s %s %s]' % (status, report.get('staying'), left),
-                  status == 5 and report.get('staying') is True and bool(left) and there(process, 1.5)
-                  and bool(alive(first.get('holders'), 'descendant')) and not late.exists())
+                       'was sent nothing [%s %s %s; the supervisor stayed %s, what the command left is there %s and '
+                       'its last line is %r; the wrapper returned after %.1f s and the watch ended %.1f s after '
+                       'the command began, of the %.0f s the fixture gives what it leaves]'
+                       % (status, report.get('staying'), left, stayed, bool(still), word, took,
+                          time.monotonic() - began, LINGER),
+                  status == 5 and report.get('staying') is True and bool(left) and stayed
+                  and bool(still) and not late.exists())
             held_by = rule_three(given['items'][given['scratch']]) if given.get('scratch') else None
             check(row, 'rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent '
                        '[%s %s]' % ((held_by or {}).get('found'), [name for name, _ in written(since)]),
