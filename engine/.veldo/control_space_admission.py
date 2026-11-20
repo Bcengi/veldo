@@ -130,7 +130,10 @@ def finished(ledger, dispatches, project, station):
                 continue
             seen.add(identity)
             hold = ledger.hold((contract.get('space') or {}).get('hold')) or {}
-            runs.append(hold.get('used', {}) if hold.get('state') == 'released' else {})
+            sizes = hold.get('used', {}) if hold.get('state') == 'released' else {}
+            if not contract.get('space'):
+                sizes = measured(ledger, identity)
+            runs.append(sizes)
             if len(runs) == 5:
                 return runs
     return runs

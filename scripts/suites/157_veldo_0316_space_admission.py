@@ -326,7 +326,7 @@ def _v316_suite():
                 path = f.root / 'run-output'
                 path.mkdir()
                 (path / 'output').write_bytes(b'output')
-                placed = f.ledger.declare('scratch', {'path': str(path)}, owner, 'fixture')
+                placed = f.ledger.declare('scratch', {'path': str(path)}, owner, 'seam')
                 assert placed['ok'], placed
                 assert f.ledger.confirm(placed['item'])['ok']
                 receiver = object.__new__(L.Receiver)
