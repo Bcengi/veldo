@@ -1,0 +1,11 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -46,7 +46,7 @@
+     """
+     if not isinstance(value, dict) or not isinstance(value.get('sandbox', {}), dict):
+         raise Refused('unsupported_configuration:claude_settings')
+-    if value.get('sandbox', {}).get('enabled', False) is not False:
++    if False:
+         raise Refused('unsupported_configuration:claude_bash_sandbox')
+     if any(key in value for key in ('policyHelper', 'policyHelpers', 'env')):
+         raise Refused('unsupported_configuration:claude_settings_source')

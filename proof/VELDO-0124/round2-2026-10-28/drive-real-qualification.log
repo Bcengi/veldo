@@ -1,0 +1,15 @@
+{
+  "qualified_exit": 2,
+  "live_model_calls": 1,
+  "rows": [
+    [
+      "native/qualified-claude_code/descendant",
+      "blocked"
+    ],
+    [
+      "native/qualified-codex/descendant",
+      "passed"
+    ]
+  ],
+  "stray_jobs": ""
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "name": "lint",
+    "command": [
+      "bash",
+      "scripts/check_lint.sh"
+    ],
+    "exit_code": 0,
+    "log": "lint.log"
+  },
+  {
+    "name": "security",
+    "command": [
+      "python3",
+      "scripts/secret_inventory.py"
+    ],
+    "exit_code": 0,
+    "log": "security.log"
+  },
+  {
+    "name": "generated",
+    "command": [
+      "bash",
+      "scripts/check_generated.sh"
+    ],
+    "exit_code": 0,
+    "log": "generated.log"
+  },
+  {
+    "name": "docs",
+    "command": [
+      "bash",
+      "scripts/check_docs.sh"
+    ],
+    "exit_code": 0,
+    "log": "docs.log"
+  },
+  {
+    "name": "template-sync",
+    "command": [
+      "bash",
+      "scripts/check_template_sync.sh"
+    ],
+    "exit_code": 0,
+    "log": "template-sync.log"
+  },
+  {
+    "name": "contracts",
+    "command": [
+      "python3",
+      ".veldo/validate.py",
+      "all"
+    ],
+    "exit_code": 1,
+    "log": "contracts.log"
+  },
+  {
+    "name": "shape",
+    "command": [
+      "python3",
+      ".veldo/shape_gate.py"
+    ],
+    "exit_code": 0,
+    "log": "shape.log"
+  }
+]

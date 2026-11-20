@@ -1,0 +1,5 @@
+--- a/project_runner_macos.py
++++ b/project_runner_macos.py
+@@ -284 +284 @@
+-        if now >= self.deadline and self.stage in (None, 'cooperative'):
++        if False and self.stage in (None, 'cooperative'):

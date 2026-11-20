@@ -1,0 +1,11 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -325,7 +325,7 @@
+                 if not isinstance(reference, dict) or set(reference) != {'path', 'digest'}:
+                     raise ValueError('reference')
+                 path = Path(reference['path'])
+-                if not path.is_absolute():
++                if False:
+                     raise ValueError('absolute evidence path required')
+                 path = path.resolve(strict=True)
+                 if not any(path.is_relative_to(Path(root).resolve(strict=True))

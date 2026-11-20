@@ -1,0 +1,5 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -49 +49 @@
+-    if value.get('sandbox', {}).get('enabled', False) is not False:
++    if False:

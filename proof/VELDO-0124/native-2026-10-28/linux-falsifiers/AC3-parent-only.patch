@@ -1,0 +1,11 @@
+--- a/project_runner_macos.py
++++ b/project_runner_macos.py
+@@ -276,7 +276,7 @@
+             observed = heartbeat['monotonic']
+             if self.last_heartbeat <= observed <= now:
+                 self.last_heartbeat = observed
+-        if self.exit_seen and not members:
++        if self.exit_seen:
+             if now >= self.deadline and self.cause is None:
+                 self.cause = 'runtime_cap'
+             return True

@@ -112,7 +112,90 @@ not tests run by this writing revision.
 
 ## History
 
+2026-10-29: round 3 addresses fixcheck N1 and N2 with reason-specific forged
+qualification cases, five isolated verification check mutants and a neutral
+fixture identity. Scoped suite and red/green evidence is recorded in
+`proof/VELDO-0124/round3-2026-10-29/`. Acceptance text is unchanged; the Mac owner
+action and complete native qualification remain pending.
+
+2026-10-28: round 2 addresses the independent review at e20b4c15. Qualification
+now verifies protected evidence files, SHA256 references and native observation
+bindings; the forged record falsifier runs against the reviewed and fixed code.
+A real Codex 0.154.0 child on the selected Mac ignores SIGTERM and requires kill
+escalation, with OS exit and no live descendants before slot release. The three
+existing real Claude Code rows and the newly prepared child row remain blocked
+on login inside the Keychain denying sandbox. `proof/VELDO-0124/OPEN.md` specifies
+the VELDO-0147 credential delivery needed from the owner. The manifest records
+current observations and blockers. Acceptance text and approval requirements
+are unchanged; no complete native qualification or activation is claimed.
+
+2026-10-15: batch 2 resolved the suite catalog conflicts while retaining both
+sets of registrations and regenerating prerequisite closures. The two owning
+suites were rerun against the integrated control modules, and all nine local
+falsifiers were rejected. The proof manifest now declares rollback and the
+pending unit/integration evidence explicitly. See `proof/VELDO-0124/ROUND-batch2.md`
+for static checks, review response locations and native commands. SSH to the
+selected Mac timed out; real Claude Code/Codex qualification and the reviewer
+gate remain blocked/pending. Status, criteria and approval requirements remain
+unchanged; local fixture results do not qualify the Mac.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
 installation, adoption, migration and rollback Release 4.
+
+2026-10-09: implemented the candidate profile in five canonical
+`project_runner_macos*.py` assets and their identical installed copies. Suites
+`103_veldo_0124_macos` and `104_veldo_0124_control` exercise Linux logic and the
+real signed control store against explicitly synthetic Apple interfaces. The
+build record, named rows, single-change falsifiers and runnable native commands
+are in `proof/VELDO-0124/README.md`. The selected Mac is the SSH tailnet alias
+`dmitrys-mac-mini`; its actual hostname, macOS version and installed engine
+configurations are not yet observed because access is unavailable until the
+owner enables it. Native launchd, filesystem/process containment and both real
+CLI configurations remain pending; fixtures confer no qualification or activation.
+All new runtime assets map to the existing project_runner area. Packs compose
+them from the engine canon. Criteria, risk, approval requirements and status are
+unchanged. The canonical gate and independent review remain the reviewer's work.
+
+2026-10-10: first native run on the selected Mac, hostname `dmitrys-mini.lan`,
+macOS 26.5.1 (25F80) arm64, Python 3.12.13. The ten synthetic engine lifecycle and
+containment rows passed after one fix: launchd jobs in `user/<uid>` must declare
+the Background session type. Real Claude Code and Codex rows remain not run and
+need owner supplied configurations; `proof/VELDO-0124/README.md` lists them.
+Criteria, risk, approval requirements and status are unchanged.
+
+2026-10-10: fixed the independent review's nine findings. The Seatbelt profile now
+denies writes outside the run's clone, scratch, run home, run temp and its own login
+profile (protected paths never overlap a grant); reads of the account's `.ssh`,
+`.claude*`, `.codex*`, other account profiles, other projects and the slot root;
+`/bin/launchctl` exec and Seatbelt `job-creation`; mach lookups of
+`com.apple.SecurityServer`, `com.apple.securityd` and `com.apple.securityd.xpc`;
+and signals outside the sandbox instance. Observed on macOS 26.5.1: launchd itself
+also refuses job creation from sandboxed callers. The run's own login directory
+(`CLAUDE_CONFIG_DIR` or `CODEX_HOME`) stays writable because the engine keeps its
+session there; every other account directory is denied for read and write, so one
+run cannot use or spoil another account. Keychain access is denied until VELDO-0147
+decides what a run's own engine account needs. Engines run with their own sandboxes
+off inside this profile (Codex in its no sandbox mode, Claude Code without its bash
+sandbox) because a nested Seatbelt fails with `sandbox_apply: Operation not
+permitted`. Network restriction is a Release 2 open item. HOME and TMPDIR are run
+scoped in production, the engine has its own process group under the wrapper, the
+wrapper enforces the elapsed deadline itself, descendants are tracked by the launchd
+job's resource coalition (setsid and reparented children stay in it), a restarted
+supervisor rebuilds a Run from `slot.json`, and the interpreter is pinned in profile
+data. 22 synthetic native rows and 14 native single rule falsifiers ran on the Mac;
+real Claude Code and Codex rows still need the owner. Criteria, risk, approval
+requirements and status are unchanged.
+
+2026-10-10: closed the remaining nested Claude Code bash sandbox review gap on
+the reviewed host base 7b70d125. Admission and the trusted wrapper check
+`sandbox.enabled` in the run's own settings, project/local settings, managed
+files and drop-ins, preference files, cached remote settings and CLI settings.
+Enabling sources refuse with `unsupported_configuration:claude_bash_sandbox`;
+unknown invocation or dynamic settings sources fail closed. Newly created run
+settings explicitly disable it. The name and JSON paths were rechecked in the
+installed Claude Code 2.1.281 binary without invoking it. Suites 103 and 104 add
+refusal, acceptance and wrapper recheck rows; the proof README records their
+limits and the check-removal falsifier. Existing Seatbelt, run environment and
+Codex enforcement remain intact. No native or real-login qualification is claimed.

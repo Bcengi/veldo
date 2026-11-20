@@ -1,0 +1,5 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -319 +319 @@
+-            or evidence.get('kind') != 'native'
++            or False

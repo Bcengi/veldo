@@ -1,0 +1,368 @@
+{
+  "schema": "veldo.macos_build_observations/v1",
+  "implementation_commit": "7be4d267bdfdc0852dcecaf1e283b9bdc4227ebc",
+  "scope": "development_only",
+  "selected_host": "dmitrys-mac-mini",
+  "macos_version": "26.5.1 (25F80), arm64, hostname dmitrys-mini.lan",
+  "real_engine_versions": null,
+  "assets": [
+    {
+      "path": "engine/.veldo/project_runner_macos.py",
+      "sha256": "47ec25a7c8441b8365339c04d928d193c5e335bf9117662569e18974bd79ff71"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_control.py",
+      "sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_os.py",
+      "sha256": "79f8405adf03185efe5a4cd42da6aef964fd669cecf0cb3e8b296c1dfe5f62e3"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_profile.py",
+      "sha256": "00b4a3f121fada4b8c278094e61533a3fdceff16ef36f24f9506825c276cb898"
+    },
+    {
+      "path": "engine/.veldo/project_runner_macos_wrapper.py",
+      "sha256": "b9ce30408eb3f468960350922c55918147f5490b3fbef392498875055120de83"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "103_veldo_0124_macos",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "own_rows": 22,
+      "failed": 0,
+      "scope": "partial_development_only",
+      "exit_code": 2,
+      "log": "linux-logic.log"
+    },
+    {
+      "suite": "104_veldo_0124_control",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "own_rows": 6,
+      "failed": 0,
+      "scope": "partial_development_only",
+      "exit_code": 2,
+      "log": "linux-control.log"
+    }
+  ],
+  "rows": {
+    "AC1": [
+      "AC1/qualification",
+      "AC1/profile",
+      "AC1/bindings",
+      "AC1/apfs-policy",
+      "AC1/apple-interfaces",
+      "AC1/run-environment",
+      "AC1/interpreter",
+      "AC1/nested-sandbox",
+      "AC1/template-sync",
+      "AC1/native-declared",
+      "AC1/accepted-store",
+      "AC1/refusals"
+    ],
+    "AC2": [
+      "AC2/capacity",
+      "AC2/deadline",
+      "AC2/contract-deadline",
+      "AC2/precall-caps",
+      "AC2/invocation-boundaries"
+    ],
+    "AC3": [
+      "AC3/descendant",
+      "AC3/natural",
+      "AC3/notification-lost",
+      "AC3/cooperative",
+      "AC3/unknown",
+      "AC3/ignoring",
+      "AC3/hard-kill-unknown",
+      "AC3/recover",
+      "AC3/heartbeat",
+      "AC3/retirement-obligations",
+      "AC3/unknown-charge"
+    ]
+  },
+  "negative_controls": "negative-controls.json",
+  "native": [
+    {
+      "row": "native/claude_code/natural",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/cooperative",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/deadline",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/descendant",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/hard-kill",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/supervisor-loss",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/natural",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/cooperative",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/deadline",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/descendant",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/hard-kill",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/codex/supervisor-loss",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-lifecycle.json"
+    },
+    {
+      "row": "native/claude_code/write",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/read",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/launchd",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/keychain",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/claude_code/signal",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/write",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/read",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/launchd",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/keychain",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/codex/signal",
+      "status": "passed",
+      "kind": "real_macos_synthetic_engine",
+      "log": "native-containment.json"
+    },
+    {
+      "row": "native/qualified-claude_code/natural",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-claude_code/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-claude_code/deadline",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-codex/natural",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-codex/cooperative",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    },
+    {
+      "row": "native/qualified-codex/deadline",
+      "status": "not_run",
+      "kind": "real_macos_real_cli",
+      "reason": "needs_owner_cli_configuration_and_consent"
+    }
+  ],
+  "gate": "not_run",
+  "activation": "disabled_until_native_qualification",
+  "review": "not_performed",
+  "native_falsifiers": [
+    {
+      "change": "drop LimitLoadToSessionType",
+      "row": "native/claude_code/natural",
+      "rejected": true,
+      "error": "Refused: unknown_outcome:launch",
+      "log": "native-falsifier-session-type.json"
+    },
+    {
+      "change": "write",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/write",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-ssh",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-claude",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-codex",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-accounts",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-projects",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "read-dispatches",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/read",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "launchctl-exec",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/launchd",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "job-creation",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/launchd",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "keychain",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/keychain",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "signal",
+      "file": "project_runner_macos_profile.py",
+      "row": "native/claude_code/signal",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "wrapper-backstop",
+      "file": "project_runner_macos_wrapper.py",
+      "row": "native/claude_code/supervisor-loss",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "coalition-kill",
+      "file": "project_runner_macos.py",
+      "row": "native/claude_code/descendant",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    },
+    {
+      "change": "engine-group",
+      "file": "project_runner_macos_wrapper.py",
+      "row": "native/claude_code/hard-kill",
+      "rejected": true,
+      "log": "native-falsifiers.json"
+    }
+  ],
+  "native_interpreter": "/opt/homebrew/bin/python3.12 (3.12.13); /usr/bin/python3 is 3.9.6 and unsupported"
+}
