@@ -384,3 +384,108 @@ Runs, all with no gate holding ~/.local/state/core-gates/.gate.lock:
 
 Seen and not changed: scripts/gate_host.py (and its engine/ canon) reads /proc/locks once to name the holders
 of a gate lock, so the same tear can show it a held lock as unheld or held twice.
+
+### Gate 10 (eece9cf3): 51 cases voided, no survivor. Four causes; three fixed in the suites, one is a defect of the launch and is not fixed here
+
+Gate 10 printed "mutations: failed registered=3597 executed=3597 rejected=3546". No mutant survived. All 51
+are in the receipt's invalid_results as invalid_baseline: a control of the unmutated suite failed a row, so
+the cases that share the control were not judged. By the row that failed:
+
+| cases | suite | row the control failed | cause |
+|---|---|---|---|
+| 11 | 127_veldo_0259_installation | VELDO-0259 ac1/fresh-clone, baseline and no-op | the home path this file carried (removed in f37fcca8) |
+| 23 | 63_veldo_0040_containment | VELDO-0040 containment/exit-notified (no-op of 22, baseline of 1) | a heartbeat inside the watched window; fixed |
+| 16 | 78_veldo_0060_claude_adapter | VELDO-0060 pin/rehash-before-exec, no-op | the launch drops a fast run's artifact report; not fixed here |
+| 1 | 120_veldo_0131_factory_ui | VELDO-0131 ac2/refusals, no-op | the test moved the scope under a read still in flight; fixed |
+
+The 11 of suite 127: install259-setup-untraced, install259-builtin-person, writers259-home-kept and the eight
+personal259-* cases (red-without-installation, patterns-ignored, uid-shape-dropped, unmasked,
+silent-builtin-only, base-guessed, quoted-names-skipped, no-base-silent). Their control ran the personal
+setup check on a fresh clone of the candidate and got "1 finding(s) home_path=1", the same finding as the
+personal_setup stage; the four controls they share (check_personal_setup.py 8 cases, control_factory_setup.py,
+installation.py and qualify.py one each) all failed it, baseline and no-op.
+scripts/check_personal_setup.py on a clone of f37fcca8: 0 finding(s).
+
+The 23 of suite 63 (22 on the no-op control of control_containment.py, containment-not-installed on the
+baseline control of init_scaffold.py): containment-result-before-settled, -not-found-is-success, -start-activation-lost,
+-oom-evidence-lost, -unreadable-result-silent, -launch-outside-group, -shared-group, -unknown-setting-ignored,
+-kind-unchecked, -runtime-cap-ignored, -runtime-cap-one-second-late, -memory-cap-ignored, -cpu-cap-ignored,
+-file-limit-ignored, -concurrency-uncounted, -required-setting-optional, -zero-seconds-accepted,
+-stop-only-parent, -terminate-without-grace, -kill-without-grace, -no-cooperative-step,
+-retire-without-looking, -not-installed.
+
+Cause. exit-notified counts the wakes of an idle worker's receiver over a window of at least 1.5 s and
+requires none. The window is the time six refused launches take, and the gate recorded 6.86 s and 6.91 s with
+6 wakes. The idle worker ran under the main profile, whose wrapper sends a heartbeat every ten seconds, and a
+receiver wakes for a heartbeat by right. Reproduced through the driver's worker, unmutated, 80 at once (40 of
+this suite beside 40 of suite 78): 80 runs of 80 failed this row, windows of 8 to 15 s, and each failure
+carried the heartbeats the receiver itself recorded taking inside the window: one in 78 runs, two in 2.
+
+Fix, in the suite only. The idle worker runs under a profile of its own, the main one with a heartbeat of
+120 s (its window 240 s), so its wrapper sends one at the start and none in the worker's 60 s life. The
+row's conditions are unchanged, and one is added: the receiver recorded no heartbeat taken inside the
+window. A red now carries heartbeats_in_window and heartbeat_seconds.
+
+The 16 of suite 78 (the no-op control of control_launch.py): claude-binding-skipped,
+-updater-configured-accepted, -slot-completed-on-exit, -invocation-completed-on-exit, -exit-artifact-unbound,
+-artifact-unreturned, -cap-checked-after-launch, -stop-recorded-ended, -stopped-invocation-released,
+-wrapper-rehash-skipped, -argv-position-unchecked, -stop-leaves-descendant, -entrance-interpreter-unchecked,
+-wrapper-path-unresolved, -wrapper-entrance-unforwarded, -usage-cap-stop-ignored.
+
+Cause. The receipt held the row's name and no words: the suite printed what failed and the mutation stage
+keeps a row's words, not the print. With the words added the red was caught 5 times in 1000 loaded runs
+(rehash-before-exec 3, rehash-dot-dot 2). The three caught with the full detail were the same: the launch
+held no artifact report and its messages ended at "running"; in the two that also carried the receiver, it
+had been killed (status -9) and the record showed "exited" 0.03 and 0.10 s after "running". This is the launch, not the row. Launch.start settles from the record when it
+reads "running"; when the run has already ended by then (the re-hash refusal ends in a few hundredths of a
+second, and a loaded host delays the reader), the record it reads says "exited". Launch.wait reads the
+receiver's messages only while the record it holds says "running", so it reads none, stops the receiver at
+once and never takes the artifact report and the end the receiver had already written to the pipe. The
+receiver is stopped while it may still be between its record and its report (the run-end scan and the space
+end are made there). Shown without load: a 0.6 s sleep before that settle, in a scratch copy, makes
+pin/rehash-before-exec, pin/rehash-dot-dot, contained/rehash-before-exec and nine more rows red with the
+same detail. The row is right to be red, and it stays as it is. Reading the receiver's messages in
+Launch.wait while the record says "running" or "exited" turned those rows green again under the same sleep,
+in the scratch copy only. .veldo/control_launch.py is not changed here: it is a change of the product's
+dispatch path and needs its own specification.
+
+Fixed in the suite, two things beside it:
+- every red row of suite 78 now carries its failed checks after the colon; the two re-hash rows carry what the
+  receiver reported, the file it names, the receiver's status and log and the record's history; a region
+  that raises names the suite line.
+- the fake engine wrote its children marker by opening it for writing, and the suite reads that file while
+  it waits for the descendant: read empty, a JSONDecodeError that reds every row of the region (contained/*
+  ten rows at once, stop/descendant-alive, stop/requested, lifecycle/registration; 8 runs of 1000). Not seen
+  in gate 10. The marker is now written whole and renamed, as the engine's own marker is.
+
+The 1 of suite 120: ui131-node-settings-hover-only. In its no-op control (FlowProperties.vue) the browser test
+ac2/refusals timed out
+on the click of the choice: "element was detached from the DOM, retrying".
+
+Cause. The page reads the inbox twice as it opens, the shell for its badge and then the decisions screen,
+and shows the decision from the first answer. The test moved the member's scope as soon as the decision was
+visible. Measured on a quiet host: second read sent at 584 ms, decision visible at 623 ms, second read
+answered at 625 ms, scope moved at 775 ms. When the API answers the second read after the move, the inbox
+no longer lists the decision and the screen takes it away, as it should; the click then waits for an element
+that is gone. Shown by holding the second read until the scope had moved: the same error, every time.
+
+Fix, in the test only. The page counts the requests it has sent that the API has not answered, and the test
+moves the scope when there is none. Nothing the test asserts is changed. With every inbox read after the
+first reaching the API 3 s late, the test waits for it and the refusal is shown beside the action.
+
+Runs, all on a scratch clone, holding ~/.local/state/core-gates/.gate.lock so that no gate ran beside them:
+- suite 63 through the driver's worker, unmutated, before the fix: 80 of 80 red on exit-notified (80 at
+  once on the host). After it: 0 of 80 (40 at once) and 0 of 200 (80 at once on the host) on exit-notified.
+- scripts/check_gate_mutations.py --finding 40 (the 23 and the row's own falsifier containment-exit-polled
+  among them): "passed registered=41 executed=41 rejected=41".
+- scripts/check_gate_mutations.py --case for the 16 of suite 78 and the 1 of suite 120:
+  "passed registered=17 executed=17 rejected=17".
+- suite 78 through the driver's worker, unmutated, 70 at once, after the marker fix: 0 failed rows of 400.
+- ac2/refusals in a browser: 5 of 5 passed, and passed with the second read 3 s late.
+- scripts/selftest.py --suite: 63_veldo_0040_containment 59 passed, 78_veldo_0060_claude_adapter 35 passed,
+  120_veldo_0131_factory_ui 14 passed; 0 failed. scripts/check_lint.sh: pass.
+
+Seen and not changed. At twice the gate's load (80 suite processes on 20 cores) suite 63 also failed
+containment/cooperative-stop in 5 runs of 280 and containment/runtime-cap in 1 of 280; the first carries no
+detail, the second showed a worker that had not started its descendant when its 1.2 s cap ended it. Neither
+was red in gate 10 and neither was seen at 40 at once (0 of 80).
