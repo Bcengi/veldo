@@ -1729,6 +1729,12 @@ class Runner:
         # this preparation reserves another.
         self.sweep()
         now = self.clock()
+        admission = _organ('control_space_admission')
+        coordinates = {'domain': self.dispatches.domain, 'repository': self.dispatches.repository, 'unit': unit}
+        prior = admission.previous(self.dispatches.conn, coordinates)
+        if (prior.get('space_failure') or {}).get('andon'):
+            raise D.Refused('environment_failure:no_space', 'andon: two consecutive environment failures')
+        payload = admission.brief(self.dispatches.conn, coordinates, payload)
         try:
             configuration = CFG.bind(self.dispatches.conn, self.dispatches.domain,
                                      self.dispatches.repository, configuration)
@@ -2918,6 +2924,17 @@ class Receiver:
 
     def _finish(self, termination, contract, contract_digest, process, remote):
         dispatch_id = contract['dispatch_id']
+        admission = _organ('control_space_admission')
+        unsuccessful = (termination['returncode'] != 0 or termination['signal'] is not None
+                        or termination['deadline_stop'])
+        if self.metering is not None:
+            self.metering.terminal.close()
+            document = self.metering.terminal.document(termination, (self.supervision or {}).get('cause'))
+            unsuccessful = unsuccessful or not document.get('complete')
+        observation = admission.classify(getattr(self, 'space', None), contract, unsuccessful,
+            getattr(getattr(self, 'space_output', None), 'found', False),
+            (getattr(self, 'space_run', None) or {}).get('worktree'))
+        self.space_failure = admission.disposition(self.conn, contract, observation) if observation else None
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
@@ -2959,11 +2976,12 @@ class Receiver:
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
-                             execution_record=self.committed)
+                             execution_record=self.committed,
+                             **({'space_failure': observation} if observation else {}))
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
         report_end(self, contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
-                                    'record': self._ended()})
+                                    'record': self._ended(), 'space_failure': self.space_failure})
 
     def _conclude_exit(self):
         group = self._exit_group
@@ -3652,6 +3670,8 @@ class Receiver:
         wrapper's own heartbeat, which ends on the worker's exit, is given SETTLE_SECONDS first), and the
         reap ends once the group is empty (or, SETTLE_SECONDS after the kill, declared not empty in the
         supervision). Every stop it begins escalates on the monotonic clock."""
+        self.space_output = _organ('control_space_admission').Output()
+        self.space_output.feed('engine', carry)
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
@@ -3735,6 +3755,7 @@ class Receiver:
             # VELDO-0231: a flag goes out on the launch pipe as soon as its line is read.
             if flags is not None:
                 flags.feed(chunk)
+            self.space_output.feed('engine', chunk)
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
@@ -3816,8 +3837,10 @@ class Receiver:
                         chunk = os.read(errors, 65536)
                         if not chunk:
                             poller.unregister(errors)
-                        elif recorder is not None:
-                            recorder.feed('stderr', chunk)
+                        else:
+                            self.space_output.feed('stderr', chunk)
+                            if recorder is not None:
+                                recorder.feed('stderr', chunk)
                     elif fd == pidfd:
                         poller.unregister(pidfd)
                         code = worker.wait()
@@ -3874,6 +3897,7 @@ class Receiver:
             for chunk in iter(lambda: os.read(output, 65536), b''):
                 size += len(chunk)
                 hasher.update(chunk)
+                self.space_output.feed('engine', chunk)
                 if recorder is not None:
                     recorder.feed('engine', chunk)
                 if metering is not None:
@@ -3882,6 +3906,7 @@ class Receiver:
             os.set_blocking(errors, False)
             with contextlib.suppress(OSError):
                 for chunk in iter(lambda: os.read(errors, 65536), b''):
+                    self.space_output.feed('stderr', chunk)
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
         feeder.join(timeout=1)
@@ -4259,7 +4284,11 @@ class Metering:
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
-            self.report = self._artifact(termination, cause)
+            failure = getattr(self.receiver, 'space_failure', None) or {}
+            unjudged = failure.get('retry') or failure.get('andon')
+            self.report = None if unjudged else self._artifact(termination, cause)
+            if unjudged:
+                outcome = 'cancelled'
             if outcome == 'completed' and not self.report['complete']:
                 outcome = 'failed'  # a zero exit is a completion only with its terminal record (THE ENGINE PROTOCOL)
             # VELDO-0160: a run its account's limit stopped ends account_limit, with the window and reset.

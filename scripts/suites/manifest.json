@@ -2375,6 +2375,15 @@
    ],
    "regions": "VELDO-0334 AC1-AC3: one admission Signal, cached waits, freeing marks and journal space wakes; real worker completion and optimistic concurrency.",
    "requires_note": "Only ROOT and expect. Real SQLite, signed mode commands, Git, Runner, FactoryLoop, Signal and removers. Frozen clock, eligibility seam and fixture free-byte reader; worker pipe completion, no sleeps."
+  },
+  {
+   "name": "159_veldo_0317_no_space",
+   "file": "159_veldo_0317_no_space.py",
+   "requires": [
+    "159_veldo_0317_no_space"
+   ],
+   "regions": "VELDO-0317 AC1-AC4: no-space classification, attempt refund, bounded repeats, retained work and owner andon.",
+   "requires_note": "ROOT and expect; real child pipes, SQLite, Git worktrees, Runner, Line, census and Signal. No timing assertions."
   }
  ],
  "resource_capacities": {

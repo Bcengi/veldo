@@ -166,6 +166,7 @@ TAXONOMY = {
     'unresolved_dependency': 'missing_evidence', 'missing_evidence': 'missing_evidence',
     'unavailable_service': 'unavailable_service', 'receiver_unavailable': 'unavailable_service',
     'spawn_failed': 'unavailable_service', 'space_wait': 'unavailable_service',
+    'environment_failure': 'unavailable_service',
     'space_hold_state': 'stale_subject',
     'clock_uncertain': 'unknown_outcome', 'dispatch_outcome_unknown': 'unknown_outcome',
     'launch_evidence_missing': 'unknown_outcome', 'outcome_unknown': 'unknown_outcome',
@@ -338,6 +339,7 @@ def completed(record):
     artifact = (record or {}).get('artifact')
     return ((record or {}).get('state') == 'exited' and termination.get('returncode') == 0
             and termination.get('signal') is None and termination.get('deadline_stop') is False
+            and not (record or {}).get('space_failure')
             and (artifact is None or artifact.get('complete') is True))
 
 
@@ -529,9 +531,11 @@ def transition(conn, params, before):
         record = {'schema': SCHEMA, 'dispatch_id': params['dispatch_id'], 'state': 'prepared',
                   'contract': contract, 'contract_digest': digest(contract), 'receiver': None, 'process': None,
                   'termination': None, 'refusal': None, 'stop': None, 'reason': None,
-                  'history': [dict(history, state='prepared')]}
+                  'history': [dict(history, state='prepared')],
+                  'ordinal': index.get('runs', index.get('attempts', 0)) + 1}
         slot = {'domain': contract['domain'], 'repository': contract['repository'], 'unit': contract['unit'],
-                'station': contract['station'], 'dispatch_id': params['dispatch_id'], 'attempts': contract['attempt']}
+                'station': contract['station'], 'dispatch_id': params['dispatch_id'], 'attempts': contract['attempt'],
+                'runs': record['ordinal']}
         return {rid: {'kind': RECORD_KIND, 'data': record}, iid: {'kind': INDEX_KIND, 'data': slot}}
     if not current or current['kind'] != RECORD_KIND:
         raise Refused('missing_dispatch', rid)
@@ -565,6 +569,24 @@ def transition(conn, params, before):
             raise Refused('invalid_input', 'an artifact binding carries its verdict, completeness and digest only')
         if _execution_record_problems(params.get('execution_record')):
             raise Refused('invalid_input', 'an execution record binding carries its line count, byte count and digest only')
+        observation = params.get('space_failure')
+        if observation is not None:
+            admission = _organ('control_space_admission')
+            if (not isinstance(observation, dict) or set(observation) != {'classification', 'pools', 'worktree'}
+                    or observation.get('classification') not in (admission.NO_SPACE, admission.UNCONFIRMED)
+                    or not isinstance(observation.get('pools'), list) or not observation['pools']
+                    or not all(isinstance(p, dict) and set(p) == {'pool', 'free', 'floor'}
+                               and _text(p['pool']) and (p['free'] is None or _count(p['free'], 0))
+                               and (p['floor'] is None or _count(p['floor'], 0)) for p in observation['pools'])
+                    or not (observation['worktree'] is None or _text(observation['worktree']))):
+                raise Refused('invalid_input', 'a no-space end binds its classification and pool measurements')
+            if admission.classification(observation['pools']) != observation['classification']:
+                raise Refused('invalid_input', 'the no-space classification disagrees with its measurements')
+            record['space_failure'] = admission.disposition(conn, contract, observation)
+            record['reason'] = observation['classification']
+            if record['space_failure']['retry'] or record['space_failure']['andon']:
+                if params.get('artifact') is not None:
+                    raise Refused('invalid_input', 'an unjudged no-space end writes no verdict')
         record['termination'] = params['termination']
         record['artifact'] = params.get('artifact')
         # VELDO-0141: the run's execution record, committed with its end.
@@ -588,6 +610,8 @@ def transition(conn, params, before):
         iid = index_id(contract['domain'], contract['repository'], contract['unit'], contract['station'])
         index = (before.get(iid) or {}).get('data') or {}
         if index.get('dispatch_id') == record['dispatch_id']:
+            if (record.get('space_failure') or {}).get('classification') == 'environment_failure:no_space':
+                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))
             changes[iid] = {'kind': INDEX_KIND, 'data': dict(index, dispatch_id=None, released_by=target)}
     return changes
 
@@ -799,7 +823,7 @@ class Dispatches:
         return self._run('run', dispatch_id, {'contract_digest': contract_digest, 'process': process}, now)
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
-    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None, execution_record=None):
+    def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None, execution_record=None, space_failure=None):
         """The reaped worker's termination, bound to the process `run` recorded, the verdict and digest
         of its engine's artifact (None for a worker with no engine) and the line count, byte count and digest
         of its execution record (VELDO-0141; None when none was kept)."""
@@ -807,6 +831,8 @@ class Dispatches:
                   'artifact': artifact}
         if execution_record is not None:
             fields['execution_record'] = execution_record
+        if space_failure is not None:
+            fields['space_failure'] = space_failure
         return self._run('exit', dispatch_id, fields, now)
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
