@@ -11254,9 +11254,9 @@ def cases():
     # inside this if, so the anchor now carries the if and its first consumer line and the defect
     # replaces only the assignment; the consumer block stays under the if and the mutant compiles.
     new_project('newproject143-take-on-not-due', 'control_service.py',
-                "        if self.watermark() > before:\n            self.projects_due = True\n"
+                "        if self.watermark() > before:\n            self.space_pass()\n            self.projects_due = True\n"
                 "            consumer = getattr(self, 'space_consumer', None)\n",
-                "        if self.watermark() > before:\n"
+                "        if self.watermark() > before:\n            self.space_pass()\n"
                 "            pass  # defect: an advance of the journal does not make the new-project pass due\n"
                 "            consumer = getattr(self, 'space_consumer', None)\n",
                 ['provision/handed-over'])
@@ -12631,6 +12631,7 @@ def cases():
         "COUNTED = ('admitted', 'advised')\n",
         "COUNTED = ('admitted',)\n",
         ['ac2/advised-counts-as-held'])
+    result[-1]['siblings'] = True  # admission now calls Signal and the removal modules (VELDO-0334)
     add(331, 'space331-switch-back-refused', space331, 'control_space.py',
         "        if old == new:\n            return self._observed({'ok': True, 'seq': None, 'replayed': False, 'changed': False,",
         "        if new == REPORTING and old == ACTING:\n"
@@ -12650,6 +12651,7 @@ def cases():
         "'waiting' if ledger.acts(scope) else 'advised'",
         "'waiting'",
         ['ac2/admission-by-scope'])
+    result[-1]['siblings'] = True
     add(331, 'space331-adopts-in-report', space331, 'control_space_reconcile.py',
         "    if ledger.acts(owner.get('scope')):\n",
         "    if owner:\n",
@@ -13020,8 +13022,8 @@ def cases():
     # answers {}.
     space301 = '139_veldo_0301_space_signal.py'
     add(301, 'space301-returns-after-marking-due', space301, 'control_space_signal.py',
-        "                      borrow_root=borrow_root) if carried else []\n",
-        "                      borrow_root=borrow_root) if False else []\n",
+        "        if identities:\n            outcomes.extend(_carry(",
+        "        if False:  # defect: return after marking due\n            outcomes.extend(_carry(",
         ['ac1/removes-before-return'])
     add(301, 'space301-refused-item-not-deferred', space301, 'control_space_signal.py',
         "    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",

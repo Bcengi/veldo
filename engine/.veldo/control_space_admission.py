@@ -98,8 +98,9 @@ def _admit(ledger, identity, free, principal, command_id, given):
                              expected_version=version)
         if not asked['ok']:
             return asked
-        for key in ('probe', 'kinds', 'remover'):
-            given.setdefault(key, organ('control_space_' + ('remove' if key == 'remover' else key)))
+        given.setdefault('probe', organ('control_space_probe'))
+        given.setdefault('kinds', organ('control_space_kinds'))
+        given.setdefault('remover', organ('control_space_remove'))
         sent = organ('control_space_signal').signal(
             ledger, 'admission_requested', {'pool': reason['pool']}, free=free, **given)
         if not sent['ok']:

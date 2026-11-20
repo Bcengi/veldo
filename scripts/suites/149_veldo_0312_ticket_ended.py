@@ -1670,8 +1670,8 @@ def _v312_suite():
                  'Abandon, which the ledger checks the owner at',
               set(re.findall(r'time\.\w+\(\)', part)) <= {'time.time()'}
               and all("'at': time.time()" in line for line in part.splitlines() if 'time.time()' in line))
-        check(R, 'the pass is called after a packet, after a channel pass and after a factory loop pass',
-              text.count('        self.space_pass()\n') == 2 and 'service.loop.run() is not None' in text
+        check(R, 'the pass is called after a packet, a channel pass, a factory loop pass and a journal hint (including a worker)',
+              text.count('        self.space_pass()\n') == 3 and 'service.loop.run() is not None' in text
               and text.count('                        service.space_pass()\n') == 1)
         for name in PRODUCTION:
             check(R, 'the engine canon of %s equals this repository\'s copy' % name,
