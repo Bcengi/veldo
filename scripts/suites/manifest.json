@@ -2357,6 +2357,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "157_veldo_0316_space_admission",
+   "file": "157_veldo_0316_space_admission.py",
+   "requires": [
+    "157_veldo_0316_space_admission"
+   ],
+   "regions": "VELDO-0316 AC1-AC4 admission, waiting, advised startup, need selection and digest binding.",
+   "requires_note": "Only ROOT and expect; real SQLite ledger, reservations and dispatches, temporary Git and signed mode commands; fixture eligibility and containment."
   }
  ],
  "resource_capacities": {

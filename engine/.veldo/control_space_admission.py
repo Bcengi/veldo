@@ -23,13 +23,25 @@ working folder is inside, else no project; design 6.7). The ledger checks the an
 again when it writes it, and refuses advised for a hold of a scope in act mode. Two projects on one pool
 can be in different modes; the numbers are the same for both.
 
-WHAT IS NOT HERE. Where a need comes from, reading free space from a filesystem or an engine, the one
-admission requested event, the freed mark that lets a waiting hold be judged again, the Runner and the
-dispatch contract are VELDO-0316, 0317 and 0334. `free(pool)` is given: it returns the free bytes of one
+The admission requested event and the freed mark that lets a waiting hold be judged again
+are VELDO-0334. Runner preparation and need selection are VELDO-0316. `free(pool)` is given: it returns the free bytes of one
 pool record at the moment of the call. No clock is read here.
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
 """
+
+import importlib.util
+import json
+import os
+from pathlib import Path
+
+
+def organ(name):
+    spec = importlib.util.spec_from_file_location('admission_' + name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 
 SCHEMA = 'veldo.control_space_admission/v1'
 
@@ -64,6 +76,11 @@ def admit(ledger, identity, free, principal=None, command_id=None):
     """Judge a waiting hold and write the answer: admitted, or with the reason waiting for a run of a
     scope in act mode and advised for a run of a scope in report mode. The scope is the one the hold
     records. Returns the ledger's answer with the answer and the reason added."""
+    with ledger.item_lock('admission:' + ledger.host):
+        return _admit(ledger, identity, free, principal, command_id)
+
+
+def _admit(ledger, identity, free, principal, command_id):
     hold = ledger.hold(identity)
     if hold is None:
         return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
@@ -72,3 +89,118 @@ def admit(ledger, identity, free, principal=None, command_id=None):
     answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
     result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id)
     return dict(result, answer=answer, reason=reason) if result['ok'] else result
+
+
+def measured(ledger, dispatch_id):
+    """The last measured sizes of this run's own items, per pool; unknown is not zero."""
+    items = [item for item in ledger.items().values()
+             if ((item.get('owner') or {}).get('run') or {}).get('id') == dispatch_id]
+    sizes = {}
+    unknown = set()
+    for item in items:
+        pool, size = item.get('pool'), item.get('size')
+        if not pool:
+            continue
+        if not isinstance(size, dict) or type(size.get('bytes')) is not int:
+            unknown.add(pool)
+        else:
+            sizes[pool] = sizes.get(pool, 0) + size['bytes']
+    return {pool: size for pool, size in sizes.items() if pool not in unknown}
+
+
+def finished(ledger, dispatches, project, station):
+    """Last five exited runs, in durable exit order, including failed runs, never refusals.
+
+    Read the release's saved measurements, not surviving files or a promised need.
+    A run missing a measurement keeps that pool on its default.
+    """
+    runs = []
+    seen = set()
+    for (raw,) in dispatches.conn.execute(
+            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC"):
+        for entry in json.loads(raw).values():
+            record = entry.get('data') or {}
+            contract = record.get('contract') or {}
+            identity = record.get('dispatch_id')
+            if (entry.get('kind') != 'dispatch' or record.get('state') != 'exited' or identity in seen
+                    or contract.get('domain') != dispatches.domain
+                    or contract.get('repository') != dispatches.repository
+                    or (contract.get('reservation') or {}).get('project') != project
+                    or contract.get('station') != station):
+                continue
+            seen.add(identity)
+            hold = ledger.hold((contract.get('space') or {}).get('hold')) or {}
+            runs.append(hold.get('used', {}) if hold.get('state') == 'released' else {})
+            if len(runs) == 5:
+                return runs
+    return runs
+
+
+def needs(ledger, dispatches, project, station, declarations):
+    """Declared bytes, else the maximum of five finished runs, else installation defaults."""
+    history = finished(ledger, dispatches, project, station)
+    declared = (declarations.get('needs') or {}).get(station) or {}
+    values, sources = {}, {}
+    for pool, config in sorted(ledger.config['pools'].items()):
+        if pool in declared:
+            values[pool], sources[pool] = declared[pool], 'declared'
+        elif len(history) == 5 and all(pool in run for run in history):
+            values[pool], sources[pool] = max(run[pool] for run in history), 'measured'
+        else:
+            # Coordination is project work and uses the build default until it declares a station need.
+            values[pool], sources[pool] = config['needs'].get(station, config['needs']['build']), 'default'
+    return values, sources
+
+
+def prepare(space, dispatches, unit, station, project, repository):
+    """Place and judge a stable unit/station/attempt hold before any reservation.
+
+    An already waiting hold keeps its identity on subsequent offers. VELDO-0334
+    owns the event policy for judging it again. Serialized across pools so two
+    concurrent preparations cannot both promise the same free bytes.
+    """
+    if space is None or space['ledger'].config.get('enabled') is not True:
+        return None
+    ledger = space['ledger']
+    D = organ('control_dispatch')
+    declarations = next((p for p in ledger.projects
+                         if os.path.realpath(p.get('repository', '')) == os.path.realpath(repository)), None)
+    if declarations is None:
+        raise D.Refused('space_unknown_scope', 'the repository has no space declaration')
+    declarations = organ('control_space_config').read_project(
+        repository, organ('yamlish').read, config=ledger.config, project=declarations['project'])
+    scope = {'type': 'project', 'id': declarations['project']}
+    base = json.dumps([dispatches.domain, dispatches.repository, unit, station,
+                       dispatches.attempts(unit, station) + 1], separators=(',', ':'))
+    with ledger.item_lock('admission:' + ledger.host):
+        identity = base
+        generation = 0
+        while (ledger.hold(identity) or {}).get('state') == 'released':
+            generation += 1
+            identity = base + '/' + str(generation)
+        hold = ledger.hold(identity)
+        if hold is None:
+            values, sources = needs(ledger, dispatches, project, station, declarations)
+            placed = ledger.place_hold(identity, values, sources, scope=scope)
+            if not placed['ok']:
+                raise D.Refused(placed['reason'], placed.get('detail', ''))
+            hold = ledger.hold(identity)
+        if hold['state'] != 'waiting':
+            raise D.Refused('space_hold_state:' + hold['state'], 'another preparation owns this hold')
+        answer = admit(ledger, identity, space['free'])
+        if not answer['ok']:
+            raise D.Refused(answer['reason'], answer.get('detail', ''))
+        if answer['answer'] == 'waiting':
+            error = D.Refused('space_wait:' + answer['reason']['pool'])
+            error.space = dict(answer['reason'])
+            raise error
+        return {'hold': identity, 'needs': dict(hold['needs'])}
+
+
+def status(ledger, free):
+    """Current per-pool free/floor/held bytes and counts by admission outcome."""
+    holds = ledger.holds().values()
+    return {'pools': {pool['name']: {'free': free(pool), 'floor': pool['floor'],
+                                    'held': held(ledger, pool['name'])} for pool in ledger._pools()},
+            'holds': {state: sum(h['state'] == state for h in holds)
+                      for state in ('admitted', 'waiting', 'advised')}}

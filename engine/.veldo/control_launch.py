@@ -782,7 +782,7 @@ def space_named(ledger, event, paths, subjects, root):
     return {'items': [{'item': identity, 'version': versions[identity]} for identity in named]}
 
 
-def space_release(space, identity):
+def space_release(space, identity, used=None):
     """VELDO-0308 AC2: release the hold `identity` (design 6.7: at run finished, after Signal). The answer is
     {hold, state, released, refusal}: released is True when this call wrote the release. A hold that is
     released already is left as it is, and a run that was given no hold has none (refusal no_hold).
@@ -795,7 +795,7 @@ def space_release(space, identity):
             return dict(out, refusal='no_hold')
         if held.get('state') == 'released':
             return dict(out, state='released')
-        done = ledger.release(identity)
+        done = ledger.release(identity, used=used)
         if not done.get('ok'):
             return dict(out, state=held.get('state'), refusal=str(done.get('reason')))
         return dict(out, state='released', released=True)
@@ -1515,6 +1515,10 @@ class Runner:
         a live worker or a populated group is refused (worker_alive, cleanup_incomplete) and keeps the
         slot, pending, until an obligation it waits on is completed and the retirement is retried. A
         dispatch the runner asked to stop is accounted as cancelled."""
+        record = self.dispatches.record(dispatch_id) or {}
+        binding = (record.get('contract') or {}).get('space')
+        if getattr(self, 'space', None) is not None and binding and record.get('state') == 'refused':
+            space_release(self.space, binding['hold'])
         launch = self.launches.pop(dispatch_id, None)
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
@@ -1738,22 +1742,27 @@ class Runner:
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
+        space = _organ('control_space_admission').prepare(
+            self.space, self.dispatches, unit, station, project, source)
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
-        # VELDO-0180 AC2: a project's PM run, and the first build run of a unit under an objective a conversation was
-        # made into, receive the conversation's rendering and workspace snapshot as input artifacts, by bound digest.
-        given = _organ('control_conversation_project').run_inputs(
-            self.dispatches.conn, station, unit, project, self.dispatches.attempts(unit, station) + 1)
-        if given:
-            payload = dict(payload or {}, input_artifacts=given)
-        account = self.account
-        if hasattr(account, 'reserve'):
-            # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
-            # reservation, reading the pool now: an account registered while work runs takes this dispatch.
-            account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
-                                      adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
-        else:
-            self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
+        reserved = False
         try:
+            # VELDO-0180 AC2: a project's PM run, and the first build run of a unit under an objective a conversation
+            # was made into, receive the conversation's rendering and workspace snapshot as input artifacts, by bound
+            # digest. Inside the try (VELDO-0316): a refusal here releases the space hold prepared above.
+            given = _organ('control_conversation_project').run_inputs(
+                self.dispatches.conn, station, unit, project, self.dispatches.attempts(unit, station) + 1)
+            if given:
+                payload = dict(payload or {}, input_artifacts=given)
+            account = self.account
+            if hasattr(account, 'reserve'):
+                # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
+                # reservation, reading the pool now: an account registered while work runs takes this dispatch.
+                account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
+                                          adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
+            else:
+                self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
+            reserved = True
             entity, version, slot_digest = self._slot(dispatch_id)
             contract = {
                 'schema': D.SCHEMA, 'dispatch_id': dispatch_id, 'domain': self.dispatches.domain,
@@ -1768,10 +1777,14 @@ class Runner:
                 'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
                                 'account': account, 'project': project},
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
+                'space': space,
             }
             self.dispatches.prepare(contract, now=now)
         except BaseException:
-            self._retire(dispatch_id, 'cancelled', 'never_spawned')
+            if space is not None:
+                space_release(self.space, space['hold'])
+            if reserved:
+                self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise
         return contract
 
@@ -1836,7 +1849,7 @@ class Runner:
                                        'configuration_digest': D.digest(bound)},
                         'reservation': {'entity': entity, 'version': version, 'digest': slot_digest,
                                         'account': account, 'project': None},
-                        'claim': None, 'deadline': deadline, 'authority_generation': self.dispatches.generation}
+                        'claim': None, 'deadline': deadline, 'authority_generation': self.dispatches.generation, 'space': None}
             self.dispatches.prepare(contract, now=now)
         except BaseException:
             self._retire(dispatch_id, 'cancelled', 'never_spawned')
@@ -2488,7 +2501,8 @@ class Receiver:
         if not self.run_sent:
             end['reason'] = ((self.run_removal or {}).get('deferral') if self.run_removal else None) or 'nothing_recorded'
         named = ((contract or {}).get('space') or {}).get('hold') if isinstance((contract or {}).get('space'), dict) else None
-        end['hold'] = space_release(space, named or dispatch_id)
+        sizes = _organ('control_space_admission').measured(space['ledger'], dispatch_id) if named else None
+        end['hold'] = space_release(space, named or dispatch_id, used=sizes)
         return end
 
     def _turn_event(self, contract, group):
