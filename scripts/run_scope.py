@@ -556,7 +556,9 @@ SHARD_DEADLINE_S = 1800.0   # one shard; a hang detector, never a pace
 SHARD_TICK_S = 2.0          # how often a waiting dispatcher samples memory and asks the ledger again
 SETTLE_S = 300.0            # how long a foreign-looking item in a strict place may take to go
 SHARD_UNMEASURED = {"cpu": 1.0, "memory": 1 << 30}
-LEDGER_CHANNEL = "VELDO_GATE_LEDGER_FD"
+# The leg's own channel to the authority's leg runner, which asks the gate ledger for each shard
+# (scripts/gate_legs.py ShardClaims). The gate ledger's own channel never reaches this dispatcher.
+LEDGER_CHANNEL = "VELDO_GATE_SHARD_LEDGER_FD"
 SHARD_CLAIMS = "VELDO_GATE_SHARD_CLAIMS"
 SHARD_METRICS = "VELDO_GATE_SHARD_METRICS_FD"
 FORCE_FRESH = "VELDO_GATE_FORCE_FRESH"
@@ -633,8 +635,9 @@ class ShardResources:
 
 
 class ShardLedger:
-    """The gate-wide ledger (VELDO-0216) over the channel the authority's leg runner handed this
-    dispatcher: one request and one reply per line. A refusal means ask again later, never start."""
+    """The gate-wide ledger (VELDO-0216) as the authority's leg runner serves it to this dispatcher:
+    one request and one reply per line. The runner forwards each request with its own measured
+    claim for the suite. A refusal means ask again later, never start."""
 
     def __init__(self, descriptor):
         import socket

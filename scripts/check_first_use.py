@@ -283,7 +283,7 @@ def _copy(src, dest, what):
 
 # VELDO-0221: the channels the authority's leg runner hands a leg's shard dispatcher. The nested
 # dispatcher is that dispatcher, so in a leg it is handed them on; outside a leg there are none.
-SHARD_CHANNELS = ("VELDO_GATE_LEDGER_FD", "VELDO_GATE_SHARD_METRICS_FD")
+SHARD_CHANNELS = ("VELDO_GATE_SHARD_LEDGER_FD", "VELDO_GATE_SHARD_METRICS_FD")
 
 
 def shard_fds(environ):
