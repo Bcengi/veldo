@@ -17049,6 +17049,8 @@ def cases():
         refusal113, refusal113 + '\n'
         '            child = os.fork()\n'
         '            if child == 0:\n'
+        '                Authority(binding["store_uuid"], binding["domain_uuid"], store,\n'
+        '                          enrollment, verify, host_identity, lambda command: None)\n'
         '                os._exit(0)\n'
         '            os.waitpid(child, 0)',
         ['unavailable/no-client-starts-the-authority'])

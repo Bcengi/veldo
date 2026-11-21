@@ -55,8 +55,30 @@ def verify(data, signature):
     return hmac.compare_digest(sign(data), signature)
 
 
+def production_sources(root):
+    """Runtime modules, front doors and operational scripts; exclude test harnesses."""
+    paths = set()
+    for directory in ('.veldo', 'engine/.veldo', 'scripts', 'engine/scripts', 'bin', 'engine/bin'):
+        for path in (root / directory).rglob('*'):
+            relative = path.relative_to(root / directory)
+            if set(relative.parts) & {'fixtures', 'suites', '__pycache__'} or not path.is_file():
+                continue
+            if path.suffix == '.py' or (path.parent.name == 'bin' and
+                    'python' in path.read_text(errors='replace').split('\n', 1)[0]):
+                paths.add(path)
+    return sorted(paths)
+
+
+def copy_production(root, destination):
+    import shutil
+    for path in production_sources(root):
+        target = destination / path.relative_to(root)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+
+
 def construction_census(root, inventory):
-    """Scan BOTH shipped trees afresh, including untracked new production modules.
+    """Scan shipped modules, front doors and operational scripts afresh, including new files.
 
     Follow simple imported/assigned constructor aliases, and flag dynamic getattr
     of either class. Unknown registered in-process classes fail closed. Test and
@@ -74,50 +96,50 @@ def construction_census(root, inventory):
             classes.add(entry.split(':', 1)[1].split('.')[0])
     if classes != set(AUTHORITY_MODULES):
         problems.append('unknown_or_missing_in_process_class')
-    for tree_name in ('.veldo', 'engine/.veldo'):
-        for path in sorted((root / tree_name).rglob('*.py')):
-            relative = str(path.relative_to(root))
-            source = path.read_text()
-            files[relative] = hashlib.sha256(source.encode()).hexdigest()
-            tree = ast.parse(source, relative)
-            aliases = {name: name for name in classes}
-            def target(node):
-                if isinstance(node, ast.Name):
-                    return aliases.get(node.id)
-                if isinstance(node, ast.Attribute) and node.attr in classes:
-                    return node.attr
-                if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-                        and node.func.id == 'getattr' and len(node.args) > 1
-                        and isinstance(node.args[1], ast.Constant)):
-                    return node.args[1].value if node.args[1].value in classes else None
-                return None
-            for _ in range(len(list(ast.walk(tree))) + 1):
-                before = dict(aliases)
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.ImportFrom):
-                        for alias in node.names:
-                            if alias.name in classes:
-                                aliases[alias.asname or alias.name] = alias.name
-                    if isinstance(node, ast.Assign) and (name := target(node.value)):
-                        for assigned in node.targets:
-                            if isinstance(assigned, ast.Name):
-                                aliases[assigned.id] = name
-                if before == aliases:
-                    break
+    for path in production_sources(root):
+        relative = str(path.relative_to(root))
+        source = path.read_text()
+        files[relative] = hashlib.sha256(source.encode()).hexdigest()
+        tree = ast.parse(source, relative)
+        aliases = {name: name for name in classes}
+        def target(node):
+            if isinstance(node, ast.Name):
+                return aliases.get(node.id)
+            if isinstance(node, ast.Attribute) and node.attr in classes:
+                return node.attr
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id == 'getattr' and len(node.args) > 1
+                    and isinstance(node.args[1], ast.Constant)):
+                return node.args[1].value if node.args[1].value in classes else None
+            return None
+        for _ in range(len(list(ast.walk(tree))) + 1):
+            before = dict(aliases)
             for node in ast.walk(tree):
-                if not isinstance(node, ast.Call) or not (name := target(node.func)):
-                    continue
-                site = dict(file=relative, line=node.lineno, constructor=name,
-                            expression=ast.unparse(node), source_digest=files[relative])
-                sites.append(site)
-                if path.relative_to(root / tree_name).as_posix() not in AUTHORITY_MODULES.get(name, ()):
-                    problems.append('outside_authority:' + relative + ':' + str(node.lineno))
+                if isinstance(node, ast.ImportFrom):
+                    for alias in node.names:
+                        if alias.name in classes:
+                            aliases[alias.asname or alias.name] = alias.name
+                if isinstance(node, ast.Assign) and (name := target(node.value)):
+                    for assigned in node.targets:
+                        if isinstance(assigned, ast.Name):
+                            aliases[assigned.id] = name
+            if before == aliases:
+                break
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not (name := target(node.func)):
+                continue
+            site = dict(file=relative, line=node.lineno, constructor=name,
+                        expression=ast.unparse(node), source_digest=files[relative])
+            sites.append(site)
+            if relative not in {tree + '/' + module for tree in ('.veldo', 'engine/.veldo')
+                                for module in AUTHORITY_MODULES.get(name, ())}:
+                problems.append('outside_authority:' + relative + ':' + str(node.lineno))
     for name in classes:
         if not any(s['constructor'] == name for s in sites):
             problems.append('missing_construction:' + name)
     return dict(status='FAIL' if problems else 'PASS', sites=sites, problems=problems,
                 inventory_digest=inventory[0].registration_digest, scanned_files=files,
-                discovery='recursive AST of both shipped module trees, constructor alias closure')
+                discovery='recursive AST of shipped module, front-door and operational-script trees; constructor alias closure')
 
 
 class Arguments:
@@ -196,21 +218,25 @@ def invoke(root, config):
             kwargs['timeout'] = max(HANG, kwargs['timeout'])
         return original_run(*args, **kwargs)
     subprocess.run = generous_run
+    expected_errno = errno.ENOENT if config['state'] == 'absent' else errno.ECONNREFUSED
     try:
         result = case.invoke(runtime, arguments)
         refused = (case.adapter.entrypoint == 'control_relay:main' and result == 3
-                   and not arguments.output.getvalue() and 'not answering' in arguments.error.getvalue())
+                   and not arguments.output.getvalue() and 'not answering' in arguments.error.getvalue()
+                   and ('[Errno ' + str(expected_errno) + ']') in arguments.error.getvalue())
         outcome = dict(refused=refused, reason='authority_unavailable' if refused else 'unexpected_return')
     except Exception as error:
         reason = getattr(error, 'reason', None)
         underlying = error
-        while underlying.__cause__ is not None:
-            underlying = underlying.__cause__
-        refused = reason == 'authority_unavailable' or (
+        while underlying.__cause__ is not None or underlying.__context__ is not None:
+            underlying = underlying.__cause__ or underlying.__context__
+        kernel_errno = getattr(underlying, 'errno', None)
+        refused = (reason == 'authority_unavailable' and kernel_errno == expected_errno) or (
             case.adapter.entrypoint == 'control_relay:forward'
-            and isinstance(error, OSError) and error.errno in (errno.ENOENT, errno.ECONNREFUSED))
-        outcome = dict(refused=refused, reason='authority_unavailable' if refused else repr(error))
-    print(json.dumps(dict(case=case.identity, inventory_digest=runtime.digest(), **outcome)))
+            and isinstance(error, OSError) and error.errno == expected_errno)
+        outcome = dict(refused=refused, reason='authority_unavailable' if refused else repr(error),
+                       kernel_errno=kernel_errno)
+    print(json.dumps(dict(case=case.identity, inventory_digest=runtime.digest(), invoked=True, **outcome)))
 
 
 def observed_effects(receipt, plan, acknowledgements):
@@ -252,6 +278,9 @@ def evaluate(census, receipt, plan, acknowledgements, outcome):
     if isinstance(receipt, dict) and receipt.get('capture_status') == 'COMPLETE' and (
             'root_missing' not in effects['errors'] and (effects['errors'] or not outcome.get('refused'))):
         rows[ROWS[0]].update(status='FAIL', reason='invalid_refusal_or_envelope')
+    if isinstance(receipt, dict) and receipt.get('capture_status') == 'COMPLETE' and not outcome.get('invoked'):
+        for row in rows.values():
+            row.update(status='FAIL', reason='invocation_incomplete')
     for row in rows.values():
         if row['status'] == 'READY':
             row.update(status='PASS', reason=None)
@@ -335,15 +364,16 @@ def measure(root, census, case, config, scratch, state, fault=None):
     wrapper = binpath / 'git'
     wrapper.write_text(GIT_WRAPPER.format(python=sys.executable, ack=str(ack), git='/usr/bin/git'))
     wrapper.chmod(0o700)
-    given = dict(config, case=case.identity, bin=str(binpath), envelope=plan)
+    given = dict(config, case=case.identity, state=state, bin=str(binpath), envelope=plan)
     request_path = scratch / 'case.json'
     request_path.write_text(json.dumps(given))
+    input_identity = dict(case=identity, inventory_digest=case.registration_digest,
+                          implementation_digest=case.implementation_digest, fixture_version=VERSION,
+                          consumer_implementation_digest=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                          envelope_digest=digest(plan), input_digest=digest(given))
     observation = census.census([sys.executable, '-B', str(Path(__file__).resolve()),
                                 'invoke', str(root), str(request_path)],
-                               identity=dict(case=identity, inventory_digest=case.registration_digest,
-                                  implementation_digest=case.implementation_digest, fixture_version=VERSION,
-                                  envelope_digest=digest(plan), input_digest=digest(given)),
-                               cwd=root, deadline=HANG, fault=fault)
+                               identity=input_identity, cwd=root, deadline=HANG, fault=fault)
     acknowledgements = [json.loads(line) for line in ack.read_text().splitlines()]
     try:
         outcome = json.loads(observation['stdout'])
@@ -351,6 +381,10 @@ def measure(root, census, case, config, scratch, state, fault=None):
     except (ValueError, AssertionError, KeyError):
         outcome = dict(refused=False, reason='invocation_incomplete')
     evaluated = evaluate(census, observation, plan, acknowledgements, outcome)
+    if (observation.get('input_identity') != input_identity or
+            observation.get('implementation_digest') != hashlib.sha256(Path(census.__file__).read_bytes()).hexdigest()):
+        for row in evaluated['rows'].values():
+            row.update(status='FAIL', reason='census_receipt_identity_mismatch')
     return dict(identity=identity, state=state, inventory_digest=case.registration_digest,
                 implementation_digest=case.implementation_digest, fixture_version=VERSION,
                 input_identity=observation['input_identity'], outcome=outcome, envelope=plan,
@@ -367,7 +401,7 @@ def protocol_controls(census):
         barriers=[{'name': name} for name in ('armed_before_exec', 'call_returned', 'descendants_drained')],
         processes=[dict(identity='100:1', pid=100, root=True, parent=None, terminal=2)], events=[])
     plan = [dict(identity='root', parent=None, role='client')]
-    outcome = dict(refused=True)
+    outcome = dict(refused=True, invoked=True)
     good = evaluate(census, complete, plan, [], outcome)
     controls = {'synthetic_complete_evaluates': all(r['status'] == 'PASS' for r in good['rows'].values())}
     invalid = [None, {}, {'addresses': []}, dict(complete, status='INCOMPLETE'),
@@ -436,7 +470,11 @@ def qualify(root, faults=('facilities', 'finalize')):
             statuses = [c['rows'][name]['status'] for c in measured]
             status = ('FAIL' if not exact or 'FAIL' in statuses else
                       'STANDS DOWN' if 'STANDS DOWN' in statuses else 'PASS')
-            rows[name] = dict(status=status, reason='census_incomplete' if status == 'STANDS DOWN' else None)
+            reason = ('census_incomplete' if status == 'STANDS DOWN' else
+                      next((c['rows'][name]['reason'] for c in measured
+                            if c['rows'][name]['status'] == 'FAIL'), 'census_incomplete')
+                      if status == 'FAIL' else None)
+            rows[name] = dict(status=status, reason=reason)
         faults_ok = (sorted((c['identity'], c['fault']) for c in fault_cases) ==
                      sorted((c['identity'], fault) for c in measured for fault in faults) and all(
             c['receipt']['status'] == 'INCOMPLETE'
@@ -450,12 +488,17 @@ def qualify(root, faults=('facilities', 'finalize')):
             row['observation_receipts'] = [dict(identity=c['identity'], digest=digest(c['receipt'])) for c in measured]
         rows[CONSTRUCTION] = dict(status=construction['status'], reason=construction['problems'])
         rows[STORE] = store
-        return dict(schema=VERSION, inventory_digest=runtime.digest(), expected=expected, completed=completed,
+        return dict(schema=VERSION, inventory_digest=runtime.digest(),
+                    implementation_digest=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                    fixture_digest=hashlib.sha256(Path(fixture.__file__).read_bytes()).hexdigest(),
+                    expected=expected, completed=completed,
                     rows=rows, qualification='COMPLETE' if all(r['status'] == 'PASS' for r in rows.values())
                     else 'INCOMPLETE', construction=construction, cases=cases, faults=fault_cases,
                     inventory_receipts=receipts, faults_ok=faults_ok, protocol_controls=controls,
                     metrics=dict(expected=len(expected), completed=len(completed), measured=len(measured),
                         construction_cases=len(cases)-len(measured),
+                        invocations_completed=sum(bool(c['outcome'].get('invoked')) for c in measured),
+                        complete_censuses=sum(c['receipt']['status'] == 'COMPLETE' for c in measured),
                         forbidden_launches=sum(len(c['effects']['forbidden_births']) for c in measured),
                         observation_failures=sum(c['receipt']['status'] != 'COMPLETE' for c in measured)))
 
