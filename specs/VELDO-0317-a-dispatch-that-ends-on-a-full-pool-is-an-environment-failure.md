@@ -94,3 +94,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-20: implemented on VELDO-0334 with registered falsifiers and proof under proof/VELDO-0317/.
+  Dispatch accounting and the factory loop join the footprint: they own the charged attempt and the
+  automatic repeat. Status remains ready pending the lead gate and independent review.
