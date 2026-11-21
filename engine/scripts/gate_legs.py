@@ -828,7 +828,7 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     declared = document['stages'].get(stage)
     if declared is None or declared != command:
         # Not a declared leg: the whole stage is confined, and no caller variable reaches it.
-        return confined(root, command, handed_env(_env()), keep)
+        return confined(root, command, handed_env(_env()), *(() if keep is None else (keep,)))
     listed = entries(document)
     whole = [e for e in document['suites'] if 'rows' not in e]
     if leg != 'unconfined':
@@ -859,7 +859,8 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
             environment[SHARD_METRICS] = str(write)
         started = time.monotonic()
         try:
-            code = runner(root, command, handed_env(environment), keep)
+            # The ledger only when one is taken: a stand-in runner a suite installs takes the first three.
+            code = runner(root, command, handed_env(environment), *(() if keep is None else (keep,)))
         finally:
             if write is not None:
                 os.close(write)
