@@ -140,3 +140,18 @@ gate files this specification already names):
 scripts/agent_sandbox.json is not changed. The specification's footprint and protected_paths now name
 gate_candidate.py and agent_sandbox.py (both copies) and selftest.py. check_space_boundary.py declares the
 ledger folder (TakeOpened); the wall-clock census and template sync pass; check_personal_setup.py finds 0.
+
+## 6. After the decision: brief C's full mutation stage on the merged branch, and the full unit leg
+
+Every heavy run below went through the external host-heavy wrapper (outside the repository), each in its own
+scratch worktree of the named commit, so later edits could not disturb it.
+
+Fixes the runs found (each a stand-in or fixture that met the new code, none a change of what is judged):
+
+| Found by | Defect | Fix |
+| - | - | - |
+| affected-case mutation run at 5f71c7f2 (50 cases) | suite 111 (0214) replaces gate_legs.confined with a three-argument stand-in; the new keep argument made its noop control fail (TypeError) | the ledger is handed to a leg runner only when one is taken (ad63ce18) |
+| full mutation stage, attempt 1, at fb7705e1 | suite 113 (0220): the fixture's hold file was read as soon as it existed and read empty under load (non-atomic write), so a noop control failed and the stage executed no case (full-stage-attempt1-fb7705e1.txt) | the fixture writes the file atomically (e2c02152) |
+| full mutation stage, attempt 2, at e2c02152 | not a defect of the tree: the wrapper's 10G scope was hit by the OOM killer at 16 workers after 18 minutes, before any receipt | attempt 3 binds the stage to five CPUs (ten workers) |
+| full unit leg at e2c02152 | suite 103 (0211) stands in for agent_sandbox.prepared_launch with seven arguments; the dispatcher ended there (full-unit-run-e2c02152.txt) | the kept descriptor is passed only when there is one (9f9dd8b1) |
+| full unit leg at 9f9dd8b1 | suite 114 (0216) runs a verify.sh fragment under set -u without VELDO_OPENED_RECORD: shell-catalog red (full-unit-run-9f9dd8b1.txt) | verify.sh reads it as possibly unset; falsifier anchors follow (6414e4c5); suite 114 alone green (opened/suite-114.txt) |
