@@ -1,6 +1,7 @@
 # Brief C implementation notes
 
 The mutation driver uses pidfds for exits and inotify for appended output.
+poll accepts high descriptor numbers; its fixture waits on descriptor 2048.
 Worker lifecycle sockets remain in the wait set so ownership acknowledgements
 cannot deadlock behind a child waiting for its own acknowledgement. Complete
 output lines rearm each worker independently. Shared controls and case admission

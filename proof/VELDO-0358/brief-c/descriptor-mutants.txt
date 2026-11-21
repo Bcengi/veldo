@@ -1,0 +1,3 @@
+{"case": "wait358-child-watchdog-silent", "status": "rejected", "controls": [[], []], "failed": ["VELDO-0215 case-deadlines/real-hang-reaped", "VELDO-0358 watchdog/progress-not-total"], "kills": [{"row": "VELDO-0358 watchdog/progress-not-total", "kill_by": "unproven"}]}
+{"case": "wait358-child-watchdog-total-time", "status": "rejected", "controls": [[], []], "failed": ["VELDO-0358 watchdog/progress-not-total"], "kills": [{"row": "VELDO-0358 watchdog/progress-not-total", "kill_by": "unproven"}]}
+{"case": "wait358-descriptor-ceiling", "status": "rejected", "controls": [[], []], "failed": ["VELDO-0358 watchdog/progress-not-total"], "kills": [{"row": "VELDO-0358 watchdog/progress-not-total", "kill_by": "unproven"}]}
