@@ -12,37 +12,37 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-{"event": "account_added", "account": "account-claude_code", "directory": "<runtime>/v129-h16f5yd6/profiles/accounts/profiles/account-claude_code", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "account-codex", "directory": "<runtime>/v129-h16f5yd6/profiles/accounts/profiles/account-codex", "directory_state": "created", "metrics": {"accounts_added": 1}}
-  /tmp/tmpl4650g_8: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpl4650g_8/nocrit.md: no acceptance criteria
-  /tmp/tmpl4650g_8/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpl4650g_8/status.md: bad status: donezo
-  /tmp/tmpl4650g_8/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpl4650g_8/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpl4650g_8/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpl4650g_8/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpl4650g_8/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpl4650g_8/verdict.json: bad verdict: looks_fine
-  /tmp/tmpxfrccluc/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpxfrccluc/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpxfrccluc/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpxfrccluc/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpxfrccluc/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpxfrccluc/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpxfrccluc/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpxfrccluc/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpxfrccluc/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpxfrccluc/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpxfrccluc/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpxfrccluc/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+{"event": "account_added", "account": "account-claude_code", "directory": "<runtime>/v129-tv0fyrqs/profiles/accounts/profiles/account-claude_code", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "account-codex", "directory": "<runtime>/v129-tv0fyrqs/profiles/accounts/profiles/account-codex", "directory_state": "created", "metrics": {"accounts_added": 1}}
+  /tmp/tmp9d3iog68: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp9d3iog68/nocrit.md: no acceptance criteria
+  /tmp/tmp9d3iog68/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp9d3iog68/status.md: bad status: donezo
+  /tmp/tmp9d3iog68/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp9d3iog68/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp9d3iog68/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp9d3iog68/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp9d3iog68/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp9d3iog68/verdict.json: bad verdict: looks_fine
+  /tmp/tmplepfhfdg/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmplepfhfdg/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmplepfhfdg/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmplepfhfdg/fref.md: work W1: unknown feature ref F9
+  /tmp/tmplepfhfdg/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmplepfhfdg/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmplepfhfdg/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmplepfhfdg/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmplepfhfdg/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmplepfhfdg/dupspec.md: duplicate spec ids across work items
+  /tmp/tmplepfhfdg/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmplepfhfdg/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  VELDO-0129 build/claude detail: default build returns a real commit and bound proof: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/claude detail: default build returns a real commit and bound proof: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   VELDO-0129 build/claude detail: accepted clone and group precede engine work
   SELFTEST FAIL: VELDO-0129 build/claude
-  VELDO-0129 build/codex detail: default build returns a real commit and bound proof: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/codex detail: default build returns a real commit and bound proof: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   VELDO-0129 build/codex detail: accepted clone and group precede engine work
   SELFTEST FAIL: VELDO-0129 build/codex
   VELDO-0129 review/loop-claude detail: independent process receives only assigned artifacts: transition_refused:None:assign_review
@@ -55,13 +55,13 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   SELFTEST FAIL: VELDO-0129 review/reviewer-codex
   VELDO-0129 review/independence-policy detail: self review refuses and current critical count requires two: transition_refused:None:assign_review
   SELFTEST FAIL: VELDO-0129 review/independence-policy
-  VELDO-0129 outcome/nonzero detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
-  VELDO-0129 outcome/nonzero detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/nonzero detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/nonzero detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
   VELDO-0129 outcome/nonzero detail: claude review retains charge and honors outcome: transition_refused:None:assign_review
   VELDO-0129 outcome/nonzero detail: codex review retains charge and honors outcome: transition_refused:None:assign_review
   SELFTEST FAIL: VELDO-0129 outcome/nonzero
-  VELDO-0129 outcome/missing-build detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
-  VELDO-0129 outcome/missing-build detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/missing-build detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/missing-build detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
   SELFTEST FAIL: VELDO-0129 outcome/missing-build
   VELDO-0129 outcome/missing-review detail: claude: no verdict manufactured: transition_refused:None:assign_review
   VELDO-0129 outcome/missing-review detail: codex: no verdict manufactured: transition_refused:None:assign_review
@@ -69,30 +69,30 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   VELDO-0129 outcome/malformed-review detail: claude: no verdict manufactured: transition_refused:None:assign_review
   VELDO-0129 outcome/malformed-review detail: codex: no verdict manufactured: transition_refused:None:assign_review
   SELFTEST FAIL: VELDO-0129 outcome/malformed-review
-  VELDO-0129 outcome/missing-usage detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
-  VELDO-0129 outcome/missing-usage detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/missing-usage detail: claude: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
+  VELDO-0129 outcome/missing-usage detail: codex: result and conservative charge: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py' {}
   VELDO-0129 outcome/missing-usage detail: claude review retains charge and honors outcome: transition_refused:None:assign_review
   VELDO-0129 outcome/missing-usage detail: codex review retains charge and honors outcome: transition_refused:None:assign_review
   SELFTEST FAIL: VELDO-0129 outcome/missing-usage
-  VELDO-0129 outcome/reservation detail: exhausted allowance causes zero engine launches: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
-  VELDO-0129 outcome/reservation detail: default executor turns the named adapter refusal into a halt: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 outcome/reservation detail: exhausted allowance causes zero engine launches: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
+  VELDO-0129 outcome/reservation detail: default executor turns the named adapter refusal into a halt: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   VELDO-0129 outcome/reservation detail: review allowance is reserved before process invocation: transition_refused:None:assign_review
   SELFTEST FAIL: VELDO-0129 outcome/reservation
-  VELDO-0129 proof/authority detail: claude: accepted stored bundle feeds floor: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
-  VELDO-0129 proof/authority detail: codex: accepted stored bundle feeds floor: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
-  VELDO-0129 proof/authority detail: committed manifest alone is refused: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 proof/authority detail: claude: accepted stored bundle feeds floor: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
+  VELDO-0129 proof/authority detail: codex: accepted stored bundle feeds floor: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
+  VELDO-0129 proof/authority detail: committed manifest alone is refused: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 proof/authority
   VELDO-0129 installation/assets detail: every emitted line recursively matches the recorded formats; missing-usage/modelUsage is explicit
   SELFTEST FAIL: VELDO-0129 installation/assets
-  VELDO-0129 build/gitdir-symlink detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/gitdir-symlink detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 build/gitdir-symlink
-  VELDO-0129 build/gitdir-gitfile detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/gitdir-gitfile detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 build/gitdir-gitfile
-  VELDO-0129 build/gitdir-commondir detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/gitdir-commondir detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 build/gitdir-commondir
-  VELDO-0129 build/gitdir-alternates detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/gitdir-alternates detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 build/gitdir-alternates
-  VELDO-0129 build/gitdir-missing detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-h16f5yd6/installed/.veldo/control_space_admission.py'
+  VELDO-0129 build/gitdir-missing detail: hostile layout refuses by name and source config stays byte-identical: [Errno 2] No such file or directory: '<runtime>/v129-tv0fyrqs/installed/.veldo/control_space_admission.py'
   SELFTEST FAIL: VELDO-0129 build/gitdir-missing
   VELDO-0129 build/config-neutralization detail: hostile fsmonitor and hooks never executed
   SELFTEST FAIL: VELDO-0129 build/config-neutralization
@@ -109,6 +109,6 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   VELDO-0129 format/fake-lines detail: every line the fakes printed is its event in the binaries' own table {} []
   SELFTEST FAIL: VELDO-0129 format/fake-lines
 VELDO-0172 fake/capture:0129_worker_wiring: 8 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:result/success', 'claude:system/init', 'codex:item.completed', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
-  82_veldo_0129_worker_wiring                      4 passed    2.51s
-selftest (PARTIAL, 1 of 239 suites): 30 passed, 25 failed in 2.51s
+  82_veldo_0129_worker_wiring                      4 passed    3.11s
+selftest (PARTIAL, 1 of 239 suites): 30 passed, 25 failed in 3.11s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

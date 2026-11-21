@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -333 +333 @@
+-    if failure.get('classification') == NO_SPACE and path:
++    if path:  # defect: an unconfirmed end's worktree is claimed as kept work

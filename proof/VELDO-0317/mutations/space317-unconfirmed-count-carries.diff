@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -309 +309 @@
+-        consecutive = 2 if prior.get('classification') == UNCONFIRMED and prior.get('retry') else 1
++        consecutive = prior.get('consecutive', 0) + 1 if prior.get('classification') == UNCONFIRMED else 1

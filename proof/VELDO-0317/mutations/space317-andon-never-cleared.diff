@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -3746 +3746 @@
+-        if not admission['admitted']:
++        if True:  # defect: the owner's answer clears nothing

@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -203 +203 @@
+-        'SELECT data FROM entities WHERE id >= ? AND id < ? AND kind = ?', (prefix, prefix[:-1] + '-', INDEX_KIND))]
++        'SELECT data FROM entities WHERE id >= ? AND ? != id AND kind = ?', (prefix, prefix[:-1] + '-', INDEX_KIND))]

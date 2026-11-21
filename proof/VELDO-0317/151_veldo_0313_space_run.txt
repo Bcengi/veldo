@@ -12,45 +12,44 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpi6adfvbr: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpi6adfvbr/nocrit.md: no acceptance criteria
-  /tmp/tmpi6adfvbr/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpi6adfvbr/status.md: bad status: donezo
-  /tmp/tmpi6adfvbr/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpi6adfvbr/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpi6adfvbr/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpi6adfvbr/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpi6adfvbr/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpi6adfvbr/verdict.json: bad verdict: looks_fine
-  /tmp/tmpq2xqino3/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpq2xqino3/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpq2xqino3/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpq2xqino3/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpq2xqino3/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpq2xqino3/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpq2xqino3/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpq2xqino3/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpq2xqino3/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpq2xqino3/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpq2xqino3/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpq2xqino3/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmpyyo54ek6: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpyyo54ek6/nocrit.md: no acceptance criteria
+  /tmp/tmpyyo54ek6/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpyyo54ek6/status.md: bad status: donezo
+  /tmp/tmpyyo54ek6/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpyyo54ek6/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpyyo54ek6/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpyyo54ek6/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpyyo54ek6/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpyyo54ek6/verdict.json: bad verdict: looks_fine
+  /tmp/tmpt6yxr5wq/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpt6yxr5wq/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpt6yxr5wq/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpt6yxr5wq/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpt6yxr5wq/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpt6yxr5wq/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpt6yxr5wq/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpt6yxr5wq/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpt6yxr5wq/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpt6yxr5wq/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpt6yxr5wq/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpt6yxr5wq/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
   SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after the command the census, then one signal, then the outcomes, and the release last [['space_issue', 'space_hold', 'space_declare', 'space_confirm', 'space_declare', 'space_confirm', 'space_measure', 'space_measure', 'space_signal', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_release']]
   SELFTEST FAIL: VELDO-0313 ac1/unread-group-sends-nothing: the scratch root is present and on disk with its file, the build folder has no item and is there, and the hold is held [['present'] waiting]
   SELFTEST FAIL: VELDO-0313 fix2/returns-at-the-commands-exit: nothing of the run was judged: no census, no signal and no release are written, the scratch root is present with the file the process holds, and the hold is held [['space_issue', 'space_hold', 'space_declare', 'space_confirm'] ['present'] waiting]
+  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: then run finished was sent, the scratch root removed and the hold released, in that order [['space_measure', 'space_signal', 'space_outcome', 'space_outcome'] ['removed'] waiting]
   SELFTEST FAIL: VELDO-0313 fix2/captured-output-ends-at-return: the run is held as before: run finished is not sent, the scratch root is present and the hold is held [group_not_empty ['present'] waiting]
-  SELFTEST FAIL: VELDO-0313 fix2/captured-end-follows: when the suite ends that sleep the run's end follows [None waiting]
-  SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-ends-nothing: rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent [{'process': {'pid': 3577758, 'start': 289079834, 'live': True}} ['space_issue', 'space_hold', 'space_declare', 'space_confirm']]
+  SELFTEST FAIL: VELDO-0313 fix2/captured-end-follows: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 615428, 'started': 291748254, 'how': 'supervisor'}, {'pid': 889829, 'started': 291756054, 'how': 'unread'}, {'pid': 929175, 'started': 291757294, 'how': 'unread'}, {'pid': 929819, 'started': 291757569, 'how': 'unread'} ^^^^^^^^^^^^^^^^^^^^^ | File "<checkout>/scripts/suites/151_veldo_0313_space_run.py", line 647, in follow | raise RuntimeError( | RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 615428, 'started': 291748254, 'how': 'supervisor'}, {'pid': 889829, 'started': 291756054, 'how': 'unread'}, {'pid': 929175, 'started': 2
+  SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-ends-nothing: rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent [{'process': {'pid': 975295, 'start': 291760448, 'live': True}} ['space_issue', 'space_hold', 'space_declare', 'space_confirm']]
   SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: while that worker lives the scratch root is present with its file and the hold is held [['present'] waiting]
-  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a process that started after the run began and whose environment cannot be read may be the run's: the run stays open, nothing is sent or written, and each is named. The one that was running before the run began cannot be the run's and is not [label_unread [{'pid': 3704734, 'started': 289096129, 'how': 'unread'}, {'pid': 3704762, 'started': 289096131, 'how': 'unread'}]]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a process that started after the run began and whose environment cannot be read may be the run's: the run stays open, nothing is sent or written, and each is named. The one that was running before the run began cannot be the run's and is not [label_unread [{'pid': 1099533, 'started': 291764779, 'how': 'unread'}, {'pid': 1099564, 'started': 291764781, 'how': 'unread'}]]
   SELFTEST FAIL: VELDO-0313 fix3/rule-3-reads-the-kernel: the hold is not released for a run the kernel still shows [held:group_not_empty waiting]
-  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 143 for kill -TERM $$, and the run's hold is released and its scratch root removed [143 released veldo space run: admission was not judged: _SpaceAs.admit() got an unexpected keyword argument 'expected_version'
-veldo space run: run finished was not sent (la]
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 127 for ayfu/no-such-program, and the run's hold is released and its scratch root removed [127 waiting veldo space run: admission was not judged: _SpaceAs.admit() got an unexpected keyword argument 'expected_version']
   SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: act mode with too little space: the wrapper returns 75 [0]
-  SELFTEST FAIL: VELDO-0313 ac2/report-starts: report mode with the same numbers: they are printed, and the command starts and its status is returned [4 veldo space run: admission was not judged: _SpaceAs.admit() got an unexpected keyword argument 'expected_version'
-veldo space run: run finished was not sent (label_unread): nothing of the run was judged; it follows the exit of process 3716712, 3716719]
-  151_veldo_0313_space_run                        25 passed  180.63s
-selftest (PARTIAL, 1 of 239 suites): 51 passed, 12 failed in 180.63s
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: report mode with the same numbers: they are printed, and the command starts and its status is returned [4 veldo space run: admission was not judged: _SpaceAs.admit() got an unexpected keyword argument 'expected_version']
+  151_veldo_0313_space_run                        24 passed  178.01s
+selftest (PARTIAL, 1 of 239 suites): 50 passed, 13 failed in 178.01s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

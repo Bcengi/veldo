@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -3904 +3904 @@
+@@ -3903 +3903 @@
 -            self.report = None if unjudged else self._artifact(termination, cause)
 +            self.report = self._artifact(termination, cause)

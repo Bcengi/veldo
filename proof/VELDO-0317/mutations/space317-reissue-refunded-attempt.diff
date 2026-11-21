@@ -1,0 +1,5 @@
+--- a/.veldo/control_dispatch.py
++++ b/.veldo/control_dispatch.py
+@@ -623 +623 @@
+-                index = dict(index, refunded=index.get('refunded', 0) + 1)
++                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))  # defect: the rerun takes the failed attempt's number

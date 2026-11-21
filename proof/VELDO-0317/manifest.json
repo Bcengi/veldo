@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0317",
-  "commit": "384e4568fe8fbfb333359dc251cd4dd9155d10ef",
-  "tree": "6c087ab1c3e0384e7b6454b533c2f2d37c1bee72",
-  "producer": "Codex implementation agent, completed by a Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-21T03:41:26.847641+00:00",
+  "commit": "f2ef53ced9bb993116b74bd682d2b4e84112ab1a",
+  "tree": "719466dca3b17e7e68a16be38d2cdad876dd510d",
+  "producer": "Codex implementation agent, completed and fixed after review (round 1) by Claude implementation agents; not an independent reviewer",
+  "produced_at": "2026-11-21T11:08:48.935118+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "scripts/suites/159_veldo_0317_no_space.py",
-          "detail": "A real child prints the error and exits 1 with the host pool under its floor: the end is environment_failure:no_space in the unavailable_service class with the pools, free bytes and floors read before cleanup, the attempt count stays 0, and in act mode the re-run waits behind admission until space is back."
+          "detail": "A real child prints the error and exits 1 with the host pool under its floor: the end is environment_failure:no_space in the unavailable_service class with the pools, free bytes and floors read before cleanup, the charged count stays 0, and in act mode the re-run waits behind admission until space is back. Fix round 1: the clean rerun is attempt 2, the floor accepts it as the newest build, and the charged count is 1 (ac1/rerun-accepted; falsifier space317-reissue-refunded-attempt)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0317/mutations.json",
-          "sha256": "32e12599678d7c29f9c3532a289c75d4e2684f65a7e9a2655a270ab388e9444e",
+          "sha256": "e8d7a57601dbbd942fb3da38ff0fff296186e90ae7b2fdc55c03c2242486107c",
           "detail": "Green baseline and no-op controls, red mutant on space317/ac1/not-charged; pending lead gate."
         },
         {
@@ -35,12 +35,12 @@
         {
           "type": "unit",
           "ref": "scripts/suites/159_veldo_0317_no_space.py",
-          "detail": "The same output with free space above the floor is unknown_outcome:no_space_unconfirmed and is launched once more; the second end keeps its exit 1 as an ordinary unsuccessful end with no further repeat and no andon."
+          "detail": "The same output with free space above the floor is unknown_outcome:no_space_unconfirmed and is launched once more; the second end keeps its exit 1 as an ordinary unsuccessful end with no further repeat and no andon. Fix round 1: an unconfirmed end after a standing repeat is a new run with its own repeat (history/unconfirmed-new-run)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0317/mutations.json",
-          "sha256": "32e12599678d7c29f9c3532a289c75d4e2684f65a7e9a2655a270ab388e9444e",
+          "sha256": "e8d7a57601dbbd942fb3da38ff0fff296186e90ae7b2fdc55c03c2242486107c",
           "detail": "Green baseline and no-op controls, red mutant on space317/ac2/repeat-red; pending lead gate."
         },
         {
@@ -57,12 +57,12 @@
         {
           "type": "unit",
           "ref": "scripts/suites/159_veldo_0317_no_space.py",
-          "detail": "The run worktree and its uncommitted file survive run finished in act and report mode, and the next contract payload names the retained worktree and says it holds uncommitted changes."
+          "detail": "The run worktree and its uncommitted file survive run finished in act and report mode, and the next contract payload names the retained worktree and says it holds uncommitted changes. Fix round 1: only the worktree of an environment_failure:no_space end the ledger still holds live is named (ac3/brief-no-space-only, ac3/brief-live-only)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0317/mutations.json",
-          "sha256": "32e12599678d7c29f9c3532a289c75d4e2684f65a7e9a2655a270ab388e9444e",
+          "sha256": "e8d7a57601dbbd942fb3da38ff0fff296186e90ae7b2fdc55c03c2242486107c",
           "detail": "Green baseline and no-op controls, red mutant on space317/ac3/edit-kept; pending lead gate."
         },
         {
@@ -79,12 +79,12 @@
         {
           "type": "unit",
           "ref": "scripts/suites/159_veldo_0317_no_space.py",
-          "detail": "After two confirmed ends in a row the loop launches nothing, reports the stop, opens one signed owner request titled Andon, and a fresh connection still refuses to prepare a third run with space free."
+          "detail": "After two confirmed ends in a row the loop launches nothing, reports the stop and opens one signed owner request titled Andon; a restart finds the same stop and request. The andon refuses no dispatch (another station prepares, in report mode with the pool still short), and the owner's recorded answer clears it: rerun dispatches once more, acknowledge closes it and leaves the unit stopped (ac4/later-dispatch-open, ac4/owner-clears; falsifiers space317-andon-refuses-dispatch, space317-andon-never-cleared)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0317/mutations.json",
-          "sha256": "32e12599678d7c29f9c3532a289c75d4e2684f65a7e9a2655a270ab388e9444e",
+          "sha256": "e8d7a57601dbbd942fb3da38ff0fff296186e90ae7b2fdc55c03c2242486107c",
           "detail": "Green baseline and no-op controls, red mutant on space317/ac4/two-stop; pending lead gate."
         },
         {
@@ -99,7 +99,7 @@
     {
       "name": "unit",
       "status": "not_run",
-      "reason": "No aggregate unit gate; 18 selected selftests are diagnostics in regressions.json, two of them red here and on the base."
+      "reason": "No aggregate unit gate; 19 selected selftests, all run on the final tree, are diagnostics in regressions.json, two of them red here and on the base."
     },
     {
       "name": "integration",
@@ -110,7 +110,7 @@
       "name": "falsifiers",
       "status": "passed",
       "ref": "proof/VELDO-0317/mutation-summary.json",
-      "detail": "33 rejected mutations (30 in mutations.json, 3 repaired older cases in regression-mutations.json) with green baseline and no-op controls; zero reuse and zero surviving workers."
+      "detail": "44 rejected mutations (41 in mutations.json, 3 repaired older cases in regression-mutations.json) with green baseline and no-op controls; zero reuse and zero surviving workers."
     },
     {
       "name": "lint",
@@ -140,58 +140,63 @@
     {
       "name": "gate",
       "status": "not_run",
-      "reason": "Reserved for the lead; independent review not performed."
+      "reason": "Reserved for the lead; independent review of fix round 1 not performed."
     }
   ],
   "assumptions": [
-    "Suites 82_veldo_0129_worker_wiring and 151_veldo_0313_space_run are red on the base commit 870c43ea too; 151 fails a varying set of rows, so the base comparison does not prove this change leaves it untouched.",
+    "Suites 82_veldo_0129_worker_wiring and 151_veldo_0313_space_run are red on the base commit 9bbf44d4 too; 151 fails a varying set of rows, so the base comparison does not prove this change leaves it untouched.",
     "Free bytes, eligibility, account policy and the process table are fixture seams in the ticket suite; engine-image pools have no free-space reader in the receiver and cannot confirm a full disk on their own.",
     "The full mutation inventory and the full unit suite were not run; only the anchors of the four changed modules were counted statically."
   ],
   "rollback": "Revert the change. A run that ends on a full pool is charged as a failed attempt again.",
   "artifacts": {
-    "106_veldo_0185_dispatch_setup.txt": "sha256:7f10fa92b65ce5440f3eb5411686ccf78c2013abc4ebf225048d4103e45fbbe7",
-    "129_veldo_0247_line.txt": "sha256:32a223ee0e6004f13f589e20b4fc9166fe9e953336ac0969c92f88a35dabe23b",
-    "134_veldo_0331_space_mode.txt": "sha256:1d9db9fa3df2a39e41a9816b9c7e38c39b84fbe7d72137a470db2afa3da8f5c8",
-    "146_veldo_0308_run_finished.txt": "sha256:21106e1d2a8a187b3ce72aa49034934b5c8d1056985bff3293d1d7207640eac2",
-    "150_veldo_0350_end_write.txt": "sha256:6bc47e956072d034ba684349e8e2459433e81ffcf1e710fbfb6a81b21be83eaf",
-    "151_veldo_0313_space_run.txt": "sha256:2cba63da7b422eb5c41f8151e9d39fd259aef86c890aaa3283e6a9b49e8ba169",
-    "153_veldo_0336_run_worktree.txt": "sha256:baa98c3f003b62627a487fb4e78f3b59b00be7164d0c8275cf7be92dee9536a9",
-    "156_veldo_0315_reconcile.txt": "sha256:2bb00d82f7d291a134577d8c20a250038cfa7facf2e334cf84bf49e803ed4b1f",
-    "157_veldo_0316_space_admission.txt": "sha256:00f0bc2aa4659feecb1b08afd7599a76003c56fe9055ddf40015a7cdb2d258d2",
-    "158_veldo_0334_space_freed.txt": "sha256:ac151951ad45098d0e21f47c97a85f28827a5306cad06dfce9105058d3323832",
-    "159_veldo_0317_no_space.txt": "sha256:096576e074c3efd5b126e713ef976676e92594272caad38e98f6656bbd055b43",
-    "62_veldo_0039_dispatch.txt": "sha256:124097633c065c7afec0cd0248b8c6ee203aefd1c2f16fe97e6fda61a63c28b6",
-    "63_veldo_0040_containment.txt": "sha256:54fbe8dce8921b2f754dfab2afd8db558b95e24bed548363780f80b7ae9c448d",
-    "67_veldo_0041_heartbeat.txt": "sha256:766927dd0a8f392d1ac0d8428793bc632796bc61a5f2e72c29ca5a638a12a252",
-    "82_veldo_0129_worker_wiring.txt": "sha256:5057dbf267d30e40842ea197ece0825805f70ec6231a8b6ec5dc380f01f8cdad",
-    "82_veldo_0141_execution_record.txt": "sha256:401853cb0bc8b48f17a6c3128a74426ab67384f0bd718af55632400e901c8882",
-    "83_veldo_0154_factory_loop.txt": "sha256:c65922042adb9ab328873f904ad0333e73d0f7dc9c08c31a2ae9668cc587d5f9",
-    "83_veldo_0166_usage_windows.txt": "sha256:205f9b904928586ef2a1729eb0c57581c22c6646f7bf6f0ab8acbf8d15c7efd9",
-    "README.md": "sha256:74f39f571520a53a32edcfe8ad337efd4b2a0cdecea0155909b7d70bfc8fe1a1",
-    "base-870c43ea-151_veldo_0313_space_run.txt": "sha256:d3bef153c55a4a060bac3e6aa26db8f5256fcbe69cf3c1962d2de74ae614b96d",
-    "base-870c43ea-82_veldo_0129_worker_wiring.txt": "sha256:8e639f72130e4ccefec2d3439e744d1f962c72444c11c47e6baa1efba7cd94e7",
+    "106_veldo_0185_dispatch_setup.txt": "sha256:6c5d4698de20e3b4729449da8097584fdc15a9a4cca72f49f3f5bd72404ac3ff",
+    "129_veldo_0247_line.txt": "sha256:b79093cb395f1032a7c0ac5fd4eaa101bdba9505b8aa96e1c3074f7d2073b1cb",
+    "134_veldo_0331_space_mode.txt": "sha256:273ebe69b133c6688971c5a7b6a83a06fafcc6baa4fe63aff1b63ce52cda9fc8",
+    "146_veldo_0308_run_finished.txt": "sha256:a26935dff52eba671c69c2b7729b0dcd58486ec905cf06ed80356e3f89328a2c",
+    "150_veldo_0350_end_write.txt": "sha256:7d116cebf98bbe4a0c9dfec711334ab14c281bc35f929aa034006c9a31a40d63",
+    "151_veldo_0313_space_run.txt": "sha256:5f344eb2f87b495ccfe850a0e2730b72f7b82bddc3456cc75f072c2636c3029f",
+    "153_veldo_0336_run_worktree.txt": "sha256:f4b8012a08691a8680fd1e4bf275cab88e4cd24a27a3c19a0bd88e83cd27b227",
+    "156_veldo_0315_reconcile.txt": "sha256:6c13c8a5bfba8a3a8abc125696ac98216e0e252dca75b65a9a3f69b234986e19",
+    "157_veldo_0316_space_admission.txt": "sha256:52a6e8f89eaa0c5bca5b69701b17d735be6e88377c5ffd66f3c809cbda5dc4b5",
+    "158_veldo_0334_space_freed.txt": "sha256:b87761ccccac4a2c20ea3f2868c671042efd7c8c596ae4b6cd6cd69953a763e0",
+    "159_veldo_0317_no_space.txt": "sha256:1496d2b2297f912ba64b9f39f07dc614b7c30be8ded1d9dba4772a47884e9e40",
+    "62_veldo_0039_dispatch.txt": "sha256:60028e417228fb786cc5d69dae87e110a9806c27295c672dd50c2d8da2c29485",
+    "63_veldo_0040_containment.txt": "sha256:0a270171ce6f7909efd6240008d2033aa95cc9755a31375c0635d1f2c7660f87",
+    "63_veldo_0049_floor.txt": "sha256:4b9d8b7a66d1f657a58e927773e2d3b5f9a64bf2272717bbaac283659aac7d84",
+    "67_veldo_0041_heartbeat.txt": "sha256:00bb400fdb40032c01ceeddc443dbd69571c144c0ce4c3ee12ba21dfc001ae4c",
+    "82_veldo_0129_worker_wiring.txt": "sha256:ec380749a96d79d685e5fb522f90b9a3046a1c29c8c39907ead301a728550cc7",
+    "82_veldo_0141_execution_record.txt": "sha256:f40f8da81c9f21b3c9b2705253262046ea76e7fc20e337e416408da9e1a5eafe",
+    "83_veldo_0154_factory_loop.txt": "sha256:6d9839ea410b3b0d2f03fae0e44887f026d9b5e27720f8570a4c4be31d9e1668",
+    "83_veldo_0166_usage_windows.txt": "sha256:2390de975fd9fa4fbc76f7aac3811927de276c4e2d327c3222174bcac7471db0",
+    "README.md": "sha256:f9591fadad42b57cd868362fc5d3b34e4ca7a4cfcfdb13504daa3e32a1121e3a",
+    "base-9bbf44d4-151_veldo_0313_space_run.txt": "sha256:b7498a2f865f436eda1860a22bc506103a3160ae14e19798812e03382e93ceaa",
+    "base-9bbf44d4-82_veldo_0129_worker_wiring.txt": "sha256:7b351e448ebbe645e64db577e3d916e4ca4c4b55396f13e8f2433be5fe2a1b05",
     "checks.json": "sha256:030b345dd196e2f449c70ea1406f3a96b652256d98317df79e70f2987da6464f",
-    "first-146-failure.txt": "sha256:5b1336cab89c6ff5844fc9a35cc78a8a84445e9c20c223a1494eb073fe5a566e",
-    "first-151-run.txt": "sha256:a5768ff074d08e32535319041b80794a242ecbf3f1b98a7da6c235a52a2b70a3",
     "generated.txt": "sha256:f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
-    "lint.txt": "sha256:df60455affc479adfe4f3c343c66e9d35f532c63b7eeee6525fbda766a158913",
-    "mutation-summary.json": "sha256:4e742aa6c900547919656bcb026b02a65f84b54cecd7d9c026f3fc7c66c84737",
-    "mutations/space317-charge-attempt.diff": "sha256:28889c81957aac4f015b67b73a467dade3a70955d44dd577eb86fbc132e22e26",
-    "mutations/space317-no-owner-request.diff": "sha256:5353bdf8f168b92728c077a8f743cc66ce7fa6f14b717f4620b0477157f002fc",
-    "mutations/space317-omit-next-brief.diff": "sha256:b32f9f01bd4c1ab40e59141fccb825af82634da33bbeca065bf6ab2781d7a9bc",
-    "mutations/space317-refund-hides-latest.diff": "sha256:c10b7db50cde877cbd6bb2ea66e0c93e7e282c3b02d35c254d849cf07d62b1c6",
-    "mutations/space317-remove-worktree.diff": "sha256:90d9d229a36de1c730c47b91bdf8c0659ae098927396fc7e1f3b3ab879e006aa",
-    "mutations/space317-text-alone.diff": "sha256:6eb93719ca626fc1d390b56184d0372afad88d66b871df4348371063b921bc97",
-    "mutations/space317-third-attempt.diff": "sha256:756e94059c85713842a3c5d246e0e0174372a7c8e93084ed2158986ef722cf5b",
-    "mutations/space317-unwired-receiver.diff": "sha256:d6acd9f2cf35e71b69d761591eb034d421bb850a3b857d6b1ef49f137c9c24c6",
-    "mutations/space317-write-verdict.diff": "sha256:a40dd60012e97c7250e392f748d3296d22cb9079c7c9e8aa954f93cecb0a9137",
-    "mutations.json": "sha256:32e12599678d7c29f9c3532a289c75d4e2684f65a7e9a2655a270ab388e9444e",
-    "mutations.txt": "sha256:4bd761ca247ccb56c287fceeec453fe56d6d7f17f63a5ad98e4df090736bda13",
+    "lint.txt": "sha256:a947254b88918ebe4b741d28f0445ea87d024e5edd643c087ae6408f01483df1",
+    "mutation-summary.json": "sha256:16088bdeb3f73f9e50ffce7164e9a3e20cd09cdf931142c6012e8ff255a82921",
+    "mutations/space317-andon-never-cleared.diff": "sha256:955c0f3e7fcef8616b3ad9f453453c6b9daac5a757059674258df54430fb30fa",
+    "mutations/space317-andon-refuses-dispatch.diff": "sha256:85545379f79433e1d618cab234395500865dc78bc6faa8c8571cac6ade2637ba",
+    "mutations/space317-brief-any-end.diff": "sha256:1554acf71ef29275d9d53b1e492f4bb55a9fc8a6c7cd4578989494955b6f31b0",
+    "mutations/space317-brief-dead-item.diff": "sha256:f1ce92e06a8c28f28f52c09bf3ff66f289b0292f0d0d01cd4b75f5dbc502d998",
+    "mutations/space317-charge-attempt.diff": "sha256:963e1713fe3d57d1a4a4b4f538c3b833b47d67b8d3ffe3a0684c2a1e0eee52a5",
+    "mutations/space317-no-owner-request.diff": "sha256:f8702000f8d5b304eee2c1c880313111b8cfb83d84b20c0f6f382a0a8e90231d",
+    "mutations/space317-omit-next-brief.diff": "sha256:caee4481c35435173e10afc82f8bbe4de9e405c9e6491c15c929e323340fe18b",
+    "mutations/space317-reissue-refunded-attempt.diff": "sha256:e7ddaf010cc323bed6ba5377da0e400bd65d1895a2fb8c7e28c759ea37ddbd50",
+    "mutations/space317-remove-worktree.diff": "sha256:9327411330c4bf292517bed7cf6706e85cd56e8fcc1c669b390d009907d5ec9c",
+    "mutations/space317-slots-unbounded.diff": "sha256:77083a65cfd751376fee0b2979d3eda4b7277622cdefe3f3dda6291bba932081",
+    "mutations/space317-text-alone.diff": "sha256:2f4140a35147d6f7be5f0f991ff0e901ba4ce70fdb8802e4194b9f8e1e5c6603",
+    "mutations/space317-third-attempt.diff": "sha256:26b6fb63337775ad6d0406aa2a26bacb0d0ed14e46d1c668a75814dd7e1c7988",
+    "mutations/space317-unconfirmed-count-carries.diff": "sha256:123038cb1776f97c5cccc7b5c1b656c92d13f1c68c6ae3f3db5d0acbd2b2a069",
+    "mutations/space317-unwired-receiver.diff": "sha256:3954d7860f61e650b8ac76ed96b76b5562af2456cfa34cdd2f7ced1df8998fe2",
+    "mutations/space317-write-verdict.diff": "sha256:f52eace5214c9103db2c6c109c03be31add77c1a9bee2823e2f49edda7d0a71f",
+    "mutations.json": "sha256:e8d7a57601dbbd942fb3da38ff0fff296186e90ae7b2fdc55c03c2242486107c",
+    "mutations.txt": "sha256:c4a11264a99bac29912872713a28a6c273dea36146822374a71b77cc6bf672dd",
     "personal-setup.txt": "sha256:29bcda4c225cfaf46d74d1637c2e8d8f55247be560bf35083840471369b7f5a8",
-    "regression-mutations.json": "sha256:04cb9b1a9cd067a65e2f5029f35a42e75ee250df73b97bf17ba72c2d8c33463b",
-    "regression-mutations.txt": "sha256:fec371f54da7b74c1a1cae3e99f4fa4da8aeda9d0d073891ec781ce84413c054",
-    "regressions.json": "sha256:9d622690ed6890ecb77711b9606d6be276a45638b88623addb4e401b14cd2e64",
+    "regression-mutations.json": "sha256:b0d3f916bd766b8258592827af6f9cf9e142000831e0250eb7d2d32c419447f3",
+    "regression-mutations.txt": "sha256:e0946d538cedd594304449d76a794bbd85ff3414b1a6da3c39527ef369cfb0b6",
+    "regressions.json": "sha256:1d300004bfaeb3a6b2cdfa146fcdbe48e5cfad2078d9c474ea8aa78bd39cba1b",
     "space-boundary.txt": "sha256:c765f4cb582622d9410266a9eea2b02d14ac01fcb2b8085aeb7d789909a2d119",
     "spec-validation.txt": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "template-sync.txt": "sha256:343656aa06130084b2ad5f7413fa5a24a3d061491382915c77913de03fde19ab",
