@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0218",
-  "commit": "51f896714e0d57408a3af88c1d292a5458a842d8",
+  "commit": "8c4640d95312221ec3811682655ad3bfa18e41ce",
   "producer": "Codex implementation agent; not an independent reviewer",
   "criteria": [
     {
@@ -61,8 +61,8 @@
     },
     {
       "name": "selected-suites",
-      "status": "not_run",
-      "detail": "Final Linux regression result pending."
+      "status": "passed",
+      "detail": "linux-suites.txt: 382 passed, zero failed across suites 53, 99, 100, 101 and 115. controlled-suites-attempt.txt: suites 98, 157 and 158 passed; its old deadline fixture failed and was corrected, then deadlines.txt reports 43 passed, zero failed. audit-suite.txt: 38 passed, zero failed. These are selected diagnostics, not the canonical unit gate."
     },
     {
       "name": "mutation-falsifiers",
@@ -83,6 +83,11 @@
       "name": "personal-setup",
       "status": "passed",
       "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
+    },
+    {
+      "name": "landing-fixture-replay",
+      "status": "passed",
+      "detail": "landing-replay.txt: 25 existing suite-101 assertions replayed after isolating the engine provenance negative control. No production code changed after the full Linux regression run."
     }
   ],
   "assumptions": [
