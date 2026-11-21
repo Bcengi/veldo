@@ -237,9 +237,9 @@ def _veldo_0221():
             '    str(p.relative_to(roots["XDG_RUNTIME_DIR"])) for p in Path(roots["XDG_RUNTIME_DIR"]).rglob("*")\n'
             '    if p.name != "same-relative-path"))), flush=True)\n' + engine_names)
         intruder = (
-            'mine = Path(os.environ["HOME"]).parent\n'
+            'mine = Path(os.environ["TMPDIR"])\n'
             'refused = []\n'
-            'for target in (mine.parent / "probe" / "intruder", mine.parent / "000" / "h" / "intruder"):\n'
+            'for target in (mine.parent / "p" / "intruder", mine.parent / "00h" / "intruder"):\n'
             '    try:\n        target.write_text("x")\n        refused.append("wrote")\n'
             '    except PermissionError:\n        refused.append("refused")\n'
             '    except FileNotFoundError:\n        refused.append("gone")\n'
@@ -267,10 +267,13 @@ def _veldo_0221():
             every_root = list(first.values()) + list(second.values())
             if len(set(every_root)) != 14 or len(first) != 7:
                 problems.append("%s: the two shards share a root: %r %r" % (leg, first, second))
-            base_of = {name: str(Path(r["HOME"]).parent) for name, r in roots.items()}
-            if base_of["01_first"] == base_of["02_second"] or not all(
-                    value.startswith(base_of[name] + "/") for name, r in roots.items() for value in r.values()):
-                problems.append("%s: a root lies outside its shard's own directory" % leg)
+            # Each shard's roots are its own siblings of one leg directory, named by its own tag.
+            tags = {name: Path(r["TMPDIR"]).name for name, r in roots.items()}
+            legs_base = {str(Path(value).parent) for r in roots.values() for value in r.values()}
+            if tags["01_first"] == tags["02_second"] or len(legs_base) != 1 or not all(
+                    Path(value).name.startswith(tags[name]) and len(Path(value).name) <= len(tags[name]) + 1
+                    for name, r in roots.items() for value in r.values()):
+                problems.append("%s: a root is not its own shard's: %r" % (leg, roots))
             # The runtime directory holds only links to the user manager's own sockets, or nothing.
             if not all(set(found) <= {"bus", "systemd", "systemd/private"} for found in runtime.values()):
                 problems.append("%s: a runtime directory holds more than the manager's sockets: %r" % (leg, runtime))
@@ -443,12 +446,12 @@ def _veldo_0221():
         # An item is charged to the shard it can be tied to, and what cannot be the leg's is not.
         jobs = [{"name": "01_first", "index": 0}, {"name": "02_second", "index": 1}]
         base = top / "vs-attribution"
-        (base / "001/h").mkdir(parents=True)
+        (base / "01h").mkdir(parents=True)
         place = top / "attribution-place"
         place.mkdir()
         (place / "plain").write_text("nothing here")
-        (place / "refers").write_text("ExecStart=%s/001/h/bin/run\n" % base)
-        os.symlink(base / "001/h", place / "link")
+        (place / "refers").write_text("ExecStart=%s/01h/bin/run\n" % base)
+        os.symlink(base / "01h", place / "link")
         (place / "named-02_second").write_text("x")
         told = {name: RS.attribute("place", name, place / name, base, jobs)[:2]
                 for name in ("plain", "refers", "link", "named-02_second")}
@@ -465,9 +468,9 @@ def _veldo_0221():
             finally:
                 process.stdin.close()
                 process.wait()
-        holder = (held_by(dict(plain, HOME=str(top))), held_by(dict(plain, HOME=str(base / "001/h"))))
+        holder = (held_by(dict(plain, HOME=str(top))), held_by(dict(plain, HOME=str(base / "01h"))))
         by_unit = RS.attribute("unit", "run-u7.scope", None, base, jobs,
-                               lambda unit: "WorkingDirectory=%s/000/t\n" % base)
+                               lambda unit: "WorkingDirectory=%s/00\nExecStart=%s/011/x" % (base, base))
         expect("VELDO-0221 suite-shards/attribution: %r %r %r" % (told, holder, by_unit),
                told == {"plain": (None, "unknown"), "refers": ("02_second", "leg"), "link": ("02_second", "leg"),
                         "named-02_second": ("02_second", "leg")}
