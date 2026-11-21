@@ -96,9 +96,33 @@ def raw(paths, scratch):
     return [(str(Path(p).relative_to(scratch)), Path(p).read_bytes()) for p in paths if Path(p).is_file()]
 
 
+def proof_summary(path, command, deciding, discarded):
+    """A veldo.proof-summary/v1 record, written here: the line this ticket was brought onto has no
+    validate.write_proof_summary (that writer is VELDO-0270's, on another line). Same fields: the
+    command, the commit, tree, host, interpreter, git and load, each raw file by name, size and
+    sha256, and the deciding part."""
+    import hashlib
+    import platform
+
+    def rev(spec):
+        done = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', spec], capture_output=True, text=True)
+        return done.stdout.strip() if done.returncode == 0 else 'unknown'
+    git = subprocess.run(['git', '--version'], capture_output=True, text=True).stdout.strip() or 'unknown'
+    environment = {'commit': rev('HEAD'), 'tree': rev('HEAD^{tree}'), 'host': platform.node(),
+                   'python': platform.python_version(), 'git': git, 'load': list(os.getloadavg())}
+    kept = [{'name': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+            for name, data in ((n, d.encode() if isinstance(d, str) else bytes(d)) for n, d in discarded)]
+    record = {'schema': 'veldo.proof-summary/v1', 'command': command, 'environment': environment,
+              'discarded': kept, 'deciding': deciding}
+    path.write_text(json.dumps(record, indent=1, sort_keys=True, ensure_ascii=True) + '\n')
+
+
 def write(V, name, command, deciding, discarded):
     path = HERE / (name + '.summary.json')
-    V.write_proof_summary(path, command, deciding, discarded=discarded, root=ROOT, timing=True)
+    if hasattr(V, 'write_proof_summary'):
+        V.write_proof_summary(path, command, deciding, discarded=discarded, root=ROOT, timing=True)
+    else:
+        proof_summary(path, command, deciding, discarded)
     print('VELDO-0117 %s: %s -> %s' % (name, deciding['verdict'], path.relative_to(ROOT)))
     return 0 if deciding['verdict'] == 'pass' else 1
 

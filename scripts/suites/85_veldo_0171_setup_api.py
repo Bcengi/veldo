@@ -1277,10 +1277,17 @@ def _v171_suite():
                                                units_b / (unit_b + '.wants'), units_b / (unit_b + '.wants') / api_unit_b,
                                                host_b / 'engines.json', root_b / 'records', root_b / 'engines', root_b / 'engines/claude_code',
                                                root_b / 'engines/claude_code' / engines186['version']))
-            added_outside = [p for p in added if not p.startswith(bin_b + '/')]
+            # VELDO-0117: the service this rerun started registers its store in the install root's domain registry.
+            # The registry is the service's own file, not a setup step's; SQLite keeps its -shm and -wal beside
+            # it while the service holds it open.
+            registry = str(install_b / 'domains.sqlite3')
+            registry_files = [p for p in added if p in (registry, registry + '-shm', registry + '-wal')]
+            added_outside = [p for p in added if not p.startswith(bin_b + '/') and p not in registry_files]
             check(OB, 'the files it added outside the installed engine are exactly the API steps\' [%s]'
                   % sorted(set(added_outside) ^ set(expected))[:4],
                   added_outside == expected and not [p for p in removed if not p.startswith(bin_b + '/')])
+            check(OB, 'and the started service\'s domain registry in the install root [%s]' % registry_files,
+                  registry in registry_files)
 
             def engine_of(directory):
                 return {str(p.relative_to(directory)): (oct(stat.S_IMODE(p.lstat().st_mode)),

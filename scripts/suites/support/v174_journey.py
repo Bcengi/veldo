@@ -278,6 +278,9 @@ def service_config(f, CS, receiver=None):
          enrollment_signers=trust['enrollment_signers'],host_identity=trust['host_identity'],
          repositories={authority.ids['repository_uuid']:[authority.config['workspace']]},
          observations=str(home/'observations.jsonl'),state_root=str(f['root']/'state'),
+         # VELDO-0117: each fixture service names its own domain registry; the default is found from the
+         # installer's layout, and these fixtures share one domain across several scratch roots.
+         domain_registry=str(home/'domains.sqlite3'),
          receiver={'conversations':str(receiver)} if receiver else {},work=None)
     return config
 
