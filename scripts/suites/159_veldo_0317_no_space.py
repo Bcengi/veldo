@@ -125,7 +125,8 @@ def _v317_suite():
                     self.next_id = 0
                     def ordered(*args, **kwargs):
                         self.next_id += 1
-                        with patch.object(L.uuid, 'uuid4', return_value=types.SimpleNamespace(hex='%032x' % self.next_id)):
+                        with patch.object(L, 'uuid', types.SimpleNamespace(
+                                uuid4=lambda: types.SimpleNamespace(hex='%032x' % self.next_id))):
                             return original(*args, **kwargs)
                     self.runner.prepare = ordered
 
