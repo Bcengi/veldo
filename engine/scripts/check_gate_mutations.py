@@ -1278,13 +1278,22 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             elif identity in results:
                 receipt['results'].append(reuse.evidence(case, results[identity], True))
         for member in audit['population']:
-            suite = audit['suites'].setdefault(member['suite'], dict(reused=0, audited=0))
-            suite['reused'] += 1
+            suite = audit['suites'].setdefault(member['suite'], dict(hits=0, reused=0, audited=0))
+            suite['hits'] += 1
+            suite['reused'] += member['identity'] not in selected
             suite['audited'] += member['identity'] in selected
-        for suite in audit['suites'].values():
-            fraction = suite['audited'] / suite['reused']
+        for suite_name, suite in audit['suites'].items():
+            strata = {}
+            for member in audit['population']:
+                if member['suite'] == suite_name:
+                    counts = strata.setdefault(member['rate'], [0, 0])
+                    counts[0] += 1
+                    counts[1] += member['identity'] in selected
+            minimum = min(chosen / total for total, chosen in strata.values())
+            suite['minimum_inclusion_probability'] = minimum
+            fraction = suite['audited'] / suite['hits']
             suite['sample_fraction'] = fraction
-            suite['detection_probability'] = {str(k): 1 - (1 - fraction) ** k for k in (1, 20, 60)}
+            suite['detection_probability'] = {str(k): 1 - (1 - minimum) ** k for k in (1, 20, 60)}
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
             frozen = directory / 'input'
