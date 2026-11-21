@@ -2,6 +2,7 @@
 import hashlib
 import json
 import os
+import uuid
 from pathlib import Path
 import importlib.util
 
@@ -112,6 +113,9 @@ class Session(M.Session):
                          environment=environment, cache_directory=cache_directory)
         self.snapshots, self.declarations, self.case_digests, self.runtimes = {}, {}, {}, {}
         self.runtime_absent = {}
+        self.stale = {}
+        self.gate_run = uuid.uuid4().hex
+        self.reviewed = {}
         try:
             document = json.loads(files[I.DECLARATIONS][1])
             if document['schema'] != 'veldo.case-inputs/v1':
@@ -126,6 +130,8 @@ class Session(M.Session):
                 directory.append(cache_directory or controls.get('VELDO_GATE_CACHE')
                                  or R.E.configuration()[1]['store'])
             return directory[0]
+        self.store_directory = store_directory
+        marks = None
         for case in cases:
             name = case['identity']
             self.case_digests[name] = self.base_digest
@@ -136,6 +142,14 @@ class Session(M.Session):
                 # Proposals alone grant no reuse and do not alter fresh behavior.
                 if declaration.get('reviewed') is not True:
                     self.reasons[name] = 'unreviewed_declaration'
+                    continue
+                self.reviewed[name] = declaration
+                if marks is None:
+                    marks = M.stale_entries(store_directory())
+                prior = next((entry for entry in marks if entry['identity'] == name
+                              and entry['declaration'] == declaration_digest(declaration)), None)
+                if prior is not None:
+                    self.mark_stale(case, prior['reason'])
                     continue
                 toolchain = document['toolchains'][case['driver']]
                 runtime = tuple(toolchain['paths'])
@@ -189,10 +203,26 @@ class Session(M.Session):
                 self.keys[name] = self.case_digests[name]
                 self.reasons[name] = 'miss'
             except (KeyError, TypeError, ValueError, OSError) as error:
-                # A reviewed declaration that no longer closes fails, never falls back silently.
-                raise ValueError('invalid declaration for ' + name + ': ' + str(error)) from error
+                self.mark_stale(case, 'declaration no longer closes: ' + str(error))
         if any(self.keys.values()):
             self.store = R.Store(store_directory(), root)
+
+    def mark_stale(self, case, reason):
+        """Discard the whole declared attempt. Its replacement runs fresh and cannot publish."""
+        name = case['identity']
+        if name in self.stale:
+            return
+        if self.store is None:
+            self.store = R.Store(self.store_directory(), self.root)
+        entry = M.mark_stale(self.store, identity=name,
+                             declaration=declaration_digest(self.reviewed[name]),
+                             gate_run=self.gate_run, reason=reason)
+        self.stale[name] = entry
+        self.keys[name] = None
+        self.hits.pop(name, None)
+        self.reasons[name] = 'declaration_stale'
+        self.snapshots.pop(name, None)
+        self.runtime_absent.pop(name, None)
 
     def withhold(self, case, reason):
         """A run that would publish showed a non-file input (VELDO-0217 AC4): the case stays fresh

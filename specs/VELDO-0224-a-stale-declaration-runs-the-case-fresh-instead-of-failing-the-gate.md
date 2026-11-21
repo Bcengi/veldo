@@ -17,6 +17,7 @@ footprint:
   - engine/scripts/case_trace.py
   - scripts/check_gate_mutations.py
   - engine/scripts/check_gate_mutations.py
+  - scripts/propose_case_inputs.py
   - scripts/mutation_reuse.py
   - engine/scripts/mutation_reuse.py
   - scripts/check_teeth_mutations.py

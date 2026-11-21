@@ -25,6 +25,10 @@ NETWORK_WAITS = {'accept', 'accept4', 'recvfrom', 'recvmsg', 'recvmmsg',
 PENDING_CALL = re.compile(r'^\d+ ([a-zA-Z0-9_]+|\?\?\?)\(')
 
 
+class UndeclaredInput(ValueError):
+    """A closed trace found an input outside the declaration: rerun the case fresh."""
+
+
 class IncompleteTrace(ValueError):
     """A traced thread ended inside a call that may have read a file: lost evidence. The gate keeps
     such a run's case from publishing rather than failing its stage (VELDO-0217 F6)."""
@@ -203,7 +207,7 @@ def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directo
             else:
                 permitted = name in allowed or (kind == 'metadata' and name in parents)
             if not permitted:
-                raise ValueError('undeclared input read: ' + name + ' (' + kind + ')')
+                raise UndeclaredInput('undeclared input read: ' + name + ' (' + kind + ')')
         elif scratch is not None:
             if not success and str(path) in runtime_absent:
                 continue
@@ -213,7 +217,7 @@ def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directo
                 continue
             if kind == 'metadata' and any(resolved in p.parents for p in grants):
                 continue
-            raise ValueError('undeclared runtime read: ' + str(path) + ' (' + kind + ')')
+            raise UndeclaredInput('undeclared runtime read: ' + str(path) + ' (' + kind + ')')
 
 
 # VELDO-0217 AC4: non-file inputs, refused mechanically from the trace. A connection or datagram to

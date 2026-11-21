@@ -2411,6 +2411,15 @@
    ],
    "regions": "VELDO-0217 AC1 to AC4: the proposer finds stale declarations from recorded digests and re-proposes with the support helper a suite loads, its report against the coordinator enumeration, admission through the ledger; case_reuse review conditions with named reasons and a review record that must match; key coverage per input class; non-file input classes refused from traces at proposal and again on the publish path.",
    "requires_note": "Only ROOT, V, leg_runs and expect. Fixture repositories in scratch, real case_reuse sessions, the real proposer capture under its audit hook in a child Python, a real ledger with a barrier, a controlled coordinator stage. No tracer, no host lock or manager."
+  },
+  {
+   "name": "158_veldo_0224_stale_declarations",
+   "file": "158_veldo_0224_stale_declarations.py",
+   "requires": [
+    "158_veldo_0224_stale_declarations"
+   ],
+   "regions": "VELDO-0224 AC1-AC3: stale declared cases rerun fresh, never publish, and mark only the authority store.",
+   "requires_note": "Only ROOT, leg_runs and expect; fixture children, real coordinator/session/finish with controlled launch and inventory. No tracer or host manager."
   }
  ],
  "resource_capacities": {

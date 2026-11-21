@@ -73,6 +73,10 @@ rollback: Revert per-case reuse and its declarations together; force-fresh remai
 
 ## Design and authority
 
+VELDO-0224 supersedes the stale-declaration failure rule: an undeclared probe, missing declared
+file or broken reviewed closure runs the case fresh with its own controls in the full frozen tree.
+Its result is never published, and its stale mark lives only in the authority store.
+
 The owner explicitly accepted the reviewer's per-case sandbox design on 2026-10-06.
 This ready contract prepares protected changes for separate exact-commit owner approval.
 No push, merge, full gate or full mutation registry execution occurs during this build.

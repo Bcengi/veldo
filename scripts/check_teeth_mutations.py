@@ -11806,6 +11806,25 @@ def cases():
         ['admission/ledger-link-swapped-mid-resolve'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0224: stale declarations lose their snapshot verdict and all reuse authority.
+    suite224 = '158_veldo_0224_stale_declarations.py'
+    add(224, 'stale224-snapshot-verdict-kept', suite224, 'check_gate_mutations.py',
+        "                stale = str(undeclared_input)\n",
+        "                stale = None  # keep the snapshot's verdict\n",
+        ['stale-declarations/runs-fresh'])
+    result[-1]['dir'] = 'scripts'
+    add(224, 'stale224-published', suite224, 'case_reuse.py',
+        "        self.keys[name] = None\n",
+        "        pass  # publish the fresh rerun under the stale declaration key\n",
+        ['stale-declarations/never-published'])
+    result[-1]['dir'] = 'scripts'
+    add(224, 'stale224-writes-candidate', suite224, 'case_reuse.py',
+        "        self.stale[name] = entry\n",
+        "        (self.root / I.DECLARATIONS).write_bytes(R.canonical(entry))\n"
+        "        self.stale[name] = entry\n",
+        ['stale-declarations/authority-store'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0217: every confined case gets a current, reviewed input declaration with complete keys.
     suite217 = '157_veldo_0217_declarations.py'
     add(217, 'declarations217-support-dropped', suite217, 'propose_case_inputs.py',
