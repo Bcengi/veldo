@@ -2400,8 +2400,8 @@
    "requires": [
     "157_veldo_0206_suite_reuse"
    ],
-   "regions": "VELDO-0206 AC1 to AC3: exact input suite result reuse. suite-reuse/closure (every changed input, prerequisite state included, misses and an untouched qualified suite hits), suite-reuse/pass-only (failed, timed-out, selector, corrupt and signed-but-invalid records never replace a fresh suite) and suite-reuse/receipts (cold, warm, mixed and force-fresh counts, planted stale records, a fresh failure red beside hits, and the production gate script over the fixture).",
-   "requires_note": "Only ROOT and expect. The production gate_reuse.py, selftest.py, run_scope.py and verify.sh over a fixture repository of six fixture suites, with the VELDO-0205 store in a temporary private folder. Child dispatchers and one serial gate; no engine, no service, no network."
+   "regions": "VELDO-0206 AC1 to AC3: exact input suite result reuse. suite-reuse/closure (every changed input, prerequisite state included, misses and an untouched qualified suite hits; a qualified suite runs in a process of its own, so state an earlier suite leaves cannot hide a failure; only the authority qualifies), suite-reuse/pass-only (failed, timed-out, selector, shared-namespace, corrupt and signed-but-invalid records never replace a fresh suite; the plan reaches only the unit stage) and suite-reuse/receipts (cold, warm, mixed and force-fresh counts, exact keys in the stamp and the event, planted stale records, a fresh failure red beside hits, a fresh suite without its prerequisites, and the production gate script over the fixture).",
+   "requires_note": "Only ROOT and expect. The production gate_reuse.py, selftest.py, run_scope.py and verify.sh over fixture repositories of six fixture suites, with the VELDO-0205 store in a temporary private folder. Child dispatchers, the processes they start for isolated suites, and one serial gate; no engine, no service, no network."
   }
  ],
  "resource_capacities": {

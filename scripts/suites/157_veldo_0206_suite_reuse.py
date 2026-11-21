@@ -2,11 +2,12 @@
 
 Every row runs the production scripts/gate_reuse.py (plan, settlement, stamp), the production
 scripts/selftest.py and scripts/run_scope.py, and for the gate wiring the production
-scripts/verify.sh, over a small fixture repository: six fixture suites in one shared namespace,
-one of them the prerequisite of another, one unqualified. The store is the VELDO-0205 store with
-its own key, in a private folder outside the fixture. Nothing waits on the clock: the one run
-that is ended early is ended when the suite it is stopped in says, on its own output, that it got
-there, and every deadline is a hang detector.
+scripts/verify.sh, over a small fixture repository: six fixture suites, five of them qualified
+(each runs in a process of its own), one of those the prerequisite of another, and one unqualified
+suite in the shared namespace. The dispatcher's output is the unit stage's own file, as the gate
+gives it. The store is the VELDO-0205 store with its own key, in a private folder outside the
+fixture. Nothing waits on the clock: the one run that is ended early is ended when the suite it is
+stopped in says, through a FIFO it opens, that it got there, and every deadline is a hang detector.
 """
 
 
@@ -17,6 +18,7 @@ def _v206_suite_reuse():
     import os
     import re
     import shutil
+    import signal
     import subprocess
     import sys
     import tempfile
@@ -33,6 +35,10 @@ def _v206_suite_reuse():
     QUALIFIED = ('a', 'b', 'c', 'e', 't')
     ORDER = ('a', 'b', 'c', 'd', 'e', 't')
     CLOSURES = {'a': ['a'], 'b': ['a', 'b'], 'c': ['c'], 'd': ['d'], 'e': ['e'], 't': ['t']}
+    # What a run with nothing on record executes, in order: every qualified suite first, each in a
+    # process of its own (a twice: its own run, and in b's process as b's prerequisite), then the
+    # shared namespace, which holds only the unqualified d.
+    ISOLATED_FIRST = ['a', 'a', 'b', 'c', 'e', 't', 'd']
     EMPTY = '"force_fresh":false,"reused":{"mutation":0,"unit":0}'
     rows = {'closure': {}, 'pass-only': {}, 'receipts': {}}
 
@@ -87,7 +93,9 @@ def _v206_suite_reuse():
                 'e': 'ran("e")\nexpect("fixture e always passes this row", True)\n'
                      'expect("fixture e passes unless told to fail", not (OUTSIDE / "e-fails").exists())\n',
                 't': 'ran("t")\nif (OUTSIDE / "t-blocks").exists():\n'
-                     '    print("fixture t: reached", flush=True)\n    sys.stdin.read()\n'
+                     '    print("fixture t: reached", flush=True)\n'
+                     '    with open(OUTSIDE / "t-blocks", "w") as _reached:\n        _reached.write("reached\\n")\n'
+                     '    sys.stdin.read()\n'
                      'expect("fixture t passes", True)\n',
             }
             for name, body in bodies.items():
@@ -108,6 +116,7 @@ def _v206_suite_reuse():
             self.environ.update(LANG='C.UTF-8', TZ='UTC', HOME=str(self.base / 'home'))
             (self.base / 'home').mkdir(exist_ok=True)
             self.store = self.base / 'store'
+            self.authority = None  # the fixture's own scripts/, where its gate_reuse.py stands
             self.qualify()
 
         def write_manifest(self):
@@ -120,7 +129,7 @@ def _v206_suite_reuse():
 
         def registry_text(self, document):
             text = SOURCES['scripts/run_scope.py'].read_text()
-            literal = 'SUITE_REUSE = {"schema": "veldo.suite-closures/v1", "suites": {}}\n'
+            literal = 'SUITE_REUSE = {"schema": "veldo.suite-closures/v2", "suites": {}}\n'
             if text.count(literal) != 1:
                 raise RuntimeError('the production qualifications literal moved')
             return text.replace(literal, 'SUITE_REUSE = ' + repr(document) + '\n')
@@ -132,50 +141,62 @@ def _v206_suite_reuse():
             for name in names:
                 entry = {'closure_digest': self.G.suite_code_digest(self.root, 'shared.py', CLOSURES[name], files)[0],
                          'inputs': inputs[name], 'runtime_paths': list(self.runtime_paths), 'environment': [],
-                         'non_file_inputs': 'none',
+                         'non_file_inputs': 'none', 'side_effects': 'none',
                          'rationale': 'Fixture suite: it reads only its declared inputs and the outside flags the test sets.'}
                 entry.update(self.overrides.get(name, {}))
                 entry.update(changed.get(name, {}))
                 suites[name] = entry
             (self.root / 'scripts/run_scope.py').write_text(
-                self.registry_text({'schema': 'veldo.suite-closures/v1', 'suites': suites}))
+                self.registry_text({'schema': 'veldo.suite-closures/v2', 'suites': suites}))
+
+        def entries_now(self, environ=None, root=None, forced=False):
+            return self.G.suite_entries(root or self.root, self.environ if environ is None else environ,
+                                        forced, self.runtime, self.authority)[1]
 
         def keys(self, environ=None, root=None):
-            entries = self.G.suite_entries(root or self.root, self.environ if environ is None else environ,
-                                           False, self.runtime)[1]
+            entries = self.entries_now(environ, root)
             return {name: entries[name]['key'] for name in ORDER}
 
         def reasons(self, environ=None):
-            entries = self.G.suite_entries(self.root, self.environ if environ is None else environ,
-                                           False, self.runtime)[1]
+            entries = self.entries_now(environ)
             return {name: entries[name]['reason'] for name in ORDER}
 
-        def plan(self, force='0', environ=None):
+        def plan(self, force='0', environ=None, root=None):
             state = Path(tempfile.mkdtemp(dir=str(self.base), prefix='state-'))
             env = dict(self.environ, **(environ or {}))
-            value = self.G.suite_plan(self.root, state, environ=env, force_fresh=force, store=str(self.store),
-                                      runtime=self.runtime)
+            value = self.G.suite_plan(root or self.root, state, environ=env, force_fresh=force,
+                                      store=str(self.store), runtime=self.runtime, authority=self.authority)
             return state, env, value
 
-        def dispatch(self, value, env, args=(), root=None, leg=None):
+        def dispatch(self, value, env, args=(), root=None, leg=None, state=None):
+            """The dispatcher as the gate starts it. With `state` its output is the unit stage's own
+            file there, which the plan step made and the plan names; without, a pipe, which is what
+            any other process has."""
             run_env = dict(env)
             if value is not None:
                 run_env['VELDO_SUITE_REUSE'] = value
             if leg:
                 run_env.update(leg)
             root = root or self.root
-            return subprocess.run([sys.executable, str(root / 'scripts/selftest.py'), *args], cwd=str(root),
-                                  env=run_env, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                  timeout=HANG)
+            command = [sys.executable, str(root / 'scripts/selftest.py'), *args]
+            if state is None:
+                return subprocess.run(command, cwd=str(root), env=run_env, stdin=subprocess.DEVNULL,
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=HANG)
+            log = Path(state) / ('unit.%s.log' % leg['VELDO_GATE_LEG'] if leg else 'unit.log')
+            with open(log, 'w') as stream:  # opened as the gate opens it: the same file, emptied
+                done = subprocess.run(command, cwd=str(root), env=run_env, stdin=subprocess.DEVNULL,
+                                      stdout=stream, stderr=subprocess.STDOUT, timeout=HANG)
+            done.stdout = log.read_text(errors='replace')
+            return done
 
         def settle(self, state, env, texts, status):
             return self.G.suite_settle(self.root, state, texts, status, environ=env, store=str(self.store),
-                                       runtime=self.runtime)
+                                       runtime=self.runtime, authority=self.authority)
 
         def cycle(self, args=(), status=None, force='0', environ=None, legs=None, edit=None, between=None):
             state, env, value = self.plan(force, environ)
             (self.outside / 'trace').write_text('')
-            done = [self.dispatch(value, env, args, leg=leg) for leg in (legs or [None])]
+            done = [self.dispatch(value, env, args, leg=leg, state=state) for leg in (legs or [None])]
             texts = [d.stdout for d in done]
             if edit:
                 texts = [edit(text) for text in texts]
@@ -184,10 +205,12 @@ def _v206_suite_reuse():
             honest = 'pass' if all(d.returncode == 0 for d in done) else 'FAIL'
             receipt, problems = self.settle(state, env, texts, status or honest)
             return {'state': state, 'value': json.loads(value), 'done': done, 'code': [d.returncode for d in done],
-                    'out': '\n'.join(d.stdout + d.stderr for d in done), 'receipt': receipt, 'problems': problems,
+                    'out': '\n'.join(d.stdout for d in done), 'receipt': receipt, 'problems': problems,
                     'trace': (self.outside / 'trace').read_text().split(),
                     'source': {r['suite']: r['source'] for r in receipt['results']},
                     'reason': {r['suite']: r['reason'] for r in receipt['results']},
+                    'isolated': sorted(r['suite'] for r in receipt['results'] if r['isolated']),
+                    'failed': {r['suite']: r['failed'] for r in receipt['results']},
                     'key': {r['suite']: r['key'] for r in receipt['results']}}
 
     def tell(run):
@@ -206,14 +229,15 @@ def _v206_suite_reuse():
         # ---- AC1: a hit needs the exact, complete closure --------------------------------------
         cold = fx.cycle()
         row('closure', 'cold-run-is-all-fresh',
-            cold['source'] == fresh_all and cold['trace'] == list(ORDER) and cold['code'] == [0]
+            cold['source'] == fresh_all and cold['trace'] == ISOLATED_FIRST and cold['code'] == [0]
+            and cold['isolated'] == sorted(QUALIFIED) and 'selftest: 8 passed, 0 failed' in cold['out']
             and cold['reason'] == dict({n: 'miss' for n in QUALIFIED}, d='unqualified')
             and all(re.fullmatch('[0-9a-f]{64}', cold['key'][n]) for n in QUALIFIED) and cold['key']['d'] is None
             and not cold['problems'], tell(cold))
         warm = fx.cycle()
         row('closure', 'untouched-qualified-suite-hits',
             warm['source'] == warm_sources and warm['trace'] == ['d'] and warm['code'] == [0]
-            and warm['key'] == cold['key'] and not warm['problems']
+            and warm['key'] == cold['key'] and not warm['problems'] and warm['isolated'] == []
             and 'selftest: 1 passed, 0 failed' in warm['out'], tell(warm))
         base_keys = fx.keys()
 
@@ -271,12 +295,13 @@ def _v206_suite_reuse():
         shutil.copytree(fx.root, other / 'repository')
         row('closure', 'another-root-misses-all', changed(root=other / 'repository') == every)
 
-        def unknown(name, expected, apply, undo):
+        def unknown(name, expected, apply, undo, keyed=()):
             apply()
             reasons, keys = fx.reasons(), fx.keys()
             undo()
-            row('closure', name, all(reasons[n] == why and keys[n] is None for n, why in expected.items()),
-                reasons)
+            row('closure', name, all(reasons[n] == why and (keys[n] is None) == (n not in keyed)
+                                     for n, why in expected.items())
+                and all(keys[n] is not None for n in keyed), reasons)
 
         def append(path, text='# reviewed code changed\n'):
             path = Path(path)
@@ -295,6 +320,19 @@ def _v206_suite_reuse():
                 lambda: fx.write_requires(CLOSURES))
         unknown('state-not-reviewed-is-unknown', {'c': 'invalid_qualification'},
                 lambda: fx.qualify(c={'non_file_inputs': 'the clock'}), fx.qualify)
+        unknown('side-effects-not-reviewed-is-unknown', {'c': 'invalid_qualification'},
+                lambda: fx.qualify(c={'side_effects': 'a cache another suite reads'}), fx.qualify)
+        # The shared namespace keeps what it needs: a suite an unqualified suite lists as its
+        # prerequisite is not isolated, and with an unqualified suite's prerequisites not on record
+        # no suite is.
+        unknown('prerequisite-of-a-shared-suite-is-not-isolated',
+                {'c': 'prerequisite_of_shared', 'd': 'unqualified', 'e': 'miss'},
+                lambda: fx.write_requires(dict(CLOSURES, d=['c', 'd'])), lambda: fx.write_requires(CLOSURES),
+                keyed=('a', 'b', 'e', 't'))
+        unknown('unknown-prerequisites-of-a-shared-suite-isolate-nothing',
+                {n: 'dependents_unknown' for n in QUALIFIED},
+                lambda: fx.write_requires({k: v for k, v in CLOSURES.items() if k != 'd'}),
+                lambda: fx.write_requires(CLOSURES))
         unknown('unreadable-registry-is-unknown', {n: 'unqualified' for n in QUALIFIED},
                 *append(fx.root / 'scripts/run_scope.py', 'SUITE_REUSE = {}\n'))
         listing = fx.root / 'scripts/gate_unconfined.json'
@@ -313,23 +351,88 @@ def _v206_suite_reuse():
         row('closure', 'interpreter-and-tools-are-in-the-key',
             uncovered and set(identity['trees']) == set(real) and identity['python'] == sys.version
             and G.suite_entries(fx.root, fx.environ, False)[1]['c']['reason'] == 'closure_error', real)
+
+        # The qualifications are the AUTHORITY's. A candidate that qualifies its own unqualified
+        # suite, or declares fewer inputs for one, changes nothing the authority decides.
+        candidate = base / 'candidate/repository'
+        shutil.copytree(fx.root, candidate)
+        files = {name: name + '.py' for name in ORDER}
+        own = dict(G.suite_registry(fx.root))
+        own['d'] = dict(own['e'], closure_digest=G.suite_code_digest(candidate, 'shared.py', ['d'], files)[0])
+        own['c'] = dict(own['c'], inputs=[])
+        (candidate / 'scripts/run_scope.py').write_text(
+            fx.registry_text({'schema': 'veldo.suite-closures/v2', 'suites': own}))
+        judged = fx.entries_now(root=candidate)
+        (candidate / 'data/c/one').write_text('one, changed in the candidate\n')
+        judged_after = fx.entries_now(root=candidate)
+        by_itself = G.suite_entries(candidate, fx.environ, False, fx.runtime, candidate)[1]
+        state, env, value = fx.plan(root=candidate)
+        unreviewed = base / 'unreviewed-authority'
+        (unreviewed / 'scripts').mkdir(parents=True)
+        shutil.copyfile(SOURCES['scripts/run_scope.py'], unreviewed / 'scripts/run_scope.py')
+        nobody = G.suite_entries(fx.root, fx.environ, False, fx.runtime, unreviewed)[1]
+        row('closure', 'candidate-cannot-qualify-itself',
+            judged['d'] == {'suite': 'd', 'key': None, 'reason': 'unqualified', 'isolated': False}
+            and by_itself['d']['key'] is not None and by_itself['d']['isolated']
+            and judged['c']['key'] is not None and judged_after['c']['key'] not in (None, judged['c']['key'])
+            and json.loads(value)['isolate'] == list(QUALIFIED)
+            and all(entry['key'] is None and entry['reason'] == 'unqualified' and not entry['isolated']
+                    for entry in nobody.values()),
+            (judged['d'], by_itself['d'], json.loads(value)['isolate']))
         row('closure', 'reverting-every-change-restores-every-key', fx.keys() == base_keys)
 
         (fx.root / 'data/a.txt').write_text('a v2\n')
         moved = fx.cycle()
         row('closure', 'changed-prerequisite-state-runs-the-dependent-fresh',
-            moved['source'] == dict(warm_sources, a='fresh', b='fresh') and moved['trace'] == ['a', 'b', 'd']
+            moved['source'] == dict(warm_sources, a='fresh', b='fresh') and moved['trace'] == ['a', 'a', 'b', 'd']
             and moved['reason']['b'] == 'miss' and moved['key']['b'] != cold['key']['b']
             and moved['key']['c'] == cold['key']['c'] and not moved['problems'], tell(moved))
         (fx.root / 'data/b.txt').write_text('b v2\n')
         mixed = fx.cycle()
+        # b runs fresh in its own process and executes its prerequisite a THERE, though a itself is
+        # left out on its record: a's rows in b's process are b's observation, not a's.
         row('closure', 'fresh-dependent-executes-its-reusable-prerequisite',
-            mixed['source'] == dict(warm_sources, a='fresh', b='fresh') and mixed['trace'] == ['a', 'b', 'd']
-            and mixed['reason']['a'] == 'prerequisite_of_fresh' and mixed['reason']['b'] == 'miss'
+            mixed['source'] == dict(warm_sources, b='fresh') and mixed['trace'] == ['a', 'b', 'd']
+            and mixed['reason']['a'] == 'hit' and mixed['reason']['b'] == 'miss' and mixed['isolated'] == ['b']
+            and re.search(r'result \{[^\n]*"isolated": "b"[^\n]*"source": "fresh", "suite": "a"\}', mixed['out'])
+            and 'selftest: 3 passed, 0 failed' in mixed['out']
             and mixed['code'] == [0] and not mixed['problems'], tell(mixed))
         again = fx.cycle()
         row('closure', 'new-inputs-hit-once-observed',
             again['source'] == warm_sources and again['trace'] == ['d'], tell(again))
+
+        # THE REVIEW'S COUNTEREXAMPLE (finding 1). An unqualified suite d, outside e's closure, leaves
+        # state behind; e needs it. In one shared namespace e passed after d, its pass was stored,
+        # and when d stopped leaving the state the stored pass stood in for a run that fails. Here e
+        # runs in its own process and never sees what d left: it fails in the first run, in the
+        # run after d changed and in the force-fresh run alike, and nothing is ever stored for it.
+        # The other way round too: d sees nothing the isolated a left, and t, which follows d in the
+        # manifest, sees neither d's names nor what d did to the process environment.
+        st = Fixture(base / 'state')
+        sx = st.root / 'scripts/suites'
+        leaves = ('import os\nran("d")\nD_LEFT = True\nos.environ["V206_D_LEFT"] = "1"\n'
+                  'expect("fixture d sees nothing the isolated a left", "A_STATE" not in globals())\n')
+        (sx / 'd.py').write_text(leaves)
+        (sx / 'e.py').write_text('ran("e")\nexpect("fixture e needs what d left", globals().get("D_LEFT") is True)\n')
+        (sx / 't.py').write_text('import os\nran("t")\nexpect("fixture t sees nothing d left", '
+                                 '"D_LEFT" not in globals() and "V206_D_LEFT" not in os.environ)\n')
+        st.qualify()
+        s_first = st.cycle()
+        (sx / 'd.py').write_text(leaves.replace('D_LEFT = True\n', ''))
+        s_second = st.cycle()
+        s_forced = st.cycle(force='1')
+        s_runs = (s_first, s_second, s_forced)
+        row('closure', 'state-left-by-an-earlier-suite-cannot-hide-a-failure',
+            all(run['source']['e'] == 'fresh' and run['failed']['e'] == 1 and run['code'] == [1]
+                and run['receipt']['status'] == 'failed' and 'e' in run['trace']
+                and run['failed']['d'] == 0 and run['failed']['t'] == 0 for run in s_runs)
+            and s_first['key']['e'] == s_second['key']['e'] == s_forced['key']['e']
+            and not (st.store / (s_first['key']['e'] + '.json')).exists()
+            and s_first['receipt']['published'] == 4 and s_second['source']['t'] == 'reused'
+            and s_second['reason']['e'] == 'miss'
+            and (s_second['source']['e'], s_second['failed']['e'], s_second['code'])
+            == (s_forced['source']['e'], s_forced['failed']['e'], s_forced['code']),
+            [tell(run) for run in s_runs])
         expect('VELDO-0206 suite-reuse/closure: a hit needs the exact closure, prerequisite state included%s'
                % ('' if all(rows['closure'].values()) else
                   ': false: ' + ', '.join(k for k, v in rows['closure'].items() if not v)),
@@ -354,45 +457,57 @@ def _v206_suite_reuse():
             failing['code'] == [1] and failing['receipt']['status'] == 'failed'
             and failing['receipt']['published'] == 4 and failing['source']['e'] == 'fresh'
             and after_failure['source']['e'] == 'fresh' and after_failure['reason']['e'] == 'miss'
-            and after_failure['trace'] == ['d', 'e'] and hit_after['source']['e'] == 'reused',
+            and after_failure['trace'] == ['e', 'd'] and hit_after['source']['e'] == 'reused',
             (tell(failing), tell(after_failure)))
 
         new_store('timed-out')
-        (fx.outside / 't-blocks').write_text('')
+        reached_at = fx.outside / 't-blocks'
+        os.mkfifo(reached_at)
+        waiting = os.open(reached_at, os.O_RDWR)  # held open here, so the suite's own open never waits
         state, env, value = fx.plan()
-        process = subprocess.Popen([sys.executable, str(fx.root / 'scripts/selftest.py')], cwd=str(fx.root),
-                                   env=dict(env, VELDO_SUITE_REUSE=value), stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        watchdog = threading.Timer(HANG, process.kill)
+        (fx.outside / 'trace').write_text('')
+        with open(state / 'unit.log', 'w') as stream:
+            process = subprocess.Popen([sys.executable, str(fx.root / 'scripts/selftest.py')], cwd=str(fx.root),
+                                       env=dict(env, VELDO_SUITE_REUSE=value), stdin=subprocess.PIPE,
+                                       stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
+        watchdog = threading.Timer(HANG, lambda: os.write(waiting, b'hang\n'))
         watchdog.start()
-        collected, reached = [], False
-        for line in process.stdout:  # ends when the suite says it got there, or at end of output
-            collected.append(line)
-            if line.strip() == 'fixture t: reached':
-                reached = True
-                break
-        process.kill()
-        process.wait()
+        reached = os.read(waiting, 64) == b'reached\n'  # returns when the suite says it got there
         watchdog.cancel()
-        process.stdout.close()
+        os.killpg(process.pid, signal.SIGKILL)  # the dispatcher and the process t runs in
+        process.wait()
         process.stdin.close()
-        (fx.outside / 't-blocks').unlink()
-        cut, cut_problems = fx.settle(state, env, [''.join(collected)], 'FAIL')
+        os.close(waiting)
+        reached_at.unlink()
+        cut_trace = (fx.outside / 'trace').read_text().split()
+        cut, cut_problems = fx.settle(state, env, [(state / 'unit.log').read_text()], 'FAIL')
         after_cut = fx.cycle()
+        # a, b, c and e had each finished in a process of its own when the run was ended in t, before
+        # the shared namespace ran d. Nothing of an unfinished run is stored.
         row('pass-only', 'timed-out-run-is-not-stored',
             reached and cut['status'] == 'failed' and cut['published'] == 0 and not cut_problems
-            and {r['suite']: r['source'] for r in cut['results']} == dict(fresh_all, t='not_run')
+            and cut_trace == ['a', 'a', 'b', 'c', 'e', 't']
+            and {r['suite']: r['source'] for r in cut['results']} == dict(fresh_all, t='not_run', d='not_run')
             and after_cut['source'] == fresh_all and after_cut['receipt']['published'] == 5,
-            (cut['problems'], tell(after_cut)))
+            (cut['problems'], cut_trace, tell(after_cut)))
 
         new_store('partial')
         partial = fx.cycle(args=('--suite', 'c'))
         after_partial = fx.cycle()
+        # A whole honest run whose account says it was a selector run: nothing of it is stored either.
+        new_store('partial-account')
+        said_partial = fx.cycle(edit=lambda text: re.sub(
+            r'( begin \{"isolated": null, [^\n]*"scope": )"full"', r'\1"partial"', text))
+        after_said = fx.cycle()
+        new_store('partial')
         row('pass-only', 'selector-run-is-not-stored',
             partial['code'] == [2] and partial['trace'] == ['c'] and partial['receipt']['published'] == 0
             and partial['receipt']['status'] == 'failed' and not partial['problems']
-            and after_partial['source'] == fresh_all and after_partial['reason']['c'] == 'miss',
-            (tell(partial), tell(after_partial)))
+            and partial['source']['c'] == 'fresh' and partial['isolated'] == []
+            and after_partial['source'] == fresh_all and after_partial['reason']['c'] == 'miss'
+            and said_partial['code'] == [0] and said_partial['isolated'] == sorted(QUALIFIED)
+            and said_partial['receipt']['published'] == 0 and after_said['source'] == fresh_all,
+            (tell(partial), tell(after_partial), tell(said_partial)))
         selected = fx.cycle(args=('--suite', 'c'))
         upto = fx.cycle(args=('--upto', 'b'))
         row('pass-only', 'cached-selector-run-cannot-verify',
@@ -404,26 +519,49 @@ def _v206_suite_reuse():
             and selected['receipt']['reused'] == 0 and selected['receipt']['status'] == 'failed',
             (tell(selected), tell(upto)))
         reordered = fx.cycle(environ={'VELDO_SUITE_ORDER': 'c'})
+        after_reordered = fx.cycle()
         state, env, value = fx.plan()
         (fx.outside / 'trace').write_text('')
-        elsewhere = fx.dispatch(value, env, root=other / 'repository')
+        elsewhere = fx.dispatch(value, env, root=other / 'repository', state=state)
         elsewhere_trace = (fx.outside / 'trace').read_text().split()
         declaration = 'sha256:' + hashlib.sha256(b'fixture list').hexdigest()
         leg = lambda name, listed: {'VELDO_GATE_LEG': name, 'VELDO_GATE_UNCONFINED': listed,
                                     'VELDO_GATE_DECLARATION': declaration}
         (fx.outside / 'trace').write_text('')
-        outside_leg = fx.dispatch(value, env, leg=leg('unconfined', 'c'))
+        outside_leg = fx.dispatch(value, env, leg=leg('unconfined', 'c'), state=state)
         outside_trace = (fx.outside / 'trace').read_text().split()
         (fx.outside / 'trace').write_text('')
-        listed_leg = fx.dispatch(value, env, leg=leg('confined', 'c:rows'))
+        listed_leg = fx.dispatch(value, env, leg=leg('confined', 'c:rows'), state=state)
         listed_trace = (fx.outside / 'trace').read_text().split()
         (fx.outside / 'trace').write_text('')
-        malformed = fx.dispatch(json.dumps(dict(json.loads(value), reuse={'c': 0})), env)
+        malformed = fx.dispatch(json.dumps(dict(json.loads(value), reuse={'c': 0})), env, state=state)
         malformed_trace = (fx.outside / 'trace').read_text().split()
         (fx.outside / 'trace').write_text('')
-        inherited = fx.dispatch(value, env, args=('--list',))
+        inherited = fx.dispatch(value, env, args=('--list',), state=state)
+        # THE PLAN IS THE UNIT STAGE'S ALONE (finding 3). The same plan in a process whose output is
+        # not the unit stage's file, as any other stage's or node's is, isolates and leaves out
+        # nothing; in the unit stage's own dispatcher the same value is honored.
+        (fx.outside / 'trace').write_text('')
+        other_stage = fx.dispatch(value, env)
+        other_stage_trace = (fx.outside / 'trace').read_text().split()
+        (fx.outside / 'trace').write_text('')
+        unit_stage = fx.dispatch(value, env, state=state)
+        unit_stage_trace = (fx.outside / 'trace').read_text().split()
+        row('pass-only', 'plan-reaches-only-the-unit-stage',
+            json.loads(value)['reuse'].keys() == set(QUALIFIED) and len(json.loads(value)['output']) == 3
+            and other_stage_trace == list(ORDER) and other_stage.returncode == 0
+            and 'this process does not write its output' in other_stage.stdout
+            and unit_stage_trace == ['d'] and unit_stage.returncode == 0,
+            (other_stage_trace, unit_stage_trace, other_stage.stdout[-400:]))
+        # A reordered run honors no plan, so its qualified suites ran in the shared namespace: that
+        # is no observation of them, the settlement is red behind its passing exit, nothing is stored.
         row('pass-only', 'plan-is-honored-only-by-the-run-it-was-made-for',
             reordered['source'] == fresh_all and reordered['trace'][0] == 'c' and len(reordered['trace']) == 6
+            and reordered['code'] == [0] and reordered['isolated'] == [] and reordered['receipt']['published'] == 0
+            and reordered['receipt']['status'] == 'failed' and reordered['reason']['c'] == 'not_isolated'
+            and sum('is qualified to run isolated and ran in the shared namespace' in p
+                    for p in reordered['problems']) == 5
+            and after_reordered['source'] == warm_sources
             and elsewhere_trace == list(ORDER) and 'the plan is for another root' in elsewhere.stdout
             and outside_trace == ['c'] and 'the unconfined leg is never reused' in outside_leg.stdout
             and listed_trace == list(ORDER) and 'does not own' in listed_leg.stdout
@@ -461,11 +599,13 @@ def _v206_suite_reuse():
             {name: detail for name, (ok, detail) in outcomes.items() if not ok})
 
         good = {'schema': G.SUITE_RESULT, 'suite': 'c', 'input_digest': cold['key']['c'], 'status': 'passed',
-                'scope': 'full', 'complete': True, 'passed': 1, 'failed': 0}
+                'scope': 'isolated', 'complete': True, 'passed': 1, 'failed': 0}
         current = fx.keys()['c']
         good['input_digest'] = current
         signed = {
             'partial-scope': dict(good, scope='partial'),
+            'shared-namespace-scope': dict(good, scope='full'),
+            'earlier-schema': dict(good, schema='veldo.suite-result/v1'),
             'incomplete': dict(good, complete=False),
             'failed-status': dict(good, status='failed'),
             'failed-rows': dict(good, failed=1),
@@ -514,6 +654,13 @@ def _v206_suite_reuse():
         def counts(receipt):
             return tuple(receipt[k] for k in ('registered', 'executed', 'reused', 'not_run', 'qualified', 'published'))
 
+        def suites_field(run):
+            """What the stamp and the event must carry for this run: exact counts and exact keys."""
+            receipt = run['receipt']
+            return {'registered': 6, 'fresh': receipt['executed'], 'reused': receipt['reused'],
+                    'not_run': receipt['not_run'], 'qualified': 5,
+                    'keys': {name: [run['source'][name], run['key'][name]] for name in QUALIFIED}}
+
         def sound(run):
             receipt = run['receipt']
             results = receipt['results']
@@ -522,6 +669,8 @@ def _v206_suite_reuse():
                     and receipt['reused'] == sum(r['source'] == 'reused' for r in results)
                     and all((r['key'] is None) == (r['suite'] == 'd') for r in results)
                     and all(r['key'] == run['key'][r['suite']] for r in results)
+                    and receipt['isolated'] == sum(r['isolated'] for r in results)
+                    and all(r['isolated'] == (r['source'] == 'fresh' and r['suite'] != 'd') for r in results)
                     and json.loads((run['state'] / 'receipt.json').read_text()) == receipt)
 
         new_store('receipts')
@@ -531,10 +680,12 @@ def _v206_suite_reuse():
         r_mixed = fx.cycle()
         row('receipts', 'cold-warm-and-mixed-counts-are-exact',
             counts(r_cold['receipt']) == (6, 6, 0, 0, 5, 5) and counts(r_warm['receipt']) == (6, 1, 5, 0, 5, 0)
-            and counts(r_mixed['receipt']) == (6, 3, 3, 0, 5, 2) and all(sound(r) for r in (r_cold, r_warm, r_mixed))
+            and counts(r_mixed['receipt']) == (6, 2, 4, 0, 5, 1) and all(sound(r) for r in (r_cold, r_warm, r_mixed))
             and all(r['receipt']['status'] == 'passed' for r in (r_cold, r_warm, r_mixed))
             and r_warm['reason'] == dict({n: 'hit' for n in QUALIFIED}, d='unqualified')
-            and r_mixed['reason']['a'] == 'prerequisite_of_fresh',
+            and [r['receipt']['isolated'] for r in (r_cold, r_warm, r_mixed)] == [5, 0, 1]
+            and r_mixed['reason']['a'] == 'hit' and r_mixed['source']['a'] == 'reused'
+            and r_mixed['reason']['b'] == 'miss' and r_mixed['source']['b'] == 'fresh',
             [counts(r['receipt']) for r in (r_cold, r_warm, r_mixed)])
 
         def stamp(run, fields=EMPTY, force='0', environ=None):
@@ -542,6 +693,9 @@ def _v206_suite_reuse():
                 return G.suite_stamp(run['state'], fields, force, environ=environ or {})
             except (ValueError, KeyError, TypeError, OSError) as error:
                 return 'refused: %s' % error
+
+        def parsed(fields):
+            return {} if fields.startswith('refused') else json.loads('{' + fields + '}')
 
         def listing_of(store):
             return {p.name: p.read_bytes() for p in sorted(Path(store).iterdir())}
@@ -557,23 +711,39 @@ def _v206_suite_reuse():
             unknown_force = True
         row('receipts', 'force-fresh-reads-and-writes-no-record',
             r_again['source'] == warm_sources
-            and all(run['source'] == fresh_all and run['trace'] == list(ORDER)
-                    and counts(run['receipt']) == (6, 6, 0, 0, 0, 0) and run['receipt']['force_fresh'] is True
-                    and set(run['reason'].values()) == {'force_fresh'} and run['value']['reuse'] == {}
+            # Force fresh keeps the store closed and changes nothing else: the qualified suites
+            # still run each in its own process, under the same exact keys, which the receipt names.
+            and all(run['source'] == fresh_all and run['trace'] == ISOLATED_FIRST
+                    and counts(run['receipt']) == (6, 6, 0, 0, 5, 0) and run['receipt']['force_fresh'] is True
+                    and run['reason'] == dict({n: 'force_fresh' for n in QUALIFIED}, d='unqualified')
+                    and run['value']['reuse'] == {} and run['value']['isolate'] == list(QUALIFIED)
+                    and run['key'] == r_again['key'] and run['isolated'] == sorted(QUALIFIED)
                     for run in (forced, by_variable))
             and listing_of(fx.store) == before and unknown_force
-            and stamp(forced, EMPTY.replace('false', 'true'), '1') == EMPTY.replace('false', 'true')
+            and parsed(stamp(forced, EMPTY.replace('false', 'true'), '1')) == {
+                'force_fresh': True, 'reused': {'mutation': 0, 'unit': 0}, 'suites': suites_field(forced)}
             and stamp(forced, EMPTY).startswith('refused'), (tell(forced), stamp(forced, EMPTY, '1')))
 
-        def parsed(fields):
-            return {} if fields.startswith('refused') else json.loads('{' + fields + '}')
-
         stamped = parsed(stamp(r_again))
+        cold_keys = {n: r_cold['key'][n] for n in QUALIFIED}
         tampered_state = Path(tempfile.mkdtemp(dir=str(base), prefix='tampered-'))
         lying = dict(r_again['receipt'], reused=0)
         (tampered_state / 'receipt.json').write_text(json.dumps(lying))
+        unkeyed = Path(tempfile.mkdtemp(dir=str(base), prefix='tampered-'))
+        (unkeyed / 'receipt.json').write_text(json.dumps(dict(r_again['receipt'], qualified=0)))
+        # The stamp's fields (finding 5): the reused count, the exact counts, and every qualified
+        # suite's exact key beside its source; the unqualified d has no key and is in the counts.
         row('receipts', 'stamp-carries-the-reused-count-and-landing-refuses-it',
-            stamp(r_cold) == EMPTY and stamped == {'force_fresh': False, 'reused': {'mutation': 0, 'unit': 5}}
+            parsed(stamp(r_cold)) == {'force_fresh': False, 'reused': {'mutation': 0, 'unit': 0},
+                                      'suites': suites_field(r_cold)}
+            and stamped == {'force_fresh': False, 'reused': {'mutation': 0, 'unit': 5},
+                            'suites': suites_field(r_again)}
+            and stamped['suites']['keys'] == {n: ['reused', r_again['key'][n]] for n in QUALIFIED}
+            and suites_field(r_cold)['keys'] == {n: ['fresh', cold_keys[n]] for n in QUALIFIED}
+            and all(re.fullmatch('[0-9a-f]{64}', key) for _, key in stamped['suites']['keys'].values())
+            and 'd' not in stamped['suites']['keys'] and r_again['key']['b'] != cold_keys['b']
+            and stamp({'state': unkeyed}).startswith('refused')
+            and stamp(r_again, EMPTY + ',"suites":{}').startswith('refused')
             and stamp({'state': tampered_state}).startswith('refused')
             and stamp({'state': base / 'no-such-state'}).startswith('refused')
             and stamp(r_again, EMPTY, '1').startswith('refused')
@@ -624,6 +794,31 @@ def _v206_suite_reuse():
             l + '\n' + l if '"suite": "d"' in l else l for l in text.splitlines()))
         foreign = fx.cycle(edit=lambda text: re.sub(r'(selftest-suite-reuse) [0-9a-f]{32}', r'\1 ' + 'f' * 32, text))
         unfinished = fx.cycle(edit=lambda text: '\n'.join(l for l in text.splitlines() if ' end {' not in l))
+        # A FRESH SUITE NEEDS ITS PREREQUISITES WHERE IT RAN (finding 4). b's own process without a
+        # in it is no observation of b: red, and nothing is stored for b. And a suite of the shared
+        # namespace beside a prerequisite that was left out or ran only in a process of its own.
+        new_store('prerequisites')
+        without = fx.cycle(edit=lambda text: '\n'.join(
+            l for l in text.splitlines() if not ('"isolated": "b"' in l and '"suite": "a"' in l)) + '\n')
+        after_without = fx.cycle()
+        fx.write_requires(dict(CLOSURES, d=['c', 'd']))
+        needs_c = fx.cycle()
+        beside_reused = fx.cycle(edit=lambda text: reused_line(text, 'c'))
+        fx.write_requires(CLOSURES)
+        row('receipts', 'fresh-suite-without-its-prerequisites-is-red-and-not-stored',
+            without['code'] == [0] and without['receipt']['status'] == 'failed'
+            and any('the isolated run of b did not execute exactly its prerequisite closure' in p
+                    for p in without['problems']) and len(without['problems']) == 1
+            and without['receipt']['published'] == 4 and 'published' not in
+            [r for r in without['receipt']['results'] if r['suite'] == 'b'][0]
+            and after_without['source'] == dict(warm_sources, b='fresh') and after_without['receipt']['published'] == 1
+            and needs_c['trace'].count('c') == 1 and needs_c['trace'][-2:] == ['c', 'd']
+            and needs_c['reason']['c'] == 'prerequisite_of_shared' and not needs_c['problems']
+            and needs_c['source']['c'] == 'fresh' and 'c' not in needs_c['isolated']
+            and any('d ran fresh without its prerequisite c in its namespace' in p for p in beside_reused['problems'])
+            and beside_reused['receipt']['status'] == 'failed',
+            (tell(without), tell(after_without), tell(needs_c), beside_reused['problems']))
+        fx.store = base / 'store-receipts'
         row('receipts', 'every-suite-is-accounted-for-or-the-settlement-is-red',
             any('d was reused without an authenticated record' in p for p in forged['problems'])
             and any('d has no result' in p for p in dropped['problems'])
@@ -673,7 +868,18 @@ def _v206_suite_reuse():
         gate.qualify()
         text = SOURCES['scripts/verify.sh'].read_text()
         text = re.sub(r'^CHECK_(?!unit=)([a-z_]+)=.*$', r'CHECK_\1="na:fixture"', text, flags=re.M)
+        # Two other stages, one before the unit stage and one after it, write down whether the
+        # suite plan reached them.
+        for other_stage in ('lint', 'integration'):
+            declared = 'CHECK_%s="na:fixture"' % other_stage
+            if text.count(declared) != 1:
+                raise RuntimeError('the fixture gate has no %s slot' % other_stage)
+            text = text.replace(declared, 'CHECK_%s="required:python3 scripts/stage_probe.py"' % other_stage)
         (gate.root / 'scripts/verify.sh').write_text(text)
+        (gate.root / 'scripts/stage_probe.py').write_text(
+            'import os\nwith open(%r, "a") as stream:\n'
+            '    stream.write(("reached" if "VELDO_SUITE_REUSE" in os.environ else "absent") + "\\n")\n'
+            % str(gate.outside / 'stages'))
         (gate.root / 'scripts/gate_candidate.py').write_text(
             'import subprocess,sys\nargs=sys.argv[1:]\n'
             'raise SystemExit(subprocess.call(args[args.index(chr(45)*2)+1:]))\n')
@@ -690,6 +896,7 @@ def _v206_suite_reuse():
 
         def run_gate(**extra):
             (gate.outside / 'trace').write_text('')
+            (gate.outside / 'stages').write_text('')
             done = subprocess.run(['bash', str(gate.root / 'scripts/verify.sh')], cwd=str(gate.root),
                                   env=dict(gate_env, **extra), stdin=subprocess.DEVNULL, capture_output=True,
                                   text=True, timeout=HANG)
@@ -699,13 +906,15 @@ def _v206_suite_reuse():
             except (OSError, ValueError, IndexError):
                 stamped, event = {}, {}
             return {'code': done.returncode, 'out': done.stdout + done.stderr, 'stamp': stamped, 'event': event,
-                    'trace': (gate.outside / 'trace').read_text().split()}
+                    'trace': (gate.outside / 'trace').read_text().split(),
+                    'stages': (gate.outside / 'stages').read_text().split()}
 
         def gate_tell(*runs):
             return [(r['code'], r['trace'], r['stamp'].get('status'), r['stamp'].get('reused'), r['out'][-900:])
                     for r in runs]
 
-        planted_plan = json.dumps({'schema': 'veldo.suite-plan/v1', 'nonce': 'e' * 32, 'root': str(gate.root),
+        planted_plan = json.dumps({'schema': 'veldo.suite-plan/v2', 'nonce': 'e' * 32, 'root': str(gate.root),
+                                   'output': [], 'child': None, 'report': None, 'isolate': list(ORDER),
                                    'reuse': {name: 1 for name in ORDER}})
         g_cold = run_gate(VELDO_SUITE_REUSE=planted_plan)
         g_warm = run_gate()
@@ -714,9 +923,10 @@ def _v206_suite_reuse():
         g_red = run_gate()
         (gate.outside / 'd-fails').unlink()
         row('receipts', 'gate-plans-settles-and-stamps-the-suite-stage',
-            g_cold['code'] == 0 and g_cold['trace'] == list(ORDER) and g_cold['stamp'].get('status') == 'green'
+            g_cold['code'] == 0 and g_cold['trace'] == ISOLATED_FIRST and g_cold['stamp'].get('status') == 'green'
             and g_cold['stamp'].get('reused') == {'mutation': 0, 'unit': 0}
-            and 'registered=6 fresh=6 reused=0 not_run=0 qualified=5 published=5' in g_cold['out']
+            and 'registered=6 fresh=6 reused=0 not_run=0 qualified=5 published=5 isolated=5' in g_cold['out']
+            and 'selftest: 8 passed, 0 failed' in g_cold['out']
             and g_warm['code'] == 0 and g_warm['trace'] == ['d'] and g_warm['stamp'].get('status') == 'green'
             and g_warm['stamp'].get('reused') == {'mutation': 0, 'unit': 5}
             and g_warm['event'].get('reused') == {'mutation': 0, 'unit': 5}
@@ -724,8 +934,36 @@ def _v206_suite_reuse():
             and re.search(r'^   suite d: source=fresh key=none reason=unqualified passed=1 failed=0$', g_warm['out'], re.M)
             and gate.G.E.landing_problem(g_warm['stamp']) is not None,
             gate_tell(g_cold, g_warm))
+
+        def printed_keys(run, source):
+            return {name: [source, key] for name, key in re.findall(
+                r'^   suite ([a-z]): source=%s key=([0-9a-f]{64}) ' % source, run['out'], re.M)}
+
+        # THE GATE'S RECEIPTS CARRY THE EXACT KEYS (finding 5): the stamp and the gate event, not
+        # only the gate's output, hold the counts and each qualified suite's key beside its source.
+        row('receipts', 'gate-stamp-and-event-carry-exact-keys-and-counts',
+            g_cold['stamp'].get('suites') == g_cold['event'].get('suites')
+            and g_cold['stamp'].get('suites') == {'registered': 6, 'fresh': 6, 'reused': 0, 'not_run': 0,
+                                                  'qualified': 5, 'keys': printed_keys(g_cold, 'fresh')}
+            and g_warm['stamp'].get('suites') == g_warm['event'].get('suites')
+            and g_warm['stamp'].get('suites') == {'registered': 6, 'fresh': 1, 'reused': 5, 'not_run': 0,
+                                                  'qualified': 5, 'keys': printed_keys(g_warm, 'reused')}
+            and sorted(printed_keys(g_warm, 'reused')) == sorted(QUALIFIED)
+            and {n: k[1] for n, k in printed_keys(g_warm, 'reused').items()}
+            == {n: k[1] for n, k in printed_keys(g_cold, 'fresh').items()}
+            and g_forced['stamp'].get('suites', {}).get('keys') == printed_keys(g_cold, 'fresh')
+            and g_red['stamp'].get('suites', {}).get('fresh') == 1
+            and g_red['stamp'].get('suites', {}).get('reused') == 5,
+            (g_cold['stamp'].get('suites'), g_warm['event'].get('suites')))
+        # THE PLAN IS THE UNIT STAGE'S ALONE (finding 3): neither the stage before it nor the one
+        # after it finds the plan in its environment, in a gate with a plan to honor or a caller's.
+        row('receipts', 'gate-hands-the-plan-to-the-unit-stage-only',
+            all(run['stages'] == ['absent', 'absent'] for run in (g_cold, g_warm, g_forced, g_red))
+            and g_warm['trace'] == ['d']
+            and 'export VELDO_SUITE_REUSE' not in SOURCES['scripts/verify.sh'].read_text(),
+            [run['stages'] for run in (g_cold, g_warm, g_forced, g_red)])
         row('receipts', 'gate-force-fresh-runs-every-suite',
-            g_forced['code'] == 0 and g_forced['trace'] == list(ORDER)
+            g_forced['code'] == 0 and g_forced['trace'] == ISOLATED_FIRST
             and g_forced['stamp'].get('force_fresh') is True
             and g_forced['stamp'].get('reused') == {'mutation': 0, 'unit': 0}
             and 'fresh=6 reused=0' in g_forced['out'] and 'force_fresh=true' in g_forced['out'],
@@ -745,6 +983,16 @@ def _v206_suite_reuse():
             honest.count(account) == 1 and '   unit: pass' in g_silent['out'] and g_silent['code'] == 1
             and g_silent['stamp'].get('status') == 'red' and 'suite reuse: FAIL' in g_silent['out']
             and 'd has no result behind a passing stage' in g_silent['out'], gate_tell(g_silent))
+        # No plan could be made (an unreadable freshness request): every suite runs in the shared
+        # namespace, the stage passes, and the gate is RED because nothing can be settled.
+        g_unplanned = run_gate(VELDO_GATE_FORCE_FRESH='perhaps')
+        row('receipts', 'gate-is-red-when-no-plan-could-be-made',
+            g_unplanned['code'] == 1 and g_unplanned['trace'] == list(ORDER)
+            and 'suite reuse: no plan could be made' in g_unplanned['out'] and '   unit: pass' in g_unplanned['out']
+            and 'suite reuse: FAIL' in g_unplanned['out'] and g_unplanned['stamp'].get('status') == 'red'
+            and g_unplanned['stamp'].get('reused') == {'mutation': 0, 'unit': 0}
+            and 'suites' not in g_unplanned['stamp'] and 'GATE: RED' in g_unplanned['out'],
+            gate_tell(g_unplanned))
         # Under the graph the settlement reads the scheduler's own node output. The two legs' output
         # is put where the scheduler puts it and settled by the command the gate runs.
         node_logs = base / 'node-logs'
@@ -752,11 +1000,11 @@ def _v206_suite_reuse():
         graph_state = Path(tempfile.mkdtemp(dir=str(base), prefix='graph-state-'))
         steps = [sys.executable, '-I', '-S', str(gate.root / 'scripts/gate_reuse.py')]
         where = ['--root', str(gate.root), '--state', str(graph_state)]
-        planned = subprocess.run(steps + ['suite-plan'] + where, env=gate_env, capture_output=True, text=True,
-                                 timeout=HANG)
-        for name, variables in (('confined', leg('confined', 'd')), ('unconfined', leg('unconfined', 'd'))):
-            (node_logs / ('unit.%s.log' % name)).write_text(
-                gate.dispatch(planned.stdout.strip(), gate_env, leg=variables).stdout)
+        planned = subprocess.run(steps + ['suite-plan'] + where + ['--logs', str(node_logs)], env=gate_env,
+                                 capture_output=True, text=True, timeout=HANG)
+        # Each leg's dispatcher writes to the node's own log, opened as the scheduler opens it.
+        for variables in (leg('confined', 'd'), leg('unconfined', 'd')):
+            gate.dispatch(planned.stdout.strip(), gate_env, leg=variables, state=node_logs)
         (node_logs / 'unit.status').write_text('pass')
         (node_logs / 'lint.log').write_text((node_logs / 'unit.confined.log').read_text())
         settled = subprocess.run(steps + ['suite-settle'] + where + ['--logs', str(node_logs), '--stage-status', 'pass'],
@@ -770,7 +1018,10 @@ def _v206_suite_reuse():
             and json.loads((graph_state / 'receipt.json').read_text())['legs'] == ['confined', 'unconfined']
             and nodes and all(name + '.log' in gate.G.SUITE_LOGS for name in nodes)
             and "open(directory / (name + '.log'), 'w')" in schedule
-            and '_veldo_unit_logs="$VELDO_SCHEDULE"' in SOURCES['scripts/verify.sh'].read_text(),
+            and '_veldo_unit_logs="$VELDO_SCHEDULE"' in SOURCES['scripts/verify.sh'].read_text()
+            and '--logs "${VELDO_SCHEDULE:-$VELDO_SUITE_STATE}"' in SOURCES['scripts/verify.sh'].read_text()
+            and 'veldo_planned python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py"'
+            in SOURCES['scripts/verify.sh'].read_text(),
             (planned.stderr, settled.stdout[-900:], settled.stderr, nodes))
         expect('VELDO-0206 suite-reuse/receipts: exact keys and counts, full coverage, force fresh, red stays red%s'
                % ('' if all(rows['receipts'].values()) else
@@ -778,7 +1029,7 @@ def _v206_suite_reuse():
                all(rows['receipts'].values()))
 
     production = ROOT / 'scripts/gate_reuse.py'
-    registry = load(production, 'v206_production_gate_reuse').suite_registry(ROOT)
+    registry = load(production, 'v206_production_gate_reuse').suite_registry()
     engine = (ROOT / 'engine/scripts/verify.sh').read_text()
     expect('VELDO-0206 suite-reuse/production-registry: no production suite is qualified, the engine copy is '
            'the canon and the generic gate hands a dispatcher no plan',

@@ -52,6 +52,10 @@ what is available, never a silent zero-assertion pass.
 import os
 import sys
 
+# What this process was started with and where, before anything it runs can change either: the
+# process an isolated suite runs in (VELDO-0206) is started with exactly these.
+_ENVIRONMENT, _DIRECTORY = dict(os.environ), os.getcwd()
+
 # NO FILE IN scripts/ OR scripts/suites/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). The
 # gate runs this file as `python3 scripts/selftest.py`, which puts scripts/ first on sys.path, so an
 # unprotected scripts/json.py would run inside this protected dispatcher before it reads its leg,
@@ -203,6 +207,38 @@ elif SUITE_VALUES:
     RUN = [s for s in RUN if s["name"] in WANTED]
     SELECTOR = "--suite %s" % " ".join(ASKED)
 
+# SUITE RESULT REUSE (VELDO-0206). The gate's authority may hand the unit stage's dispatcher a
+# plan: the qualified suites, each of which runs in a process of its own, and of those the ones
+# for which the authority holds an authenticated passing record under exactly their present
+# inputs. This dispatcher opens no store and computes no key. With a plan it starts one process
+# per isolated suite BEFORE any suite has run here, so nothing a suite of the shared namespace
+# leaves behind (names, modules, environment, working directory, process state) can reach one;
+# that process runs the suite's prerequisite closure in manifest order and nothing else. A suite
+# the plan lets it leave out is not run at all. It honors a plan only as the full manifest in
+# manifest order, at the plan's own root, outside the unconfined leg and writing to the unit
+# stage's own output. It says, on its own lines, what it ran, where, and what it left out, so the
+# authority can account for every suite. Without a plan it runs as it always has.
+REUSE, REUSED, ISOLATED, CHILD = None, [], [], None
+try:
+    REUSE = RS.reuse_plan(os.environ)
+    _ENVIRONMENT.pop(RS.REUSE_VARIABLE, None)
+except RS.ReuseRefused as e:
+    _ENVIRONMENT.pop(RS.REUSE_VARIABLE, None)
+    print("selftest reuse: %s; every suite runs fresh" % e, flush=True)
+if REUSE and REUSE["child"] is not None:
+    # THE PROCESS OF ONE ISOLATED SUITE: the suite and its prerequisite closure, in manifest order.
+    CHILD = REUSE["child"]
+    if SELECTOR is not None or ENV_ORDER or CHILD not in ORDER:
+        print("selftest isolated: %r with a selector or an order is not a run this dispatcher starts" % CHILD)
+        sys.exit(2)
+    try:
+        _closure = RS.resolve([CHILD], manifest=MANIFEST)[1]
+    except (RS.UnknownSuite, RS.ClosureUnavailable) as e:
+        print("selftest isolated: %s" % e)
+        sys.exit(2)
+    RUN = [s for s in RUN if s["name"] in _closure]  # the whole prerequisite closure runs here
+    SELECTOR = "isolated %s" % CHILD
+
 # THE GATE'S LEG (VELDO-0208, owner decision 2026-10-07), set only by the authority's
 # scripts/gate_legs.py: the confined leg runs every suite but the ones the authority listed whole,
 # the unconfined leg only the listed ones. A suite listed for some rows runs in both, and its rows
@@ -224,41 +260,34 @@ if LEG:
     else:
         RUN = [s for s in RUN if s["name"] in LISTED]
         _what = "runs only the %d listed suite(s) present, and of a row-scoped one only its rows" % len(RUN)
-    print("selftest leg %s: %s. Whole: %s. Rows: %s.%s Declaration: %s."
-          % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
-             " Not in this manifest: %s." % ", ".join(_absent) if _absent else "",
-             os.environ[RS.GATE_DECLARATION]), flush=True)
+    if CHILD is None:
+        print("selftest leg %s: %s. Whole: %s. Rows: %s.%s Declaration: %s."
+              % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
+                 " Not in this manifest: %s." % ", ".join(_absent) if _absent else "",
+                 os.environ[RS.GATE_DECLARATION]), flush=True)
     if not RUN:
         print("selftest leg %s: LEG_RAN_NOTHING: no suite of this manifest is in the %s leg; "
               "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
         sys.exit(2)
 
 SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
-if SCOPE.partial:
+if CHILD is not None:
+    print("selftest isolated %s: a process of its own, running the %d suite(s) of its prerequisite "
+          "closure and nothing else" % (CHILD, len(RUN)), flush=True)
+elif SCOPE.partial:
     print(SCOPE.banner(), flush=True)
 
-# SUITE RESULT REUSE (VELDO-0206). The gate's authority may hand this dispatcher a plan: the suites
-# for which it holds an authenticated passing record under exactly their present inputs. This
-# dispatcher opens no store and computes no key. It leaves out what the plan names, and only in a
-# full run of the manifest, in manifest order, at the plan's own root and outside the unconfined
-# leg; and it still executes a named suite that a fresh suite's prerequisite closure needs, because
-# the suites share one namespace. With a plan it says, on its own lines, what it ran and what it
-# left out, so the authority can account for every suite. Without one it runs as it always has.
-REUSE, REUSED = None, []
-try:
-    REUSE = RS.reuse_plan(os.environ)
-except RS.ReuseRefused as e:
-    print("selftest reuse: %s; every suite runs fresh" % e, flush=True)
-if REUSE:
-    _reusable, _why = RS.reuse_honored(REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER)
+if REUSE and CHILD is None:
+    _isolated, _reusable, _why = RS.reuse_honored(REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER,
+                                                  RS.output_identity(sys.stdout))
     if _why:
         print("selftest reuse: %s; every suite runs fresh" % _why, flush=True)
-    if _reusable:
+    if _isolated:
         try:
             _closures = RS.load_requires()
         except (OSError, ValueError, KeyError):
             _closures = {}
-        REUSED = RS.reuse_execution([s["name"] for s in RUN], _closures, _reusable)[1]
+        _, ISOLATED, REUSED = RS.reuse_execution([s["name"] for s in RUN], _closures, _isolated, _reusable)
 
 
 def _account(kind, **payload):
@@ -266,10 +295,59 @@ def _account(kind, **payload):
     if REUSE:
         sys.stdout.flush()
         os.write(sys.stdout.fileno(), RS.reuse_line(
-            REUSE["nonce"], kind, leg=LEG, scope="partial" if SCOPE.partial else "full", **payload).encode())
+            REUSE["nonce"], kind, leg=LEG, isolated=CHILD,
+            scope="isolated" if CHILD is not None else "partial" if SCOPE.partial else "full",
+            **payload).encode())
+
+
+def _isolate(name):
+    """Run one isolated suite in its own process and return (rows it passed, rows that failed there).
+
+    The process is started with what this dispatcher was started with, not with what it has
+    become, and it writes to this dispatcher's output. Its counts come back in a file of this
+    run; this waits for the process to exit and for nothing else. A process that reports nothing
+    counts as one failed row."""
+    import subprocess
+    import tempfile
+    _fd, _report = tempfile.mkstemp(prefix="veldo-suite-")
+    os.close(_fd)
+    try:
+        sys.stdout.flush()
+        _code = subprocess.call(
+            [sys.executable, *subprocess._args_from_interpreter_flags(), str(HERE / "selftest.py")],
+            cwd=_DIRECTORY, env=dict(_ENVIRONMENT, **{RS.REUSE_VARIABLE: RS.reuse_child(REUSE, name, _report)}))
+        try:
+            _counts = json.loads(Path(_report).read_text())
+            if (_counts.get("suite") != name or type(_counts.get("passed")) is not int
+                    or type(_counts.get("failed")) is not int or _counts["passed"] < 0 or _counts["failed"] < 0):
+                raise ValueError("malformed")
+        except (OSError, ValueError, AttributeError):
+            print("  SELFTEST FAIL: %s: its isolated process exited %s and reported no result" % (name, _code),
+                  flush=True)
+            return 0, 1
+        if _code != 0 and not _counts["failed"]:
+            print("  SELFTEST FAIL: %s: its isolated process exited %s" % (name, _code), flush=True)
+            return _counts["passed"], 1
+        return _counts["passed"], _counts["failed"]
+    finally:
+        try:
+            os.unlink(_report)
+        except OSError:
+            pass
 
 
 _account("begin", suites=len(RUN))
+
+# ISOLATED SUITES RUN FIRST, before the shared namespace exists in this process.
+_ISOLATED_ROWS = [0, 0]
+for _s in RUN:
+    if _s["name"] in REUSED:
+        # Not executed: the authority holds this suite's passing record under its present inputs.
+        # Its rows are NOT added to this run's count; the line says what was left out.
+        _account("result", suite=_s["name"], source="reused", passed=REUSE["reuse"][_s["name"]], failed=0)
+    elif _s["name"] in ISOLATED:
+        _p, _f = _isolate(_s["name"])
+        _ISOLATED_ROWS = [_ISOLATED_ROWS[0] + _p, _ISOLATED_ROWS[1] + _f]
 
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
@@ -281,12 +359,10 @@ shared.SCOPE = SCOPE
 T0 = time.monotonic()
 PER_SUITE = []
 _LEG_FLOOR = shared.PASS + shared.FAIL
+_OWN = (0, 0)
 for _s in RUN:
-    if _s["name"] in REUSED:
-        # Not executed: the authority holds this suite's passing record under its present inputs.
-        # Its rows are NOT added to this run's count; the line says what was left out.
-        _account("result", suite=_s["name"], source="reused", passed=REUSE["reuse"][_s["name"]], failed=0)
-        continue
+    if _s["name"] in REUSED or _s["name"] in ISOLATED:
+        continue  # left out on its record, or already run in its own process
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
@@ -296,6 +372,20 @@ for _s in RUN:
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
     _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
              failed=shared.FAIL - _failed)
+    if _s["name"] == CHILD:
+        _OWN = (shared.PASS - _before, shared.FAIL - _failed)
+
+# The rows the isolated suites asserted in their own processes are this run's rows.
+shared.PASS, shared.FAIL = shared.PASS + _ISOLATED_ROWS[0], shared.FAIL + _ISOLATED_ROWS[1]
+if CHILD is not None:
+    # One isolated suite's process: its own passed rows, and every row that failed here, since a
+    # prerequisite that fails here leaves no passing observation of the suite. Never the aggregate.
+    print("selftest isolated %s: %d passed, %d failed (%d passed row(s) of its prerequisites are "
+          "theirs, not counted)" % (CHILD, _OWN[0], shared.FAIL, shared.PASS - _OWN[0]), flush=True)
+    _code = 1 if shared.FAIL else 0
+    Path(REUSE["report"]).write_text(json.dumps({"suite": CHILD, "passed": _OWN[0], "failed": shared.FAIL}))
+    _account("end", exit=_code, passed=_OWN[0], failed=shared.FAIL)
+    sys.exit(_code)
 
 if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR and not REUSED:
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
@@ -317,6 +407,8 @@ if REUSED:
     print("selftest reuse: %d of %d suites left out on authenticated passing records (%d rows not "
           "run again); %d ran fresh" % (len(REUSED), len(RUN), sum(REUSE["reuse"][n] for n in REUSED),
                                         len(RUN) - len(REUSED)), flush=True)
+if ISOLATED:
+    print("selftest reuse: %d suite(s) ran fresh, each in a process of its own" % len(ISOLATED), flush=True)
 _CODE = shared.report()
 _account("end", exit=_CODE, passed=shared.PASS, failed=shared.FAIL)
 sys.exit(_CODE)
