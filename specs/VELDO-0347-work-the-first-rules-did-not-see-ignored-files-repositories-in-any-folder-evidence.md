@@ -34,6 +34,8 @@ footprint:
   - ".veldo/control_space_keep.py"
   - "engine/.veldo/control_space_reconcile.py"
   - ".veldo/control_space_reconcile.py"
+  - "engine/.veldo/control_space_worker.py"
+  - ".veldo/control_space_worker.py"
   - "scripts/suites/135_veldo_0298_space_kinds.py"
   - "scripts/suites/136_veldo_0299_space_probe.py"
   - "scripts/suites/138_veldo_0300_space_remove.py"
@@ -157,6 +159,28 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-21: fix round 1, from the independent review (review-veldo-0347, verdict FIX). No acceptance
+  criterion changed; AC2 is built as written again, with one exception named here. F1: the evidence
+  remover reads "the trunk" from the work configuration's land entry (the spool's Local.trunk, the one
+  place a trunk is read from), given to Signal and the remover as `landing`, never from the main
+  repository's HEAD; with no trunk declared only the kept refs count. The service's consumer
+  (control_space_worker.py, both copies, added to the footprint) passes the land entry it already holds.
+  F2: an item keeps the table it was declared under, so an agent repository of a clone's form declared
+  under table 1, which has no clone row, is handled as table 1 says: Signal holds its branches against
+  the shared repository, the keep step takes no snapshot and the remover makes no per-file comparison.
+  F3: a folder beneath scratch or build output that cannot be listed holds the item at rule 6 again,
+  whoever owns it. The one exception is a confined run's own scratch (a scratch item with a parent
+  item whose folder's name begins with the sandbox's SCRATCH_PREFIX, veldo-agent-): the confined process
+  may shut folders in it (VELDO-0324, suite 154 ac2/recorded), and a folder there that this user owns
+  and that refuses only for its permission bits is opened by the folder remover, whose walk stops on any
+  repository that is not a clean clone before anything is deleted. F8: a local remote's commit counts
+  only when one of that remote's refs reaches it, not when the object is merely present. F4: the
+  ticket's suite gives each row its own guard and its own fixtures. F5: the VELDO-0315 row asserts that
+  the adopted batch clone is removed and its commit is on a kept ref. F6: the VELDO-0300 and 0345
+  suites use the before_0347 probe only on the rows that plant ignored work or an own-folder repository,
+  each named. F7: the VELDO-0298 suite has a whole-table row for table 2. F9: the suite is renumbered
+  from 157 (VELDO-0358 brief A's) to 161, the next number no branch uses.
 
 - 2026-11-21: built. No acceptance criterion changed. The footprint gains seven paths, each named here.
   The keep step (control_space_keep.py) is where a worker clone's snapshot is taken (one condition,
