@@ -1120,8 +1120,12 @@ with tempfile.TemporaryDirectory() as _d:
     )
     _w1404_dependency = _w1404_auditroot / ".veldo" / "estimate.py"
     _w1404_dependency_source = _w1404_dependency.read_text()
+    # THE FIRST FOUR CASES RUN HERE (VELDO-0221 fix round 1). The other sixteen run, unchanged, in
+    # 15_warp_1404_historical_analogy_audit_b and 15_warp_1404_historical_analogy_audit_c, so that no
+    # one shard of a gate leg carries all twenty (about 27 seconds each). The table above is held
+    # byte for byte in all three files; suite 157 requires that and that the slices cover it once.
     try:
-        for _w1404_case, _w1404_event, _w1404_call in _w1404_cases:
+        for _w1404_case, _w1404_event, _w1404_call in _w1404_cases[:4]:
             _w1404_injection = (
                 "\nimport os as _ao, sys as _asys, shutil as _ash, socket as _aso\ntry:\n"
                 + "\n".join("    " + line for line in _w1404_call.splitlines())
