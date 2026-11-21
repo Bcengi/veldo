@@ -163,6 +163,11 @@ CREATORS[('engine/scripts/gate_legs.py', 'run_load_proof')] = (
     "Creates the load writers' private folder beside the checkout, outside it; removed empty at the leg's end.")
 CREATORS[('engine/scripts/gate_load.py', 'canary')] = "Creates a private temporary folder for the canary's marker."
 REVIEWED[('engine/scripts/gate_load.py', 'canary')] = "Removes only the canary's own mkdtemp folder at its end; design 6.10."
+# VELDO-0358 (lead decision on integration finding 2): the authority's opened-files ledger.
+CREATORS[('engine/scripts/gate_legs.py', 'TakeOpened.__init__')] = (
+    "Creates the authority's private ledger folder (mkdtemp), granted to no domain; the leg gets an append descriptor.")
+REVIEWED[('engine/scripts/gate_legs.py', 'TakeOpened.finish')] = (
+    "Removes only the ledger folder its own __init__ made with mkdtemp, once the record is taken; design 6.10.")
 
 
 def canonical(path):

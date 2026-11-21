@@ -2357,10 +2357,13 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         raise ValueError('only the gate profile inherits a descriptor')
     for descriptor in inherit:
         # A channel is a pipe or a socket pair the authority made, above the standard three; a file,
-        # a directory or a device named here would be a way around the domain's own grants.
+        # a directory or a device named here would be a way around the domain's own grants. The one
+        # file allowed is the authority's opened-files ledger, append-only (VELDO-0358, --keep-fd).
         mode = os.fstat(descriptor).st_mode
-        if descriptor < 3 or not (stat.S_ISFIFO(mode) or stat.S_ISSOCK(mode)):
-            raise ValueError('an inherited descriptor must be a pipe or a socket above the standard three')
+        if descriptor < 3 or not (stat.S_ISFIFO(mode) or stat.S_ISSOCK(mode)
+                                  or kept_descriptor_problem(descriptor) is None):
+            raise ValueError('an inherited descriptor must be a pipe or a socket above the standard three, '
+                             'or the append-only opened-files ledger')
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -2631,6 +2634,21 @@ def tracer_problem(status=None):
     fields = dict(line.split(':', 1) for line in status.splitlines() if ':' in line)
     if fields.get('TracerPid', '').strip() != '0':
         return 'it is traced (TracerPid %s); only a declared case runs traced' % fields.get('TracerPid', '').strip()
+    return None
+
+
+def kept_descriptor_problem(fd):
+    """Why `fd` may not be handed into a gate tree, or None (VELDO-0358). The one descriptor a gate run
+    keeps is the authority's opened-files ledger: a regular file this process may only append to, so the
+    tree gains no read and no other write by it (scripts/gate_legs.py TakeOpened)."""
+    try:
+        info, flags = os.fstat(fd), fcntl.fcntl(fd, fcntl.F_GETFL)
+    except OSError as error:
+        return 'descriptor %d: %s' % (fd, error.strerror)
+    if fd < 3 or not stat.S_ISREG(info.st_mode):
+        return 'descriptor %d is not a regular file' % fd
+    if flags & os.O_ACCMODE != os.O_WRONLY or not flags & os.O_APPEND:
+        return 'descriptor %d is not append-only' % fd
     return None
 
 
@@ -3054,13 +3072,22 @@ def main():
     parser.add_argument('--inherit', type=int, action='append', default=[], metavar='FD',
                         help='a pipe or socket the gate profile\'s command keeps (the leg runner\'s '
                         'channels to a shard dispatcher); repeatable')
+    parser.add_argument('--keep-fd', type=int, help='gate profile: the authority\'s opened-files ledger, '
+                        'an append-only descriptor the tree keeps (VELDO-0358)')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        return launch(args.config, args.worktree, command, args.profile, args.client, inherit=args.inherit)
+        inherit = list(args.inherit)
+        if args.keep_fd is not None:
+            problem = ('only the gate profile keeps a descriptor' if args.profile != 'gate'
+                       else kept_descriptor_problem(args.keep_fd))
+            if problem:
+                raise ValueError(problem)
+            inherit.append(args.keep_fd)
+        return launch(args.config, args.worktree, command, args.profile, args.client, inherit=inherit)
     except CredentialRecovery as error:
         print(recovery_message(error), file=sys.stderr, flush=True)
         return RECOVERY_EXIT

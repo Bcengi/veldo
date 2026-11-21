@@ -509,15 +509,37 @@ for _s in RUN:
         _p, _f = _isolate(_s["name"])
         _ISOLATED_ROWS = [_ISOLATED_ROWS[0] + _p, _ISOLATED_ROWS[1] + _f]
 
-# THE OPENED-FILES RECORD (VELDO-0358, C18): every file under scripts/ and proof/ this process opened or
+# THE OPENED-FILES CLAIMS (VELDO-0358, C18): every file under scripts/ and proof/ this process opened or
 # imported, by the suite running when it did, however its path was computed (an audit hook sees the open
-# itself). What shared.py opens while it loads is recorded under the manifest's shared entry. Written to
-# the path in VELDO_OPENED_FILES when the gate sets it, merged with what other suite processes of the same
-# gate wrote there: one JSON object, suite name to its sorted repository-relative paths.
-OPENED_ENV = "VELDO_OPENED_FILES"
+# itself). What shared.py opens while it loads is claimed under the manifest's shared entry. This process
+# WRITES NO RECORD. The record is the authority's (scripts/gate_legs.py, TakeOpened): it hands the gate's
+# unit legs an append descriptor to its own ledger, named by VELDO_OPENED_LEDGER_FD, takes the lines
+# written there as claims, keeps a claim only where it saw the file opened from outside the confinement,
+# and writes the record itself. Without that descriptor nothing is claimed anywhere. The variable is
+# removed here and the descriptor is not inherited, so no process this one starts (a fixture's dispatcher,
+# a nested gate) claims anything.
+OPENED_ENV = "VELDO_OPENED_LEDGER_FD"
 _REPO = str(HERE.parent) + os.sep
 _OPENED = {}
 _OPENER = [os.path.splitext(MANIFEST["shared"])[0]]
+
+
+def _ledger(value):
+    """The authority's ledger descriptor: a regular file this process may only append to, else None."""
+    import fcntl
+    import stat
+    try:
+        fd = int(value)
+        info, flags = os.fstat(fd), fcntl.fcntl(fd, fcntl.F_GETFL)
+    except (TypeError, ValueError, OSError):
+        return None
+    if fd < 3 or not stat.S_ISREG(info.st_mode) or flags & os.O_ACCMODE != os.O_WRONLY or not flags & os.O_APPEND:
+        return None
+    os.set_inheritable(fd, False)
+    return fd
+
+
+_LEDGER = _ledger(os.environ.pop(OPENED_ENV, None))
 
 
 def _audit(event, args):
@@ -539,27 +561,14 @@ def _audit(event, args):
             _OPENED.setdefault(_OPENER[0], set()).add(os.path.normpath(rel))
 
 
-def _write_opened():
-    target = os.environ.get(OPENED_ENV)
-    if not target:
-        return
-    import fcntl
-    with open(target + ".lock", "a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        try:
-            with open(target) as f:
-                merged = {k: set(v) for k, v in json.load(f).items()}
-        except FileNotFoundError:
-            merged = {}
-        for name, paths in _OPENED.items():
-            merged.setdefault(name, set()).update(paths)
-        part = target + ".part.%d" % os.getpid()
-        with open(part, "w") as f:
-            json.dump({k: sorted(v) for k, v in sorted(merged.items())}, f, indent=1, sort_keys=True)
-        os.replace(part, target)
+def _claim_opened():
+    """One line per suite on the authority's ledger: {"suite": name, "paths": [...]}."""
+    for name, paths in sorted(_OPENED.items()):
+        line = json.dumps({"suite": name, "paths": sorted(paths)}, sort_keys=True) + "\n"
+        os.write(_LEDGER, line.encode())
 
 
-if os.environ.get(OPENED_ENV):
+if _LEDGER is not None:
     sys.addaudithook(_audit)
 
 # VELDO-0358: THE SUITE PROCESS'S RUNTIME. The wait primitive's module is loaded first, under the name
@@ -575,8 +584,8 @@ WAITS = None
 if (SUITES / "support" / "waits.py").is_file():
     WAITS = _protected("waits", SUITES / "support" / "waits.py")
     WAITS.arm_watchdog()
-    if os.environ.get(OPENED_ENV):
-        WAITS.RUNTIME.before_exit.append(_write_opened)
+    if _LEDGER is not None:
+        WAITS.RUNTIME.before_exit.append(_claim_opened)
 
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
@@ -649,8 +658,8 @@ if WAITS is not None:
     WAITS.disarm_watchdog()
     for _hook in WAITS.RUNTIME.before_exit:
         _hook()
-elif os.environ.get(OPENED_ENV):
-    _write_opened()
+elif _LEDGER is not None:
+    _claim_opened()
 
 if SHARD is not None:
     # The shard's verdict: the target's own counts and labels, and how many rows of its closure or

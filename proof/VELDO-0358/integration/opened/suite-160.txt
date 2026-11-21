@@ -1,0 +1,2 @@
+# suite 160 alone at the working tree before the opened-files commit (2026-11-21)
+  160_veldo_0358_load_leg                          6 passed  161.41s

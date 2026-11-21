@@ -18035,6 +18035,39 @@ def cases():
         "        if named in CONTRACT_HANG:  # defect: any value under the name is a hang bound\n",
         ['census/each-rule'])
     result[-1]['dir'] = 'scripts'
+    # Integration (lead decision on finding 2): the opened-files record is TAKEN BY THE AUTHORITY (gate_legs.py
+    # TakeOpened), never written by the candidate. Each case removes one part of that.
+    load358('opened358-forged-claim-kept', 'gate_legs.py',
+            "            if not (overflowed or path in opened or any(path.startswith(d + '/') for d in late)):\n",
+            "            if False:  # defect: a claim is kept whether or not the authority saw the file opened\n",
+            ['leg/record-taken-by-the-authority'])
+    load358('opened358-candidate-record-read', 'verify.sh',
+            '  if [ -s "$VELDO_OPENED_RECORD" ]; then\n',
+            '  set -- --opened "$VELDO_OUT/opened_files.json"  # defect: the leg reads what is beside the stamp\n'
+            '  if false; then\n',
+            ['leg/record-taken-by-the-authority'])
+    load358('opened358-unit-not-taken', 'verify.sh',
+            '    _veldo_take=(); [ "$1" != unit ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")\n',
+            '    _veldo_take=()  # defect: the unit stage takes no opened-files record\n',
+            ['leg/record-taken-by-the-authority'])
+    load358('opened358-tree-drops-ledger', 'agent_sandbox.py',
+            '            inherit = (args.keep_fd,)\n',
+            '            inherit = ()  # defect: the gate tree does not keep the authority\'s ledger\n',
+            ['leg/record-taken-by-the-authority'])
+    load358('opened358-load-reads-unpublished', 'gate_schedule.py',
+            "            load_module('gate_legs').publish_opened(target, parts)\n",
+            "            pass  # defect: the unit legs' parts are not published before the load node starts\n",
+            ['leg/record-taken-by-the-authority'])
+    add(358, 'opened358-dispatcher-claims-nothing', '157_veldo_0358_suite_runtime.py', 'selftest.py',
+        "if _LEDGER is not None:\n    sys.addaudithook(_audit)\n",
+        "if False:  # defect: the dispatcher claims no open\n    sys.addaudithook(_audit)\n",
+        ['record/opened-files'])
+    result[-1]['dir'] = 'scripts'
+    add(358, 'opened358-ledger-reaches-children', '157_veldo_0358_suite_runtime.py', 'selftest.py',
+        "_LEDGER = _ledger(os.environ.pop(OPENED_ENV, None))\n",
+        "_LEDGER = _ledger(os.environ.get(OPENED_ENV))  # defect: every process a suite starts is handed the ledger\n",
+        ['record/opened-files'])
+    result[-1]['dir'] = 'scripts'
     # BEGIN VELDO-0358 BRIEF C: verdict, progress, holders and timers.
     # Preserved VELDO-0214 measurement and provenance falsifiers.
     suite214 = '111_veldo_0214_first_use_budget.py'

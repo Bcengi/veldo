@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208, VELDO-0215, VELDO-0220]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py"]
+protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/selftest.py", "scripts/gate_candidate.py", "engine/scripts/gate_candidate.py", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py"]
 footprint:
   - scripts/suites/support/waits.py
   - scripts/suites/support/holders.py
@@ -90,6 +90,10 @@ footprint:
   - proof/VELDO-0358/*
   - scripts/gate_schedule.py
   - engine/scripts/gate_schedule.py
+  - scripts/gate_candidate.py
+  - engine/scripts/gate_candidate.py
+  - scripts/agent_sandbox.py
+  - engine/scripts/agent_sandbox.py
   - scripts/check_space_boundary.py
   - proof/VELDO-0219/local_check.py
   - proof/VELDO-0219/qualification.py
