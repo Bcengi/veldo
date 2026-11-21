@@ -4377,6 +4377,9 @@ class FactoryLoop:
 
     def status(self):
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
+                # VELDO-0358: the wakes collected for the next pass, so a reader can tell an idle loop (nothing
+                # running, no timer, nothing pending) from one whose next pass is still to come.
+                'pending_wakes': len(self.wakes),
                 'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
