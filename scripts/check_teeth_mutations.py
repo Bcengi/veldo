@@ -11798,6 +11798,34 @@ def cases():
         ['admission/ledger-link-swapped-mid-resolve'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0217: every confined case gets a current, reviewed input declaration with complete keys.
+    suite217 = '157_veldo_0217_declarations.py'
+    add(217, 'declarations217-support-dropped', suite217, 'propose_case_inputs.py',
+        "            if '.git' in path.parts or '__pycache__' in path.parts:\n",
+        "            if '.git' in path.parts or '__pycache__' in path.parts or name.startswith('scripts/suites/support/'):\n",
+        ['declarations/stale-found'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-one-trace-enough', suite217, 'case_reuse.py',
+        "        if len(baselines) != 2 or baselines[0]['reads'] != baselines[1]['reads']:\n",
+        "        if not baselines:\n",
+        ['declarations/review-conditions'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-proof-skipped', suite217, 'case_reuse.py',
+        "                if not sensitivity_proved(store_directory(), self.case_digests[name]):\n",
+        "                if False:  # the sensitivity proof is skipped\n",
+        ['declarations/review-conditions'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-helper-not-keyed', suite217, 'case_reuse.py',
+        "                         'helpers': I.identity({n: v for n, v in chosen.items() if n in loaded}),\n",
+        "                         # the support helpers stay in the snapshot but leave the key\n",
+        ['declarations/key-covers-inputs'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-bus-allowed', suite217, 'case_trace.py',
+        "                kind = 'user_bus'\n",
+        "                kind = None  # a user-bus connection classed as loopback traffic\n",
+        ['declarations/non-file-refused'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',

@@ -51,9 +51,42 @@ def projection(body, case):
     return (worker_body(body) + '\ndef cases():\n    return ' + repr([definition]) + '\n').encode()
 
 
+REQUIRES = 'scripts/suites/requires.json'
+SUPPORT = 'scripts/suites/support/'
+
+
+def prerequisites(files, case):
+    """The case's suite's prerequisite closure (scripts/suites/requires.json, VELDO-0217 AC3): the
+    closure's suite files and the closure file itself. A suite the closure does not name is its own."""
+    import json
+    names = {'scripts/suites/' + case['suite']}
+    if REQUIRES in files:
+        names.add(REQUIRES)
+        closure = json.loads(files[REQUIRES][1]).get('requires', {}).get(Path(case['suite']).stem, [])
+        names.update('scripts/suites/' + suite + '.py' for suite in closure)
+    return sorted(names)
+
+
+def helpers(files, names):
+    """The support helpers (scripts/suites/support/) the given files load, closed over the helpers'
+    own loads: a helper is loaded when its file name appears in a loader's text. Over-inclusion only
+    widens a key; a helper the scan misses would leave a reused result unkeyed (VELDO-0217 AC3)."""
+    available = {name: Path(name).name.encode() for name in files if name.startswith(SUPPORT)}
+    found, pending = set(), [n for n in names if n in files]
+    while pending:
+        body = files[pending.pop()][1]
+        for name, base in available.items():
+            if name not in found and base in body:
+                found.add(name)
+                pending.append(name)
+    return sorted(found)
+
+
 def selected(files, case, declaration):
     names = set(declaration['files']) | set(MANDATORY) | set(DRIVERS)
-    names.add('scripts/suites/' + case['suite'])
+    closure = prerequisites(files, case)
+    names.update(closure)
+    names.update(helpers(files, closure))
     names.add(('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) + '/' + case['module'])
     for directory in declaration.get('directories', []):
         safe_name(directory)

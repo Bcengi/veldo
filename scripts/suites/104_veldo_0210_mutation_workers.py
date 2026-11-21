@@ -61,7 +61,10 @@ def _v210_mutation_workers():
         for name, entry in (('verify', 'scripts/verify.sh'), ('engine-copy', 'engine/scripts/gate_candidate.py')):
             document['cases'][starts['identity']]['files'] = [entry]
             files[I.DECLARATIONS] = (0o644, R.canonical(document))
-            with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: {'paths': paths}):
+            # VELDO-0217's review conditions and VELDO-0226's proof are not what this row tests.
+            with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: {'paths': paths}), \
+                 patch.object(C, 'failed_condition', return_value=None), \
+                 patch.object(C, 'sensitivity_proved', return_value=True):
                 session = C.Session(root, files, [starts, plain], 'head',
                                     {'worker_environment': gate.fixed_env('<private-worker-home>')},
                                     cache_directory=top / 'cache')

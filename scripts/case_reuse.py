@@ -1,5 +1,6 @@
 """Per-case reuse keys; traces propose, declared snapshots enforce the inputs."""
 import json
+import os
 from pathlib import Path
 import importlib.util
 
@@ -14,6 +15,74 @@ def load(name):
 I = load('case_inputs')
 M = load('mutation_reuse')
 R = M.R
+
+# A reviewed toolchain may only name system trees: never the checkout, the store or a home.
+SYSTEM_ROOTS = ('/usr', '/lib', '/lib64', '/etc')
+REVIEW_SCHEMA = 'veldo.case-input-review/v1'
+SENSITIVITY_SCHEMA = 'veldo.sensitivity-proof/v1'
+# The traced runs a proposal records (VELDO-0217 AC2): two independent baselines, the no-op, the mutant.
+TRACED_RUNS = ('baseline', 'baseline', 'noop', 'mutant')
+
+
+def declaration_digest(declaration):
+    """What a review record binds: the declaration without its reviewed flag and record name."""
+    return R.digest({k: v for k, v in declaration.items() if k not in ('reviewed', 'review')})
+
+
+def observation_digest(observation):
+    """An observation without its free-text failure details, as the store keeps it."""
+    return R.digest({k: v for k, v in observation.items() if k != 'failed_details'})
+
+
+def sensitivity_proved(directory, key):
+    """VELDO-0226's clock and randomness proof for this exact key, in the authority store:
+    <store>/sensitivity/<key>.json naming the key. Until that proof exists, no key qualifies."""
+    try:
+        record = json.loads((Path(directory) / 'sensitivity' / (key + '.json')).read_bytes())
+    except (OSError, ValueError):
+        return False
+    return isinstance(record, dict) and record.get('schema') == SENSITIVITY_SCHEMA and record.get('key') == key
+
+
+def review_matches(files, name, declaration):
+    """The declaration names a review record (proof/VELDO-0217/reviews/) whose entry for this case
+    binds this declaration's digest and its proposal's trace digests, with a reviewer and a commit."""
+    try:
+        record = json.loads(files[I.safe_name(declaration['review'])][1])
+        entry = record['cases'][name]
+        return (record['schema'] == REVIEW_SCHEMA and isinstance(record['reviewer'], str)
+                and record['reviewer'].strip() and isinstance(record['commit'], str) and record['commit'].strip()
+                and entry['declaration'] == declaration_digest(declaration)
+                and entry['traces'] == [run['trace'] for run in declaration['proposal']['runs']])
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def failed_condition(files, name, declaration):
+    """The first mechanical condition of VELDO-0217 AC2 a reviewed declaration fails, or None. The
+    reviewer judges the rationale only; everything else is checked here, from the proposal."""
+    if not review_matches(files, name, declaration):
+        return 'review_mismatch'
+    try:
+        runs = declaration['proposal']['runs']
+        if sorted(run['mode'] for run in runs) != sorted(TRACED_RUNS) or any(run['exit'] != 0 for run in runs):
+            return 'trace_failed'
+        baselines = [run for run in runs if run['mode'] == 'baseline']
+        if len(baselines) != 2 or baselines[0]['reads'] != baselines[1]['reads']:
+            return 'baseline_reads_differ'
+        for run in runs:
+            if run['non_file']:
+                return sorted(run['non_file'])[0]
+        if declaration['non_file_inputs'] != 'none':
+            return 'non_file_unreviewed'
+        gate = declaration['proposal'].get('gate_observation')
+        if not gate or any(run['observation'] != gate for run in baselines):
+            return 'observation_differs'
+    except (KeyError, TypeError):
+        return 'trace_failed'
+    if not isinstance(declaration.get('rationale'), str) or not declaration['rationale'].strip():
+        return 'no_rationale'
+    return None
 
 
 class Session(M.Session):
@@ -32,6 +101,14 @@ class Session(M.Session):
                 raise ValueError('unknown declaration schema')
         except (KeyError, ValueError, TypeError):
             document = {'cases': {}, 'toolchains': {}}
+        controls = os.environ if environment is None else environment
+        directory = []
+
+        def store_directory():
+            if not directory:
+                directory.append(cache_directory or controls.get('VELDO_GATE_CACHE')
+                                 or R.E.configuration()[1]['store'])
+            return directory[0]
         for case in cases:
             name = case['identity']
             self.case_digests[name] = self.base_digest
@@ -43,51 +120,65 @@ class Session(M.Session):
                 if declaration.get('reviewed') is not True:
                     self.reasons[name] = 'unreviewed_declaration'
                     continue
-                if declaration['non_file_inputs'] != 'none' or not declaration['rationale'].strip():
-                    raise ValueError('non-file inputs are not qualified')
                 toolchain = document['toolchains'][case['driver']]
-                if toolchain.get('reviewed') is not True:
-                    raise ValueError('toolchain is not reviewed')
                 runtime = tuple(toolchain['paths'])
                 absent_runtime = tuple(toolchain.get('absent', []))
                 for path in absent_runtime:
                     if not Path(path).is_absolute() or Path(path).exists() or Path(path).is_symlink():
                         raise ValueError('expected absent runtime input: ' + path)
-                self.runtime_absent[name] = absent_runtime
                 # Runtime grants cannot expose the original repository, cache, or arbitrary homes.
                 for path in runtime:
                     resolved = Path(path).resolve()
                     if not any(resolved == Path(p).resolve() or Path(p).resolve() in resolved.parents
-                               for p in ('/usr', '/lib', '/lib64', '/etc')):
+                               for p in SYSTEM_ROOTS):
                         raise ValueError('runtime outside approved system roots')
-                if runtime not in self.runtime_checks:
-                    self.runtime_checks[runtime] = M.runtime_identity(runtime, self.environment)
-                    self.runtime_digests[runtime] = R.digest(self.runtime_checks[runtime])
                 chosen = I.selected(files, case, declaration)
                 if I.gate_entries(chosen):
                     # A suite that starts a gate is never declared (VELDO-0210 AC7): its gate nests in
                     # a fresh worker's tree, which no tracer may follow, so its cases run fresh.
                     self.reasons[name] = 'starts_a_gate'
                     continue
-                self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
-                value = {'schema': 'veldo.case-key/v1', 'files': I.identity(chosen), 'case': case,
-                         'declaration': declaration, 'toolchain': toolchain,
+                # VELDO-0217 AC2: every mechanical condition, each failure named; the case runs fresh.
+                reason = failed_condition(files, name, declaration)
+                if reason is None and toolchain.get('reviewed') is not True:
+                    reason = 'toolchain_unreviewed'
+                if reason is not None:
+                    self.reasons[name] = reason
+                    continue
+                self.runtime_absent[name] = absent_runtime
+                if runtime not in self.runtime_checks:
+                    self.runtime_checks[runtime] = M.runtime_identity(runtime, self.environment)
+                    self.runtime_digests[runtime] = R.digest(self.runtime_checks[runtime])
+                # VELDO-0217 AC3: the support helpers the suite loads are keyed as their own part.
+                loaded = set(I.helpers(files, I.prerequisites(files, case)))
+                value = {'schema': 'veldo.case-key/v1',
+                         'files': I.identity({n: v for n, v in chosen.items() if n not in loaded}),
+                         'helpers': I.identity({n: v for n, v in chosen.items() if n in loaded}),
+                         'case': case, 'declaration': declaration, 'toolchain': toolchain,
                          'runtime': self.runtime_digests[runtime], 'configuration': configuration,
                          'authority': R.E.authority_identity()}
                 self.case_digests[name] = R.digest(value)
-                if not self.forced:
-                    self.keys[name] = self.case_digests[name]
-                    self.reasons[name] = 'miss'
+                if self.forced:
+                    self.reasons[name] = 'force_fresh'
+                    self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
+                    continue
+                if not sensitivity_proved(store_directory(), self.case_digests[name]):
+                    self.reasons[name] = 'sensitivity_unproved'
+                    continue
+                self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
+                self.keys[name] = self.case_digests[name]
+                self.reasons[name] = 'miss'
             except (KeyError, TypeError, ValueError, OSError) as error:
                 # A reviewed declaration that no longer closes fails, never falls back silently.
                 raise ValueError('invalid declaration for ' + name + ': ' + str(error)) from error
         if any(self.keys.values()):
-            import os
-            controls = os.environ if environment is None else environment
-            directory = cache_directory or controls.get('VELDO_GATE_CACHE')
-            if not directory:
-                directory = R.E.configuration()[1]['store']
-            self.store = R.Store(directory, root)
+            self.store = R.Store(store_directory(), root)
+
+    def withhold(self, case, reason):
+        """A run that would publish showed a non-file input (VELDO-0217 AC4): the case stays fresh
+        with that class as its reason, and nothing is published under its key."""
+        self.keys[case['identity']] = None
+        self.reasons[case['identity']] = reason
 
     def unchanged(self):
         return (super().unchanged() and all(not Path(p).exists() and not Path(p).is_symlink()

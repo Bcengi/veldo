@@ -23,6 +23,8 @@ footprint:
   - engine/scripts/check_gate_mutations.py
   - scripts/check_teeth_mutations.py
   - scripts/suites/100_veldo_0207_case_reuse.py
+  - scripts/suites/101_veldo_0208_landing_reuse.py
+  - scripts/suites/104_veldo_0210_mutation_workers.py
   - scripts/suites/*_veldo_0217_*.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
@@ -178,3 +180,22 @@ VELDO-0207 and VELDO-0208. Out of review scope: planted records in the owner's s
 Numbers come from the 2026-10-25 canonical receipt (canonical-mutations.json, case_receipts) and a
 scan of the pending stack at 3ab6e90d; the mechanical staleness check, not the list in AC1, is the
 authority.
+
+## Build notes
+
+- Footprint: 101_veldo_0208_landing_reuse and 104_veldo_0210_mutation_workers build reviewed fixture
+  declarations to test landing reuse and gate-entry refusal. Under AC2 such a declaration no longer
+  qualifies without a review record and a sensitivity proof, so those fixtures now stand the two in
+  (case_reuse.failed_condition, case_reuse.sensitivity_proved) and nothing else in them changed.
+- Where the parts live: the review conditions are case_reuse.failed_condition, run after the
+  starts_a_gate refusal and before the key; the sensitivity proof is read from
+  <store>/sensitivity/<key>.json (schema veldo.sensitivity-proof/v1), the place VELDO-0226 writes it;
+  a review record is proof/VELDO-0217/reviews/<batch>.json (schema veldo.case-input-review/v1) named
+  by the declaration's review field.
+- A Unix socket path a case tries that does not exist (glibc probes /var/run/nscd/socket on every
+  user lookup) is no peer: it is keyed as an absent runtime input in the driver's toolchain, as a
+  failed runtime file probe is, so its appearance changes the key. Every other attempt counts,
+  answered or refused.
+- The proposer's earlier single-case form, trace_case(gate, case), is kept: VELDO-0208's confined
+  proposal row and the space-boundary census name it.
+

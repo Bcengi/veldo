@@ -842,16 +842,23 @@ class Workers:
         if measurement is not None:
             record['measurement'] = measurement
         result = None
+        non_file = {}
         if error is None and 'snapshot_root' in job:
             # Trace is outside the worker's writable home. Check before trusting output.
             try:
-                load(ROOT / 'scripts/case_trace.py').check(
-                    home.parent / ('trace-' + home.name), job['snapshot_root'], job['declared_files'],
+                tracer = load(ROOT / 'scripts/case_trace.py')
+                trace = home.parent / ('trace-' + home.name)
+                tracer.check(
+                    trace, job['snapshot_root'], job['declared_files'],
                     job.get('declared_absent', []), runtime=job['runtime_paths'], scratch=home,
                     directories=job.get('declared_directories', []),
                     runtime_absent=job.get('runtime_absent', []), after_confinement=True)
+                # VELDO-0217 AC4: a non-file input this run shows keeps its case from publishing.
+                non_file = tracer.non_file_inputs(trace, (home, job['snapshot_root']), after_confinement=True)
             except ValueError as trace_error:
                 error = trace_error
+        if non_file:
+            record['non_file_inputs'] = sorted(non_file)
         if error is None:
             if proc.returncode:
                 error = Refused('worker_launch_error' if b'worker_launch_error:' in stderr else 'driver_error',
@@ -896,7 +903,7 @@ class Workers:
                 self.admission.release(name)
         if error is not None:
             raise error
-        return {'result': result, 'elapsed': elapsed}
+        return {'result': result, 'elapsed': elapsed, 'non_file': sorted(non_file)}
 
     def cleanup(self, on_result=None):
         # Reap and account for every sibling, even after the first failure.
@@ -1317,6 +1324,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                     receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
                                                            detail=str(error)))
                     return
+                # VELDO-0217 AC4: the baseline, no-op and mutant traces of a run that would publish
+                # are checked again; a non-file input in any of them keeps the case fresh, unpublished.
+                shown = sorted(set(completed.get('non_file', ())).union(*(
+                    control_results[group + ':' + mode].get('non_file', ()) for mode in ('baseline', 'noop'))))
+                if shown and hasattr(reuse, 'withhold'):
+                    reuse.withhold(case, shown[0])
                 results[identity] = record
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
                                                elapsed=completed['elapsed']))
