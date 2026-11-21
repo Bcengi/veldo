@@ -223,6 +223,13 @@ def hang_bounds():
 
 
 def invoke(root, config):
+    if config.get('fault_trigger'):
+        # The loss/death faults require a birth even for childless relay clients.
+        # This declared fixture child exists only in interrupted-observer runs.
+        child = os.fork()
+        if child == 0:
+            os._exit(0)
+        os.waitpid(child, 0)
     fixture = load(root / 'scripts/fixtures/registered_clients.py', 'autostart_registry')
     runtime = fixture.registry(root)
     inventory = fixture.cases(runtime)
@@ -392,7 +399,12 @@ def measure(root, census, case, config, scratch, state, fault=None):
     wrapper = binpath / 'git'
     wrapper.write_text(GIT_WRAPPER.format(python=sys.executable, ack=str(ack), git='/usr/bin/git'))
     wrapper.chmod(0o700)
-    given = dict(config, case=case.identity, state=state, bin=str(binpath), envelope=plan)
+    trigger = fault in ('loss', 'collector_death')
+    if trigger:
+        plan.append(dict(identity='root/observer-fault-trigger', parent='root',
+                         role='observer_fault_trigger', argv=[]))
+    given = dict(config, case=case.identity, state=state, bin=str(binpath), envelope=plan,
+                 fault_trigger=trigger)
     request_path = scratch / 'case.json'
     request_path.write_text(json.dumps(given))
     input_identity = dict(case=identity, inventory_digest=case.registration_digest,
@@ -475,14 +487,15 @@ def protocol_controls(census):
     return controls
 
 
-def qualify(root, faults=('facilities', 'finalize')):
+def qualify(root):
     with hang_bounds():
-        return _qualify(root, faults)
+        return _qualify(root)
 
 
-def _qualify(root, faults):
+def _qualify(root):
     census = load(root / 'scripts/fixtures/lifecycle_census.py', 'autostart_census')
     controls = protocol_controls(census)
+    faults = tuple(census.FAULTS)
     with tempfile.TemporaryDirectory(prefix='v113-') as temporary:
         scratch = Path(temporary)
         fixture, runtime, binding, config, database = setup(root, scratch)
@@ -518,6 +531,14 @@ def _qualify(root, faults):
                 for fault in faults:
                     fault_result = measure(root, census, case, config, private, state, fault)
                     fault_result['fault'] = fault
+                    phase, category, capability = census.FAULTS[fault]
+                    receipt = fault_result['receipt']
+                    fault_result['fault_exercised'] = (
+                        receipt['capture_status'] == 'INCOMPLETE'
+                        and any(f['state'] == phase and f['category'] == category
+                                and f['capability'] == capability and bool(f['reason'])
+                                for f in receipt['failures'])
+                        and (category != 'event_loss' or receipt['lost_events'] > 0))
                     failures.append(fault_result)
                 return result, failures
             # Threads coordinate independent observer subprocesses outside all measured
@@ -563,7 +584,10 @@ def _qualify(root, faults):
                     rows=rows, qualification='COMPLETE' if all(r['status'] == 'PASS' for r in rows.values())
                     else 'INCOMPLETE', construction=construction, cases=cases, faults=fault_cases,
                     inventory_receipts=receipts, faults_ok=faults_ok, protocol_controls=controls,
+                    fault_matrix=dict(census.FAULTS),
+                    faults_driven=all(c['fault_exercised'] for c in fault_cases),
                     metrics=dict(expected=len(expected), completed=len(completed), measured=len(measured),
+                        fault_cases=len(fault_cases),
                         construction_cases=len(cases)-len(measured),
                         invocations_completed=sum(bool(c['outcome'].get('invoked')) for c in measured),
                         complete_censuses=sum(c['receipt']['status'] == 'COMPLETE' for c in measured),
