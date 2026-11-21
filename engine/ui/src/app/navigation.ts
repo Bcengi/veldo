@@ -41,6 +41,8 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
       badge: () =>
         decisions.waiting > 0 ? { count: decisions.waiting, label: `${decisions.waiting} waiting on you`, tone: 'waiting' } : null,
     },
+    // VELDO-0179: a rail entry; on a phone the You screen links to it.
+    { id: 'conversations', label: 'Conversations', to: { name: 'conversations' }, matches: ['conversations', 'conversation', 'conversation-turn'], icon: 'decisions', glyph: 'i-lucide-messages-square', phone: false, group: 'operate' },
     { id: 'servers', label: 'MCP servers', to: { name: 'servers' }, matches: ['servers', 'server'], icon: 'key', glyph: 'i-lucide-server', phone: false, group: 'setup' },
     // VELDO-0163: rail entries; on a phone the You screen links to them.
     { id: 'roles', label: 'Roles', to: { name: 'role' }, matches: ['role'], icon: 'key', glyph: 'i-lucide-id-card', phone: false, group: 'setup' },

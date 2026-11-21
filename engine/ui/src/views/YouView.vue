@@ -62,6 +62,7 @@ async function out(everywhere: boolean) {
       <UCard as="section" class="you-setup" aria-labelledby="you-factory" :ui="{ body: 'p-5 sm:p-6' }">
         <h2 id="you-factory" class="eyebrow you-title">Factory</h2>
         <nav class="you-actions" aria-label="Factory">
+          <RouterLink :to="{ name: 'conversations' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-conversations">Conversations</RouterLink>
           <RouterLink :to="{ name: 'project' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-projects">Projects</RouterLink>
           <RouterLink :to="{ name: 'backlog' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-backlog">Backlog</RouterLink>
           <RouterLink :to="{ name: 'workers' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-workers">Workers</RouterLink>

@@ -1,0 +1,12 @@
+scripts/check_gate_mutations.py --case ui179-reply-as-html at 1c0ede25 (the commit that registered the finding 179 cases), alone, in a
+transient user scope: the case ran in the CONFINED leg (suite 134 is not on scripts/gate_unconfined.json yet), where the
+worker's copy has no engine/ui/node_modules and npm ci cannot complete, so the baseline was refused invalid_baseline
+and nothing was judged. The lead adds suites 134 and 135 to gate_unconfined.json (OPEN.md); the four cases were then
+run alone unconfined (mutation-*.txt).
+
+{"budget_seconds": 5654.0, "case_deadlines": {"check_teeth_mutations.py:ui179-reply-as-html": 120}, "case_receipts": [{"identity": "check_teeth_mutations.py:ui179-reply-as-html", "key": null, "reason": "unknown_closure", "source": "fresh", "validated": false}], "detail": "invalid_baseline: invalid_baseline: check_teeth_mutations.py:ui179-reply-as-html: completed controls: {\"baseline\": {\"failed_
+   mutation: confined leg - every case except those of the 47 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)
+   mutation: unconfined leg ran 0 cases, 0 rejected: none
+mutations: failed registered=1 executed=1 reused=0 rejected=0 workers=3 elapsed=144.121s
+"error": "invalid_baseline"
+npm error Exit handler never called! 

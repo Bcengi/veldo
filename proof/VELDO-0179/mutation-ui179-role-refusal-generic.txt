@@ -1,0 +1,13 @@
+Mutation case ui179-role-refusal-generic run alone, unconfined, through the driver's own entries: check_teeth_mutations.materialize() for
+the no-op and the mutant copy and 'python3 scripts/check_teeth_mutations.py --worker ui179-role-refusal-generic [--mutant PATH]' for baseline,
+no-op and mutant (the runner is quoted in proof/VELDO-0179/alone.py), in a transient user scope (MemoryMax=8G,
+MemorySwapMax=0). Through scripts/check_gate_mutations.py the case runs in the confined leg until suites 134 and 135
+are on scripts/gate_unconfined.json (see OPEN.md).
+
+case: ui179-role-refusal-generic | suite: 134_veldo_0179_conversation_screens.py | module: engine/ui/src/views ConversationView.vue | rows: ['ac1/stale-version']
+at: 51a51023
+baseline: exit 0, 51s, module sha256 e26a3d66e7283b26, 33 rows observed, failed rows [], target rows green {'ac1/stale-version': True}
+noop: exit 0, 53s, module sha256 e26a3d66e7283b26, 33 rows observed, failed rows [], target rows green {'ac1/stale-version': True}
+mutant: exit 0, 68s, module sha256 864af59a8946e291, 33 rows observed, failed rows ['VELDO-0179 ac1/stale-version'], target rows green {'ac1/stale-version': False}
+   VELDO-0179 ac1/stale-version detail: its browser test ran and passed [['failed']; Expected: visible | Timeout: 10000ms | Error: element(s) not found | Call log: |   - Expect "toBeVisible" getByTestId('conversation-controls').locator('[data-refusal]') with timeout 10000ms |   - waiting for getByTestId('conversation-controls').locator('[data-refusal]')]
+verdict: KILLED (baseline and no-op green, every target row red under the mutant)

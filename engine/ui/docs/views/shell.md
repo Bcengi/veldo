@@ -47,3 +47,4 @@ Factory setup (VELDO-0159) lists the destinations that are in the rail but not t
 Factory setup (VELDO-0163) links to the Roles and Team screens, which the phone's bottom bar has no room for.
 Factory (VELDO-0131) lists the factory screens the bottom bar has no room for: Projects, Backlog, Workers,
 Gate and review, Usage, Configuration, MCP catalog, Repositories and identities, and Workflows; the rail lists them too.
+It begins with Conversations (VELDO-0179, [conversations.md](conversations.md)), which the rail lists in its operate group.
