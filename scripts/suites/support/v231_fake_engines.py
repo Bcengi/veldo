@@ -7,6 +7,14 @@ release a run follows the scenario in its markers directory (`scenario.json`): f
 with the time immediately before it is written, then printing for `after` seconds and ending normally; a
 synchronous question answered at once or never; or a flood of flags. PROBE is a fake Codex binary for the qualify
 command's loopback flag probe: it speaks the Responses wire to the loopback model and prints exec JSON events.
+
+THE LOAD RULE (owner, Telegram 42829, 2026-11-20: no gate depends on machine speed). Every wait of the suites that
+load this module waits for the condition it needs: a launch pipe the poll set finds readable (`drive`), a ledger or
+store row the predicate reads, a hint on a socket, a process's exit. HANG_SECONDS is never a verdict: it only ends a
+wait that would otherwise hang, and `drive` and `eventually` refuse a shorter one, so a pause that is then asserted
+on ("nothing moved in 2 seconds") cannot come back. Where a row must show that the loop did NOT act, `quiesce`
+forces the loop's next pass and reads every run it starts to its end: the event that proves the loop has processed
+past the point, whatever the machine's speed.
 """
 import hashlib
 import json
@@ -16,6 +24,7 @@ import shutil
 import socket
 import time
 
+HANG_SECONDS = 120
 # The forms the fake Codex writes its flag calls in, as the qualify probe records them (`flag_means`).
 FORMS = {
     'request_user_input_async': {'type': 'item.completed', 'item_type': 'mcp_tool_call', 'name': ['item', 'tool'],
@@ -65,10 +74,28 @@ def keep(seconds):
 if ENGINE == 'codex':
     emit({'type':'thread.started','thread_id':'fixture-thread'})
     emit({'type':'turn.started'})
+acks = None
+if scenario.get('ack'):
+    # VELDO-0231 AC1 (ordering): the suite writes one line on this FIFO as it commits each flag. The engine writes
+    # nothing more until it reads it, so each commit is ordered before the engine's next line and before its end,
+    # whatever the machine's speed. HANG only ends a wait for a commit that never comes (a defect): the engine then
+    # goes on unacknowledged to its end, so the row reads the defect instead of hanging.
+    import select
+    acks = os.open(str(MARKERS / scenario['ack']), os.O_RDWR)
+def acknowledged():
+    global acks
+    if acks is None:
+        return
+    if not select.select([acks], [], [], scenario.get('hang', 120))[0]:
+        say('flag not committed: going on unacknowledged')
+        acks = None
+        return
+    os.read(acks, 1)
 if mode == 'flags':
     for n in range(scenario.get('count', 10)):
         time.sleep(scenario.get('interval', .3))
         flag('flag %d stamp=%.6f' % (n, time.time()))
+        acknowledged()
     keep(scenario.get('after', 5))
 elif mode == 'none':
     keep(scenario.get('after', 5))
@@ -81,13 +108,23 @@ elif mode == 'flood':
 elif mode in ('question', 'block'):
     say('working')
     question = {'questions':[{'question':'Which lock should I wait for?','header':'Lock'}]}
-    emit({'type':'item.started','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
-          'tool':'request_user_input','arguments':question,'status':'in_progress'}})
+    started = {'type':'item.started','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
+               'tool':'request_user_input','arguments':question,'status':'in_progress'}}
     if mode == 'block':
+        emit(started)
         while True: time.sleep(1)
-    emit({'type':'item.completed','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
-          'tool':'request_user_input','arguments':question,'result':{'answers':{}},'status':'completed'}})
-    say('No answer: continuing on my own judgment.')
+    # The binary's immediate empty answer and the agent's next line, in the same write as the question: the receiver
+    # reads the engine writing on after its question in that one read (an event), so the 2 second question window
+    # the suite sets can never close on it however slow the machine is.
+    import contextlib, io
+    together = io.StringIO()
+    with contextlib.redirect_stdout(together):
+        emit(started)
+        emit({'type':'item.completed','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
+              'tool':'request_user_input','arguments':question,'result':{'answers':{}},'status':'completed'}})
+        say('No answer: continuing on my own judgment.')
+    sys.stdout.write(together.getvalue())
+    sys.stdout.flush()
     keep(scenario.get('after', 1))
 '''
 
@@ -97,7 +134,7 @@ elif mode in ('question', 'block'):
 PROBE = r'''#!PYTHON -B
 import json, sys, time, tomllib, urllib.request
 args = sys.argv[1:]
-STREAM, ANSWER = PROBE_STREAM, PROBE_ANSWER
+STREAM, ANSWER, HANG = PROBE_STREAM, PROBE_ANSWER, PROBE_HANG
 if args[:2] == ['features', 'list'] or args[:2] == ['debug', 'models']:
     sys.exit(0)
 cfg = {}
@@ -123,7 +160,7 @@ def ask(items):
     request = urllib.request.Request(base + '/responses', json.dumps(body).encode(),
                                      {'Content-Type':'application/json'})
     done = []
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with urllib.request.urlopen(request, timeout=HANG) as response:
         for raw in response.read().decode().splitlines():
             if raw.startswith('data: '):
                 event = json.loads(raw[6:])
@@ -143,7 +180,9 @@ if call is not None:
         emit({'type':'item.started' if call['name'] == 'request_user_input' else 'item.completed',
               'item':{'id':'call','type':'mcp_tool_call','server':'codex','tool':call['name'],'arguments':arguments}})
     if call['name'] == 'request_user_input' and not ANSWER:
-        while True: time.sleep(1)
+        # Never answers: it ends without the call's output, an event the probe reads at once (no answer, so not
+        # immediate), instead of blocking until the probe's own hang bound.
+        sys.exit(0)
     answer = json.dumps({'answers': {}}) if call['name'] == 'request_user_input' else 'delivered'
     ask(items + [call, {'type':'function_call_output','call_id':call['call_id'],'output':answer}])
 emit({'type':'item.completed','item':{'id':'answer','type':'agent_message','text':'ready'}})
@@ -239,9 +278,12 @@ def install(ROOT, f, CS, J, accounts_module):
     return path, markers, mods
 
 
-def drive(factory, until, seconds):
+def drive(factory, until, seconds=HANG_SECONDS):
     """THE SERVICE LOOP's part this suite needs (control_service serve): every launch pipe in a poll set, a
-    readable one handed to the factory loop, a pass run when something woke it; until `until()` or `seconds`."""
+    readable one handed to the factory loop, a pass run when something woke it; until `until()` holds. `seconds` is
+    a hang detector only (at least HANG_SECONDS); a shorter one is refused, so no row rests on a pause."""
+    if seconds < HANG_SECONDS:
+        raise ValueError('drive: %r seconds is a pause, not a hang detector (the load rule)' % (seconds,))
     end = time.monotonic() + seconds
     while time.monotonic() < end:
         if until():
@@ -261,6 +303,35 @@ def drive(factory, until, seconds):
     return until()
 
 
+def eventually(predicate, seconds=HANG_SECONDS):
+    """Until `predicate()` holds (a marker a fake engine writes as it starts, a store row); `seconds` is a hang
+    detector only, at least HANG_SECONDS."""
+    if seconds < HANG_SECONDS:
+        raise ValueError('eventually: %r seconds is a pause, not a hang detector (the load rule)' % (seconds,))
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        value = predicate()
+        if value:
+            return value
+        time.sleep(.03)
+    return predicate()
+
+
+def quiet(factory):
+    """No run in flight (no launch pipe) and nothing waking the loop."""
+    return not factory.pipes() and not factory.wakes
+
+
+def quiesce(factory):
+    """The event that proves the loop has processed past this point, in place of a pause before asserting that
+    nothing moved: the loop's next pass is forced, and every run it starts is read to its end (its pipe's end of
+    file), until no run is in flight and nothing wakes the loop. A defect that would act on the next pass has acted
+    by the time this returns, however slow the machine. True when the loop went quiet (False only on a hang)."""
+    factory.wake('journal')  # the fullest pass: as a journal advance (an answer, a message) wakes it
+    factory.run()
+    return drive(factory, lambda: quiet(factory))
+
+
 def probe_binary(directory, stream, answer, python):
     """A fake Codex vendor package for the flag probe; its executable."""
     package = Path(directory)
@@ -268,7 +339,7 @@ def probe_binary(directory, stream, answer, python):
     executable.parent.mkdir(parents=True)
     (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.0.1-linux-x64'}))
     executable.write_text(PROBE.replace('PYTHON', python).replace('PROBE_STREAM', repr(stream))
-                          .replace('PROBE_ANSWER', repr(answer)))
+                          .replace('PROBE_ANSWER', repr(answer)).replace('PROBE_HANG', repr(HANG_SECONDS)))
     executable.chmod(0o755)
     return executable
 

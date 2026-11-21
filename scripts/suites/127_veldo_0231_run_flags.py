@@ -70,7 +70,7 @@ def _v231_suite():
         running = list(loop.conversation.runner.launches.values())
         for launch in running:
             launch.stop('requested')
-        F.drive(loop, lambda: all(launch.ended for launch in running), 20)
+        F.drive(loop, lambda: all(launch.ended for launch in running))
     try:
         # The fixture's modules: the production copies the suite names (mutation-substituted) beside the rest.
         f = F.fixture(ROOT, base, H, load, 'flags', 0, PRODUCTION)
@@ -95,18 +95,72 @@ def _v231_suite():
         factory, lock, events = J.loop(f, CS, receiver)
         dispatches = factory.conversation.dispatches
 
-        # Each commit of a flag, on the wall clock, with the state its dispatch was in at that moment.
+        # VELDO-0231 AC1 as an ORDERING criterion (lead decision under the owner's rule that no gate depends on
+        # machine speed, Telegram 42829): the record of the service loop's dispatch cycles. A cycle is one
+        # `readable` call, the poll set having found a launch pipe readable: what the pipe holds is taken (`pump`)
+        # and each flag delivered. The trace names, in order, each flag event taken off the pipe with its cycle and
+        # each commit with the cycle it happened in; the driver's poll and the loop's passes happen only between
+        # cycles, so a flag taken and committed in the same cycle had no wait, poll or pass between them.
+        trace, taken_ids, current = [], set(), [None]
+        cycles = [0]
+        original_readable = factory.readable
+
+        def traced(held):
+            launch = held[1]
+            cycles[0] += 1
+            current[0] = cycles[0]
+            pump = launch.pump
+
+            def taking(*args, **kwargs):
+                ended = pump(*args, **kwargs)
+                for message in getattr(launch, 'flags', None) or ():
+                    if id(message) not in taken_ids and message.get('event') == 'flag':
+                        taken_ids.add(id(message))
+                        trace.append({'event': 'taken', 'cycle': current[0], 'text': message.get('text')})
+                return ended
+            launch.pump = taking
+            try:
+                return original_readable(held)
+            finally:
+                del launch.pump
+                current[0] = None
+        factory.readable = traced
+
+        # Each commit of a flag: its cycle, the state its dispatch was in and whether its run had ended, and the
+        # wall clock (recorded data only, never a verdict). The commit is acknowledged to the fake engine on its
+        # FIFO, and the engine writes nothing more until it reads that: each commit comes before its run's next
+        # line and before its end, as an event, not as a window of seconds.
         commits = []
         original_flag = conversations.flag
+        ack = {'path': None}
 
         def timed(dispatch_id, **fields):
             result = original_flag(dispatch_id, **fields)
+            launch = factory.conversation.runner.launches.get(dispatch_id)
             commits.append({'wall': time.time(), 'dispatch_id': dispatch_id, 'result': result,
-                            'state': (dispatches.record(dispatch_id) or {}).get('state')})
+                            'state': (dispatches.record(dispatch_id) or {}).get('state'), 'cycle': current[0],
+                            'run_ended': bool(launch is None or launch.ended)})
+            trace.append({'event': 'commit', 'cycle': current[0], 'text': fields.get('text')})
+            if ack['path'] is not None:
+                try:
+                    writer = os.open(str(ack['path']), os.O_WRONLY | os.O_NONBLOCK)
+                except OSError:
+                    writer = None
+                if writer is not None:
+                    try:
+                        os.write(writer, b'c')
+                    finally:
+                        os.close(writer)
             return result
         conversations.flag = timed
 
-        def turn(identity, role, scenario, seconds=40):
+        def turn(identity, role, scenario, seconds=F.HANG_SECONDS):
+            ack['path'] = None
+            if scenario.get('ack'):
+                ack['path'] = markers / scenario['ack']
+                if ack['path'].exists():
+                    ack['path'].unlink()
+                os.mkfifo(str(ack['path']), 0o600)
             (markers / 'scenario.json').write_text(json.dumps(scenario))
             conversations.open(identity, owner='owner', role=role, intake_digest='sha256:' + identity)
             conversations.message(identity, identity + '-1', 'sha256:' + identity + '-1', owner='owner')
@@ -120,33 +174,51 @@ def _v231_suite():
         stamp = re.compile(r'stamp=([0-9.]+)')
 
         # AC1: ten flags from a running Claude Code agent (SendUserMessage), the service's rate window on the
-        # suite's clock (61 seconds per reading) so that each is deliverable; the run goes on for 5 seconds after.
+        # suite's clock (61 seconds per reading) so that each is deliverable; the engine waits for each commit before
+        # it writes on, and ends normally after its last. Its acknowledgement wait has its own hang detector, so a
+        # defect that never commits ends the run (the turn's drive allows both).
         clock = {'now': time.time()}
 
         def stepping():
             clock['now'] += 61
             return clock['now']
         factory.clock = stepping
+        trace_start = len(trace)
         flagged, ended, made = turn('flags-claude', 'assistant', {'mode': 'flags', 'count': 10, 'interval': .3,
-                                                                 'after': 5})
+                                                                 'after': 1, 'ack': 'commits.fifo',
+                                                                 'hang': F.HANG_SECONDS},
+                                    seconds=3 * F.HANG_SECONDS)
+        run_trace = trace[trace_start:]
+        # Measured, recorded and printed; never judged here (any latency bound is a paired A/B measurement in
+        # VELDO-0358's paired performance stage, never an absolute bound in this functional gate).
         latencies = [c['wall'] - float(stamp.search(c['result']['flag']['text']).group(1))
                      for c in made if c['result']['flag'] and stamp.search(c['result']['flag']['text'])]
         delivered = conversations.flags('flags-claude')
         (base / 'ac1-latencies.json').write_text(json.dumps(latencies))
-        print('  VELDO-0231 AC1 latencies (s):', ', '.join('%.3f' % v for v in latencies))
+        print('  VELDO-0231 AC1 latencies (s, recorded, not judged):', ', '.join('%.3f' % v for v in latencies))
+        print('  VELDO-0231 AC1 cycle order:', ' '.join('%s%s' % ('T' if e['event'] == 'taken' else 'C', e['cycle'])
+                                                        for e in run_trace))
         check('AC1/at-once', 'the turn ended', ended)
         check('AC1/at-once', 'ten flags committed, %d' % len(made), len(made) == 10 and len(latencies) == 10)
-        check('AC1/at-once', 'each within 2 seconds of the engine writing it: max %.3f' % max(latencies or [99]),
-              len(latencies) == 10 and max(latencies) < 2)
+        taken = {e['text']: e for e in run_trace if e['event'] == 'taken'}
+        committed = [e for e in run_trace if e['event'] == 'commit']
+        check('AC1/at-once', 'each committed in the same dispatch cycle that took it off the launch pipe, with no '
+              'wait, poll or pass between them (event order: %s)' % [
+                  (taken.get(e['text'], {}).get('cycle'), e['cycle']) for e in committed],
+              len(committed) == 10 and all(e['cycle'] is not None and e['text'] in taken
+                                           and taken[e['text']]['cycle'] == e['cycle'] for e in committed))
+        order = [e['event'] for e in run_trace]
+        check('AC1/at-once', 'in the record, each flag is committed before the next is taken: %s'
+              % ''.join(o[0].upper() for o in order), order == ['taken', 'commit'] * 10)
         states = sorted({c['state'] for c in made})
-        check('AC1/at-once', 'each committed while the dispatch is still running: %s' % states,
-              bool(made) and all(c['state'] == 'running' for c in made))
+        check('AC1/at-once', 'each committed while the dispatch is still running, its run not ended: %s' % states,
+              bool(made) and all(c['state'] == 'running' and not c['run_ended'] for c in made))
         check('AC1/at-once', "each in the run's own conversation", len(delivered) == 10 and all(
             d['conversation'] == 'flags-claude' for d in delivered))
         check('AC1/run-goes-on', 'each names the run id, the engine and the text', all(
             d['dispatch_id'] == flagged['dispatch_id'] and d['engine'] == 'claude_code'
             and d['means'] == 'SendUserMessage' and d['text'].startswith('flag ') for d in delivered))
-        plain, ended_plain, none = turn('flags-none', 'assistant', {'mode': 'none', 'after': 5})
+        plain, ended_plain, none = turn('flags-none', 'assistant', {'mode': 'none', 'after': 1})
         check('AC1/run-goes-on', 'the outcome with flags (%s) is the one with none (%s)'
               % (flagged.get('outcome'), plain.get('outcome')),
               ended and ended_plain and flagged.get('outcome') == plain.get('outcome') == 'completed' and not none)
@@ -157,7 +229,7 @@ def _v231_suite():
         for identity in ('lead-older', 'lead-newer'):
             opened = conversations.open(identity, owner='owner', intake_digest='sha256:' + identity)
             conversations.attach_project(identity, opened['version'], project, owner='owner')
-            time.sleep(.01)
+            time.sleep(.01)  # distinct open times on the clock that orders them, not a wait for anything
         led = conversations.flag('project-run-1', engine='codex', means='marked_line', text='x' * 2500,
                                  at=time.time(), read_at=time.time(), project=project)
         orphan = conversations.flag('project-run-2', engine='codex', means='marked_line', text='nobody',
@@ -242,7 +314,7 @@ def _v231_suite():
 
         # AC2, AC3: the qualify command's loopback probe over fake Codex binaries.
         LB = load('v231_loopback', ROOT / 'proof/VELDO-0127/loopback.py')
-        Q.PROBE_SECONDS = 4
+        Q.PROBE_SECONDS = F.HANG_SECONDS  # a hang detector only: the fake that never answers ends (an event)
         catalog = {'models': [{'slug': 'probe-model', 'experimental_supported_tools': ['send_user_message_async'],
                                'apply_patch_tool_type': None, 'supports_search_tool': False}]}
         qualified = {'model_catalog': catalog, 'model_catalog_digest': X.catalog_digest(catalog),
@@ -328,11 +400,13 @@ def _v231_suite():
         check('AC3/answered', 'the service records the question as answered',
               any(e.get('dispatch_id') == answered.get('dispatch_id') and e.get('outcome') == 'answered'
                   for e in launch_events))
+        # The blocking engine is stopped by the receiver's question window (2 seconds, the receiver setting the
+        # suite sets): the suite waits for that stop, an event, with only a hang detector.
         began = time.monotonic()
-        blocking, blocking_end, block_asked = turn('question-block', 'assistant_codex', {'mode': 'block'}, seconds=15)
+        blocking, blocking_end, block_asked = turn('question-block', 'assistant_codex', {'mode': 'block'})
         took = time.monotonic() - began
         launch_events = [e for e in events if e.get('kind') == 'flag' and e.get('operation') == 'question']
-        check('AC3/blocking', 'the blocking run is not running when the deadline passes (%.1fs, %s)'
+        check('AC3/blocking', 'the blocking run is stopped and ended, not left waiting (%.1fs, %s)'
               % (took, blocking.get('outcome')), blocking_end and blocking.get('state') == 'ended')
         check('AC3/blocking', 'it was stopped by name, configuration_stop:wait_question',
               any(e.get('dispatch_id') == blocking.get('dispatch_id')
@@ -343,10 +417,12 @@ def _v231_suite():
             # A run the window did not stop holds the account: stopped here so the rows after it still run.
             stop_all(factory)
 
-        # AC4: a run that flags in a loop: 500 flags in 5 seconds, on the service's own clock.
-        factory.clock = time.time
-        flood, flood_end, flooded = turn('flood', 'assistant_codex', {'mode': 'flood', 'count': 500, 'seconds': 5},
-                                         seconds=90)
+        # AC4: a run that flags in a loop: 500 flags in 5 seconds. The service's clock is the suite's and stands
+        # still through the flood, so however long the machine takes to carry 500 flags they all fall in one rate
+        # window: the row's count rests on the transition's rule, never on the machine's speed.
+        frozen = time.time()
+        factory.clock = lambda: frozen
+        flood, flood_end, flooded = turn('flood', 'assistant_codex', {'mode': 'flood', 'count': 500, 'seconds': 5})
         summary = conversations.flag_summary(flood.get('dispatch_id'))
         records = conversations.flags('flood')
         check('AC4/flood', 'the flood run ended (%s)' % flood.get('outcome'), flood_end)
@@ -405,7 +481,7 @@ def _v231_suite():
         try:
             for owner, name, _ in saved:
                 setattr(owner, name, refuse)
-            reader = L.Flags(emitted.append, 'outward-run', X, 'account-codex-1', MEANS, 2)
+            reader = L.Flags(emitted.append, 'outward-run', X, 'account-codex-1', MEANS)
             reader.feed((json.dumps({'type': 'item.completed', 'item': {
                 'id': 'o', 'type': 'agent_message', 'text': 'VELDO-FLAG: offline'}}) + '\n').encode())
             raised.append(refusal(lambda: socket.socket()) is not None
