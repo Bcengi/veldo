@@ -1,0 +1,42 @@
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+root = Path.cwd()
+proof = root / 'proof/VELDO-0224'
+def clean(text):
+    return text.replace(str(root), '<checkout>').replace(str(Path.home()), '<home>')
+commands = [
+ ('suite224', ['python3', 'scripts/selftest.py', '--suite', '158_veldo_0224_stale_declarations']),
+ ('affected-suites', ['python3', 'scripts/selftest.py', '--suite', '98_veldo_0204_mutation_receipts', '--suite', '99_veldo_0205_reuse', '--suite', '100_veldo_0207_case_reuse', '--suite', '101_veldo_0208_landing_reuse', '--suite', '104_veldo_0210_mutation_workers', '--suite', '112_veldo_0215_case_deadlines', '--suite', '115_veldo_0219_measured_admission', '--suite', '157_veldo_0217_declarations', '--suite', '158_veldo_0224_stale_declarations']),
+ ('mutations224', ['python3', 'scripts/check_gate_mutations.py', '--finding', '224', '--receipt', '/tmp/veldo-0224-mutations224.json']),
+ ('mutations217', ['python3', 'scripts/check_gate_mutations.py', '--finding', '217', '--receipt', '/tmp/veldo-0224-mutations217.json']),
+ ('lint', ['bash', 'scripts/check_lint.sh']),
+ ('template-sync', ['bash', 'scripts/check_template_sync.sh']),
+ ('personal-setup', ['python3', 'scripts/check_personal_setup.py', '--base', '7460e9a9']),
+]
+results = []
+for name, argv in commands:
+    print('START', name, flush=True)
+    result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    body = clean(result.stdout)
+    if name.startswith('mutations'):
+        path = Path(argv[-1])
+        if path.exists():
+            receipt = json.loads(path.read_text())
+            # Keep exact row observations and validation, omit voluminous unrelated registry/setup rows.
+            summary = {k: receipt.get(k) for k in ('status','error','detail','registered','executed','reused','rejected','case_receipts','invalid_results','stale_count','surviving_workers')}
+            summary['results'] = [dict(name=r['case']['name'], rows=r['case']['rows'], source=r['source'],
+                baseline_failed=r['baseline']['failed_rows'], noop_failed=r['noop']['failed_rows'],
+                mutant_failed=r['mutant']['failed_rows'], mutant_details=r['mutant'].get('failed_details',[]))
+                for r in receipt['results']]
+            (proof / (name + '.json')).write_text(clean(json.dumps(summary, indent=2)) + '\n')
+            body = '\n'.join(line for line in body.splitlines() if not line.startswith('{')) + '\n'
+    (proof / (name + '.txt')).write_text('Command: ' + ' '.join(argv).replace('/tmp/veldo-0224-', '<scratch>/') + '\n' + body + '\nExit: ' + str(result.returncode) + '\n')
+    results.append((name,result.returncode))
+    print('END', name, result.returncode, flush=True)
+    if result.returncode:
+        print(body[-5000:], flush=True)
+print(json.dumps(results), flush=True)
+sys.exit(any(code for _, code in results))
