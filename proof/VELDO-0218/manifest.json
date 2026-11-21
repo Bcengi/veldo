@@ -1,0 +1,91 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0218",
+  "commit": "51f896714e0d57408a3af88c1d292a5458a842d8",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0218/audit-suite.txt",
+          "detail": "sample-size and unpredictable cover 0, 1, 7, 8, 100 and 2000 hits, suite quotas, fresh OS entropy and a fixed-entropy control. Selected diagnostic, not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0218/measurement.txt",
+          "detail": "audit218-predictable-sample rejects reuse-audit/unpredictable. Real coordinator and confined workers; fixture qualification and scratch authenticated store. The warm audit entries retain each registered mutant and all fresh observations."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0218/audit-suite.txt",
+          "detail": "compare and field rows cover every verdict-bearing field, non-target-only differences, identical records, authority stale marks and store revocation. Selected diagnostic, not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0218/measurement.txt",
+          "detail": "audit218-status-only rejects reuse-audit/compare; warm real workers reproduce all three stored records. Real coordinator and confined workers; fixture qualification and scratch authenticated store. The warm audit entries retain each registered mutant and all fresh observations."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0218/audit-suite.txt",
+          "detail": "receipts drives the real reducer and landing check for cold, warm, mixed, all-audited and force-fresh states, including removed entries and a missing audit object. Selected diagnostic, not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0218/measurement.txt",
+          "detail": "audit218-audit-optional rejects reuse-audit/receipts, including a re-signed incomplete landing envelope. Real coordinator and confined workers; fixture qualification and scratch authenticated store. The warm audit entries retain each registered mutant and all fresh observations."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "The lead queues the canonical gate. Selected suites are diagnostic only and intentionally return exit 2 when all their assertions pass."
+    },
+    {
+      "name": "selected-suites",
+      "status": "not_run",
+      "detail": "Final Linux regression result pending."
+    },
+    {
+      "name": "mutation-falsifiers",
+      "status": "passed",
+      "detail": "mutations.txt: 3/3 registered cases rejected, green baseline/no-op controls. measurement.txt: the same cases rejected cold and freshly re-audited warm, all matched."
+    },
+    {
+      "name": "lint",
+      "status": "not_run"
+    },
+    {
+      "name": "template-sync",
+      "status": "not_run"
+    },
+    {
+      "name": "personal-setup",
+      "status": "not_run"
+    }
+  ],
+  "assumptions": [
+    "Independent review and owner approval remain separate acts.",
+    "The production 2500-case audit cost is not measured here; the real three-case fixture cost is recorded in build-notes.txt.",
+    "VELDO-0222 is a future admission producer; its authenticated reuse_admission marker selects the tested ten-percent quota. Existing unconfined cases still run fresh."
+  ],
+  "rollback": "Revert the VELDO-0218 changes to restore unaudited mutation reuse."
+}
