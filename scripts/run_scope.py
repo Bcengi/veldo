@@ -64,6 +64,7 @@ import os
 import re
 import resource
 import selectors
+import shutil
 import signal
 import subprocess
 import sys
@@ -676,7 +677,8 @@ class RunScope:
 #     and its own runtime directory in place of /run/user/<uid>, which holds only links to the
 #     user manager's own sockets (its bus and systemd/private) and to its runtime unit directory,
 #     so units still reach the one manager and nothing else of the real runtime directory is in
-#     the shard's reach by name;
+#     the shard's reach by name. In an unconfined leg that private directory stands inside the
+#     real runtime directory, in a directory of the leg's own (leg_runtime says why);
 #   - a shard reports over a pipe it inherits, never through a shared file;
 #   - in a confined leg each shard stacks its own Landlock layer on the leg's domain
 #     (scripts/agent_sandbox.py write_layer), which grants writes only beneath its own roots, and proves it
@@ -688,7 +690,7 @@ class RunScope:
 #     leg's random token, the shard's tag and the suite's name (instance_of). A suite that needs
 #     the one manager cannot replace its runtime directory, so the installer and every tool it
 #     starts read one name, and an installed service recovers it from its own unit's name. The
-#     three suites UNNAMED lists get none, each for the reason written there.
+#     six suites UNNAMED lists get none, each for the reason written there.
 #
 # CHECKED IN EVERY GATE, force-fresh or not. A confined shard must report its layer in force
 # before its suite runs and must leave its probe unwritten. An unconfined leg, which cannot be
@@ -784,7 +786,7 @@ UNLAYERED = {
 
 # THE SHARDS THAT ARE GIVEN NO INSTANCE NAME, each with its reason: the second and last table of
 # exceptions in this file, under the same rules as UNLAYERED. Measured on 2026-11-21 against the
-# real user manager with every shard named: each of these three suites lays a host down with an
+# real user manager with every shard named: each of these six suites lays a host down with an
 # OLDER ENGINE taken from this repository's history (`git archive` of an earlier commit's .veldo)
 # and then runs the current engine over it. An engine that predates the instance name installs its
 # unit without one, so the current engine, given a name, looks for a unit that was never installed
@@ -801,9 +803,19 @@ UNNAMED = {
     "86_veldo_0189_engine_upgrade":
         "its rows upgrade hosts laid down by the engines of commits 8bc34e94 and 971186ac, which "
         "name their units without an instance (20 rows failed with a name set)",
+    "91_veldo_0167_setup_records":
+        "its rows older-engine-host and upgrade-restart-answer run the current engine over a host "
+        "laid down by an older engine, which names its unit without an instance (2 rows failed with "
+        "a name set)",
+    "106_veldo_0185_dispatch_setup":
+        "its row rerun/over-earlier-host runs the current engine over a host laid down by the engine "
+        "before VELDO-0185, which names its unit without an instance (1 row failed with a name set)",
     "117_veldo_0227_ui_location":
         "its row ui/upgrade-pre-change runs the current engine over a host laid down by the engine "
         "before VELDO-0227, which names its unit without an instance (1 row failed with a name set)",
+    "127_veldo_0234_https_port":
+        "its row rerun/pre-change-host runs the current engine over a host laid down by the engine "
+        "before VELDO-0234, which names its unit without an instance (1 row failed with a name set)",
 }
 
 # The two arguments a shard interpreter is started with. The gate launcher's broker knows a shard by
@@ -993,6 +1005,42 @@ def short_temporary(scratch):
         except OSError:
             return None
     return None
+
+
+def leg_runtime(real):
+    """The real runtime directory an unconfined leg's shards' runtime directories stand in, or None
+    when it is no directory this process may write. A SHARD'S RUNTIME DIRECTORY MUST NOT BE BENEATH
+    A TEMPORARY DIRECTORY: measured on 2026-11-21, nineteen suites of the unconfined leg stand
+    their fixtures in XDG_RUNTIME_DIR because the engine refuses a protected target beneath one
+    (control_clone invalid_input:layout), and suite 78 failed all 37 rows with its runtime
+    directory beside the other roots in the system temporary directory. The real runtime directory
+    is the one place that is the owner's, private to the account and no temporary directory."""
+    if real and os.path.isdir(real) and os.access(real, os.W_OK | os.X_OK):
+        return Path(real)
+    return None
+
+
+class RuntimeStand:
+    """One directory of this leg's own inside the real runtime directory, which holds its shards'
+    runtime directories and is removed with everything in it when the leg ends. Only the exact
+    directory this object made, named with the leg's token, is ever removed. With no real runtime
+    directory to stand in (a confined leg, a host with no session) it is nothing and `path` is None."""
+
+    def __init__(self, real, token):
+        self.real, self.token, self.path = real, token, None
+
+    def __enter__(self):
+        if self.real is not None:
+            try:
+                self.path = Path(tempfile.mkdtemp(prefix="veldo-leg-%s-" % self.token, dir=str(self.real)))
+            except OSError:
+                self.path = None
+        return self.path
+
+    def __exit__(self, *_exc):
+        if self.path is not None:
+            shutil.rmtree(self.path, ignore_errors=True)
+        return False
 
 
 def link_manager(runtime, real):
@@ -1500,7 +1548,8 @@ def relay(job, result):
 
 def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, manifest=None,
                places=None, units=manager_units, describe=describe_unit, deadline=SHARD_DEADLINE_S,
-               settle=SETTLE_S, parallel=None, python=None, tick=SHARD_TICK_S, clock=time.monotonic):
+               settle=SETTLE_S, parallel=None, python=None, tick=SHARD_TICK_S, clock=time.monotonic,
+               runtime=None):
     """Run one gate leg as shards and return what it proved: {passed, failed, shards, breaches,
     parallelism, events, wall_seconds}. `targets` are the leg's suites by name, each a target
     exactly once. Green is failed == 0, which needs every shard to pass and the isolation check to
@@ -1508,12 +1557,20 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     """
     # Every shard's roots stand in one temporary directory of this leg's own, which ends with it.
     with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory:
-        return _run_shards(Path(directory), Path(root), leg, targets, environ, emit, requires, manifest,
-                           places, units, describe, deadline, settle, parallel, python, tick, clock)
+        token = os.urandom(4).hex()
+        # An unconfined leg's shards get their runtime directories inside the real one (leg_runtime),
+        # in a directory of this leg's own that ends with it like the roots' directory above. A
+        # confined leg cannot write there, and its launcher's scratch is already a temporary one.
+        real = leg_runtime(("/run/user/%d" % os.getuid() if runtime is None else runtime)
+                           if leg != "confined" else "")
+        with RuntimeStand(real, token) as stand:
+            return _run_shards(Path(directory), Path(root), leg, targets, environ, emit, requires, manifest,
+                               places, units, describe, deadline, settle, parallel, python, tick, clock,
+                               token, stand)
 
 
 def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, places, units, describe,
-                deadline, settle, parallel, python, tick, clock):
+                deadline, settle, parallel, python, tick, clock, token, stand):
     environ = dict(os.environ if environ is None else environ)
     say = emit or (lambda line: print(line, flush=True))
     manifest = manifest or load_manifest(root / "scripts" / "suites" / "manifest.json")
@@ -1528,9 +1585,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     claims = handed_claims(environ)
     began = clock()
     (base / SHARD_PROBES).mkdir(mode=0o700)
-    # THIS LEG'S TOKEN: what its shards' instance names begin with. It is random, so the units of
-    # another session's leg, which runs the same suites, never carry it.
-    token = os.urandom(4).hex()
+    # THIS LEG'S TOKEN (`token`): what its shards' instance names begin with. It is random, so the
+    # units of another session's leg, which runs the same suites, never carry it.
     jobs = []
     for index, name in enumerate(names):
         closure = requires.get(name)
@@ -1562,6 +1618,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     passes = launcher_fds(root)
     scratch = leg_scratch(environ, root) if leg == "confined" else None
     own = set()  # what this dispatcher itself made outside its own directory
+    if stand is not None:
+        own.add(str(stand))
     # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this
     # gate was asked to be force-fresh.
     if places is None:
@@ -1605,6 +1663,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         if short is not None:
             roots["TMPDIR"] = short
             own.add(str(short))
+        if stand is not None:
+            roots["XDG_RUNTIME_DIR"] = stand / shard_tag(job["index"])
         for path in roots.values():
             if path != short:
                 path.mkdir(mode=0o700)
@@ -1703,7 +1763,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         done.append(job)
         say("selftest shard %s %s: closure %s; roots %s*%s; instance %s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
             % (shard_tag(job["index"]), job["name"], ", ".join(job["closure"]), job["root"],
-               "" if job["roots"]["TMPDIR"] == str(job["root"]) else " and " + job["roots"]["TMPDIR"],
+               "".join(" and " + job["roots"][variable] for variable in ("TMPDIR", "XDG_RUNTIME_DIR")
+                       if not job["roots"][variable].startswith(str(job["root"]))),
                job["instance"], result["passed"],
                result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
                "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
