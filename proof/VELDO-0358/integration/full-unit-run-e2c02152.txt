@@ -1,0 +1,21 @@
+# Full unit leg, one dispatcher process over every suite, through host_heavy.sh, at e2c02152
+queued 2026-11-21T11:51:51Z head e2c02152
+started 2026-11-21T11:54:21Z load 25.21 43.25 40.41
+end 2026-11-21T13:05:32Z load 32.96 29.98 31.41
+# lines kept: every SELFTEST FAIL/HUNG/NOT RUN line (cut at 400 characters) and the end of the run
+  SELFTEST FAIL: residue/66_veldo_0042_clones: thread 'Thread-13157 (serve)' alive (Thread); thread 'Thread-13158 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/86_veldo_0189_engine_upgrade: thread 'Thread-14686 (serve)' alive (Thread); thread 'Thread-14687 (serve)' alive (Thread)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-6oz80lim/tmp-parent/veldo-agent-ere4_ko8', 'pid': 1089022}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-8p48cj4f', 'veldo-agent-ere4_ko8']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: (the run ended without an exit status); kept privately at /tmp/v210-profile-6oz80lim/state-home/veldo/borrowed-logins/veldo-agent-8p48cj4f; restore it with: python3 <scratch worktree>/scripts/agent_sandbox.py restore-login /tmp/v210-profile-6oz80lim/state-home/veldo/borrowed-logins/veldo-agent-8p48cj4f
+# the run ended at suite 103_veldo_0211_borrowed_login with this traceback (exit 1); no total line:
+  File "<scratch worktree>/scripts/suites/103_veldo_0211_borrowed_login.py", line 451, in launch_failing
+    S.launch(top / 'config.json', worktree, ['fake'], client='claude')
+  File "<scratch worktree>/scripts/agent_sandbox.py", line 2216, in launch
+    code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop, inherit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: _v211_borrowed_login.<locals>.prepared() takes 7 positional arguments but 8 were given
