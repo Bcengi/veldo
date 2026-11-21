@@ -26,6 +26,7 @@ private key byte, signature or token is printed or retained.
 def _v143_suite():
     import contextlib
     import copy
+    import datetime
     import hashlib
     import http.server
     import importlib.util
@@ -39,8 +40,13 @@ def _v143_suite():
     import sys
     import tempfile
     import threading
-    import time
     from types import SimpleNamespace
+
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the hang
+    # bounds. The wall time handed to the product as data is the support module's stamp.
+    def wall_now():
+        """The wall time now, as data (a record's time): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
 
     # Literal anchors: the registered mutation driver substitutes one production copy here.
     PRODUCTION = {
@@ -180,7 +186,8 @@ def _v143_suite():
     servers = []
     conform_formats = load('v143_conform_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
     formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
-    with stage_kept(), helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True) as f:
+    with stage_kept(), helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True,
+                                      role_seconds=WAITS.WAIT_HANG_SECONDS) as f:
         S, CM, AC, conn, base, mods = (f[k] for k in ('S', 'CM', 'AC', 'conn', 'base', 'mods'))
         DOMAIN, REPO, ids = f['DOMAIN'], f['REPO'], f['ids']
         sign_as, journal_sign, next_id = f['sign_as'], f['journal_sign'], f['next_id']
@@ -200,6 +207,10 @@ def _v143_suite():
             FS = load('v143_setup', mods / 'control_factory_setup.py')
             SP = load('v143_service_projects', mods / 'control_service_projects.py')
             SV = load('v143_service', mods / 'control_service.py')
+            # VELDO-0358 AC15: the timers profile. Every entry of the timers table the in-process services, clients and
+            # stores of this suite arm from is at the wait hang bound; no row of this suite tests a table timer.
+            TIMERS = SV.TIMERS
+            TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
             PJ = load('v143_project', mods / 'control_project.py')
             OB = load('v143_objective', mods / 'control_objective.py')
             GR = load('v143_grooming_request', mods / 'control_grooming_request.py')
@@ -219,7 +230,8 @@ def _v143_suite():
                 return R.read(conn, repository)
 
             def git(path, *args, check=True):
-                done = GP.run(['git', '-C', str(path), *args], capture_output=True, text=True, timeout=60)
+                done = GP.run(['git', '-C', str(path), *args], capture_output=True, text=True,
+                              timeout=WAITS.WAIT_HANG_SECONDS)
                 if check and done.returncode:
                     raise RuntimeError('git %s: %s' % (args[0], done.stderr.strip()[:300]))
                 return done.stdout.strip()
@@ -267,7 +279,8 @@ def _v143_suite():
             adoption_public = FS.adoption_signer(str(keys))
             adoption_key = keys / 'adoption-signer'
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v143-settlement', '-f',
-                            str(keys / 'settlement')], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL,
+                            str(keys / 'settlement')], check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                            stdin=subprocess.DEVNULL,
                             env=R._quiet_env())
             settlement_public = ' '.join((keys / 'settlement.pub').read_text().split()[:2])
             state_root = base / 'state'
@@ -440,7 +453,7 @@ def _v143_suite():
             # =====================================================================================================
             with region('factory/own-repository'):
                 small = dict(plan, root=str(state_root), store=str(f['db']), owner_key=str(f['keyfile'][OWNER]))
-                made = FS.factory_repository(small, ids, S, conn, identities, 'personal', time.time)
+                made = FS.factory_repository(small, ids, S, conn, identities, 'personal', wall_now)
                 committed = FS.record_team(made, f['team']())
                 again = FS.record_team(made, f['team']())
                 files = git(made['path'], 'ls-tree', '-r', '--name-only', 'HEAD').splitlines()
@@ -1362,7 +1375,8 @@ def _v143_suite():
                 # does not enroll is refused before any directory exists or GitHub is asked.
                 stranger_key = keys / 'stranger-signer'
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v143-stranger', '-f',
-                                str(stranger_key)], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL,
+                                str(stranger_key)], check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                stdin=subprocess.DEVNULL,
                                 env=R._quiet_env())
                 decision_u, _, _ = own_decision('unsigned')
                 calls, pushes = len(hub['calls']), len(wire.invocations())
@@ -1994,7 +2008,7 @@ def _v143_suite():
                         waker.connect(self.path)
                         waker.close()
                     self.agent.close()
-                    self.thread.join(timeout=5)
+                    self.thread.join()  # woken above by its own socket; the progress watchdog bounds the rest
                     with contextlib.suppress(OSError):
                         os.unlink(self.path)
                         os.rmdir(self.directory)
@@ -2050,25 +2064,41 @@ def _v143_suite():
                                                 service.apply, watermark=service.watermark, minimum_generation=1,
                                                 context=True)
                 passes, served, takes = [], 0, []
+
+                def serve_turn(listener=None, authority=None):
+                    """One turn of the serve loop's own shape: the socket and the provisioners' pipes waited on (the
+                    wait primitive, woken by whichever is readable), each served, and a pass when an event made it
+                    due. False when nothing is left to wait on, so nothing more can come."""
+                    pipes = service.provisioner_pipes()
+                    fds = ([listener] if listener is not None else []) + sorted(pipes)
+                    if not fds:
+                        return False, []
+                    ready = []
+
+                    def readable():
+                        ready[:] = select.select(fds, [], [], 0)[0]
+                        return bool(ready)
+                    WAITS.wait('the serve loop: a request or a provisioner\'s output', readable, None,
+                               [WAITS.Readable(fd, drain=False) for fd in fds])
+                    if listener is not None and listener in ready:
+                        SV.CC.serve_one(listener, authority)
+                    for fd in ready:
+                        if fd in pipes:
+                            service.provisioner_readable(fd)
+                    return listener is not None and listener in ready, (service.new_project_pass() if service.projects_due
+                                                                       else [])
                 try:
                     with fenced(wire):
                         started = service.new_project_pass()
                         one = service.projects_pass.running.get(decision_s)
                         # The serve loop's own shape: the socket and the provisioner's pipe, waited on; a pass only
                         # when an event made it due. Nothing is taken on by reading the records.
-                        deadline = time.monotonic() + 120
-                        while one is not None and not one.done and time.monotonic() < deadline:
-                            pipes = service.provisioner_pipes()
-                            ready = select.select(([listener] if listener is not None else []) + sorted(pipes), [], [],
-                                                  5)[0]
-                            if listener is not None and listener in ready:
-                                SV.CC.serve_one(listener, authority)
-                                served += 1
-                            for fd in ready:
-                                if fd in pipes:
-                                    service.provisioner_readable(fd)
-                            if service.projects_due:
-                                passes += service.new_project_pass()
+                        while one is not None and not one.done:
+                            if not service.provisioner_pipes():
+                                break  # its output pipe is gone: its end cannot come
+                            took, made = serve_turn(listener, authority)
+                            served += int(took)
+                            passes += made
                         ended_state = (record(lagoon_repo) or {}).get('state')
                         active_before_start = (PJ.read(S, conn, 'lagoon') or {}).get('state') == 'ACTIVE'
                         if not UNIX:
@@ -2091,13 +2121,8 @@ def _v143_suite():
                 with fenced(wire):
                     withheld_started = service.new_project_pass()
                     two = service.projects_pass.running.get(decision_w)
-                    deadline = time.monotonic() + 120
-                    while two is not None and not two.done and time.monotonic() < deadline:
-                        pipes = service.provisioner_pipes()
-                        for fd in select.select(sorted(pipes), [], [], 5)[0]:
-                            service.provisioner_readable(fd)
-                        if service.projects_due:
-                            withheld += service.new_project_pass()
+                    while two is not None and not two.done and service.provisioner_pipes():
+                        withheld += serve_turn()[1]
                 ended_withheld = [e for e in withheld if e.get('operation') == 'provision'
                                   and e.get('decision') == decision_w and e.get('outcome') == 'ended']
                 atoll_waiting = (record(PP.read(conn, decision_w)['proposal']['repository']) or {}).get('state')
@@ -2190,10 +2215,18 @@ def _v143_suite():
                                    if e.get('operation') == 'provision' and e.get('outcome') == 'started'}
                     # Each provisioner runs to its end; an instance then takes the repositories on and the pass activates.
                     runs = [service.projects_pass.running.get(d) for d in (PP.decision_id(pid_b1), rill_decision)]
-                    deadline = time.monotonic() + 120
-                    while any(one is not None and not one.done for one in runs) and time.monotonic() < deadline:
+                    while any(one is not None and not one.done for one in runs):
                         pipes = service.provisioner_pipes()
-                        for fd in select.select(sorted(pipes), [], [], 5)[0]:
+                        if not pipes:
+                            break  # nothing left to wait on: their ends cannot come
+                        ready = []
+
+                        def readable():
+                            ready[:] = select.select(sorted(pipes), [], [], 0)[0]
+                            return bool(ready)
+                        WAITS.wait('a provisioner\'s output', readable, None,
+                                   [WAITS.Readable(fd, drain=False) for fd in sorted(pipes)])
+                        for fd in ready:
                             service.provisioner_readable(fd)
                         serve_step()
                 takes_due = service.take_on()
@@ -2237,7 +2270,7 @@ def _v143_suite():
                 runpy.run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
                     mods, conn, DOMAIN, {REPO: str(source)})
                 CE.enroll(str(source), DOMAIN, ids['store_uuid'], str(f['db']), HOST, 1,
-                          lambda b: sign_as(OWNER, b, EL.ENROLLMENT_NAMESPACE), OWNER, time.time(), repository_uuid=REPO)
+                          lambda b: sign_as(OWNER, b, EL.ENROLLMENT_NAMESPACE), OWNER, wall_now(), repository_uuid=REPO)
                 RS.attach_revisions(S, conn, DOMAIN, {REPO: str(source)}).accept(
                     'revision-143', REPO, commit, 'pm', documents={'README': PM.SN.digest((source / 'README').read_bytes())},
                     signer='authority', sign=journal_sign, authority_generation=1)
@@ -2303,7 +2336,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 line.pm_cycles = PM.from_line(line)
                 for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                     line.reservations.configure('policy/' + subject, scope, subject,
-                                                dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())
+                                                dict(capacity=5, invocations=100, wall_seconds=5000), now=wall_now())
                 # Every identity configured when the PM runs is offered: the three above and the one bind_paths
                 # configured for the factory source.
                 offered_ids = sorted(r['id'] for r in GI.records(conn, DOMAIN))
@@ -2314,7 +2347,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 pm_loop.run()
                 cycle = max(line.pm_cycles.records('factory'), key=lambda r: r['watermark'])
                 if cycle.get('dispatch') in line.runner.launches:
-                    line.runner.wait(line.runner.launches[cycle['dispatch']], timeout=60)
+                    line.runner.wait(line.runner.launches[cycle['dispatch']], timeout=WAITS.WAIT_HANG_SECONDS)
                     pm_loop.wake('run_end')
                     pm_loop.run()
                 cycle = next(r for r in line.pm_cycles.records('factory') if r['cycle'] == cycle['cycle'])
@@ -2734,6 +2767,20 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      REPO not in held_loop.lines
                      and any(s.get('repository') == REPO for s in (held_after.get('lines') or {}).get('stopped') or []))])
 
+            # VELDO-0358 AC15: the profile reached every arming site: the timers table the in-process services,
+            # clients and stores of this suite arm from (each of brief F's timers present, all at the hang bound), and
+            # the role budget the PM cycles' dispatch deadline is taken from.
+            with region('timers/profile-applied'):
+                hang = WAITS.WAIT_HANG_SECONDS
+                mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS',
+                        'control_client.SERVE_READ_SECONDS', 'control_store.BUSY_SECONDS'}
+                named = {r['name']: r['value'] for r in TIMERS.report()}
+                unset = sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in mine - set(named)])
+                roles = (((f['team']() or {}).get('roles') or {}).get('project_manager') or {}).get('budget') or {}
+                check('timers/profile-applied', [('timer_unset %r' % unset, unset == []),
+                                                 ('the role budget is the hang bound [%r]' % roles,
+                                                  roles.get('wall_seconds') == hang)])
+
             with region('pm/graph-stage-own'):
                 # The seam's outcome, not its frame match: the PM exchanges above (pm/new-project-run's, and those of
                 # the cycles the factory passes built in Line.build_cycles) resolved the account stage, and the
@@ -2780,7 +2827,5 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
         check('ran/' + first, [('ran to its end', first not in {label for label, _ in raised})])
 
 
-_v143_started = __import__('time').monotonic()
 __import__('runpy').run_path(str(ROOT / 'proof/VELDO-0143/check_compiled_sources.py'))['suite_rows'](expect)
 _v143_suite()
-print('VELDO-0143 suite seconds: %.3f' % (__import__('time').monotonic() - _v143_started))
