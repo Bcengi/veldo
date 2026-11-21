@@ -155,6 +155,31 @@
   "base": "0b767d26baf67e4be13eaa7d31b6d44e81699f18",
   "ported_at": "10d4ba11d546c950566f3d152f92222e5f5e9c49",
   "not_run": "teeth step of heavy_runs.sh (ten mutants): pending the host lock; one mutant run alone and killed",
-  "needs_review": "The default domain registry path and hand-written service configurations (check registry_scope); the changes to suite 85, scripts/suites/support/v174_journey.py and proof/VELDO-0204/host.py; heavy_summary.py writes its summaries itself because the line has no validate.write_proof_summary (VELDO-0270 is not on the line)."
+  "needs_review": "The default domain registry path and hand-written service configurations (check registry_scope); the changes to suite 85, scripts/suites/support/v174_journey.py and proof/VELDO-0204/host.py; heavy_summary.py writes its summaries itself because the line has no validate.write_proof_summary (VELDO-0270 is not on the line).",
+  "deadlines": {
+   "rule": "A test synchronizes on events; a bound is only a hang detector. No row of suite 113_veldo_0117_domain_store compares an elapsed time with a number, and no row's verdict changes when a bound is larger.",
+   "touched": [
+    {
+     "bound": "_v117_START, 60 s on the source branch, 120 s here",
+     "guards": "event(): the read of the next line a child authority process writes on its pipe (begin, waiting, checked, ready, listening, stopped), by select on that pipe, and listening(): the same wait for the service's socket",
+     "why_not_timing": "The wait returns the moment the line arrives or the pipe closes. The bound is reached only by a process that neither reports nor ends; the row then fails on the missing event, never on a duration."
+    },
+    {
+     "bound": "the 1 s bound on the stopped event, removed (the default bound applies)",
+     "guards": "the last line of a process that process.wait has already returned for",
+     "why_not_timing": "The process has ended, so its last line or the end of its output is already there; a 1 s bound could only fail a correct run."
+    },
+    {
+     "bound": "two subprocess timeouts of 20 s and the client.send timeout of 10 s, each now _v117_START",
+     "guards": "subprocess.run of ssh-keygen (key generation and signing) until the process exits, and the client's wait for the authority's answer on its socket",
+     "why_not_timing": "Each returns on the process's exit or the answer's arrival. The rows judge the answer, never how long it took."
+    },
+    {
+     "bound": "_v117_OVERLAP, a 3 s window on the source branch, removed",
+     "guards": "it was a timing assertion: an overlapped schedule watched for 3 s that the second registration did not get past the first's open transaction",
+     "why_not_timing": "Replaced by an event. The second authority reports `waiting` when its registration's transaction starts (a trace on the registry connection), and the first is released only after `waiting`, or with the transaction removed after the second's `checked`, was reported. No clock decides the schedule."
+    }
+   ]
+  }
  }
 }
