@@ -31,7 +31,7 @@ the 133 baseline entries (138 sites) this change removed are lowered (lower_base
 
 ## Falsifiers (brief F's block in scripts/check_teeth_mutations.py)
 
-| Mutant | Suite | Row | Verdict (mutants.txt) |
+| Mutant | Suite | Row | Verdict (mutants.txt, run 3 at fc1c924e) |
 | - | - | - | - |
 | timers358-profile-skips-client (the specification's) | 66_veldo_0047 | timers/profile-applied | rejected, assertion |
 | timers358-service-profile-ignored | 71 | timers/profile-applied | rejected, unproven (lead item 3) |
