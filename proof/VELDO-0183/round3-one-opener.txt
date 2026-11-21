@@ -1,0 +1,25 @@
+Fix round 3: row AC4/one-opener red at 7b67f6af (the row samples /proc throughout the servers step, its rerun and
+factory setup's two runs, and each fixture store open records the other pids then holding the store; production as at
+83588ab4), then green at b0af7b3c (a check that runs while a store server is up reads the store through that server).
+Each run: python3 scripts/selftest.py with the suite option naming 130_veldo_0183_memory_servers, alone, in a
+systemd-run scope; exit 1 red, exit 2 (the PARTIAL run's own code) green.
+
+== red at 7b67f6af
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 servers step: done {'ava-memory': 1, 'knowledge-graph': 1, 'claude-mem': 1, 'memory-kb': 1} ['configuration:assistant:2', 'configuration:assistant_codex:2', 'default_team:3']
+  VELDO-0183 store servers: {'ava_memory': 2367966, 'memory_kb': 2368263}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
+  VELDO-0183 detail: AC4/one-opener servers step, ava_memory: never held by two processes [21 samples, 1 by two or more [[2367966, 2368078]]; 4 opens, 3 beside another holder [(2368078, [2367966]), (2368513, [2367966])]]; servers step, memory_kb: never held by two processes [21 samples, 2 by two or more [[2368263, 2368399], [2368263, 2368799]]; 4 opens, 3 beside another holder [(2368399, [2368263]), (2368610, [2368263])]]; factory setup, ava_memory: never held by two processes [55 samples, 1 by two or more [[2400643, 2401137]]; 7 opens, 3 beside another holder [(2400787, [2400643]), (2401137, [2400643])]]; factory setup, memory_kb: never held by two processes [55 samples, 2 by two or more [[2400949, 2401057], [2400949, 2401388]]; 7 opens, 3 beside another holder [(2401057, [2400949]), (2401236, [2400949])]]
+  SELFTEST FAIL: VELDO-0183 AC4/one-opener
+  130_veldo_0183_memory_servers                   16 passed   29.90s
+selftest (PARTIAL, 1 of 192 suites): 42 passed, 1 failed in 29.90s
+
+== green at b0af7b3c
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 servers step: done {'ava-memory': 1, 'knowledge-graph': 1, 'claude-mem': 1, 'memory-kb': 1} ['configuration:assistant:2', 'configuration:assistant_codex:2', 'default_team:3']
+  VELDO-0183 store servers: {'ava_memory': 2417753, 'memory_kb': 2418051}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
+  130_veldo_0183_memory_servers                   17 passed   28.90s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 28.90s

@@ -12,7 +12,7 @@ work: W143
 plan_revision: 4
 depends_on: [VELDO-0141, VELDO-0144, VELDO-0158, VELDO-0177, VELDO-0182]
 placement: [contracts, fleet, distribution]
-protected_paths: []
+protected_paths: ["scripts/gate_unconfined.json"]
 footprint:
   - "engine/.veldo/control_memory*.py"
   - ".veldo/control_memory*.py"
@@ -37,6 +37,7 @@ footprint:
   - "specs/VELDO-0183-memory-servers-in-the-catalog.md"
   - "specs/index.md"
   - "proof/VELDO-0183/*"
+  - "scripts/gate_unconfined.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -238,3 +239,8 @@ AC4's copy and check around them, and the Notes' myday change runs the same chec
 depends_on already names VELDO-0182. Asked by the owner; back to draft: the owner must re-mark it ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0183/OPEN.md item 1): the new suite needs
+the systemd user manager, as VELDO-0177's suite 129 does, so it joins the gate's unconfined list,
+scripts/gate_unconfined.json, a protected file that needs the owner's approval at landing. Acceptance criteria
+are unchanged.

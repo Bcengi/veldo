@@ -8483,7 +8483,8 @@ def cases():
         "if (row[0] == 'credential:' + digest",
         ['catalog/deleted-reference'], ())
     add(144, 'mcp144-foreign-reference-accepted', '82_veldo_0144_mcp_catalog.py', 'control_mcp_catalog.py',
-        '            if not recorded:',
+        # Re-anchored for VELDO-0183, which keeps the recorded credential's id for its paid-API check.
+        '            if recorded is None:',
         '            if False:',
         ['catalog/credential-domain'], ())
     add(144, 'mcp144-application-attribute-dropped', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
@@ -16011,6 +16012,37 @@ def cases():
             # Written with `in`, so VELDO-0152's v152-intake-companions-missing still anchors once in this file.
             if case['module'] in ('control_intake.py',):
                 case['companions'] = list(RENDERER_COMPANIONS) + ['control_project.py', 'control_intake_routes.py']
+    # VELDO-0183: the owner's memory servers as catalog servers over one store; each spec falsifier as one exact edit,
+    # and the guard the one-opener claim implies.
+    suite183 = '130_veldo_0183_memory_servers.py'
+    add(183, 'roles183-no-claude-mem', suite183, 'control_memory_servers.py',
+        "            for server, _ in SERVERS]\n",
+        "            for server, _ in SERVERS if server != 'claude-mem']  # defect: the roles lack claude-mem\n",
+        ['AC1/init'])
+    add(183, 'catalog183-paid-api-accepted', suite183, 'control_mcp_catalog.py',
+        "    return next((name for name in named if name in paid), None)\n",
+        "    return None  # defect: a paid-API key is accepted as a server's credential\n", ['AC2/paid-api'])
+    add(183, 'servers183-ava-opens-store', suite183, 'control_memory_servers.py',
+        "        found[server] = base\n",
+        "        if server == 'ava-memory':  # defect: mcp_server.py opens the store itself, as .mcp.json does today\n"
+        "            base.update(command=parts[part]['interpreter'],\n"
+        "                        arguments=[str(Path(parts[part]['code']) / 'mcp_server.py')])\n"
+        "        found[server] = base\n", ['AC4/one-opener'])
+    add(183, 'servers183-check-opens-store', suite183, 'control_memory_servers.py',
+        "        result = CHECK.check(root, definition, part, phase, Served(root) if served else None)\n",
+        "        result = CHECK.check(root, definition, part, phase, None)  # defect: the check opens a served store itself\n",
+        ['AC4/one-opener'])
+    add(183, 'store183-open-unchecked', suite183, 'control_memory_store.py',
+        "    others = holders(data, {os.getpid()})\n",
+        "    others = set()  # defect: a store another process holds open is opened anyway\n", ['AC4/open-refused'])
+    add(183, 'kb183-guessed-name', suite183, 'control_memory_kb.py',
+        "    'stats': ('kb.store', 'get_stats', {}, []),\n",
+        "    'stats': ('kb.store', 'stats', {}, []),  # defect: a name memory_kb's cli.py does not call\n",
+        ['AC1/real-layout'])
+    add(183, 'setup183-no-servers-step', suite183, 'control_factory_setup.py',
+        "    if memory_plan is not None and dispatch is not None:\n        with step('memory_servers'):\n",
+        "    if False:  # defect: setup leaves the servers step to a separate command\n        with step('memory_servers'):\n",
+        ['AC1/setup-step'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

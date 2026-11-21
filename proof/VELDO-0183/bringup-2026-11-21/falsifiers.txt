@@ -1,0 +1,11 @@
+Each registered mutation case of finding 183 applied to the checkout's module at the head of the chain (VELDO-0187 ported), its suite run alone, the module restored byte for byte.
+183 [roles183-no-claude-mem] control_memory_servers.py rows AC1/init: RED on its row; false rows: VELDO-0183 AC1/role-selections; VELDO-0183 AC1/init; VELDO-0183 AC1/setup-step; 130_veldo_0183_memory_servers 16 passed 26.95s; restored True
+183 [catalog183-paid-api-accepted] control_mcp_catalog.py rows AC2/paid-api: RED on its row; false rows: VELDO-0183 AC2/paid-api; VELDO-0183 AC4/assistant-entries; 130_veldo_0183_memory_servers 17 passed 27.47s; restored True
+183 [servers183-ava-opens-store] control_memory_servers.py rows AC4/one-opener: RED on its row; false rows: VELDO-0183 AC1/catalog-records; VELDO-0183 AC2/smart-add; VELDO-0183 AC2/tools-work; VELDO-0183 AC3/cross-conversation; VELDO-0183 AC4/one-opener; VELDO-0183 AC4/all-written; 130_veldo_0183_memory_servers 12 passed 26.97s; restored True
+183 [servers183-check-opens-store] control_memory_servers.py rows AC4/one-opener: RED on its row; false rows: VELDO-0183 AC4/one-opener; 130_veldo_0183_memory_servers 18 passed 27.46s; restored True
+183 [store183-open-unchecked] control_memory_store.py rows AC4/open-refused: RED on its row; false rows: VELDO-0183 AC4/open-refused; 130_veldo_0183_memory_servers 18 passed 46.97s; restored True
+183 [kb183-guessed-name] control_memory_kb.py rows AC1/real-layout: RED on its row; false rows: VELDO-0183 AC1/real-layout; VELDO-0183 AC2/tools-work; 130_veldo_0183_memory_servers 17 passed 26.94s; restored True
+183 [setup183-no-servers-step] control_factory_setup.py rows AC1/setup-step: RED on its row; false rows: VELDO-0183 AC1/setup-step; 130_veldo_0183_memory_servers 18 passed 26.95s; restored True
+
+Mutation cases of other findings that this ticket's port re-anchored, run the same way:
+144 [mcp144-foreign-reference-accepted] control_mcp_catalog.py rows catalog/credential-domain: RED on its row; false rows: VELDO-0144 catalog/observability; VELDO-0144 install/assets; VELDO-0144 catalog/deleted-reference; VELDO-0144 catalog/credential-domain; 82_veldo_0144_mcp_catalog 25 passed 42.12s; restored True
