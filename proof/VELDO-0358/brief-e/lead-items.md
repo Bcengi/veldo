@@ -6,8 +6,9 @@
    scripts/suites/support/setup_runtime.py (5) and proof/VELDO-0172/compare_formats.py (4). None is in the
    specification's footprint or in any brief's files, so they were not touched (brief rule: stop and report).
    Suite 106's own file has no site. Converting them is a footprint decision (wave 2, or this specification).
-   Suites 62, 63 and 78 open no file with a site (their opened-files records: 62 and 63 open only themselves
-   and the support modules; 78 opens JSON captures, fake_formats.py, compiled_sources.py, git_identity.py).
+   Suite 78 opens proof/VELDO-0172/compare_formats.py too (the mutation observer's record; selftest's own record
+   did not list it), so its 36 cases are kill_by unproven as well. Suites 62 and 63 open only themselves and the
+   support modules.
 
 2. Census gap (brief B's tool): R3 reads shared.wait_for's bound only as a number, and its bound is the tuple
    (seconds, origin), so `wait_for(cond, (10.0, '...'), what)` is not a site. Since brief A the tuple bounds
