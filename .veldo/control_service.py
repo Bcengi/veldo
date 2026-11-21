@@ -436,7 +436,10 @@ EXIT_REFUSED = 78
 # The kernel's limit on a local socket path (sun_path), terminator included.
 SOCKET_PATH_LIMIT = 108
 ACTIVE_STATES = ('active', 'activating', 'deactivating', 'reloading', 'refreshing')
-UNIT_NAME = re.compile(re.escape(CC.SERVICE_PREFIX) + r'[0-9a-f]{16}\.service')
+# An authority unit's name, with the instance name its installer gave it or, as in every production
+# installation, with none (VELDO-0221). The name is PARSED, never rebuilt from this process's own
+# instance: a tool may be asked about a unit another process installed.
+UNIT_NAME = re.compile(re.escape(CC.SERVICE_BASE) + r'(?:[0-9A-Za-z][0-9A-Za-z_]{0,63}-)?([0-9a-f]{16})\.service')
 # What may appear in a value written into the unit: nothing systemd would read as a specifier,
 # a quote, a separator or a second argument.
 UNIT_VALUE = re.compile(r'[A-Za-z0-9._/+-]+')
@@ -1295,12 +1298,6 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         if state_root is not None:
             config['state_root'] = os.path.abspath(str(state_root))
         _write(config_path, _json(config), 0o600)
-        if C.instance_name():
-            # VELDO-0221: the installed engine runs under the user manager's environment, so the
-            # instance name this installer was configured with goes beside its configuration, where
-            # control_containment.instance_name reads it. No production installation has one.
-            _write(os.path.join(config_dir, C.INSTANCE_FILE),
-                   _json({'schema': C.INSTANCE_SCHEMA, 'prefix': C.instance_name()}), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
         created.append(unit_path)
@@ -1516,7 +1513,7 @@ def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
     state = status(unit, runner)
     if state.get('ActiveState') in ACTIVE_STATES:
         raise Refused('invalid_input:active', unit, 'stop it first: systemctl --user stop %s' % unit)
-    service = unit[len(CC.SERVICE_PREFIX):-len('.service')]
+    service = UNIT_NAME.fullmatch(_unit(unit)).group(1)
     home = os.path.join(os.path.realpath(str(install_root or default_install_root())), service)
     unit_path = os.path.join(os.path.realpath(str(unit_dir or default_unit_dir())), unit)
     removed = []

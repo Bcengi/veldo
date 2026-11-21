@@ -62,6 +62,7 @@ which is what proof/WARP-0717/inner-loop-measurement.json does per fragment.
 import json
 import os
 import re
+import resource
 import selectors
 import signal
 import subprocess
@@ -680,30 +681,52 @@ class RunScope:
 #   - in a confined leg each shard stacks its own Landlock layer on the leg's domain
 #     (scripts/agent_sandbox.py write_layer), which grants writes only beneath its own roots, and proves it
 #     by a write the dispatcher planted a target for and the kernel must refuse;
-#   - the engine names what it creates on the one user manager with the instance name the
-#     dispatcher writes into each shard's configuration directory (INSTANCE_FILE): the suite's.
+#   - the same layer scopes signals and abstract Unix sockets (Landlock ABI 6, which the leg's own
+#     domain already needs), so a confined shard cannot signal or connect to a sibling shard;
+#   - the engine names what it creates on the one user manager with the INSTANCE NAME the
+#     dispatcher writes into each shard's runtime directory (INSTANCE_FILE), in both legs: this
+#     leg's random token, the shard's tag and the suite's name (instance_of). A suite that needs
+#     the one manager cannot replace its runtime directory, so the installer and every tool it
+#     starts read one name, and an installed service recovers it from its own unit's name. The
+#     three suites UNNAMED lists get none, each for the reason written there.
 #
 # CHECKED IN EVERY GATE, force-fresh or not. A confined shard must report its layer in force
 # before its suite runs and must leave its probe unwritten. An unconfined leg, which cannot be
 # confined, is read before, at every shard's end and after, in the shared places a suite can
-# reach (unconfined_places and the user manager's units). What appeared and stayed is
-# isolation_breach, RED, naming the suite.
+# reach (unconfined_places), and the user manager's units are read at every tick as well. What
+# appeared and stayed is isolation_breach, RED.
 #
-# WHAT THE CHECK CAN AND CANNOT ATTRIBUTE, measured on the qualification host on 2026-11-21 and
-# stated because a check that turned every gate red would be ignored. The host is shared: in 260
-# seconds other sessions made 20 entries at the top of /tmp, two units and one /dev/shm entry,
-# and this gate's own launchers and mutation workers make more. The kernel records no creator
-# for a file, so a NEW ITEM IS THE LEG'S when one of these holds: its name carries a suite's
-# instance name; it refers to a shard's roots (a link's target, a small file's text, a unit's
-# properties); or a live process that carries a shard's roots in its environment holds it. An
-# item a live process of another tree holds, or that another account owns, is foreign. For
-# what is left, each place has a rule: `strict` places are waited on until the item is gone
-# (SETTLE_S, a hang detector) and what stays is a breach charged to the suites that ran when it
-# first appeared; the top of the system temporary directory is `attributed`, because this gate
-# itself makes entries there throughout the leg, so an unattributed entry there is printed by
-# name and not charged.
+# WHAT THE CHECK CAN AND CANNOT ATTRIBUTE. The host is shared (measured on the qualification host
+# on 2026-11-21: in 260 seconds other sessions made 20 entries at the top of /tmp, two units and
+# one /dev/shm entry), and the kernel records no creator for a file.
+#   FILES, in every place including the top of the system temporary directory. A new entry IS A
+#   SHARD'S when its name carries the shard's instance name, when it refers to a shard's roots (a
+#   link's target, a small file's text), when a live process that carries a shard's roots holds
+#   it, or when exactly one shard ran in the window in which it first appeared: it is charged to
+#   that suite. It is FOREIGN, and only noted, when another account owns it or a live process of
+#   another tree holds it. Anything else is waited on (SETTLE_S, a hang detector) and, if it
+#   stays, FAILS THE LEG'S ISOLATION CHECK with its name and the suites that ran when it
+#   appeared recorded. An unattributed entry is never silently allowed (lead decision
+#   2026-11-21).
+#   UNITS. Only this instance's units are judged (lead decision 2026-11-21): another session's
+#   or the desktop's units come and go throughout a leg and are none of its business. A unit is
+#   this leg's BY ITS PREFIX (the leg's token in an engine-shaped name) or BY REFERENCE (its
+#   properties or its processes' environments name a shard's roots). One of this leg's that is
+#   left behind is a breach of its suite. An engine-shaped unit (ENGINE_UNIT) seen at any
+#   reading that refers to a shard's roots and does not carry that shard's prefix is a breach
+#   too, started and stopped or not: every unit a shard starts must carry its prefix. A unit
+#   nothing ties to this leg is counted and named on the summary and not judged. THE FLOOR: a
+#   unit that starts and ends between two readings (SHARD_TICK_S apart) is not seen, and a
+#   unit of a shard's that is neither engine-shaped nor refers to its roots (an empty slice
+#   left by a suite that names its own) cannot be told from another session's.
 
-SHARD_DEADLINE_S = 1800.0   # one shard; a hang detector, never a pace
+# A HANG DETECTOR, NEVER A PACE: a shard is ended when it has made NO PROGRESS for this long, where
+# progress is a byte of output or of its report, or CPU time used by its process group. A slow or
+# loaded machine makes a suite slower, and a suite that is still working is never ended for that
+# (owner rule 42829): the longest suite of this repository alone takes over 600 seconds. A shard
+# that spins without ending is not caught here; the stage's own budget ends it, as it would have
+# ended the ordered run.
+SHARD_DEADLINE_S = 1800.0
 SHARD_TICK_S = 2.0          # how often a waiting dispatcher samples memory and asks the ledger again
 SETTLE_S = 300.0            # how long a foreign-looking item in a strict place may take to go
 SHARD_UNMEASURED = {"cpu": 1.0, "memory": 1 << 30}
@@ -713,8 +736,17 @@ LEDGER_CHANNEL = "VELDO_GATE_SHARD_LEDGER_FD"
 SHARD_CLAIMS = "VELDO_GATE_SHARD_CLAIMS"
 SHARD_METRICS = "VELDO_GATE_SHARD_METRICS_FD"
 FORCE_FRESH = "VELDO_GATE_FORCE_FRESH"
-INSTANCE_FILE = ("veldo", "instance.json")
+INSTANCE_FILE = "veldo-instance.json"
 INSTANCE_SCHEMA = "veldo.instance/v1"
+INSTANCE_NAME = r"[0-9A-Za-z][0-9A-Za-z_]{0,63}"
+# What the engine names on the user manager (.veldo/control_client.py, control_containment.py and
+# control_factory_setup.py), with the instance name it carries or none.
+ENGINE_UNIT = re.compile(
+    r"veldo-(?:authority|api|dispatch)-(?:(?P<instance>%s)-)?[0-9a-f]+\.(?:service|scope)"
+    r"|veldo-workers(?:_(?P<slice>%s))?\.slice" % (INSTANCE_NAME, INSTANCE_NAME))
+ENGINE_UNIT_PATTERNS = ("veldo-authority-*", "veldo-api-*", "veldo-dispatch-*", "veldo-workers*")
+# The one failure that belongs to no suite: an item the isolation check could tie to nothing.
+LEG_OWNER = "(the leg)"
 FAIL_MARK = "SELFTEST FAIL:"
 UNCOUNTED_MARK = "SELFTEST ROW-FAIL (not counted in this shard):"
 ISOLATION_BREACH = "isolation_breach"
@@ -737,7 +769,10 @@ SHARD_PROBES = "p"
 # only way out of the layer, it lives in this protected file, every leg prints what it exempted, and
 # an entry is a reviewed decision, never a convenience. A shard named here still has its own roots,
 # its own result pipe and the broker's hold on its binds, and still runs inside the leg's domain;
-# what it loses is the kernel's refusal of a write to another shard's roots.
+# what it loses is the kernel's refusal of a write to another shard's roots and of a signal to a
+# sibling. SO IT RUNS ALONE (lead decision 2026-11-21): the dispatcher starts it before every other
+# shard of the leg and starts nothing beside it, so there is no sibling whose roots or processes
+# it could reach while it runs.
 UNLAYERED = {
     "151_veldo_0313_space_run":
         "its rows judge what every process of the leg's tree holds: the space probe reads each "
@@ -745,6 +780,30 @@ UNLAYERED = {
         "is refused the dispatcher's and every other shard's, so each of them counts as an unread "
         "process that may hold the run's folders and the run never ends. In the leg's own domain "
         "it reads them, as it did in the ordered run",
+}
+
+# THE SHARDS THAT ARE GIVEN NO INSTANCE NAME, each with its reason: the second and last table of
+# exceptions in this file, under the same rules as UNLAYERED. Measured on 2026-11-21 against the
+# real user manager with every shard named: each of these three suites lays a host down with an
+# OLDER ENGINE taken from this repository's history (`git archive` of an earlier commit's .veldo)
+# and then runs the current engine over it. An engine that predates the instance name installs its
+# unit without one, so the current engine, given a name, looks for a unit that was never installed
+# and refuses the run (invalid_input:state_root:holds_unit_dir). No carrier of the name can reach
+# an engine version that does not read it. Such a shard's units keep today's names, apart on the one
+# manager as they are in the mutation stage (by each installation's own service id and by the
+# manifest's manager declarations), and the isolation check ties them to the shard by reference to
+# its roots: one left behind is still its breach.
+UNNAMED = {
+    "85_veldo_0171_setup_api":
+        "its rows rerun/over-0139-host, api-edge/running-service and api/start-rules run the current "
+        "engine over a host laid down by the engine of commit 7fefdb9a, which names its unit without "
+        "an instance (3 rows failed with a name set)",
+    "86_veldo_0189_engine_upgrade":
+        "its rows upgrade hosts laid down by the engines of commits 8bc34e94 and 971186ac, which "
+        "name their units without an instance (20 rows failed with a name set)",
+    "117_veldo_0227_ui_location":
+        "its row ui/upgrade-pre-change runs the current engine over a host laid down by the engine "
+        "before VELDO-0227, which names its unit without an instance (1 row failed with a name set)",
 }
 
 # The two arguments a shard interpreter is started with. The gate launcher's broker knows a shard by
@@ -968,13 +1027,27 @@ def shard_environment(environ, roots, linked, base):
     return env
 
 
-def write_instance(config, name):
-    """The installation's configuration of this shard: the engine reads its instance name here and
-    names every unit, slice, service and runtime directory it creates with it."""
-    path = Path(config).joinpath(*INSTANCE_FILE)
-    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+def instance_of(token, index, name):
+    """A shard's instance name: this leg's token and the shard's tag, which no other shard of any
+    leg on this host shares, then the suite's name for a reader; at most 64 characters."""
+    return ("%s%s_%s" % (token, shard_tag(index), name))[:64]
+
+
+def write_instance(runtime, name):
+    """This shard's instance name, where the engine reads it: in the shard's runtime directory,
+    which a suite that needs the one user manager cannot replace. The engine names every unit,
+    slice, service and scope it creates with it."""
+    path = Path(runtime) / INSTANCE_FILE
     path.write_text(json.dumps({"schema": INSTANCE_SCHEMA, "prefix": name}) + "\n")
     return path
+
+
+def unit_instance(unit):
+    """(engine-shaped, the instance name it carries or '') for a unit's name."""
+    match = ENGINE_UNIT.fullmatch(unit)
+    if not match:
+        return False, ""
+    return True, match.group("instance") or match.group("slice") or ""
 
 
 def launcher_fds(root):
@@ -1048,14 +1121,19 @@ def confine_shard(root, launcher, environ=None):
 
 # ---- the shared places an unconfined leg can reach ----------------------------------------------
 
-def manager_units():
-    """The user manager's loaded units and slices by name, or None when it does not answer."""
+def _manager_environment():
     env = dict(os.environ, XDG_RUNTIME_DIR="/run/user/%d" % os.getuid())
     env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+    return env
+
+
+def manager_units(patterns=()):
+    """The user manager's loaded units and slices by name (those matching `patterns`, or all), or
+    None when it does not answer. The 600 seconds are a hang detector."""
     try:
         proc = subprocess.run(["systemctl", "--user", "list-units", "--all", "--no-legend", "--plain",
-                               "--full"], capture_output=True, text=True, timeout=120, env=env,
-                              stdin=subprocess.DEVNULL)
+                               "--full", *patterns], capture_output=True, text=True, timeout=600,
+                              env=_manager_environment(), stdin=subprocess.DEVNULL)
     except (OSError, subprocess.TimeoutExpired):
         return None
     if proc.returncode:
@@ -1063,22 +1141,61 @@ def manager_units():
     return [line.split()[0] for line in proc.stdout.splitlines() if line.split()]
 
 
-def describe_unit(unit):
-    """What a unit runs and where, as the manager shows it: the text a shard's roots are sought in."""
-    env = dict(os.environ, XDG_RUNTIME_DIR="/run/user/%d" % os.getuid())
-    env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+def _unit_processes(group, cgroup_root="/sys/fs/cgroup"):
+    """The environments of the processes in a unit's control group and beneath it, as text."""
+    top = Path(cgroup_root) / group.lstrip("/")
+    text = []
     try:
-        return subprocess.run(["systemctl", "--user", "show", unit, "-p", "ExecStart", "-p", "Environment",
-                               "-p", "WorkingDirectory", "-p", "FragmentPath", "-p", "Description"],
-                              capture_output=True, text=True, timeout=120, env=env,
-                              stdin=subprocess.DEVNULL).stdout
-    except (OSError, subprocess.TimeoutExpired):
+        listings = [top / "cgroup.procs", *top.rglob("cgroup.procs")]
+    except OSError:
         return ""
+    for listing in listings[:256]:
+        try:
+            pids = listing.read_text().split()
+        except OSError:
+            continue
+        for pid in pids[:256]:
+            try:
+                text.append(Path("/proc/%s/environ" % pid).read_bytes().decode("utf-8", "replace"))
+            except OSError:
+                continue
+    return "\n".join(text)
+
+
+def describe_units(units):
+    """{unit: what it runs and where, as the manager shows it, and its processes' environments}: the
+    text a shard's roots are sought in. One call to the manager for every 100 units."""
+    found = {}
+    units = list(units)
+    for start in range(0, len(units), 100):
+        try:
+            out = subprocess.run(["systemctl", "--user", "show", *units[start:start + 100], "-p", "Id",
+                                  "-p", "ExecStart", "-p", "Environment", "-p", "WorkingDirectory",
+                                  "-p", "FragmentPath", "-p", "Description", "-p", "ControlGroup"],
+                                 capture_output=True, text=True, timeout=600, env=_manager_environment(),
+                                 stdin=subprocess.DEVNULL).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        for block in out.split("\n\n"):
+            fields = dict(line.split("=", 1) for line in block.splitlines() if "=" in line)
+            if fields.get("Id"):
+                group = fields.get("ControlGroup") or ""
+                found[fields["Id"]] = block + ("\n" + _unit_processes(group) if group.startswith("/") else "")
+    return found
+
+
+def describe_unit(unit):
+    """describe_units for one unit."""
+    return describe_units([unit]).get(unit, "")
+
+
+describe_unit.many = describe_units
 
 
 def unconfined_places(base):
-    """The shared locations of AC3, each with the depth it is read to and its rule (see the note at
-    the top of this section). They are the owner's own, never taken from the leg's environment."""
+    """The shared locations of AC3, each with the depth it is read to. Every one is judged by the
+    one rule for files in the note at the top of this section, the top of the system temporary
+    directory included. They are the owner's own, never taken from the leg's environment."""
     import pwd
     uid = os.getuid()
     home = Path(pwd.getpwuid(uid).pw_dir)
@@ -1088,7 +1205,7 @@ def unconfined_places(base):
         {"name": "runtime unit directory", "path": Path("/run/user/%d" % uid) / MANAGER_UNITS, "depth": 2,
          "rule": "strict"},
         {"name": "/dev/shm", "path": Path("/dev/shm"), "depth": 1, "rule": "strict"},
-        {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"},
+        {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "strict"},
         {"name": "owner cache", "path": home / ".cache/veldo", "depth": 1, "rule": "strict"},
         {"name": "owner state", "path": home / ".local/state/veldo", "depth": 1, "rule": "strict"},
     ]
@@ -1096,11 +1213,11 @@ def unconfined_places(base):
 
 def confined_places(base, environ):
     """What a confined shard could reach outside its roots if its layer failed: the leg's own home
-    and the directory the shards' roots stand in. Attributed: outside the gate's launcher these are
-    the owner's home and /tmp, which other sessions write."""
-    places = [{"name": "leg temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"}]
+    and the directory the shards' roots stand in. In the gate both are the launcher's scratch,
+    which is this leg's alone."""
+    places = [{"name": "leg temporary directory", "path": Path(base).parent, "depth": 1, "rule": "strict"}]
     if environ.get("HOME"):
-        places.append({"name": "leg home", "path": Path(environ["HOME"]), "depth": 1, "rule": "attributed"})
+        places.append({"name": "leg home", "path": Path(environ["HOME"]), "depth": 1, "rule": "strict"})
     return places
 
 
@@ -1140,6 +1257,21 @@ class SharedPlaces:
             else:
                 seen.update(("unit", name) for name in listed)
         return seen
+
+    def engine(self):
+        """The engine-shaped units loaded now: the cheap reading made at every tick."""
+        if self.units is None:
+            return []
+        listed = self.units(ENGINE_UNIT_PATTERNS) if self.units is manager_units else self.units()
+        return [name for name in listed or () if ENGINE_UNIT.fullmatch(name)]
+
+    def described(self, names):
+        """{unit: its description text} for each of `names`."""
+        names = list(names)
+        if not names or self.describe is None:
+            return {}
+        many = getattr(self.describe, "many", None)
+        return many(names) if many else {name: self.describe(name) for name in names}
 
     def place(self, name):
         return next((p for p in self.places if p["name"] == name), None)
@@ -1185,10 +1317,10 @@ def _shard_named(text, base, jobs):
 def attribute(kind, item, path, base, jobs, describe=None):
     """Whose a new item is: (suite or None, 'leg' | 'foreign' | 'unknown', how it was told).
     See the note at the top of this section for what each answer rests on."""
-    # By name: the engine names what it creates with the suite's instance name.
-    for job in sorted(jobs, key=lambda j: -len(j["name"])):
-        if job["name"] in item:
-            return job["name"], "leg", "its name carries the suite's instance name"
+    # By name: the engine names what it creates with the shard's instance name.
+    for job in sorted(jobs, key=lambda j: -len(j.get("instance") or j["name"])):
+        if (job.get("instance") or job["name"]) in item:
+            return job["name"], "leg", "its name carries the shard's instance name"
     if kind == "unit":
         text = (describe or (lambda unit: ""))(item)
         named = _shard_named(text, base, jobs)
@@ -1247,24 +1379,40 @@ def _drain(descriptor):
         data += chunk
 
 
-def _group_anonymous(groups):
-    """{process group: anonymous resident bytes of its members now}, read from /proc."""
-    totals = dict.fromkeys(groups, 0)
+def _group_usage(groups):
+    """{process group: (anonymous resident bytes of its members now, their CPU ticks so far, their
+    own and their waited-for children's)}, read from /proc."""
+    totals = {group: [0, 0] for group in groups}
     for name in os.listdir("/proc"):
         if not name.isdigit():
             continue
         try:
-            stat = Path("/proc/%s/stat" % name).read_text()
-            group = int(stat.rsplit(")", 1)[1].split()[2])
+            fields = Path("/proc/%s/stat" % name).read_text().rsplit(")", 1)[1].split()
+            group = int(fields[2])
             if group not in totals:
                 continue
+            totals[group][1] += sum(int(value) for value in fields[11:15])
             for line in Path("/proc/%s/status" % name).read_text().splitlines():
                 if line.startswith("RssAnon:"):
-                    totals[group] += int(line.split()[1]) * 1024
+                    totals[group][0] += int(line.split()[1]) * 1024
                     break
         except (OSError, ValueError, IndexError):
             continue
-    return totals
+    return {group: tuple(pair) for group, pair in totals.items()}
+
+
+def shard_progress(job, now, marks):
+    """Note what a running shard has done by `now`. `marks` is anything that changes when the
+    shard works (the bytes it has written, its process group's CPU ticks): a change is progress."""
+    if marks != job.get("marks"):
+        job["marks"], job["progress_at"] = marks, now
+
+
+def shard_stalled(job, now):
+    """Whether a shard has made no progress for its deadline: the hang detector's whole rule. It is
+    measured from the shard's LAST PROGRESS, never from its start, so no suite is ended for being
+    slow or for running on a loaded machine."""
+    return now - job["progress_at"] > job["deadline"]
 
 
 def shard_verdict(job, leg, status):
@@ -1285,7 +1433,8 @@ def shard_verdict(job, leg, status):
     passed = failed = 0
     rows = []
     if job.get("timed_out"):
-        failures.append(("deadline_exceeded", "it ran past its deadline of %.0fs and was ended" % job["deadline"]))
+        failures.append(("deadline_exceeded", "it made no progress (no output, no CPU time) for its "
+                                              "deadline of %.0fs and was ended" % job["deadline"]))
         verdict = None
     elif verdict is None:
         code = os.waitstatus_to_exitcode(status) if status is not None else None
@@ -1351,7 +1500,7 @@ def relay(job, result):
 
 def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, manifest=None,
                places=None, units=manager_units, describe=describe_unit, deadline=SHARD_DEADLINE_S,
-               settle=SETTLE_S, parallel=None, python=None, tick=SHARD_TICK_S):
+               settle=SETTLE_S, parallel=None, python=None, tick=SHARD_TICK_S, clock=time.monotonic):
     """Run one gate leg as shards and return what it proved: {passed, failed, shards, breaches,
     parallelism, events, wall_seconds}. `targets` are the leg's suites by name, each a target
     exactly once. Green is failed == 0, which needs every shard to pass and the isolation check to
@@ -1360,11 +1509,11 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     # Every shard's roots stand in one temporary directory of this leg's own, which ends with it.
     with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory:
         return _run_shards(Path(directory), Path(root), leg, targets, environ, emit, requires, manifest,
-                           places, units, describe, deadline, settle, parallel, python, tick)
+                           places, units, describe, deadline, settle, parallel, python, tick, clock)
 
 
 def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, places, units, describe,
-                deadline, settle, parallel, python, tick):
+                deadline, settle, parallel, python, tick, clock):
     environ = dict(os.environ if environ is None else environ)
     say = emit or (lambda line: print(line, flush=True))
     manifest = manifest or load_manifest(root / "scripts" / "suites" / "manifest.json")
@@ -1377,8 +1526,11 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         if name not in names:
             names.append(name)
     claims = handed_claims(environ)
-    began = time.monotonic()
+    began = clock()
     (base / SHARD_PROBES).mkdir(mode=0o700)
+    # THIS LEG'S TOKEN: what its shards' instance names begin with. It is random, so the units of
+    # another session's leg, which runs the same suites, never carry it.
+    token = os.urandom(4).hex()
     jobs = []
     for index, name in enumerate(names):
         closure = requires.get(name)
@@ -1388,11 +1540,16 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                        "`python3 scripts/run_scope.py --emit-requires`")
         jobs.append({"name": name, "index": index, "closure": [n for n in order if n in (closure or ())],
                      "problem": problem, "claim": claims.get(name, SHARD_UNMEASURED),
+                     "instance": instance_of(token, index, name),
+                     # A shard with no Landlock layer of its own runs beside no other (UNLAYERED).
+                     "alone": leg == "confined" and name in UNLAYERED,
                      "root": shard_roots(base, index)[0], "output": b"", "report": b"", "peak": 0})
-    # The longest measured shard first: it is the floor of the leg's wall time. Unmeasured ones keep
-    # the manifest's order ahead of it, so a first run is the manifest's order.
+    by_instance = {job["instance"]: job for job in jobs}
+    # A shard that must run alone goes first, so the leg does not have to drain for it. Then the
+    # longest measured shard: it is the floor of the leg's wall time. Unmeasured ones keep the
+    # manifest's order ahead of it, so a first run is the manifest's order.
     pending = sorted((j for j in jobs if not j["problem"]),
-                     key=lambda j: -claims.get(j["name"], {"seconds": float("inf")})["seconds"])
+                     key=lambda j: (not j["alone"], -claims.get(j["name"], {"seconds": float("inf")})["seconds"]))
     ledger = ShardLedger(environ[LEDGER_CHANNEL]) if environ.get(LEDGER_CHANNEL) else None
     parallelism = None if ledger else max(1, int(parallel or usable_cpus()))
     metrics = int(environ[SHARD_METRICS]) if environ.get(SHARD_METRICS, "").isdigit() else None
@@ -1404,16 +1561,6 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     python = python or sys.executable
     passes = launcher_fds(root)
     scratch = leg_scratch(environ, root) if leg == "confined" else None
-    # WHICH SHARDS GET THEIR INSTANCE NAME. Every shard of a confined leg. In an unconfined leg, only
-    # a suite whose manifest entry declares `"instance": true`, and no suite of this repository
-    # declares it yet: measured on 2026-11-21 against the real user manager, suites 66, 85 and 117
-    # fail with an instance configured in their shard (their own fixtures hand their subprocesses a
-    # configuration root of their own, so the installer and the tool it starts disagree on the
-    # unit's name, and 66 pins the installation's exact file set). The suites are outside
-    # VELDO-0221, so until they carry the name through their fixtures the unconfined leg's units
-    # keep today's names, apart on the one manager as they are in the mutation stage: by each
-    # installation's own service id and by the manifest's manager declarations.
-    named = {s["name"] for s in fragments(manifest) if s.get("instance") is True}
     own = set()  # what this dispatcher itself made outside its own directory
     # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this
     # gate was asked to be force-fresh.
@@ -1423,6 +1570,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     before = watch.read()
     watched_units = watch.answers and watch.units is not None
     known, first_seen, window = set(before), {}, set()
+    unit_text = {}  # engine-shaped unit without this leg's token -> its description at first sight
     running, done, events = {}, [], []
     selector = selectors.DefaultSelector()
     stopped = []
@@ -1431,14 +1579,24 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         raise ShardsStopped(number)
     previous = {n: signal.signal(n, stop) for n in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
 
-    def observe():
+    def notice(seen):
+        """Record every item first seen now, with the suites that ran in the window it appeared in.
+        An engine-shaped unit that does not carry this leg's token is described AT ONCE: it may be
+        gone at the next reading, and whether it refers to a shard's roots is what decides it."""
         nonlocal window
-        seen = watch.read()
         suspects = sorted(window | set(running))
-        for item in seen - known:
+        fresh = seen - known
+        for item in fresh:
             first_seen[item] = suspects
         known.update(seen)
         window = set(running)
+        strangers = [name for kind, name in sorted(fresh) if kind == "unit" and unit_instance(name)[0]
+                     and unit_instance(name)[1] not in by_instance]
+        unit_text.update(watch.described(strangers))
+
+    def observe():
+        seen = watch.read()
+        notice(seen)
         return seen
 
     def launch(job):
@@ -1451,8 +1609,10 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             if path != short:
                 path.mkdir(mode=0o700)
         linked = link_manager(roots["XDG_RUNTIME_DIR"], "/run/user/%d" % os.getuid())
-        if leg == "confined" or job["name"] in named:
-            write_instance(roots["XDG_CONFIG_HOME"], job["name"])
+        # EVERY SHARD OF EVERY LEG GETS ITS INSTANCE NAME, in its runtime directory, but the few
+        # UNNAMED lists with their reasons.
+        if job["name"] not in UNNAMED:
+            write_instance(roots["XDG_RUNTIME_DIR"], job["instance"])
         env = shard_environment(environ, roots, linked, base)
         report_r, report_w = os.pipe()
         output_r, output_w = os.pipe()
@@ -1467,22 +1627,28 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             os.close(output_w)
         for descriptor in (report_r, output_r):
             os.set_blocking(descriptor, False)
-        job.update(pid=process.pid, process=process, started=time.monotonic(), deadline=deadline,
+        now = clock()
+        job.update(pid=process.pid, process=process, started=now, deadline=deadline, progress_at=now,
+                   marks=(0, 0), cpu_ticks=0,
                    pidfd=os.pidfd_open(process.pid), report_fd=report_r, output_fd=output_r,
                    roots={k: str(v) for k, v in roots.items()}, linked=linked)
         selector.register(report_r, selectors.EVENT_READ, ("report", job))
         selector.register(output_r, selectors.EVENT_READ, ("output", job))
         selector.register(job["pidfd"], selectors.EVENT_READ, ("exit", job))
         events.append({"event": "start", "suite": job["name"], "running": sorted(running),
-                       "exclusive": resources.exclusive(job["name"]),
+                       "exclusive": resources.exclusive(job["name"]), "alone": job["alone"],
                        "resources": dict(resources.demand(job["name"]))})
         running[job["name"]] = job
         window.add(job["name"])
 
     def admit():
+        if any(job["alone"] for job in running.values()):
+            return  # nothing starts beside a shard that has no layer of its own
         barred = set()
         for job in list(pending):
             name = job["name"]
+            if job["alone"] and running:
+                return  # it waits for the leg to drain, and nothing is started ahead of it
             demand = set(resources.demand(name))
             if barred & demand or not resources.fits(name):
                 barred |= demand
@@ -1503,6 +1669,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                 raise
             if ledger is not None:
                 ledger.peak = max(ledger.peak, len(running))
+            if job["alone"]:
+                return
 
     def finish(job, status, usage):
         for key in ("report_fd", "output_fd", "pidfd"):
@@ -1520,7 +1688,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         for key in ("report_fd", "output_fd", "pidfd"):
             os.close(job[key])
         job["process"].returncode = os.waitstatus_to_exitcode(status)
-        wall = time.monotonic() - job["started"]
+        wall = clock() - job["started"]
         cpu = usage.ru_utime + usage.ru_stime
         job.update(wall_seconds=wall, cpu_seconds=cpu,
                    peak_anon_bytes=max(job["peak"], usage.ru_maxrss * 1024))
@@ -1533,13 +1701,14 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         observe()
         job["result"] = result
         done.append(job)
-        say("selftest shard %s %s: closure %s; roots %s*%s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
+        say("selftest shard %s %s: closure %s; roots %s*%s; instance %s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
             % (shard_tag(job["index"]), job["name"], ", ".join(job["closure"]), job["root"],
-               "" if job["roots"]["TMPDIR"] == str(job["root"]) else " and " + job["roots"]["TMPDIR"], result["passed"],
+               "" if job["roots"]["TMPDIR"] == str(job["root"]) else " and " + job["roots"]["TMPDIR"],
+               job["instance"], result["passed"],
                result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
                "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
                and result["layer"].get("refused") is True
-               else "; NO Landlock layer of its own (exempt in run_scope.UNLAYERED)"
+               else "; NO Landlock layer of its own (exempt in run_scope.UNLAYERED), run alone"
                if result["layer"] and result["layer"].get("exempt") else ""))
         for line in relay(job, result):
             say(line)
@@ -1552,14 +1721,14 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
 
     try:
         try:
-            last_sample = time.monotonic()
+            last_sample = clock()
             while pending or running:
                 admit()
                 if not running and pending and ledger is None:
                     raise LegRefused("no pending shard fits the manifest's declared resources: %s"
                                      % ", ".join(j["name"] for j in pending))
-                now = time.monotonic()
-                wait = min([tick] + [j["started"] + j["deadline"] - now for j in running.values()])
+                now = clock()
+                wait = min([tick] + [j["progress_at"] + j["deadline"] - now for j in running.values()])
                 for key, _mask in selector.select(max(0.0, wait)):
                     kind, job = key.data
                     if kind == "exit":
@@ -1570,20 +1739,25 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                     job[kind] += data
                     if closed:
                         selector.unregister(key.fd)
-                now = time.monotonic()
+                now = clock()
+                if running and now - last_sample >= tick:
+                    last_sample = now
+                    usage = _group_usage({j["pid"] for j in running.values()})
+                    for job in running.values():
+                        anonymous, job["cpu_ticks"] = usage.get(job["pid"], (0, job["cpu_ticks"]))
+                        job["peak"] = max(job["peak"], anonymous)
+                    if watched_units:
+                        # The cheap reading of the manager at every tick: a unit a shard starts and
+                        # stops again inside one suite is still seen, down to one tick.
+                        notice(known | {("unit", name) for name in watch.engine()})
                 for job in list(running.values()):
-                    if now - job["started"] > job["deadline"] and not job.get("timed_out"):
+                    shard_progress(job, now, (len(job["output"]) + len(job["report"]), job["cpu_ticks"]))
+                    if shard_stalled(job, now) and not job.get("timed_out"):
                         job["timed_out"] = True
                         try:
                             os.killpg(job["pid"], signal.SIGKILL)
                         except ProcessLookupError:
                             pass
-                if running and now - last_sample >= tick:
-                    last_sample = now
-                    for group, total in _group_anonymous({j["pid"] for j in running.values()}).items():
-                        for job in running.values():
-                            if job["pid"] == group:
-                                job["peak"] = max(job["peak"], total)
         except ShardsStopped as error:
             stopped.append(error.number)
         finally:
@@ -1603,6 +1777,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                         pass
         if stopped:
             raise ShardsStopped(stopped[0])
+        shards_ended = clock()
 
         # ---- what each shard proved --------------------------------------------------------------
         passed = failed = 0
@@ -1618,31 +1793,55 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                 charged.setdefault(job["name"], []).append(failure)
 
         # ---- the isolation check, in every gate --------------------------------------------------
-        breaches, unattributed = [], []
+        # breaches: (suite or None, words, the suites that ran when the item first appeared).
+        breaches, unattributed, strangers = [], [], []
         after = observe()
         if watched_units and not watch.answers:
             breaches.append((None, "the user manager answered before the leg and not after it, so its "
-                                   "units could not be checked"))
-        candidates = {}
-        for kind, item in sorted(after - before):
-            place = watch.place(kind)
-            if place is not None and (Path(place["path"]) / item == base or str(Path(place["path"]) / item) in own):
-                continue
-            candidates[(kind, item)] = place
+                                   "units could not be checked", []))
+        # waiting: (kind, item) -> (where, the suite it is charged to if it stays or None, suspects, how)
         waiting = {}
-        for (kind, item), place in candidates.items():
-            path = (Path(place["path"]) / item) if place else None
-            suite, whose, how = attribute(kind, item, path, base, jobs, watch.describe)
-            where = "unit %s" % item if kind == "unit" else "%s: %s" % (kind, path)
+        loaded = {item for kind, item in after if kind == "unit"}
+        described_late = watch.described(sorted(
+            item for kind, item in known - before
+            if kind == "unit" and item in loaded and not unit_instance(item)[0]))
+        for kind, item in sorted(known - before):
             suspects = first_seen.get((kind, item)) or []
-            if whose == "leg":
+            if kind == "unit":
+                # ONLY THIS INSTANCE'S UNITS ARE JUDGED: by the leg's prefix, or by reference to a
+                # shard's roots. See the note at the top of this section.
+                engine, instance = unit_instance(item)
+                where = "unit %s" % item
+                if engine and instance in by_instance:
+                    if item in loaded:
+                        waiting[(kind, item)] = (where, by_instance[instance]["name"], suspects,
+                                                 "its name carries the shard's instance name")
+                    continue
+                text = unit_text.get(item, "") if engine else described_late.get(item, "")
+                named = _shard_named(text, base, jobs)
+                if not (named or str(base) in text):
+                    strangers.append(item)
+                elif engine and named not in UNNAMED:
+                    breaches.append((named, "%s was started without its shard's prefix (it refers to a "
+                                            "shard's roots)" % where, suspects))
+                elif item in loaded:
+                    waiting[(kind, item)] = (where, named, suspects, "the unit refers to a shard's roots")
+                continue
+            if (kind, item) not in after:
+                continue
+            place = watch.place(kind)
+            path = Path(place["path"]) / item
+            if path == base or str(path) in own:
+                continue
+            suite, whose, how = attribute(kind, item, path, base, jobs)
+            where = "%s: %s" % (kind, path)
+            if whose == "leg" and suite:
                 breaches.append((suite, "%s was left behind (%s)" % (where, how), suspects))
             elif whose == "foreign":
                 unattributed.append("%s (%s)" % (where, how))
-            elif place is not None and place["rule"] == "attributed":
-                unattributed.append("%s (nothing ties it to a shard)" % where)
             else:
-                waiting[(kind, item)] = (where, suspects)
+                waiting[(kind, item)] = (where, suspects[0] if len(suspects) == 1 else None, suspects,
+                                         "the one shard that ran when it appeared" if len(suspects) == 1 else "")
         limit = time.monotonic() + settle
         while waiting and time.monotonic() < limit:
             time.sleep(min(1.0, max(0.0, limit - time.monotonic())))
@@ -1650,17 +1849,19 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             for key in [k for k in waiting if k not in present]:
                 unattributed.append("%s (gone again %.0fs after the leg)"
                                     % (waiting.pop(key)[0], settle - (limit - time.monotonic())))
-        for (kind, item), (where, suspects) in sorted(waiting.items()):
-            breaches.append((None, "%s appeared during the leg and was left behind%s"
-                             % (where, "" if kind != "unit" else ", and carries no shard's prefix"),
-                             suspects))
-        for breach in breaches:
-            suite, words = breach[0], breach[1]
-            suspects = breach[2] if len(breach) > 2 else []
-            owners = [suite] if suite else (suspects or [j["name"] for j in jobs])
-            for owner in owners:
-                if not any(code == ISOLATION_BREACH and text == words for code, text in charged.get(owner, [])):
-                    charged.setdefault(owner, []).append((ISOLATION_BREACH, words))
+        for (kind, item), (where, suite, suspects, how) in sorted(waiting.items()):
+            orphan = "%s appeared during the leg, was left behind and could be tied to no shard" % where
+            if suite:
+                breaches.append((suite, "%s was left behind (%s)" % (where, how), suspects))
+            else:
+                breaches.append((None, orphan, suspects))
+        for suite, words, suspects in breaches:
+            if suite is None:
+                # Tied to no shard: the leg's own failure, with the item and the suspects named.
+                words = "%s; the suites that ran when it first appeared: %s" % (words, ", ".join(suspects) or "none")
+            owner = suite or LEG_OWNER
+            if not any(code == ISOLATION_BREACH and text == words for code, text in charged.get(owner, [])):
+                charged.setdefault(owner, []).append((ISOLATION_BREACH, words))
 
         # ---- one counted failure per shard-level failure, each with a fixed name ------------------
         for job in jobs:
@@ -1668,7 +1869,13 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                 failed += 1
                 say("  %s suite-shard %s %s" % (FAIL_MARK, job["name"], code))
                 say("     %s: %s" % (code, words))
-        wall = time.monotonic() - began
+        if charged.get(LEG_OWNER):
+            # One counted failure for everything the check could tie to no shard, each item named.
+            failed += 1
+            say("  %s suite-shard-leg %s %s" % (FAIL_MARK, leg, ISOLATION_BREACH))
+            for code, words in charged[LEG_OWNER]:
+                say("     %s: %s" % (code, words))
+        wall = clock() - began
         critical = max((j for j in jobs if "wall_seconds" in j), key=lambda j: j["wall_seconds"], default=None)
         isolation = [w for owner in charged.values() for code, w in owner if code == ISOLATION_BREACH]
         say("selftest leg %s: %d shard(s), parallelism %s, peak %d running; isolation check %s; critical shard %s; wall %.1fs"
@@ -1677,16 +1884,27 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                max([len(e["running"]) + 1 for e in events if e["event"] == "start"] or [0]),
                "held" if not isolation else "FAILED: %s" % ISOLATION_BREACH,
                "%s %.1fs" % (critical["name"], critical["wall_seconds"]) if critical else "none", wall))
+        mine = os.times()
+        say("   the dispatcher itself: %.1fs CPU, peak %d MiB; shards ended at %.1fs, the isolation check "
+            "took %.1fs; instance token %s"
+            % (mine.user + mine.system, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss >> 10,
+               shards_ended - began, wall - (shards_ended - began), token))
         for line in unattributed:
             say("   isolation note, not charged: %s" % line)
+        if strangers:
+            say("   %d unit(s) appeared during the leg that nothing ties to this instance, not judged: %s%s"
+                % (len(strangers), ", ".join(sorted(strangers)[:12]), " ..." if len(strangers) > 12 else ""))
         for job in jobs:
-            if leg == "confined" and job["name"] in UNLAYERED:
-                say("   shard %s ran without a Landlock layer of its own: %s" % (job["name"], UNLAYERED[job["name"]]))
+            if job["name"] in UNNAMED:
+                say("   shard %s ran without an instance name: %s" % (job["name"], UNNAMED[job["name"]]))
+            if job["alone"]:
+                say("   shard %s ran without a Landlock layer of its own, alone: %s" % (job["name"], UNLAYERED[job["name"]]))
         return {"passed": passed, "failed": failed, "targets": names, "charged": charged,
-                "breaches": isolation, "unattributed": unattributed, "events": events,
+                "breaches": isolation, "unattributed": unattributed, "strangers": sorted(strangers),
+                "events": events, "token": token,
                 "parallelism": parallelism, "wall_seconds": wall,
                 "shards": [{k: j.get(k) for k in ("name", "index", "closure", "wall_seconds", "cpu_seconds",
-                                                    "peak_anon_bytes", "roots", "linked", "claim")}
+                                                    "peak_anon_bytes", "roots", "linked", "claim", "instance")}
                            | {"passed": j["result"]["passed"] if "result" in j else 0,
                               "failed": j["result"]["failed"] if "result" in j else 0}
                            for j in jobs]}

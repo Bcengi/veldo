@@ -115,10 +115,17 @@ def write_layer(roots):
     """Stack one more Landlock layer on this process and every descendant: writes only beneath
     `roots` (VELDO-0221). A shard of a confined gate leg calls it before its suite runs, on top of
     the leg's own domain, so a write to another shard's roots is refused by the kernel whatever the
-    leg's domain grants. The layer handles the write accesses only: what the process may read,
-    execute and reach over sockets stays exactly what the layers beneath it already allow, and a
-    layer can only take away. The two devices every profile may write stay writable. It is the same
-    unprivileged mechanism as `landlock` above and needs no namespace, helper or capability."""
+    leg's domain grants. The layer handles the write accesses only: what the process may read
+    and execute stays exactly what the layers beneath it already allow, and a layer can only take
+    away. The two devices every profile may write stay writable. THE LAYER IS ALSO A SCOPE for
+    signals and abstract Unix sockets (the same two scopes the leg's domain sets, here one level
+    further in): a process in it can signal, and connect to an abstract socket of, only processes
+    in this layer or beneath it, so one shard cannot signal or kill a sibling shard or the
+    dispatcher. The dispatcher, outside the layer, still signals in. THE FLOOR is Landlock ABI 6
+    (Linux 6.12), which the leg's own domain already requires (`landlock` above), so there is no
+    kernel on which a confined leg runs and a shard goes unscoped: below it this call raises and
+    the shard is reported unconfined. It is the same unprivileged mechanism as `landlock` above
+    and needs no namespace, helper or capability."""
     libc = ctypes.CDLL(None, use_errno=True)
 
     def call(number, *args):
@@ -129,8 +136,8 @@ def write_layer(roots):
 
     if platform.machine() != 'x86_64':
         raise RuntimeError('agent sandbox supports reviewed x86_64 syscall numbers only')
-    if call(444, 0, 0, 1) < 3:
-        raise RuntimeError('a shard layer needs Landlock ABI 3 (truncation)')
+    if call(444, 0, 0, 1) < 6:
+        raise RuntimeError('a shard layer needs Landlock ABI 6 (truncation, signal and abstract socket scope)')
 
     class Ruleset(ctypes.Structure):
         _fields_ = [('access', ctypes.c_uint64), ('net', ctypes.c_uint64), ('scoped', ctypes.c_uint64)]
@@ -143,7 +150,8 @@ def write_layer(roots):
         raise OSError(ctypes.get_errno(), 'cannot set no_new_privs')
     grants = [(Path(root), WRITE) for root in roots]
     grants += [(device, 1 << 1) for device in (Path('/dev/null'), PTMX) if device.exists()]
-    rules = Ruleset(WRITE, 0, 0)
+    # scoped: LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET (1) | LANDLOCK_SCOPE_SIGNAL (2).
+    rules = Ruleset(WRITE, 0, 3)
     fd = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
     try:
         for path, access in grants:
