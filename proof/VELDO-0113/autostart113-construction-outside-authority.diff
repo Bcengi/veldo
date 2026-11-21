@@ -1,0 +1,12 @@
+--- a/.veldo/claim.py
++++ b/.veldo/claim.py
+@@ -57,6 +57,9 @@
+ import subprocess
+ import uuid
+ from datetime import datetime, timezone
++
++def outside_authority_constructor():
++    return _CLIENTS.load_client_module("control_dispatch").Dispatches(None, None)
+ 
+ STALE_AFTER_SECONDS = 90
+ 

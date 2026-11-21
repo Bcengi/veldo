@@ -1,0 +1,15 @@
+command: -B proof/VELDO-0113/run_checks.py --case autostart113-reaped-fallback
+exit_code: 1
+Traceback (most recent call last):
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 160, in <module>
+    
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 151, in main
+    elif args.case:
+        ^^^^^^^^^^^^
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 120, in run
+    summary = retain(name, result)
+              ^^^^^^^^^^^^^^^^^^^^
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 49, in retain
+    assert read_receipts(DESTINATION / (name + '.json.gz')) == result
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

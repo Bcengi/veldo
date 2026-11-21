@@ -1,0 +1,240 @@
+{
+  "note": "Superseded implementation diagnostics. Full archives replaced by final-source runs to keep proof below its size cap. Pre-correction verdicts violated mandatory stand-down and are not acceptance evidence.",
+  "runs": [
+    {
+      "name": "baseline",
+      "diagnostic_only": true,
+      "implementation_digest": "df765a6a2dc63e4d70eebf645983942f73dbefaf7f1918896cbd9c993cfc0738",
+      "receipt_sha256": "535512c4bad6098a7749485f1be2f4c0c2f0c91c4db2995e29ef37974d562f1e",
+      "rows": {
+        "unavailable/in-process-construction-boundary": {
+          "reason": [
+            "outside_authority:bin/veldo:285",
+            "outside_authority:engine/bin/veldo:285"
+          ],
+          "status": "FAIL"
+        },
+        "unavailable/no-auto-start-needs-census": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-hosts-a-listener": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-starts-the-authority": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/store-write-grant": {
+          "observation": {
+            "pid": 3958106,
+            "writable": true
+          },
+          "reason": "no_process_specific_write_grant",
+          "status": "GAP"
+        }
+      },
+      "metrics": {
+        "complete_censuses": 0,
+        "completed": 42,
+        "construction_cases": 20,
+        "expected": 42,
+        "forbidden_launches": 0,
+        "invocations_completed": 22,
+        "measured": 22,
+        "observation_failures": 22
+      },
+      "fault_cases": 44,
+      "faults_ok": true
+    },
+    {
+      "name": "baseline-current",
+      "diagnostic_only": true,
+      "implementation_digest": "3fa835091d33337d953f3fc3a0e699bc6dde2be2085479a941c88bc163148c54",
+      "receipt_sha256": "0b42a8f4d6ed932390d2598a72d5fab549b95289a47a8d05dd90d3d93f10a73b",
+      "rows": {
+        "unavailable/in-process-construction-boundary": {
+          "reason": [
+            "outside_authority:bin/veldo:285",
+            "outside_authority:engine/bin/veldo:285"
+          ],
+          "status": "FAIL"
+        },
+        "unavailable/no-auto-start-needs-census": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-hosts-a-listener": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-starts-the-authority": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/store-write-grant": {
+          "observation": {
+            "pid": 146900,
+            "writable": true
+          },
+          "reason": "no_process_specific_write_grant",
+          "status": "GAP"
+        }
+      },
+      "metrics": {
+        "complete_censuses": 0,
+        "completed": 42,
+        "construction_cases": 20,
+        "expected": 42,
+        "forbidden_launches": 0,
+        "invocations_completed": 22,
+        "measured": 22,
+        "observation_failures": 22
+      },
+      "fault_cases": 44,
+      "faults_ok": true
+    },
+    {
+      "name": "restored",
+      "diagnostic_only": true,
+      "implementation_digest": "149cf24f62215e73f7ad205c0f42b42d9641fcd479e390003e2db538a4f7f24d",
+      "receipt_sha256": "90f5ad49813bc916e84421dd451bd047ef1aef6d67da71e5b4fad2b68a57d242",
+      "rows": {
+        "unavailable/in-process-construction-boundary": {
+          "reason": [
+            "outside_authority:bin/veldo:285",
+            "outside_authority:engine/bin/veldo:285"
+          ],
+          "status": "FAIL"
+        },
+        "unavailable/no-auto-start-needs-census": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-hosts-a-listener": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-starts-the-authority": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/store-write-grant": {
+          "observation": {
+            "pid": 2553210,
+            "writable": true
+          },
+          "reason": "no_process_specific_write_grant",
+          "status": "GAP"
+        }
+      },
+      "metrics": {
+        "complete_censuses": 0,
+        "completed": 42,
+        "construction_cases": 20,
+        "expected": 42,
+        "forbidden_launches": 0,
+        "invocations_completed": 22,
+        "measured": 22,
+        "observation_failures": 22
+      },
+      "fault_cases": 44,
+      "faults_ok": true
+    },
+    {
+      "name": "autostart113-reaped-fallback-pre-correction",
+      "diagnostic_only": true,
+      "implementation_digest": "3fa835091d33337d953f3fc3a0e699bc6dde2be2085479a941c88bc163148c54",
+      "receipt_sha256": "1f51dc5b824b4691eb981d998e74519c72657f60faa098da6bb4f05f685c9fde",
+      "rows": {
+        "unavailable/in-process-construction-boundary": {
+          "reason": [
+            "outside_authority:bin/veldo:285",
+            "outside_authority:engine/bin/veldo:285"
+          ],
+          "status": "FAIL"
+        },
+        "unavailable/no-auto-start-needs-census": {
+          "reason": "incomplete_census_accepted",
+          "status": "FAIL"
+        },
+        "unavailable/no-client-hosts-a-listener": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/no-client-starts-the-authority": {
+          "reason": "forbidden_autostart",
+          "status": "FAIL"
+        },
+        "unavailable/store-write-grant": {
+          "observation": {
+            "pid": 677726,
+            "writable": true
+          },
+          "reason": "no_process_specific_write_grant",
+          "status": "GAP"
+        }
+      },
+      "metrics": {
+        "complete_censuses": 0,
+        "completed": 42,
+        "construction_cases": 20,
+        "expected": 42,
+        "forbidden_launches": 18,
+        "invocations_completed": 22,
+        "measured": 22,
+        "observation_failures": 22
+      },
+      "fault_cases": 44,
+      "faults_ok": false
+    },
+    {
+      "name": "autostart113-transient-abstract-listener-pre-correction",
+      "diagnostic_only": true,
+      "implementation_digest": "3fa835091d33337d953f3fc3a0e699bc6dde2be2085479a941c88bc163148c54",
+      "receipt_sha256": "4ab0a8b53a3bbc2108654aaef07068f8b0b6068d84bf1dc2634c19dfe0ae8a82",
+      "rows": {
+        "unavailable/in-process-construction-boundary": {
+          "reason": [
+            "outside_authority:bin/veldo:285",
+            "outside_authority:engine/bin/veldo:285"
+          ],
+          "status": "FAIL"
+        },
+        "unavailable/no-auto-start-needs-census": {
+          "reason": "incomplete_census_accepted",
+          "status": "FAIL"
+        },
+        "unavailable/no-client-hosts-a-listener": {
+          "reason": "forbidden_autostart",
+          "status": "FAIL"
+        },
+        "unavailable/no-client-starts-the-authority": {
+          "reason": "census_incomplete",
+          "status": "STANDS DOWN"
+        },
+        "unavailable/store-write-grant": {
+          "observation": {
+            "pid": 1152879,
+            "writable": true
+          },
+          "reason": "no_process_specific_write_grant",
+          "status": "GAP"
+        }
+      },
+      "metrics": {
+        "complete_censuses": 0,
+        "completed": 42,
+        "construction_cases": 20,
+        "expected": 42,
+        "forbidden_launches": 0,
+        "invocations_completed": 22,
+        "measured": 22,
+        "observation_failures": 22
+      },
+      "fault_cases": 44,
+      "faults_ok": false
+    }
+  ]
+}

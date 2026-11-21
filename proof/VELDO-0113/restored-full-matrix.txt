@@ -1,0 +1,75 @@
+{
+  "name": "restored-full-matrix",
+  "metrics": {
+    "complete_censuses": 0,
+    "completed": 42,
+    "construction_cases": 20,
+    "expected": 42,
+    "fault_cases": 176,
+    "forbidden_launches": 0,
+    "invocations_completed": 22,
+    "measured": 22,
+    "observation_failures": 22
+  },
+  "faults_ok": true,
+  "faults_driven": true,
+  "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+  "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+  "protocol_controls": {
+    "failures": true,
+    "incomplete_witness_stands_down": true,
+    "invalid_receipt_0": true,
+    "invalid_receipt_1": true,
+    "invalid_receipt_2": true,
+    "invalid_receipt_3": true,
+    "invalid_receipt_4": true,
+    "invalid_receipt_5": true,
+    "invalid_receipt_6": true,
+    "invalid_receipt_7": true,
+    "known_non_refusal_is_false": true,
+    "qualification": true,
+    "synthetic_complete_birth_refutes": true,
+    "synthetic_complete_birth_restored": true,
+    "synthetic_complete_evaluates": true,
+    "synthetic_complete_service_refutes": true,
+    "synthetic_complete_service_restored": true
+  },
+  "rows": {
+    "unavailable/in-process-construction-boundary": {
+      "reason": [
+        "outside_authority:bin/veldo:285",
+        "outside_authority:engine/bin/veldo:285"
+      ],
+      "status": "FAIL"
+    },
+    "unavailable/no-auto-start-needs-census": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/no-client-hosts-a-listener": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/no-client-starts-the-authority": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/store-write-grant": {
+      "observation": {
+        "pid": 797506,
+        "writable": true
+      },
+      "reason": "no_process_specific_write_grant",
+      "status": "GAP"
+    }
+  },
+  "saved_receipt_reassessment": {
+    "status": "named_assertions_not_satisfied",
+    "fresh_live_drive": false,
+    "reason": "{'unavailable/in-process-construction-boundary': {'reason': ['outside_authority:bin/veldo:285', 'outside_authority:engine/bin/veldo:285'], 'status': 'FAIL'}, 'unavailable/no-auto-start-needs-census': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/no-client-hosts-a-listener': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/no-client-starts-the-authority': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/store-write-grant': {'observation': {'pid': 797506, 'writable': True}, 'reason': 'no_process_specific_write_grant', 'status': 'GAP'}}"
+  },
+  "receipt_sha256": "f8b0db3448669189c9ae41d4399eb67cbed49893824732b3923a374b72288062"
+}
