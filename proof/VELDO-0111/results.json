@@ -1,6 +1,6 @@
 {
-  "source_digest": "59e3eba3f53a0606a4cfa3ecb82601b99c486bfe790c3231213f4e95944990bc",
-  "suite_digest": "c82c93eb450fc5de73601bcbea66607ea9bbd696e4ed264c2f3a4311862e8e14",
+  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+  "suite_digest": "2538aefc1043737059a8513ef5db6deb2310e321a21a57435ad77efd640ecd62",
   "cases": [
     {
       "criterion": "AC1",
@@ -11,7 +11,7 @@
           "row": "census/process-lifetimes",
           "passed": false,
           "completed": true,
-          "seconds": 10.266518877935596,
+          "seconds": 180.80103179486468,
           "log": "AC1-red.json.gz"
         },
         {
@@ -19,7 +19,7 @@
           "row": "census/process-lifetimes",
           "passed": true,
           "completed": true,
-          "seconds": 10.506848439923488,
+          "seconds": 175.53497863281518,
           "log": "AC1-green.json.gz"
         }
       ]
@@ -33,7 +33,7 @@
           "row": "census/listener-lifetimes",
           "passed": false,
           "completed": true,
-          "seconds": 10.322974693030119,
+          "seconds": 211.79160943394527,
           "log": "AC2-red.json.gz"
         },
         {
@@ -41,7 +41,7 @@
           "row": "census/listener-lifetimes",
           "passed": true,
           "completed": true,
-          "seconds": 10.208191246027127,
+          "seconds": 179.28885702090338,
           "log": "AC2-green.json.gz"
         }
       ]
@@ -55,7 +55,7 @@
           "row": "census/observer-is-outside",
           "passed": false,
           "completed": true,
-          "seconds": 9.683990821940824,
+          "seconds": 193.7592627601698,
           "log": "AC3-red.json.gz"
         },
         {
@@ -63,7 +63,7 @@
           "row": "census/observer-is-outside",
           "passed": true,
           "completed": true,
-          "seconds": 9.862894418067299,
+          "seconds": 176.66754819406196,
           "log": "AC3-green.json.gz"
         }
       ]
@@ -77,7 +77,7 @@
           "row": "census/incomplete-is-not-empty",
           "passed": false,
           "completed": true,
-          "seconds": 10.537493961979635,
+          "seconds": 173.86518893530592,
           "log": "AC4-red.json.gz"
         },
         {
@@ -85,7 +85,7 @@
           "row": "census/incomplete-is-not-empty",
           "passed": true,
           "completed": true,
-          "seconds": 10.466724078985862,
+          "seconds": 180.6244556759484,
           "log": "AC4-green.json.gz"
         }
       ]

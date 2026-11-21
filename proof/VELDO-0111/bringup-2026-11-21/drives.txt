@@ -1,0 +1,23 @@
+VELDO-0111 full falsifier drives through the host lock (host_heavy.sh), scratch clone of 6b322350, 2026-11-21, load about 22.
+AC1 red census/process-lifetimes False
+AC1 green census/process-lifetimes True
+AC2 red census/listener-lifetimes False
+AC2 green census/listener-lifetimes True
+AC3 red census/observer-is-outside False
+AC3 green census/observer-is-outside True
+AC4 red census/incomplete-is-not-empty False
+AC4 green census/incomplete-is-not-empty True
+All four falsifiers detected, followed by green controls. Qualification remains INCOMPLETE.
+drive exit 0
+phantom-unix-red [['census/unix-binding-is-real', False]]
+phantom-unix-green [['census/unix-binding-is-real', True]]
+drop-autobind-red [['census/unix-binding-is-real', False]]
+drop-autobind-green [['census/unix-binding-is-real', True]]
+other-family-service-red [['census/unix-binding-is-real', False]]
+other-family-service-green [['census/unix-binding-is-real', True]]
+silence-family-red [['census/family-qualification-boundary', False]]
+silence-family-green [['census/family-qualification-boundary', True]]
+uncovered-state-red [['census/fault-state-coverage', False]]
+uncovered-state-green [['census/fault-state-coverage', True]]
+round3 exit 0
+exit 0
