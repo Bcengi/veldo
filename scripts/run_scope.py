@@ -1296,6 +1296,11 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     ledger = ShardLedger(environ[LEDGER_CHANNEL]) if environ.get(LEDGER_CHANNEL) else None
     parallelism = None if ledger else max(1, int(parallel or usable_cpus()))
     metrics = int(environ[SHARD_METRICS]) if environ.get(SHARD_METRICS, "").isdigit() else None
+    if metrics is not None:
+        try:
+            os.set_blocking(metrics, False)  # a reader that fell behind loses a line, never holds the leg
+        except OSError:
+            metrics = None
     python = python or sys.executable
     passes = launcher_fds(root)
     # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this

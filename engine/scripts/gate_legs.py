@@ -78,6 +78,21 @@ reach its own integration stage. A suite that drives a temporary authority copy 
 own list keeps out of the owner's store from its own side, by giving that driver a scratch HOME.
 There is no environment override for the store's path, because that would be one more input to
 forge.
+
+THE LEG'S SHARDS (VELDO-0221). The candidate's dispatcher runs a leg's suites as parallel shards,
+and each shard claims its measured CPU and anonymous memory from the gate-wide ledger (VELDO-0216).
+So a declared leg's command is handed three things beside its leg variables, each set only here,
+the caller's always dropped. The ledger channel this runner inherited from the scheduler
+(VELDO_GATE_LEDGER_FD): the confined leg gets it through the launcher's --inherit, the unconfined
+leg as an inherited descriptor; the dispatcher keeps it from every shard, and scripts/selftest.py
+and scripts/run_scope.py are protected. The claims (VELDO_GATE_SHARD_CLAIMS): what each suite's
+shard measured in this leg's last passing unit stage, read from the leg-time store. And, in the
+unit stage, a pipe the dispatcher writes each passing shard's wall seconds, CPU seconds and peak
+anonymous memory to (VELDO_GATE_SHARD_METRICS_FD), which this runner records after a passing leg,
+under the same rule as the leg's own time: only the authority's own list reaches the owner's store.
+A suite with no measurement claims one core and 1 GiB. The manager is not claimed per shard: the
+unconfined leg's node already holds it for the leg (scripts/gate_graph.json), and the dispatcher
+admits the manifest's exclusive and shared manager suites inside that hold.
 """
 import argparse
 import hashlib
@@ -101,6 +116,9 @@ MUTATION_COMMAND = 'authority mutation stage'
 LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION'
 # VELDO-0214: the unit leg's measured seconds, handed to the matching integration leg.
 UNIT_SECONDS = 'VELDO_GATE_UNIT_SECONDS'
+# VELDO-0221: what a leg's shard dispatcher is handed (see the docstring).
+LEDGER_CHANNEL = 'VELDO_GATE_LEDGER_FD'
+SHARD_CLAIMS, SHARD_METRICS = 'VELDO_GATE_SHARD_CLAIMS', 'VELDO_GATE_SHARD_METRICS_FD'
 MEASURED_STAGE, BUDGETED_STAGE = 'unit', 'integration'
 LEG_TIMES = Path.home() / '.cache' / 'veldo' / 'gate-leg-seconds'
 RESOURCE_READ_MAX_AGE_DAYS = 30
@@ -154,16 +172,94 @@ def entries(document):
     return [e['suite'] + (':' + e['rows'] if 'rows' in e else '') for e in document['suites']]
 
 
-def _env(leg=None, listed=(), digest=None, measured=None):
+def _env(leg=None, listed=(), digest=None, measured=None, claims=None):
     env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
-    for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST'):
+    for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST', SHARD_CLAIMS, SHARD_METRICS):
         env.pop(authority_variable, None)
     if leg:
         env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
         if measured is not None:
             env[UNIT_SECONDS] = json.dumps(dict(measured, leg=leg, declaration=digest),
                                            sort_keys=True, separators=(',', ':'))
+        if claims:
+            env[SHARD_CLAIMS] = json.dumps(claims, sort_keys=True, separators=(',', ':'))
     return env
+
+
+def _shards_file(times, digest, leg):
+    """This authority's per-suite shard measurements for one declaration and leg."""
+    identity = '%s\n%s\nshards\n%s' % (HERE.parent, digest, leg)
+    return Path(times) / (hashlib.sha256(identity.encode()).hexdigest()[:32] + '.json')
+
+
+def read_shard_claims(times, digest, leg):
+    """{suite: {cpu, memory, seconds}} last recorded for this authority, declaration and leg, or {}.
+    A record that is not this authority's, or older than RESOURCE_READ_MAX_AGE_DAYS, is not read."""
+    try:
+        path = _shards_file(times, digest, leg)
+        document = json.loads(path.read_text())
+        if document.get('authority') != str(HERE.parent) or document.get('declaration') != digest \
+                or document.get('leg') != leg or not isinstance(document.get('suites'), dict) \
+                or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:
+            return {}
+    except (OSError, ValueError, AttributeError):
+        return {}
+    claims = {}
+    for suite, item in document['suites'].items():
+        try:
+            values = {key: item[key] for key in ('cpu', 'memory', 'seconds')}
+        except (TypeError, KeyError):
+            continue
+        if SUITE.match(suite) and all(type(v) in (int, float) and math.isfinite(v) and v > 0
+                                      for v in values.values()):
+            claims[suite] = values
+    return claims
+
+
+def shard_measurements(text):
+    """{suite: {cpu, memory, seconds}} from the lines a leg's dispatcher wrote to its metrics pipe.
+    A line that is not one suite's finite positive wall, CPU and memory is dropped."""
+    measured = {}
+    for line in text.splitlines():
+        try:
+            item = json.loads(line)
+            suite, wall = item['suite'], item['wall_seconds']
+            cpu, memory = item['cpu_seconds'], item['peak_anon_bytes']
+        except (ValueError, TypeError, KeyError):
+            continue
+        if not isinstance(suite, str) or not SUITE.match(suite) or not all(
+                type(v) in (int, float) and math.isfinite(v) and v > 0 for v in (wall, cpu, memory)):
+            continue
+        # A shard never claims under a tenth of a core: a suite that mostly waits still starts an
+        # interpreter and its preamble.
+        measured[suite] = {'cpu': max(0.1, cpu / wall), 'memory': memory, 'seconds': wall}
+    return measured
+
+
+def record_shard_claims(times, digest, leg, measured):
+    """Keep each suite's largest measured claim and its latest wall time; said, not fatal."""
+    if not measured:
+        return False
+    try:
+        Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+        suites = read_shard_claims(times, digest, leg)
+        for suite, item in measured.items():
+            previous = suites.get(suite, {})
+            suites[suite] = {'cpu': max(item['cpu'], previous.get('cpu', 0)),
+                             'memory': max(item['memory'], previous.get('memory', 0)),
+                             'seconds': item['seconds']}
+        target = _shards_file(times, digest, leg)
+        fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(target.parent))
+        with os.fdopen(fd, 'w') as handle:
+            json.dump({'authority': str(HERE.parent), 'declaration': digest, 'leg': leg, 'suites': suites},
+                      handle, sort_keys=True)
+        os.replace(pending, target)
+    except OSError as error:
+        print('   unit: could not record the %s leg\'s shard measurements in %s (%s)' % (leg, times, error),
+              flush=True)
+        return False
+    prune_times(times, keep=target)
+    return True
 
 
 def _times_file(times, digest):
@@ -321,11 +417,24 @@ def measurement(times, digest, leg, run):
             'fresh': 'this gate run' if item.get('run') == run else 'an earlier gate run'}
 
 
-def confined(root, command, env):
-    """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it."""
-    return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
-                           str(root), '--', 'bash', '-c', command], env=env,
-                          stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
+def confined(root, command, env, channels=None):
+    """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it. A
+    leg's channels (VELDO-0221) cross the launcher by its --inherit, which gate_candidate.py does
+    not take: the launcher is then started here with the same arguments gate_candidate.py gives it."""
+    if not channels:
+        return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
+                               str(root), '--', 'bash', '-c', command], env=env,
+                              stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
+    env = dict(env, **{name: str(fd) for name, fd in channels.items()})
+    config = env.get('VELDO_AGENT_CONFIG', str(HERE / 'agent_sandbox.json'))
+    inherit = [word for fd in channels.values() for word in ('--inherit', str(fd))]
+    code = subprocess.run([sys.executable, '-I', '-S', str(HERE / 'agent_sandbox.py'), '--profile', 'gate',
+                           '--config', config, '--worktree', str(root), *inherit, '--', 'bash', '-c', command],
+                          env=env, stdin=subprocess.DEVNULL, close_fds=True,
+                          pass_fds=(*_launcher_fds(), *channels.values())).returncode
+    if code:
+        print('candidate execution failed in store-denied domain (publication forbidden)', file=sys.stderr)
+    return code
 
 
 def _launcher_fds():
@@ -346,11 +455,13 @@ def _launcher_fds():
 AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON', 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')
 
 
-def unconfined(root, command, env):
-    """The stage command outside every domain, in the candidate, as before VELDO-0208."""
+def unconfined(root, command, env, channels=None):
+    """The stage command outside every domain, in the candidate, as before VELDO-0208. A leg's
+    channels (VELDO-0221) are the only authority variables it keeps, as inherited descriptors."""
     env = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
-    return subprocess.run(['bash', '-c', command], cwd=str(root), env=env,
-                          stdin=subprocess.DEVNULL).returncode
+    env.update({name: str(fd) for name, fd in (channels or {}).items()})
+    return subprocess.run(['bash', '-c', command], cwd=str(root), env=env, stdin=subprocess.DEVNULL,
+                          pass_fds=tuple((channels or {}).values())).returncode
 
 
 def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None):
@@ -379,15 +490,35 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
             print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
                   % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
                   else 'no unit %s leg measurement recorded' % leg), flush=True)
+        # VELDO-0221: the leg's shard dispatcher claims on the ledger this runner inherited, with the
+        # claims the last passing unit leg measured, and in the unit stage reports what it measures.
+        channels, metrics = {}, None
+        if os.environ.get(LEDGER_CHANNEL, '').isdigit():
+            channels[LEDGER_CHANNEL] = int(os.environ[LEDGER_CHANNEL])
+        if stage == MEASURED_STAGE:
+            metrics, write = os.pipe()
+            channels[SHARD_METRICS] = write
         started = time.monotonic()
-        code = runner(root, command, _env(leg, listed, digest, handed))
+        try:
+            code = runner(root, command, _env(leg, listed, digest, handed,
+                                              read_shard_claims(times, digest, leg)), channels)
+        finally:
+            if metrics is not None:
+                os.close(channels[SHARD_METRICS])
         seconds = time.monotonic() - started
         print('   %s: %s leg: %s (%.1fs)' % (stage, leg, 'pass' if code == 0 else 'FAIL', seconds),
               flush=True)
+        measured = {}
+        if metrics is not None:
+            with os.fdopen(metrics, 'rb') as handle:
+                measured = shard_measurements(handle.read().decode('utf-8', 'replace'))
         if stage == MEASURED_STAGE and code == 0:
             refusal = owner_store_refusal(times, path)
             if refusal is None:
                 record_time(times, digest, leg, seconds, run)
+                if record_shard_claims(times, digest, leg, measured):
+                    print('   %s: %s leg: %d shard measurement(s) recorded for the next gate\'s claims'
+                          % (stage, leg, len(measured)), flush=True)
             else:
                 print('   %s: %s leg time not recorded in the owner\'s store: %s' % (stage, leg, refusal),
                       flush=True)
