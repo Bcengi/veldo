@@ -35,6 +35,12 @@ any of them continues the conversation (control_intake); a reply part or status 
 (`sent`), and a line answering one of the owner's messages is kept under that message
 (`conversation-answer:<bot>:<chat>:<message>`), so a redelivered message is never answered twice.
 
+VELDO-0180: the owner's typed command making the conversation a project's work points it at that project
+(`record_conversation_project`, planned in intake's routing transaction, the owner's own): `projects` lists each
+project, route, conversion proposal and command; the conversation stays open.  `records` is where the conversation
+receiver keeps its turns' execution records (its state root's, unless the service names another), which the
+conversion's rendering reads.
+
 Conversation worker reservations use the shared subscription-account records and
 the same account-pool selection order.  Their context names the conversation as the
 unit and deliberately carries no project or repository.  They are visible to the
@@ -79,6 +85,8 @@ END = 'end_conversation_turn'
 DEFER = 'wait_conversation_turn'
 # VELDO-0176 AC2: a question the factory asked about a turn, or a notice it gave the owner, kept on the turn record.
 NOTE = 'note_conversation_turn'
+# VELDO-0180: the conversation points at the project its owner's typed command made it the work of.
+POINT = 'record_conversation_project'
 OWNER_OPERATIONS = (OPEN, CLOSE, ROLE, ATTACH, MESSAGE)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
@@ -102,7 +110,7 @@ SENT_KIND = 'conversation_message'
 ANSWER_KIND = 'conversation_answer'
 SENT_SCHEMA = 'veldo.conversation_message/v1'
 SENT_KINDS = ('reply', 'status', 'answer', 'refusal')
-OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT)
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT, POINT)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
 WORKSPACE = 'workspace'
@@ -400,6 +408,18 @@ def transition(conn, params, before):
         return {cid: {'kind': KIND, 'data': data}}
     if not current or current.get('kind') != KIND:
         raise Refused('invalid_input:conversation:unknown')
+    if operation == POINT:
+        _member(conn, principal, now, owner=True)
+        if record.get('owner') != principal:
+            raise Refused('missing_authority:conversation_owner')
+        if record.get('status') != 'open':
+            raise Refused('stale_subject:conversation_closed')
+        if not all(_text(params.get(k)) for k in ('project', 'route', 'proposal', 'command')):
+            raise Refused('invalid_input:conversation_project')
+        record.setdefault('projects', []).append({k: params[k] for k in ('project', 'route', 'proposal', 'command')}
+                                                 | {'at': now})
+        record['version'] += 1
+        return {cid: {'kind': KIND, 'data': record}}
     if operation in OWNER_OPERATIONS:
         member = _member(conn, principal, now, owner=True)
         if record.get('owner') != principal:
@@ -574,9 +594,12 @@ def _bind_session(turn, session, started):
 
 
 class Conversations:
-    def __init__(self, store, conn, *, domain, principal, signer, sign, state_root, generation=1, observe=None):
+    def __init__(self, store, conn, *, domain, principal, signer, sign, state_root, generation=1, observe=None,
+                 records=None):
         self.store, self.conn, self.domain, self.principal = store, conn, domain, principal
         self.signer, self.sign, self.state_root, self.generation = signer, sign, os.path.abspath(str(state_root)), generation
+        # VELDO-0180: the turns' execution records (the conversation receiver's), for a conversion's rendering.
+        self.records = os.path.abspath(str(records)) if records else os.path.join(self.state_root, 'records')
         self.observe = observe or (lambda event: None)
         conn.command_registry[OPERATION] = {'transaction_transition': transition,
                                             'writes': ('entities', 'journal', 'commands', 'nonces')}

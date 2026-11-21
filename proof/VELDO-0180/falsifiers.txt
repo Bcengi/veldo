@@ -1,0 +1,30 @@
+python3 proof/VELDO-0180/falsify.py at 35cb35f4, in a transient user scope (MemoryMax=8G, MemorySwapMax=0)
+case: route180-turn-reply-carried (control_conversation_project.py)
+  target rows: ['AC1/injected-route']
+  failed rows: ['VELDO-0180 AC1/injected-route', 'VELDO-0180 AC1/observability']
+  killed at its target: True
+      VELDO-0180 detail: AC1/injected-route no project was made with no owner command: no conversion, decision, project, objective or pointer
+      VELDO-0180 detail: AC1/observability conversions are counted by route and by command route, one asked a question, refusals by name
+  restored: True
+case: inputs180-last-message-only (control_conversation_project.py)
+  target rows: ['AC2/context']
+  failed rows: ['VELDO-0180 AC2/context', 'VELDO-0180 AC2/history']
+  killed at its target: True
+      VELDO-0180 detail: AC2/history every turn so far, from the redacted records: both messages, the tool call and result, both replies; never shortened
+      VELDO-0180 detail: AC2/context the PM run's input holds the first turn's message, as he wrote it
+  restored: True
+case: launch180-snapshot-unchecked (control_conversation_project.py)
+  target rows: ['AC2/snapshot-mismatch']
+  failed rows: ['VELDO-0180 AC2/observability', 'VELDO-0180 AC2/snapshot-mismatch']
+  killed at its target: True
+      VELDO-0180 detail: AC2/snapshot-mismatch a snapshot whose digest differs from the bound one is refused binding_mismatch:conversation_snapshot before launch [None]; nothing was spawned for it
+      VELDO-0180 detail: AC2/observability each run that read the inputs is joined to its objective and conversation by digest; the refusal is counted
+  restored: True
+case: name180-read-not-his-words (control_intake_conversation.py)
+  target rows: ['AC1/name-from-command']
+  failed rows: ['VELDO-0180 AC1/injected-route', 'VELDO-0180 AC1/name-from-command', 'VELDO-0180 AC1/observability']
+  killed at its target: True
+      VELDO-0180 detail: AC1/name-from-command a PM reading naming a project his words do not name is refused by name [None]
+      VELDO-0180 detail: AC1/injected-route no project was made with no owner command: no conversion, decision, project, objective or pointer
+      VELDO-0180 detail: AC1/observability conversions are counted by route and by command route, one asked a question, refusals by name
+  restored: True

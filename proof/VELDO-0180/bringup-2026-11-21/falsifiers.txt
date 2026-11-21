@@ -1,0 +1,8 @@
+Each registered mutation case of finding 180 applied to the checkout's module at the head of the chain (VELDO-0187 ported), its suite run alone, the module restored byte for byte.
+180 [route180-turn-reply-carried] control_conversation_project.py rows AC1/injected-route: RED on its row; false rows: VELDO-0180 AC1/injected-route; VELDO-0180 AC1/observability; 136_veldo_0180_conversation_projects 20 passed 3.84s; restored True
+180 [inputs180-last-message-only] control_conversation_project.py rows AC2/context: RED on its row; false rows: VELDO-0180 AC2/history; VELDO-0180 AC2/context; 136_veldo_0180_conversation_projects 20 passed 3.69s; restored True
+180 [launch180-snapshot-unchecked] control_conversation_project.py rows AC2/snapshot-mismatch: RED on its row; false rows: VELDO-0180 AC2/snapshot-mismatch; VELDO-0180 AC2/observability; 136_veldo_0180_conversation_projects 20 passed 3.62s; restored True
+180 [name180-read-not-his-words] control_intake_conversation.py rows AC1/name-from-command: RED on its row; false rows: VELDO-0180 AC1/name-from-command; VELDO-0180 AC1/injected-route; VELDO-0180 AC1/observability; 136_veldo_0180_conversation_projects 19 passed 3.76s; restored True
+
+Mutation cases of other findings that this ticket's port re-anchored, run the same way:
+152 [v152-route-stale] control_intake_routes.py rows route/stale: RED on its row; false rows: VELDO-0152 route/stale; 93_veldo_0152_intake_routes 23 passed 73.48s; restored True

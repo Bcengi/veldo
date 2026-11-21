@@ -13,6 +13,13 @@ route makes it that conversation's next turn; both retire the inbox proposal ROU
 A route naming a conversation that is not an open one of the sender's is refused (invalid_input:route:conversation).
 The unclear question also offers a new conversation and the sender's open conversations. The same command carries
 the PM's reading of a conversation reply (control_intake_conversation.read).
+
+VELDO-0180: the owner's typed command making a conversation a project's work is recorded by intake as a conversion
+proposal (state CONVERTING, which no PM run reads), and this routing command carries out the route document the
+factory built from that command alone: a new or existing project, marked with its conversation as its `source`.
+Only a conversion proposal takes a document with a source, only one naming exactly its conversation, command, route
+and project; every PM document stays sourceless and for AWAITING_ROUTE alone. The same transaction points the
+conversation at the project (control_conversation's record_conversation_project); the conversation stays open.
 """
 import copy
 import hashlib
@@ -26,6 +33,9 @@ CONVERSATION_ROUTES = ('new_conversation', 'open_conversation')
 ALL_ROUTES = ROUTES + CONVERSATION_ROUTES
 # The extra field each route's document carries.
 ROUTE_FIELDS = {'existing_project': 'project', 'open_conversation': 'conversation'}
+# VELDO-0180: the field marking a route document the factory built from the owner's conversion command.
+SOURCE_FIELD = 'source'
+CONVERTING = 'CONVERTING'
 
 
 class Routes:
@@ -76,6 +86,20 @@ class Routes:
         self._event('route', 'applied', route='new_project_resolved', accepted_versions=expected, **about)
         return dict(ok=True, outcome='resolved', proposal_id=held['resolved_to'], project=project)
 
+    def _point_conversation(self, conversion, pid, changes, reads):
+        """VELDO-0180: the conversation, still open, points at the project its owner's command made it the work of."""
+        CV = self.CI.CV
+        cid = CV.conversation_id(conversion['conversation'])
+        try:
+            planned = CV.transition(self.conn, {'operation': CV.POINT, 'conversation': conversion['conversation'],
+                                                'principal': conversion['owner'], 'project': conversion['project'],
+                                                'route': conversion['route'], 'proposal': pid,
+                                                'command': conversion['command']}, {cid: self._entity(cid)})
+        except CV.Refused as error:
+            raise self.route_refused(error.code, error.detail) from None
+        changes.update(planned)
+        reads.append(cid)
+
     def _resolve_plan(self, params):
         fail = self.route_refused
         pid, name, decision = params.get('proposal_id'), params.get('project'), params.get('decision')
@@ -105,18 +129,31 @@ class Routes:
             return self._reading_plan(params['reading'] if isinstance(params['reading'], dict) else {})
         doc, pid = params.get('document'), params.get('proposal_id')
         fail = self.route_refused
+        sourced = isinstance(doc, dict) and SOURCE_FIELD in doc
         if (not isinstance(doc, dict) or doc.get('schema') != SCHEMA
                 or doc.get('route') not in ALL_ROUTES or doc.get('proposal_id') != pid
                 or not isinstance(doc.get('reason'), str) or not doc['reason'].strip()
                 or set(doc) != ({'schema', 'proposal_id', 'route', 'reason'}
-                                | ({ROUTE_FIELDS[doc['route']]} if doc.get('route') in ROUTE_FIELDS else set()))
+                                | ({ROUTE_FIELDS[doc['route']]} if doc.get('route') in ROUTE_FIELDS else set())
+                                | ({SOURCE_FIELD} if sourced else set()))
                 or not isinstance(params.get('dispatch'), str) or not params['dispatch']):
             raise fail('invalid_input:route')
         held = self._entity(pid)
         if not held or held['kind'] != 'intake_proposal':
             raise fail('invalid_input:route')
         data = copy.deepcopy(held['data'])
-        if (data.get('state') != 'AWAITING_ROUTE' or data.get('project') != 'factory'
+        conversion = data.get('conversion') if (data.get('decision') or {}).get('decided_by') == \
+            'conversation_command' else None
+        if sourced or conversion is not None:
+            # VELDO-0180: a sourced document is the factory's, from the owner's recorded conversion command, and
+            # only for that command's conversion proposal; a conversion proposal takes no other document.
+            if (not isinstance(conversion, dict) or doc.get(SOURCE_FIELD) != {'conversation': conversion.get(
+                    'conversation'), 'command': conversion.get('command')}
+                    or doc['route'] != conversion.get('route') or params['dispatch'] != conversion.get('command')
+                    or doc['route'] not in ('new_project', 'existing_project')
+                    or (doc['route'] == 'existing_project' and doc.get('project') != conversion.get('project'))):
+                raise fail('invalid_input:route')
+        if (data.get('state') != (CONVERTING if sourced else 'AWAITING_ROUTE') or data.get('project') != 'factory'
                 or params.get('version') not in (None, held['version'])):
             raise fail('stale_version')
         principal = data['principal']
@@ -140,6 +177,8 @@ class Routes:
         route = dict(doc, dispatch=params['dispatch'])
         data['route'] = route
         changes = {}
+        if sourced:
+            self._point_conversation(conversion, pid, changes, reads)
         if doc['route'] == 'new_project':
             data['state'] = 'NEW_PROJECT'
         elif doc['route'] in ('new_conversation', 'open_conversation'):
