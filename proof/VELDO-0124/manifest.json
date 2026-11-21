@@ -106,7 +106,7 @@
     {
       "name": "unit",
       "status": "pending",
-      "detail": "Current quiet owning suites pass: 103 has 56 assertions and 104 has 33, zero failures, partial exit 2. Historical results remain archived. Loaded verification and baseline comparison remain queued; see VELDO-0125 port-results.json.",
+      "detail": "Current quiet and eight-CPU-worker loaded owning suites pass: 103 has 56 assertions and 104 has 33, zero failures, partial exit 2. Historical results remain archived. See VELDO-0125 port-results.json for the complete scoped results and remaining limits.",
       "evidence": [
         "proof/VELDO-0124/round3-2026-10-29/suite-103.log",
         "proof/VELDO-0124/round3-2026-10-29/suite-104.log"
@@ -206,7 +206,7 @@
     "proof/VELDO-0124/round3-2026-10-29/suite-104.log": "sha256:bea481346817b26abf5f2dbeddee5f94cf9157bf4ba2c2af892a05da08748dee",
     "proof/VELDO-0124/round3-2026-10-29/supervised-runs.json": "sha256:03a0d7495b9c163bad4bb4fd414bbbdefafab043915de4db4d436938a82541e5",
     "specs/VELDO-0124-macos-worker-profile.md": "sha256:a527c2effafd1ecb007bf67c88d2cf6955b7ee509ae020794ffaadef0390fe55",
-    "proof/VELDO-0124/PORT-2026-11-21.md": "sha256:1451e18b5585f00a6f33e96e0d834542cbf95c185444c9f5c87698c502cbddcb"
+    "proof/VELDO-0124/PORT-2026-11-21.md": "sha256:56daf7c6720d0a1933b7ec91e9a4cd0f4f1a9b6033477002e54ffaea03a40159"
   },
   "diagnostics": {
     "qualification_claim": false,
@@ -284,7 +284,7 @@
       "Exit events replace heartbeat polling; profile v2 needs new qualification.",
       "Protected evidence verification and Claude sandbox admission/wrapper checks remain required."
     ],
-    "status": "scoped_results_recorded_remaining_runs_queued",
+    "status": "scoped_results_recorded_mutation_recheck_pending",
     "ref": "proof/VELDO-0124/PORT-2026-11-21.md",
     "native_rerun": false,
     "historical_manifest": "6b322350:proof/VELDO-0124/manifest.json",

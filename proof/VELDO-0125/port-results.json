@@ -17,7 +17,11 @@
     "rejected_after_rechecks": 100,
     "initial": "proof/VELDO-0125/port-falsifiers/results.json",
     "rechecks": "proof/VELDO-0125/port-falsifier-rechecks/results.json",
-    "detail": "Initial deadline-removal mutant timed out; corrected row asserts escalation at simulated cap before waiting. Timeout is not counted as rejection."
+    "detail": "Initial deadline-removal mutant timed out; corrected row asserts escalation at simulated cap before waiting. Timeout is not counted as rejection.",
+    "by_ticket": {
+      "VELDO-0124": 17,
+      "VELDO-0125": 83
+    }
   },
   "audit": {
     "passed": 109,
@@ -26,9 +30,28 @@
     "normal_bytecode_environment": true,
     "ref": "proof/VELDO-0125/port-audit-normal.txt"
   },
-  "loaded": "pending",
-  "baseline151": "pending",
-  "changed_mutation_checks": "pending",
+  "loaded": {
+    "ref": "proof/VELDO-0125/port-loaded/results.json",
+    "passed": 405,
+    "failed": 0,
+    "suites": 4,
+    "load_workers": 8,
+    "executed_at_commit": "d05587c9",
+    "harness": "external host_heavy.sh"
+  },
+  "baseline151": {
+    "commit": "6b322350",
+    "passed": 58,
+    "failed": 5,
+    "exit": 1,
+    "ref": "proof/VELDO-0125/port-baseline-151.txt",
+    "original_four_failures_reproduced": true
+  },
+  "changed_mutation_checks": {
+    "status": "stable_tree_rerun_pending",
+    "initial": "proof/VELDO-0125/port-teeth-initial.txt",
+    "invalidated": "proof/VELDO-0125/port-teeth-invalidated.txt"
+  },
   "native_rerun": false,
   "independent_review": false,
   "quiet": {
@@ -40,5 +63,12 @@
     "host_reserved_idle": false,
     "executed_at_commit": "ca522cf8",
     "subject_note": "Production and suite bytes unchanged at the subsequent proof commits; the later harness edit affects only added load-worker cleanup."
+  },
+  "space_recheck": {
+    "passed": 58,
+    "failed": 5,
+    "exit": 1,
+    "ref": "proof/VELDO-0125/port-space-recheck/results.json",
+    "detail": "Back-to-back with base, with varying process-observation failures. No suite-151 assertion changed."
   }
 }

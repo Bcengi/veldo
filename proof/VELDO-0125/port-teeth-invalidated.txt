@@ -1,0 +1,79 @@
+{
+  "status": "failed",
+  "registered": 5,
+  "executed": 5,
+  "rejected": 5,
+  "error": "driver_error",
+  "detail": "driver_error: inputs changed during stage",
+  "surviving_workers": 0,
+  "note": "INVALIDATED: proof files were edited while this stage ran. Observations are retained but this is not a passing stage receipt.",
+  "receipt_sha256": "sha256:64ab0260f04ae7bad34ba759e07e8d521c5d95f5d5c65848c6968bfef140497a",
+  "cases": [
+    {
+      "name": "owners37-different-owner-adds",
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "28e779ac8f383d09ec9693e8f86be647d7806d7bdc2fa07a1c687eea8da77d9b",
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "owners/different-owner/kinds": [
+          false
+        ],
+        "owners/different-owner/prefixes": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "owners37-bound-command-added",
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "c7e2be42ce2a050b619ded1779a0cae7d8ebef77bfde1a8de52dd22d4dfbffea",
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "owners/bound-elsewhere/kinds": [
+          false
+        ],
+        "owners/bound-elsewhere/prefixes": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "retire-no-sweep-on-wait",
+      "old_digest": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+      "new_digest": "a201c428458254d8080a5d8fe95871188dc83cbd204d67fa2a2c76e3fb70e7be",
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "retirement/live-descendant": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "loop154-periodic-pass",
+      "old_digest": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+      "new_digest": "6352cb47f48d3ba11b6202973253abf4f73975768af3bdb5c3b7422857554e9c",
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "loop/no-other-timer": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "owners-may-name-generic-commands",
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "381f726fd0dcedfea0315f287b6ec366e511a50c0c9ad3cfec913439a23ea3fe",
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "aliases/owned-by-code-not-name": [
+          false
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+command: env PYTHONDONTWRITEBYTECODE=1 python3 scripts/selftest.py --suite 151_veldo_0313_space_run
+checkout: 6b322350 (detached worktree)
+exit_code: 1
+raw_output_sha256: f4d991be83d20397e1314d5d1d237797419eb1f0c5f86e563ff939038f6fccd4
+Compact failure/summary excerpt:
+  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: then run finished was sent, the scratch root removed and the hold released, in that order [['space_measure', 'space_signal', 'space_outcome', 'space_release'] ['deferred'] released]
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [{"held": true, "released": true} None]
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 7 for exit 7, and the run's hold is released and its scratch root removed [7 admitted veldo space run: run finished was not sent (group_not_empty): nothing of the run was judged; it follows the exit of process 2875667]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 16777216000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+selftest (PARTIAL, 1 of 240 suites): 58 passed, 5 failed in 57.89s
