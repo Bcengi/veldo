@@ -24,13 +24,17 @@ def fields(receipt, force, commit=None):
             or receipt['force_fresh'] != force or (force and receipt['reused'])):
         raise ValueError('missing or inconsistent mutation reuse receipt')
     answer = {'force_fresh': force, 'reused': {'unit': 0, 'mutation': receipt['reused']}}
-    if not receipt['reused']:
+    audit = receipt.get('audit')
+    if audit is not None:
+        E.check_audit(audit, receipt['reused'], force)
+    if not receipt['reused'] and not (audit and audit['population']):
         return answer
     if not isinstance(commit, str) or len(commit) != 40 or any(c not in '0123456789abcdef' for c in commit):
         raise ValueError('landing reuse requires a gate commit')
     _, config = E.configuration()
     directory = Path(config['store'])
     secret = E.probe(directory)
+    members, chosen = E.authenticate_audit(audit, receipt['reused'], force, directory, secret)
     records, seen = [], set()
     spec = importlib.util.spec_from_file_location('gate', Path(__file__).with_name('check_gate_mutations.py'))
     gate = importlib.util.module_from_spec(spec)
@@ -46,7 +50,20 @@ def fields(receipt, force, commit=None):
             raise ValueError('duplicate case or invalid execution source')
         seen.add(identity)
         if result['source'] != 'reused':
+            if identity in chosen:
+                entry = chosen[identity]
+                original = {k: v for k, v in result.items()
+                            if k not in ('reuse_key', 'source', 'reuse_reason', 'elapsed', 'audited')}
+                gate.validate_result(original, result['case'])
+                if (result.get('audited') is not True or result['reuse_key'] != entry['key']
+                        or original != entry['fresh_record']):
+                    raise ValueError('audit does not describe fresh result')
+            elif result.get('audited'):
+                raise ValueError('unlisted audit result')
             continue
+        if identity in chosen or members.get(identity) != dict(identity=identity, key=result['reuse_key'],
+                suite=result['case']['suite'], rate=E.audit_rate(result)):
+            raise ValueError('reuse audit population differs')
         key = result['reuse_key']
         stored = E.record(directory, key, secret)
         gate.validate_result(stored, result['case'])
@@ -54,10 +71,10 @@ def fields(receipt, force, commit=None):
         if original != stored or stored['input_digest'] != key:
             raise ValueError('reused observation differs from declared case key')
         records.append(dict(key=key, identity=identity, result_digest=E.digest(stored)))
-    if len(records) != receipt['reused']:
+    if not set(chosen) <= seen or len(records) != receipt['reused']:
         raise ValueError('reuse count differs from authenticated records')
     payload = dict(schema='veldo.landing-reuse/v1', provenance=E.PROVENANCE, authority=E.authority_identity(),
-                   commit=commit, records=records, **answer)
+                   commit=commit, records=records, audit=audit, **answer)
     answer['reuse_evidence'] = E.sign(payload, secret)
     return answer
 

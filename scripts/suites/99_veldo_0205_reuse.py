@@ -350,27 +350,27 @@ def _v205_reuse():
 
         cold = run()
         warm = run()
-        expect('VELDO-0205 reuse/receipt-counts: cold executes both drivers; warm validates both cached kills',
+        expect('VELDO-0205 reuse/receipt-counts: cold executes both drivers; warm audits both cached kills',
                cold['status'] == warm['status'] == 'passed'
                and (cold['executed'], cold['reused'], cold['rejected']) == (2, 0, 2)
-               and (warm['executed'], warm['reused'], warm['rejected']) == (0, 2, 2)
-               and warm['worker_invocations'] == 0
-               and all(d['executed'] == 0 and d['reused'] == 1 for d in warm['drivers'].values())
-               and all(r['key'] and r['source'] == 'reused' for r in warm['case_receipts']))
-        # Corrupt one entry. Exactly that case executes again, its peer remains a hit.
+               and (warm['executed'], warm['reused'], warm['rejected']) == (2, 0, 2)
+               and warm['worker_invocations'] == 6
+               and all(d['executed'] == 1 and d['reused'] == 0 for d in warm['drivers'].values())
+               and all(r['key'] and r['source'] == 'fresh' and r['audited'] for r in warm['case_receipts']))
+        # Corrupt one entry. That case executes again and its peer is audited.
         broken_key = captured[-1].keys[cases[0]['identity']]
         (stage_cache / (broken_key + '.json')).write_bytes(b'corrupt')
         mixed = run()
-        expect('VELDO-0205 reuse/mixed-counts: corruption causes one fresh case and retains the other hit',
+        expect('VELDO-0205 reuse/mixed-counts: corruption causes one fresh case and audits the other hit',
                mixed['status'] == 'failed' and mixed['error'] == 'reuse_integrity_conflict'
-               and (mixed['executed'], mixed['reused']) == (1, 1)
+               and (mixed['executed'], mixed['reused']) == (2, 0)
                and mixed['drivers'][gate.DRIVERS[0]]['executed'] == 1
-               and mixed['drivers'][gate.DRIVERS[1]]['reused'] == 1)
+               and mixed['drivers'][gate.DRIVERS[1]]['executed'] == 1)
         survivor[0] = True
         red = run()
         expect('VELDO-0205 reuse/stale-cannot-pass: a corrupt record cannot hide a surviving fresh mutant',
                red['status'] == 'failed' and red['error'] == 'mutation_survived'
-               and (red['executed'], red['reused'], red['rejected']) == (1, 1, 1))
+               and (red['executed'], red['reused'], red['rejected']) == (2, 0, 0))
         survivor[0] = False
         fresh = run(True)
         direct = session(force_fresh=True)
@@ -402,10 +402,10 @@ def _v205_reuse():
         # Run the real coordinator code with planted counting and force-fresh defects.
         source = (ROOT / 'scripts/check_gate_mutations.py').read_text()
         for label, old, new, criterion in [
-            ('count', "receipt['executed'] += int(attempted)", "receipt['executed'] += int(attempted or hit)",
-             lambda value: value['executed'] == 0 and value['reused'] == 2),
+            ('count', "receipt['executed'] += int(attempted)", "receipt['executed'] += int(attempted) + int(identity in audits)",
+             lambda value: value['executed'] == 2 and value['reused'] == 0),
             ('force', 'force_fresh=force_fresh)', 'force_fresh=False)',
-             lambda value: value['executed'] == 2 and value['reused'] == 0)]:
+             lambda value: value['executed'] == 2 and value['reused'] == 0 and value['audit']['audited'] == 0)]:
             assert source.count(old) == 1
             mutant = types.ModuleType('controlled_coordinator_' + label)
             mutant.__file__ = str(ROOT / 'scripts/check_gate_mutations.py')

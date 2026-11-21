@@ -398,8 +398,10 @@ print(json.dumps(results))
             expect('VELDO-0207 case/receipts',
                    cold['status'] == warm['status'] == mixed['status'] == 'passed'
                    and (cold['executed'], cold['reused']) == (2,0)
-                   and (warm['executed'], warm['reused']) == (0,2)
-                   and (mixed['executed'], mixed['reused']) == (1,1))
+                   and (warm['executed'], warm['reused']) == (2,0)
+                   and warm['audit']['audited'] == 2
+                   and (mixed['executed'], mixed['reused']) == (2,0)
+                   and mixed['audit']['audited'] == 1)
 
 
 _v207_cases()

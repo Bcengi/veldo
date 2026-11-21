@@ -7,6 +7,8 @@ import hashlib
 import importlib.util
 import json
 import os
+import random
+import math
 from pathlib import Path
 import platform
 import sys
@@ -113,6 +115,25 @@ def mark_stale(store, *, identity, declaration, gate_run, reason):
     return entry
 
 
+def audit_sample(records):
+    """Draw only after lookup, using new authority entropy, with a quota in every suite.
+
+    VELDO-0222 admission is authority record metadata, never a candidate's sampling knob.
+    Per-suite rounding can exceed the global floor; no small suite can disappear in a big one.
+    """
+    rng = random.Random(int.from_bytes(os.urandom(32), 'big'))
+    groups = {}
+    for identity, record in records.items():
+        rate = R.E.audit_rate(record)
+        groups.setdefault((record['case']['suite'], rate), []).append(identity)
+    selected = set()
+    for (_, rate), identities in groups.items():
+        selected.update(rng.sample(sorted(identities), math.ceil(len(identities) * rate / 100)))
+    remaining = sorted(set(records) - selected)
+    selected.update(rng.sample(remaining, max(0, min(len(records), 8) - len(selected))))
+    return selected
+
+
 class Session:
     def __init__(self, root, files, cases, head, configuration, *, force_fresh=False,
                  environment=None, cache_directory=None):
@@ -186,6 +207,15 @@ class Session:
                 self.reasons[identity] = 'hit'
                 return record
         return None
+
+    def mark_stale(self, case, reason):
+        """Legacy whole-tree profiles also revoke authority records on an audit mismatch."""
+        identity = case['identity']
+        mark_stale(self.store, identity=identity, declaration=self.source_digest,
+                   gate_run=self.base_digest, reason=reason)
+        self.keys[identity] = None
+        self.hits.pop(identity, None)
+        self.reasons[identity] = 'declaration_stale'
 
     def unchanged(self):
         try:

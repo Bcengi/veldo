@@ -737,6 +737,21 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
         commit = 'a' * 40
         receipt = dict(status='passed', force_fresh=False, reused=1, executed=0, registered=1,
                        results=[dict(record, reuse_key=key, source='reused', reuse_reason='hit')])
+        # VELDO-0218: eight fresh audit results accompany the one remaining reused case.
+        audit_records = []
+        for i in range(8):
+            audit_case = dict(case, identity='audit-fixture-' + str(i))
+            audit_key = E.digest(audit_case)
+            audit_record = dict(record, case=audit_case, input_digest=audit_key)
+            assert store.put(audit_key, audit_record)
+            audit_records.append((audit_key, audit_record))
+        receipt.update(registered=9, executed=8)
+        receipt['results'] += [dict(r, reuse_key=k, source='fresh', audited=True) for k, r in audit_records]
+        receipt['audit'] = dict(population=[dict(identity=r['case']['identity'], key=k,
+            suite=r['case']['suite'], rate=5) for k, r in [(key, record), *audit_records]],
+            entries=[dict(identity=r['case']['identity'], key=k, result_digest=E.digest(r), fresh_record=r,
+                fresh_digest=E.digest(r), differences={}, matched=True) for k, r in audit_records],
+            audited=8, matched=8, mismatched=0)
         with patch.dict(os.environ, {'VELDO_AGENT_CONFIG': str(config)}):
             fields = reducer.fields(receipt, False, commit)
             stamp = dict(commit=commit, status='green', **fields)
@@ -752,6 +767,9 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             engine_identity = load('engine/.veldo/reuse_evidence.py').authority_identity()
             def signed_under(identity, at):
                 path.write_bytes(E.canonical(E.sign(dict(payload, authority=identity), store.secret)))
+                for audit_key, audit_record in audit_records:
+                    envelope = dict(payload, authority=identity, key=audit_key, result=audit_record)
+                    (storepath / (audit_key + '.json')).write_bytes(E.canonical(E.sign(envelope, store.secret)))
                 with patch.object(reducer.E, 'authority_identity', return_value=identity):
                     return dict(commit=at, status='green', **reducer.fields(receipt, False, at))
             engine_stamp = signed_under(engine_identity, commit)
@@ -777,6 +795,9 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                     expect('VELDO-0208 landing/missing-fields-' + document + str(missing),
                            bool(landing.judge(altered)))
             path.write_bytes(raw)
+            for audit_key, audit_record in audit_records:
+                (storepath / (audit_key + '.json')).write_bytes(E.canonical(E.sign(
+                    dict(payload, key=audit_key, result=audit_record), store.secret)))
             alterations = [dict(reuse_evidence={}), dict(commit='c' * 40),
                           dict(reused={'unit': 0, 'mutation': 2}), dict(force_fresh=True)]
             for n, change in enumerate(alterations):
@@ -807,7 +828,7 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
             expect('VELDO-0208 landing/zero-reuse-needs-no-force-flag',
                    E.landing_problem(dict(commit=commit, force_fresh=False, reused={'mutation': 0})) is None)
             fresh_record = dict(record, case=dict(case, identity='second'))
-            mixed = dict(receipt, registered=2, executed=1,
+            mixed = dict(receipt, registered=10, executed=9,
                          results=receipt['results'] + [dict(fresh_record, source='fresh')])
             expect('VELDO-0208 landing/mixed-counts-remain-honest',
                    reducer.fields(mixed, False, commit)['reused'] == {'unit': 0, 'mutation': 1})
