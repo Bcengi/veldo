@@ -90,8 +90,9 @@ def _veldo_0221():
         options.setdefault("settle", 0)
         options.setdefault("parallel", 4)
         extra = options.pop("extra", {})
-        result = RS.run_shards(root, leg, targets, environ=leg_env(leg, listed, **extra), emit=lines.append,
-                               **options)
+        drop = options.pop("drop", ())
+        environ = {k: v for k, v in leg_env(leg, listed, **extra).items() if k not in drop}
+        result = RS.run_shards(root, leg, targets, environ=environ, emit=lines.append, **options)
         return result, lines
 
     def codes(result, suite):
@@ -276,7 +277,7 @@ def _veldo_0221():
         writer = (
             'import json\n'
             'roots = {v: os.environ[v] for v in ("HOME", "TMPDIR", "XDG_CONFIG_HOME", "XDG_DATA_HOME", '
-            '"XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_RUNTIME_DIR")}\n'
+            '"XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_RUNTIME_DIR") if v in os.environ}\n'
             'for variable in ("HOME", "TMPDIR", "XDG_RUNTIME_DIR"):\n'
             '    target = Path(roots[variable]) / "same-relative-path"\n'
             '    expect("the path is new in my own root: " + variable, not target.exists())\n'
@@ -296,7 +297,11 @@ def _veldo_0221():
             'print("V221-INTRUDER %s" % ",".join(refused), flush=True)\n'
             'expect("my own root is writable", (Path(os.environ["HOME"]) / "ok").write_text("x") == 1)\n')
         isolated = tree(top / "isolated", {"01_first": writer, "02_second": writer, "03_intruder": intruder})
-        engine = {"V221_ENGINE": str(ROOT / ".veldo")}
+        # The leg's environment names all four XDG base directories here, so each shard is given
+        # its own of each; a row below drives a leg that names none.
+        engine = {"V221_ENGINE": str(ROOT / ".veldo"), "XDG_CONFIG_HOME": str(top / "leg-xdg-c"),
+                  "XDG_DATA_HOME": str(top / "leg-xdg-d"), "XDG_CACHE_HOME": str(top / "leg-xdg-k"),
+                  "XDG_STATE_HOME": str(top / "leg-xdg-s")}
         problems = []
         for leg in ("unconfined", "confined"):
             result, lines = shards(isolated, leg, ["01_first", "02_second", "03_intruder"],
@@ -369,6 +374,21 @@ def _veldo_0221():
         if other["token"] == result["token"] or len(other["token"]) != 8 \
                 or RS.instance_of("abcdef01", 0, "x" * 80) != ("abcdef0100_" + "x" * 80)[:64]:
             problems.append("two legs share a token, or a long suite name overflows the instance name")
+        # A leg whose environment names no XDG base directory: its shards name none either, so each
+        # one's default lies beneath that shard's own HOME, as in the ordered run. One the leg names is
+        # replaced by the shard's own, never inherited.
+        xdg = ("XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "XDG_STATE_HOME")
+        result, lines = shards(isolated, "unconfined", ["01_first", "02_second"], listed="01_first,02_second",
+                               extra={"V221_ENGINE": str(ROOT / ".veldo"), "XDG_DATA_HOME": str(top / "leg-xdg-d")},
+                               drop=("XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_STATE_HOME"))
+        named_roots = [json.loads(line.split(" ", 2)[2]) for line in lines if line.startswith("V221-ROOTS ")]
+        if not (result["failed"] == 0 and len(named_roots) == 2
+                and all(sorted(r) == ["HOME", "TMPDIR", "XDG_DATA_HOME", "XDG_RUNTIME_DIR"] for r in named_roots)
+                and named_roots[0]["XDG_DATA_HOME"] != named_roots[1]["XDG_DATA_HOME"]
+                and str(top / "leg-xdg-d") not in (named_roots[0]["XDG_DATA_HOME"], named_roots[1]["XDG_DATA_HOME"])
+                and RS.SHARD_ALWAYS == ("TMPDIR", "HOME", "XDG_RUNTIME_DIR")
+                and sorted(v for v, _leaf in RS.SHARD_ROOTS) == sorted(RS.SHARD_ALWAYS + xdg)):
+            problems.append("a shard names an XDG directory its leg does not, or inherits the leg's: %r" % named_roots)
         expect("VELDO-0221 AC2 suite-shards/isolated-by-construction: " + "; ".join(problems), not problems)
 
         # A confined shard cannot signal a sibling shard or the dispatcher: its layer is also a
@@ -954,7 +974,8 @@ def _veldo_0221():
                 anywhere = error.errno
             if "--shard" in sys.argv:
                 unsharded = (sorted(mine or []) == sorted(os.environ[name.decode()].encode()
-                                                          for name in AS.Broker.SHARD_ROOT_VARIABLES),
+                                                          for name in AS.Broker.SHARD_ROOT_VARIABLES
+                                                          if name.decode() in os.environ),
                              anywhere == errno.EACCES)
             else:
                 unsharded = (mine is None, anywhere is None)

@@ -523,6 +523,8 @@ class RunScope:
 # ISOLATED BY CONSTRUCTION (owner decision D1), not inferred from a clean run:
 #   - separate interpreters share no Python state;
 #   - every shard has its own HOME, TMPDIR, XDG configuration, data, cache and state directories
+#     (each XDG one named in its environment only when the leg's environment names it, and
+#     otherwise its default beneath the shard's HOME: SHARD_ALWAYS says why)
 #     and its own runtime directory in place of /run/user/<uid>, which holds only links to the
 #     user manager's own sockets (its bus and systemd/private) and to its runtime unit directory,
 #     so units still reach the one manager and nothing else of the real runtime directory is in
@@ -616,6 +618,14 @@ SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "dead
 SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
                ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
 SHARD_PROBES = "p"
+# WHICH ROOTS A SHARD IS GIVEN BY NAME. Its HOME, its TMPDIR and its runtime directory always. Each
+# of the four XDG base directories ONLY WHEN THE LEG'S OWN ENVIRONMENT SETS IT: one the leg leaves
+# unset stays unset in the shard, where its default lies beneath the shard's private HOME and so is
+# the shard's own already. Setting it would change what a suite sees against the ordered run:
+# measured on 2026-11-21, suite 80's row paid-api/profile-login hands its engine another HOME and
+# expects the profile beneath THAT home's .config to be found, which an inherited XDG_CONFIG_HOME
+# hides (2 of its 4 cases went unrefused).
+SHARD_ALWAYS = ("TMPDIR", "HOME", "XDG_RUNTIME_DIR")
 # THE SHARDS THAT RUN WITHOUT A LANDLOCK LAYER OF THEIR OWN, each with its reason. This table is the
 # only way out of the layer, it lives in this protected file, every leg prints what it exempted, and
 # an entry is a reviewed decision, never a convenience. A shard named here still has its own roots,
@@ -819,10 +829,16 @@ def roots_of(root):
     return {variable: Path(str(root) + leaf) for variable, leaf in SHARD_ROOTS}
 
 
-def shard_roots(base, index):
-    """(a shard's own path prefix, {environment variable: its private root})."""
+def shard_roots(base, index, environ=None):
+    """(a shard's own path prefix, {environment variable: its private root}). With the leg's
+    environment given, only the roots a shard is given by name (SHARD_ALWAYS and the XDG base
+    directories that environment sets)."""
     root = Path(base) / shard_tag(index)
-    return root, roots_of(root)
+    roots = roots_of(root)
+    if environ is not None:
+        roots = {variable: path for variable, path in roots.items()
+                 if variable in SHARD_ALWAYS or environ.get(variable)}
+    return root, roots
 
 
 def leg_scratch(environ, root):
@@ -915,6 +931,8 @@ def shard_environment(environ, roots, linked, base):
     """What one shard runs with: the leg's environment (its leg variables included), its own roots
     in place of the leg's, and none of the dispatcher's channels."""
     env = {k: v for k, v in environ.items() if k not in SHARD_DROPPED}
+    for variable, _leaf in SHARD_ROOTS:
+        env.pop(variable, None)
     env.update({variable: str(path) for variable, path in roots.items()})
     # A shard's temporary directory is its own, never the leg's, which every shard would share.
     env["TMPDIR"] = str(roots["TMPDIR"])
@@ -1004,7 +1022,7 @@ def confine_shard(root, launcher, environ=None):
         spec = importlib.util.spec_from_file_location("veldo_shard_sandbox", launcher)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        module.write_layer([Path(environ[variable]) for variable, _leaf in SHARD_ROOTS])
+        module.write_layer([Path(environ[variable]) for variable, _leaf in SHARD_ROOTS if environ.get(variable)])
     except Exception as error:  # noqa: BLE001 - any failure is reported, and the dispatcher reddens
         return False, False, "%s: %s" % (type(error).__name__, error)
     try:
@@ -1507,7 +1525,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         return seen
 
     def launch(job):
-        directory, roots = shard_roots(base, job["index"])
+        directory, roots = shard_roots(base, job["index"], environ)
         short = short_temporary(scratch) if scratch is not None else None
         if short is not None:
             roots["TMPDIR"] = short

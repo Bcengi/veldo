@@ -16609,6 +16609,11 @@ def cases():
               '                     "alone": False,  # defect: the unlayered shard runs beside the others\n',
               ['suite-shards/isolation-checked'])
 
+    # Found by the fix round's own runs: a shard named every XDG base directory, set or not in the leg.
+    shards221('shards221-xdg-always-named',
+              '                 if variable in SHARD_ALWAYS or environ.get(variable)}\n',
+              '                 if True}  # defect: a shard names every XDG directory, whatever its leg names\n',
+              ['suite-shards/isolated-by-construction'])
     # Found by the fix round's own runs: an unconfined shard's runtime directory stood beneath the
     # system temporary directory, where the engine refuses a protected target.
     shards221('shards221-runtime-beneath-temporary',
