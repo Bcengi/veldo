@@ -675,6 +675,54 @@ def feature_listing(executable):
             raise Refused('missing_evidence:codex_feature_listing') from None
 
 
+# VELDO-0176: a conversation's held session. The 0.154.0 binary keeps a thread as a rollout file
+# <profile>/sessions/YYYY/MM/DD/rollout-<timestamp>-<thread id>.jsonl under CODEX_HOME and resumes the thread
+# `exec resume <thread id> -` names ("Resume a previous session by id"; "Prompt to send after resuming the session.
+# If `-` is used, read from stdin"), both read from its bytes (proof/VELDO-0176/engine-resume-evidence.txt).
+SESSIONS_DIRECTORY = 'sessions'
+RESUME = {'argv': ['resume', '{session}', '-'], 'evidence': 'proof/VELDO-0176/engine-resume-evidence.txt',
+          'sessions': 'sessions/YYYY/MM/DD/rollout-<timestamp>-<thread id>.jsonl'}
+# The characters of history a first input carries (VELDO-0176 AC3): the catalog models' context window is 272000
+# tokens at 95 percent effective; 500000 characters is about 125000 tokens, under half of it, leaving the rest to
+# the turn.
+HISTORY_BOUND = {'characters': 500000, 'basis': 'about half of the catalog models\' 272000 token context window'}
+
+
+def resume_problem(bound):
+    resume = (bound or {}).get('resume')
+    if (not isinstance(resume, dict) or not isinstance(resume.get('argv'), list) or '{session}' not in resume['argv']
+            or not all(isinstance(part, str) for part in resume['argv'])):
+        return 'missing_evidence:engine_resume:%s' % (bound or {}).get('version')
+    return None
+
+
+def resume_argv(bound, thread_id):
+    """`exec resume <thread> -` as the qualification names it: appended after exec's options."""
+    problem = resume_problem(bound)
+    if problem:
+        raise Refused(problem)
+    return [str(thread_id) if part == '{session}' else part for part in bound['resume']['argv']]
+
+
+def session_file(profile, cwd, thread_id):
+    """The rollout file of `thread_id` under the profile's sessions directory, or None."""
+    if not isinstance(thread_id, str) or not re.fullmatch(r'[A-Za-z0-9._-]+', thread_id):
+        return None
+    root = os.path.join(str(profile), SESSIONS_DIRECTORY)
+    found = []
+    for directory, _dirs, files in os.walk(root):
+        for name in files:
+            path = os.path.join(directory, name)
+            if name.startswith('rollout-') and name.endswith('-' + thread_id + '.jsonl') and not os.path.islink(path):
+                found.append(path)
+    return sorted(found)[-1] if found else None
+
+
+def history_bound(bound):
+    value = ((bound or {}).get('history_bound') or {}).get('characters')
+    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else None
+
+
 def qualification(executable, flags=FLAGS, *, catalog=False):
     """The qualification record of one installed vendor binary. Reads its package manifest and its bytes;
     catalog=True also captures its bundled model catalog offline."""
@@ -694,7 +742,8 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',
             'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
-            'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
+            'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED}),
+            'resume': RESUME, 'history_bound': HISTORY_BOUND}
     if catalog:
         bundled, listing = bundled_catalog(executable), feature_listing(executable)
         # VELDO-0230 AC3: a feature on by default that the classification does not name is off at launch,
@@ -750,7 +799,8 @@ def bind(adapter, state_root=None):
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
             'baseline': base, 'model_tool_modes': record['model_tool_modes'],
             'feature_listing': record.get('feature_listing', ''),
-            'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
+            'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest'),
+            'resume': record.get('resume'), 'history_bound': record.get('history_bound')}
 
 
 def command(bound, adapter):

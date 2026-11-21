@@ -41,6 +41,8 @@ footprint:
   - "specs/VELDO-0176-conversation-history-kept-by-the-factory.md"
   - "specs/index.md"
   - "proof/VELDO-0176/*"
+  - ".veldo/qualify.py"
+  - "engine/.veldo/qualify.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -187,3 +189,8 @@ AC3 carries the newest whole turns that fit the target engine and names how many
 stopping a history that is too long. depends_on adds VELDO-0065, VELDO-0068 and VELDO-0177. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0176/OPEN.md item 1): the Claude
+Code qualification entry is assembled in .veldo/qualify.py (and its engine/ copy), which now writes the
+resume option and history bound AC1 and AC3 record, so a fresh qualify run reproduces the shipped record.
+Acceptance criteria are unchanged.
