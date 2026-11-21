@@ -66,6 +66,41 @@ def runtime_identity(paths, environment):
             'platform': list(platform.uname()), 'environment': R.digest(dict(environment))}
 
 
+STALE_SCHEMA = 'veldo.stale-declaration/v1'
+
+
+def stale_entries(directory):
+    """Authority findings, also consumed by the proposer and the VELDO-0218 audit.
+    Marks only deny reuse; they never authorize it. One immutable file per finding avoids
+    lost updates between concurrent stages. Reading does not create a store or credentials.
+    """
+    entries = []
+    for path in sorted((Path(directory).expanduser() / 'stale').glob('*.json')):
+        try:
+            entry = json.loads(path.read_bytes())
+            if (entry['schema'] == STALE_SCHEMA and all(isinstance(entry[k], str) and entry[k]
+                    for k in ('identity', 'declaration', 'gate_run', 'reason'))):
+                entries.append(entry)
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+    return entries
+
+
+def mark_stale(store, *, identity, declaration, gate_run, reason):
+    """Write a stale finding beside authenticated results, using the same private store boundary.
+    The audit calls this same API for mismatches. No candidate or worker path is an output.
+    """
+    if store.secret is None:
+        raise ValueError('authority stale store unavailable')
+    directory = store.directory / 'stale'
+    directory.mkdir(mode=0o700, exist_ok=True)
+    store._private(directory, directory=True)
+    entry = dict(schema=STALE_SCHEMA, identity=identity, declaration=declaration,
+                 gate_run=gate_run, reason=reason)
+    store._publish(directory / (R.digest(entry) + '.json'), R.canonical(entry))
+    return entry
+
+
 class Session:
     def __init__(self, root, files, cases, head, configuration, *, force_fresh=False,
                  environment=None, cache_directory=None):

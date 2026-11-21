@@ -843,6 +843,7 @@ class Workers:
             record['measurement'] = measurement
         result = None
         non_file, withheld = {}, set()
+        stale = None
         if error is None and 'snapshot_root' in job:
             # Trace is outside the worker's writable home. Check before trusting output.
             tracer = load(ROOT / 'scripts/case_trace.py')
@@ -863,6 +864,10 @@ class Workers:
                 if undeclared:
                     withheld.add('undeclared_absent_socket')
                     record['undeclared_absent_sockets'] = undeclared
+            except tracer.UndeclaredInput as undeclared_input:
+                stale = str(undeclared_input)
+                self.case_reuse.mark_stale(job['case'], stale)
+                record['declaration_stale'] = stale
             except tracer.IncompleteTrace as incomplete:
                 # A thread ended inside a call (a case that SIGKILLs its own child): the confined
                 # run's result stands as a fresh result, but its inputs are not proven, so it is
@@ -873,7 +878,7 @@ class Workers:
                 error = trace_error
         if non_file:
             record['non_file_inputs'] = sorted(non_file)
-        if error is None:
+        if error is None and stale is None:
             if proc.returncode:
                 error = Refused('worker_launch_error' if b'worker_launch_error:' in stderr else 'driver_error',
                                 name + ': worker exit ' + str(proc.returncode))
@@ -917,6 +922,8 @@ class Workers:
                 self.admission.release(name)
         if error is not None:
             raise error
+        if stale is not None:
+            return {'result': None, 'elapsed': elapsed, 'declaration_stale': stale}
         return {'result': result, 'elapsed': elapsed, 'non_file': sorted(non_file), 'withheld': sorted(withheld)}
 
     def cleanup(self, on_result=None):
@@ -1268,7 +1275,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             prepared_cases = {c['identity']: {'declared_case': True} for c in fresh
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
             def group_for(case):
-                return case['identity'] if prepared_cases.get(case['identity']) else control_group(case)
+                return case['identity'] if (prepared_cases.get(case['identity'])
+                                            or case['identity'] in getattr(reuse, 'stale', {})) else control_group(case)
             controls = control_jobs(fresh, group_for, prepared_cases, planned, claims)
             mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
                            'budget_seconds': planned[c['identity']],
@@ -1298,7 +1306,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 # shared noop serves the larger of them (VELDO-0285).
                 group, _, mode = name.rpartition(':')
                 own = [c for c in members[group] if c['identity'] in unmeasured]
-                if mode != 'baseline' or not own:
+                if mode != 'baseline' or not own or completed.get('declaration_stale'):
                     return
                 seconds = scaled_deadline(completed['elapsed'])
                 for case in own:
@@ -1307,6 +1315,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 workers.retarget(group + ':noop', max(deadlines[c['identity']] for c in members[group]))
 
             control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)
+            rerun = {job['case']['identity'] for name, job in controls.items()
+                     if control_results[name].get('declaration_stale')}
+            for identity in rerun:
+                mutant_jobs.pop(identity, None)
             if unmeasured.intersection(c['identity'] for c in fresh):
                 # The mutants' deadlines are measured now: the rest of the stage is bounded by
                 # them, never by more than the plan made at the ceiling.
@@ -1323,6 +1335,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 # timeout cannot discard results that were already produced.
                 case = by_identity[identity]
                 group = group_for(case)
+                if completed.get('declaration_stale'):
+                    rerun.add(identity)
+                    return
                 prepared = completed['result']
                 try:
                     record = {'schema': SCHEMA, 'case': case,
@@ -1351,6 +1366,23 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                                elapsed=completed['elapsed']))
 
             workers.run(mutant_jobs, directory, frozen, on_result=collect)
+            if rerun:
+                # Every stale attempt loses all three observations. Its own controls and mutant
+                # run in the full frozen input tree, with ordinary fresh worker confinement.
+                again = [c for c in fresh if c['identity'] in rerun]
+                rerun_controls = control_jobs(again, group_for, {}, planned, claims)
+                rerun_mutants = {c['identity']: {'case': c, 'mode': 'mutant',
+                    'budget_seconds': planned[c['identity']],
+                    **({'claim': claims[c['identity']]} if claims is not None else {})} for c in again}
+                # A stale snapshot is not a timing sample for its full-tree replacement.
+                budget = max(budget, time.monotonic() - started + budget_for(
+                    len(again), workers.parallel, [rerun_controls.values(), rerun_mutants.values()],
+                    workers.resources, floor=admission.floor if admission else None))
+                receipt['budget_seconds'] = budget
+                workers.deadline = started + budget
+                signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
+                control_results.update(workers.run(rerun_controls, directory, frozen))
+                workers.run(rerun_mutants, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -1394,6 +1426,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         finally:
             # Restore the caller's handler even when cleanup itself fails.
             signal.signal(signal.SIGALRM, previous)
+        receipt['declaration_stale'] = list(getattr(reuse, 'stale', {}).values())
+        receipt['stale_count'] = len(receipt['declaration_stale'])
         receipt['worker_outcomes'] = workers.outcomes
         failed_workers = [o for o in workers.outcomes if 'error' in o]
         receipt['invalid_results'].extend(failed_workers)

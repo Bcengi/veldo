@@ -124,13 +124,13 @@ expect('fixture target', namespace['value'] == 1)
             expect('VELDO-0207 case/keys-toolchain', all(session().keys[n] != k for n,k in keys.items()))
             runtime_version[0] = 1
             changed = dict(files); changed['optional'] = (0o644, b'now present')
-            try:
-                session(changed)
-            except ValueError as error:
-                absent_refused = 'expected absent' in str(error)
-            else:
-                absent_refused = False
-            expect('VELDO-0207 case/absent-input-addition-refused', absent_refused)
+            stale = session(changed)
+            expect('VELDO-0207 case/absent-input-addition-refused',
+                   all(stale.reasons[c['identity']] == 'declaration_stale' and stale.keys[c['identity']] is None
+                       for c in cases))
+            # Isolate this deliberate stale finding from the later independent store assertions.
+            for mark in (top / 'cache' / 'stale').glob('*.json'):
+                mark.unlink()
             record = killed(case, original)
             expect('VELDO-0207 case/store-cold-warm', original.lookup(case, gate.validate_result) is None
                    and original.publish(case, record, gate.validate_result)
@@ -155,6 +155,8 @@ expect('fixture target', namespace['value'] == 1)
         # of this suite stays in the confined leg.
         if leg_runs('strace'):
             def run_worker(source, suffix, expected_failure=False, force=False):
+                for mark in (top / 'cache' / 'stale').glob('*.json'):
+                    mark.unlink()
                 current = session(source, force=force)
                 parent = top / suffix; parent.mkdir()
                 job = dict(case=case, mode='baseline', **current.prepare(case, parent / 'cases'))
@@ -162,7 +164,7 @@ expect('fixture target', namespace['value'] == 1)
                 expect('VELDO-0207 case/snapshot-only-declared-' + suffix,
                        not (frozen / 'unrelated').exists() and not (frozen / '.git').exists())
                 resources = gate.SuiteResources({'suites': [{'file': 'test.py'}]})
-                workers = gate.Workers(time.monotonic()+20, resources)
+                workers = gate.Workers(time.monotonic()+300, resources)
                 workers.case_reuse = current
                 job['declared_case'] = True
                 with patch.object(gate, 'PARALLEL', 1):
@@ -177,7 +179,9 @@ expect('fixture target', namespace['value'] == 1)
                         print('case worker error:', str(error)[-800:])
                         return False
                 if expected_failure:
-                    return False
+                    return ('undeclared input read' in result['one'].get('declaration_stale', '')
+                            and not workers.owned_snapshots
+                            and not (parent / 'cases' / '0').exists())
                 honest = result['one']['result']['observation']
                 pair = {}
                 with patch.object(gate, 'PARALLEL', 1):

@@ -457,6 +457,17 @@ def home_as_tilde(text):
     return text
 
 
+def authority_staleness(document, directory):
+    """Only marks for the current declaration ask the proposer to re-trace it."""
+    C = load_module('case_reuse')
+    result = {}
+    for entry in M.stale_entries(directory):
+        declaration = document['cases'].get(entry['identity'])
+        if declaration is not None and C.declaration_digest(declaration) == entry['declaration']:
+            result.setdefault(entry['identity'], []).append('declaration_stale:' + entry['reason'])
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--probe', nargs=2)
@@ -486,7 +497,9 @@ def main():
     registry = {c['identity']: c for c in confined}
     document = (json.loads(args.output.read_text()) if args.output.exists()
                 else {'schema': 'veldo.case-inputs/v1', 'cases': {}, 'toolchains': {}})
-    staleness = {name: stale(ROOT, document['cases'][name]) for name in registry if name in document['cases']}
+    marked = authority_staleness(document, os.environ.get('VELDO_GATE_CACHE') or M.R.E.configuration()[1]['store'])
+    staleness = {name: stale(ROOT, document['cases'][name]) + marked.get(name, [])
+                 for name in registry if name in document['cases']}
     for name, reasons in sorted(staleness.items()):
         if reasons:
             print('stale', name, ' '.join(reasons[:4]) + (' ...' if len(reasons) > 4 else ''), flush=True)
