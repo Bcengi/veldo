@@ -166,7 +166,7 @@ The two runs this section ends on:
 | load358-no-spinners survived | brief D's falsifier of load/level-by-construction | A blocked spinner still shows its start-up CPU, so "every spinner consumed CPU" held; the row caught the mutant only through the canary, that is, only on a quiet host. The row now also requires the spinners together to consume at least the leg's own fifteen CPU-seconds beside them (three spinners to one leg per CPU share fairly, so this holds however busy the host is) (f136fd03); suite 160 alone green (285 s) |
 
 Still running when this was written, at f136fd03, each a selected-case stage of the same driver through the
-host-heavy wrapper on five CPUs: A, the fourteen cases of suites 160 and 114 (the eight load358 and
+host-heavy wrapper on five CPUs: A, the fourteen cases of suites 160 and 114 (the ten load358 and
 opened358 cases of 160, the spinner case among them, and 114's four whose controls were red); B, the
 twenty-one inherited cases the stage could not finish (suite 83's, dispatch261, space328 and end350). They are
 apart so that a red control of an inherited suite cannot void A.
