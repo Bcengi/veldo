@@ -784,6 +784,34 @@ def _v47_suite():
                       and probe.get('stale') is False,
                       detail='timer_unset %r' % profile)
 
+            # VELDO-0358 AC10, AC15: the same census row as suite 71's (brief F's files, each suite read through its
+            # literal anchor, the engine modules from this suite's copies), so a registered mutant of suite 71's own
+            # file is read here.
+            with region('wave1/no-sites'):
+                census = load('v47_census', ROOT / 'scripts' / 'check_wallclock.py')
+                wave1 = {'scripts/suites/66_veldo_0047_authority.py': ROOT / "scripts/suites" / "66_veldo_0047_authority.py",
+                         'scripts/suites/71_veldo_0138_channel_service.py': ROOT / "scripts/suites" / "71_veldo_0138_channel_service.py",
+                         'scripts/suites/83_veldo_0154_factory_loop.py': ROOT / "scripts/suites" / "83_veldo_0154_factory_loop.py",
+                         'scripts/suites/86_veldo_0189_engine_upgrade.py': ROOT / "scripts/suites" / "86_veldo_0189_engine_upgrade.py",
+                         'scripts/suites/110_veldo_0143_new_project.py': ROOT / "scripts/suites" / "110_veldo_0143_new_project.py",
+                         'proof/VELDO-0152/fixture.py': ROOT / "proof/VELDO-0152" / "fixture.py"}
+                found = []
+                for rel, path in wave1.items():
+                    found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
+                for name in ('control_service.py', 'control_client.py', 'control_client_api.py', 'control_store.py',
+                             'control_factory_setup_upgrade.py', 'control_workflow_cycle_pm.py'):
+                    found += census.Python('engine/.veldo/' + name, (mods / name).read_text(), ('R3',), engine=True).scan()
+                excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+                # Design 4.8, "not changed in wave 1": the two accept intervals are cadences (a lap of a serving loop), not
+                # giving-up deadlines, and a profile at the hang bound would stop the laps. Each is named here exactly.
+                cadences = {('engine/.veldo/control_service.py', 'R3', 'listener.settimeout(ACCEPT_SECONDS)', 'serve'),
+                            ('engine/.veldo/control_client_api.py', 'R3', 'self.server.settimeout(0.25)', 'Hints.__init__')}
+                counts, first_site = census.counted(found)
+                over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1], first_site[k]['form'], k[3])
+                              for k, n in counts.items() if n > excepted.get(k, 0) + (1 if k in cadences else 0))
+                observed['no_sites'] = over
+                check('wave1/no-sites', not over, {'sites outside the declared exceptions': over[:20]})
+
             # AC2, declared falsifier: a signed mutation through production IPC changes the configured
             # store itself, read back through a connection of this suite's own
             with region('authority/mutation-reaches-the-configured-store'):
