@@ -19,6 +19,7 @@ def _v113_work_suite():
     import subprocess
     import tempfile
     from types import SimpleNamespace
+    from unittest.mock import patch
 
     def load(name, path):
         loader = importlib.machinery.SourceFileLoader(name, str(path))
@@ -62,7 +63,11 @@ def _v113_work_suite():
         conn = S.open_store(str(database))
         for i, (identity, kind, data) in enumerate((
                 ('owner', 'membership', dict(principal_type='person', roles=['project_owner'], scope=['repository'])),
-                ('key:owner', 'verification_key', dict(principal='owner', public_key=public, effective_at=0)))):
+                ('key:owner', 'verification_key', dict(principal='owner', public_key=public, effective_at=0)),
+                ('scoped', 'membership', dict(principal_type='person', roles=['project_owner'], scope=['elsewhere'])),
+                ('key:scoped', 'verification_key', dict(principal='scoped', public_key=public, effective_at=0)),
+                ('member', 'membership', dict(principal_type='person', roles=[], scope=['repository'])),
+                ('key:member', 'verification_key', dict(principal='member', public_key=public, effective_at=0)))):
             S.execute(conn, dict(command_id=str(i), principal='owner', operation='upsert_entity', nonce=str(i),
                 artifact_digests=[], expected_versions={identity: 0},
                 parameters=dict(entity_id=identity, kind=kind, data=data)), 'owner', signer('owner', 'veldo-journal'), 1)
@@ -78,6 +83,11 @@ def _v113_work_suite():
             def local_dispatch():
                 raise AssertionError('client attempted local dispatch')
             cli._dispatch = local_dispatch
+            request = cli._request_work
+            def no_store_request(*args, **kwargs):
+                with patch('sqlite3.connect', side_effect=AssertionError('client opened a store')):
+                    return request(*args, **kwargs)
+            cli._request_work = no_store_request
             for state in helper.STATES:
                 if Path(address).exists():
                     Path(address).unlink()
@@ -108,7 +118,7 @@ def _v113_work_suite():
                         'fixture-host', service.apply, watermark=service.watermark, context=True)
                     os.write(started, b'R')
                     os.close(started)
-                    for _ in range(5):
+                    for _ in range(8):
                         CC.serve_one(listener, authority, timeout=1200)
                     (base / 'wakes.json').write_text(json.dumps(wakes))
                     connection.close()
@@ -127,14 +137,17 @@ def _v113_work_suite():
                 for account, who, principal, reason in (
                         ('other', 'owner', 'owner', 'unsupported_configuration:work_account'),
                         (None, 'outsider', 'owner', 'command_signature_invalid'),
-                        (None, 'owner', 'outsider', 'unauthorized:work')):
+                        (None, 'owner', 'outsider', 'unauthorized:work'),
+                        (None, 'owner', 'scoped', 'unauthorized:work'),
+                        (None, 'owner', 'member', 'unauthorized:work'),
+                        ([], 'owner', 'owner', 'invalid_input:parameters')):
                     try:
                         cli._request_work(str(workspace), account, principal, signer(who), trust)
                     except cli._work().CL.ClaimStopped as error:
                         found = error.reason
                     else:
                         found = None
-                    expect('VELDO-0113 work/refuses-' + reason + '/' + str(index), found == reason)
+                    expect('VELDO-0113 work/refuses-' + reason + '/' + principal + '/' + str(index), found == reason)
                 # The outer request's valid signature cannot replace the inner command signature.
                 command = dict(operation='work', domain_uuid='domain', store_uuid='store',
                                repository_uuid='repository', principal='owner', parameters={'account': None})

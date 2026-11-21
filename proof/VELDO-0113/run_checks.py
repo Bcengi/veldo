@@ -50,7 +50,9 @@ def retain(name, result):
         json.dumps(archive, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
     assert json.dumps(read_receipts(DESTINATION / (name + '.json.gz')),
                       sort_keys=True, separators=(',', ':')).encode() == data
-    summary = dict(name=name, rows=result['rows'], metrics=result['metrics'],
+    rows = {name: {k: v for k, v in row.items() if k != 'observation_receipts'}
+            for name, row in result['rows'].items()}
+    summary = dict(name=name, rows=rows, metrics=result['metrics'],
                    qualification=result['qualification'], faults_ok=result['faults_ok'],
                    receipt_sha256=hashlib.sha256(data).hexdigest())
     (DESTINATION / (name + '.txt')).write_text(json.dumps(summary, indent=2) + '\n')
@@ -68,7 +70,7 @@ def read_archive(path):
 def compressed_archive(archive):
     raw = json.dumps(archive, sort_keys=True, separators=(',', ':')).encode()
     envelope = dict(schema='veldo.0113-compressed/v1', encoding='lzma+base64',
-                    payload=base64.b64encode(lzma.compress(raw)).decode())
+                    payload=base64.b64encode(lzma.compress(raw, preset=9 | lzma.PRESET_EXTREME)).decode())
     return gzip.compress(json.dumps(envelope, sort_keys=True).encode(), mtime=0)
 
 
