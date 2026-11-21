@@ -1,0 +1,12 @@
+start 2026-11-21T15:48:18Z load 13.35 16.34 17.97 tree ccea0423
+
+Running 1 test using 1 worker
+
+  ✓  1 e2e/screens.spec.ts:38:1 › section 7 screenshots from the production build, seeded demonstration data (5.3s)
+
+  1 passed (8.3s)
+exit status 0
+rewritten by the run:  M proof/VELDO-0229/screens/3-run-detail-diff-dark-1440.png
+rewritten by the run:  M proof/VELDO-0229/screens/4-decisions-light-1440.png
+rewritten by the run:  M proof/VELDO-0229/screens/7-decision-phone-light-390.png
+end 2026-11-21T15:48:27Z load 13.51 16.28 17.94 tree ccea0423
