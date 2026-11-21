@@ -47,7 +47,7 @@ its target row red by assertion or terminal condition, and none hung: waits-for-
 report-loss-cancels-the-supervision, stop-after-the-command-ends-the-supervisor (terminal: the supervisor
 ended before both acknowledgements), table-read-at-every-exit (12 passes counted where 0 are allowed),
 supervisor-keeps-the-callers-output, wait-sleeps-on-what-holds-nothing, wait-reads-at-every-unread-exit,
-wrapper-gone-nobody-makes-the-end, follower-takes-the-closed-pipe-for-the-exit (re-run after 5a fix below).
+wrapper-gone-nobody-makes-the-end, follower-takes-the-closed-pipe-for-the-exit (re-run after the settled() fix, cd1e6b3b).
 what-the-command-left-is-killed cannot be judged on this host: its target row fix2/end-follows-their-exit is
 red in the unmutated runs too, because processes outside the fixture hold the run (see below).
 
