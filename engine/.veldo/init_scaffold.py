@@ -549,6 +549,8 @@ _FILES += _REUSE_AUTHORITY
 # does not: it names this host's lock and limits, so an adopter has none, and its gate takes no
 # lock and makes no scope.
 _FILES += ["scripts/gate_host.py", "scripts/gate_space.py"]
+# VELDO-0358 AC15: the timers table every launch-path module reads its giving-up deadlines from.
+_FILES += [".veldo/timers.py"]
 
 # Files that must be executable in the scaffolded repository.
 _EXECUTABLE = {
