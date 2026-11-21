@@ -1,0 +1,14 @@
+Round 2 at 190c4e90, each suite alone (four at a time), local through host_heavy.sh; then suite 62 with
+Runner.honor_stops recording through dispatches.stop_result directly (the code before 69961820), same tree.
+
+62_veldo_0039_dispatch: selftest (PARTIAL, 1 of 239 suites): 58 passed, 0 failed in 5.72s
+78_veldo_0060_claude_adapter: selftest (PARTIAL, 1 of 239 suites): 65 passed, 0 failed in 21.51s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 239 suites): 48 passed, 0 failed in 13.42s
+85_veldo_0171_setup_api: selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 10.90s
+63_veldo_0040_containment: selftest (PARTIAL, 1 of 239 suites): 90 passed, 0 failed in 23.12s
+91_veldo_0167_setup_records: selftest (PARTIAL, 1 of 239 suites): 36 passed, 0 failed in 14.95s
+95_veldo_0203_owner_revisions: selftest (PARTIAL, 1 of 239 suites): 63 passed, 0 failed in 6.40s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 239 suites): 39 passed, 0 failed in 7.90s
+== falsifier: Runner.honor_stops records with stop_result directly (the code before 69961820)
+selftest (PARTIAL, 1 of 239 suites): 57 passed, 1 failed in 5.46s
+  SELFTEST FAIL: VELDO-0039 dispatch/owner-stop-ends-first: observed {'requested': 'ok', 'swept': [], 'interleaved': {'end': 'done', 'moved': (4, 5)}, 'cause': {'state': 'exited', 'asked': False, 'deadline_stop': False, 'cause': 'requested', 'returncode': None, 'signal': 15}, 'stop_request': {'assertion_digest': None, 'at': 1795298527.186108, 'by': 'owner-person', 'channel': None, 'reason': 'owner_stop', 'request': 'stop-ends-first', 'result': {'asked': False, 'at': 1795298527.219185, 'by': 'runner'}}, 'pending': [], 'waited': None}

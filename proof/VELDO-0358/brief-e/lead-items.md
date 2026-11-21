@@ -1,14 +1,10 @@
 # Brief E: items for the lead
 
-1. Suite 106 is not in the proven set yet, through files no brief owns. It reuses suite 85's installed-host
-   fixture (proof/VELDO-0185/fixture.py runs scripts/suites/85_veldo_0171_setup_api.py) and so opens
-   scripts/suites/85_veldo_0171_setup_api.py (21 sites), scripts/suites/support/v73_authority.py (8),
-   scripts/suites/support/setup_runtime.py (5) and proof/VELDO-0172/compare_formats.py (4). None is in the
-   specification's footprint or in any brief's files, so they were not touched (brief rule: stop and report).
-   Suite 106's own file has no site. Converting them is a footprint decision (wave 2, or this specification).
-   Suite 78 opens proof/VELDO-0172/compare_formats.py too (the mutation observer's record; selftest's own record
-   did not list it), so its 36 cases are kill_by unproven as well. Suites 62 and 63 open only themselves and the
-   support modules.
+1. Closed in round 2 (lead decision: brief E converts them). The files suites 78 and 106 open with sites,
+   scripts/suites/85_veldo_0171_setup_api.py, support/setup_runtime.py, support/v73_authority.py and
+   proof/VELDO-0172/compare_formats.py, wait on events (190c4e90); their 38 baseline sites are lowered. The 42
+   suites that open them were run (runs.md, round 2); suite 86_veldo_0168, which froze v73_authority's clock by
+   patching its time module, now patches its one wall-time reader (481bd6fc).
 
 2. Census gap (brief B's tool): R3 reads shared.wait_for's bound only as a number, and its bound is the tuple
    (seconds, origin), so `wait_for(cond, (10.0, '...'), what)` is not a site. Since brief A the tuple bounds
@@ -43,5 +39,16 @@
 9. The scaffold change (a48602c9) is in engine/.veldo/init_scaffold.py, which no brief lists: the engine modules
    now load timers.py, so an adopter's installation must lay it down (suites 66_veldo_0047 and 82_veldo_0129).
 
-10. Suite 62 dispatch/owner-stop was red once in 50 at slowdown 7.9 (runs.md, red-62-owner-stop.txt). Cause not
-    established; open.
+10. Closed in round 2: a product race in Runner.honor_stops (a stop result refused stale_version by the
+    receiver's own exit commit), fixed in 69961820 with the row dispatch/owner-stop-ends-first (runs.md, round 2).
+
+11. The same order exists in control_api_authority (not brief E's file): the API's stop_worker asks the receiver
+    (self.stop) and then calls dispatches.stop_result with the version read at that moment, so a receiver that
+    records the worker's end in between makes the result stale_version, which the API returns as a refusal of an
+    owner's stop that was in fact asked. The fix is the same as Runner._stop_result; no row reaches it today.
+
+12. Brief F's lead item 6b is fixed here (69961820, d1b18d13); suite 83 with both briefs: 10 of 10 idle, 49 of 50
+    loaded with no hang. Its one loaded red is loop/reset-timer-wake, brief F's row (runs.md, round 2).
+
+13. Every proof run of round 2 is local: pc2's Python has no os.pidfd_open and its runs have no systemd user
+    manager, so these suites cannot run there (runs.md, round 2).
