@@ -1,0 +1,75 @@
+{
+  "name": "autostart113-reaped-fallback",
+  "metrics": {
+    "complete_censuses": 0,
+    "completed": 42,
+    "construction_cases": 20,
+    "expected": 42,
+    "fault_cases": 176,
+    "forbidden_launches": 18,
+    "invocations_completed": 22,
+    "measured": 22,
+    "observation_failures": 22
+  },
+  "faults_ok": true,
+  "faults_driven": true,
+  "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+  "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+  "protocol_controls": {
+    "failures": true,
+    "incomplete_witness_stands_down": true,
+    "invalid_receipt_0": true,
+    "invalid_receipt_1": true,
+    "invalid_receipt_2": true,
+    "invalid_receipt_3": true,
+    "invalid_receipt_4": true,
+    "invalid_receipt_5": true,
+    "invalid_receipt_6": true,
+    "invalid_receipt_7": true,
+    "known_non_refusal_is_false": true,
+    "qualification": true,
+    "synthetic_complete_birth_refutes": true,
+    "synthetic_complete_birth_restored": true,
+    "synthetic_complete_evaluates": true,
+    "synthetic_complete_service_refutes": true,
+    "synthetic_complete_service_restored": true
+  },
+  "rows": {
+    "unavailable/in-process-construction-boundary": {
+      "reason": [
+        "outside_authority:bin/veldo:285",
+        "outside_authority:engine/bin/veldo:285"
+      ],
+      "status": "FAIL"
+    },
+    "unavailable/no-auto-start-needs-census": {
+      "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/no-client-hosts-a-listener": {
+      "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/no-client-starts-the-authority": {
+      "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+      "reason": "census_incomplete",
+      "status": "STANDS DOWN"
+    },
+    "unavailable/store-write-grant": {
+      "observation": {
+        "pid": 3680076,
+        "writable": true
+      },
+      "reason": "no_process_specific_write_grant",
+      "status": "GAP"
+    }
+  },
+  "saved_receipt_reassessment": {
+    "status": "named_assertions_not_satisfied",
+    "fresh_live_drive": false,
+    "reason": "('autostart113-reaped-fallback', 'unavailable/no-client-starts-the-authority')"
+  },
+  "receipt_sha256": "743ec25c3b357865dd3a45c98c15d0a5cb82bc758ac71415325c3342ad7055da"
+}

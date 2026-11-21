@@ -1,0 +1,412 @@
+{
+  "command": "python3 -B scripts/check_gate_mutations.py --finding 113",
+  "exit_code": 1,
+  "note": "Diagnostic projection; personal path prefixes normalized. Original raw receipt kept outside repository.",
+  "raw_receipt_sha256": "1424abeebb75e7f0f0d90b72b5b957ac891beabb113c08e4328b9b2e3933e5c4",
+  "receipt": {
+    "budget_seconds": 7364.0,
+    "case_deadlines": {
+      "check_teeth_mutations.py:autostart113-construction-outside-authority": 1068.990731252823,
+      "check_teeth_mutations.py:autostart113-incomplete-counts-as-success": 1069.842425703071,
+      "check_teeth_mutations.py:autostart113-reaped-fallback": 1067.9290627297014,
+      "check_teeth_mutations.py:autostart113-transient-abstract-listener": 1067.9290627297014
+    },
+    "case_receipts": [
+      {
+        "identity": "check_teeth_mutations.py:autostart113-reaped-fallback",
+        "key": null,
+        "reason": "unknown_closure",
+        "source": "fresh",
+        "validated": false
+      },
+      {
+        "identity": "check_teeth_mutations.py:autostart113-transient-abstract-listener",
+        "key": null,
+        "reason": "unknown_closure",
+        "source": "fresh",
+        "validated": false
+      },
+      {
+        "identity": "check_teeth_mutations.py:autostart113-incomplete-counts-as-success",
+        "key": null,
+        "reason": "unknown_closure",
+        "source": "fresh",
+        "validated": false
+      },
+      {
+        "identity": "check_teeth_mutations.py:autostart113-construction-outside-authority",
+        "key": null,
+        "reason": "unknown_closure",
+        "source": "fresh",
+        "validated": false
+      }
+    ],
+    "detail": "invalid_baseline: invalid_baseline: check_teeth_mutations.py:autostart113-transient-abstract-listener: completed controls: {\"baseline\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}, \"noop\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}}",
+    "drivers": {
+      "check_review_mutations.py": {
+        "executed": 0,
+        "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "registered": 0,
+        "reused": 0,
+        "wall_seconds": 0,
+        "worker_seconds": 0
+      },
+      "check_teeth_mutations.py": {
+        "executed": 4,
+        "inventory_digest": "8f16c59a14b263c76de85f76e1378eec4ad4cfbc0ed4e197c0274587841cf382",
+        "registered": 4,
+        "reused": 0,
+        "wall_seconds": 780.9767952179536,
+        "worker_seconds": 3834.3541672867723
+      }
+    },
+    "elapsed": 783.9752503652126,
+    "error": "invalid_baseline",
+    "executed": 4,
+    "force_fresh": false,
+    "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+    "input_digest": "0ada2983f60666cc1ebe9c2911dbe61cb95ebd2abf3d0a314d339547a0e4d497",
+    "invalid_results": [
+      {
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 113,
+          "identity": "check_teeth_mutations.py:autostart113-transient-abstract-listener",
+          "module": "control_client.py",
+          "name": "autostart113-transient-abstract-listener",
+          "new": "            seen = last_seen(enrollment, workspace, binding)\n            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as fallback:\n                fallback.bind(\"\\0v113-fallback-\" + str(os.getpid()))\n                fallback.listen(1)",
+          "old": "            seen = last_seen(enrollment, workspace, binding)",
+          "rows": [
+            "unavailable/no-client-hosts-a-listener"
+          ],
+          "suite": "114_veldo_0113_no_autostart.py"
+        },
+        "detail": "invalid_baseline: check_teeth_mutations.py:autostart113-transient-abstract-listener: completed controls: {\"baseline\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}, \"noop\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}}",
+        "error": "invalid_baseline"
+      },
+      {
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 113,
+          "identity": "check_teeth_mutations.py:autostart113-construction-outside-authority",
+          "module": "claim.py",
+          "name": "autostart113-construction-outside-authority",
+          "new": "def outside_authority_constructor():\n    return _CLIENTS.load_client_module(\"control_dispatch\").Dispatches(None, None)\n\nSTALE_AFTER_SECONDS = 90",
+          "old": "STALE_AFTER_SECONDS = 90",
+          "rows": [
+            "unavailable/in-process-construction-boundary"
+          ],
+          "suite": "114_veldo_0113_no_autostart.py"
+        },
+        "detail": "invalid_baseline: check_teeth_mutations.py:autostart113-construction-outside-authority: completed controls: {\"baseline\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}, \"noop\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}}",
+        "error": "invalid_baseline"
+      },
+      {
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 113,
+          "identity": "check_teeth_mutations.py:autostart113-reaped-fallback",
+          "module": "control_client.py",
+          "name": "autostart113-reaped-fallback",
+          "new": "            seen = last_seen(enrollment, workspace, binding)\n            child = os.fork()\n            if child == 0:\n                Authority(binding[\"store_uuid\"], binding[\"domain_uuid\"], store,\n                          enrollment, verify, host_identity, lambda command: None)\n                os._exit(0)\n            os.waitpid(child, 0)",
+          "old": "            seen = last_seen(enrollment, workspace, binding)",
+          "rows": [
+            "unavailable/no-client-starts-the-authority"
+          ],
+          "suite": "114_veldo_0113_no_autostart.py"
+        },
+        "detail": "invalid_baseline: check_teeth_mutations.py:autostart113-reaped-fallback: completed controls: {\"baseline\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}, \"noop\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}}",
+        "error": "invalid_baseline"
+      },
+      {
+        "case": {
+          "driver": "check_teeth_mutations.py",
+          "finding": 113,
+          "fixture": true,
+          "identity": "check_teeth_mutations.py:autostart113-incomplete-counts-as-success",
+          "module": "no_autostart.py",
+          "name": "autostart113-incomplete-counts-as-success",
+          "new": "    rows = {name: dict(name=name, status='READY', reason=None) for name in ROWS}\n",
+          "old": "    rows = {r['name']: dict(r) for r in census.consumer_rows(receipt, 'VELDO-0113')}\n",
+          "rows": [
+            "unavailable/no-auto-start-needs-census"
+          ],
+          "suite": "114_veldo_0113_no_autostart.py"
+        },
+        "detail": "invalid_baseline: check_teeth_mutations.py:autostart113-incomplete-counts-as-success: completed controls: {\"baseline\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}, \"noop\": {\"failed_details\": [[\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"{\\\"status\\\": \\\"FAIL\\\", \\\"reason\\\": [\\\"outside_authority:bin/veldo:285\\\", \\\"outside_authority:engine/bin/veldo:285\\\"]}\"]], \"failed_rows\": [\"VELDO-0113 protocol unavailable/in-process-construction-boundary\", \"VELDO-0113 protocol unavailable/each-external-client-reaches-refusal\", \"VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised\"]}}",
+        "error": "invalid_baseline"
+      }
+    ],
+    "parallel_workers": 16,
+    "peak_workers": 6,
+    "registered": 4,
+    "rejected": 0,
+    "resources": {
+      "capacities": {
+        "new_project_fixture": 2,
+        "systemd_user_manager": 16,
+        "ui_browser": 4
+      },
+      "peak_slots": {
+        "new_project_fixture": 0,
+        "systemd_user_manager": 0,
+        "ui_browser": 0
+      },
+      "remaining_slots": {
+        "new_project_fixture": 0,
+        "systemd_user_manager": 0,
+        "ui_browser": 0
+      }
+    },
+    "results": [],
+    "reuse_integrity_errors": [],
+    "reuse_qualified": 0,
+    "reused": 0,
+    "schema": "veldo.mutation-stage/v1",
+    "scope": "selected",
+    "status": "failed",
+    "surviving_workers": 0,
+    "unconfined": {
+      "cases": [],
+      "declaration": "sha256:49a8ca3eddf9882b87651c844977859cf4320334e21dc68a6da39b6245bbd01d",
+      "entries": [
+        "62_veldo_0039_dispatch",
+        "63_veldo_0040_containment",
+        "63_veldo_0049_floor",
+        "64_veldo_0050_proof",
+        "66_veldo_0042_clones",
+        "66_veldo_0047_authority",
+        "67_veldo_0041_heartbeat",
+        "67_veldo_0135_offers",
+        "71_veldo_0076_projects",
+        "71_veldo_0130_api",
+        "71_veldo_0138_channel_service",
+        "73_veldo_0139_factory_setup",
+        "78_veldo_0060_claude_adapter",
+        "79_veldo_0061_codex_adapter",
+        "80_veldo_0155_claude_baseline",
+        "81_veldo_0156_codex_baseline",
+        "82_veldo_0129_worker_wiring",
+        "82_veldo_0141_execution_record",
+        "83_veldo_0154_factory_loop",
+        "85_veldo_0158_credential_delivery",
+        "85_veldo_0171_setup_api",
+        "133_veldo_0326_space_principals",
+        "86_veldo_0127_agent_configuration",
+        "86_veldo_0148_re_land",
+        "86_veldo_0189_engine_upgrade",
+        "87_veldo_0170_receiver_trust",
+        "91_veldo_0167_setup_records",
+        "92_veldo_0088_pm_cycles",
+        "93_veldo_0152_intake_routes",
+        "94_veldo_0162_configuration_routes",
+        "95_veldo_0203_owner_revisions",
+        "96_veldo_0204_reservation_policies",
+        "106_veldo_0185_dispatch_setup",
+        "117_veldo_0227_ui_location",
+        "127_veldo_0234_https_port",
+        "110_veldo_0143_new_project",
+        "116_veldo_0188_project_lines",
+        "65_veldo_0067_edges",
+        "100_veldo_0207_case_reuse:strace",
+        "101_veldo_0208_landing_reuse:strace",
+        "114_veldo_0220_gate_scope",
+        "118_veldo_0159_mcp_credential_form",
+        "119_veldo_0163_role_team_form",
+        "120_veldo_0131_factory_ui",
+        "121_veldo_0131_factory_screens_narrow",
+        "122_veldo_0131_factory_screens_wide",
+        "124_veldo_0131_factory_reads_commands",
+        "128_veldo_0254_confined_runner",
+        "129_veldo_0254_canary_launch",
+        "152_veldo_0313_house_group",
+        "128_veldo_0177_conversation_workspace",
+        "129_veldo_0177_assistant_setup",
+        "134_veldo_0179_conversation_screens",
+        "135_veldo_0179_conversation_layout",
+        "130_veldo_0183_memory_servers",
+        "138_veldo_0187_claude_mem_feed"
+      ],
+      "suites": {}
+    },
+    "unmeasured_cases": [
+      "check_teeth_mutations.py:autostart113-construction-outside-authority",
+      "check_teeth_mutations.py:autostart113-incomplete-counts-as-success",
+      "check_teeth_mutations.py:autostart113-reaped-fallback",
+      "check_teeth_mutations.py:autostart113-transient-abstract-listener"
+    ],
+    "worker_invocations": 10,
+    "worker_outcomes": [
+      {
+        "budget_seconds": 1800,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 355.98741286527365,
+        "leg": "confined",
+        "mode": "baseline",
+        "name": "114_veldo_0113_no_autostart.py:control_client.py:False:baseline",
+        "output_directory": "/tmp/v113-gate-workers/0",
+        "pid": 2233649,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3932
+      },
+      {
+        "budget_seconds": 1068.990731252823,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 356.29863435588777,
+        "leg": "confined",
+        "mode": "noop",
+        "name": "114_veldo_0113_no_autostart.py:claim.py:False:noop",
+        "output_directory": "/tmp/v113-gate-workers/5",
+        "pid": 2233654,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3935
+      },
+      {
+        "budget_seconds": 1069.842425703071,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 356.3306981967762,
+        "leg": "confined",
+        "mode": "noop",
+        "name": "114_veldo_0113_no_autostart.py:no_autostart.py:True:noop",
+        "output_directory": "/tmp/v113-gate-workers/3",
+        "pid": 2233652,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3928
+      },
+      {
+        "budget_seconds": 1800,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 356.34112483169883,
+        "leg": "confined",
+        "mode": "baseline",
+        "name": "114_veldo_0113_no_autostart.py:claim.py:False:baseline",
+        "output_directory": "/tmp/v113-gate-workers/4",
+        "pid": 2233653,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3935
+      },
+      {
+        "budget_seconds": 1067.9290627297014,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 356.39349146792665,
+        "leg": "confined",
+        "mode": "noop",
+        "name": "114_veldo_0113_no_autostart.py:control_client.py:False:noop",
+        "output_directory": "/tmp/v113-gate-workers/1",
+        "pid": 2233650,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3932
+      },
+      {
+        "budget_seconds": 1800,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 356.6252144561149,
+        "leg": "confined",
+        "mode": "baseline",
+        "name": "114_veldo_0113_no_autostart.py:no_autostart.py:True:baseline",
+        "output_directory": "/tmp/v113-gate-workers/2",
+        "pid": 2233651,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3928
+      },
+      {
+        "budget_seconds": 1067.9290627297014,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 423.8535755900666,
+        "leg": "confined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:autostart113-transient-abstract-listener",
+        "output_directory": "/tmp/v113-gate-workers/7",
+        "pid": 945473,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3928
+      },
+      {
+        "budget_seconds": 1068.990731252823,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 423.9711617580615,
+        "leg": "confined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:autostart113-construction-outside-authority",
+        "output_directory": "/tmp/v113-gate-workers/9",
+        "pid": 945475,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3977
+      },
+      {
+        "budget_seconds": 1067.9290627297014,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 424.20341119077057,
+        "leg": "confined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:autostart113-reaped-fallback",
+        "output_directory": "/tmp/v113-gate-workers/6",
+        "pid": 945472,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 3932
+      },
+      {
+        "budget_seconds": 1069.842425703071,
+        "cleanup": {
+          "directories": 202,
+          "units": []
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 424.34944257419556,
+        "leg": "confined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:autostart113-incomplete-counts-as-success",
+        "output_directory": "/tmp/v113-gate-workers/8",
+        "pid": 945474,
+        "returncode": 0,
+        "stderr_bytes": 0,
+        "stdout_bytes": 4285
+      }
+    ]
+  }
+}

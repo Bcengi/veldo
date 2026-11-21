@@ -1,0 +1,261 @@
+{
+  "note": "Projection of standard coordinator worker observations; raw stdout hashes identify retained external worker logs.",
+  "workers": [
+    {
+      "worker": "0",
+      "mode": "baseline",
+      "case": "autostart113-reaped-fallback",
+      "raw_stdout_sha256": "853a24cccbfe39af602a5f71f149ab17fd6fc973ebc70a17376a39b99e33a15e",
+      "replacement_count": 1,
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-client-starts-the-authority": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "1",
+      "mode": "noop",
+      "case": "autostart113-reaped-fallback",
+      "raw_stdout_sha256": "853a24cccbfe39af602a5f71f149ab17fd6fc973ebc70a17376a39b99e33a15e",
+      "replacement_count": 1,
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-client-starts-the-authority": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "2",
+      "mode": "baseline",
+      "case": "autostart113-incomplete-counts-as-success",
+      "raw_stdout_sha256": "d9fd7de6889e27d5a39c4f99d86f7501753f1d0a6afd5acb7479700f27ee865c",
+      "replacement_count": 1,
+      "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "new_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-auto-start-needs-census": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "3",
+      "mode": "noop",
+      "case": "autostart113-incomplete-counts-as-success",
+      "raw_stdout_sha256": "d9fd7de6889e27d5a39c4f99d86f7501753f1d0a6afd5acb7479700f27ee865c",
+      "replacement_count": 1,
+      "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "new_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-auto-start-needs-census": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "4",
+      "mode": "baseline",
+      "case": "autostart113-construction-outside-authority",
+      "raw_stdout_sha256": "fde2488674da08a711e20d3e93bf03b63807babc6f9e7cae7365cbe54103b84e",
+      "replacement_count": 1,
+      "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "new_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/in-process-construction-boundary": [
+          false
+        ]
+      }
+    },
+    {
+      "worker": "5",
+      "mode": "noop",
+      "case": "autostart113-construction-outside-authority",
+      "raw_stdout_sha256": "fde2488674da08a711e20d3e93bf03b63807babc6f9e7cae7365cbe54103b84e",
+      "replacement_count": 1,
+      "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "new_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/in-process-construction-boundary": [
+          false
+        ]
+      }
+    },
+    {
+      "worker": "6",
+      "mode": "mutant",
+      "case": "autostart113-reaped-fallback",
+      "raw_stdout_sha256": "63886c440c4cbc4b61116f08db4f0a86980da0b51a80381a72de753d1bb40e3f",
+      "replacement_count": 1,
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "17b70518329cc22798fa9c9770654c0428a66764d4ec51ca4b8eb65dc15b45dc",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-client-starts-the-authority": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "7",
+      "mode": "mutant",
+      "case": "autostart113-transient-abstract-listener",
+      "raw_stdout_sha256": "212b7e0ef6a815ab6899c3d0671a875843214d2e66e799a62815fdf2cb2a8b96",
+      "replacement_count": 1,
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "5fb88003c220644f13cdfc9130cf868d93051b3e4105983a632179e841165397",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-client-hosts-a-listener": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "8",
+      "mode": "mutant",
+      "case": "autostart113-incomplete-counts-as-success",
+      "raw_stdout_sha256": "0ae9a1284adf0c296a5e7ca91695040c541754f4133b6ac7d025427341e606f5",
+      "replacement_count": 1,
+      "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "new_digest": "e86ae7a1d5bb024c41b208344707200bc0b9878b11b1bc7ebc21801aa5caa442",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/faults-preserve-all-three-rows",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
+          "{\"status\": \"FAIL\", \"reason\": \"incomplete_census_accepted\", \"inventory_digest\": \"8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e\"}"
+        ],
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/no-auto-start-needs-census": [
+          false
+        ]
+      }
+    },
+    {
+      "worker": "9",
+      "mode": "mutant",
+      "case": "autostart113-construction-outside-authority",
+      "raw_stdout_sha256": "a6b3941e7b5ad92f998133f7fc71118d19d3a4d7900b2dd86e72d4ca2475b1e9",
+      "replacement_count": 1,
+      "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "new_digest": "f4023d205e6e83e69948490a7eb046e0c1d80cbd68dd58c776393734a18eb0c0",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:.veldo/claim.py:62\", \"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+        ]
+      ],
+      "targets": {
+        "unavailable/in-process-construction-boundary": [
+          false
+        ]
+      }
+    }
+  ]
+}
