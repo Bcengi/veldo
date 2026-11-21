@@ -1,0 +1,217 @@
+
+CASE budget214-caller-value-kept
+--- gate_legs.py
++++ gate_legs.py
+@@ -158 +158 @@
+-    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
++    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST)}
+
+CASE budget214-failed-leg-recorded
+--- gate_legs.py
++++ gate_legs.py
+@@ -387 +387 @@
+-        if stage == MEASURED_STAGE and code == 0:
++        if stage == MEASURED_STAGE:
+
+CASE budget214-keep-not-spared
+--- gate_legs.py
++++ gate_legs.py
+@@ -275 +275 @@
+-        if entry.name == Path(keep).name or not TIMES_NAME.match(entry.name):
++        if not TIMES_NAME.match(entry.name):
+
+CASE budget214-stale-docstring
+--- check_first_use.py
++++ check_first_use.py
+@@ -31 +31,2 @@
+-WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest of the leg it runs in,
++WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest, measured at about
++90 seconds, of the leg it runs in,
+
+CASE budget214-temporary-authority-refused
+--- gate_legs.py
++++ gate_legs.py
+@@ -307,0 +308,3 @@
++    temporary = Path(tempfile.gettempdir()).resolve()
++    if authority == temporary or temporary in authority.parents:
++        return 'this authority %s is a temporary tree under %s' % (authority, temporary)
+
+CASE deadline215-candidate-authority-not-recorded
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1550 +1550 @@
+-                        log_dir=args.worker_log_dir, leg=leg, measure=True)
++                        log_dir=args.worker_log_dir, leg=leg, measure=False)
+
+CASE deadline215-drop-measurement
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1036 +1036 @@
+-                    self.budgets[name] = job.get('budget_seconds', WORKER_BUDGET)
++                    self.budgets[name] = WORKER_BUDGET
+
+CASE deadline215-first-control
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -429 +429 @@
+-            job['budget_seconds'] = max(job.get('budget_seconds', 0), deadlines[case['identity']])
++            job.setdefault('budget_seconds', deadlines[case['identity']])
+
+CASE deadline215-key-omits-definition
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -155 +155 @@
+-    return digest({'authority': str(ROOT), 'case': case, 'sources': sources,
++    return digest({'authority': str(ROOT), 'case': {}, 'sources': sources,
+
+CASE deadline215-key-omits-sources
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -155 +155 @@
+-    return digest({'authority': str(ROOT), 'case': case, 'sources': sources,
++    return digest({'authority': str(ROOT), 'case': case, 'sources': {},
+
+CASE deadline215-latest-sample
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -217 +217 @@
+-            samples = [(at, value) for at, value in case_samples(key, times, now) if value > seconds]
++            samples = []
+
+CASE deadline215-lost-baseline-details
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -636 +636 @@
+-                          + json.dumps(failures, sort_keys=True))
++                          + 'failed')
+
+CASE deadline215-no-authority-guard
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -208 +208 @@
+-    if Path(times) == CASE_TIMES and not authority:
++    if False:
+
+CASE deadline215-no-ceiling
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -187,2 +187 @@
+-    return min(WORKER_CEILING, max(WORKER_BUDGET,
+-               WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
++    return max(WORKER_BUDGET, WORKER_MULTIPLIER * seconds)
+
+CASE deadline215-no-prune
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -235 +235 @@
+-            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)
++            pass  # defect: never prune
+
+CASE deadline215-old-stage-cap
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -124 +124 @@
+-    return max(BUDGET + scheduled, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
++    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
+
+CASE deadline215-record-invalid
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1407,0 +1408 @@
++            record_case_times(root, {time_keys[c['identity']]: 1 for c in fresh}, authority=True)
+
+CASE deadline215-serial-stage-cap
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -123 +123 @@
+-        scheduled += min(work, work / max(1, workers) + tail + chains)
++        scheduled += work
+
+CASE deadline215-stage-drops-authority
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1434 +1434 @@
+-        record_case_times(root, samples, authority=measure)
++        record_case_times(root, samples, authority=False)
+
+CASE deadline285-no-same-stage-derivation
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1374 +1374 @@
+-            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)
++            control_results = workers.run(controls, directory, frozen)
+
+CASE deadline285-unmeasured-floor
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -1270 +1270 @@
+-        planned = {identity: WORKER_CEILING if seconds is None else seconds
++        planned = {identity: WORKER_BUDGET if seconds is None else seconds
+
+CASE firstuse358-total-budget
+--- check_first_use.py
++++ check_first_use.py
+@@ -309 +309 @@
+-                         env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=launcher_fds())
++                         env=_child_env(), timeout=PROCESS_HANG_SECONDS, pass_fds=launcher_fds())
+
+CASE host358-holders-from-table
+--- gate_host.py
++++ gate_host.py
+@@ -157 +157 @@
+-                lines = descriptor.read_text().splitlines()
++                lines = ['lock: ' + line for line in (Path(proc_root) / 'locks').read_text().splitlines()]
+
+CASE timers358-profile-skips-entry
+--- timers.py
++++ timers.py
+@@ -42 +42 @@
+-    if _PROFILE is not None and name != _PROFILE[0]:
++    if False:
+
+CASE verdict358-control-hang-accepted
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -628 +628 @@
+-        if (not all(ok is True for _, ok in honest) or noop != honest
++        if (not all(bool(ok) for _, ok in honest) or False
+
+CASE verdict358-hang-counts-as-kill
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -637,0 +638 @@
++        broken = [(n, False if state == 'hung' else state) for n, state in broken]
+
+CASE verdict358-measured-time-kills
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -857 +857 @@
+-        if self.clock() - last >= self.hang_seconds:
++        if self.clock() - started >= 3 * self.budgets.get(name, WORKER_BUDGET):
+
+CASE verdict358-not-run-passes
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -639 +639 @@
+-        stalled.update(n.split()[-1] for n, state in broken if state in ('hung', 'not_run'))
++        stalled.update(n.split()[-1] for n, state in broken if state == 'hung')
+
+CASE verdict358-unproven-lost
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -663 +663 @@
+-        if baselined(case, dict(mutant, opened_files=opened), baseline):
++        if False:
+
+CASE wait358-child-watchdog-silent
+--- check_gate_mutations.py
++++ check_gate_mutations.py
+@@ -897 +897 @@
+-                os.killpg(proc.pid, signal.SIGABRT)
++                os.killpg(proc.pid, signal.SIGKILL)
+
+CASE wait358-child-watchdog-total-time
+--- mutation_observer.py
++++ mutation_observer.py
+@@ -37 +36,0 @@
+-        self.last = self.clock()

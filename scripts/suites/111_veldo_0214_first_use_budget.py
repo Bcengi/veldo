@@ -1,4 +1,4 @@
-"""VELDO-0214: the first-use check's budget per nested run is measured from the unit stage's leg.
+"""VELDO-0214 measurements remain data; VELDO-0358 bounds only absent progress.
 
 Run: python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget
 
@@ -38,11 +38,23 @@ def _v214_suite():
 
     GL = load('gate_legs_0214', ROOT / "scripts" / "gate_legs.py")
     CF = load('check_first_use_0214', ROOT / "scripts" / "check_first_use.py")
+    # The fixture commands are instantaneous; advance the runner's supplied clock
+    # so its rounded measurement is nonzero without sleeping for a clock tick.
+    clock = [0.0]
+    def tick():
+        clock[0] += 0.25
+        return clock[0]
+    def supplied_time(module):
+        module.time = types.SimpleNamespace(**{name: getattr(module.time, name)
+            for name in dir(module.time) if not name.startswith('_')})
+        module.time.monotonic = tick
+    supplied_time(GL)
+
 
     with tempfile.TemporaryDirectory(prefix='veldo-0214-') as top:
         top = Path(top)
         python = shlex.quote(sys.executable)
-        unit_command = (python + ' -c "import os, sys, time; time.sleep(0.2); '
+        unit_command = (python + ' -c "import os, sys; '
                         'sys.exit(int(os.environ.get(\'V214_FAIL\', \'0\')))"')
         integration_command = (python + ' -c "import os; open(os.environ[\'V214_OUT\'] + \'.\' + '
                                'os.environ[\'VELDO_GATE_LEG\'], \'w\').write('
@@ -79,9 +91,6 @@ def _v214_suite():
                 seen[leg] = text if text == '<absent>' else json.loads(text)
             return seen
 
-        def budget_of(env):
-            return CF.run_budget(env)
-
         # A fixture tree main() can copy, write spend into and run: the fake subprocess plays the
         # sanctioned writer (it appends a spend event, so the mutation lands) and the nested
         # selftest (it records the timeout it was given and reports one failure, so the lazy
@@ -98,18 +107,19 @@ def _v214_suite():
 
             def fake_run(argv, **kwargs):
                 cwd = Path(kwargs['cwd'])
-                if list(argv[1:]) == ['scripts/selftest.py']:
-                    nested.append((cwd.name, kwargs.get('timeout')))
+                if argv[-1] == 'scripts/selftest.py':
+                    nested.append((cwd.name, kwargs.get('seconds'), kwargs.get('timeout')))
                     return types.SimpleNamespace(returncode=1, stderr='', stdout=(
                         'SELFTEST FAIL: fixture row\nselftest: 3 passed, 1 failed\n'))
                 writes.append(kwargs.get('timeout'))
                 with open(cwd / '.veldo' / 'events.jsonl', 'a') as handle:
                     handle.write('{"tokens": 1}\n')
                 return types.SimpleNamespace(returncode=0, stdout='', stderr='')
-            saved = (CF.subprocess, CF.launcher_fds, CF.ROOT, CF.SELFTEST)
+            saved = (CF.subprocess, CF.launcher_fds, CF.ROOT, CF.SELFTEST, CF.heavy_run)
             saved_os = dict(os.environ)
             printed = io.StringIO()
             CF.subprocess = types.SimpleNamespace(run=fake_run, TimeoutExpired=subprocess.TimeoutExpired)
+            CF.heavy_run = fake_run
             CF.launcher_fds = lambda: ()
             CF.ROOT, CF.SELFTEST = fixture, fixture / 'scripts' / 'selftest.py'
             try:
@@ -122,74 +132,27 @@ def _v214_suite():
                     except Exception as error:  # a traceback is the defect some rows look for
                         code = 'raised %r' % (error,)
             finally:
-                CF.subprocess, CF.launcher_fds, CF.ROOT, CF.SELFTEST = saved
+                CF.subprocess, CF.launcher_fds, CF.ROOT, CF.SELFTEST, CF.heavy_run = saved
                 os.environ.clear()
                 os.environ.update(saved_os)
             return code, printed.getvalue(), nested, writes
 
         try:
-            # A budget derived from a recorded unit time is used and printed. The authority records
-            # the unit confined leg at 1138.4s, hands it to the integration leg, and the check's
-            # budget is 2.0 x that: it is printed with its source, and it is the timeout of every
-            # nested run main() makes (the mutated run and the lazy baseline run alike).
-            store = top / 'times-measured'
-            GL.record_time(store, digest, 'confined', 1138.4, 'record-of-this-run')
-            value = GL.measurement(store, digest, 'confined', 'record-of-this-run')
-            env = GL._env('confined', ['01_fixture'], digest, value)
-            budget, source = budget_of(env)
-            seen_timeout = []
-
-            def fake_run(argv, **kwargs):
-                seen_timeout.append(kwargs.get('timeout'))
-                raise subprocess.TimeoutExpired(argv, kwargs.get('timeout'))
-            real_subprocess, real_fds = CF.subprocess, CF.launcher_fds
-            CF.subprocess = types.SimpleNamespace(run=fake_run, TimeoutExpired=subprocess.TimeoutExpired)
-            CF.launcher_fds = lambda: ()
-            try:
-                try:
-                    CF._run_suite(top, 'mutated(fixture)', budget)
-                    timeout_said = None
-                except CF.CannotAnswer as error:
-                    timeout_said = str(error)
-            finally:
-                CF.subprocess, CF.launcher_fds = real_subprocess, real_fds
-            code, printed, nested, writes = drive_main(env)
-            line = [ln for ln in printed.splitlines() if 'budget per nested run' in ln]
-            expect('VELDO-0214 first-use-budget/measured-budget-used: '
-                   + repr((budget, source, seen_timeout, timeout_said, line, code, nested, writes)),
-                   abs(budget - 2276.8) < 1e-6 and seen_timeout == [budget]
-                   and 'inside its budget of 2277s' in (timeout_said or '')
-                   and len(line) == 1 and 'budget per nested run: 2277s' in line[0]
-                   and 'max(1800, 2.0 x 1138.4s)' in line[0] and 'confined leg' in line[0]
-                   and 'this gate run' in line[0]
-                   and code == 0 and [label for label, _ in nested] == ['mutated-spend_recorded', 'pristine']
-                   and all(timeout == budget for _, timeout in nested)
-                   and len(writes) == 2 and all(timeout == CF.WRITE_TIMEOUT_S for timeout in writes))
-
-            # The budget has a ceiling of 6 hours, printed when it applies, and a measurement whose
-            # budget is not a finite number of seconds is ignored by name, never a traceback.
+            # Every nested run uses a progress watchdog, regardless of unit measurements.
             def bound(seconds):
                 return {'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_DECLARATION': digest,
-                        CF.UNIT_SECONDS: json.dumps({'seconds': seconds, 'leg': 'confined', 'declaration': digest,
-                                                     'fresh': 'this gate run', 'at': 'fixture'})}
-            capped, under = budget_of(bound(20000)), budget_of(bound(10799))
-            capped_code, capped_printed, capped_nested, _ = drive_main(bound(1e9))
-            expect('VELDO-0214 first-use-budget/ceiling-caps-the-budget: '
-                   + repr((capped, under, capped_code, capped_nested)),
-                   capped[0] == 21600 and 'CAPPED at the ceiling of 21600s (6 hours)' in capped[1]
-                   and '40000s' in capped[1]
-                   and abs(under[0] - 21598) < 1e-6 and 'CAPPED' not in under[1]
-                   and capped_code == 0 and capped_nested
-                   and all(timeout == 21600 for _, timeout in capped_nested)
-                   and 'budget per nested run: 21600s' in capped_printed and 'CAPPED' in capped_printed)
-            huge = budget_of(bound(1e308))
-            huge_code, huge_printed, huge_nested, _ = drive_main(bound(1e308))
-            expect('VELDO-0214 first-use-budget/non-finite-budget-refused: '
-                   + repr((huge, huge_code, huge_nested, huge_printed[-300:])),
-                   huge[0] == 1800 and 'not a finite number of seconds, so it is ignored' in huge[1]
-                   and huge_code == 0 and huge_nested
-                   and all(timeout == 1800 for _, timeout in huge_nested)
-                   and 'Traceback' not in huge_printed)
+                        CF.UNIT_SECONDS: json.dumps({'seconds': seconds, 'leg': 'confined',
+                            'declaration': digest, 'fresh': 'this gate run', 'at': 'fixture'})}
+            for label, measurement in [('measured-budget-used', 1138.4),
+                                       ('ceiling-caps-the-budget', 1e9),
+                                       ('non-finite-budget-refused', float('inf'))]:
+                code, printed, nested, writes = drive_main(bound(measurement))
+                expect('VELDO-0214 first-use-budget/' + label + ': measurement cannot expire a run',
+                       code == 0 and [item[0] for item in nested] == ['mutated-spend_recorded', 'pristine']
+                       and all(hang == CF.PROCESS_HANG_SECONDS and timeout is None
+                               for _, hang, timeout in nested)
+                       and 'since its last output line; no total bound' in printed
+                       and len(writes) == 2 and all(t == CF.WRITE_TIMEOUT_S for t in writes))
 
             # The leg-time store is pruned after each recording: a file whose authority checkout is
             # gone goes. VELDO-0333: an old file of a live checkout and an unfinished pending file
@@ -259,6 +222,7 @@ def _v214_suite():
             (installed / 'scripts' / 'gate_legs.py').write_bytes((ROOT / "scripts" / "gate_legs.py").read_bytes())
             (installed / 'scripts' / 'gate_unconfined.json').write_bytes(listing.read_bytes())
             IL = load('gate_legs_0214_installed', installed / 'scripts' / 'gate_legs.py')
+            supplied_time(IL)
             installed_store = top / 'installed-owner-store'
             IL.LEG_TIMES = installed_store
             IL.confined = lambda r, command, env: IL.unconfined(r, command, env)
@@ -301,7 +265,7 @@ def _v214_suite():
             expect('VELDO-0214 first-use-budget/stage-runner-hands-the-matching-leg: '
                    + repr((unit_code, int_code, recorded, seen, unit_out[-400:])),
                    unit_code == 0 and int_code == 0
-                   and all(recorded.get(leg, {}).get('seconds', 0) >= 0.2 for leg in seen)
+                   and all(recorded.get(leg, {}).get('seconds', 0) > 0 for leg in seen)
                    and all(isinstance(seen[leg], dict) and seen[leg]['leg'] == leg
                            and seen[leg]['declaration'] == digest
                            and seen[leg]['seconds'] == recorded[leg]['seconds']
@@ -319,17 +283,17 @@ def _v214_suite():
             out_kept = top / 'forged-kept'
             stage('integration', top / 'record-1', store, out=out_kept, forged=forged)
             dropped, replaced = handed(out_empty), handed(out_kept)
-            outside_leg = budget_of({CF.UNIT_SECONDS: forged})
-            other_leg = budget_of({'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_DECLARATION': digest,
+            outside_leg = drive_main({CF.UNIT_SECONDS: forged})
+            other_leg = drive_main({'VELDO_GATE_LEG': 'unconfined', 'VELDO_GATE_DECLARATION': digest,
                                    CF.UNIT_SECONDS: forged})
-            other_digest = budget_of({'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_DECLARATION': 'sha256:' + '1' * 64,
+            other_digest = drive_main({'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_DECLARATION': 'other',
                                       CF.UNIT_SECONDS: forged})
             fallbacks = [(ROOT / relative).read_text() for relative in ('scripts/verify.sh', 'engine/scripts/verify.sh')]
             expect('VELDO-0214 first-use-budget/candidate-set-value-ignored: '
                    + repr((dropped, replaced, outside_leg, other_leg, other_digest)),
                    dropped == {'confined': '<absent>', 'unconfined': '<absent>'}
                    and all(isinstance(v, dict) and v['seconds'] != 99999 for v in replaced.values())
-                   and all(answer[0] == 1800 and 'ignored' in answer[1]
+                   and all(answer[0] == 0 and all(t is None for _, _, t in answer[2])
                            for answer in (outside_leg, other_leg, other_digest))
                    and all('-u VELDO_GATE_DECLARATION -u VELDO_GATE_UNIT_SECONDS' in text for text in fallbacks))
 
@@ -341,20 +305,18 @@ def _v214_suite():
             out_reused = top / 'reused-seen'
             stage('integration', top / 'record-3', store, out=out_reused)
             reused = handed(out_reused)
-            reused_budget = budget_of({'VELDO_GATE_LEG': 'confined', 'VELDO_GATE_DECLARATION': digest,
-                                       CF.UNIT_SECONDS: json.dumps(reused['confined'])
-                                       if isinstance(reused['confined'], dict) else ''})
+            reused_budget = drive_main({CF.UNIT_SECONDS: json.dumps(reused['confined'])})
             expect('VELDO-0214 first-use-budget/reused-stage-uses-last-fresh: '
                    + repr((fail_code, recorded, after_failure, reused, reused_budget)),
                    fail_code != 0 and after_failure == recorded
                    and all(isinstance(reused[leg], dict) and reused[leg]['fresh'] == 'an earlier gate run'
                            and reused[leg]['seconds'] == recorded[leg]['seconds'] for leg in reused)
-                   and reused_budget[0] == 1800 and 'an earlier gate run' in reused_budget[1])
+                   and reused_budget[0] == 0 and all(t is None for _, _, t in reused_budget[2]))
 
             # By hand there is no measurement: the floor, said as such. The stale cost is gone.
-            by_hand = budget_of({})
+            by_hand = drive_main({})
             expect('VELDO-0214 first-use-budget/by-hand-uses-1800-and-says-so: ' + repr(by_hand),
-                   by_hand[0] == 1800 and 'no unit-leg measurement' in by_hand[1]
+                   by_hand[0] == 0 and 'no total bound' in by_hand[1]
                    and 'about\n90 seconds' not in CF.__doc__ and '2276.8s' in CF.__doc__)
         finally:
             GL.confined = plain

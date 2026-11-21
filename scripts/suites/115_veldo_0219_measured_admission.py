@@ -69,7 +69,7 @@ def _v219_checks():
                     len(item['resource_runs']) == 6, gate.case_deadline(key, store) == 120]
         bad = record('2' * 32, dict(case, identity='failure'), 10, 8, 1024)
         before = (store / ('2' * 32 + '.json')).read_bytes()
-        bad[0]['error'] = 'invalid_baseline'
+        bad[0]['error'] = 'control_failed'
         gate.record_case_resources([dict(case, identity='failure')], {'failure': '2' * 32}, bad,
                                    gate.control_group, store)
         measured.append((store / ('2' * 32 + '.json')).read_bytes() == before)
@@ -353,7 +353,8 @@ def _v219_checks():
                     patch.object(gate.os, 'killpg', lambda *a: None), \
                     patch.object(gate.Workers, 'launcher_fds', lambda self: ()), \
                     patch.object(gate.time, 'monotonic', lambda: clock[0]), \
-                    patch.object(gate.time, 'sleep', lambda dt: clock.__setitem__(0, clock[0] + dt)):
+                    patch.object(gate.Workers, 'watch_worker', lambda *a: None), \
+                    patch.object(gate.Workers, 'wait_for_progress', lambda *a: clock.__setitem__(0, clock[0] + .2)):
                 try:
                     done = workers.run(jobs, home, ROOT)
                 except gate.Refused as exc:
@@ -436,7 +437,7 @@ def _v219_checks():
         floor = dict(cpu=2, memory=2**30)
         receipts = [exercise(jobs, 20, 16, limit=n, floor=floor, background=True)
                     for n in (2, 8, 16, None)]
-        same = [r[3] is None and all(o['budget_seconds'] == jobs[o['name']]['budget_seconds']
+        same = [r[3] is None and all(o['estimate_seconds'] == jobs[o['name']]['budget_seconds']
                                     for o in r[0].outcomes) for r in receipts]
         observations = [{n: v['result'] for n, v in r[2].items()} for r in receipts]
         same.append(all(o == observations[0] for o in observations))
@@ -539,22 +540,23 @@ def _v219_checks():
                 stack.enter_context(patch.object(gate.subprocess,'Popen',Child))
                 stack.enter_context(patch.object(gate.os,'killpg',lambda *a:None))
                 stack.enter_context(patch.object(gate.time,'monotonic',lambda:clock[0]))
-                stack.enter_context(patch.object(gate.time,'sleep',lambda dt:clock.__setitem__(0,clock[0]+5)))
+                stack.enter_context(patch.object(gate.Workers,'watch_worker',lambda *a:None))
+                stack.enter_context(patch.object(gate.Workers,'wait_for_progress',lambda *a:clock.__setitem__(0,clock[0]+5)))
                 stack.enter_context(patch.object(gate.signal,'setitimer',lambda *a:None))
                 result = gate.run_stage(top,top/'.git',parallel=ceiling,admission=admission,measure=True)
             return result,times
         stage_runs = [stage_run(n) for n in (2,8,16,None)]
         stage_failed,failed_store = stage_run(8,True)
         fields = ('status','registered','executed','reused','rejected','surviving_workers','invalid_results')
-        receipt_checks = [r['status']=='passed' and all(o['budget_seconds']==240 for o in r['worker_outcomes'])
+        receipt_checks = [r['status']=='passed' and all(o['estimate_seconds']==240 for o in r['worker_outcomes'])
                           and len(list(t.glob('*.json')))==12 for r,t in stage_runs]
         receipt_checks.append(all({k:r[k] for k in fields} == {k:stage_runs[0][0][k] for k in fields}
                                   for r,t in stage_runs))
         for (result, times), m in zip(stage_runs,(2,4,4,4)):
             # Two shared controls then twelve mutants, each with 240s deadline.
             wanted = 120 + sum(min(n*240,n*240/m+240+n*240*.5) for n in (2,12))
-            receipt_checks.append(result['budget_seconds']==wanted and result['guaranteed_workers']==m)
-        receipt_checks.append(stage_failed['error']=='invalid_baseline' and not list(failed_store.glob('*.json')))
+            receipt_checks.append(result['estimate_seconds']==wanted and result['guaranteed_workers']==m)
+        receipt_checks.append(stage_failed['error']=='control_failed' and not list(failed_store.glob('*.json')))
         row('stage-receipts-and-recording', all(receipt_checks))
 
         regressions = load(ROOT / 'proof/VELDO-0219/round2/check.py')

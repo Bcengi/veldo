@@ -9,7 +9,7 @@ a gate without one (every adopter's) takes no lock and makes no scope, exactly a
 verify.sh, before its first check, asks `--inside`. That answers yes (exit 0, the stamp's host field
 on stdout) only when this process already runs under a gate that holds the host: inside a gate scope
 the kernel places it in (its /proc/self/cgroup beneath the scope verify.sh's holder named), or below
-a live holder process when /proc/locks names that holder, or a process above it, as holding the
+a live holder process when its descriptor record names that holder, or a process above it, as holding the
 configured lock. An environment variable alone never answers yes. Otherwise verify.sh execs
 `--enter`, which becomes the gate's holder:
 
@@ -114,7 +114,7 @@ def gib(value):
     return '%g GiB' % round(value / 1024 ** 3, 2)
 
 
-# Who holds the lock: the kernel's table, read by inode.
+# Who holds the lock: descriptor-local lock records, matched by device and inode.
 
 def ppid(pid):
     try:
@@ -132,20 +132,45 @@ def ancestors(pid=None):
     return found
 
 
-def holders(lock):
-    """The pids /proc/locks names as holding a flock on `lock` (blocked waiters excluded)."""
+def holders(lock, proc_root=Path('/proc')):
+    """Read descriptor-local flock records; an open descriptor alone proves no hold.
+
+    Deduplicate inherited descriptors by the lock owner's PID, not the descriptor
+    holder's PID. Disappearing processes/descriptors are normal during this scan.
+    """
     try:
         info = os.stat(lock)
-        table = Path('/proc/locks').read_text()
+        processes = list(Path(proc_root).iterdir())
     except OSError:
         return []
-    device = '%02x:%02x:%d' % (os.major(info.st_dev), os.minor(info.st_dev), info.st_ino)
-    pids = []
-    for line in table.splitlines():
-        fields = line.split()
-        if len(fields) >= 6 and fields[1] == 'FLOCK' and fields[3] == 'WRITE' and fields[5] == device:
-            pids.append(int(fields[4]))
-    return pids
+    device = (os.major(info.st_dev), os.minor(info.st_dev), info.st_ino)
+    owners = set()
+    for process in processes:
+        if not process.name.isdigit():
+            continue
+        try:
+            descriptors = list((process / 'fdinfo').iterdir())
+        except OSError:
+            continue
+        for descriptor in descriptors:
+            try:
+                lines = descriptor.read_text().splitlines()
+            except OSError:
+                continue
+            for line in lines:
+                fields = line.split()
+                if (len(fields) < 7 or fields[0] != 'lock:' or fields[2] != 'FLOCK'
+                        or fields[4] != 'WRITE'):
+                    continue
+                try:
+                    major, minor, inode = fields[6].split(':')
+                    identity = (int(major, 16), int(minor, 16), int(inode))
+                    owner = int(fields[5])
+                except ValueError:
+                    continue
+                if identity == device and owner > 0:
+                    owners.add(owner)
+    return sorted(owners)
 
 
 def holder_file(lock):

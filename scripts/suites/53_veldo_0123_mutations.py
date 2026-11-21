@@ -42,16 +42,15 @@ FIXTURE_SUITE = '''module = ROOT / ".veldo" / "fixture.py"
 if module != ROOT / '.veldo/fixture.py' and (ROOT / 'scripts/crash').exists():
     raise RuntimeError('controlled worker crash')
 if (ROOT / 'scripts/hang').exists():
-    import os, subprocess, sys, time
-    # The child holds a lock on a file in the home until it ends: a pid means nothing outside the
-    # worker's own PID namespace (VELDO-0210 AC7), a lock any process can test.
+    import os, subprocess, sys
     lock = Path(os.environ['TMPDIR']) / 'child.lock'
-    child = subprocess.Popen([sys.executable, '-c', 'import fcntl, sys, time; f = open(sys.argv[1], "w"); '
-                              'fcntl.flock(f, fcntl.LOCK_EX); open(sys.argv[2], "w").close(); time.sleep(30)',
-                              str(lock), str(lock) + '.held'])
-    while not Path(str(lock) + '.held').exists():
-        time.sleep(0.01)
-    time.sleep(30)
+    child = subprocess.Popen([sys.executable, '-c',
+        'import fcntl,os,sys; f=open(sys.argv[1],"w"); '
+        'fcntl.flock(f,fcntl.LOCK_EX); os.write(1,b"R"); os.read(0,1)', str(lock)],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    assert child.stdout.read(1) == b'R'
+    r,w = os.pipe()
+    os.read(r,1)
 expect('fixture/teeth', 'answer = True' in module.read_text())
 expect('fixture/control', True)
 '''
@@ -254,69 +253,26 @@ def qualification(module, repository, selected=None):
                 (root / '.veldo/fixture.py').write_text('moved anchor')
                 moved = run()
                 answers[row] = bool(ok and all(variants) and crashed['status'] == 'failed'
-                                    and crashed.get('error') == 'driver_error' and moved['status'] == 'failed')
+                                    and crashed.get('error') == 'control_failed' and moved['status'] == 'failed')
             elif row == ROWS[2]:
-                original_time = module.time
-                class Clock:
-                    now = 0
-                    @classmethod
-                    def monotonic(cls):
-                        return cls.now
-                module.time = Clock
-                budget = module.Workers(120)
+                clock = [0.0]
+                worker = module.Workers(120, hang_seconds=3, clock=lambda: clock[0])
+                worker.jobs['virtual'] = {'mode': 'mutant'}
                 hits = []
+                for moment in (0, 20, 120, 140, 21601):
+                    clock[0] = moment
+                    worker.check()
+                    worker.progress['virtual'] = (moment, 'row completed')
+                    worker.check_worker('virtual', 0)
+                    hits.append(True)
+                clock[0] += 3
                 try:
-                    for moment in (0, 20, 40, 60, 80, 100, 120, 140):
-                        Clock.now = moment
-                        try:
-                            budget.check()
-                            hits.append(False)
-                        except module.Refused:
-                            hits.append(True)
-                    Clock.now = 119
-                    budget.check_worker('virtual', 0)
-                    Clock.now = 120
-                    worker_limit = False
-                    try:
-                        budget.check_worker('virtual', 0)
-                    except module.Refused:
-                        worker_limit = True
-                finally:
-                    module.time = original_time
-                if hits != [False] * 6 + [True, True]:
-                    answers[row] = False
-                    evidence[row] = hits
-                    continue
-                (root / 'scripts/hang').touch()
-                # Long enough for the worker to start its tree (VELDO-0210 AC7) and reach the hang.
-                worker = module.Workers(_m123_time.monotonic() + 2.0)
-                started = _m123_time.monotonic()
-                timed_out = False
-                case = module.inventory(root, common)[0]
-                try:
-                    worker.run({'hung': {'case': case, 'mode': 'baseline'}}, _m123_Path(temp), root)
+                    worker.check_worker('virtual', 0)
+                    hung = False
                 except module.Refused as error:
-                    timed_out = error.code == 'mutation_budget_exceeded'
-                child_dead = False
-                lockfile = worker.homes['hung'] / 'child.lock' if 'hung' in worker.homes else root / 'absent'
-                if _m123_Path(str(lockfile) + '.held').exists():
-                    # The child held the lock; it is free once the child has ended (a zombie holds no
-                    # descriptor). The kill reaches it through its tree, so allow it a moment.
-                    import fcntl as _m123_fcntl
-                    with open(lockfile) as held:
-                        for _ in range(200):
-                            try:
-                                _m123_fcntl.flock(held, _m123_fcntl.LOCK_EX | _m123_fcntl.LOCK_NB)
-                                child_dead = True
-                                break
-                            except BlockingIOError:
-                                _m123_time.sleep(0.01)
-                detail.append(dict(deadline_hits=hits, worker_limit=worker_limit,
-                                   timed_out=timed_out, child_dead=child_dead,
-                                   cleanup_seconds=_m123_time.monotonic() - started,
-                                   active_workers=len(worker.active)))
-                answers[row] = (hits == [False] * 6 + [True, True] and worker_limit and timed_out and
-                                _m123_time.monotonic() - started < 5.4 and not worker.active and child_dead)
+                    hung = error.code == 'hung_not_killed' and 'row completed' in error.detail
+                answers[row] = all(hits) and hung and worker.deadline is None
+                detail.append(dict(progress=hits, hung=hung))
             elif row == ROWS[3]:
                 first = run()
                 second = run()
@@ -380,7 +336,7 @@ if 'expect' in globals():
             _m123_made.append(self)
 
     def _m123_stop_after_arm(root, expected_common):
-        _m123_seen.append((_m123_made[-1].deadline - _m123_time.monotonic(),
+        _m123_seen.append((_m123_made[-1].deadline,
                            _m123_signal.getitimer(_m123_signal.ITIMER_REAL)[0]))
         raise _m123_budget.Refused('driver_error', 'stop after the cap is armed')
 
@@ -393,17 +349,13 @@ if 'expect' in globals():
         for _m123_count in (10, 116, 300):
             _m123_budget.inventory = lambda root, common, n=_m123_count: [{'driver': 'synthetic'}] * n
             _m123_caps[_m123_count] = _m123_budget.run_stage(
-                ROOT, _m123_budget.common_directory(ROOT)).get('budget_seconds')
+                ROOT, _m123_budget.common_directory(ROOT)).get('estimate_seconds')
     finally:
         _m123_budget.inventory, _m123_budget.read_inputs, _m123_budget.Workers = _m123_saved
         _m123_budget.PARALLEL = _m123_budget_parallel
     _m123_want = {n: _m123_budget.budget_for(n, 2) for n in (10, 116, 300)}
-    _m123_enforced = [abs(left - _m123_want[n]) < 5 and abs(alarm - _m123_want[n]) < 5
-                      for n, (left, alarm) in zip((10, 116, 300), _m123_seen)]
-    expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: run_stage records, enforces as the '
-           'worker deadline, and arms as the alarm a cap of the floor or 2 s per registered case, '
-           'whichever is larger, scaled to the workers the stage runs (at 8 or more workers: 10 -> 120, 116 -> 232, '
-           '300 -> 600; four times that per case at 2, never less than the 8-worker figure at 16)',
+    _m123_enforced = [left is None and alarm == 0 for left, alarm in _m123_seen]
+    expect('VELDO-0123 gate/mutation-budget-scales-with-inventory: estimates scale; no deadline or alarm',
            _m123_caps == _m123_want and len(_m123_seen) == 3 and all(_m123_enforced)
            and [_m123_w.parallel for _m123_w in _m123_made] == [2, 2, 2]
            and [_m123_budget.budget_for(n, 8) for n in (10, 116, 300)] == [120, 232.0, 600.0]
@@ -674,12 +626,23 @@ if 'expect' in globals():
     _m123_live = []
     _m123_peak = [0]
 
+    _m123_latches = []
+    _m123_spawned = [0]
     def _m123_fake_popen(args, **kwargs):
         _m123_live[:] = [p for p in _m123_live if p.poll() is None]
-        proc = _m123_real_popen([_m123_sys.executable, '-c', 'import time; time.sleep(0.3); print("{}")'],
-                                **{k: v for k, v in kwargs.items() if k in ('stdout', 'stderr', 'start_new_session')})
+        reader, writer = _m123_os.pipe()
+        proc = _m123_real_popen([_m123_sys.executable, '-c',
+            'import os; os.read(0,1); print("{}")'], stdin=reader,
+            **{k: v for k, v in kwargs.items() if k in ('stdout', 'stderr', 'start_new_session')})
+        _m123_os.close(reader)
+        _m123_latches.append(writer)
+        _m123_spawned[0] += 1
         _m123_live.append(proc)
         _m123_peak[0] = max(_m123_peak[0], len(_m123_live))
+        if len(_m123_latches) == _m123_gate.PARALLEL or _m123_spawned[0] == len(_m123_jobs):
+            for fd in _m123_latches:
+                _m123_os.close(fd)
+            _m123_latches.clear()
         return proc
 
     # Drive at a count that is not the host's own, so a literal equal to the host count cannot pass.
@@ -723,7 +686,8 @@ if 'expect' in globals():
         _m123_quotas = [_m123_gate._quota_cpus(str(_m123_cgp), str(_m123_cgp / n))
                         for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup', 'tight-cgroup',
                                   'escape-cgroup')]
-        _m123_sp.run(['rm', '-rf', str(_m123_cgp.parent / (_m123_cgp.name + '-evil'))], check=True)
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil') / 'cpu.max').unlink()
+        (_m123_cgp.parent / (_m123_cgp.name + '-evil')).rmdir()
         # And the worker count really applies it: a 3.5-CPU quota permits a ceiling of seven workers.
         _m123_quota_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'half-cgroup'))
         _m123_host_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'none-cgroup'))

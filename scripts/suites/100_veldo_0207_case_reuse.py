@@ -170,6 +170,8 @@ expect('fixture target', namespace['value'] == 1)
                               mutant=pair['mutant']['observation'],
                               old_digest=pair['mutant']['old_digest'], new_digest=pair['mutant']['new_digest'])
                 current.store = R.Store(parent / 'cache', root)
+                # VELDO-0358 adds the evidence classification before storing the receipt.
+                gate.validate_result(actual, case)
                 # The store keeps the observations without their free-text failure details.
                 stored = dict(actual, **{mode: {k: v for k, v in actual[mode].items() if k != 'failed_details'}
                                          for mode in ('baseline', 'noop', 'mutant')})
