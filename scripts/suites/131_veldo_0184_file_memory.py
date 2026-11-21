@@ -288,7 +288,7 @@ if ENGINE != 'codex':
             saved = conversations.turns(identity)
             return bool(saved) and saved[-1].get('state') == 'ended'
 
-        def turns(identities, scenario, release=True, seconds=40):
+        def turns(identities, scenario, release=True, seconds=F.HANG_SECONDS):
             """Open each conversation with its role and send one turn each; the release marker held back until every
             engine has its prompt when `release` is False at first (the turns then run at once)."""
             (markers / 'memory-scenario.json').write_text(json.dumps(scenario))
@@ -678,7 +678,7 @@ if ENGINE != 'codex':
                 running = list(factory.conversation.runner.launches.values())
                 for launch in running:
                     launch.stop('requested')
-                F.drive(factory, lambda: all(launch.ended for launch in running), 20)
+                F.drive(factory, lambda: all(launch.ended for launch in running))
             except Exception:  # noqa: BLE001
                 pass
         if lock is not None:

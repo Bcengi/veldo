@@ -115,8 +115,11 @@ sys.exit(2)
         store = root / 'authority' / 'control.sqlite3'
         print('  VELDO-0177 setup:', code, report.get('outcome'), report.get('reason'))
 
+        # The store's busy wait ends when the writer's lock is released (an event); its bound only detects a hang.
+        HANG_SECONDS = 120
+
         def entity(identity):
-            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=HANG_SECONDS)
             try:
                 found = conn.execute('SELECT kind, data FROM entities WHERE id=?', (identity,)).fetchone()
             finally:
@@ -124,7 +127,7 @@ sys.exit(2)
             return json.loads(found[1]) if found else None
 
         def read(role, revision):
-            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=HANG_SECONDS)
             try:
                 return CG.read(conn, report['authority_ids']['domain_uuid'], report['authority_ids']['repository_uuid'],
                                role, revision)

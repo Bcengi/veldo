@@ -277,7 +277,7 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         factory.start()
         (markers / 'release').touch()
 
-        def settle(identity, count, seconds=60):
+        def settle(identity, count, seconds=F.HANG_SECONDS):
             if not identity or len(conversations.turns(identity)) < count:
                 return False
             J.pass_(factory)

@@ -245,7 +245,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 cycles = line.pm_cycles
                 record = max(cycles.records('factory'), key=lambda r: r['watermark'])
                 if record.get('dispatch') in line.runner.launches:
-                    line.runner.wait(line.runner.launches[record['dispatch']], timeout=30)
+                    # Waits for the run's end (its receiver's exit report); 120 seconds only detects a hang (the load rule).
+                    line.runner.wait(line.runner.launches[record['dispatch']], timeout=120)
                     factory.wake('run_end')
                     factory.run()
                 latest = next(r for r in cycles.records('factory') if r['cycle'] == record['cycle'])

@@ -114,7 +114,7 @@ def holders(directory):
 class Collection:
     def __init__(self, directory, name):
         self.directory, self.name = Path(directory), name
-        self.db = sqlite3.connect(str(self.directory / 'chroma.sqlite3'), timeout=60)
+        self.db = sqlite3.connect(str(self.directory / 'chroma.sqlite3'), timeout=120)  # busy wait: a hang bound
         # The store is the data directory above chromadb (mem0_memory's, whose lock is there) or chromadb itself.
         store = self.directory.resolve().parent
         others = sorted(holders(store) - {os.getpid()})

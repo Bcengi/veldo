@@ -25,6 +25,7 @@ def _v183_suite():
     import importlib.util
     import json
     import os
+    import select
     from pathlib import Path
     import shutil
     import socket
@@ -51,6 +52,9 @@ def _v183_suite():
             'observability', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
     FOUR = ('ava-memory', 'knowledge-graph', 'claude-mem', 'memory-kb')
+    # The load rule (Telegram 42829): every wait here is for its event (a process's exit, a socket, a lock released);
+    # this bound only detects a hang and is never a verdict.
+    HANG_SECONDS = 120
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -201,7 +205,7 @@ for index, (server, tool, arguments) in enumerate(plan['calls']):
          'content': result.get('content') or [{'type': 'text', 'text': json.dumps(answer.get('error'))}]}]}})
 emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'done', 'session_id': plan['session']})
 for proc, _, _ in servers.values():
-    proc.stdin.close(); proc.wait(10)
+    proc.stdin.close(); proc.wait(120)
 '''
 
     class Keystore:
@@ -289,7 +293,7 @@ for proc, _, _ in servers.values():
             root, str(owner_key), runner=manager, unit_dir=str(units), install_root=str(base / 'install-v183'),
             python=sys.executable, factory=str(mods), host=host, observe=events.append))
         print('  VELDO-0183 servers step:', step['outcome'], step['catalog'], step['roles'])
-        conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=30)
+        conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=HANG_SECONDS)
         try:
             records = {}
             for server in FOUR:
@@ -776,16 +780,27 @@ print(json.dumps(out))
                   and (root / 'memory' / 'copies' / part).is_dir())
         server_pids = {part: manager.pid(MS.unit_name(part)) for part in MS.STORES}
         print('  VELDO-0183 store servers:', server_pids)
-        # A second opener: another store server for the same store, and a store held open by another process. A
-        # start that is not refused serves until stopped, so each is given 20 seconds and then stopped.
+        # A second opener: another store server for the same store, and a store held open by another process. Each
+        # start ends in one of two events, never a number of seconds: a refused start exits (its pidfd turns
+        # readable); a start that is not refused tells its service manager READY=1 on NOTIFY_SOCKET (here a socket of
+        # the suite's) and serves, and is then stopped. HANG_SECONDS only detects a start that does neither.
         def start(argv):
-            proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+            ready_path = base / ('notify-%d.sock' % len(list(base.glob('notify-*.sock'))))
+            ready = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            ready.bind(str(ready_path))
+            proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                                    env=dict(os.environ, NOTIFY_SOCKET=str(ready_path)))
+            exited = os.pidfd_open(proc.pid)
             try:
-                out, _ = proc.communicate(timeout=20)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                out, _ = proc.communicate()
-                out = ''
+                woke = select.select([exited, ready], [], [], HANG_SECONDS)[0]
+                if exited not in woke:
+                    proc.kill()
+                    proc.communicate()
+                    return subprocess.CompletedProcess(argv, proc.returncode, '', '')
+            finally:
+                os.close(exited)
+                ready.close()
+            out, _ = proc.communicate()
             return subprocess.CompletedProcess(argv, proc.returncode, out, '')
         entry = definition['parts']['ava_memory']
         second = start([entry['interpreter'], '-B', str(mods / 'control_memory_store.py'), 'ava_memory',
@@ -808,7 +823,7 @@ print(json.dumps(out))
                              '--socket', str(base / 'held.sock'), '--state-root', str(root), '--python', sys.executable])
         finally:
             holder.stdin.close()
-            holder.wait(10)
+            holder.wait(HANG_SECONDS)  # it exits as its input closes
         check('AC4/open-refused', 'a store another process holds open is refused by name before it is opened [%s]'
               % refused.stdout.strip(),
               json.loads(refused.stdout or '{}').get('reason') == 'conflict:memory_store_open:memory_kb:%d' % holder.pid
@@ -1014,7 +1029,7 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
                 'domain_uuid']
 
             def read():
-                conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=30)
+                conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=HANG_SECONDS)
                 try:
                     heads = {server: (MC.entity(conn, MC.head_id(domain, server)) or {}).get('data') for server in FOUR}
                     bound = {}

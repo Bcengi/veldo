@@ -260,7 +260,7 @@ class Stdio:
         with contextlib.suppress(Exception):
             self.proc.stdin.close()
         self.proc.terminate()
-        self.proc.wait(10)
+        self.proc.wait(120)  # its exit; the bound only detects a hang (the load rule)
 
 
 def interpreter_copy(root):

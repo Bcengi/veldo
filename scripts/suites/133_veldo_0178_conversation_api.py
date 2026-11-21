@@ -103,6 +103,7 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         return source[:source.index(OWN)] + BODY
 
     hints = queue.Queue()
+    hinted = []  # every hint received, in order, kept to wait for the one that marks a record ended
 
     def hint_socket(path):
         """The receiver's record hint socket: each hint received, queued for this thread to hand to the API."""
@@ -132,7 +133,8 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
                     except OSError:
                         pass
                 try:
-                    hints.put(json.loads(data.decode()))
+                    hinted.append(json.loads(data.decode()))
+                    hints.put(hinted[-1])
                 except ValueError:
                     pass
         thread = threading.Thread(target=serve, daemon=True)
@@ -204,12 +206,12 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         import subprocess
         edge_key = base / 'edge-api-key'
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v178-api-edge', '-f', str(edge_key)],
-                       check=True, capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=F.HANG_SECONDS, stdin=subprocess.DEVNULL)
         edge_public = ' '.join(edge_key.with_name(edge_key.name + '.pub').read_text().split()[:2])
 
         def edge_sign(message, namespace='veldo-command'):
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(edge_key), '-n', namespace], input=message,
-                                  capture_output=True, check=True, timeout=10).stdout.decode()
+                                  capture_output=True, check=True, timeout=F.HANG_SECONDS).stdout.decode()
         EDGE = 'api-edge-178'
         edge = {'channel': 'api', 'edge_principal': EDGE, 'edge_key_id': 'edge-api', 'public_key': edge_public,
                 'connection_public_key': authority.public['settler'], 'scope': [project]}
@@ -437,21 +439,23 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
             (markers / ('hold-' + talk)).write_text('1')
         J.pass_(factory)
         midway = F.drive(factory, lambda: talk and (markers / ('midway-%s-1' % talk)).exists()
-                         and (conversations.turns(talk) or [{}])[0].get('state') == 'dispatched', 60)
+                         and (conversations.turns(talk) or [{}])[0].get('state') == 'dispatched')
         turn = (conversations.turns(talk) or [{}])[0] if talk else {}
         dispatch_id = turn.get('dispatch_id')
         print('  VELDO-0178 midway:', midway, dispatch_id)
         # Finding 1: while the turn runs, nothing of it is served the colleague on his feed or any read model.
         leaks_running = colleague_leaks(talk, dispatch_id, turn.get('intake_command'))
 
-        def lines_until(who, want, seconds=20):
-            """runs.record read by `who` from cursor 0 until `want(answer)` holds or `seconds` pass."""
-            end = time.monotonic() + seconds
-            while True:
-                got = call('GET', 'runs/record', who=who, query={'dispatch': dispatch_id or 'none', 'after': 0})
-                if got[0] != 200 or want(got[1]) or time.monotonic() > end:
-                    return got
-                F.drive(factory, lambda: False, .2)
+        def lines_until(who, want):
+            """runs.record read by `who` from cursor 0 until `want(answer)` holds: read again each time the service loop
+            has handled its launch pipes (F.drive), with only the hang detector as a bound."""
+            got = [None]
+
+            def read():
+                got[0] = call('GET', 'runs/record', who=who, query={'dispatch': dispatch_id or 'none', 'after': 0})
+                return got[0][0] != 200 or want(got[0][1])
+            F.drive(factory, read)
+            return got[0]
 
         def printed(answer, needle):
             return any(needle in line['payload'] for line in (answer or {}).get('lines') or ())
@@ -465,7 +469,7 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
               live[0] == 200 and live[1]['run'].get('conversation') == talk and live[1]['run'].get('turn') == 1
               and live[1]['run'].get('project') is None)
         stream_status, stream = call('GET', 'runs/record/stream', query={'dispatch': dispatch_id or 'none', 'after': 0})
-        first_frame = stream.next(1) if stream_status == 200 else ('none', None)
+        first_frame = stream.next(F.HANG_SECONDS) if stream_status == 200 else ('none', None)
         cursor = (first_frame[1] or {}).get('cursor') if first_frame[0] == 'frame' else None
         check('AC2/owner-live', 'the owner follows it live on runs.record_stream [%s]' % stream_status,
               stream_status == 200 and first_frame[0] == 'frame' and bool(first_frame[1]['lines'])
@@ -482,13 +486,19 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         # The turn ends; the receiver's hints wake the owner's stream, which closes once every line is out.
         if talk:
             (markers / ('hold-' + talk)).unlink()
-        ended = F.drive(factory, lambda: (conversations.turns(talk) or [{}])[0].get('state') == 'ended', 60)
-        F.drive(factory, lambda: False, .5)
-        delivered = drain_hints()
+        ended = F.drive(factory, lambda: (conversations.turns(talk) or [{}])[0].get('state') == 'ended')
+        # Not a pause: the receiver's last hint, the one that marks the record ended, is waited for on the suite's
+        # hint socket (an event), and every hint before it is handed to the API as it comes.
+        delivered = []
+
+        def last_hint():
+            delivered.extend(drain_hints())
+            return any(h.get('dispatch_id') == dispatch_id and h.get('ended') is True for h in hinted)
+        F.eventually(last_hint)
         frames = [first_frame[1]] if first_frame[0] == 'frame' else []
         closed = None
         while True:
-            kind, frame = stream.next(.5) if stream_status == 200 else ('closed', None)
+            kind, frame = stream.next(F.HANG_SECONDS) if stream_status == 200 else ('closed', None)
             if kind == 'frame':
                 frames.append(frame)
                 continue
