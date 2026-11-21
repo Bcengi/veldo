@@ -2246,6 +2246,8 @@ class Launch:
         self.messages.append(message)
         if not isinstance(message, dict):
             return {}
+        if message.get('event') in ('exited', 'unknown'):
+            self.ended = True  # its last report: the receiver is ending by itself (VELDO-0358)
         if isinstance(message.get('group'), dict):
             self.group = message['group']
         if message.get('supervision') is not None:
@@ -2268,9 +2270,9 @@ class Launch:
         """Make the receiver's silence conclusive: it is stopped and reaped, so it writes no more."""
         if self.child is None:
             return
-        if self.child.poll() is None and (self.closed or self.lost):
-            # VELDO-0350: its output reached its end of file, so it is ending by itself: its own exit status
-            # is waited for, briefly, before the kill that would replace it.
+        if self.child.poll() is None and (self.closed or self.lost or self.ended):
+            # VELDO-0350: its output reached its end of file, or (VELDO-0358) it sent its last report, so it is
+            # ending by itself: its own exit status is waited for before the kill that would replace it.
             # VELDO-0358 AC15: on its pidfd (the kernel's notification of its exit), bounded by the table's
             # RECEIVER_EXIT_SECONDS; it is killed only once that bound has passed.
             self.receiver_exit = _await_exit(self.child, timeout=timer('RECEIVER_EXIT_SECONDS'))
@@ -2453,6 +2455,13 @@ class Receiver:
         self.qualification = None
         self.supervision = None
         self.control = control
+        # VELDO-0358 C4: the supplied clock and the check request, honoured only under the test harness
+        # (VELDO_CONTROL_TEST_HARNESS=1): {"advance": seconds} on the control channel moves this receiver's wall clock
+        # for the contract deadline, and {"check": id} is answered, after the timers are evaluated, by a `checked`
+        # message naming the cause a stop was begun for (None: nothing was due). A timer that never fires is then seen
+        # as an answer, not as silence.
+        self.clock_offset = 0.0
+        self.checks = []
         self.conn = S.open_store(config['store'])
         key = config['journal_key']
         signer = _organ('control_signer')
@@ -3049,6 +3058,9 @@ class Receiver:
         beat = {'interval_seconds': watch.interval, 'window_seconds': watch.window} if watch else None
         graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
+                   # VELDO-0358 AC15: the effective timers of this receiver and of the wrapper's start record.
+                   'timers': {'receiver': TIMERS.report(), 'wrapper': (getattr(worker, 'start_record', None) or {}).get(
+                       'timers')},
                    'group': group.report() if group else None})
         if contract.get('subject_kind') == 'conversation':
             self.emit(self._turn_event(contract, group))
@@ -3737,6 +3749,7 @@ class Receiver:
         message = json.loads(line)
         # VELDO-0141: the wrapper's line is the first line of the run's execution record.
         worker.identity_line = line
+        worker.start_record = message
         if not isinstance(message, dict) or message.get('schema') != WRAPPER_SCHEMA:
             raise ValueError('not an identity line')
         if D._text(message.get('refused')) and message['refused'].startswith('spawn_failed:'):
@@ -3805,7 +3818,16 @@ class Receiver:
             with contextlib.suppress(ValueError):
                 message = json.loads(line)
                 asked = asked or (isinstance(message, dict) and bool(message.get('stop')))
+                if isinstance(message, dict) and os.environ.get('VELDO_CONTROL_TEST_HARNESS') == '1':
+                    if type(message.get('advance')) in (int, float) and math.isfinite(message['advance']):
+                        self.clock_offset += message['advance']
+                    if isinstance(message.get('check'), str):
+                        self.checks.append(message['check'])
         return asked
+
+    def _wall(self):
+        """The wall clock the contract deadline is judged on: the real one, moved only by a supplied advance."""
+        return time.time() + self.clock_offset
 
     def _reap(self, worker, contract, carry=b'', process=None, contract_digest=None):
         """Feed the worker its packet, hash what it prints, and reap it and its group by the contract
@@ -3958,7 +3980,7 @@ class Receiver:
                     empty = False
                     break
                 live = cause is None and code is None
-                waits = [contract['deadline'] - time.time()] if live else []
+                waits = [contract['deadline'] - self._wall()] if live else []
                 if live and runtime_deadline != math.inf:
                     waits.append(runtime_deadline - time.monotonic())
                 if live and getattr(login, 'init_deadline', None) is not None and not login.released:
@@ -4018,7 +4040,7 @@ class Receiver:
                     if metering is not None:
                         metering.login_stop = metering.login_stop or QUESTION_STOP
                     begin('configuration_stop')
-                if cause is None and code is None and time.time() >= contract['deadline']:
+                if cause is None and code is None and self._wall() >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
                     # No heartbeat for the window with the worker still running: its liveness is
@@ -4032,6 +4054,8 @@ class Receiver:
                         settle = None
                         stop.adapter_exited(now)
                     stop.advance(now)
+                while self.checks:  # VELDO-0358 C4: answered once the timers above have been evaluated
+                    self.emit({'event': 'checked', 'check': self.checks.pop(0), 'due': cause})
         finally:
             # A prompt still held is never written: the engine's input closes with nothing more on it.
             held.put(None)

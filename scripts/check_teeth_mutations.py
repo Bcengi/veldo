@@ -15408,7 +15408,7 @@ def cases():
             "            reason = END_UNRECORDED_REASON  # defect: a killed receiver is recorded the same\n",
             ['f1/launch-records-the-status'])
     kept350('end350-ending-receiver-killed-for-its-status',
-            "        if self.child.poll() is None and (self.closed or self.lost):\n",
+            "        if self.child.poll() is None and (self.closed or self.lost or self.ended):\n",
             "        if False:\n",
             ['f1/launch-records-the-status'])
     kept350('end350-receiver-errors-discarded',

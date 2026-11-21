@@ -12,6 +12,7 @@ qualifies no live engine.
 
 def _v39_suite():
     import contextlib
+    import datetime
     import hashlib
     import importlib.util
     import json
@@ -23,7 +24,20 @@ def _v39_suite():
     import sys
     import tempfile
     import threading
-    import time
+
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the two hang
+    # bounds. The wall time it hands the product as data is the support module's stamp.
+    def now():
+        """The wall time now, as data (a record's time, a deadline the product judges): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
+
+    def joined(thread, what):
+        """A thread joined under the wait hang bound; past it the row is hung, never read as ended."""
+        thread.join(timeout=WAITS.WAIT_HANG_SECONDS)
+        if thread.is_alive():
+            here = sys._getframe(1)
+            WAITS.hung(WAITS.next_row(here, what), what, '%s:%d' % (here.f_code.co_filename, here.f_lineno),
+                       'thread %s still alive after the wait hang bound' % thread.name)
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -51,6 +65,16 @@ def _v39_suite():
         # The runner raises the dispatch module IT loaded; the suite uses that same instance.
         L = load('v39_launch', mods / 'control_launch.py')
         D = L.D
+        # VELDO-0358 AC15: the timers profile. Every entry of the timers table is at the wait hang bound in this
+        # process, in the receiver (its configuration) and in the wrapper (the receiver passes it on); no row of this
+        # suite tests a table timer, so none is excepted.
+        TIMERS = L.TIMERS
+        TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+        TIMERS_PROFILE = {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS}
+        # The supplied clock and the check request of the receiver (control_launch, VELDO-0358 C4) are honoured
+        # only under the test harness.
+        harness = os.environ.get('VELDO_CONTROL_TEST_HARNESS')
+        os.environ['VELDO_CONTROL_TEST_HARNESS'] = '1'
         EL = load('v39_eligibility', mods / 'control_eligibility.py')
         RES = load('v39_reservations', mods / 'control_reservations.py')
         SIG = load('v39_signer', mods / 'control_signer.py')
@@ -60,7 +84,8 @@ def _v39_suite():
         private = base / 'private'
         private.mkdir(mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                       stdin=subprocess.DEVNULL)
 
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
@@ -109,7 +134,7 @@ def _v39_suite():
                                         authorize=authority, signer='runner', sign=sign)
         for scope, subject in (('account', ACCOUNT), ('project', 'p1')):
             reservations.configure('policy/' + subject, scope, subject,
-                                   dict(capacity=50, invocations=50, wall_seconds=5000), now=time.time())
+                                   dict(capacity=50, invocations=50, wall_seconds=5000), now=now())
         units = []
 
         def admitted(unit):
@@ -121,7 +146,7 @@ def _v39_suite():
             put('backlog:' + unit, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
             put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest='sha256:scope-' + unit))
             reservations.configure('policy/' + unit, 'unit', unit, dict(capacity=5, invocations=5, wall_seconds=500),
-                                   now=time.time())
+                                   now=now())
             cid = CLM.claim_id(REPOSITORY, unit)
             serial[0] += 1
             S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
@@ -150,8 +175,20 @@ def _v39_suite():
         markers = base / 'markers'
         markers.mkdir()
         worker = base / 'engine.py'
-        worker.write_text('''import json, os, sqlite3, sys, time
+        worker.write_text('''import ctypes, hashlib, json, os, select, sqlite3, sys
 from pathlib import Path
+
+
+def released(path):
+    """Block until `path` exists, woken only by inotify on its directory (no clock, no bound: a worker that is
+    never released ends by its stop)."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    fd = libc.inotify_init1(os.O_CLOEXEC)
+    libc.inotify_add_watch(fd, os.path.dirname(path).encode(), 0x100 | 0x80 | 0x8)  # create, moved to, close write
+    while not Path(path).exists():
+        select.select([fd], [], [])
+        os.read(fd, 65536)
+    os.close(fd)
 store, markers = sys.argv[1], Path(sys.argv[2])
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 printed = b''
@@ -180,14 +217,20 @@ packet = json.loads(raw) if raw.strip() else {}
 (markers / ('%d.packet' % os.getpid())).write_text(json.dumps(packet))
 payload = packet.get('payload') or {}
 if payload.get('close_stdout'):
-    # A worker that closes its output and keeps running: the receiver must still hold it to its deadline.
+    # A worker that closes its output and keeps running: the receiver must still hold it to its deadline. It says
+    # it has closed (its marker), then either works a fixed amount (hashing, no clock) or waits for its release.
     os.close(1)
-    time.sleep(payload.get('hold', 0))
+    (markers / ('%d.closed' % os.getpid())).write_text('closed')
+    if payload.get('work'):
+        digest = hashlib.sha256()
+        block = bytes(1 << 20)
+        for _ in range(payload['work']):
+            digest.update(block)
+    if payload.get('release'):
+        released(payload['release'])
     sys.exit(payload.get('code', 0))
 if payload.get('release'):
-    end = time.time() + 60
-    while not Path(payload['release']).exists() and time.time() < end:
-        time.sleep(0.02)
+    released(payload['release'])
 out = json.dumps(dict(payload.get('say', {}), worker_token=os.urandom(8).hex())).encode()
 (markers / ('%d.out' % os.getpid())).write_bytes(printed + out)
 sys.stdout.buffer.write(out)
@@ -223,7 +266,7 @@ sys.exit(child.wait())
             'profile': {'kind': 'linux-systemd', 'slice': worker_slice, 'lock': str(base / 'containment.lock'),
                         'concurrency': 64, 'runtime_seconds': 600, 'memory_bytes': 1 << 30, 'cpu_percent': 400,
                         'file_bytes': 1 << 30},
-            'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
+            'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1, 'timers_profile': TIMERS_PROFILE,
             'adapters': {'fixture-engine': {'argv': [sys.executable, '-B', str(worker), str(db), str(markers)],
                                             'environment': {'ENGINE_PROFILE': 'configured-profile'}},
                          'missing-engine': {'argv': [str(base / 'no-such-engine')]},
@@ -250,7 +293,7 @@ sys.exit(child.wait())
         def invoke(contract, environment=None, before=None):
             if before:
                 before()
-            launch = L.invoke(config, contract, dispatches, accept_seconds=20, environment=environment)
+            launch = L.invoke(config, contract, dispatches, environment=environment)
             launches.append(launch)
             return launch
 
@@ -263,7 +306,7 @@ sys.exit(child.wait())
                 payload['release'] = str(base / ('release-' + release))
                 releases.append(Path(payload['release']))
             return dict(holder=HOLDER, source=str(src), revision='HEAD', payload=payload, adapter=adapter,
-                        configuration=CONFIGURATION, deadline=time.time() + deadline)
+                        configuration=CONFIGURATION, deadline=now() + deadline)
 
         def release(name):
             (base / ('release-' + name)).write_text('go')
@@ -279,25 +322,39 @@ sys.exit(child.wait())
                     found.append(data)
             return found
 
-        def marker_for(dispatch_id, timeout=10.0):
-            """The marker the worker of a dispatch wrote at its start, or {}. The wait ends on the marker, and
-            also on the dispatch's own record: a worker is started only under a record that is prepared, accepted
-            or running (D.STOPPABLE), so a record in any other state (refused, exited, unknown) says no worker is
-            still to start, and the markers are read once more after it and that reading is the answer. The
-            timeout bounds a record that stays open with no marker; it is not what a refused dispatch waits out."""
+        def marker_for(dispatch_id):
+            """The marker the worker of a dispatch wrote at its start, or {}. The wait (VELDO-0358) wakes on the
+            markers directory and on the store, and ends on the marker (done) or on the dispatch's own record
+            (impossible): a worker is started only under a record that is prepared, accepted or running
+            (D.STOPPABLE), so a record in any other state (refused, exited, unknown) says no worker is still to
+            start; the markers are read once more after it and that reading is the answer."""
             found = {}
 
-            def written():
-                # The state is read BEFORE the markers: a record that had ended by then has no later worker.
-                state = rec(dispatch_id).get('state')
+            def mine():
                 for data in worker_markers():
                     if data.get('dispatch') == dispatch_id:
                         found.update(data)
-                        return True, {'state': state}
-                return state is not None and state not in D.STOPPABLE, {'state': state}
-            wait_for(written, (timeout, "this suite's bound on a worker's start"),
-                     'the marker of the worker of dispatch %s' % dispatch_id)
+                        return True
+                return False
+
+            def ended():
+                # The state is read BEFORE the markers: a record that had ended by then has no later worker.
+                state = rec(dispatch_id).get('state')
+                return (state is not None and state not in D.STOPPABLE and not mine()), {'state': state}
+            WAITS.wait('the marker of the worker of dispatch %s' % dispatch_id, mine, ended,
+                       [WAITS.PathAppears(markers / '.any-marker'), WAITS.Store(db)])
             return found
+
+        def file_of(path, pid, what):
+            """`path`, once its worker (`pid`) has written it: woken on its directory and on the worker's exit, which
+            is the terminal condition (a worker that has ended writes nothing more)."""
+            if not isinstance(pid, int):
+                return path.exists()  # no worker: nothing is to come
+            sources = [WAITS.PathAppears(path)]
+            with contextlib.suppress(OSError):
+                sources.append(WAITS.Pidfd(pid))
+            WAITS.wait(what, path.exists, lambda: proc_identity(pid) is None, sources)
+            return path.exists()
 
         def attempt(fn):
             try:
@@ -331,6 +388,7 @@ sys.exit(child.wait())
 
         emitted, raised, regions = set(), [], []
         observed = {}
+        first_messages = []
 
         def check(label, condition, detail=''):
             """One row; a false one carries `detail`, what it saw, after its name's colon (VELDO-0261)."""
@@ -365,30 +423,59 @@ sys.exit(child.wait())
         # that was asked; a stop never asked, or ignored, ends at it as a deadline stop, which the rows name.
         STOP_ROW_DEADLINE = 30
 
+        class LaunchPipe(WAITS.Source):
+            """The receiver's output (the launch pipe), taken by Launch.pump so the launch keeps every message; watched
+            until the run's end is seen on it."""
+
+            def __init__(self, launch):
+                self.launch = launch
+
+            def fileno(self):
+                return self.launch.child.stdout.fileno()
+
+            def fired(self):
+                return not self.launch.pump()
+
+            def describe(self):
+                return 'launch-pipe(%s)' % self.launch.dispatch_id
+
+        def check_request(launch, name):
+            """VELDO-0358 C4: ask the receiver whether a stop is begun (the test harness's check request). Its answer, a
+            `checked` message naming the cause it began a stop for, or None, comes on the launch pipe."""
+            launch.child.stdin.write((json.dumps({'check': name}) + '\n').encode())
+            launch.child.stdin.flush()
+
+        def answered(launch, name):
+            return [m for m in launch.messages if isinstance(m, dict) and m.get('event') == 'checked'
+                    and m.get('check') == name]
+
         def settle_stopped(launch):
-            """VELDO-0261: wait for a stopped dispatch's record to reach a terminal state, bounded by the product's
-            own end obligation for that dispatch (Launch.wait's bound when no timeout is given: the later of its
-            contract deadline and the end its receiver announced, plus ACCEPT_SECONDS), and only then settle it with
-            the runner's wait. The wait also ends when the receiver itself has ended, since no one is left to record
-            the end. None, or the wait report (the runner's wait then ends the receiver at once and records what it
-            finds, as it does for any caller's timeout)."""
-            ends_by = max(launch.contract['deadline'], launch.ends_by or 0)
-            bound = (max(1.0, ends_by - time.time() + L.ACCEPT_SECONDS),
-                     "the dispatch's end obligation: the later of its contract deadline and the end its receiver "
-                     "announced, plus control_launch.ACCEPT_SECONDS")
+            """VELDO-0261, VELDO-0358: once the runner has asked the receiver to stop, ask the receiver whether it has
+            begun a stop (a check request) and wait for the dispatch's record to reach a terminal state, woken by the
+            store, the launch pipe and the receiver's exit. The wait is impossible when the receiver answers that it
+            began no stop (nothing will end the worker but its deadline, so the stop was not honoured), or when the
+            receiver has ended with the record still open (no one is left to record the end). None, or the report;
+            then the runner's wait settles it (at once, timeout 0, after a report)."""
+            name = 'stop-%s' % launch.dispatch_id
+            check_request(launch, name)
 
             def ended():
                 state = rec(launch.dispatch_id).get('state')
-                receiver = launch.child.poll() if launch.child is not None else 'none'
-                return state not in D.STOPPABLE or receiver is not None, {'state': state, 'receiver_exit': receiver}
-            what = 'dispatch %s to reach a terminal state' % launch.dispatch_id
-            report = wait_for(ended, bound, what)
-            if report is None and rec(launch.dispatch_id).get('state') in D.STOPPABLE:
-                report = 'the receiver of %s ended (exit %r) with the record still %s: nothing is left to record its end' % (
-                    launch.dispatch_id, launch.child.poll() if launch.child is not None else None,
-                    rec(launch.dispatch_id).get('state'))
-            runner.wait(launch, timeout=None if report is None else 0)
-            return report
+                return state not in D.STOPPABLE, {'state': state}
+
+            def impossible():
+                state = rec(launch.dispatch_id).get('state')
+                receiver = launch.child.poll()
+                nothing_begun = any(m.get('due') is None for m in answered(launch, name))
+                return (state in D.STOPPABLE and (receiver is not None or nothing_begun),
+                        {'state': state, 'receiver_exit': receiver, 'answer': answered(launch, name)})
+            result = WAITS.wait('dispatch %s to reach a terminal state' % launch.dispatch_id, ended, impossible,
+                                [WAITS.Store(db), WAITS.Pidfd(launch.child), LaunchPipe(launch)])
+            if result.done:
+                runner.wait(launch)
+                return None
+            runner.wait(launch, timeout=0)  # nothing more will come: the runner records what it finds now
+            return result.report()
 
         def stop_cause(launch, record):
             """What ended a stopped dispatch, as the row judges it: the cause, never the speed."""
@@ -416,9 +503,7 @@ sys.exit(child.wait())
                 packet_path = markers / ('%s.packet' % seen.get('pid'))
                 # The packet is the file of the worker the marker names; with no marker there is no worker whose
                 # packet could come, and nothing to wait for.
-                end = time.time() + (10 if seen.get('pid') else 0)
-                while not packet_path.exists() and time.time() < end:
-                    time.sleep(0.02)
+                file_of(packet_path, seen.get('pid'), 'the packet of the worker of %s' % first.dispatch_id)
                 packet = json.loads(packet_path.read_text()) if packet_path.exists() else {}
                 order = [journal_seq('dispatch/%s/%s/' % (a, first.dispatch_id)) for a in ('prepare', 'accept', 'run')]
                 given = contract.get('input') or {}
@@ -447,7 +532,7 @@ sys.exit(child.wait())
                         and slot.get('data', {}).get('dispatch') == first.dispatch_id,
                     'claim': (contract.get('claim') or {}) == {'entity': CLM.claim_id(REPOSITORY, u1), 'holder': HOLDER,
                                                                'generation': claim.get('data', {}).get('generation')},
-                    'deadline': isinstance(contract.get('deadline'), float) and contract['deadline'] > time.time(),
+                    'deadline': isinstance(contract.get('deadline'), float) and contract['deadline'] > now(),
                     'complete': D.contract_problems(contract) == [] and record.get('contract_digest') == D.digest(contract),
                 }
                 # The worker's birth environment names the journal digest of the acceptance it was
@@ -477,15 +562,16 @@ sys.exit(child.wait())
                 # A second complete contract for the held unit and station, at the authority itself.
                 rival = dict(contract, dispatch_id='dispatch/%s/rival' % u1)
                 reservations.reserve_worker('worker/' + rival['dispatch_id'], rival['dispatch_id'], ACCOUNT, 'p1', u1,
-                                            now=time.time())
+                                            now=now())
                 rslot = entity(RES.entity('worker', [DOMAIN, rival['dispatch_id']]))
                 rival['reservation'] = dict(contract.get('reservation') or {}, entity=RES.entity('worker', [DOMAIN, rival['dispatch_id']]),
                                             version=rslot['version'], digest=rslot['digest'])
                 # The next attempt number, so only the active dispatch can refuse it.
                 rival['attempt'] = 2
-                direct = attempt(lambda: dispatches.prepare(rival, now=time.time()))
+                direct = attempt(lambda: dispatches.prepare(rival, now=now()))
                 release('u1-a')
                 ended = runner.wait(first)
+                first_messages = list(first.messages)
                 # A conclusive end frees the unit and station: the next attempt is attempt 2.
                 third_try = attempt(lambda: runner.submit(u1, 'build', **job(release='u1-b')))
                 third = third_try[1] if third_try[0] == 'ok' else None
@@ -512,12 +598,12 @@ sys.exit(child.wait())
                             original = mine_dispatches.prepare
 
                             def together(*args, **kwargs):
-                                barrier.wait(timeout=20)
+                                barrier.wait(timeout=WAITS.WAIT_HANG_SECONDS)
                                 return original(*args, **kwargs)
                             mine_dispatches.prepare = together
                             racer = L.Runner(EL.Gate(store, mine_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base)),
                                              mine_reservations, mine_dispatches,
-                                             lambda c: L.invoke(config, c, mine_dispatches, accept_seconds=20),
+                                             lambda c: L.invoke(config, c, mine_dispatches),
                                              account=ACCOUNT)
                             got = attempt(lambda: racer.submit(u2, 'build', **job(release='u2')))
                             if got[0] == 'ok':
@@ -534,7 +620,7 @@ sys.exit(child.wait())
                 for racer_thread in racers:
                     racer_thread.start()
                 for racer_thread in racers:
-                    racer_thread.join(timeout=60)
+                    joined(racer_thread, 'a racing runner of %s' % u2)
                 balance = reservations.balances('unit', u2)
                 observed['uniqueness'] = {'second': [second[0], getattr(second[1], 'result', second[1])],
                                           'direct': [direct[0], getattr(direct[1], 'get', lambda k: direct[1])('state')],
@@ -645,35 +731,63 @@ sys.exit(child.wait())
 
             with region('dispatch/deadline-after-closed-output', 'dispatch/remote-stop-holds-unit'):
                 # A worker that closes its output early is still stopped at its deadline, and recorded as
-                # stopped, not as a clean exit.
+                # stopped, not as a clean exit. VELDO-0358: the deadline is an hour away and the receiver's clock is
+                # supplied. Once the worker says its output is closed, the clock is moved one second past the
+                # deadline and the receiver is asked whether a stop is due (C4): it stops the worker for the
+                # deadline, or answers that nothing was due (the terminal condition). The worker then works a fixed
+                # amount and exits by itself, which only a receiver that did not stop it lets happen.
                 uc = admitted('VELDO-9321')
-                started = time.time()
-                closing = runner.submit(uc, 'build', **dict(job(deadline=2), payload={
-                    'task': 'build the unit', 'close_stdout': True, 'hold': 8}))
-                ec = runner.wait(closing) or {}
-                elapsed = time.time() - started
+                closing = runner.submit(uc, 'build', **dict(job(deadline=3600), payload={
+                    'task': 'build the unit', 'close_stdout': True, 'work': 16384}))
+                closing_marker = marker_for(closing.dispatch_id)
+                file_of(markers / ('%s.closed' % closing_marker.get('pid')), closing_marker.get('pid'),
+                        'the worker of %s to close its output' % closing.dispatch_id)
+                closing.child.stdin.write((json.dumps({'advance': closing.contract['deadline'] - now() + 1,
+                                                       'check': 'past-deadline'}) + '\n').encode())
+                closing.child.stdin.flush()
+
+                def deadline_stopped():
+                    state = rec(closing.dispatch_id).get('state')
+                    return state not in D.STOPPABLE, {'state': state}
+
+                def nothing_due():
+                    answer = answered(closing, 'past-deadline')
+                    return any(m.get('due') is None for m in answer), {'answer': answer}
+                judged = WAITS.wait('the deadline stop of %s on the supplied clock' % closing.dispatch_id,
+                                    deadline_stopped, nothing_due,
+                                    [WAITS.Store(db), WAITS.Pidfd(closing.child), LaunchPipe(closing)])
+                if judged.done:
+                    ec = runner.wait(closing) or {}
+                else:
+                    ec = runner.wait(closing, timeout=0) or {}  # nothing will stop it: recorded as found now
                 rc = rec(closing.dispatch_id)
                 term = rc.get('termination') or {}
                 observed['closed_output'] = {'result': closing.result, 'state': rc.get('state'), 'termination': term,
-                                             'elapsed': round(elapsed, 2)}
+                                             'answer': answered(closing, 'past-deadline'), 'wait': judged.report()}
                 # And a worker that closes its output early but finishes before its deadline is not cut short:
-                # its own exit code is recorded, with no deadline stop.
+                # its own exit code is recorded, with no deadline stop. It ends when the test releases it, after it
+                # said its output is closed; its deadline is an hour away.
                 un = admitted('VELDO-9323')
-                started = time.time()
-                early = runner.submit(un, 'build', **dict(job(deadline=10), payload={
-                    'task': 'build the unit', 'close_stdout': True, 'hold': 1, 'code': 4}))
+                early = runner.submit(un, 'build', **dict(job(deadline=3600), payload={
+                    'task': 'build the unit', 'close_stdout': True, 'code': 4,
+                    'release': str(base / 'release-closed-early')}))
+                releases.append(base / 'release-closed-early')
+                early_marker = marker_for(early.dispatch_id)
+                closed_early = file_of(markers / ('%s.closed' % early_marker.get('pid')), early_marker.get('pid'),
+                                       'the worker of %s to close its output' % early.dispatch_id)
+                release('closed-early')
                 runner.wait(early)
-                early_elapsed = time.time() - started
                 rn = rec(early.dispatch_id)
                 early_term = rn.get('termination') or {}
                 observed['closed_output_normal'] = {'state': rn.get('state'), 'termination': early_term,
-                                                    'elapsed': round(early_elapsed, 2)}
+                                                    'closed_before_release': closed_early}
                 check('dispatch/deadline-after-closed-output',
-                      closing.result == 'accepted' and rc.get('state') == 'exited' and term.get('deadline_stop') is True
-                      and term.get('returncode') is None and elapsed < 6
-                      and early.result == 'accepted' and rn.get('state') == 'exited'
-                      and early_term.get('returncode') == 4 and early_term.get('deadline_stop') is False
-                      and early_elapsed >= 1)
+                      closing.result == 'accepted' and judged.done and rc.get('state') == 'exited'
+                      and term.get('deadline_stop') is True and term.get('returncode') is None
+                      and [m.get('due') for m in answered(closing, 'past-deadline')] == ['deadline']
+                      and early.result == 'accepted' and closed_early and rn.get('state') == 'exited'
+                      and early_term.get('returncode') == 4 and early_term.get('deadline_stop') is False,
+                      'closed %r; early %r' % (observed['closed_output'], observed['closed_output_normal']))
                 # Through the wrapper (a remote engine), stopping the local transport at the deadline does not
                 # show the far engine ended: the outcome is unknown and the unit stays held.
                 ur = admitted('VELDO-9322')
@@ -693,14 +807,15 @@ sys.exit(child.wait())
                 resubmit = attempt(lambda: runner.submit(u6, 'build', **job()))
                 fresh = dict(rec(lost.dispatch_id).get('contract') or {}, dispatch_id='dispatch/%s/fresh' % u6, attempt=2)
                 reservations.reserve_worker('worker/' + fresh['dispatch_id'], fresh['dispatch_id'], ACCOUNT, 'p1', u6,
-                                            now=time.time())
+                                            now=now())
                 fslot = entity(RES.entity('worker', [DOMAIN, fresh['dispatch_id']]))
                 fresh['reservation'] = dict(fresh.get('reservation') or {}, entity=RES.entity('worker', [DOMAIN, fresh['dispatch_id']]),
                                             version=fslot['version'], digest=fslot['digest'])
-                direct = attempt(lambda: dispatches.prepare(fresh, now=time.time()))
+                direct = attempt(lambda: dispatches.prepare(fresh, now=now()))
                 again = invoke(rec(lost.dispatch_id).get('contract'))
                 ended_again = invoke(rec(first.dispatch_id).get('contract'))
-                time.sleep(0.2)
+                # VELDO-0358 pattern W: the absence of a worker is read after both receivers have ended (each
+                # refused not_prepared, and Launch.start reaped it), with no window of time.
                 observed['unknown_relaunch'] = {'resubmit': [resubmit[0], getattr(resubmit[1], 'result', resubmit[1])],
                                                 'direct': [direct[0], getattr(direct[1], 'get', lambda k: direct[1])('state')],
                                                 'reinvoke': [again.result, again.refusal, again.owned],
@@ -721,8 +836,11 @@ sys.exit(child.wait())
                 o7 = marker_for(orphaned.dispatch_id)
                 # The receiver that owns the running worker is stopped: the outcome is unknown.
                 orphaned.child.kill()
-                orphaned.child.wait(timeout=10)
+                orphaned.child.wait()  # killed: its exit is certain
                 r7 = runner.wait(orphaned) or {}
+                # VELDO-0154: the dead receiver's stop is made by the runner, which then waits for the kernel to show
+                # the worker gone (its group's cgroup.events and its pidfd, VELDO-0358) and frees the account slot.
+                runner.orphaned(orphaned)
                 p7 = r7.get('process') or {}
                 if p7.get('pid') and proc_identity(p7['pid']) == p7.get('start'):
                     os.killpg(p7['pid'], signal.SIGKILL)
@@ -730,7 +848,7 @@ sys.exit(child.wait())
                 prepared_only = runner.prepare(u8, 'build', **job())
                 accepted_only = runner.prepare(u9, 'build', **job())
                 me = dict(L.process_identity(os.getpid()), principal='launch-receiver')
-                receiving.accept(accepted_only['dispatch_id'], D.digest(accepted_only), me, now=time.time())
+                receiving.accept(accepted_only['dispatch_id'], D.digest(accepted_only), me, now=now())
                 derived = {(frm, action, to) for action, (froms, to) in D.TRANSITIONS.items() for frm in (froms or (None,))}
                 walked = set()
                 for (identity, data) in writer.execute('SELECT id, data FROM entities WHERE kind=?', ('dispatch',)):
@@ -751,18 +869,18 @@ sys.exit(child.wait())
                         r = rec(target)
                         version = dispatches.version(target)
                         digest_ = r.get('contract_digest')
-                        call = {'prepare': lambda: dispatches.prepare(r.get('contract'), now=time.time()),
-                                'accept': lambda: receiving.accept(target, digest_, me, now=time.time()),
-                                'run': lambda: receiving.run(target, digest_, L.process_identity(os.getpid()), now=time.time()),
-                                'exit': lambda: receiving.exit(target, digest_, r.get('process'), termination, now=time.time()),
-                                'refuse': lambda: receiving.refuse(target, digest_, 'probe', now=time.time()),
-                                'unknown': lambda: receiving.unknown(target, digest_, 'probe', now=time.time())}[action]
+                        call = {'prepare': lambda: dispatches.prepare(r.get('contract'), now=now()),
+                                'accept': lambda: receiving.accept(target, digest_, me, now=now()),
+                                'run': lambda: receiving.run(target, digest_, L.process_identity(os.getpid()), now=now()),
+                                'exit': lambda: receiving.exit(target, digest_, r.get('process'), termination, now=now()),
+                                'refuse': lambda: receiving.refuse(target, digest_, 'probe', now=now()),
+                                'unknown': lambda: receiving.unknown(target, digest_, 'probe', now=now())}[action]
                         refusals[(state, action)] = attempt(call)
                         unchanged &= dispatches.version(target) == version
                 # An observation that names the state it ends is refused once the record has left it.
                 moved_version = dispatches.version(accepted_only['dispatch_id'])
                 moved = attempt(lambda: receiving.refuse(accepted_only['dispatch_id'], D.digest(accepted_only), 'probe',
-                                                         now=time.time(), expected_state='prepared'))
+                                                         now=now(), expected_state='prepared'))
                 unchanged &= dispatches.version(accepted_only['dispatch_id']) == moved_version
                 expected_refusals = {(state, action): ('refused', 'duplicate_dispatch' if action == 'prepare'
                                                        else 'transition_refused:%s:%s' % (state, action))
@@ -798,11 +916,11 @@ sys.exit(child.wait())
                             'output_bytes': 2, 'deadline_stop': False}
                 probes = {
                     'a_result_to_b': attempt(lambda: receiving.exit(b.dispatch_id, ra.get('contract_digest'), ra.get('process'),
-                                                                    a_result, now=time.time())),
+                                                                    a_result, now=now())),
                     'a_process_under_b_digest': attempt(lambda: receiving.exit(b.dispatch_id, rb.get('contract_digest'),
-                                                                               ra.get('process'), a_result, now=time.time())),
+                                                                               ra.get('process'), a_result, now=now())),
                     'a_stop_to_b': attempt(lambda: receiving.unknown(b.dispatch_id, ra.get('contract_digest'), 'lost',
-                                                                     now=time.time())),
+                                                                     now=now())),
                 }
                 untouched = (dispatches.version(b.dispatch_id) == b_version and dispatches.version(a.dispatch_id) == a_version)
                 release('ua')
@@ -852,15 +970,15 @@ sys.exit(child.wait())
                 running_seen = marker_for(stopping.dispatch_id)
                 sid = stopping.dispatch_id
                 version = dispatches.version(sid)
-                stale = attempt(lambda: dispatches.request_stop(sid, version + 1, 'owner-person', now=time.time(),
+                stale = attempt(lambda: dispatches.request_stop(sid, version + 1, 'owner-person', now=now(),
                                                                 request='stop-stale'))
-                outside = attempt(lambda: dispatches.request_stop(sid, version, 'stranger-person', now=time.time(),
+                outside = attempt(lambda: dispatches.request_stop(sid, version, 'stranger-person', now=now(),
                                                                   request='stop-outside'))
-                roleless = attempt(lambda: dispatches.request_stop(sid, version, 'plain-person', now=time.time(),
+                roleless = attempt(lambda: dispatches.request_stop(sid, version, 'plain-person', now=now(),
                                                                    request='stop-roleless'))
                 untouched = dispatches.version(sid) == version and not rec(sid).get('stop_request')
-                started = time.monotonic()
-                requested = attempt(lambda: dispatches.request_stop(sid, version, 'owner-person', now=time.time(),
+                started = WAITS.stamp()
+                requested = attempt(lambda: dispatches.request_stop(sid, version, 'owner-person', now=now(),
                                                                     request='stop-1', channel='api'))
                 held = rec(sid)
                 pending_before = dispatches.stop_requests()
@@ -868,17 +986,18 @@ sys.exit(child.wait())
                 # VELDO-0261: the end is waited on, bounded by the product's own obligation, and judged by its cause:
                 # an unasked or ignored stop ends the worker otherwise, and the cause says so.
                 waited = settle_stopped(stopping)
-                elapsed = time.monotonic() - started
+                finished = WAITS.stamp()
                 ended = rec(sid)
                 cause = stop_cause(stopping, ended)
                 again = attempt(lambda: dispatches.request_stop(sid, dispatches.version(sid), 'owner-person',
-                                                                now=time.time(), request='stop-2'))
+                                                                now=now(), request='stop-2'))
                 actors = [r[0] for r in writer.execute(
                     "SELECT principal FROM journal WHERE command_id LIKE ? ORDER BY seq",
                     ('dispatch/%stop%' + sid + '%',))]
                 observed['owner_stop'] = {'stale': stale, 'outside': outside, 'roleless': roleless, 'requested': requested[0],
                                           'swept': swept, 'state': ended.get('state'), 'again': again,
-                                          'stop_request': ended.get('stop_request'), 'elapsed': round(elapsed, 2),
+                                          'stop_request': ended.get('stop_request'), 'asked_at': started.iso(),
+                                          'ended_seen_at': finished.iso(),
                                           'actors': actors, 'termination': ended.get('termination'),
                                           'stop_requested': stopping.stop_requested, 'cause': cause, 'waited': waited}
                 check('dispatch/owner-stop',
@@ -906,7 +1025,7 @@ sys.exit(child.wait())
                 marker_for(oid)
                 bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
                 asked_by = attempt(lambda: dispatches.request_stop(oid, dispatches.version(oid), 'owner-person',
-                                                                   now=time.time(), request='stop-other'))
+                                                                   now=now(), request='stop-other'))
                 by_bystander = bystander.honor_stops()
                 still = dispatches.stop_requests()
                 by_holder = runner.honor_stops()
@@ -933,7 +1052,7 @@ sys.exit(child.wait())
                     outsider = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal=principal,
                                             signer=principal, sign=sign)
                     outsiders[principal] = attempt(lambda: outsider.unknown(target, rec(target).get('contract_digest'),
-                                                                            'forged', now=time.time()))
+                                                                            'forged', now=now()))
                 receiving_ok = rec(target).get('state') == 'running' and dispatches.version(target) == version
                 observed['authority'] = outsiders
                 check('dispatch/service-principals-only',
@@ -974,6 +1093,64 @@ sys.exit(child.wait())
                       'unknown dispatches differ from the three made unknown on purpose: %r' % stray
                       if stray['extra'] or stray['missing'] else 'status %r' % status)
 
+            # VELDO-0358 AC15: the profile reached every arming site this suite crosses, read from where each value
+            # was used: the table in this process, the receiver's and the wrapper's start records (the running
+            # message), the receiver-exit wait of a launch whose receiver ended by itself, and the orphan release.
+            with region('timers/profile-applied'):
+                hang = WAITS.WAIT_HANG_SECONDS
+                launch_path = {'control_launch.' + n for n in (
+                    'ACCEPT_SECONDS', 'RECEIVER_EXIT_SECONDS', 'ORPHAN_SECONDS', 'REQUEST_SECONDS', 'CENSUS_SECONDS',
+                    'SOURCE_SECONDS', 'IDENTITY_SECONDS', 'NAMESPACE_SECONDS', 'FEEDER_SETTLE_SECONDS', 'FEEDER_SECONDS')} | {
+                    'control_containment.SETTLE_SECONDS', 'control_containment.TOOL_SECONDS',
+                    'control_heartbeat.SETTLE_SECONDS', 'control_heartbeat.SETUP_SECONDS',
+                    'control_engine_claude.LOGIN_SECONDS', 'control_engine_claude.INIT_SECONDS',
+                    'control_engine_codex.LOGIN_SECONDS', 'control_engine_codex.CATALOG_SECONDS'}
+
+                def unset(report):
+                    """timer_unset: each entry of a report not at the hang bound, and each launch-path timer absent."""
+                    report = report or []
+                    named = {r['name']: r['value'] for r in report}
+                    return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in launch_path - set(named)])
+                running = next((m for m in first_messages if m.get('event') == 'running'), {}) if first_messages else {}
+                started = (running.get('timers') or {})
+                orphan_release = [o for o in runner.observations if o.get('operation') == 'release_account'
+                                  and o.get('dispatch_id') == orphaned.dispatch_id]
+                profile = {'in_process': unset(TIMERS.report()), 'receiver': unset(started.get('receiver')),
+                           'wrapper': unset(started.get('wrapper')), 'receiver_exit': first.receiver_exit,
+                           'orphan': [(o.get('outcome'), o.get('awaited')) for o in orphan_release]}
+                observed['timers'] = profile
+                check('timers/profile-applied',
+                      profile['in_process'] == [] and profile['receiver'] == [] and profile['wrapper'] == []
+                      and first.receiver_exit == {'awaited': 'pidfd', 'bound': hang, 'ended_by': 'exit'}
+                      and len(orphan_release) == 1 and orphan_release[0].get('outcome') == 'released'
+                      and 'bound' not in orphan_release[0].get('awaited', ['bound'])
+                      and set(orphan_release[0]['awaited']) <= {'cgroup.events', 'pidfd', 'none'},
+                      'timer_unset %r' % profile)
+
+            # VELDO-0358 AC10, AC15: the census over brief E's files finds no site outside the declared exceptions:
+            # the four suites (every rule) and the launch path's engine modules (R3), each read from the copy this
+            # suite installed, so a registered mutant of one of them is what is read.
+            with region('wave1/no-sites'):
+                census = load('v39_census', ROOT / 'scripts' / 'check_wallclock.py')
+                suites = ('62_veldo_0039_dispatch.py', '63_veldo_0040_containment.py', '78_veldo_0060_claude_adapter.py',
+                          '106_veldo_0185_dispatch_setup.py')
+                engine = ('control_launch.py', 'control_containment.py', 'control_heartbeat.py',
+                          'control_engine_claude.py', 'control_engine_codex.py', 'policy_contract.py')
+                found = []
+                for name in suites:
+                    rel = 'scripts/suites/' + name
+                    found += census.Python(rel, (ROOT / rel).read_text(), census.RULES).scan()
+                for name in engine:
+                    rel = 'engine/.veldo/' + name
+                    found += census.Python(rel, (mods / name).read_text(), ('R3',), engine=True).scan()
+                excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+                counts, first_site = census.counted(found)
+                over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1],
+                                                       first_site[k]['form'], k[3])
+                              for k, n in counts.items() if n > excepted.get(k, 0))
+                observed['no_sites'] = over
+                check('wave1/no-sites', not over, 'sites outside the declared exceptions: %r' % over[:20])
+
             with region('dispatch/installed-assets'):
                 scaffold = load('v39_scaffold', mods / 'init_scaffold.py')
                 check('dispatch/installed-assets', '.veldo/control_dispatch.py' in scaffold._FILES
@@ -989,14 +1166,20 @@ sys.exit(child.wait())
                 with contextlib.suppress(Exception):
                     if launch.child.poll() is None:
                         launch.child.kill()
-                    launch.child.wait(timeout=10)
+                    launch.child.wait()  # killed above, or already ended
                     launch.child.stdout.close()
             for conn in connections:
                 conn.close()
             with contextlib.suppress(Exception):
-                subprocess.run(['systemctl', '--user', 'stop', worker_slice], capture_output=True, timeout=20,
+                subprocess.run(['systemctl', '--user', 'stop', worker_slice], capture_output=True,
+                               timeout=WAITS.WAIT_HANG_SECONDS,
                                stdin=subprocess.DEVNULL, env=dict(os.environ, XDG_RUNTIME_DIR=os.environ.get(
                                    'XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()))
+            TIMERS.reset_profile()
+            if harness is None:
+                os.environ.pop('VELDO_CONTROL_TEST_HARNESS', None)
+            else:
+                os.environ['VELDO_CONTROL_TEST_HARNESS'] = harness
             if owner_session is None:
                 os.environ.pop('V39_OWNER_SESSION', None)
             else:
@@ -1009,6 +1192,4 @@ sys.exit(child.wait())
         globals()['_V39_OBSERVED'] = observed
 
 
-_v39_started = __import__('time').monotonic()
 _v39_suite()
-_V39_SECONDS = __import__('time').monotonic() - _v39_started
