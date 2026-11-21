@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# bash host_heavy.sh bash loaded.sh <root> <out>: the generator, then the runs under it.
+set -u
+ROOT=$1; OUT=$2; mkdir -p "$OUT/write"
+cd "$ROOT" || exit 1
+echo "start $(date -u +%FT%TZ) load $(cut -d' ' -f1-3 /proc/loadavg)"
+python3 -I -S scripts/gate_load.py --slots 8 --write-dir "$OUT/write" -- \
+  python3 "$(dirname "$0")"/loaded_runs.py.txt "$ROOT" "$OUT" 50 8 \
+  86_veldo_0189_engine_upgrade 83_veldo_0154_factory_loop 110_veldo_0143_new_project 71_veldo_0138_channel_service 66_veldo_0047_authority
+echo "generator exit status $?"
+echo "end $(date -u +%FT%TZ) load $(cut -d' ' -f1-3 /proc/loadavg)"

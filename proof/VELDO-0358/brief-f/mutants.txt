@@ -1,0 +1,19 @@
+Brief F's registered falsifiers through the gate's driver (scripts/check_gate_mutations.py --case ...),
+run under host_heavy.sh in a scratch copy of this branch plus the scaffold's .veldo/timers.py line (lead item 1).
+
+== run 1, at 173a802b (five cases): status failed, registered 5, executed 5, rejected 4, error mutation_survived
+{"identity": "check_teeth_mutations.py:timers358-profile-skips-client", "validated": false, "kill_by": null, "kills": null}
+{"identity": "check_teeth_mutations.py:timers358-service-profile-ignored", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 timers/profile-applied"}]}
+{"identity": "check_teeth_mutations.py:timers358-reply-literal", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 wave1/no-sites"}]}
+{"identity": "check_teeth_mutations.py:wave358-budget-restored", "validated": true, "kill_by": "assertion", "kills": [{"kill_by": "assertion", "row": "VELDO-0047 wave1/no-sites"}]}
+{"identity": "check_teeth_mutations.py:wave358-window-restored", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 wave1/no-sites"}]}
+invalid: {"detail": "mutation_survived: check_teeth_mutations.py:timers358-profile-skips-client", "error": "mutation_survived"}
+
+== run 2, at 5bc570a0 (the restated client case): status passed, registered 1, executed 1, rejected 1, error None
+{"identity": "check_teeth_mutations.py:timers358-profile-skips-client", "validated": true, "kill_by": "assertion", "kills": [{"kill_by": "assertion", "row": "VELDO-0047 timers/profile-applied"}]}
+
+Run 1's timers358-profile-skips-client survived: its mutant read SEND_SECONDS, which a client module loaded
+after the suite selected its profile holds at the hang bound, so the defect was not one. Restated (5bc570a0) to
+arm the timer's own production value; rejected in run 2 on VELDO-0047 timers/profile-applied by assertion.
+kill_by unproven on suite 71's cases: suite 71 opens scripts/suites/support/v73_authority.py, which keeps
+baseline entries (lead item 3).

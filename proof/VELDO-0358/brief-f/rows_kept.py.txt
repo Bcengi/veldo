@@ -1,0 +1,22 @@
+"""Row labels each suite emits, read by the mutation driver's own worker (baseline mode), at two roots."""
+import json, subprocess, sys
+from pathlib import Path
+base, now = Path(sys.argv[1]), Path(sys.argv[2])
+suites = {'66_veldo_0047_authority.py': 'v47-unit-template-restart', '71_veldo_0138_channel_service.py': None,
+          '83_veldo_0154_factory_loop.py': None, '86_veldo_0189_engine_upgrade.py': None, '110_veldo_0143_new_project.py': None}
+import importlib.util as u
+s = u.spec_from_file_location('t', now / 'scripts/check_teeth_mutations.py'); m = u.module_from_spec(s); s.loader.exec_module(m)
+cases = m.cases()
+def labels(root, case):
+    p = subprocess.run([sys.executable, str(root / 'scripts/check_teeth_mutations.py'), '--worker', case], capture_output=True,
+                       text=True, cwd=str(root))
+    out = json.loads(p.stdout.strip().splitlines()[-1])
+    return set(out['row_names']), out['failed_rows']
+print('Row labels each suite emits, read by the mutation driver\'s own worker (baseline mode), at the base')
+print('fb7705e1 and at this branch. Required (AC10 wave1/rows-kept): the same set or a superset.')
+for suite in suites:
+    case = next(c['name'] for c in cases if c['suite'] == suite)
+    before, _ = labels(base, case)
+    after, failed = labels(now, case)
+    print('%s: base %d, now %d, missing %s, added %s; failed now %s' % (suite, len(before), len(after), sorted(before - after),
+                                                                        sorted(after - before), failed))

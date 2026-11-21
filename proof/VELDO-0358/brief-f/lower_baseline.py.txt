@@ -1,0 +1,32 @@
+"""Lower each baseline entry to the count the census requires (the landing order rule): never raise one."""
+import importlib.util, json, sys
+from pathlib import Path
+root = Path(sys.argv[1]).resolve()
+spec = importlib.util.spec_from_file_location('wc', root / 'scripts/check_wallclock.py')
+wc = importlib.util.module_from_spec(spec); spec.loader.exec_module(wc)
+record = wc.read_record(root / wc.RECORD)
+files, how = wc.scope(root, root, record)
+sites, notes = wc.census(root, files)
+counts, first = wc.counted(sites)
+exceptions = wc.load_list(root / wc.EXCEPTIONS, True)[0]
+base_counts, base_entries = wc.load_list(root / wc.BASELINE, False)
+problems = wc.judge(counts, files, root, base_counts, exceptions, base_counts)
+lowered = {}
+for error, key, have, required, recorded in problems:
+    if error == 'wallclock_site':
+        sys.exit('a new site, not lowering: %r' % (key,))
+    assert required < recorded, key
+    lowered[key] = required
+document = json.loads((root / wc.BASELINE).read_text())
+entries, removed, changed = [], 0, 0
+for entry in document['entries']:
+    key = wc.key_of(entry)
+    if key in lowered:
+        if lowered[key] == 0:
+            removed += 1
+            continue
+        entry = dict(entry, count=lowered[key]); changed += 1
+    entries.append(entry)
+document['entries'] = entries
+(root / wc.BASELINE).write_text(wc.rendered(document))
+print('removed %d entries, lowered %d, sites %d' % (removed, changed, sum(recorded - required for _, _, _, required, recorded in problems)))
