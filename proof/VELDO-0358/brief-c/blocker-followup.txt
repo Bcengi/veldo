@@ -1,0 +1,63 @@
+VELDO-0358 Brief C: additional scope conflicts after the lead decision
+Starting commit: cb0c3da3
+Status: stopped during dependency inspection; no implementation changes.
+
+The lead authorized restating suite 111 and its first-use registrations.
+That resolves blocker.txt's first conflict. The lead also supplied the external
+host_heavy.sh wrapper, resolving the missing-wrapper issue. Neither original
+issue is being raised again.
+
+Further existing tests require behavior that AC5, AC8 and AC9 prohibit:
+
+1. scripts/suites/53_veldo_0123_mutations.py:258-287
+   The qualification fixture constructs Workers(120) and requires check() to
+   refuse at 120 and 140 supplied seconds. It also requires check_worker to
+   refuse at 120 seconds from launch. Lines 291-299 require a real worker to
+   fail with mutation_budget_exceeded under a two-second combined deadline.
+   Lines 364-410 additionally drive run_stage and inspect BOTH Workers.deadline
+   and signal.getitimer(ITIMER_REAL), requiring an actually armed total-time
+   alarm. Keeping budget_for as a harmless estimate cannot satisfy this row:
+   gate/mutation-budget-scales-with-inventory requires enforcement.
+   AC5 and AC9 explicitly remove that enforcement and the combined deadline.
+
+2. scripts/suites/98_veldo_0204_mutation_receipts.py:198-205
+   completed_siblings requires mutation_budget_exceeded and 'worker deadline'
+   in the failed worker's receipt. Its process double advances the supplied
+   clock by 121 seconds in poll() (lines 76-79), and the fixture drives the
+   real coordinator. AC9 instead requires judging slow workers by progress,
+   with mutation_budget_exceeded absent. The useful completed-sibling and
+   cleanup assertions must be preserved while restating the hang fixture.
+
+3. scripts/suites/115_veldo_0219_measured_admission.py:546-558
+   stage-receipts-and-recording requires every worker budget_seconds to be
+   240, requires the stage's computed budget_seconds, and requires
+   stage_failed['error'] == 'invalid_baseline'. AC8 requires control_failed;
+   AC5 and AC9 remove measured worker and combined stage deadlines.
+   The failed-control status assertion alone directly contradicts AC8.
+   Resource admission, measurement and recording checks remain relevant.
+
+The pidfd conversion also changes the process boundary exercised by these
+fixtures. scripts/suites/97_veldo_0204_gate_resources.py:83-121 creates fake
+PIDs beginning at 1000000, completes children only when poll() has been called
+twice, and mocks sleep and killpg but supplies no pidfd event. Suites 98 and
+115 use the same polling-only style. These fixtures need event-capable process
+doubles; treating nonexistent production PIDs as a polling fallback would
+retain the synchronization mechanism this brief must remove.
+
+Required lead decision: assign the restatement of suites 53, 97, 98 and 115
+and any registrations targeting their changed expectations, or expand Brief
+C's scope to include them. Preserve the existing admission, cleanup, sibling
+receipt and measurement properties, replacing only the superseded deadlines,
+verdict names and polling transport. The three direct contradictions above
+cannot be fixed inside the currently authorized files without special-casing
+tests or retaining forbidden production behavior.
+
+Evidence is a read-only source inspection at cb0c3da3; the line references
+identify executable assertions, not inferred requirements. No affected suite,
+selftest, mutation stage or loaded run was executed, and no test pass is
+claimed. The canonical gate was not run. No sub-agents were used.
+This is a scope conflict, not a guard refusal. No outside-scope file was edited.
+
+Validation: python3 scripts/check_personal_setup.py --base e3451130
+Exit 0; personal setup: 0 finding(s). Built-in shapes ran without an
+installation. The machine-specific installation lookup path is omitted here.
