@@ -80,6 +80,9 @@ stage`), the third, in an untouched clone of the same commit, passed.
   of one mutation run (two suite runs side by side), which makes that run `invalid_baseline`. It
   passed in every suite run alone (latencies 0.007 to 0.023 s). The bound was not touched: under the
   load rule a 2 second bound on a loaded host is the specification's to restate, not the bring-up's.
+  Restated 2026-11-21 by the lead under the owner's rule (Telegram 42829) as an ordering criterion, in the
+  specification's History; the suite row now judges event order and keeps the latencies as data
+  (`proof/bringup-2026-11-21-conversation-chain/README.md`, fix round 1).
 - Suite 86 `live/claude` and `live/codex`: live captures to retake (above).
 - The ticket is `risk: high`, `human_approval: required`. Its review of 2026-11-04 was of the
   source branch; the port's conflict resolutions above have had no review.

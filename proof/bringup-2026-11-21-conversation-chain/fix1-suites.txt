@@ -1,0 +1,31 @@
+Fix round 1: each touched suite run alone, `python3 scripts/selftest.py --suite <name>` through the
+builders' host_heavy wrapper (outside the repository), 2026-11-21. Exit 2 is the dispatcher's partial-run status;
+the verdict is the failure count. Runs at 81e610e3, except 127 (at 3c775bda, after the no-commit signal).
+Load is /proc/loadavg at each run's end.
+
+101_veldo_0208_landing_reuse: 216 passed, 0 failed in 262.17s; load 10.14 11.77 13.76
+126_veldo_0230_qualify_reproduces: 30 passed, 0 failed in 107.75s; load 8.66 10.48 13.06
+128_veldo_0177_conversation_workspace: 42 passed, 0 failed in 3.23s; load 8.13 10.34 13.00
+129_veldo_0177_assistant_setup: 32 passed, 0 failed in 4.39s; load 7.80 10.23 12.95
+130_veldo_0176_conversation_history: 43 passed, 0 failed in 12.01s; load 7.52 10.09 12.88
+130_veldo_0183_memory_servers: 45 passed, 0 failed in 26.93s; load 7.00 9.72 12.66
+131_veldo_0175_conversation_replies: 42 passed, 0 failed in 3.75s; load 7.00 9.72 12.66
+131_veldo_0184_file_memory: 42 passed, 0 failed in 124.30s; load 6.28 8.56 11.87
+132_veldo_0175_conversation_routes: 47 passed, 0 failed in 24.25s; load 43.79 60.05 44.08
+133_veldo_0178_conversation_api: 42 passed, 0 failed in 2.72s; load 41.56 59.32 43.93
+136_veldo_0180_conversation_projects: 48 passed, 0 failed in 3.61s; load 41.56 59.32 43.93
+137_veldo_0181_conversation_decisions: 45 passed, 0 failed in 7.14s; load 38.23 58.02 43.67
+138_veldo_0187_claude_mem_feed: 44 passed, 0 failed in 6.02s; load 37.01 57.44 43.56
+155_veldo_0304_space_boundary: 77 passed, 0 failed in 9.28s; load 34.92 56.32 43.35
+79_veldo_0061_codex_adapter: 47 passed, 0 failed in 18.84s; load 31.50 54.12 42.90
+86_veldo_0127_agent_configuration: 52 passed, 2 failed in 67.84s; load 27.55 48.69 41.78
+    VELDO-0127 live/claude detail: missing or stale live capture
+    SELFTEST FAIL: VELDO-0127 live/claude
+    VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different
+    SELFTEST FAIL: VELDO-0127 live/codex
+127_veldo_0231_run_flags (at 81e610e3): 43 passed, 0 failed in 22.92s; load -
+    VELDO-0231 AC1 latencies (s, recorded, not judged): 0.007, 0.007, 0.012, 0.007, 0.008, 0.007, 0.007, 0.007, 0.012, 0.008
+    VELDO-0231 AC1 cycle order: T1 C1 T2 C2 T3 C3 T4 C4 T5 C5 T6 C6 T7 C7 T8 C8 T9 C9 T10 C10
+127_veldo_0231_run_flags (at 3c775bda): 43 passed, 0 failed in 23.04s; load 9.19 14.76 26.53
+    VELDO-0231 AC1 latencies (s, recorded, not judged): 0.007, 0.007, 0.007, 0.004, 0.007, 0.007, 0.012, 0.013, 0.008, 0.012
+    VELDO-0231 AC1 cycle order: T1 C1 T2 C2 T3 C3 T4 C4 T5 C5 T6 C6 T7 C7 T8 C8 T9 C9 T10 C10

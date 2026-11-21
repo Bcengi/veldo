@@ -1,0 +1,7 @@
+python3 one-off against scripts/suites/support/v231_fake_engines.py at 81e610e3:
+HANG_SECONDS = 120
+drive 2 -> refused: drive: 2 seconds is a pause, not a hang detector (the load rule)
+drive 0.5 -> refused: drive: 0.5 seconds is a pause, not a hang detector (the load rule)
+eventually 30 -> refused: eventually: 30 seconds is a pause, not a hang detector (the load rule)
+drive with a held condition returns at once: True
+quiesce on a quiet loop returns True: True

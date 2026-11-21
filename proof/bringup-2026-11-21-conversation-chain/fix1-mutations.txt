@@ -1,0 +1,21 @@
+Fix round 1 falsifiers.
+
+1. scripts/check_teeth_mutations.py through host_heavy at 81e610e3 (five cases, one stage):
+   status failed: mutation_budget_exceeded: check_teeth_mutations.py:flag231-delivered-at-end: worker deadline (120s)
+   flag231-run-window-removed: baseline [], noop [], mutant red rows ['VELDO-0231 AC4/flood', 'VELDO-0231 AC4/per-run-cap']
+   ask176-moved-unasked: baseline [], noop [], mutant red rows ['VELDO-0176 AC2/ask', 'VELDO-0176 AC2/wait', 'VELDO-0176 AC2/move', 'VELDO-0176 AC3/observability']
+   store183-open-unchecked: invalid_baseline: invalid_baseline: check_teeth_mutations.py:store183-open-unchecked: completed controls: {"baseline": {"failed_details": [], "failed_rows": ["VELDO-0183 AC1/catalog-records", "VELDO-0183 AC1/role-selections", "VELDO-0183 AC1/init", "VELDO-01
+   check_teeth_mutations.py:flag231-delivered-at-end: mutation_budget_exceeded: check_teeth_mutations.py:flag231-delivered-at-end: worker deadline (120s)
+   check_teeth_mutations.py:flag231-question-window-dropped: worker_cancelled: stage stopped before worker completed
+
+2. The same driver at 3c775bda, after the suite tells the fake engine at the cycle's end that a flag was not committed:
+   status passed, elapsed 65.4s
+   flag231-delivered-at-end: baseline [], noop [], mutant red rows ['VELDO-0231 AC1/at-once']
+
+3. Applied in place to a scratch copy (git archive 3c775bda, both .veldo and engine/.veldo copies), the suite run alone through host_heavy:
+   flag231-question-window-dropped (suite 127): 42 passed, 1 failed in 140.21s
+      VELDO-0231 detail: AC3/blocking it was stopped by name, configuration_stop:wait_question
+      SELFTEST FAIL: VELDO-0231 AC3/blocking
+   store183-open-unchecked (suite 130_0183): 44 passed, 1 failed in 27.47s
+      VELDO-0183 detail: AC4/open-refused a store another process holds open is refused by name before it is opened []
+      SELFTEST FAIL: VELDO-0183 AC4/open-refused
