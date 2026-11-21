@@ -158,6 +158,11 @@ CREATORS[('scripts/selftest.py', '_isolate')] = (
     'with design 6.10.')
 REVIEWED[('scripts/selftest.py', '_isolate')] = (
     'Removes only the one mkdtemp result this call created, in its finally; pending review with design 6.10.')
+# VELDO-0358: the load-proof leg and its canary.
+CREATORS[('engine/scripts/gate_legs.py', 'run_load_proof')] = (
+    "Creates the load writers' private folder beside the checkout, outside it; removed empty at the leg's end.")
+CREATORS[('engine/scripts/gate_load.py', 'canary')] = "Creates a private temporary folder for the canary's marker."
+REVIEWED[('engine/scripts/gate_load.py', 'canary')] = "Removes only the canary's own mkdtemp folder at its end; design 6.10."
 
 
 def canonical(path):

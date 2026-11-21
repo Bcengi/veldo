@@ -90,6 +90,7 @@ footprint:
   - proof/VELDO-0358/*
   - scripts/gate_schedule.py
   - engine/scripts/gate_schedule.py
+  - scripts/check_space_boundary.py
   - scripts/suites/01_warp_0101_reviewer_notes.py
   - scripts/suites/38_veldo_0025_membership.py
   - scripts/suites/93_veldo_0152_intake_routes.py
