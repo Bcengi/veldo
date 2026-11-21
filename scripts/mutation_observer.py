@@ -44,6 +44,14 @@ class Progress:
         return self.remaining() == 0
 
 
+def wait_readable(fds, seconds):
+    """pidfds and pipes remain waitable above select's fixed descriptor ceiling."""
+    poller = select.poll()
+    for fd in fds:
+        poller.register(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
+    return {fd for fd, events in poller.poll(seconds * 1000)}
+
+
 class Events:
     """Kernel notifications for worker exits and appended output. No periodic wake."""
     def __init__(self):
@@ -75,8 +83,8 @@ class Events:
             self.libc.inotify_rm_watch(self.fd, wd)
 
     def wait(self, remaining):
-        select.select([self.fd, *self.pidfds.values(),
-                       *(fd for fds in self.notifications.values() for fd in fds)], [], [], remaining)
+        wait_readable([self.fd, *self.pidfds.values(),
+                       *(fd for fds in self.notifications.values() for fd in fds)], remaining)
         try:
             while os.read(self.fd, 65536):
                 pass
@@ -125,8 +133,7 @@ def run_heavy(argv, *, cwd, env, pass_fds=(), seconds=PROCESS_HANG_SECONDS, cloc
             remaining = progress.remaining()
             # A supplied logical clock must not impose a short real-time deadline.
             wait_seconds = max(WAIT_HANG_SECONDS, remaining) if clock is not None and remaining else remaining
-            ready, _, _ = select.select([*([pidfd] if pidfd >= 0 else []), *open_fds],
-                                         [], [], wait_seconds)
+            ready = wait_readable([*([pidfd] if pidfd >= 0 else []), *open_fds], wait_seconds)
             if not ready:
                 if not progress.expired():
                     continue
