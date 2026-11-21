@@ -490,36 +490,69 @@ except Exception as e:
            _v25_busy_code == "store_busy" and _v25_ro_code == "read_only_handle"
            and {"store_busy", "read_only_handle"} <= set(_v25_BS.REFUSALS))
 
-    # VELDO-0261 AC2: wait_for's expiry branch, driven directly with a condition that never holds and a short bound.
-    # The helper is the shared module's own function, read from the file the anchor names, so a broken expiry path
-    # in that file reds this row. Every field of the report is asserted: what, the bound, its source, the elapsed
-    # seconds and the last observation.
-    import ast as _v25_ast
-    import re as _v25_re
-    import time as _v25_time
-    _v25_wf_file = ROOT / "scripts/suites" / "shared.py"
-    _v25_wf_ns = {}
-    exec(compile(_v25_ast.Module(body=[n for n in _v25_ast.parse(_v25_wf_file.read_text()).body
-                                       if isinstance(n, _v25_ast.FunctionDef) and n.name == "wait_for"], type_ignores=[]),
-                 str(_v25_wf_file), "exec"), _v25_wf_ns)
+    # VELDO-0261 AC2, restated by VELDO-0358 AC1 (three outcomes; a hang by progress). What was real in the
+    # 0261 row stays: a wait that does not succeed names what it waited for, the bound and its source, and its
+    # last observation. What AC1 removed goes: a wait no longer runs out into a report. It ends done, or
+    # impossible when its terminal condition holds (the report), or it is hung past the wait hang bound and
+    # the process ends; it never reads as false. Neither half reads a clock or depends on machine speed.
+    # Both halves drive the wait primitive's own file (scripts/suites/support/waits.py, which shared.wait_for
+    # calls into), named by the path the mutation driver replaces with its mutant's.
+    _v25_waits_file = ROOT / "scripts/suites/support" / "waits.py"
+    _v25_wspec = _v25_ilu.spec_from_file_location("v261_waits", str(_v25_waits_file))
+    _v25_wmod = _v25_ilu.module_from_spec(_v25_wspec)
+    _v25_wspec.loader.exec_module(_v25_wmod)
     _v25_polls = []
 
     def _v25_never():
         _v25_polls.append(len(_v25_polls) + 1)
         return False, {"poll": _v25_polls[-1]}
 
-    _v25_wf_began = _v25_time.monotonic()
-    _v25_wf_report = _v25_wf_ns["wait_for"](_v25_never, (0.3, "the row's own short bound"), "a condition that never holds")
-    _v25_wf_took = _v25_time.monotonic() - _v25_wf_began
-    _v25_wf_m = _v25_re.fullmatch(r"waited (\d+\.\d) s for a condition that never holds, bound 0\.3 s "
-                                  r"\(the row's own short bound\); last observed: (.*)", _v25_wf_report or "")
-    expect("VELDO-0261 AC2 wait/expiry-report: wait_for given a condition that never holds and a 0.3 s bound returns, once the "
-           "bound has run out, the report naming what it waited for, the bound, its source, the elapsed seconds and the last "
-           "observation, after polling more than once (report: %r; polls: %d; took %.2f s)"
-           % (_v25_wf_report, len(_v25_polls), _v25_wf_took),
-           _v25_wf_m is not None and 0.3 <= float(_v25_wf_m.group(1)) <= _v25_wf_took + 0.05
-           and _v25_wf_m.group(2) == repr({"poll": len(_v25_polls)}) and len(_v25_polls) > 1
-           and 0.3 <= _v25_wf_took < 5)
+    # Impossible: the producer the wait is for has exited, which its pidfd says. The child exits at once.
+    _v25_gone = _v25_sp.Popen([_v25_sys.executable, "-c", "pass"])
+    _v25_wf_report = _v25_wmod.wait_for(
+        _v25_never, (0.3, "the row's own short bound"), "a condition that never holds",
+        sources=[_v25_wmod.Pidfd(_v25_gone)],
+        terminal=lambda: (_v25_gone.poll() is not None, {"producer exit": _v25_gone.returncode}))
+    _v25_gone.wait()
+    expect("VELDO-0261 AC2 wait/expiry-report: wait_for given a condition that never holds and a terminal condition "
+           "that comes (its producer exited, on the producer's pidfd) returns the report, as the impossible outcome, "
+           "naming what it waited for, the caller's former bound and its source, the last observation of both "
+           "conditions and the source it woke on (report: %r; polls: %d)" % (_v25_wf_report, len(_v25_polls)),
+           isinstance(_v25_wf_report, str) and _v25_wf_report.startswith("impossible for a condition that never holds (")
+           and "last observed: done=%r, terminal={'producer exit': 0}" % ({"poll": len(_v25_polls)},) in _v25_wf_report
+           and "sources: pidfd(%d)" % _v25_gone.pid in _v25_wf_report
+           and _v25_wf_report.endswith("(the caller once bounded this at 0.3 s: the row's own short bound)"))
+
+    # Hung, never false: the same wait with no terminal condition, in a child process of its own whose wait
+    # hang bound is set to one second (the bound only decides when the row is called hung; any machine gets
+    # there). The child must end with the hung status and the SELFTEST HUNG line naming the wait, its source
+    # line, the bound and the last observation, and must never return from wait_for.
+    _v25_hang_dir = _v25_tf.mkdtemp(prefix="v261-hung-")
+    _v25_hung_src = (
+        "import importlib.util as u, os\n"
+        "s = u.spec_from_file_location('waits', %r)\n"
+        "w = u.module_from_spec(s); s.loader.exec_module(w)\n"
+        "w.WAIT_HANG_SECONDS = 1\n"
+        "r, _ = os.pipe()\n"
+        "polls = []\n"
+        "def never():\n"
+        "    polls.append(len(polls) + 1)\n"
+        "    return False, {'poll': polls[-1]}\n"
+        "got = w.wait_for(never, (0.3, 'the row bound'), 'a condition that never holds', sources=[w.Readable(r)])\n"
+        "print('RETURNED %%r' %% (got,), flush=True)\n" % str(_v25_waits_file))
+    _v25_hung = _v25_sp.run([_v25_sys.executable, "-c", _v25_hung_src], capture_output=True, text=True,
+                            env=dict(_v25_os.environ, VELDO_HANG_DIR=_v25_hang_dir))
+    _v25_hung_line = next((ln for ln in _v25_hung.stdout.splitlines() if ln.startswith("SELFTEST HUNG ")), "")
+    _v25_shutil.rmtree(_v25_hang_dir, ignore_errors=True)
+    expect("VELDO-0261 AC2 wait/expiry-hung: wait_for given a condition that never holds and no terminal condition never "
+           "returns a report or a false result once the wait hang bound passes: its process ends with the hung status and "
+           "a SELFTEST HUNG line naming the wait, the line it waits at, the bound and the last observation "
+           "(status %r; hung line: %r; stdout tail: %r)"
+           % (_v25_hung.returncode, _v25_hung_line, _v25_hung.stdout[-300:]),
+           _v25_hung.returncode == _v25_wmod.HUNG_EXIT_STATUS and "RETURNED" not in _v25_hung.stdout
+           and "wait a condition that never holds at <string>:10;" in _v25_hung_line
+           and "bound 1 s since the wait began" in _v25_hung_line
+           and "last observed: done={'poll': " in _v25_hung_line)
     _v25_st = _v25_w.state()
     _v25_req_named = {"roles": [], "named_principals": ["ops-lead"], "quorum": 1, "subject_digest": "sha256:s"}
     _v25_req_two = {"roles": [], "named_principals": [], "quorum": 2, "min_independence": 2, "subject_digest": "sha256:s"}

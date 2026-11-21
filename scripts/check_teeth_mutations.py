@@ -13756,13 +13756,22 @@ def cases():
                "        ends_by = contract['deadline']  # the mutant's shortened end obligation\n"),
               ("if __name__ == '__main__':\n    main()\n",
                "if __name__ == '__main__':\n    main()\nelse:\n    ACCEPT_SECONDS = 2  # the mutant's shortened allowance\n")])
-    # wait_for's expiry branch: a helper that never reports an expired wait reds the row that drives it.
-    add(261, 'wait261-expiry-returns-none', '38_veldo_0025_membership.py', 'shared.py',
-        "            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'\n",
-        "            return None  # defect: an expired wait reports nothing\n"
-        "            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'\n",
+    # wait_for's report and its hang (VELDO-0358 AC1 restated this pair; wait261-expiry-returns-none anchored
+    # shared.py's timed-out branch, which AC1 removed, and is retired for these two). The report now comes
+    # only from the impossible outcome; a wait that never ends is hung, never false.
+    add(261, 'wait261-impossible-returns-none', '38_veldo_0025_membership.py', 'waits.py',
+        "    if result.done:\n        return None\n",
+        "    if result.done or result.impossible:  # defect: a wait that cannot succeed reports nothing\n"
+        "        return None\n",
         ['wait/expiry-report'])
-    result[-1]['dir'] = 'scripts/suites'
+    result[-1]['dir'] = 'scripts/suites/support'
+    add(261, 'wait261-expiry-returns-false', '38_veldo_0025_membership.py', 'waits.py',
+        "            if left <= 0:\n                hung(",
+        "            if left <= 0:\n"
+        "                return Result('expired', name, where, done_obs, terminal_obs, [], bound)  # defect\n"
+        "                hung(",
+        ['wait/expiry-hung'])
+    result[-1]['dir'] = 'scripts/suites/support'
     # AC3: each race order reds its own row on every run. The racers load the whole mutated .veldo copy.
     add(261, 'membership261-store-version-unchecked', '38_veldo_0025_membership.py', 'control_store.py',
         "            if actual != expected:\n"
