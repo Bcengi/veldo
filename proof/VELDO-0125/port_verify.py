@@ -41,11 +41,11 @@ def main():
             reader, writer = mp.Pipe(duplex=False)
             worker = mp.Process(target=load, args=(writer, stop))
             worker.start()
+            workers.append(worker)
             writer.close()
             assert reader.poll(120), 'load readiness hang detector'
             assert reader.recv()
             reader.close()
-            workers.append(worker)
         for suite in args.suites:
             command = [sys.executable, 'scripts/selftest.py', '--suite', suite]
             result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=1800)
