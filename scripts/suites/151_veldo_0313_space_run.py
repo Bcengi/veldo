@@ -194,9 +194,13 @@ def _v313_space_run_suite():
     import subprocess
     import sys
     import tempfile
-    import time
     import types
     from pathlib import Path
+
+    # VELDO-0358: the one duration this suite names. Every wait here ends on its event (a pidfd, a
+    # readable descriptor, a path, a line of the supervisor's report); the wait hang bound is the only
+    # bound, and a wait that reaches it makes its row hung.
+    WAIT_HANG_SECONDS = WAITS.WAIT_HANG_SECONDS
 
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {
@@ -238,7 +242,7 @@ def _v313_space_run_suite():
             'ac2/command-status', 'ac2/act-waits-75', 'ac2/report-starts',
             'ac3/record-refusals', 'fix1/existing-work-is-never-scratch', 'ac3/record-accepted', 'ac3/event-types',
             'ac4/no-installation-runs-unchanged', 'ac4/each-verb-says-so',
-            'paths/canon')
+            'paths/canon', 'timers/profile-applied', 'wave1/no-sites')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -252,7 +256,7 @@ def _v313_space_run_suite():
                                '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null',
                                '-c', 'advice.detachedHead=false', '-C', str(where)] + list(argv),
                               env=ENVIRONMENT, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE, timeout=120)
+                              stderr=subprocess.PIPE, timeout=WAIT_HANG_SECONDS)
         if done.returncode:
             raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:]))
         return done.stdout.decode().strip()
@@ -277,6 +281,70 @@ def _v313_space_run_suite():
     try:
         CLI = load_cli('v313_veldo_cli', PRODUCTION['veldo'])
         CLI.ROOT = ROOT  # the modules the CLI loads are this repository's .veldo
+        # VELDO-0358. The suite keeps each supervisor the wrapper starts (its process object), so a row
+        # reads the exit status the kernel records when it ends and nothing else collects it first; for
+        # the row that asks, it keeps its own copy of the read end of the supervisor's report, so the
+        # supervisor's lines after the wrapper's return can be read; and when the wrapper waits for its
+        # supervisor to exit while the latch of what a command left is held (guarded), that latch is
+        # released first: a wrapper that would wait for what the command left then returns only after
+        # it exited, and the row sees that, instead of the suite waiting with it for ever.
+        kept_supervisors, copies, copy_report, guarded = {}, {}, [False], []
+        _wrapper_start = CLI._SpaceSupervisor.start
+
+        def _start(self):
+            made = _wrapper_start(self)
+            child = self.child
+            if child is not None:
+                kept_supervisors[child.pid] = self
+                if copy_report[0] and self.lines is not None:
+                    copies[child.pid] = os.dup(self.lines.fileno())
+                real_wait = child.wait
+
+                def wait(*given, **named):
+                    for latch in list(guarded):
+                        release(latch)
+                    return real_wait(*given, **named)
+                child.wait = wait
+            return made
+        CLI._SpaceSupervisor.start = _start
+        # VELDO-0358 AC15: the timers profile. Every entry of the timers table the CLI's modules share
+        # (timers.py beside them, under its own key) is at the wait hang bound in this process; no row of
+        # this suite tests a table timer, so none is excepted.
+        timers_path = VELDO / 'timers.py' if (VELDO / 'timers.py').is_file() else ROOT / 'engine' / '.veldo' / 'timers.py'
+        timers_key = 'veldo_timers:' + os.path.realpath(str(timers_path))
+        if timers_key not in sys.modules:
+            sys.modules[timers_key] = load(timers_key, timers_path)
+        TIMERS = sys.modules[timers_key]
+        TIMERS.set_profile(None, hang_seconds=WAIT_HANG_SECONDS)
+
+        def exit_of(process):
+            """The exit status of a supervisor the wrapper started, once it has ended (its pidfd)."""
+            wrapper = kept_supervisors.get((process or {}).get("pid"))
+            if wrapper is None:
+                return None
+            if wrapper.child.poll() is None:
+                WAITS.wait('supervisor %d to end' % wrapper.child.pid, lambda: wrapper.child.poll() is not None,
+                           sources=[WAITS.Pidfd(wrapper.child)])
+            return wrapper.child.returncode
+
+        def report_lines(source):
+            """The JSON lines a report source (waits.Readable) has read so far."""
+            out = []
+            for line in bytes(source.data).split(b'\n')[:-1]:
+                try:
+                    out.append(json.loads(line.decode()))
+                except ValueError:
+                    continue
+            return out
+
+        def said_line(source, what, wanted):
+            """Wait on a supervisor's report for its first line that `wanted` takes; that line, or None
+            when the report ended without one."""
+            def found():
+                lines = [one for one in report_lines(source) if isinstance(one, dict) and wanted(one)]
+                return bool(lines), lines[0] if lines else None
+            result = WAITS.wait(what, found, lambda: (source.closed, {'lines': report_lines(source)[-4:]}), [source])
+            return result.done_observation if result.done else None
         SP = load('v313_control_space', VELDO / 'control_space.py')
         S = load('v313_control_store', VELDO / 'control_store.py')
         CM = load('v313_control_membership', VELDO / 'control_membership.py')
@@ -294,13 +362,13 @@ def _v313_space_run_suite():
         keys = temp / 'keys'
         keys.mkdir(mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys / 'owner')], check=True,
-                       capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
+                       capture_output=True, timeout=WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         PUBLIC = (keys / 'owner.pub').read_text().strip()
 
         def owner_sign(data):
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys / 'owner'), '-n',
                                    AC.SIGNATURE_NAMESPACE], input=data, capture_output=True, check=True,
-                                  timeout=30).stdout.decode()
+                                  timeout=WAIT_HANG_SECONDS).stdout.decode()
 
         MEGABYTE = 1024 * 1024
         FLOOR, NEED = 20000 * MEGABYTE, 4000 * MEGABYTE
@@ -507,12 +575,33 @@ def _v313_space_run_suite():
             child.wait()
             return process
 
-        LINGER = 10.0  # the longest a process a fixture command leaves lives with no word from the suite
+        # LATCHES (VELDO-0358, C3). A process a fixture command leaves, or a worker a fixture server starts,
+        # lives until the suite releases its latch: a named pipe the suite holds open, for reading and
+        # writing, from before the process exists to the suite's end. The process reads one byte of it.
+        # The suite's release is that byte (a line, for a shell's read), which waits in the pipe for a
+        # reader that opens it later; and when the suite's process ends for any reason the pipe has no
+        # writer left, so the read ends too. Nothing in it counts time.
+        latches, freed = {}, set()  # path of a latch -> the suite's descriptor on it; the released ones
+
+        def latch_of(path):
+            """Make `path` a latch held by the suite (once), and return it."""
+            path = Path(path)
+            if str(path) not in latches:
+                os.mkfifo(path)
+                latches[str(path)] = os.open(str(path), os.O_RDWR | os.O_CLOEXEC)
+            return path
+
+        # A fixture's read of a latch: opened without waiting for a writer (so a suite that has ended
+        # cannot leave it waiting in its open), then one blocking read. %s is the path's expression.
+        LATCH_READ = ('_latch = os.open(%s, os.O_RDONLY | os.O_NONBLOCK)\n'
+                      'os.set_blocking(_latch, True)\n'
+                      'os.read(_latch, 1)  # the latch: the suite\'s word, or its end\n')
+        LATCHED = LATCH_READ % '%r'
 
         def lingering(code, latch, late, shown=None):
             """The source of a command that ends at once with `code` and leaves a process that left its
             session and its parent. That process holds a file under the command's temporary folder
-            and lives until the suite makes `latch` (never by the clock, short of LINGER); at its last
+            and lives until the suite releases `latch` (a latch, never the clock); at its last
             line it writes to `late` what it sees. `shown`, when given, gets the command's cgroup.
 
             The command ends only when the process between it and the one it leaves has ended and is
@@ -520,31 +609,84 @@ def _v313_space_run_suite():
             command's exit listed it on a loaded host beside the one that stays (gate fix 11: two
             descendants, started in the same tick); a row that then asks whether what was listed is
             still there found it gone. What the command leaves is now one process, whenever it is read."""
-            return ('import json, os, sys, time\n'
+            latch_of(latch)
+            return ('import json, os, sys\n'
                     'held = os.path.join(os.environ["TMPDIR"], "held.txt")\n'
                     'open(held, "w").write("in use\\n")\n'
                     + ('open(%r, "w").write(open("/proc/self/cgroup").read())\n' % str(shown) if shown else '')
-                    + 'between = os.fork()\n'
-                    'if between:\n'
-                    '    os.waitpid(between, 0)\n'
-                    '    os._exit(%d)\n'
-                    'os.setsid()\n'
-                    'if os.fork():\n'
-                    '    os._exit(0)\n'
-                    'for stream in (0, 1, 2):\n'
-                    '    os.close(stream)\n'
-                    'handle, until = open(held), time.monotonic() + %r\n'
-                    'while not os.path.exists(%r) and time.monotonic() < until:\n'
-                    '    time.sleep(0.02)\n'
-                    'json.dump({"held": os.path.isfile(held), "text": handle.read(),\n'
-                    '           "released": os.path.exists(%r)}, open(%r, "w"))\n'
-                    % (code, LINGER, str(latch), str(latch), str(late)))
+                    + ('between = os.fork()\n'
+                       'if between:\n'
+                       '    os.waitpid(between, 0)\n'
+                       '    os._exit(%d)\n'
+                       'os.setsid()\n'
+                       'if os.fork():\n'
+                       '    os._exit(0)\n'
+                       'for stream in (0, 1, 2):\n'
+                       '    os.close(stream)\n'
+                       'handle = open(held)\n' % code)
+                    + LATCHED % str(latch)
+                    + ('json.dump({"held": os.path.isfile(held), "text": handle.read(),\n'
+                       '           "released": True}, open(%r, "w"))\n' % str(late)))
 
         def release(latch):
-            """Make `latch` a moment from now, from a process of the fixture's own, so that the caller
-            is already asleep on the exit it causes."""
-            waiting.append(subprocess.Popen(['sh', '-c', 'sleep 0.7; : > "$1"', 'sh', str(latch)],
-                                            stdin=subprocess.DEVNULL))
+            """Release `latch`: the process that holds it reads the suite's word and goes on to its last
+            line. The suite keeps its descriptor to its end, so a word given before the reader opened
+            the pipe is still there for it."""
+            held = latches.get(str(latch))
+            if held is not None and str(latch) not in freed:
+                freed.add(str(latch))
+                os.write(held, b'\n')
+
+        def released(latch):
+            return str(latch) in freed
+
+        class Slept:
+            """The `select` module as the CLI's waits see it while a row watches them: each call of a
+            poller's poll() is counted, and `then`, when given, is called with that count just before
+            the call blocks. So a row causes an exit only once the wait is asleep on it, and sees a wait
+            go to sleep where it should not, with no window of time."""
+
+            def __init__(self, real, then=None):
+                self.real, self.then, self.sleeps = real, then, 0
+
+            def __getattr__(self, name):
+                return getattr(self.real, name)
+
+            def poll(self):
+                outer, real = self, self.real.poll()
+
+                class Poller:
+                    def register(self, *given):
+                        return real.register(*given)
+
+                    def unregister(self, *given):
+                        return real.unregister(*given)
+
+                    def modify(self, *given):
+                        return real.modify(*given)
+
+                    def poll(self, *given):
+                        outer.sleeps += 1
+                        if outer.then is not None:
+                            outer.then(outer.sleeps)
+                        return real.poll(*given)
+                return Poller()
+
+        def watched(then):
+            """A context in which the CLI's waits (each imports select when it runs) sleep through
+            Slept(then); it gives the Slept."""
+            import contextlib
+            import select as real_select
+
+            @contextlib.contextmanager
+            def scope():
+                slept = Slept(real_select, then)
+                sys.modules['select'] = slept
+                try:
+                    yield slept
+                finally:
+                    sys.modules['select'] = real_select
+            return scope()
 
         def alive(holders, how):
             found = [one for one in holders or () if one.get('how') == how]
@@ -587,23 +729,18 @@ def _v313_space_run_suite():
                 report['end'] = settled(wiring, report.get('given'), report['end'])
             return status, said.getvalue(), report
 
-        def there(process, seconds):
-            """Whether the kernel still shows `process` ({pid, started}) after `seconds`: one wait
-            on its pidfd, which ends early only if it exits."""
-            import select
+        def present(process):
+            """Whether the kernel shows `process` ({pid, started}) now: read at an event, never after a
+            span of time."""
+            now = CLI._space_process(process.get('pid') or 0) if isinstance(process, dict) else None
+            return now is not None and now['started'] == process.get('started')
+
+        def pidfd_of(process):
+            """A wait source on `process`'s exit, or None when it has already gone."""
             try:
-                descriptor = os.pidfd_open(process['pid'])
+                return WAITS.Pidfd(process['pid'])
             except OSError:
-                return False
-            try:
-                now = CLI._space_process(process['pid'])
-                if now is None or now['started'] != process['started']:
-                    return False
-                watch = select.poll()
-                watch.register(descriptor, select.POLLIN)
-                return not watch.poll(int(seconds * 1000))
-            finally:
-                os.close(descriptor)
+                return None
 
         def unread_by(process, run_identity):
             """The processes the kernel shows that hold `run_identity` unread for the supervisor
@@ -612,46 +749,89 @@ def _v313_space_run_suite():
                                                              reader=CLI._space_reader(None))
                     if one.get('how') == 'unread']
 
-        def stays_or_ends(process, run_identity, child=None, status=None, seconds=5.0):
+        def stays_or_ends(process, run_identity, child=None, status=None):
             """(how, said) for a supervisor with nothing of its run left: 'ended' when it ended (with
-            `status`, when its exit can be read), 'unread' when it stays and the kernel shows
+            `status`, when its exit can be read), 'unread' when it stays because the kernel shows
             processes this account cannot read that started after it (another account's, on a
-            shared host), else what it did."""
-            if not there(process, seconds):
-                if child is None:
-                    return 'ended', None
-                code = child.wait(timeout=30)
-                return ('ended' if code == status else 'exit %s' % code), code
-            held = unread_by(process, run_identity)
-            return ('unread' if held else 'stays on nothing'), held[:6]
+            shared host: it stays on them, fail closed, so its end cannot come and the wait is over).
+            The wait wakes on the supervisor's exit. One that stays on nothing has its wait hung."""
+            source = pidfd_of(process) if present(process) else None
+            if source is not None:
+                held = []
 
-        FOLLOW = 120.0  # the suite's own limit on an end held by what is no part of its fixture
+                def stays():
+                    held[:] = unread_by(process, run_identity)
+                    return bool(held), {'unread': held[:6]}
+                result = WAITS.wait('supervisor %s of run %s to end' % (process.get('pid'), run_identity),
+                                    lambda: not present(process), stays, [source])
+                if result.impossible:
+                    return 'unread', held[:6]
+            if child is None:
+                return 'ended', None
+            code = child.wait()  # it has ended: this collects it
+            return ('ended' if code == status else 'exit %s' % code), code
 
-        def follow(wiring, given):
+        def follow(wiring, given, then=None):
             """The run's end as the supervisor's follower makes it (_space_ended), which sleeps with no
-            time limit on the exit of every holder. A process that started after the run and whose
-            environment cannot be read holds the run (fail closed), whoever it belongs to. In a
-            process table of the suite's own (the gate's confinement) there is none but the
+            time limit on the exit of every holder. `then`, when given, is called once the end is
+            asleep on them (just before its first sleep), so what it releases exits while the end
+            sleeps on it; if the end never sleeps it is called after. A process that started after the
+            run and whose environment cannot be read holds the run (fail closed), whoever it belongs
+            to. In a process table of the suite's own (the gate's confinement) there is none but the
             fixture's. On a host shared with other sessions and without the process reader there
-            may be, and the end then waits for it, as it must. The suite does not wait with it: past
-            its own limit the row is red and says why. It is never passed and never stood down."""
+            may be, and the end then waits for it, as it must. The suite does not wait with it: each
+            time the end goes to sleep, a holder that another account owns (its owner read from the
+            kernel) is evidence that the end cannot come in this fixture, and the row is red at once,
+            naming it. Any other end that never comes is hung at the wait hang bound."""
             import signal
+            now_row = row
+
+            def owner_of(pid):
+                try:
+                    with open('/proc/%d/status' % pid) as status:
+                        return next(int(line.split()[1]) for line in status if line.startswith('Uid:'))
+                except (OSError, StopIteration, ValueError, TypeError):
+                    return None
+
+            class HeldByOthers(Exception):
+                pass
+
+            def others():
+                held = CLI._space_judged(wiring, given).get('holders') or []
+                return [one for one in held if one.get('how') == 'unread'
+                        and owner_of(one.get('pid')) not in (None, os.getuid())]
 
             def late(number, frame):
-                raise TimeoutError
+                WAITS.hung('VELDO-0313 ' + now_row, 'the run\'s end (_space_ended)', 'follow',
+                           'bound %d s since the end began; processes that hold the run: %s. On a host shared '
+                           'with other sessions and without the process reader, a process nobody here can read '
+                           'holds every run that began before it (fail closed). Run the suite in a process table '
+                           'of its own.' % (WAIT_HANG_SECONDS, CLI._space_judged(wiring, given).get('holders')))
+            called = []
+
+            def asleep(sleeps):
+                foreign = others()
+                if foreign:
+                    raise HeldByOthers(foreign)
+                if then is not None and not called:
+                    called.append(sleeps)
+                    then()
             before = signal.signal(signal.SIGALRM, late)
-            signal.alarm(int(FOLLOW))
+            signal.alarm(WAIT_HANG_SECONDS)
             try:
-                return CLI._space_ended(wiring, given)
-            except TimeoutError:
+                with watched(asleep):
+                    return CLI._space_ended(wiring, given)
+            except HeldByOthers as held:
                 raise RuntimeError(
-                    'the run\'s end is still asleep after %ds on processes that hold the run: %s. On a host shared '
-                    'with other sessions and without the process reader, a process nobody here can read holds every '
+                    'the run\'s end is asleep on processes of another account that hold the run: %s. On a host shared '
+                    'with other accounts and without the process reader, a process nobody here can read holds every '
                     'run that began before it (fail closed). Run the suite in a process table of its own.'
-                    % (FOLLOW, CLI._space_judged(wiring, given).get('holders'))) from None
+                    % (held.args[0],)) from None
             finally:
                 signal.alarm(0)
                 signal.signal(signal.SIGALRM, before)
+                if then is not None and not called:
+                    then()
 
         def settled(wiring, given, end):
             """The run's end on a host this suite shares with other work: another session's process
@@ -780,15 +960,17 @@ def _v313_space_run_suite():
             script = lingering(3, latch, late)
             wiring = space()
             since = seq()
-            began = time.monotonic()
-            status, said, report = run(['--label', 'child', '--', sys.executable, '-c', script], W2, wiring)
-            took = time.monotonic() - began
+            guarded[:] = [latch]
+            try:
+                status, said, report = run(['--label', 'child', '--', sys.executable, '-c', script], W2, wiring)
+            finally:
+                guarded[:] = []
             given, first = report.get('given') or {}, report.get('end') or {}
             mine = items_of(report.get('run'))
             left = alive(first.get('holders'), 'descendant')
             check(row, 'the wrapper returns the command\'s own status when the command exits: the process the '
-                       'command left is alive, and has not been told to end [%s %.1fs %s]' % (status, took, left),
-                  status == 3 and bool(left) and not late.exists() and not latch.exists() and took < LINGER)
+                       'command left is alive, and has not been told to end [%s %s]' % (status, left),
+                  status == 3 and bool(left) and not late.exists() and not released(latch))
             check(row, 'run finished is not sent, and the wrapper names the processes that hold the run: its '
                        'supervisor and what the command left [%s %s]' % (first.get('reason'), said.strip()[-160:]),
                   first.get('sent') is False and first.get('reason') == 'group_not_empty' and bool(left)
@@ -818,17 +1000,16 @@ def _v313_space_run_suite():
 
             row = 'fix2/end-follows-their-exit'
             since = seq()
-            check(row, 'a second and a half after the wrapper returned and closed its end of the report, the '
-                       'kernel still shows the supervisor: losing its reader ended nothing',
-                  isinstance(given.get('supervisor'), dict) and there(given['supervisor'], 1.5))
+            check(row, 'when the wrapper has returned and closed its end of the report, the kernel shows the '
+                       'supervisor',
+                  isinstance(given.get('supervisor'), dict) and present(given['supervisor']))
             still = rule_three(given['items'][given['scratch']]) if given.get('scratch') else None
             check(row, 'just before the suite lets that process end, the supervisor is there and rule 3 still holds '
                        'the scratch root by it [%s]' % ((still or {}).get('found'),),
                   still is not None and still.get('deferral') == 'in_use'
                   and ((still.get('found') or {}).get('process') or {}).get('pid') == given['supervisor']['pid']
                   and CLI._space_process(given['supervisor']['pid']) is not None and not late.exists())
-            release(latch)
-            end = follow(wiring, given)
+            end = follow(wiring, given, then=lambda: release(latch))
             saw = json.loads(text_of(late) or '{}')
             mine = items_of(report.get('run'))
             check(row, 'the run\'s end sleeps until the process the command left exits, and is made then: that '
@@ -846,6 +1027,9 @@ def _v313_space_run_suite():
                   and [name for name, _ in written(since)].count(SP.SIGNAL) == 1
                   and (L.hold(report.get('run')) or {}).get('state') == 'released'
                   and CLI._space_process(given['supervisor']['pid']) is None)
+            code = exit_of(given.get('supervisor'))
+            check(row, 'losing its reader ended nothing: the supervisor ended by itself, after what the command '
+                       'left had exited, with the command\'s status [%s]' % (code,), code == 3)
         except Exception as error:
             stopped(row, error)
 
@@ -857,64 +1041,54 @@ def _v313_space_run_suite():
             # The caller's pipe on the wrapper's standard output and standard error, as a shell's
             # $(...) makes it: the suite's own descriptors 1 and 2 are that pipe while the wrapper
             # runs, so the supervisor it starts is given them. The command says one word and leaves
-            # a sleep with no end, which holds none of the three. That sleep is the fixture's
-            # stand-in for a daemon, and only the fixture ends it: a process of the suite's own
-            # sends it one stop when the suite makes the latch, or after LINGER with no word from
-            # the suite, so that a wrapper that waited for it would be late and not asleep for ever.
-            napping, latch = temp / 'captured.pid', temp / 'latch-captured'
-            waiting.append(subprocess.Popen(
-                [sys.executable, '-c',
-                 'import os, signal, sys, time\n'
-                 'until = time.monotonic() + 60\n'
-                 'while not (os.path.exists(sys.argv[1]) and open(sys.argv[1]).read().strip()) '
-                 'and time.monotonic() < until:\n'
-                 '    time.sleep(0.02)\n'
-                 'pid, until = int(open(sys.argv[1]).read()), time.monotonic() + float(sys.argv[3])\n'
-                 'while not os.path.exists(sys.argv[2]) and time.monotonic() < until:\n'
-                 '    time.sleep(0.02)\n'
-                 'try:\n'
-                 '    if b"infinity" in open("/proc/%d/cmdline" % pid, "rb").read():\n'
-                 '        os.kill(pid, signal.SIGTERM)\n'
-                 'except OSError:\n'
-                 '    pass\n', str(napping), str(latch), str(LINGER)], stdin=subprocess.DEVNULL))
+            # a process with no end of its own, which holds none of the three: the fixture's stand-in for
+            # a daemon, held by the suite's latch, and only the fixture ends it (VELDO-0358: a latch, where
+            # a sleep with no end and a stop after LINGER seconds were).
+            napping, latch = temp / 'captured.pid', latch_of(temp / 'latch-captured')
             reading, writing = os.pipe()
-            kept = os.dup(1), os.dup(2)
+            ours = os.dup(1), os.dup(2)
             sys.stdout.flush()
             sys.stderr.flush()
-            began = time.monotonic()
+            guarded[:] = [latch]
             try:
                 os.dup2(writing, 1)
                 os.dup2(writing, 2)
                 os.close(writing)
                 status, said, report = run(
                     ['--label', 'captured', '--', 'sh', '-c',
-                     'sleep infinity </dev/null >/dev/null 2>&1 & echo $! > "$1"; echo the command said this; '
-                     'exit 4', 'sh', str(napping)], W15, wiring)
+                     '(read -r _ < "$2") </dev/null >/dev/null 2>&1 & echo $! > "$1"; echo the command said this; '
+                     'exit 4', 'sh', str(napping), str(latch)], W15, wiring)
             finally:
-                os.dup2(kept[0], 1)
-                os.dup2(kept[1], 2)
-                os.close(kept[0])
-                os.close(kept[1])
-            returned = time.monotonic() - began
-            # The caller reads to the end of the pipe. With a supervisor that kept it the end comes
-            # only with the sleep's, which is never: the row gives it five seconds and is red.
-            got, closed, watch = b'', False, select.poll()
-            watch.register(reading, select.POLLIN | select.POLLHUP)
-            until = time.monotonic() + 5.0
-            while not closed and time.monotonic() < until:
-                if watch.poll(int(max(0.0, until - time.monotonic()) * 1000)):
-                    part = os.read(reading, 65536)
-                    got, closed = got + part, part == b''
-            read_to_end = time.monotonic() - began
-            os.close(reading)
+                guarded[:] = []
+                os.dup2(ours[0], 1)
+                os.dup2(ours[1], 2)
+                os.close(ours[0])
+                os.close(ours[1])
             given, first = report.get('given') or {}, report.get('end') or {}
+            # The caller reads to the end of the pipe. The end can come only when no process holds a
+            # write end of it: a supervisor that kept its descriptors on it (it said it stays, so it
+            # let go before, or never will) makes the end impossible, and the read is red at once.
+            piped = 'pipe:[%d]' % os.fstat(reading).st_ino
+
+            def keeps_the_pipe():
+                names = []
+                for number in (0, 1, 2):
+                    try:
+                        names.append(os.readlink('/proc/%d/fd/%d' % ((given.get('supervisor') or {}).get('pid'), number)))
+                    except (OSError, TypeError):
+                        names.append(None)
+                return piped in names, names
+            output = WAITS.Readable(reading)
+            ended_read = WAITS.wait('the end of the wrapper\'s output', lambda: output.closed, keeps_the_pipe, [output])
+            got, closed = bytes(output.data), output.closed
+            os.close(reading)
             left = alive(first.get('holders'), 'descendant')
             check(row, 'the wrapper returns the command\'s status at once and the caller\'s read of its output ends '
-                       'at once too, with what the command wrote, while the sleep the command left lives '
-                       '[%s %.2fs %.2fs %r %s]' % (status, returned, read_to_end, got, left),
+                       'at once too, with what the command wrote, while the process the command left lives '
+                       '[%s %s %r %s]' % (status, ended_read.outcome, got, left),
                   status == 4 and closed and got == b'the command said this\n' and len(left) == 1
                   and [one['pid'] for one in left] == [int(text_of(napping) or 0)]
-                  and returned < 5.0 and read_to_end < 5.0 and not latch.exists())
+                  and not released(latch))
             names = []
             for number in (0, 1, 2):
                 try:
@@ -931,12 +1105,11 @@ def _v313_space_run_suite():
                   first.get('sent') is False and first.get('reason') == 'group_not_empty'
                   and [record['state'] for record in items_of(report.get('run')).values()] == ['present']
                   and (L.hold(report.get('run')) or {}).get('state') == 'admitted')
-            # The suite's word: the fixture's own process ends the sleep, and nothing of the wrapper
+            # The suite's word: the fixture's latch ends that process, and nothing of the wrapper
             # ever does. The end that follows is a row of its own (fix round 4 of VELDO-0315): what
             # the row above is about is read when the wrapper returns, on any host.
             row = 'fix2/captured-end-follows'
-            release(latch)
-            end = follow(wiring, given)
+            end = follow(wiring, given, then=lambda: release(latch))
             check(row, 'when the suite ends that sleep the run\'s end follows [%s %s]'
                   % (end.get('reason'), (L.hold(report.get('run')) or {}).get('state')),
                   end.get('sent') is True and (L.hold(report.get('run')) or {}).get('state') == 'released')
@@ -948,15 +1121,13 @@ def _v313_space_run_suite():
             import signal
             W16, _ = worktree(ORCHARD, 'w-report-loss')
             wiring = space()
-            done, latch = temp / 'report-loss.done', temp / 'latch-report-loss'
-            # The command leaves nothing: it waits for the suite's word, writes its last line and
-            # exits 7. The fixture is the wrapper here, so that it can go while the command runs.
-            script = ('import os, sys, time\n'
-                      'until = time.monotonic() + %r\n'
-                      'while not os.path.exists(sys.argv[1]) and time.monotonic() < until:\n'
-                      '    time.sleep(0.02)\n'
+            done, latch = temp / 'report-loss.done', latch_of(temp / 'latch-report-loss')
+            # The command leaves nothing: it waits for the suite's word (its latch), writes its last
+            # line and exits 7. The fixture is the wrapper here, so that it can go while the command runs.
+            script = ('import os, sys\n'
+                      + LATCH_READ % 'sys.argv[1]' +
                       'open(sys.argv[2], "w").write("ran to its own last line\\n")\n'
-                      'sys.exit(7)\n' % (6 * LINGER,))
+                      'sys.exit(7)\n')
             wrapper = CLI._SpaceSupervisor([sys.executable, '-c', script, str(latch), str(done)], dict(BASE), str(W16))
             given = CLI._space_begin(wiring, 'build', 'report-loss', str(W16), start=wrapper.start)
             process = given.get('supervisor') or {}
@@ -965,14 +1136,14 @@ def _v313_space_run_suite():
             wrapper.go(given, CLI._space_group(wiring, dict(BASE)))
             started = json.loads(wrapper.lines.readline().decode() or 'null')
             wrapper.lines.close()  # the wrapper is gone: nobody reads the supervisor's report any more
-            check(row, 'the command was started, and a second and a half after its report lost its reader the '
-                       'supervisor is there and the command runs on [%s]' % (started,),
-                  isinstance(started, dict) and 'group' in started and bool(process) and there(process, 1.5)
+            check(row, 'the command was started, and when its report has lost its reader the supervisor is there '
+                       'and the command runs on [%s]' % (started,),
+                  isinstance(started, dict) and 'group' in started and bool(process) and present(process)
                   and not done.exists())
-            latch.write_text('go\n')
-            until = time.monotonic() + 60
-            while not done.exists() and time.monotonic() < until:
-                time.sleep(0.02)
+            release(latch)
+            WAITS.wait('the command of the report-loss run to reach its last line', done.exists,
+                       lambda: (wrapper.child.poll() is not None and not done.exists(), {'supervisor': wrapper.child.poll()}),
+                       [WAITS.PathAppears(done), WAITS.Pidfd(wrapper.child)])
             how, said = stays_or_ends(process, given['run'], child=wrapper.child, status=7)
             check(row, 'the command ran to its own last line, and the supervisor then ended with the command\'s '
                        'status 7, or stays on processes this account cannot read that started after it [%s %s]'
@@ -994,10 +1165,7 @@ def _v313_space_run_suite():
         except Exception as error:
             stopped(row, error)
         finally:
-            try:
-                (temp / 'latch-report-loss').write_text('end\n')  # the command ends, whatever the row found
-            except OSError:
-                pass
+            release(temp / 'latch-report-loss')  # the command ends, whatever the row found
 
         try:
             row = 'supervise/stop-after-the-command-ends-nothing'
@@ -1006,27 +1174,41 @@ def _v313_space_run_suite():
             late, latch = temp / 'late-stop-after.json', temp / 'latch-stop-after'
             wiring = space()
             since = seq()
-            began = time.monotonic()
-            status, said, report = run(['--label', 'stop-after', '--', sys.executable, '-c',
-                                        lingering(5, latch, late)], W17, wiring)
-            took = time.monotonic() - began
+            script = lingering(5, latch, late)
+            # The suite keeps its own copy of the report's read end (the wrapper closes its own), so the
+            # supervisor's acknowledgement of each stop is read: the event after which what the stop
+            # left is read, with no window of time (VELDO-0358, pattern W).
+            copy_report[0], guarded[:] = True, [latch]
+            try:
+                status, said, report = run(['--label', 'stop-after', '--', sys.executable, '-c', script], W17, wiring)
+            finally:
+                copy_report[0], guarded[:] = False, []
             given, first = report.get('given') or {}, report.get('end') or {}
             process = given.get('supervisor') or {}
             left = alive(first.get('holders'), 'descendant')
             # The wrapper has returned and closed its end of the report. Now the stops: after the
             # command ended they reach nothing and end nothing.
+            reported = WAITS.Readable(copies[process['pid']])
             for number in (signal.SIGTERM, signal.SIGHUP):
                 os.kill(process['pid'], number)
-            stayed = there(process, 1.5)
+
+            def acknowledged():
+                return [one for one in report_lines(reported) if isinstance(one, dict) and 'stop' in one]
+            heard = WAITS.wait('the supervisor\'s acknowledgement of SIGTERM and SIGHUP',
+                               lambda: (len(acknowledged()) >= 2, acknowledged()),
+                               lambda: (reported.closed or not present(process),
+                                        {'present': present(process), 'lines': report_lines(reported)[-4:]}),
+                               [reported] + [one for one in (pidfd_of(process),) if one is not None])
+            stayed = present(process)
+            acks = sorted((one.get('stop'), one.get('passed_on')) for one in acknowledged())
             still, word = alive(first.get('holders'), 'descendant'), text_of(late)
             check(row, 'the command left a process and the supervisor said it stays; SIGTERM and SIGHUP after the '
-                       'command ended leave it there a second and a half later, and the process the command left '
-                       'was sent nothing [%s %s %s; the supervisor stayed %s, what the command left is there %s and '
-                       'its last line is %r; the wrapper returned after %.1f s and the watch ended %.1f s after '
-                       'the command began, of the %.0f s the fixture gives what it leaves]'
-                       % (status, report.get('staying'), left, stayed, bool(still), word, took,
-                          time.monotonic() - began, LINGER),
-                  status == 5 and report.get('staying') is True and bool(left) and stayed
+                       'command ended are each acknowledged as passed on to nothing, and when both are the '
+                       'supervisor is there, and the process the command left was sent nothing [%s %s %s; %s %s; '
+                       'the supervisor stayed %s, what the command left is there %s and its last line is %r]'
+                       % (status, report.get('staying'), left, heard.outcome, acks, stayed, bool(still), word),
+                  status == 5 and report.get('staying') is True and bool(left) and heard.done
+                  and acks == [(int(signal.SIGHUP), False), (int(signal.SIGTERM), False)] and stayed
                   and bool(still) and not late.exists())
             held_by = rule_three(given['items'][given['scratch']]) if given.get('scratch') else None
             check(row, 'rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent '
@@ -1037,8 +1219,7 @@ def _v313_space_run_suite():
                   and (L.hold(report.get('run')) or {}).get('state') == 'admitted')
 
             row = 'supervise/stop-after-the-command-end-is-made'
-            release(latch)
-            end = follow(wiring, given)
+            end = follow(wiring, given, then=lambda: release(latch))
             mine = items_of(report.get('run'))
             check(row, 'the fixture ends the process the command left, at its own last line, and run finished '
                        'follows: the scratch root is removed and the hold released [%s %s %s %s]'
@@ -1051,26 +1232,27 @@ def _v313_space_run_suite():
             stopped(row, error)
         finally:
             # The fixture ends what its command left, whatever the row found.
-            try:
-                (temp / 'latch-stop-after').write_text('end\n')
-            except OSError:
-                pass
+            release(temp / 'latch-stop-after')
+            for descriptor in copies.values():
+                os.close(descriptor)
+            copies.clear()
 
         idle_churn = []  # (process, the descriptor that ends it), for each the row has not ended yet
         try:
             row = 'supervise/staying-is-idle'
-            import signal
-            WINDOW, CHURN = 30.0, 12
-            latch, napping = temp / 'latch-idle', temp / 'idle.pid'
+            CHURN = 12
+            go, hold = latch_of(temp / 'latch-idle-go'), latch_of(temp / 'latch-idle-hold')
+            napping = temp / 'idle.pid'
             reading, writing = os.pipe()
             heard, told = os.pipe()
             # The fixture is the wrapper of a raw supervisor: no ledger is part of this row. The
-            # command waits for the suite's word, leaves a sleep and exits.
+            # command waits for the suite's word (a latch), leaves a process held by another latch and
+            # exits.
             idle = subprocess.Popen(
                 [sys.executable, '-B', str(PRODUCTION['veldo']), 'space', 'supervise', '--report', str(writing),
                  '--control', str(heard), '--', 'sh', '-c',
-                 'while [ ! -e "$1" ]; do sleep 0.05; done; sleep 600 </dev/null >/dev/null 2>&1 & echo $! > "$2"',
-                 'sh', str(latch), str(napping)],
+                 'read -r _ < "$1"; (read -r _ < "$2") </dev/null >/dev/null 2>&1 & echo $! > "$3"',
+                 'sh', str(go), str(hold), str(napping)],
                 pass_fds=(writing, heard), env=dict(BASE), cwd=str(temp), stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             os.close(writing)
@@ -1080,8 +1262,8 @@ def _v313_space_run_suite():
             supervisors.append(dict(idle_process, run=idle_run))
             os.write(told, (json.dumps({'run': idle_run, 'environment': {}, 'scope': None, 'given': {}}) + '\n').encode())
             os.close(told)
-            lines = os.fdopen(reading, 'rb')
-            first_line = json.loads(lines.readline().decode() or 'null')
+            reported = WAITS.Readable(reading)
+            first_line = said_line(reported, 'the idle supervisor\'s group line', lambda one: 'group' in one)
             # Processes this account cannot read, started after the supervisor: each holds the run
             # (fail closed) and is one more pidfd the supervisor sleeps on. Each lives until the
             # suite closes its pipe.
@@ -1092,124 +1274,142 @@ def _v313_space_run_suite():
                                            'os.write(1, b"ready\\n")\nos.read(int(sys.argv[1]), 1)\n', str(end_read)],
                     stdout=subprocess.PIPE, pass_fds=(end_read,), env=dict(BASE), stdin=subprocess.DEVNULL)
                 made.stdout.readline()
+                made.stdout.close()
                 os.close(end_read)
                 idle_churn.append((made, end_write))
-            latch.write_text('go\n')
-            status_line, staying = None, None
-            for line in lines:
-                said_line = json.loads(line.decode())
-                if 'status' in said_line:
-                    status_line = said_line
-                if 'staying' in said_line:
-                    staying = said_line['staying']
-                    break
-            lines.close()
-            hows = [one.get('how') for one in (status_line or {}).get('holders') or ()]
-            check(row, 'the supervisor stays on the sleep the command left and on the %d processes it cannot read '
-                       '[%s %s %s]' % (CHURN, first_line, {how: hows.count(how) for how in set(hows)}, staying),
-                  staying is True and 'descendant' in hows and hows.count('unread') >= CHURN)
 
             def used():
                 fields = Path('/proc/%d/stat' % idle.pid).read_text().rsplit(')', 1)[1].split()
                 reads = next(int(line.split()[1]) for line in Path('/proc/%d/io' % idle.pid).read_text().splitlines()
                              if line.startswith('syscr:'))
                 return (int(fields[11]) + int(fields[12])) / os.sysconf('SC_CLK_TCK'), reads
-            before, began = used(), time.monotonic()
-            for made, end_write in list(idle_churn):  # one exit every two seconds, each a wake of the supervisor
-                time.sleep(2.0)
+            at_go = used()
+            release(go)
+            status_line = said_line(reported, 'the idle supervisor\'s status line', lambda one: 'status' in one)
+            staying_line = said_line(reported, 'the idle supervisor\'s staying line', lambda one: 'staying' in one)
+            staying = (staying_line or {}).get('staying')
+            hows = [one.get('how') for one in (status_line or {}).get('holders') or ()]
+            check(row, 'the supervisor stays on the process the command left and on the %d processes it cannot read '
+                       '[%s %s %s]' % (CHURN, first_line, {how: hows.count(how) for how in set(hows)}, staying),
+                  staying is True and 'descendant' in hows and hows.count('unread') >= CHURN)
+            # Pattern W (VELDO-0358): what the supervisor reads is counted between events the suite
+            # causes, never over a span of time. From the moment it said it sleeps, the suite ends the
+            # processes it cannot read one by one (each a wake of the supervisor), then ends what the
+            # command left (a read holder: its exit is read again, once) and takes the supervisor's
+            # last line. Its read calls over all of that are those of one pass over the table at most
+            # twice over (the pass it made at the command's exit, with the same table and the twelve
+            # more, measured here); a read at every wake is thirteen passes.
+            before = used()
+            one_pass = before[1] - at_go[1]
+            for made, end_write in list(idle_churn):
                 idle_churn.remove((made, end_write))
                 os.close(end_write)
-                made.wait(timeout=30)
-            time.sleep(max(0.0, WINDOW - (time.monotonic() - began)))
-            after, took = used(), time.monotonic() - began
-            check(row, 'over %.0f seconds, while those %d processes ended one by one, the staying supervisor used '
-                       'under one percent of a core and made no pass over the process table: its count of read '
-                       'calls did not move [cpu %.2fs, read calls %d]'
-                  % (took, CHURN, after[0] - before[0], after[1] - before[1]),
-                  took >= WINDOW and idle.poll() is None and after[0] - before[0] < took / 100.0
-                  and after[1] - before[1] < 20)
-            os.kill(int(text_of(napping) or 0), signal.SIGTERM)  # the fixture ends what its command left
+                WAITS.wait('process %d of the churn to end' % made.pid, lambda made=made: made.poll() is not None,
+                           sources=[WAITS.Pidfd(made)])
+            through = present(idle_process)
+            release(hold)
+            last_line = said_line(reported, 'the idle supervisor\'s last line',
+                                  lambda one: one.get('staying') is False or 'end' in one)
+            after = used() if present(idle_process) else None
+            spent = (after[0] - before[0], after[1] - before[1]) if after else None
+            check(row, 'while those %d processes ended, the staying supervisor made no pass over the process table: '
+                       'to its last line it read the table once, at the exit of what the command left, with read calls '
+                       'of at most twice the one pass it made at the command\'s exit [stayed through %s; last line %s; '
+                       'read calls %s of a pass of %d; cpu %s s, data only]'
+                  % (CHURN, through, last_line, spent and spent[1], one_pass, spent and round(spent[0], 2)),
+                  through and last_line is not None and spent is not None and one_pass > 0
+                  and spent[1] <= 2 * one_pass)
+            os.close(reading)
             how, said = stays_or_ends(idle_process, idle_run, child=idle, status=0)
-            check(row, 'when the fixture ends that sleep the supervisor ends with the command\'s status, or stays on '
-                       'processes this account cannot read that started after it [%s %s]' % (how, said),
+            check(row, 'when the fixture ends what the command left the supervisor ends with the command\'s status, '
+                       'or stays on processes this account cannot read that started after it [%s %s]' % (how, said),
                   how in ('ended', 'unread'))
         except Exception as error:
             stopped(row, error)
         finally:
-            # The fixture ends what it started, whatever the row found: the sleep its command left,
-            # and each process of its own that the row did not get to.
-            try:
-                (temp / 'latch-idle').write_text('end\n')
-                if text_of(temp / 'idle.pid'):
-                    os.kill(int(text_of(temp / 'idle.pid')), 15)
-            except (OSError, ValueError):
-                pass
+            # The fixture ends what it started, whatever the row found: what its command left (its
+            # latch), and each process of its own that the row did not get to.
+            release(temp / 'latch-idle-go')
+            release(temp / 'latch-idle-hold')
             for made, end_write in idle_churn:
                 try:
                     os.close(end_write)
-                    made.wait(timeout=30)
+                    made.wait()  # its pipe is closed: it ends
                 except Exception:  # noqa: BLE001 - the fixture's own stand-in, never a process of a run
                     made.kill()
 
-        nappers = []  # the row's own stand-ins for holders
+        nappers = []  # the row's own stand-ins for holders: latch holders (VELDO-0358, C3)
         try:
             row = 'supervise/wait-reads-again-at-a-read-holders-exit'
-            import threading
 
-            def napper(seconds):
-                made = subprocess.Popen(['sleep', str(seconds)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                        stderr=subprocess.DEVNULL)
+            def napper():
+                made = HOLDERS.Holder()
                 nappers.append(made)
                 return made
 
             def holder(made, how):
                 return {'pid': made.pid, 'how': how, 'started': (CLI._space_process(made.pid) or {}).get('started')}
 
-            def waited(first, later):
-                """(seconds, reads) of one _space_wait whose first read names `first` and whose
-                later reads name what `later` gives."""
-                reads = []
+            def waited(first, later, asleep):
+                """(sleeps, reads, what each read after the first saw) of one _space_wait whose first read
+                names `first` and whose later reads name what `later` gives; `asleep(n)` is called just
+                before its n-th sleep, so the row ends a holder only while the wait sleeps on it."""
+                reads, saw = [], []
 
                 def read():
-                    reads.append(time.monotonic())
-                    return {'group': 'empty', 'holders': first if len(reads) == 1 else later()}
+                    reads.append(len(reads))
+                    if len(reads) > 1:
+                        saw.append(later())
+                    return {'group': 'empty', 'holders': first if len(reads) == 1 else saw[-1]}
 
                 def reap():
                     for made in nappers:
-                        made.poll()
-                began = time.monotonic()
-                CLI._space_wait(read, reap)
-                return time.monotonic() - began, len(reads)
+                        made.proc.poll()
+                with watched(asleep) as slept:
+                    CLI._space_wait(read, reap)
+                return slept.sleeps, len(reads), saw
 
-            # A process of the run that ends after a second, and one nobody could read at the
-            # first read that lives on. The next read does not name it: the reader has read it
-            # since, and it is not the run's. The suite ends it after six seconds, so a wait that
-            # sleeps on it ends too, late.
-            own, other = napper(1), napper(20)
-            ender = threading.Timer(6.0, other.kill)
-            ender.start()
-            try:
-                took, reads = waited([holder(own, 'descendant'), holder(other, 'unread')], lambda: [])
-                lived = other.poll() is None
-            finally:
-                ender.cancel()
-            check(row, 'the wait returns at the exit of the run\'s own process, after about a second, while the '
-                       'process the next read no longer names lives on [%.1fs, %d reads, lives on %s]'
-                  % (took, reads, lived), 0.5 <= took < 4.0 and reads == 2 and lived)
-            # The exit of an unread process while a process of the run lives: one wake, no read.
-            own, other = napper(2), napper(0.3)
+            # A process of the run and one nobody could read at the first read that lives on. The next
+            # read does not name it: the reader has read it since, and it is not the run's. The run's
+            # own is ended once the wait sleeps; a second sleep, after its exit, is a wait that sleeps on
+            # what holds nothing (the row then ends the other too, so the wait ends, and is red).
+            own, other = napper(), napper()
+            lived, slept_on = [], []
+
+            def first_case(sleeps):
+                if sleeps == 1:
+                    own.release()
+                else:
+                    slept_on.append(own.proc.poll() is not None)
+                    other.release()
+            sleeps, reads, _ = waited([holder(own, 'descendant'), holder(other, 'unread')],
+                                      lambda: lived.append(other.proc.poll() is None) or [], first_case)
+            check(row, 'the wait returns at the exit of the run\'s own process, with one more read, while the process '
+                       'the next read no longer names lives on: it never sleeps again after that exit '
+                       '[%d sleeps, %d reads, lives on %s, slept after the exit %s]' % (sleeps, reads, lived, slept_on),
+                  sleeps == 1 and reads == 2 and lived == [True] and slept_on == [])
+            other.release()
+            # The exit of an unread process while a process of the run lives: one wake, no read. The
+            # unread one ends at the first sleep, the run's own at the second.
+            own, other = napper(), napper()
             named = [holder(own, 'descendant'), holder(other, 'unread')]
-            took, reads = waited(named, lambda: [one for one, made in zip(named, (own, other)) if made.poll() is None])
-            check(row, 'the exit of a process nobody could read, while a process of the run lives, costs no read: '
-                       'the table is read again once, at the exit of the run\'s own [%.1fs, %d reads]' % (took, reads),
-                  took >= 1.5 and reads == 2)
+
+            def second_case(sleeps):
+                (other if sleeps == 1 else own).release()
+                if sleeps > 2:
+                    own.release()
+            sleeps, reads, _ = waited(named, lambda: [one for one, made in zip(named, (own, other))
+                                                     if made.proc.poll() is None], second_case)
+            check(row, 'the exit of a process nobody could read, while a process of the run lives, costs a wake and no '
+                       'read: the table is read again once, at the exit of the run\'s own [%d sleeps, %d reads]'
+                  % (sleeps, reads), sleeps == 2 and reads == 2)
         except Exception as error:
             stopped(row, error)
         finally:
             for made in nappers:
                 try:
-                    made.kill()  # the row's own stand-in, never a process of a wrapped run
-                    made.wait(timeout=30)
+                    made.release()  # the row's own stand-in, never a process of a wrapped run
+                    made.ended()
                 except Exception:  # noqa: BLE001
                     pass
 
@@ -1219,17 +1419,20 @@ def _v313_space_run_suite():
             # The real space_supervise of the production file, in a process of its own, with two
             # stand-ins and nothing else changed: a process this account cannot read is no holder
             # (as with the process reader), and the run's end records what it was given in a file
-            # instead of asking a ledger. A third makes what the kernel does at every exit last half a
-            # second: a process that exits has its descriptors closed before its exit is recorded,
-            # and here the supervisor's are closed as soon as it has a follower. A follower that
-            # takes the closed pipe for the exit makes the end while the table still shows the
-            # supervisor (gate 11: once in a loaded run; on the real ledger that end is refused). Ended is
+            # instead of asking a ledger. A third makes what the kernel does at every exit last until the
+            # follower has acted (VELDO-0358: an event, where half a second was): a process that exits
+            # has its descriptors closed before its exit is recorded, and here the supervisor's are
+            # closed as soon as it has a follower and the supervisor then stays until the follower is
+            # asleep on its pidfd or has made the end. A follower that takes the closed pipe for the exit
+            # makes the end while the table still shows the supervisor (gate 11: once in a loaded run; on
+            # the real ledger that end is refused). Ended is
             # what the product's own reader takes for it (_space_process): no entry, Z, or X. X is the
             # state of a process its parent is reaping, and a follower that wakes at the exit reads the
             # table while this suite reaps the supervisor (X read in 2 of 20000 such reads).
             stand_in.write_text(
-                'import importlib.machinery, importlib.util, json, os, sys, time\n'
+                'import importlib.machinery, importlib.util, json, os, select, sys\n'
                 'path, marker = sys.argv[1], sys.argv[2]\n'
+                'progress_read, progress_write = os.pipe()\n'
                 'loader = importlib.machinery.SourceFileLoader("veldo_cli", path)\n'
                 'spec = importlib.util.spec_from_loader("veldo_cli", loader)\n'
                 'V = importlib.util.module_from_spec(spec)\n'
@@ -1255,21 +1458,40 @@ def _v313_space_run_suite():
                 '                   "supervisor_ended": ended((given.get("supervisor") or {}).get("pid")),\n'
                 '                   "by": os.getpid()}, out)\n'
                 '    os.rename(marker + ".part", marker)\n'
+                '    os.write(progress_write, b"f")\n'
                 'V._space_finish = finish\n'
+                'real_poll = select.poll\n'
+                'class Told:\n'
+                '    def __init__(self):\n'
+                '        self.real = real_poll()\n'
+                '    def register(self, *given):\n'
+                '        return self.real.register(*given)\n'
+                '    def poll(self, *given):\n'
+                '        os.write(progress_write, b"p")\n'
+                '        return self.real.poll(*given)\n'
                 'fork = os.fork\n'
                 'def forked():\n'
                 '    made = fork()\n'
                 '    if made:\n'
-                '        os.closerange(3, 1024)\n'
-                '        time.sleep(0.5)\n'
+                '        open(marker + ".follower", "w").write(str(made))\n'
+                '        for number in range(3, 1024):\n'
+                '            if number != progress_read:\n'
+                '                try:\n'
+                '                    os.close(number)\n'
+                '                except OSError:\n'
+                '                    pass\n'
+                '        os.read(progress_read, 1)  # the follower is asleep on the exit, or has made the end\n'
+                '    else:\n'
+                '        select.poll = Told\n'
                 '    return made\n'
                 'os.fork = forked\n'
                 'sys.exit(V.space_supervise(sys.argv[3:]))\n')
             reading, writing = os.pipe()
             heard, told = os.pipe()
+            running = latch_of(temp / 'latch-gone')
             gone = subprocess.Popen(
                 [sys.executable, '-B', str(stand_in), str(PRODUCTION['veldo']), str(marker), '--report', str(writing),
-                 '--control', str(heard), '--', 'sleep', '1'],
+                 '--control', str(heard), '--', 'sh', '-c', 'read -r _ < "$1"', 'sh', str(running)],
                 pass_fds=(writing, heard), env=dict(BASE), cwd=str(temp), stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             os.close(writing)
@@ -1283,10 +1505,16 @@ def _v313_space_run_suite():
             lines = os.fdopen(reading, 'rb')
             started = json.loads(lines.readline().decode() or 'null')
             lines.close()  # the wrapper is gone while the command runs: nobody hears that nothing is left
-            code = gone.wait(timeout=60)
-            until = time.monotonic() + 15
-            while not marker.exists() and time.monotonic() < until:
-                time.sleep(0.05)
+            release(running)  # the command ends, and leaves nothing
+            WAITS.wait('the stand-in supervisor to end', lambda: gone.poll() is not None, sources=[WAITS.Pidfd(gone)])
+            code = gone.wait()
+            # The follower, when the supervisor made one: its end, or its exit without one.
+            follower = int(text_of(Path(str(marker) + '.follower')) or 0)
+            source = pidfd_of({'pid': follower}) if follower else None
+            if source is not None:
+                WAITS.wait('the follower %d to make the run\'s end' % follower, marker.exists,
+                           lambda: (CLI._space_process(follower) is None and not marker.exists(), {'follower': 'gone'}),
+                           [WAITS.PathAppears(marker), source])
             made = json.loads(text_of(marker) or 'null')
             check(row, 'the command was started, its report lost its reader while it ran, it left nothing, and the '
                        'supervisor ended with its status [%s %s]' % (started, code),
@@ -1304,17 +1532,16 @@ def _v313_space_run_suite():
             row = 'fix3/handed-outside-the-tree'
             W7, _ = worktree(ORCHARD, 'w-handed')
             fifo, acknowledged, late = temp / 'server.fifo', temp / 'server.ack', temp / 'late-worker.json'
-            latch = temp / 'latch-worker'
+            latch, word = latch_of(temp / 'latch-worker'), temp / 'server.word'
             os.mkfifo(fifo)
+            os.mkfifo(word)
             # A server that is running before the run starts, the way a terminal multiplexer's or a
             # user manager's is. It starts one worker for each line it is sent, with the environment
             # the line carries. The worker is the server's child and never the command's.
-            worker = ('import json, os, sys, time\n'
-                      'until = time.monotonic() + %r\n'
-                      'while not os.path.exists(%r) and time.monotonic() < until:\n'
-                      '    time.sleep(0.02)\n'
-                      'json.dump({"held": os.path.isfile(sys.argv[1]), "released": os.path.exists(%r)},\n'
-                      '          open(sys.argv[2], "w"))\n' % (LINGER, str(latch), str(latch)))
+            worker = ('import json, os, sys\n'
+                      + LATCHED % str(latch) +
+                      'json.dump({"held": os.path.isfile(sys.argv[1]), "released": True},\n'
+                      '          open(sys.argv[2], "w"))\n')
             server = subprocess.Popen(
                 [sys.executable, '-c',
                  'import os, subprocess, sys\n'
@@ -1322,23 +1549,25 @@ def _v313_space_run_suite():
                  '    label, held, late = line.rstrip("\\n").split("\\t")\n'
                  '    made = subprocess.Popen([sys.executable, "-c", sys.argv[3], held, late],\n'
                  '                            env=dict(os.environ, VELDO_SPACE_LABEL=label))\n'
-                 '    open(sys.argv[2], "w").write(str(made.pid))\n',
-                 str(fifo), str(acknowledged), worker], env=dict(BASE), stdin=subprocess.DEVNULL)
+                 '    open(sys.argv[2], "w").write(str(made.pid))\n'
+                 '    open(sys.argv[4], "w").close()  # the word: the work has started\n',
+                 str(fifo), str(acknowledged), worker, str(word)], env=dict(BASE), stdin=subprocess.DEVNULL)
             waiting.append(server)
             opened.append(os.open(str(fifo), os.O_RDWR))  # the server stays for as long as the suite holds this
             # The command writes a file under its scratch root, hands the work to the server with its
             # own label, waits for the server's word that the work has started, and exits 0.
-            script = ('import os, sys, time\n'
+            script = ('import os, sys\n'
                       'held = os.path.join(os.environ["TMPDIR"], "handed.txt")\n'
                       'open(held, "w").write("the worker reads this\\n")\n'
                       'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], held, sys.argv[3]]) + "\\n")\n'
-                      'while not os.path.exists(sys.argv[2]):\n'
-                      '    time.sleep(0.02)\n')
+                      'open(sys.argv[2]).read()  # the server\'s word that the work has started\n')
             wiring = space()
-            began = time.monotonic()
-            status, said, report = run(['--label', 'handed', '--', sys.executable, '-c', script, str(fifo),
-                                        str(acknowledged), str(late)], W7, wiring)
-            took = time.monotonic() - began
+            guarded[:] = [latch]
+            try:
+                status, said, report = run(['--label', 'handed', '--', sys.executable, '-c', script, str(fifo),
+                                            str(word), str(late)], W7, wiring)
+            finally:
+                guarded[:] = []
             given, first = report.get('given') or {}, report.get('end') or {}
             carried = [one for one in first.get('holders') or () if one.get('how') == 'label']
             working = int(text_of(acknowledged) or 0)
@@ -1347,9 +1576,9 @@ def _v313_space_run_suite():
                   working > 0 and (CLI._space_process(working) or {}).get('parent') == server.pid
                   and not any(one.get('how') == 'descendant' for one in first.get('holders') or ()))
             check(row, 'the wrapper returns the command\'s status while that worker lives and does not send run '
-                       'finished: a process outside the command\'s tree carries the run\'s label [%s %.1fs %s]'
-                  % (status, took, first.get('reason')),
-                  status == 0 and took < LINGER and first.get('sent') is False
+                       'finished: a process outside the command\'s tree carries the run\'s label [%s %s]'
+                  % (status, first.get('reason')),
+                  status == 0 and not released(latch) and first.get('sent') is False
                   and first.get('reason') == 'label_carried' and [one.get('pid') for one in carried] == [working]
                   and bool(alive(first.get('holders'), 'label')))
             check(row, 'while that worker lives the scratch root is present with its file and the hold is held '
@@ -1358,8 +1587,7 @@ def _v313_space_run_suite():
                   [record['state'] for record in items_of(report.get('run')).values()] == ['present']
                   and text_of(Path(report.get('scratch') or temp) / 'handed.txt') == 'the worker reads this\n'
                   and (L.hold(report.get('run')) or {}).get('state') == 'admitted' and not late.exists())
-            release(latch)
-            end = follow(wiring, given)
+            end = follow(wiring, given, then=lambda: release(latch))
             check(row, 'the end follows the worker\'s exit: the worker ended on the suite\'s word and saw the file to '
                        'its last line, and then the scratch root went and the hold was released [%s %s]'
                   % (text_of(late), end.get('reason')),
@@ -1560,7 +1788,7 @@ def _v313_space_run_suite():
             held = {one.get('pid'): one.get('how') for one in CLI._space_holders(carried_run, None, [])}
             for one in (bare, plain, mine):
                 one.stdin.close()
-                one.wait(timeout=30)
+                one.wait()  # its input is closed: it ends
                 one.stdout.close()
             check(row, 'an environment of no bytes is what the kernel returns for a process that is executing, so '
                        'a process that has one is unread and holds the run; one with an environment and no label '
@@ -1578,25 +1806,42 @@ def _v313_space_run_suite():
             # when the entry was opened, and the parent keeps that memory alive: a read that falls
             # across the execution returns the parent's whole environment, as many bytes as the ends
             # taken before it are apart. Only what the process is, before and after, tells it apart.
-            # The child waits in the open of a fifo, one of posix_spawn's own file actions, and the
-            # scan's open of its environ entry is what lets it go on.
+            # The child waits in the opens of two fifos, posix_spawn's own file actions. The suite's
+            # open of the first for writing returns when the child has opened it (VELDO-0358: that
+            # open is the event that the child is there, where the table was read every hundredth of
+            # a second), and the child then waits in the second, whose open by the scan's open of its
+            # environ entry is what lets it go on. The program it executes says so on a pipe.
             shared_run = 'row:run-' + os.urandom(4).hex()
-            go = temp / 'share.fifo'
+            there_gate, go = temp / 'share-there.fifo', temp / 'share.fifo'
+            os.mkfifo(there_gate)
             os.mkfifo(go)
+            executed_read, executed_write = os.pipe()
             spawner = subprocess.Popen(
                 [sys.executable, '-c',
                  'import os, sys\n'
-                 'os.posix_spawn(sys.executable, [sys.executable, "-c", "import os\\nos.read(0, 1)\\n"],\n'
-                 '               {sys.argv[2]: sys.argv[3]}, file_actions=[(os.POSIX_SPAWN_OPEN, 9, sys.argv[1], os.O_RDONLY, 0)])\n'
-                 'os.read(0, 1)\n', str(go), CLI.SPACE_LABEL_VARIABLE, shared_run],
-                stdin=subprocess.PIPE, env={'OTHER': 'value'})
+                 'os.posix_spawn(sys.executable, [sys.executable, "-c", "import os, sys\\nos.write(int(sys.argv[1]), b\\"e\\")\\nos.read(0, 1)\\n", sys.argv[5]],\n'
+                 '               {sys.argv[3]: sys.argv[4]}, file_actions=[(os.POSIX_SPAWN_OPEN, 100, sys.argv[1], os.O_RDONLY, 0),\n'
+                 '                                                       (os.POSIX_SPAWN_OPEN, 101, sys.argv[2], os.O_RDONLY, 0)])\n'
+                 'os.read(0, 1)\n', str(there_gate), str(go), CLI.SPACE_LABEL_VARIABLE, shared_run, str(executed_write)],
+                stdin=subprocess.PIPE, env={'OTHER': 'value'}, pass_fds=(executed_write,))
             waiting.append(spawner)
-            until, sharing = time.monotonic() + 30, None
-            while sharing is None and time.monotonic() < until:
-                born = [int(name) for name in os.listdir('/proc') if name.isdigit()
-                        and (CLI._space_process(int(name)) or {}).get('parent') == spawner.pid]
-                sharing = born[0] if born else None
-                time.sleep(0.01)
+            os.close(executed_write)
+            import threading
+            opened_there = os.pipe()
+
+            def open_there():
+                with open(there_gate, 'wb'):
+                    pass
+                os.write(opened_there[1], b'x')
+            threading.Thread(target=open_there, name='v313-share-gate', daemon=True).start()
+            there_now = WAITS.Readable(opened_there[0])
+            WAITS.wait('the spawned child at its first gate', lambda: bool(there_now.data),
+                       lambda: spawner.poll() is not None, [there_now])
+            for descriptor in opened_there:
+                os.close(descriptor)
+            born = [int(name) for name in os.listdir('/proc') if name.isdigit()
+                    and (CLI._space_process(int(name)) or {}).get('parent') == spawner.pid]
+            sharing = born[0] if born else None
             entry = '/proc/%d/environ' % sharing
             wanted = (CLI.SPACE_LABEL_VARIABLE + '=' + shared_run).encode()
             early = open(entry, 'rb')  # opened before the execution, as the scan's own will be
@@ -1608,13 +1853,12 @@ def _v313_space_run_suite():
                     opens.append(path)
                     with open(go, 'wb') as word:
                         word.write(b'x')
-                    limit = time.monotonic() + 30
-                    while time.monotonic() < limit:
-                        with open(entry, 'rb') as now:
-                            if now.read() == wanted + b'\0':
-                                opens.append('executed')
-                                break
-                        time.sleep(0.005)
+                    told = WAITS.Readable(executed_read)
+                    WAITS.wait('the shared child to execute', lambda: bool(told.data), lambda: told.closed,
+                               [told])
+                    with open(entry, 'rb') as now:
+                        if now.read() == wanted + b'\0':
+                            opens.append('executed')
                 return made
             CLI.open = across
             try:
@@ -1624,7 +1868,8 @@ def _v313_space_run_suite():
             through = early.read()
             early.close()
             spawner.stdin.close()
-            spawner.wait(timeout=30)
+            WAITS.wait('the spawner to end', lambda: spawner.poll() is not None, sources=[WAITS.Pidfd(spawner)])
+            os.close(executed_read)
             check(row, 'a process that shares its parent\'s memory and executes a program with the run\'s label '
                        'between the scan\'s open of its environ entry and the read: a descriptor opened before the '
                        'execution returns the parent\'s environment, which has no label, and the scan does not take '
@@ -1644,16 +1889,18 @@ def _v313_space_run_suite():
             """One run whose command hands work to such a worker. Returns (the run's report, what the
             worker said of itself, the latch that ends the worker, the wiring)."""
             where, _ = worktree(ORCHARD, 'w-' + name)
-            fifo, said, latch = temp / (name + '.fifo'), temp / (name + '.said'), temp / (name + '.latch')
+            fifo, said, latch = temp / (name + '.fifo'), temp / (name + '.said'), latch_of(temp / (name + '.latch'))
+            word = temp / (name + '.word')  # the worker's word that it has said what it is
             os.mkfifo(fifo)
+            os.mkfifo(word)
             # The table rule 4 reads in this row: the kernel's own entry of the worker, through a
             # link the server makes, and of no other process. In the whole table of a host, or of the
             # gate's confinement, there are processes this account cannot read in full, and each of
             # them alone defers every item; here what is kept is kept for the worker.
             view = temp / (name + '.proc')
             view.mkdir()
-            worker = ('import ctypes, json, os, sys, time\n'
-                      'cwd, held, said, latch = sys.argv[1:5]\n'
+            worker = ('import ctypes, json, os, sys\n'
+                      'cwd, held, said, latch, word = sys.argv[1:6]\n'
                       'label = os.environ.get(%r)\n'
                       'fields = open("/proc/self/stat", "rb").read().rsplit(b")", 1)[1].split()\n'
                       'first, last = int(fields[47]), int(fields[48])\n'
@@ -1665,25 +1912,23 @@ def _v313_space_run_suite():
                       'json.dump({"pid": os.getpid(), "label": label, "area": last - first,\n'
                       '           "now": %r in open("/proc/self/environ", "rb").read()}, open(said + ".part", "w"))\n'
                       'os.rename(said + ".part", said)\n'
-                      'until = time.monotonic() + %r\n'
-                      'while not os.path.exists(latch) and time.monotonic() < until:\n'
-                      '    time.sleep(0.02)\n'
-                      % (CLI.SPACE_LABEL_VARIABLE, CLI.SPACE_LABEL_VARIABLE.encode(), 3 * LINGER))
+                      'open(word, "w").close()\n'
+                      % (CLI.SPACE_LABEL_VARIABLE, CLI.SPACE_LABEL_VARIABLE.encode())) + LATCH_READ % 'latch'
             server = subprocess.Popen(
                 [sys.executable, '-c',
                  'import os, subprocess, sys\n'
                  'for line in open(sys.argv[1]):\n'
                  '    label, cwd, held = line.rstrip("\\n").split("\\t")\n'
-                 '    made = subprocess.Popen([sys.executable, "-c", sys.argv[4], cwd, held, sys.argv[2], sys.argv[3]],\n'
-                 '                            env=dict(os.environ, %s=label), stdin=subprocess.DEVNULL)\n'
+                 '    made = subprocess.Popen([sys.executable, "-c", sys.argv[4], cwd, held, sys.argv[2], sys.argv[3],\n'
+                 '                             sys.argv[6]], env=dict(os.environ, %s=label), stdin=subprocess.DEVNULL)\n'
                  '    os.symlink("/proc/%%d" %% made.pid, os.path.join(sys.argv[5], str(made.pid)))\n'
-                 % CLI.SPACE_LABEL_VARIABLE, str(fifo), str(said), str(latch), worker, str(view)],
+                 % CLI.SPACE_LABEL_VARIABLE, str(fifo), str(said), str(latch), worker, str(view), str(word)],
                 env=dict(BASE), stdin=subprocess.DEVNULL)
             waiting.append(server)
             opened.append(os.open(str(fifo), os.O_RDWR))
             wiring = space(proc=str(view))
             status, words, report = run(['--station', 'build', '--label', name, '--', sys.executable, '-c',
-                                         command, str(fifo), str(said)], where, wiring)
+                                         command, str(fifo), str(word)], where, wiring)
             report.update(status=status, words=words, where=where, server=server.pid, view=sorted(os.listdir(view)))
             return report, json.loads(text_of(said) or '{}'), latch, wiring
 
@@ -1698,10 +1943,12 @@ def _v313_space_run_suite():
                     and (report.get('end') or {}).get('sent') is True and report.get('status') == 0)
 
         def gone(worker, latch):
-            latch.write_text('')
-            until = time.monotonic() + 30
-            while CLI._space_process(worker.get('pid') or 0) is not None and time.monotonic() < until:
-                time.sleep(0.02)
+            """Release the worker's latch and wait for its exit (its pidfd); whether the kernel shows it gone."""
+            source = pidfd_of(worker) if worker.get('pid') else None
+            release(latch)
+            if source is not None:
+                WAITS.wait('worker %s to end' % worker.get('pid'),
+                           lambda: CLI._space_process(worker.get('pid') or 0) is None, sources=[source])
             return CLI._space_process(worker.get('pid') or 0) is None
 
         def kept_for(record):
@@ -1717,11 +1964,10 @@ def _v313_space_run_suite():
 
         try:
             row = 'fix3/rewritten-environment-cwd-in-scratch'
-            script = ('import os, sys, time\n'
+            script = ('import os, sys\n'
                       'open(os.path.join(os.environ["TMPDIR"], "kept.txt"), "w").write("the worker is here\\n")\n'
                       'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], os.environ["TMPDIR"], ""]) + "\\n")\n'
-                      'while not os.path.exists(sys.argv[2]):\n'
-                      '    time.sleep(0.02)\n')
+                      'open(sys.argv[2]).read()  # the worker\'s word\n')
             report, worker, latch, wiring = titled('titled-cwd', script)
             mine = items_of(report.get('run'))
             scratch = [record for record in mine.values() if record['kind'] == 'scratch']
@@ -1750,11 +1996,10 @@ def _v313_space_run_suite():
 
         try:
             row = 'fix3/rewritten-environment-open-file-in-worktree'
-            script = ('import os, sys, time\n'
+            script = ('import os, sys\n'
                       'os.mkdir("build"); open("build/out.o", "w").write("o" * 8192)\n'
                       'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], "", os.path.abspath("build/out.o")]) + "\\n")\n'
-                      'while not os.path.exists(sys.argv[2]):\n'
-                      '    time.sleep(0.02)\n')
+                      'open(sys.argv[2]).read()  # the worker\'s word\n')
             report, worker, latch, wiring = titled('titled-open', script)
             mine = items_of(report.get('run'))
             built = [record for record in mine.values() if record['kind'] == 'build_output']
@@ -1815,7 +2060,7 @@ def _v313_space_run_suite():
             words = house.words('probe:' + temp.name)
             able = bool(words) and subprocess.run(
                 [word.replace('veldo-dispatch-', 'veldo-probe-') for word in words] + ['true'],
-                stdin=subprocess.DEVNULL, capture_output=True, timeout=60).returncode == 0
+                stdin=subprocess.DEVNULL, capture_output=True, timeout=WAIT_HANG_SECONDS).returncode == 0
             if not able:
                 check(row, 'this host gives the suite no user manager to make a scope with: the row stands down, and '
                            'the wrapper\'s answer for such a host is in ac1/unread-group-sends-nothing', True)
@@ -1823,9 +2068,14 @@ def _v313_space_run_suite():
                 W9, _ = worktree(ORCHARD, 'w-house')
                 seen, late, latch = temp / 'seen-house.txt', temp / 'late-house.json', temp / 'latch-house'
                 wiring = space(group=None)  # no group is wired: the wrapper makes the house's own
-                status, said, report = run(
-                    ['--label', 'house', '--', sys.executable, '-c', lingering(5, latch, late, shown=seen)],
-                    W9, wiring, environ=dict(BASE, XDG_RUNTIME_DIR=house.environment['XDG_RUNTIME_DIR']))
+                script = lingering(5, latch, late, shown=seen)
+                guarded[:] = [latch]
+                try:
+                    status, said, report = run(
+                        ['--label', 'house', '--', sys.executable, '-c', script],
+                        W9, wiring, environ=dict(BASE, XDG_RUNTIME_DIR=house.environment['XDG_RUNTIME_DIR']))
+                finally:
+                    guarded[:] = []
                 given, first = report.get('given') or {}, report.get('end') or {}
                 read = house.read(report.get('run'), report.get('group'))
                 check(row, 'the command ran in the house\'s own group and left a process in it: run finished is not '
@@ -1834,8 +2084,7 @@ def _v313_space_run_suite():
                       status == 5 and read.get('read') is True and read.get('populated') is True
                       and first.get('sent') is False and first.get('reason') == 'group_not_empty'
                       and not late.exists())
-                release(latch)
-                end = follow(wiring, given)
+                end = follow(wiring, given, then=lambda: release(latch))
                 after = house.read(report.get('run'), report.get('group'))
                 check(row, 'the end follows its exit: the group is read empty, run finished is sent and the scratch '
                            'root goes [%s %s %s]' % (after, end.get('reason'), end.get('holders')),
@@ -2327,7 +2576,7 @@ def _v313_space_run_suite():
             done = subprocess.run([sys.executable, str(PRODUCTION['veldo']), 'space', 'run', '--', sys.executable, '-c',
                                    script, 'a b', 'c'], env=dict(NOWHERE, PYTHONDONTWRITEBYTECODE='1'),
                                   cwd=str(temp / 'elsewhere'), stdin=subprocess.DEVNULL, capture_output=True,
-                                  timeout=120)
+                                  timeout=WAIT_HANG_SECONDS)
             saw = json.loads(text_of(seen) or '{}')
             check(row, 'as a real CLI process: it says so, the command starts unchanged and the CLI exits with its '
                        'status [%s %s %s]' % (done.returncode, done.stderr.decode().strip()[-200:], saw),
@@ -2352,7 +2601,7 @@ def _v313_space_run_suite():
                          ['space', 'sign', '--as', 'space-runner']):
                 done = subprocess.run([sys.executable, str(ROOT / 'bin' / 'veldo')] + argv,
                                       env=dict(NOWHERE, PYTHONDONTWRITEBYTECODE='1'), cwd=str(temp / 'elsewhere'),
-                                      input=b'', capture_output=True, timeout=120)
+                                      input=b'', capture_output=True, timeout=WAIT_HANG_SECONDS)
                 check(row, 'veldo %s says there is no central installation [%s %s]'
                       % (' '.join(argv[:2]), done.returncode, done.stderr.decode().strip()[-160:]),
                       (b'no central installation' in done.stderr or b'space_no_installation' in done.stderr)
@@ -2370,6 +2619,36 @@ def _v313_space_run_suite():
             check(row, 'an installation whose switch is off: no admission is asked, the wrapper says so and runs the '
                        'command unchanged [%s %s]' % (status, said.strip()),
                   status == 6 and text_of(marker) == 'ran\n' and 'is off' in said and report.get('wrapped') is False)
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'timers/profile-applied'
+            unset = sorted(entry['name'] for entry in TIMERS.report() if entry['value'] != WAIT_HANG_SECONDS)
+            check(row, 'the profile is set and every entry of the timers table is at the wait hang bound in this '
+                       'process [%s %d entries, unset %s]' % (TIMERS._PROFILE, len(TIMERS.report()), unset),
+                  TIMERS._PROFILE == (None, WAIT_HANG_SECONDS) and not unset)
+
+            # VELDO-0358 AC10: the census over brief G's files finds no site outside the declared exceptions:
+            # the two suites, the port holder and the mutation tool's ownership module, each read through its
+            # literal anchor (the mutation driver substitutes a registered mutant of it there). Suite
+            # 66_veldo_0042 holds the same row, so a mutant of this suite's own file is read there.
+            row = 'wave1/no-sites'
+            census = load('v313_census', ROOT / 'scripts' / 'check_wallclock.py')
+            files = {'scripts/suites/151_veldo_0313_space_run.py': ROOT / "scripts/suites" / "151_veldo_0313_space_run.py",
+                     'scripts/suites/66_veldo_0042_clones.py': ROOT / "scripts/suites" / "66_veldo_0042_clones.py",
+                     'scripts/suites/support/v171_tailscale.py': ROOT / "scripts/suites/support" / "v171_tailscale.py",
+                     'scripts/mutation_ownership.py': ROOT / "scripts" / "mutation_ownership.py"}
+            found = []
+            for rel, path in files.items():
+                found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
+            excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+            counts, first_site = census.counted(found)
+            over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1],
+                                                   first_site[k]['form'], k[3])
+                          for k, n in counts.items() if n > excepted.get(k, 0))
+            check(row, 'the census finds no site outside the declared exceptions in brief G\'s files %s' % (over[:12],),
+                  not over)
         except Exception as error:
             stopped(row, error)
 
@@ -2401,6 +2680,13 @@ def _v313_space_run_suite():
     except Exception as error:
         stopped(row, error)
     finally:
+        try:
+            TIMERS.reset_profile()
+        except NameError:
+            pass  # the suite stopped before its modules were loaded
+        for latch in list(latches):
+            release(latch)  # what a fixture left holds its latch no longer
+            os.close(latches.pop(latch))
         for descriptor in opened:
             try:
                 os.close(descriptor)
@@ -2410,7 +2696,7 @@ def _v313_space_run_suite():
             try:
                 if child.stdin is not None:
                     child.stdin.close()
-                child.wait(timeout=30)
+                child.wait()  # its input and its latches are closed: it ends
             except Exception:  # noqa: BLE001 - a fixture process that will not end never reds a row
                 try:
                     child.kill()  # the fixture's own stand-in, never a process of a wrapped run
@@ -2422,20 +2708,18 @@ def _v313_space_run_suite():
         import signal
         try:
             row = 'supervise/none-stays-on-nothing'
-            # Read before any of them is ended: one the kernel still shows, with no process this
-            # account cannot read that started after it, stays on nothing. It is given five
-            # seconds to end first, as stays_or_ends gives.
+            # Read before any of them is ended: one the kernel still shows either ends (its pidfd) or
+            # stays on processes this account cannot read that started after it; one that stays on
+            # nothing has its wait hung (stays_or_ends), and the row with it.
+            row = 'supervise/none-stays-on-nothing'
             stayed = []
             for process in supervisors:
                 one = {'pid': process['pid'], 'started': process.get('started')}
-                if not there(one, 0.0):
+                if not present(one):
                     continue
-                held = unread_by(one, process.get('run'))
-                if not held and there(one, 5.0):
-                    held = unread_by(one, process.get('run'))
-                    stayed.append((process['pid'], process.get('run'), 'unread' if held else 'stays on nothing'))
-                elif held:
-                    stayed.append((process['pid'], process.get('run'), 'unread'))
+                how, held = stays_or_ends(one, process.get('run'))
+                if how != 'ended':
+                    stayed.append((process['pid'], process.get('run'), how))
             check(row, 'of the %d supervisors the suite started, each one the kernel still shows at the suite\'s '
                        'end stays on processes this account cannot read that started after it %s'
                   % (len(supervisors), stayed), all(how == 'unread' for _, _, how in stayed))
