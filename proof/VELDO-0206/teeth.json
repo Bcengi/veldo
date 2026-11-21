@@ -1,18 +1,42 @@
 {
  "command": "python3 -B scripts/check_teeth_mutations.py --finding 206 --jobs 4 (through the host heavy-run wrapper)",
- "commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4",
+ "commit": "6de078204de81d3ad63e3a34d9624d9f7c0360f5",
  "exit_code": 0,
- "last_line": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=30 elapsed=60.671s",
+ "last_line": "mutations: passed registered=32 executed=32 reused=0 rejected=32 workers=40 elapsed=176.433s",
  "status": "passed",
- "registered": 22,
- "executed": 22,
- "rejected": 22,
+ "registered": 32,
+ "executed": 32,
+ "rejected": 32,
  "reused": 0,
  "scope": "selected",
  "declared_falsifiers": {
   "AC1": "suite206-key-drops-prerequisite-state",
   "AC2": "suite206-partial-run-published",
   "AC3": "suite206-fresh-failure-ignored-after-hit"
+ },
+ "review_findings": {
+  "F1": [
+   "suite206-qualified-suite-runs-in-shared-namespace",
+   "suite206-shared-observation-not-flagged",
+   "suite206-prerequisite-of-shared-suite-isolated"
+  ],
+  "F2": [
+   "suite206-candidate-qualifies-itself"
+  ],
+  "F3": [
+   "suite206-plan-exported-to-every-stage",
+   "suite206-plan-honored-on-any-output"
+  ],
+  "F4": [
+   "suite206-isolated-closure-not-settled",
+   "suite206-shared-prerequisite-not-settled"
+  ],
+  "F5": [
+   "suite206-stamp-drops-suite-keys"
+  ],
+  "untested branch (no plan)": [
+   "suite206-unplanned-gate-not-settled"
+  ]
  },
  "cases": [
   {
@@ -33,10 +57,12 @@
     "VELDO-0206 suite-reuse/closure/input-mode-misses",
     "VELDO-0206 suite-reuse/closure/dependent-input-misses-dependent-only",
     "VELDO-0206 suite-reuse/closure/prerequisite-input-misses-dependent",
+    "VELDO-0206 suite-reuse/closure/candidate-cannot-qualify-itself",
     "VELDO-0206 suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh",
     "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
     "VELDO-0206 suite-reuse/closure",
     "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
+    "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
     "VELDO-0206 suite-reuse/receipts/planted-stale-record-is-never-a-hit",
     "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
     "VELDO-0206 suite-reuse/receipts"
@@ -142,7 +168,7 @@
   },
   {
    "case": "suite206-dispatcher-skips-prerequisite",
-   "module": "run_scope.py",
+   "module": "selftest.py",
    "rows": [
     "suite-reuse/closure",
     "suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite"
@@ -151,16 +177,39 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/cold-run-is-all-fresh",
+    "VELDO-0206 suite-reuse/closure/untouched-qualified-suite-hits",
+    "VELDO-0206 suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh",
     "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
     "VELDO-0206 suite-reuse/closure/new-inputs-hit-once-observed",
+    "VELDO-0206 suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure",
     "VELDO-0206 suite-reuse/closure",
+    "VELDO-0206 suite-reuse/pass-only/passing-run-is-stored-and-reused",
+    "VELDO-0206 suite-reuse/pass-only/failed-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/timed-out-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/cached-selector-run-cannot-verify",
+    "VELDO-0206 suite-reuse/pass-only/plan-reaches-only-the-unit-stage",
+    "VELDO-0206 suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for",
+    "VELDO-0206 suite-reuse/pass-only/corrupt-record-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only/unusable-store-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only",
     "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
     "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
     "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
     "VELDO-0206 suite-reuse/receipts/planted-stale-record-is-never-a-hit",
     "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored",
     "VELDO-0206 suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red",
     "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
+    "VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass",
+    "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "VELDO-0206 suite-reuse/receipts/gate-hands-the-plan-to-the-unit-stage-only",
+    "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
+    "VELDO-0206 suite-reuse/receipts/gate-fresh-failure-is-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted",
+    "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
     "VELDO-0206 suite-reuse/receipts"
    ]
   },
@@ -220,6 +269,7 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
     "VELDO-0206 suite-reuse/pass-only/cached-selector-run-cannot-verify",
     "VELDO-0206 suite-reuse/pass-only"
    ]
@@ -250,6 +300,8 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure",
+    "VELDO-0206 suite-reuse/closure",
     "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
     "VELDO-0206 suite-reuse/receipts"
    ]
@@ -285,6 +337,7 @@
     "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
     "VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass",
     "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
     "VELDO-0206 suite-reuse/receipts/gate-fresh-failure-is-red-beside-hits",
     "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
     "VELDO-0206 suite-reuse/receipts"
@@ -302,6 +355,7 @@
    "noop_failed": [],
    "mutant_failed": [
     "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
     "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
     "VELDO-0206 suite-reuse/receipts"
    ]
@@ -355,6 +409,52 @@
    ]
   },
   {
+   "case": "suite206-qualified-suite-runs-in-shared-namespace",
+   "module": "run_scope.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/cold-run-is-all-fresh",
+    "VELDO-0206 suite-reuse/closure/untouched-qualified-suite-hits",
+    "VELDO-0206 suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh",
+    "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
+    "VELDO-0206 suite-reuse/closure/new-inputs-hit-once-observed",
+    "VELDO-0206 suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure",
+    "VELDO-0206 suite-reuse/closure",
+    "VELDO-0206 suite-reuse/pass-only/passing-run-is-stored-and-reused",
+    "VELDO-0206 suite-reuse/pass-only/failed-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/timed-out-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only/cached-selector-run-cannot-verify",
+    "VELDO-0206 suite-reuse/pass-only/plan-reaches-only-the-unit-stage",
+    "VELDO-0206 suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for",
+    "VELDO-0206 suite-reuse/pass-only/corrupt-record-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only/signed-record-of-anything-but-a-full-passing-run-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only/unusable-store-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only",
+    "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
+    "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
+    "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
+    "VELDO-0206 suite-reuse/receipts/planted-stale-record-is-never-a-hit",
+    "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored",
+    "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
+    "VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass",
+    "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "VELDO-0206 suite-reuse/receipts/gate-hands-the-plan-to-the-unit-stage-only",
+    "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
+    "VELDO-0206 suite-reuse/receipts/gate-fresh-failure-is-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
    "case": "suite206-gate-ignores-settlement",
    "module": "verify.sh",
    "rows": [
@@ -381,6 +481,154 @@
    "noop_failed": [],
    "mutant_failed": [
     "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-shared-observation-not-flagged",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-prerequisite-of-shared-suite-isolated",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/prerequisite-of-a-shared-suite-is-not-isolated"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/prerequisite-of-a-shared-suite-is-not-isolated",
+    "VELDO-0206 suite-reuse/closure",
+    "VELDO-0206 suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-candidate-qualifies-itself",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/candidate-cannot-qualify-itself"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/candidate-cannot-qualify-itself",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-plan-exported-to-every-stage",
+   "module": "verify.sh",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/gate-hands-the-plan-to-the-unit-stage-only"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/gate-hands-the-plan-to-the-unit-stage-only",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-plan-honored-on-any-output",
+   "module": "run_scope.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/plan-reaches-only-the-unit-stage"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/plan-reaches-only-the-unit-stage",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-isolated-closure-not-settled",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-shared-prerequisite-not-settled",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-stamp-drops-suite-keys",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
+    "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-unplanned-gate-not-settled",
+   "module": "verify.sh",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/gate-is-red-when-no-plan-could-be-made"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
+    "VELDO-0206 suite-reuse/receipts/gate-hands-the-plan-to-the-unit-stage-only",
+    "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
+    "VELDO-0206 suite-reuse/receipts/gate-fresh-failure-is-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted",
+    "VELDO-0206 suite-reuse/receipts/gate-is-red-when-no-plan-could-be-made",
+    "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
     "VELDO-0206 suite-reuse/receipts"
    ]
   }

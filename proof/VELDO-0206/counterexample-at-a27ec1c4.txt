@@ -1,0 +1,12 @@
+The review's finding 1 probe (its suite 157 fixture with d leaving D_LEFT and e asserting it), run on a
+snapshot of a27ec1c4 before any change of this round, through the host heavy-run wrapper.
+Second run: e is reused and the dispatcher exits 0. Forced run of the same tree: exit 1.
+
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-21T09:42:52Z
+PROBE first {'a': 'fresh', 'b': 'fresh', 'c': 'fresh', 'd': 'fresh', 'e': 'fresh', 't': 'fresh'} [0] 5
+PROBE second (d no longer leaves state) {'a': 'reused', 'b': 'reused', 'c': 'reused', 'd': 'fresh', 'e': 'reused', 't': 'reused'} [0] []
+PROBE forced truth {'a': 'fresh', 'b': 'fresh', 'c': 'fresh', 'd': 'fresh', 'e': 'fresh', 't': 'fresh'} [1] st-suite-reuse dc6ec969878c5684d515c227a85274b2 result {"failed": 0, "leg": null, "passed": 1, "scope": "full", "source": "fresh", "suite": "t"}
+selftest: 6 passed, 1 failed
+selftest-suite-reuse dc6ec969878c5684d515c227a85274b2 end {"exit": 1, "failed": 1, "leg": null, "passed": 6, "scope": "full"}
+
+exit=0
