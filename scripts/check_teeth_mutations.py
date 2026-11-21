@@ -16694,6 +16694,45 @@ def cases():
     result[-1]['dir'] = 'proof/VELDO-0219'
     # END VELDO-0358 BRIEF C
 
+    # ==== VELDO-0358 BRIEF G: space run, isolation and ownership (AC10 for suites 151_veldo_0313 and 66_veldo_0042,
+    # scripts/suites/support/v171_tailscale.py and scripts/mutation_ownership.py) ====
+    # The census row wave1/no-sites is in both suites; each reads the two suites, the port holder and the ownership
+    # module through literal anchors, so a mutant of one suite's file runs in the other suite.
+    def wave358g(name, suite, module, old, new, rows, directory):
+        add(358, name, suite, module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC10: the 1.5 second window after SIGTERM and SIGHUP restored in suite 151 (pattern W replaced it).
+    wave358g('wave358-space-window-restored', '66_veldo_0042_clones.py', '151_veldo_0313_space_run.py',
+             "            stayed = present(process)\n",
+             "            import time  # defect: the window after SIGTERM and SIGHUP, restored\n"
+             "            WINDOW = 1.5\n"
+             "            time.sleep(WINDOW)\n"
+             "            stayed = present(process)\n",
+             ['wave1/no-sites'], 'scripts/suites')
+    # AC10: the listener's 2 s socket timeout restored in suite 66_veldo_0042.
+    wave358g('wave358-clones-socket-timeout-restored', '151_veldo_0313_space_run.py', '66_veldo_0042_clones.py',
+             "                                    first = connection.recv(4096)",
+             "                                    connection.settimeout(2)  # defect: the 2 s timeout, restored\n"
+             "                                    first = connection.recv(4096)",
+             ['wave1/no-sites'], 'scripts/suites')
+    # AC10: the mutation tool's 5 s cleanup poll restored (design 4.2: it waits on cgroup.events now).
+    wave358g('wave358-cleanup-polled', '66_veldo_0042_clones.py', 'mutation_ownership.py',
+             "        while b'populated 1' in os.pread(events, 4096, 0):\n"
+             "            if not select.select([], [], [events], WAIT_HANG_SECONDS)[2]:\n",
+             "        import time  # defect: the 5 s cleanup poll, restored\n"
+             "        end, poll = time.monotonic() + 5, .02\n"
+             "        while b'populated 1' in os.pread(events, 4096, 0):\n"
+             "            time.sleep(poll)\n"
+             "            if time.monotonic() >= end:\n",
+             ['wave1/no-sites'], 'scripts')
+    # C11 (AC10's v171_tailscale.py): the port read and released at once, as before the port holder.
+    wave358g('wave358-port-released', '66_veldo_0042_clones.py', 'v171_tailscale.py',
+             "    hold = _ports().reserve()\n    _HELD.append(hold)\n",
+             "    hold = _ports().reserve()\n    hold.release()  # defect: read and released at once\n",
+             ['wave1/port-held'], 'scripts/suites/support')
+    # ==== end of VELDO-0358 brief G ====
+
     return result
 
 
