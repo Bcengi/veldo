@@ -133,6 +133,11 @@ REMOVERS = {
 CREATORS[('engine/scripts/verify.sh', '<module>')] = 'The gate creates its own schedule folder.'
 REVIEWED[('engine/scripts/verify.sh', '<EXIT trap>')] = 'The gate removes its own schedule folder at exit; design 6.10.'
 REVIEWED[('engine/.veldo/control_graph_install.py', 'install')] = 'The install owns its freshly built staging and temporary folders; design 6.10.'
+# VELDO-0358: the load-proof leg and its canary.
+CREATORS[('engine/scripts/gate_legs.py', 'run_load_proof')] = (
+    "Creates the load writers' private folder beside the checkout, outside it; removed empty at the leg's end.")
+CREATORS[('engine/scripts/gate_load.py', 'canary')] = "Creates a private temporary folder for the canary's marker."
+REVIEWED[('engine/scripts/gate_load.py', 'canary')] = "Removes only the canary's own mkdtemp folder at its end; design 6.10."
 
 
 def canonical(path):

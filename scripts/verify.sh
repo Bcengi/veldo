@@ -416,7 +416,9 @@ for name in $ORDER; do
         fi
         continue
       fi
-      if [ "$name" = load ]; then veldo_load_leg; continue; fi  # VELDO-0358: the leg is its own slot
+      if [ "$name" = load ]; then
+        veldo_load_leg; continue  # VELDO-0358: the slot runs the leg, scripts/gate_legs.py --load-proof
+      fi
       if [ "$name" = mutation ]; then
         veldo_load_leg  # VELDO-0358: the load-proof leg, before the mutation stage
         if [ "$VELDO_LOAD_RED" = 1 ]; then echo "== mutation: NOT STARTED (the load-proof leg is red)"; continue; fi
