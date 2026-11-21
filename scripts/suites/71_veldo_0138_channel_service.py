@@ -54,8 +54,8 @@ def _v138_suite():
     ROWS = ('install/assets', 'served/inert', 'served/settlement', 'qualification/recorded-by-service',
             'command/owner', 'command/owner-only', 'command/stop-live', 'command/stop-keeps-pending',
             'restart/active-stays-active', 'restart/stopped-stays-stopped', 'restart/never-activated-stays-inert',
-            'qualification/transport-failure-named', 'owner/demoted-halts', 'timers/profile-applied')
-    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF, OD, TP = ROWS
+            'qualification/transport-failure-named', 'owner/demoted-halts', 'timers/profile-applied', 'wave1/no-sites')
+    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF, OD, TP, NS = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -831,6 +831,32 @@ def _v138_suite():
             profile = {'in_process': unset(TIMERS.report()), 'services': [unset(s.get('timers')) for s in starts]}
             check(TP, 'timer_unset %r' % profile, profile['in_process'] == [] and len(starts) >= 4
                   and all(u == [] for u in profile['services']))
+        # VELDO-0358 AC10, AC15: the census over brief F's files finds no site outside the declared exceptions: the
+        # five suites and the fixture (every rule, each read through its literal anchor, so a registered mutant of one
+        # suite is read here) and the engine modules of design 4.8 brief F owns (R3, from this suite's copies).
+        with section(NS):
+            census = load('v138_census', ROOT / 'scripts' / 'check_wallclock.py')
+            wave1 = {'scripts/suites/66_veldo_0047_authority.py': ROOT / "scripts/suites" / "66_veldo_0047_authority.py",
+                     'scripts/suites/71_veldo_0138_channel_service.py': ROOT / "scripts/suites" / "71_veldo_0138_channel_service.py",
+                     'scripts/suites/83_veldo_0154_factory_loop.py': ROOT / "scripts/suites" / "83_veldo_0154_factory_loop.py",
+                     'scripts/suites/86_veldo_0189_engine_upgrade.py': ROOT / "scripts/suites" / "86_veldo_0189_engine_upgrade.py",
+                     'scripts/suites/110_veldo_0143_new_project.py': ROOT / "scripts/suites" / "110_veldo_0143_new_project.py",
+                     'proof/VELDO-0152/fixture.py': ROOT / "proof/VELDO-0152" / "fixture.py"}
+            found = []
+            for rel, path in wave1.items():
+                found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
+            for name in ('control_service.py', 'control_client.py', 'control_client_api.py', 'control_store.py',
+                         'control_factory_setup_upgrade.py', 'control_workflow_cycle_pm.py'):
+                found += census.Python('engine/.veldo/' + name, (mods / name).read_text(), ('R3',), engine=True).scan()
+            excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+            # Design 4.8, "not changed in wave 1": the two accept intervals are cadences (a lap of a serving loop), not
+            # giving-up deadlines, and a profile at the hang bound would stop the laps. Each is named here exactly.
+            cadences = {('engine/.veldo/control_service.py', 'R3', 'listener.settimeout(ACCEPT_SECONDS)', 'serve'),
+                        ('engine/.veldo/control_client_api.py', 'R3', 'self.server.settimeout(0.25)', 'Hints.__init__')}
+            counts, first_site = census.counted(found)
+            over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1], first_site[k]['form'], k[3])
+                          for k, n in counts.items() if n > excepted.get(k, 0) + (1 if k in cadences else 0))
+            check(NS, 'sites outside the declared exceptions: %r' % over[:20], not over)
     finally:
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         with contextlib.suppress(Exception):
