@@ -850,7 +850,10 @@ else:
 
         # VELDO-0358: the wait wakes only on the store and the service's observations file, and has no bound of its
         # own but the wait hang bound. Done: the evidence the rows assert. Impossible: the service's own word that
-        # nothing more will come, two inspect answers in a row showing the loop idle at the same pass.
+        # nothing more will come, two inspect answers in a row showing the loop idle at the same pass, with no worker
+        # slot of the domain still held: a held slot is a run whose receiver has not yet told the service its end
+        # (seen under load: the loop idle at pass 5 while the last review's receiver was still settling), and that
+        # message wakes the loop again.
         seen = {'found': [], 'refused_ids': [], 'reruns': [], 'slots': []}
 
         def journey_done():
@@ -871,7 +874,9 @@ else:
 
         def nothing_more():
             first, second = idle(), idle()
-            return first is not None and first == second, {'idle_passes': [first, second]}
+            held_now = held()
+            return (first is not None and first == second and not held_now,
+                    {'idle_passes': [first, second], 'slots_held': held_now})
         observations = home / 'state' / 'observations.jsonl'
         journey = WAITS.wait('the dispatch journey', journey_done, nothing_more,
                              [WAITS.Store(store), WAITS.PathAppears(observations, modify=True)])
