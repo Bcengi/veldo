@@ -2402,6 +2402,15 @@
    ],
    "regions": "VELDO-0206 AC1 to AC3: exact input suite result reuse. suite-reuse/closure (every changed input, prerequisite state included, misses and an untouched qualified suite hits; a qualified suite runs in a process of its own, so state an earlier suite leaves cannot hide a failure; only the authority qualifies), suite-reuse/pass-only (failed, timed-out, selector, shared-namespace, corrupt and signed-but-invalid records never replace a fresh suite; the plan reaches only the unit stage) and suite-reuse/receipts (cold, warm, mixed and force-fresh counts, exact keys in the stamp and the event, planted stale records, a fresh failure red beside hits, a fresh suite without its prerequisites, and the production gate script over the fixture).",
    "requires_note": "Only ROOT and expect. The production gate_reuse.py, selftest.py, run_scope.py and verify.sh over fixture repositories of six fixture suites, with the VELDO-0205 store in a temporary private folder. Child dispatchers, the processes they start for isolated suites, and one serial gate; no engine, no service, no network."
+  },
+  {
+   "name": "157_veldo_0217_declarations",
+   "file": "157_veldo_0217_declarations.py",
+   "requires": [
+    "157_veldo_0217_declarations"
+   ],
+   "regions": "VELDO-0217 AC1 to AC4: the proposer finds stale declarations from recorded digests and re-proposes with the support helper a suite loads, its report against the coordinator enumeration, admission through the ledger; case_reuse review conditions with named reasons and a review record that must match; key coverage per input class; non-file input classes refused from traces at proposal and again on the publish path.",
+   "requires_note": "Only ROOT, V, leg_runs and expect. Fixture repositories in scratch, real case_reuse sessions, the real proposer capture under its audit hook in a child Python, a real ledger with a barrier, a controlled coordinator stage. No tracer, no host lock or manager."
   }
  ],
  "resource_capacities": {

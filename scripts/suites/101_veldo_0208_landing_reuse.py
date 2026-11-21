@@ -649,7 +649,10 @@ print(json.dumps(results))
             'cases': {case['identity']: {'files': [], 'reviewed': True, 'non_file_inputs': 'none',
                                        'rationale': 'Controlled file-only unit fixture.'}}}))
         def session(source):
-            with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}):
+            # VELDO-0217's review conditions and VELDO-0226's proof are not what these rows test.
+            with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}), \
+                 patch.object(C, 'failed_condition', return_value=None), \
+                 patch.object(C, 'sensitivity_proved', return_value=True):
                 return C.Session(worktree, source, [case], 'a' * 40, {}, environment={},
                                  cache_directory=storepath)
         current = session(files)
@@ -674,6 +677,8 @@ print(json.dumps(results))
             "data = json.loads(Path('attack-input.json').read_text())\n"
             "files = {n: (m, bytes.fromhex(b)) for n, (m,b) in data['files'].items()}\n"
             "C.M.runtime_identity = lambda *args: {'fixture': 'runtime-v1'}\n"
+            "C.failed_condition = lambda *args: None\n"
+            "C.sensitivity_proved = lambda *args: True\n"
             "s = C.Session(Path.cwd(), files, [data['case']], 'a' * 40, {}, environment={}, "
             "cache_directory=data['store'])\n"
             "key = s.keys[data['case']['identity']]\n"
@@ -693,7 +698,8 @@ print(json.dumps(results))
         moved = session(changed)
         expect('VELDO-0208 landing/changed-declared-input-misses',
                moved.keys[case['identity']] != key and moved.lookup(case, gate.validate_result) is None)
-        with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}):
+        with patch.object(C.M, 'runtime_identity', return_value={'fixture': 'runtime-v1'}), \
+             patch.object(C, 'failed_condition', return_value=None):
             forced = C.Session(worktree, files, [case], 'a' * 40, {},
                 environment={'VELDO_GATE_FORCE_FRESH': '1'}, cache_directory=storepath)
         expect('VELDO-0208 landing/force-fresh-bypasses-store', forced.store is None

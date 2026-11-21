@@ -20,9 +20,10 @@ PENDING_CALL = re.compile(r'^\d+ ([a-zA-Z0-9_]+|\?\?\?)\(')
 
 
 def command(trace, argv):
-    # file includes metadata probes, even failed ones. getdents is not in file.
+    # file includes metadata probes, even failed ones. getdents is not in file. network carries
+    # every bind, connect and send, the evidence of a non-file input (VELDO-0217 AC4).
     return ['/usr/bin/strace', '-f', '-q', '-yy', '-s', '65535',
-            '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
+            '-e', 'trace=%file,%process,%network,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
             '-o', str(trace), *argv]
 
 
@@ -192,3 +193,159 @@ def check(trace, root, declared, absent=(), *, runtime=(), scratch=None, directo
             if kind == 'metadata' and any(resolved in p.parents for p in grants):
                 continue
             raise ValueError('undeclared runtime read: ' + str(path) + ' (' + kind + ')')
+
+
+# VELDO-0217 AC4: non-file inputs, refused mechanically from the trace. A connection or datagram to
+# an address no process of the traced tree bound (loopback and abstract Unix names included), a Unix
+# socket outside the case's own private roots, a session or user bus, and a process started outside
+# the traced tree each name a class; a case whose trace shows one is never reused.
+NON_FILE_CLASSES = ('network_peer', 'unbound_loopback', 'user_bus', 'host_socket', 'outside_process')
+# Programs whose purpose is to have another process run the work: a service manager, a bus, a
+# scheduler, a remote shell or a container engine. The traced tree ends at their request.
+LAUNCHERS = {'systemd-run', 'systemctl', 'busctl', 'dbus-send', 'dbus-launch', 'gdbus', 'at', 'batch',
+             'ssh', 'docker', 'podman', 'loginctl', 'machinectl', 'flatpak-spawn', 'pkexec', 'sudo'}
+SENDS = {'connect', 'sendto', 'sendmsg', 'sendmmsg'}
+FAMILY = re.compile(r'\{sa_family=(AF_[A-Z0-9]+)(.*?)\}')
+INET = re.compile(r'sin_port=htons\((\d+)\), sin_addr=inet_addr\("([^"]*)"\)')
+INET6 = re.compile(r'sin6_port=htons\((\d+)\).*?inet_pton\(AF_INET6, "([^"]*)"')
+UNIX = re.compile(r'sun_path=(@?)("(?:[^"\\]|\\.)*")')
+# A socket descriptor's local endpoint as -yy prints it: TCP:[127.0.0.1:4000] or
+# TCPv6:[[::1]:4000->[::1]:5000], UNIX-STREAM:[123,@"name"] or UNIX-STREAM:[123,"/path"].
+LOCAL_INET = re.compile(r'<(?:TCP|UDP|UDPLITE|SCTP)(?:v6)?:\[(\[[^\]]*\]|[0-9.]+):(\d+)(?:->|\])')
+LOCAL_UNIX = re.compile(r'<UNIX(?:-[A-Z]+)?:\[\d+,(@?)("(?:[^"\\]|\\.)*")\]')
+WILDCARD = {'0.0.0.0', '::'}
+
+
+def _loopback(address):
+    return address.startswith('127.') or address in ('::1', 'localhost') or address.startswith('::ffff:127.')
+
+
+def _endpoint(arguments):
+    """(family, address) of the first socket address in a call's arguments, or None. An Internet
+    address is (host, port); a Unix one is ('@', name) when abstract, else ('/', path)."""
+    match = FAMILY.search(arguments)
+    if match is None:
+        return None
+    family, rest = match.groups()
+    if family == 'AF_INET':
+        inet = INET.search(rest)
+        return (family, (inet[2], int(inet[1]))) if inet else (family, None)
+    if family == 'AF_INET6':
+        inet = INET6.search(rest)
+        return (family, (inet[2], int(inet[1]))) if inet else (family, None)
+    if family == 'AF_UNIX':
+        unix = UNIX.search(rest)
+        if unix is None:
+            return (family, None)  # an unnamed or autobound address
+        return (family, ('@' if unix[1] else '/', ast.literal_eval(unix[2])))
+    return (family, rest)
+
+
+def _bus(name):
+    path = Path(name)
+    return ('dbus' in name or path.name == 'bus' and str(path.parent).startswith('/run/user/')
+            or str(path).startswith('/run/dbus/'))
+
+
+OPENED = re.compile(r'^(\d+)<(/[^<>]*)>')
+DESCRIPTOR_PATH = re.compile(r'^/proc/(?:self|thread-self|\d+)/fd/(\d+)$')
+ABSENT = ('-1 ENOENT', '-1 ENOTDIR')
+
+
+def _network(trace, private, after_confinement):
+    """(classes {class: [evidence]}, absent socket paths) of one trace; see non_file_inputs."""
+    private = [Path(p).resolve() for p in private]
+    bound_inet, bound_unix, attempts, found, absent = set(), set(), [], {}, set()
+    descriptors = {}
+    confined = not after_confinement
+    for line in syscall_lines(trace):
+        match = CALL.search(line)
+        if not match:
+            continue
+        pid = line.split(None, 1)[0]
+        call, arguments, result = match.groups()
+        if not confined:
+            if call == 'landlock_restrict_self' and result.strip() == '0':
+                confined = True
+            continue
+        own = descriptors.setdefault(pid, {})
+        opened = OPENED.match(result.strip())
+        if opened:
+            own[opened[1]] = opened[2]
+        if call in ('fork', 'vfork', 'clone', 'clone3') and result.split()[0].isdigit():
+            descriptors[result.split()[0]] = dict(own)
+        # Every endpoint the traced tree holds is one it bound (an explicit bind, a listener, or the
+        # kernel's choice for its own outgoing socket).
+        for host, port in LOCAL_INET.findall(line):
+            bound_inet.add((host.strip('[]'), int(port)))
+        for abstract, name in LOCAL_UNIX.findall(line):
+            bound_unix.add(('@' if abstract else '/', ast.literal_eval(name)))
+        if call == 'bind' and not result.startswith('-1 '):
+            endpoint = _endpoint(arguments)
+            if endpoint and endpoint[0] in ('AF_INET', 'AF_INET6') and endpoint[1]:
+                bound_inet.add(endpoint[1])
+            elif endpoint and endpoint[0] == 'AF_UNIX' and endpoint[1]:
+                bound_unix.add(endpoint[1])
+        if call in SENDS:
+            endpoint = _endpoint(arguments)
+            if endpoint is not None and endpoint[0] == 'AF_UNIX' and endpoint[1] and endpoint[1][0] == '/':
+                # A socket reached through a descriptor path (/proc/self/fd/N) is the file that
+                # descriptor holds in this process, when the trace shows it opened.
+                held = DESCRIPTOR_PATH.match(endpoint[1][1])
+                if held:
+                    endpoint = ('AF_UNIX', ('/', own.get(held[1], endpoint[1][1])))
+                # No socket file there: a probe of an absent path, which is keyed as an absent
+                # runtime input (the toolchain's absent list), not a peer that answered.
+                if result.startswith(ABSENT):
+                    absent.add(endpoint[1][1])
+                    continue
+            if endpoint is not None:
+                attempts.append((endpoint, line))
+        elif call in ('execve', 'execveat'):
+            quoted = QUOTED.search(arguments)
+            if quoted and Path(ast.literal_eval(quoted[0])).name in LAUNCHERS:
+                found.setdefault('outside_process', []).append(line[:300])
+    for (family, address), line in attempts:
+        if family in ('AF_INET', 'AF_INET6'):
+            if address is None:
+                kind = 'network_peer'
+            else:
+                host, port = address
+                ours = (host, port) in bound_inet or (_loopback(host) and any(
+                    (w, port) in bound_inet for w in WILDCARD))
+                kind = None if ours else ('unbound_loopback' if _loopback(host) else 'network_peer')
+        elif family == 'AF_UNIX':
+            if address is None:
+                kind = None if 'sendto' in line or 'sendmsg' in line else 'host_socket'
+            elif _bus(address[1]):
+                kind = 'user_bus'
+            elif address[0] == '@':
+                kind = None if address in bound_unix else 'unbound_loopback'
+            else:
+                path = Path(os.path.normpath(address[1]))
+                kind = None if any(path == root or root in path.parents for root in private) else 'host_socket'
+        elif family == 'AF_UNSPEC':
+            kind = None  # a disconnect, no peer
+        else:
+            kind = 'network_peer'  # netlink, packet, vsock and any other family reach outside the tree
+        if kind is not None:
+            found.setdefault(kind, []).append(line[:300])
+    if not confined:
+        raise ValueError('missing authority worker confinement boundary')
+    return found, sorted(absent - {str(p) for p in private})
+
+
+def non_file_inputs(trace, private=(), *, after_confinement=False):
+    """{class: [evidence, ...]} for every non-file input the trace shows; {} when it shows none.
+    `private` are the case's own roots (its scratch and its snapshot): a Unix socket path inside them
+    is the case's own. Every attempt counts, answered or refused: a refused connection still told
+    the case whether something listened. Only a Unix path with no socket file at all is not a peer:
+    absent_sockets names it, to be keyed as an absent runtime input."""
+    return _network(trace, private, after_confinement)[0]
+
+
+def absent_sockets(trace, private=(), *, after_confinement=False):
+    """Unix socket paths the trace tried that did not exist outside the private roots."""
+    found, absent = _network(trace, private, after_confinement)
+    return [p for p in absent if not any(Path(p) == Path(r).resolve() or Path(r).resolve() in Path(p).parents
+                                         for r in private)]

@@ -52,12 +52,28 @@ expect('fixture target', namespace['value'] == 1)
                                                 'directories': ['scripts'],
                                                 'reviewed': True, 'non_file_inputs': 'none',
                                                 'rationale': 'Controlled file-only test fixture.'} for c in cases}}
-        files[I.DECLARATIONS] = (0o644, R.canonical(declaration))
+        def qualify(document, source):
+            """VELDO-0217 AC2: each reviewed fixture declaration carries the traced proposal and a
+            matching review record; its sensitivity proof (VELDO-0226) is stood in by session()."""
+            record = {'schema': C.REVIEW_SCHEMA, 'batch': 'fixture', 'reviewer': 'fixture reviewer',
+                      'commit': 'f' * 40, 'cases': {}}
+            for name, entry in document['cases'].items():
+                entry['proposal'] = {'runs': [{'mode': mode, 'exit': 0, 'reads': 'same', 'trace': 't%d' % index,
+                                               'observation': 'seen', 'non_file': []}
+                                              for index, mode in enumerate(C.TRACED_RUNS)],
+                                     'gate_observation': 'seen'}
+                entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
+                record['cases'][name] = {'declaration': C.declaration_digest(entry),
+                                         'traces': [r['trace'] for r in entry['proposal']['runs']]}
+            source[entry['review']] = (0o644, R.canonical(record))
+            source[I.DECLARATIONS] = (0o644, R.canonical(document))
+        qualify(declaration, files)
         runtime_version = [1]
         # Runtime key changes are controlled; real subprocess tests below use real Landlock.
         runtime = lambda paths, env: {'version': runtime_version[0], 'paths': paths, 'environment': env}
         def session(source=None, definitions=None, head='first', force=False):
-            with patch.object(C.M, 'runtime_identity', side_effect=runtime):
+            with patch.object(C.M, 'runtime_identity', side_effect=runtime), \
+                 patch.object(C, 'sensitivity_proved', return_value=True):
                 return C.Session(root, source or files, definitions or cases, head,
                                  {'worker_environment': gate.fixed_env('<private-worker-home>')},
                                  force_fresh=force, cache_directory=top / 'cache')
@@ -95,7 +111,7 @@ expect('fixture target', namespace['value'] == 1)
             for entry in d['cases'].values(): entry['directories'] = []
             d['cases'][third['identity']] = copy.deepcopy(d['cases'][case['identity']])
             d['toolchains'][gate.DRIVERS[1]] = copy.deepcopy(d['toolchains'][gate.DRIVERS[0]])
-            three_files = dict(files); three_files[I.DECLARATIONS] = (0o644, R.canonical(d))
+            three_files = dict(files); qualify(d, three_files)
             before = session(three_files, cases+[third]).keys
             d['toolchains'][gate.DRIVERS[0]]['identity_revision'] = 2
             three_files[I.DECLARATIONS] = (0o644, R.canonical(d))
@@ -341,6 +357,7 @@ print(json.dumps(results))
                      (patch.object(C.Session, 'lookup', return_value=None) if miss else patch.object(gate, 'PARALLEL', 1)), \
                      patch.object(gate.SuiteResources, 'from_root', return_value=gate.SuiteResources({'suites':[{'file':'test.py'}, {'file':'other_test.py'}]})), \
                      patch.object(C.M, 'runtime_identity', side_effect=runtime), \
+                     patch.object(C, 'sensitivity_proved', return_value=True), \
                      patch.object(C, 'Session', side_effect=construct):
                     return gate.run_stage(root, root / '.git')
             cold, warm = run_stage(), run_stage()
@@ -376,3 +393,83 @@ print(json.dumps(results))
 
 
 _v207_cases()
+
+
+def _v217_traced():
+    """VELDO-0217's traced rows, kept with this suite's strace rows (the gate domain refuses ptrace, so
+    the authority's list runs them in the unconfined leg): real strace traces of each non-file input
+    class (AC4), and the proposer's own syscall channel finding a support helper a suite loads (AC1)."""
+    import importlib.util
+    import os
+    from pathlib import Path
+    import socket
+    import subprocess
+    import sys
+    import tempfile
+
+    def load(name):
+        spec = importlib.util.spec_from_file_location('v217_traced_' + name, ROOT / 'scripts' / (name + '.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    P, gate = load('propose_case_inputs'), load('check_gate_mutations')
+    T = P.T
+    with tempfile.TemporaryDirectory(prefix='v217-traced-') as temporary:
+        top = Path(temporary)
+        # Another host process: a listener on loopback and a Unix socket outside the case's roots.
+        listener = socket.create_server(('127.0.0.1', 0))
+        host_socket = socket.socket(socket.AF_UNIX)
+        host_socket.bind(str(top / 'host.sock'))
+        host_socket.listen()
+        programs = {
+            'remote': "import socket\ns = socket.socket(); s.setblocking(False)\n"
+                      "try: s.connect(('192.0.2.10', 443))\nexcept OSError: pass\n",
+            'bus': "import socket\ns = socket.socket(socket.AF_UNIX)\n"
+                   "try: s.connect('\\0/tmp/dbus-v217-fixture')\nexcept OSError: pass\n",
+            'host-socket': "import socket\ns = socket.socket(socket.AF_UNIX)\ns.connect(%r)\n" % str(top / 'host.sock'),
+            'host-loopback': "import socket\nsocket.create_connection(('127.0.0.1', %d), timeout=120).close()\n"
+                             % listener.getsockname()[1],
+            'loopback-only': "import socket\nserver = socket.create_server(('127.0.0.1', 0))\n"
+                             "socket.create_connection(server.getsockname(), timeout=120).close()\n"
+                             "own = socket.socket(socket.AF_UNIX); own.bind('\\0v217-own-' + str(__import__('os').getpid())); own.listen()\n"
+                             "socket.socket(socket.AF_UNIX).connect(own.getsockname())\n",
+        }
+        classes, failures = {}, []
+        for name, program in programs.items():
+            scratch = top / ('scratch-' + name)
+            scratch.mkdir()
+            code, _seconds, _out, err, trace = P.run_traced([sys.executable, '-I', '-S', '-c', program],
+                                                           gate.fixed_env(scratch), scratch, scratch, 300)
+            if code:
+                failures.append((name, err.decode(errors='replace')[-300:]))
+            classes[name] = sorted(T.non_file_inputs(trace, (scratch,)))
+        listener.close()
+        host_socket.close()
+        expect('VELDO-0217 declarations/non-file-real-traces: %r %r' % (classes, failures),
+               not failures and classes == {'remote': ['network_peer'], 'bus': ['user_bus'],
+                                            'host-socket': ['host_socket'], 'host-loopback': ['unbound_loopback'],
+                                            'loopback-only': []})
+
+        # The proposer's syscall channel alone (no audit hook) finds the helper the suite loads.
+        root = top / 'repository'
+        (root / 'scripts/suites/support').mkdir(parents=True)
+        (root / 'scripts/suites/support/compiled_sources.py').write_text('COMPILED = 1\n')
+        suite = root / 'scripts/suites/loads_helper.py'
+        suite.write_text("import importlib.util\n"
+                         "spec = importlib.util.spec_from_file_location('helper', ROOT / 'scripts/suites/support/compiled_sources.py')\n"
+                         "spec.loader.exec_module(importlib.util.module_from_spec(spec))\n")
+        runner = ("import sys\nfrom pathlib import Path\n"
+                  "exec(compile(Path(sys.argv[1]).read_text(), sys.argv[1], 'exec'), {'ROOT': Path(sys.argv[2])})\n")
+        scratch = top / 'scratch-helper'
+        scratch.mkdir()
+        code, _seconds, _out, err, trace = P.run_traced(
+            [sys.executable, '-I', '-S', '-B', '-X', 'pycache_prefix=' + str(scratch / 'bytecode'), '-c', runner,
+             str(suite), str(root)], gate.fixed_env(scratch), root, scratch, 300)
+        captured = P.capture(root, list(T.accesses(trace, cwd=root)), [], P.executables(trace))
+        expect('VELDO-0217 declarations/stale-found-traced: %r %s' % (captured['files'], err.decode(errors='replace')[-300:]),
+               code == 0 and 'scripts/suites/support/compiled_sources.py' in captured['files']
+               and 'scripts/suites/loads_helper.py' in captured['files'])
+
+
+if leg_runs('strace'):
+    _v217_traced()
