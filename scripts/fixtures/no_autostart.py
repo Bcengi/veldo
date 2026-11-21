@@ -293,8 +293,10 @@ def observed_effects(receipt, plan, acknowledgements):
 def evaluate(census, receipt, plan, acknowledgements, outcome):
     rows = {r['name']: dict(r) for r in census.consumer_rows(receipt, 'VELDO-0113')}
     effects = observed_effects(receipt, plan, acknowledgements)
-    # A witnessed counterexample is false even on an unqualified host. Missing
-    # events can prevent an absence proof; they cannot erase an observed birth.
+    # AC1-AC3 explicitly require stand-down on ANY incomplete receipt. Keep
+    # captured effects as diagnostics, never use them to override that boundary.
+    if any(row['status'] == 'STANDS DOWN' for row in rows.values()):
+        return dict(rows=rows, effects=effects)
     if effects['forbidden_births']:
         rows[ROWS[0]].update(status='FAIL', reason='forbidden_autostart')
     if effects['services']:
@@ -440,9 +442,16 @@ def protocol_controls(census):
         rows = evaluate(census, value, plan, [], outcome)['rows']
         controls['invalid_receipt_' + str(i)] = (len(rows) == 3 and all(
             r['status'] == 'STANDS DOWN' and r['reason'] == 'census_incomplete' for r in rows.values()))
-    refusal = evaluate(census, dict(complete, status='INCOMPLETE', capture_status='INCOMPLETE'),
-                       plan, [], dict(invoked=True, refused=False))
+    refusal = evaluate(census, complete, plan, [], dict(invoked=True, refused=False))
     controls['known_non_refusal_is_false'] = refusal['rows'][ROWS[0]]['status'] == 'FAIL'
+    partial = copy.deepcopy(complete)
+    partial['status'] = 'INCOMPLETE'
+    partial['processes'].append(dict(identity='101:2', pid=101, root=False, parent='100:1', terminal=4, birth=3))
+    partial['events'].append(dict(kind='service', sequence=3, time_ns=1, family=1, address='abstract'))
+    witnessed = evaluate(census, partial, plan, [], outcome)
+    controls['incomplete_witness_stands_down'] = (bool(witnessed['effects']['forbidden_births'])
+        and bool(witnessed['effects']['services'])
+        and all(r['status'] == 'STANDS DOWN' for r in witnessed['rows'].values()))
     for field in ('failures', 'qualification'):
         value = copy.deepcopy(complete)
         value[field] = ([dict(reason='lost')] if field == 'failures' else
