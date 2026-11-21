@@ -85,10 +85,14 @@ THE LEDGER CHANNEL ITSELF NEVER REACHES A CANDIDATE COMMAND (VELDO_GATE_LEDGER_F
 runner's, as VELDO-0216 requires of every node). This runner asks the ledger on the dispatcher's
 behalf: a declared leg's command is handed a channel of its own (VELDO_GATE_SHARD_LEDGER_FD, a socket
 pair this runner serves while the leg runs; ShardClaims below), over which the dispatcher can only
-ask to start one named suite's shard and say that it ended. THE CLAIM IS THE AUTHORITY'S, never the
-candidate's: what that suite's shard measured in this leg's last passing unit stage, read here from
-the leg-time store, one core and 1 GiB for a suite never measured; the size a candidate names is not
-read. The same measurements are handed to the dispatcher (VELDO_GATE_SHARD_CLAIMS), which only
+ask to start one named suite's shard and say that it ended. THE CLAIM IS READ FROM THE AUTHORITY'S
+STORE, never from the request: what that suite's shard measured in this leg's last passing unit
+stage, one core and 1 GiB for a suite never measured; the size a candidate names in its request is
+not read. The measurement itself is reported by the leg's dispatcher, a process of the candidate's
+tree, over the metrics pipe, and a process of the same account outside every domain (an unconfined
+shard) can reach that pipe; so a stored claim is evidence of what ran, not a value the authority
+computed alone, and the gate ledger holds every shard's claim to what it can always grant
+(scripts/gate_schedule.py Ledger.shard_claim) so an oversized one costs parallelism, never the leg. The same measurements are handed to the dispatcher (VELDO_GATE_SHARD_CLAIMS), which only
 orders its shards by them. In the unit stage the command also gets a pipe the dispatcher writes
 each passing shard's wall seconds, CPU seconds and peak anonymous memory to
 (VELDO_GATE_SHARD_METRICS_FD), which this runner records after a passing leg under the same rule as
@@ -355,8 +359,14 @@ def record_resources(times, digest, node, seconds, metrics):
     Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
     target = _resources_file(times, digest, node)
     previous = read_resources(times, digest, node) or {}
+    # VELDO-0221: a leg node that ran its suites as shards records its dispatcher's claim, not its
+    # cgroup's total (scripts/gate_schedule.py LEG_DISPATCHER). The two are different quantities, so
+    # the larger-of-two rule holds only between records of one kind: the other kind is replaced.
+    dispatcher = metrics.get('dispatcher') is True
+    if (previous.get('dispatcher') is True) != dispatcher:
+        previous = {}
     item = dict(authority=str(HERE.parent), digest=digest, node=node, wall_seconds=seconds,
-                cpu_seconds=metrics['cpu_seconds'],
+                cpu_seconds=metrics['cpu_seconds'], dispatcher=dispatcher,
                 cpu_rate=max(previous.get('cpu_rate', 0), metrics['cpu_seconds'] / seconds),
                 peak_anon_bytes=max(previous.get('peak_anon_bytes', 0), metrics['peak_anon_bytes']),
                 at=time.time())
