@@ -217,9 +217,11 @@ def teeth(V, args):
     log, workers, diffs = scratch / 'teeth.log', scratch / 'workers', scratch / 'diffs'
     driver_summary = scratch / 'driver.summary.json'
     command = ['python3', 'scripts/check_teeth_mutations.py', '--finding', '117', '--jobs', str(args.jobs)]
+    # The driver's own summary file is VELDO-0270's option; the line's driver has none, and its stage report is
+    # read from the last line of its output either way.
+    kept = ['--summary', str(driver_summary)] if "'--summary'" in (ROOT / 'scripts/check_teeth_mutations.py').read_text() else []
     with open(log, 'wb') as out:
-        done = subprocess.run(command + ['--worker-log-dir', str(workers), '--diff-dir', str(diffs),
-                                         '--summary', str(driver_summary)],
+        done = subprocess.run(command + ['--worker-log-dir', str(workers), '--diff-dir', str(diffs)] + kept,
                               cwd=str(ROOT), stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
     receipt = {}
     for line in reversed(log.read_text(errors='replace').splitlines()):
@@ -270,10 +272,10 @@ def teeth(V, args):
     }
     # The run's own output: the stage log, the driver's summary, each worker's output streams and ledger, and
     # each applied diff. A worker's home below the log directory holds copies of the tree and is not output.
-    files = [log, driver_summary] + sorted(p for d in (workers, diffs) if d.is_dir() for p in d.iterdir()
+    files = [log] + ([driver_summary] if kept else []) + sorted(p for d in (workers, diffs) if d.is_dir() for p in d.iterdir()
                                            if p.is_file() and not p.is_symlink())
     return write(V, 'teeth', 'systemd-run --user --scope -p MemoryMax=10G ' + ' '.join(command)
-                 + ' --worker-log-dir <scratch> --diff-dir <scratch> --summary <scratch file>', deciding,
+                 + ' --worker-log-dir <scratch> --diff-dir <scratch>' + (' --summary <scratch file>' if kept else ''), deciding,
                  raw(files, scratch))
 
 
