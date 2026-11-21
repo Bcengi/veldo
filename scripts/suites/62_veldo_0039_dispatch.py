@@ -300,7 +300,7 @@ sys.exit(child.wait())
         runner = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
         releases = []
 
-        def job(release=None, say=None, code=0, adapter='fixture-engine', deadline=120):
+        def job(release=None, say=None, code=0, adapter='fixture-engine', deadline=3600):
             payload = {'task': 'build the unit', 'code': code, 'say': say or {'status': 'working'}}
             if release:
                 payload['release'] = str(base / ('release-' + release))
@@ -421,7 +421,8 @@ sys.exit(child.wait())
         # VELDO-0261: the two owner stop rows' workers are held to this contract deadline. An asked stop is begun
         # within seconds of the worker's start and its cause is then fixed, so the deadline never decides a stop
         # that was asked; a stop never asked, or ignored, ends at it as a deadline stop, which the rows name.
-        STOP_ROW_DEADLINE = 30
+        # VELDO-0358: an hour away. Whether the stop was honoured is the receiver's check answer, never the deadline.
+        STOP_ROW_DEADLINE = 3600
 
         class LaunchPipe(WAITS.Source):
             """The receiver's output (the launch pipe), taken by Launch.pump so the launch keeps every message; watched
