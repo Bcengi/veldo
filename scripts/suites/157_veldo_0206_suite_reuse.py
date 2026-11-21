@@ -745,6 +745,33 @@ def _v206_suite_reuse():
             honest.count(account) == 1 and '   unit: pass' in g_silent['out'] and g_silent['code'] == 1
             and g_silent['stamp'].get('status') == 'red' and 'suite reuse: FAIL' in g_silent['out']
             and 'd has no result behind a passing stage' in g_silent['out'], gate_tell(g_silent))
+        # Under the graph the settlement reads the scheduler's own node output. The two legs' output
+        # is put where the scheduler puts it and settled by the command the gate runs.
+        node_logs = base / 'node-logs'
+        node_logs.mkdir()
+        graph_state = Path(tempfile.mkdtemp(dir=str(base), prefix='graph-state-'))
+        steps = [sys.executable, '-I', '-S', str(gate.root / 'scripts/gate_reuse.py')]
+        where = ['--root', str(gate.root), '--state', str(graph_state)]
+        planned = subprocess.run(steps + ['suite-plan'] + where, env=gate_env, capture_output=True, text=True,
+                                 timeout=HANG)
+        for name, variables in (('confined', leg('confined', 'd')), ('unconfined', leg('unconfined', 'd'))):
+            (node_logs / ('unit.%s.log' % name)).write_text(
+                gate.dispatch(planned.stdout.strip(), gate_env, leg=variables).stdout)
+        (node_logs / 'unit.status').write_text('pass')
+        (node_logs / 'lint.log').write_text((node_logs / 'unit.confined.log').read_text())
+        settled = subprocess.run(steps + ['suite-settle'] + where + ['--logs', str(node_logs), '--stage-status', 'pass'],
+                                 env=gate_env, capture_output=True, text=True, timeout=HANG)
+        schedule = (ROOT / 'scripts/gate_schedule.py').read_text()
+        nodes = [name for name in json.loads((ROOT / 'scripts/gate_graph.json').read_text())['nodes']
+                 if name == 'unit' or name.startswith('unit.')]
+        row('receipts', 'graph-node-output-is-what-the-gate-settles',
+            planned.returncode == 0 and settled.returncode == 0
+            and 'registered=6 fresh=1 reused=5 not_run=0' in settled.stdout
+            and json.loads((graph_state / 'receipt.json').read_text())['legs'] == ['confined', 'unconfined']
+            and nodes and all(name + '.log' in gate.G.SUITE_LOGS for name in nodes)
+            and "open(directory / (name + '.log'), 'w')" in schedule
+            and '_veldo_unit_logs="$VELDO_SCHEDULE"' in SOURCES['scripts/verify.sh'].read_text(),
+            (planned.stderr, settled.stdout[-900:], settled.stderr, nodes))
         expect('VELDO-0206 suite-reuse/receipts: exact keys and counts, full coverage, force fresh, red stays red%s'
                % ('' if all(rows['receipts'].values()) else
                   ': false: ' + ', '.join(k for k, v in rows['receipts'].items() if not v)),
