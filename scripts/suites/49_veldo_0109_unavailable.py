@@ -14,7 +14,9 @@ HOW STATE IS OBSERVED. After shutdown, the row compares recursive snapshots of t
 clone control directories, including each path's mode, nanosecond mtime, regular-file contents and
 symlink target. Existing files as well as new or removed entries are covered. These snapshots do
 not capture transient writes or paths outside those directories. The address-specific /proc/net/unix
-check is separate; it is not a process census. The fixture's wait observes only its own child.
+check is separate; it is not a process census. The fixture's wait observes only its own child. VELDO-0113's registered-client
+consumer owns the three census-backed no-auto-start rows; this address snapshot
+cannot supply a receipt for any of them.
 Grepping this account's process list for the authority's name is deliberately NOT used: it matches
 the command doing the grepping, so it passes because of itself.
 
