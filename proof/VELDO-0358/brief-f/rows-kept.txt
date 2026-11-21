@@ -1,0 +1,7 @@
+Row labels each suite emits, read by the mutation driver's own worker (baseline mode), at the base
+fb7705e1 and at this branch. Required (AC10 wave1/rows-kept): the same set or a superset.
+66_veldo_0047_authority.py: base 56, now 60, missing [], added ['VELDO-0047 ran/timers/profile-applied', 'VELDO-0047 ran/wave1/no-sites', 'VELDO-0047 timers/profile-applied', 'VELDO-0047 wave1/no-sites']; failed now []
+71_veldo_0138_channel_service.py: base 39, now 41, missing [], added ['VELDO-0138 timers/profile-applied', 'VELDO-0138 wave1/no-sites']; failed now []
+83_veldo_0154_factory_loop.py: base 40, now 41, missing [], added ['VELDO-0154 timers/profile-applied']; failed now []
+86_veldo_0189_engine_upgrade.py: base 60, now 61, missing [], added ['VELDO-0189 timers/profile-applied']; failed now []
+110_veldo_0143_new_project.py: base 135, now 137, missing [], added ['VELDO-0143 ran/timers/profile-applied', 'VELDO-0143 timers/profile-applied']; failed now []

@@ -1,0 +1,9 @@
+== census (python3 scripts/check_wallclock.py)
+wallclock: sites: 2862 (R1 274, R2 1364, R3 1177, R4 47); by class: A 47, D1 1068, D2 85, P 211, S1 32, S2 88, S3 11, ST 143, T 1177; excepted by the authority: 36
+wallclock: baseline: 2689 entry(ies), 2826 site(s) in 419 file(s); by rule: R1 239, R2 1364, R3 1177, R4 46
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+== template sync
+template sync: pass (328 pair(s) compared, 6 declared per-repo, 367 engine-only)
+== personal setup
+personal setup: 0 finding(s)
+== the census over brief F's files (wave1/no-sites rows of suites 66 and 71): green in suites.txt
