@@ -120,6 +120,8 @@ def _v113_work_suite():
                     os.close(started)
                     for _ in range(8):
                         CC.serve_one(listener, authority, timeout=1200)
+                    service.loop = None
+                    CC.serve_one(listener, authority, timeout=1200)
                     (base / 'wakes.json').write_text(json.dumps(wakes))
                     connection.close()
                     os._exit(0)
@@ -156,6 +158,14 @@ def _v113_work_suite():
                     signer('owner'), 'fixture-host', timeout=1200)
                 expect('VELDO-0113 work/inner-signature/' + str(index),
                        answer['accepted'] and answer['result']['reason'] == 'unauthorized:work')
+                try:
+                    cli._request_work(str(workspace), None, 'owner', signer('owner'), trust)
+                except cli._work().CL.ClaimStopped as error:
+                    found = error.reason
+                else:
+                    found = None
+                expect('VELDO-0113 work/unconfigured-loop/' + str(index),
+                       found == 'unavailable_service:work')
                 ended, status = os.waitpid(pid, 0)
                 pid = None
                 expect('VELDO-0113 work/only-authorized-wake/' + str(index),
