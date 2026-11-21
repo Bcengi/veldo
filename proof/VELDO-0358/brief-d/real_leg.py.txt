@@ -1,0 +1,51 @@
+"""One real load-proof leg on the gate host (brief D's Done line), over the suites that have no baseline
+entry today. The inputs brief D does not own are taken from the briefs that do: the baseline is brief B's
+(scripts/suites/wallclock_baseline.json at its HEAD) and the opened-files record is written by brief A's
+dispatcher (a plain export of its HEAD), one suite per process. The leg itself is this branch's
+scripts/gate_legs.py over this worktree, with the real confinement and the real unconfined list.
+Usage: python3 real_leg.py.txt <this worktree> <brief A export> <brief B baseline> <scratch>"""
+import importlib.util
+import json
+import os
+import subprocess
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+root, a_tree, baseline, scratch = (Path(p).resolve() for p in sys.argv[1:5])
+scratch.mkdir(parents=True, exist_ok=True)
+record = scratch / 'opened_files.json'
+baselined = {entry['file'] for entry in json.loads(baseline.read_text())['entries']}
+mine = [(s['name'], s['file']) for s in json.loads((root / 'scripts/suites/manifest.json').read_text())['suites']]
+theirs = {s['name'] for s in json.loads((a_tree / 'scripts/suites/manifest.json').read_text())['suites']}
+candidates = [name for name, file in mine if name in theirs and name != 'shared'
+              and 'scripts/suites/' + file not in baselined]
+print('suites with no baseline entry in their own file: %d of %d' % (len(candidates), len(mine)), flush=True)
+env = dict(os.environ, VELDO_OPENED_FILES=str(record), PYTHONDONTWRITEBYTECODE='1')
+
+
+def observe(name):
+    done = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', name], cwd=str(a_tree), env=env,
+                          stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    return name, done.returncode, [l for l in done.stdout.splitlines() if l.startswith('selftest (PARTIAL')][-1:]
+
+
+with ThreadPoolExecutor(4) as pool:
+    for name, code, line in pool.map(observe, candidates):
+        print('record run %s: status %s %s' % (name, code, line), flush=True)
+spec = importlib.util.spec_from_file_location('legs', root / 'scripts/gate_legs.py')
+legs = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(legs)
+opened = json.loads(record.read_text())
+state = legs.proven_set(*legs.load_inputs(root, baseline, record))
+for name in sorted(state):
+    if state[name] is not None and name in candidates:
+        print('not in the leg: %s: %s' % (name, state[name]), flush=True)
+began = time.time()  # this driver's own reading, for the proof: the leg itself reads no clock
+code = legs.run_load_proof(root, scratch / 'leg-record.json', opened=record, baseline=baseline,
+                           times=scratch / 'times')
+print('leg exit status %s; wall seconds of the leg %.0f' % (code, time.time() - began), flush=True)
+print('stamp value: %s' % json.dumps(legs.load_stamp(scratch / 'leg-record.json'), sort_keys=True), flush=True)
+sys.exit(0)

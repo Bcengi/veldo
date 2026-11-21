@@ -1,0 +1,55 @@
+"""Brief D's falsifiers, driven through the mutation driver's own worker (scripts/check_teeth_mutations.py
+--worker): one run on the unmutated tree, then each registered load358 mutant, with the diff that shows it
+landed and the target row's own words. Usage: python3 drive_mutants.py.txt <repository root>"""
+import difflib
+import importlib.util
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+ROOT = Path(sys.argv[1]).resolve()
+spec = importlib.util.spec_from_file_location('teeth', ROOT / 'scripts/check_teeth_mutations.py')
+teeth = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(teeth)
+cases = [c for c in teeth.cases() if c['name'].startswith('load358-')]
+
+
+def worker(case, mutant=None):
+    argv = [sys.executable, str(ROOT / 'scripts/check_teeth_mutations.py'), '--worker', case['name']]
+    if mutant:
+        argv += ['--mutant', str(mutant)]
+    done = subprocess.run(argv, cwd=str(ROOT), capture_output=True, text=True, stdin=subprocess.DEVNULL)
+    if done.returncode:
+        print('WORKER FAILED', done.returncode, done.stderr[-2000:])
+        return None
+    return json.loads(done.stdout.strip().splitlines()[-1])
+
+
+ok = True
+base = worker(cases[0])
+print('== unmutated: %s rows, failed rows %s' % (base and base['count'], base and base['failed_rows']))
+ok &= bool(base) and not base['failed_rows'] and base['count'] >= 3
+for case in cases:
+    directory = tempfile.mkdtemp(prefix='v358d-mutant-')
+    made = teeth.materialize(case, 'mutant', directory)
+    before = made['source'].read_text().splitlines(keepends=True)
+    after = Path(made['mutant']).read_text().splitlines(keepends=True)
+    print('\n== %s (%s, row %s)' % (case['name'], case['module'], case['rows'][0]))
+    sys.stdout.writelines(difflib.unified_diff(before, after, 'scripts/' + case['module'], 'mutant', n=1))
+    result = worker(case, made['mutant'])
+    if result is None:
+        ok = False
+        continue
+    target = result['targets'][case['rows'][0]]
+    rejected = target == [False]
+    other = [r for r in result['failed_rows'] if r.split()[-1] != case['rows'][0]]
+    print('target row %s: %s -> %s' % (case['rows'][0], target, 'REJECTED' if rejected else 'NOT REJECTED'))
+    print('other failed rows: %s' % other)
+    for name, detail in result['failed_details']:
+        print('  %s: %s' % (name, detail[:1500]))
+    ok &= rejected
+print('\nRESULT: %s' % ('all %d mutants rejected, unmutated green' % len(cases) if ok else 'NOT ALL REJECTED'))
+sys.exit(0 if ok else 1)

@@ -2511,6 +2511,15 @@
    ],
    "regions": "VELDO-0358 brief B, AC6, AC7 and AC14: the wall-clock census finds each rule's site and each positional form, leaves the allowed forms alone, takes its scope from the opened-files record, and reads its exceptions from the authority and its baseline from both; the stage is declared in the gate; VELDO-0223 is not claimable and the gate's result words are a closed list.",
    "requires_note": "Only ROOT and expect. The real scripts/check_wallclock.py as a child over fixture trees in a temporary directory, the real index generator over a fixture specs folder, and the gate's own files read as text."
+  },
+  {
+   "name": "160_veldo_0358_load_leg",
+   "file": "160_veldo_0358_load_leg.py",
+   "requires": [
+    "160_veldo_0358_load_leg"
+   ],
+   "regions": "VELDO-0358 brief D, AC12 and AC13: the load generator applies its level by construction and proves it by liveness (the load record, load_not_applied for a spinner killed midway, no generator left after a killed leg, the canary green alone and red under the load); the load-proof leg runs the proven set once and a changed suite twenty times, each suite in its own process, and a red leg is the gate's red with the mutation stage not started.",
+   "requires_note": "Only ROOT, expect and launcher_fds. The real scripts/gate_load.py as a child beside a fixture leg, and the real verify.sh, gate_legs.py and gate_load.py as a fixture authority over a fixture candidate whose suites run through the real dispatcher."
   }
  ],
  "resource_capacities": {
