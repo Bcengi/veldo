@@ -437,7 +437,8 @@ def host_inventory():
                 registry=registry, exhaustive=not registry['unexplained'] and all(
                     'kernel' in c for c in inventory if c['available']
                     and c['family'] in QUALIFICATION_FAMILIES),
-                combinations=inventory, operation_probes=operations, io_uring=io_uring_probe())
+                combinations=inventory, operation_probes=operations,
+                io_uring=dict(io_uring_probe(), refused_in_scope=True))
 
 
 def qualify(r, inventory):
@@ -461,8 +462,10 @@ def qualify(r, inventory):
     for probe in inventory['operation_probes']:
         if probe.get('gap'):
             gap(probe['gap'], 'available socket needs a qualified address or operation configuration', probe)
+    # io_uring is refused in measured scope (Collector.refuse_rings and the
+    # setup/enter/register exit check), so completions need no correlation.
     async_probe = inventory['io_uring']
-    if async_probe['available']:
+    if async_probe['available'] and async_probe.get('refused_in_scope') is not True:
         gap('io_uring_socket_effects', 'shared ring completions are not correlated to traced socket identities',
             async_probe)
     # Escapes fail capture separately. A socket is destroyed at drain only when
@@ -527,6 +530,7 @@ class Collector:
         self.early_stops = {}
         self.newborn = set()
         self.release = None
+        self.ring_checked = set()
 
     def event(self, kind, **values):
         event = dict(sequence=len(self.r["events"]) + 1, time_ns=time.monotonic_ns(),
@@ -575,6 +579,21 @@ class Collector:
             except FileNotFoundError:
                 pass
         return table
+
+    def refuse_rings(self, pid, links, how):
+        """No io_uring instance may exist in a measured task.
+
+        Ring operations (including SQPOLL submissions, which need no syscall)
+        run on an instance reached through a descriptor. The only ways a
+        measured task holds one are setup/enter/register (refused on success),
+        inheritance at its first stop, received rights, pidfd_getfd and /proc
+        reopen; each is refused here, so no completion can create, bind or
+        accept a socket without failing the capture. A ring owned and driven
+        by an outside process is an outside process's effect.
+        """
+        for fd, link in links:
+            if link == 'anon_inode:[io_uring]':
+                failure(self.r, 'io_uring', f'measured task holds an io_uring instance ({how} descriptor {fd})')
 
     def installed(self, pid, entry):
         """Descriptors the syscall installed, from the kernel table, not memory."""
@@ -864,6 +883,9 @@ class Collector:
             if size < 80:
                 raise ValueError("short syscall entry")
             nr, *args = struct.unpack_from("<7Q", raw, 24)
+            if pid not in self.ring_checked:
+                self.ring_checked.add(pid)
+                self.refuse_rings(pid, self.fd_table(pid).items(), 'inherited')
             if nr & 0x40000000:
                 raise ObservationFailure("syscall_abi", "x32")
             abi = 'x86_64'
@@ -925,6 +947,12 @@ class Collector:
         if nr == 317 and a[0] == 1 and a[1] & 8:
             failure(self.r, 'shared_socket_memory',
                     'seccomp user notification can install descriptors from outside scope')
+        if nr in (2, 257, 437, 438):  # open, openat, openat2, pidfd_getfd
+            try:
+                self.refuse_rings(pid, [(result, os.readlink(f'/proc/{pid}/fd/{result}'))],
+                                  f'syscall {nr} installed')
+            except OSError:
+                pass
         if nr in (54, 55) and a[1] == 132 and (nr, a[2]) in SCTP_UNQUALIFIED:
             failure(self.r, 'operation_configuration',
                     f'SCTP {SCTP_UNQUALIFIED[nr, a[2]]} binds, connects or installs outside observed operations')

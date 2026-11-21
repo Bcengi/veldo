@@ -22,7 +22,7 @@ import memory_aba
 
 HERE = Path(__file__).resolve().parent
 SUITE = ROOT / 'scripts/suites/113_veldo_0111_census.py'
-NEXT = 'io_uring_socket_effects'  # first retained obligation not addressed by this run
+NEXT = 'compat_socketcall_message'  # first retained obligation not addressed by this run
 
 
 def load(name, path):
@@ -287,6 +287,13 @@ def main():
         ('ignore-l2tp-conn-id',
          '    if protocol == L2TP_IP and family in (socket.AF_INET, socket.AF_INET6):\n',
          '    if False:\n', OPERATION))
+    # io_uring_socket_effects: no ring may exist in measured scope.
+    RING = 'census/io-uring-refused-in-scope'
+    PROTOCOL += (
+        ('skip-inherited-ring-scan', "                self.refuse_rings(pid, self.fd_table(pid).items(), 'inherited')\n",
+         '                pass\n', RING),
+        ('ignore-installed-rings', '        if nr in (2, 257, 437, 438):  # open, openat, openat2, pidfd_getfd\n',
+         '        if False:\n', RING))
     for label, old, new, target in PROTOCOL:
         mutate(label, old, new, target)
 

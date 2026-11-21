@@ -7,12 +7,15 @@ Direct execution emits JSON; the standard suite dispatcher consumes ROOT/expect.
 """
 
 import array
+import ctypes
 import importlib.util
 import inspect
 import json
 import os
 from pathlib import Path
 import socket
+import struct
+import subprocess
 import sys
 import tempfile
 import threading
@@ -126,6 +129,28 @@ except OSError as exc:
     ack(kind='unsupported',family=socket.AF_NETLINK,type=socket.SOCK_RAW,errno=exc.errno)
 '''
 
+RING_HELPER = r'''
+import ctypes,json,os,sys
+libc=ctypes.CDLL(None,use_errno=True)
+params=ctypes.create_string_buffer(120)
+fd=libc.syscall(425,2,ctypes.byref(params))
+libc.prctl(0x59616d61,ctypes.c_ulong(-1),0,0,0)  # PR_SET_PTRACER_ANY for pidfd_getfd
+print(json.dumps(dict(pid=os.getpid(),fd=fd)),flush=True)
+sys.stdin.read()
+'''
+RING_TAKER = r'''
+import ctypes,json,os,sys
+libc=ctypes.CDLL(None,use_errno=True)
+pid,fd=int(sys.argv[1]),int(sys.argv[2])
+pidfd=os.pidfd_open(pid)
+taken=libc.syscall(438,pidfd,fd,0)
+value=dict(fd=taken,link=os.readlink('/proc/self/fd/%d'%taken) if taken>=0 else None,reopened=None)
+try:
+    value['reopened']=os.open('/proc/%d/fd/%d'%(pid,fd),os.O_RDONLY)
+except OSError as exc:
+    value['reopen_errno']=exc.errno
+print(json.dumps(value))
+'''
 SCTP_BINDX_PROBE = r'''
 import socket,struct
 s=socket.socket(socket.AF_INET,socket.SOCK_SEQPACKET,132)
@@ -517,7 +542,7 @@ for name in (observer,'pgrep'):
     released = bool(inventory['sockets']) and all(
         (o.get('closed') or {}).get('released') is True for o in inventory['sockets'])
     wanted.update(p['gap'] for p in capabilities['operation_probes'] if p.get('gap'))
-    if capabilities['io_uring']['available']:
+    if capabilities['io_uring']['available'] and capabilities['io_uring'].get('refused_in_scope') is not True:
         wanted.add('io_uring_socket_effects')
     reasons = inventory['qualification']['reasons']
     qualified = dict(inventory, qualification=dict(inventory['qualification']),
@@ -649,6 +674,47 @@ os.write(1,(json.dumps(dict(address=repr(sender.getsockname())))+'\n').encode())
              effect['socket_effect'].get('completion_result', -1) >= 0
              and asynchronous['capture_status'] == 'INCOMPLETE'
              and any(f['capability'] == 'io_uring' for f in asynchronous['failures']))))
+    # io_uring_socket_effects: no ring may exist in measured scope. An outside
+    # helper owns a ring and permits pidfd_getfd; taking it (or reopening it via
+    # /proc) must fail the capture. A task's first stop refuses inherited rings.
+    helper = subprocess.Popen([sys.executable, '-B', '-c', RING_HELPER], stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE, text=True)
+    try:
+        held = json.loads(helper.stdout.readline())
+        taken, ring_acks = run('ring_pidfd_getfd', RING_TAKER, held['pid'], held['fd'])
+    finally:
+        helper.stdin.close()
+        helper.wait(timeout=120)
+    ring_reasons = sorted(f['reason'] for f in taken['failures'] if f['capability'] == 'io_uring')
+    took = ring_acks[0] if ring_acks else {}
+    expected_reasons = ['measured task holds an io_uring instance (syscall 438 installed descriptor %d)'
+                        % took.get('fd', -1)]
+    if took.get('reopened') is not None:
+        expected_reasons.append('measured task holds an io_uring instance (syscall 257 installed descriptor %d)'
+                                % took['reopened'])
+    unit = census.Collector(dict(identity='inherited-ring', argv=['probe']))
+    unit.r['state'] = 'collecting'
+    unit.birth(os.getpid())
+    unit.fd_table = lambda pid: {7: 'anon_inode:[io_uring]'}
+    entry = bytearray(88)
+    entry[0] = 1
+    struct.pack_into('<I9Q', entry, 4, 0xc000003e, 0, 0, 39, 0, 0, 0, 0, 0, 0)  # getpid entry
+    real_ptrace = census.ptrace
+    census.ptrace = lambda request, pid, address=0, data=0: (
+        ctypes.memmove(data, bytes(entry), 88), 88)[1]
+    try:
+        unit.syscall(os.getpid())
+    finally:
+        census.ptrace = real_ptrace
+    evidence['io_uring_refusal'] = dict(helper=held, acks=ring_acks, reasons=ring_reasons,
+                                        inherited=unit.r['failures'])
+    emit('census/io-uring-refused-in-scope', held.get('fd', -1) >= 0
+         and took.get('link') == 'anon_inode:[io_uring]' and taken.get('root_status') == 0
+         and ring_reasons == sorted(expected_reasons) and taken['capture_status'] == 'INCOMPLETE'
+         and all(row['status'] == 'STANDS DOWN' for rows in taken['consumer_rows'].values() for row in rows)
+         and [f['reason'] for f in unit.r['failures']] == [
+             'measured task holds an io_uring instance (inherited descriptor 7)']
+         and capabilities['io_uring'].get('refused_in_scope') is True)
     escape_results = []
     for nr in (56,435):
         escaped, acks = run('escape_' + str(nr), ESCAPE_PROBE, nr)
