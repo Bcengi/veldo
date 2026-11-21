@@ -5,5 +5,11 @@ selftest (PARTIAL, 1 of 240 suites): 55 passed, 0 failed in 1.93s
 selftest (PARTIAL, 1 of 240 suites): 33 passed, 0 failed in 5.40s
 
 Falsifiers (python3 -B proof/VELDO-0124/negative_controls.py --output <scratch>): 15 of 15 rejected, each on its named row;
-negative-controls.json beside this file is that run's record. Patches and logs stayed in scratch; the patches are the
-same single changes as round3-2026-10-29/falsifiers/*.patch.
+negative-controls.json beside this file is that run's record (rerun after the git boundary change below). Patches and
+logs stayed in scratch; the patches are the same single changes as round3-2026-10-29/falsifiers/*.patch (the
+AC1-session-type patch differs in line numbers only, project_runner_macos_os.py having gained lines).
+
+Line rules the port had to meet, each checked after its change:
+  python3 scripts/check_space_boundary.py   Space boundary: pass (one reviewed entry added, pending review)
+  python3 scripts/check_git_boundary.py     Git subprocess boundary: pass (check_clone calls git through git_process)
+  50_git_environment 4 rows, 86_veldo_0168_text 26 rows, 155_veldo_0304_space_boundary 51 rows: passed, each alone

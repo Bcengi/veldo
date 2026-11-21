@@ -256,6 +256,11 @@
         "check": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
         "status": "passed",
         "detail": "26 rows passed after the Mac runner's four self.os.send call sites (OS signals to a run's processes) were declared in the suite's send inventory; without them inventory/sends-and-assets was red"
+      },
+      {
+        "check": "python3 scripts/check_git_boundary.py; python3 scripts/selftest.py --suite 50_git_environment",
+        "status": "passed",
+        "detail": "The line's git boundary refused check_clone's two direct git calls in project_runner_macos_os.py. They run through git_process now, loaded from beside the module, the change the VELDO-0125 branch made to the same lines (15787c77). Suites 103 (29 rows) and 104 (7 rows) and the 15 falsifiers were rerun after it."
       }
     ],
     "not_rerun": "Native macOS rows and real engine qualification: they need the Mac and a Claude login, as OPEN.md says. Criteria statuses are unchanged (pending).",

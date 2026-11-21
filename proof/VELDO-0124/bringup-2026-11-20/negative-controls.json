@@ -75,7 +75,7 @@
     "row": "AC1/apple-interfaces",
     "rejected": true,
     "exit_code": 1,
-    "source_sha256": "79f8405adf03185efe5a4cd42da6aef964fd669cecf0cb3e8b296c1dfe5f62e3",
+    "source_sha256": "52bcc3fcb2948897c23b0a01f3b9b291a3d9bef1cc6fc6a6c87eb10b7458d41e",
     "patch": "AC1-session-type.patch",
     "log": "AC1-session-type.log"
   },

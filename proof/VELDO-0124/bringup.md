@@ -98,6 +98,14 @@ runner's four (`Run.descendants` twice, `Run.step`, `Run.wait`). They are OS sig
 processes and carry no text to a person; they are declared in the suite's inventory, as the
 VELDO-0125 branch had done. The suite passes 26 rows.
 
+## The git boundary
+
+`scripts/check_git_boundary.py` (suite 50_git_environment) refuses a git call that does not go
+through `git_process`. `check_clone` in `project_runner_macos_os.py` called `/usr/bin/git` twice
+directly. Both calls go through `git_process.run` now, the module loaded from beside the file: the
+same change the VELDO-0125 branch made to these lines (15787c77). Suites 103 and 104 and the
+fifteen falsifiers were rerun after it.
+
 ## Needs review: one space-boundary entry
 
 The line's VELDO-0304 check (`scripts/check_space_boundary.py`) refuses a recursive removal outside
