@@ -1,0 +1,266 @@
+[
+ {
+  "falsifier": "space347-ignored-left-out-of-case-3",
+  "module": "control_space_probe.py",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/loose-ignored-file",
+   "ac1/personal-rule",
+   "ac1/untraced-rule"
+  ],
+  "red_rows": [
+   "ac1/loose-ignored-file",
+   "ac1/personal-rule",
+   "ac1/untraced-rule"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac1/loose-ignored-file",
+    "the worktree is deferred as unique work by rule 5 [('deferred', 'keep_failed', 'tool') {'said': {'action': 'remove', 'bytes': 20480, 'bytes_source': 'measured', 'deferral': 'keep_failed', 'freed': None, 'host': None, 'item': 'space:item:f7188c9338fa4857844244aa291d562d', 'kind': 'worktree', 'method': 'keep_then_git_worktree_remove', 'more': 0, 'ok': False, 'pool': 'host', 'pool_free_after': None, 'pool_free_before': 55806234624, 'reason': 'space_deferred:keep_failed', 'said': 'files that are work are in no snapshot of the keep step: settings.local', 'unsaved': ['settings.local']}}]"
+   ],
+   [
+    "VELDO-0347 ac1/personal-rule",
+    "the folder and the file only a personal rule ignores are unique work [('deferred', 'keep_failed', 'tool') None]"
+   ],
+   [
+    "VELDO-0347 ac1/untraced-rule",
+    "an ignored folder whose rule git does not name is case 3 [['build/']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-beneath-worktrees-only",
+  "module": "control_space_signal.py",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/unpushed-in-session-scratch",
+   "ac2/build-output"
+  ],
+  "red_rows": [
+   "ac1/loose-ignored-file",
+   "ac2/build-output",
+   "ac2/clean-clone-reading",
+   "ac2/forged-remote-ref",
+   "ac2/reset-log",
+   "ac2/unpushed-in-session-scratch",
+   "ac2/unreadable",
+   "ac3/commit-kept",
+   "ac3/compare-before-delete",
+   "ac3/kind-and-form",
+   "ac3/put-back-at-stop",
+   "ac3/unique-work-request",
+   "ac3/worker-snapshot",
+   "ac4/digest-at-removal",
+   "ac4/no-copy-unread",
+   "ac5/clone-row",
+   "ac5/own-folder",
+   "canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac2/unpushed-in-session-scratch",
+    "the clone holds the session scratch, by rule 6 [('deferred', 'remove_refused', 'tool') []]"
+   ],
+   [
+    "VELDO-0347 ac2/build-output",
+    "an untracked file in a clone holds the build output item [('deferred', 'remove_refused', 'tool') []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-logs-left-out",
+  "module": "control_space_probe.py",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/reset-log"
+  ],
+  "red_rows": [
+   "ac2/reset-log"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac2/reset-log",
+    "the clone holds its scratch [('removed', None, None) []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-remote-ref-at-its-word",
+  "module": "control_space_probe.py",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/forged-remote-ref"
+  ],
+  "red_rows": [
+   "ac2/forged-remote-ref",
+   "ac2/unreadable"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac2/forged-remote-ref",
+    "the clone holds its scratch [('removed', None, None) []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-clone-by-folder-remover-alone",
+  "module": "control_space_remove.py",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/commit-kept"
+  ],
+  "red_rows": [
+   "ac1/loose-ignored-file",
+   "ac3/commit-kept",
+   "ac3/compare-before-delete",
+   "ac3/put-back-at-stop",
+   "ac3/worker-snapshot",
+   "ac4/digest-at-removal",
+   "ac4/no-copy-unread",
+   "ac5/clone-row",
+   "ac5/own-folder",
+   "canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac3/commit-kept",
+    "the batch clone is removed at run finished [(None, None, None) {'item': 'space:item:369b4d4ec15f4d47ad16308cf75c449f', 'action': 'remove', 'outcome': None, 'refused': 'space_no_keep_record', 'meant': 'removed'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-worker-clone-without-snapshot",
+  "module": "control_space_keep.py",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/worker-snapshot"
+  ],
+  "red_rows": [
+   "ac1/loose-ignored-file",
+   "ac3/compare-before-delete",
+   "ac3/put-back-at-stop",
+   "ac3/worker-snapshot",
+   "ac4/digest-at-removal",
+   "ac4/no-copy-unread",
+   "ac5/clone-row",
+   "ac5/own-folder",
+   "canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac3/worker-snapshot",
+    "the dead run's worker clone is removed with no request [('deferred', 'keep_failed', 'tool') {'item': 'space:item:74317107933a44d6aa093d9eb22a09ee', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-delete-without-comparison",
+  "module": "control_space_remove.py",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/compare-before-delete"
+  ],
+  "red_rows": [
+   "ac3/compare-before-delete",
+   "ac3/put-back-at-stop"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac3/compare-before-delete",
+    "the comparison stops the delete, keep_failed [('removed', None, None) None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-left-under-marked-name",
+  "module": "control_space_remove.py",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/put-back-at-stop"
+  ],
+  "red_rows": [
+   "ac3/compare-before-delete",
+   "ac3/put-back-at-stop"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac3/put-back-at-stop",
+    "at the stop the folder is at its locator, and nothing is under its marked name"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-measured-digest-used",
+  "module": "control_space_remove.py",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/digest-at-removal"
+  ],
+  "red_rows": [
+   "ac4/digest-at-removal"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac4/digest-at-removal",
+    "the file changed after it was measured stays, with its new content"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-beneath-the-item-only",
+  "module": "control_space_signal.py",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/own-folder"
+  ],
+  "red_rows": [
+   "ac5/own-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac5/own-folder",
+    "a scratch item whose own folder is a repository holds itself, unrecorded [('deferred', 'remove_refused', 'tool') []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space347-formless-gets-clone-row",
+  "module": "control_space.py",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/clone-row"
+  ],
+  "red_rows": [
+   "ac3/kind-and-form",
+   "ac5/clone-row"
+  ],
+  "red_details": [
+   [
+    "VELDO-0347 ac5/clone-row",
+    "an agent repository with no form, its worktree in place, is not made due at run finished [kept kept ['space:item:f60444e23932486f85ea43684a1b4c6f', 'space:item:f890b9bbcf564fadb9424884f55c9cac']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

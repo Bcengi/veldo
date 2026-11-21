@@ -1,0 +1,37 @@
+# VELDO-0347: each suite run on its own (python3 scripts/selftest.py --suite NAME) on the code of commit a8bfc849 or its parent; 137 and 157 and 136 run again after the last probe change.
+== 135_veldo_0298_space_kinds :: selftest (PARTIAL, 1 of 237 suites): 168 passed, 0 failed in 0.02s
+== 136_veldo_0299_space_probe :: selftest (PARTIAL, 1 of 237 suites): 72 passed, 0 failed in 5.75s
+== 138_veldo_0300_space_remove :: selftest (PARTIAL, 1 of 237 suites): 65 passed, 0 failed in 4.60s
+== 139_veldo_0301_space_signal :: selftest (PARTIAL, 1 of 237 suites): 44 passed, 0 failed in 2.56s
+== 140_veldo_0345_space_keep :: selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 8.99s
+== 142_veldo_0303_space_paths :: selftest (PARTIAL, 1 of 237 suites): 64 passed, 0 failed in 10.91s
+== 153_veldo_0302_space_creators :: selftest (PARTIAL, 1 of 237 suites): 68 passed, 0 failed in 2.58s
+== 153_veldo_0336_run_worktree :: selftest (PARTIAL, 1 of 237 suites): 47 passed, 0 failed in 8.47s
+== 154_veldo_0324_batch_sandbox :: selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 3.44s
+== 155_veldo_0304_space_boundary :: selftest (PARTIAL, 1 of 237 suites): 77 passed, 0 failed in 9.03s
+== 156_veldo_0315_reconcile :: selftest (PARTIAL, 1 of 237 suites): 61 passed, 0 failed in 26.60s
+== 157_veldo_0347_space_work :: selftest (PARTIAL, 1 of 237 suites): 47 passed, 0 failed in 3.93s
+== 66_veldo_0042_clones :: selftest (PARTIAL, 1 of 237 suites): 46 passed, 0 failed in 2.14s
+== 147_veldo_0310_landed_contained :: selftest (PARTIAL, 1 of 237 suites): 59 passed, 0 failed in 31.11s
+== 137_veldo_0330_space_rules :: selftest (PARTIAL, 1 of 237 suites): 49 passed, 0 failed in 2.97s
+== 157_veldo_0347_space_work :: selftest (PARTIAL, 1 of 237 suites): 47 passed, 0 failed in 2.87s
+== 134_veldo_0331_space_mode :: selftest (PARTIAL, 1 of 237 suites): 42 passed, 0 failed in 1.51s
+== 132_veldo_0297_space_ledger :: selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 2.59s
+== 143_veldo_0305_space_census :: selftest (PARTIAL, 1 of 237 suites): 52 passed, 0 failed in 2.68s
+== 146_veldo_0308_run_finished :: selftest (PARTIAL, 1 of 237 suites): 64 passed, 0 failed in 6.40s
+== 149_veldo_0312_ticket_ended :: selftest (PARTIAL, 1 of 237 suites): 67 passed, 0 failed in 4.79s
+== 153_veldo_0309_gate_space :: selftest (PARTIAL, 1 of 237 suites): 50 passed, 0 failed in 31.95s
+== 153_veldo_0323_hook_events :: selftest (PARTIAL, 1 of 237 suites): 66 passed, 0 failed in 14.38s
+== 153_veldo_0337_verdict_recorded :: selftest (PARTIAL, 1 of 237 suites): 47 passed, 0 failed in 3.64s
+== 154_veldo_0335_released :: selftest (PARTIAL, 1 of 237 suites): 58 passed, 0 failed in 3.06s
+== 67_veldo_0056_candidates :: selftest (PARTIAL, 1 of 237 suites): 37 passed, 0 failed in 66.31s
+== 129_veldo_0239_batch_landing :: selftest (PARTIAL, 1 of 237 suites): 49 passed, 0 failed in 26.97s
+== 70_veldo_0057_landing :: selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 16.65s
+== 144_veldo_0306_space_docker :: selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 7.53s
+== 145_veldo_0307_space_docker_ownership :: selftest (PARTIAL, 1 of 237 suites): 51 passed, 0 failed in 1.35s
+== 148_veldo_0311_git_hooks :: selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 11.81s
+== 153_veldo_0314_session_hooks :: selftest (PARTIAL, 1 of 237 suites): 54 passed, 0 failed in 3.28s
+== 153_veldo_0328_images :: selftest (PARTIAL, 1 of 237 suites): 43 passed, 0 failed in 1.62s
+== 153_veldo_0341_docker_protection :: selftest (PARTIAL, 1 of 237 suites): 47 passed, 0 failed in 1.35s
+== 133_veldo_0326_space_principals :: selftest (PARTIAL, 1 of 237 suites): 56 passed, 0 failed in 33.83s
+# 151_veldo_0313_space_run: fails a different handful of rows on each run, on this branch and on the base commit 0b767d26 alike (rows that read the host's process table, free space and other runs' holds); not changed by this ticket. Two runs on this branch: 6 and 9 failed of 63; one on the base: 6 failed of 63.
