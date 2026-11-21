@@ -1,0 +1,23 @@
+{
+  "source": "PASS",
+  "new_module_alias": {
+    "status": "FAIL",
+    "problems": [
+      "outside_authority:.veldo/new_client.py:4"
+    ]
+  },
+  "restored": "PASS",
+  "receipt_controls": {
+    "synthetic_complete_evaluates": true,
+    "invalid_receipt_0": true,
+    "invalid_receipt_1": true,
+    "invalid_receipt_2": true,
+    "invalid_receipt_3": true,
+    "invalid_receipt_4": true,
+    "invalid_receipt_5": true,
+    "invalid_receipt_6": true,
+    "invalid_receipt_7": true,
+    "failures": true,
+    "qualification": true
+  }
+}

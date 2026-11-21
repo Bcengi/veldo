@@ -1,80 +1,89 @@
-# VELDO-0113: blocked before implementation
+# VELDO-0113 implementation and evidence
 
-Base: `1df7ae358bae1cf44b4ab5e1571f0c6fd523aa37`.
-This bundle records a contract counterexample, not completed acceptance proof.
-No production code, adapters, suite declarations or mutation registrations changed.
+The lead decision of 2026-11-21 is recorded in the specification History. The
+original direct-store counterexample remains in `contract-gap.txt` and
+`reproduce_contract_gap.py`; it explains the amendment and is not an absence
+claim. The original no-op receipt and dependency logs are historical diagnostics.
 
-## Measured blocker
+The consumer now joins the unchanged VELDO-0112 adapters to every current registry
+identity and both endpoint states. There are 21 registrations: 11 external clients
+and 10 in-process entries, giving 42 assessment cases. External calls run through
+the VELDO-0111 observer from before exec through descendant drain. The absent
+endpoint is checked for ENOENT. The dead endpoint is a real socket inode whose
+binding child acknowledges readiness through a pipe, then is killed with SIGKILL
+and reaped before any client call. Refusals must carry the expected kernel error;
+a malformed input or unrelated exception does not pass.
 
-`reproduce_contract_gap.py` loads the production registry and the unchanged
-VELDO-0112 adapter for `control_dispatch:Dispatches.prepare/in_process`.
-The existing authority fixture prepares its valid arguments before shutdown.
-The adapter subsequently receives those arguments and invokes the real registered
-callable. Its store and connection are real and unchanged. The only argument
-adjustment increases the fixture contract's 60-second deadline to 1200 seconds.
+The fixture uses real Git enrollment and HMAC signing through the transport's
+public signer/verifier seams. It supplies no store handle to external clients.
+Claim authorization and state transitions remain the separate live VELDO-0112
+suite's obligation. This consumer measures the real client/refusal paths and uses
+its adapters unchanged; it does not simulate connection failure.
 
-With the fixture server stopped and joined, the endpoint is removed. For the
-second case a child binds/listens at the same endpoint, acknowledges readiness
-through a pipe, then is killed and reaped. That child is only an endpoint fixture,
-not a replacement authority. The kernel refuses connections with ENOENT (absent)
-and ECONNREFUSED (dead socket). Both calls still return `prepared` and advance the
-signed journal from sequence 12 to 13. `contract-gap.txt` binds each result to the
-inventory, implementation, fixture sources and enrollment identities.
+Launch envelopes declare the root and only the required Git identity lookups
+before invoking the observer. Their identities are causal birth slots, not
+executable-name exemptions. Each lookup's exact argv and root parent are fixed in
+advance. A fixture-controlled wrapper acknowledges its PID and parent, then execs
+the real Git binary in the same process. Those acknowledgements join one-to-one
+to census birth identities; missing, extra, duplicate or mismatched births cannot
+be waived by a process name. Every service event in the measured scope is
+forbidden. The endpoint fixture is already dead and outside that scope.
 
-This refutes the universal endpoint-refusal premise of AC1. It does not establish
-that the callable launches a process or listener. Inventing a refusing store or
-filtering the inventory would hide this mismatch. The intended authority-loss
-boundary for these in-process calls needs a contract decision before implementation.
+The three named consumer rows carry distinct PASS, FAIL or STANDS DOWN statuses.
+A captured forbidden birth or service makes the corresponding row FAIL even
+when host qualification is incomplete. Absence cannot pass without a COMPLETE
+receipt. Missing facilities and interrupted finalization are driven for every
+external registry/state case; all three names must remain STANDS DOWN with
+census_incomplete and zero PASS rows. The suite separately asserts this protocol;
+a passing protocol assertion is not a green absence claim.
 
-## Source trace
+The construction census includes both module trees, both CLI directories and
+operational scripts, excluding test harnesses. It recursively finds Python files
+and Python front doors, follows direct/imported/assigned constructor aliases,
+and reports new construction sites with file, line and source digest. The five
+Dispatches sites named by the lead are present in each shipped tree:
 
-- `scripts/fixtures/registered_clients.py:40`: eight Dispatches and two dispatcher
-  entries use `in_process`; enumeration at line 74 joins the complete registry.
-- `scripts/fixtures/registered_clients.py:26`: adapters call the public registered
-  callable with arguments supplied by the consumer's fixture.
-- `scripts/suites/113_veldo_0112_registered_clients.py:62`: Dispatches receives
-  the real store connection; lines 154-179 prepare its valid arguments.
-- `.veldo/control_dispatch.py:679` and `:747`: writes call `self.store.execute`;
-  `:761` routes prepare to that writer. There is no socket check.
-- `.veldo/dispatch.py:346`, `:567`: registered dispatcher front doors;
-  the dependency fixture's floor seam at `113_veldo_0112_registered_clients.py:229`
-  also writes directly to the store.
-- `.veldo/control_claim_client.py:57` calls `.veldo/control_client.py:265`;
-  its connection-failure handler at `:300` raises `authority_unavailable`.
-- `.veldo/claim.py:329`, `:361`, `:379` delegate to the explicit claim client.
-  `.veldo/work.py:178`, `:183`, `:210` and `.veldo/lander.py:308`, `:322`, `:340`
-  are callers. The API and service wrappers preserve transport refusals at
-  `.veldo/control_client_api.py:100` and `.veldo/control_service.py:5061`.
-- The three footprint production files match their engine copies byte for byte.
+- `control_service.py:3172,3904`
+- `control_service_api.py:214`
+- `control_launch.py:2295`
+- `control_launch_work.py:148`
 
-## Census limitation
+Dispatcher is constructed at `dispatch.py:574`. The expanded census ALSO found
+`bin/veldo:285` and `engine/bin/veldo:285`, in `cmd_work`. These are production
+constructions outside the authority modules, so the construction row currently
+fails. Its preceding `_entry_gate` calls
+`control_eligibility.enrolled_gate:429`, which opens the store read-only at line
+451; it does not contact the authority endpoint. `construction-census.txt`
+retains this finding. The earlier `structural-controls.txt` demonstrates alias
+and new-file detection over the narrower module-only scan; it does not discharge
+this newly discovered CLI boundary. The lead has been asked to resolve it. No
+CLI exemption or architectural refactor has been invented to make the row pass.
 
-The independent no-op invocation in `census-receipt.json.gz` has COMPLETE event
-capture and INCOMPLETE host qualification. It names protocol inventory bounds,
-operation configuration and asynchronous socket effects as gaps. All three
-VELDO-0113 consumer rows are STANDS DOWN with `census_incomplete`. This is a
-dependency diagnostic, not the required registry/state consumer integration.
-The compressed archive retains the complete original receipt; its digest is in
-`contract-gap.txt`.
+There is also no process-specific writable-store grant today.
+`control_store.open_store:398` accepts mode rw, checks filesystem support and
+SQLite durability, and does not authenticate the calling process. The consumer's
+separate non-authority process opens a fresh real store and commits a probe table.
+That row reports GAP, never isolation success. Filesystem access by the same
+account remains sufficient. This is explicitly permitted as a disclosed gap by
+the lead amendment; it is not silently treated as proof of process isolation.
 
-## Reproduction and remaining work
+Four falsifiers are registered under finding 113 in the standard teeth inventory:
+a fallback Authority constructed in a child and immediately reaped, a transient
+abstract Unix listener in the refusal handler, an incomplete census treated as
+success, and an extra Dispatches construction in claim.py. The standard suite
+anchors support production and fixture copies. `run_checks.py` retains the exact
+diffs and full case receipts, and checks the named false rows and restoration.
+Full red/green acceptance evidence is still pending execution and resolution of
+the baseline construction failure; registration alone is not a completed drive.
 
-Run `python3 -B proof/VELDO-0113/reproduce_contract_gap.py` through the externally
-provided host-heavy wrapper. Exit zero means the counterexample was reproduced,
-not that VELDO-0113 passed. Readiness is acknowledged through a pipe and shutdown
-through joins/waits; all new deadlines are 1200-second hang bounds. No sleeps are
-used by the diagnostic. Dependency fixture code is unchanged.
+Receipt archives use lossless shared capability tables to stay below the proof
+size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
+and verifies its original SHA-256. No home path is rewritten inside a receipt;
+the driver refuses to retain one. Human-readable diagnostic output replaces any
+user home prefix with `<user-home>`.
 
-The full client/state census integration, predeclared launch envelopes, three
-declared red/green falsifiers, teeth registrations and mutation-gate findings
-remain unimplemented. No gate was run. No independent review or approval is claimed.
-Selected dependency selftests are supplemental diagnostics only; their dispatcher
-deliberately exits 2 for a partial run and prohibits treating it as gate evidence.
-
-All three selected runs completed with zero failures: VELDO-0109 reported 5 suite
-assertions, VELDO-0112 reported 3, and VELDO-0111 reported 13 (their shared checks
-bring the respective diagnostic totals to 31, 29 and 39). Lint passed over 1328
-Python and 44 shell files. The personal-setup checker swept every ticket proof
-file and the changed specification and reported zero findings. Its sweep API was
-used to avoid the ancestry subcommand prohibited for this task. The installation
-diagnostic's home prefix is normalized to `<user-home>` in the retained text.
+All new synchronization uses pipes, waits or terminal process observations. New
+deadlines are 1200-second hang detectors; the consumer enlarges the dependency's
+Git subprocess timeout without changing its argv, result or refusal. No new
+sleep-based assertion is used. Loaded checks run through the external host-heavy
+wrapper. No canonical gate, independent review or owner approval is claimed.
