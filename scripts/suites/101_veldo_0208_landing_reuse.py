@@ -806,10 +806,18 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
                        E.landing_problem(dict(stamp, **change)) is not None)
             path.write_bytes(E.canonical(E.sign(legacy, store.secret)))
             expect('VELDO-0208 landing/missing-record-provenance-refused', E.landing_problem(stamp) is not None)
+            # Keep every audit reference valid under the engine authority: only the main
+            # record's missing provenance may cause this negative control's rejection.
+            for audit_key, audit_record in audit_records:
+                (storepath / (audit_key + '.json')).write_bytes(E.canonical(E.sign(
+                    dict(payload, authority=engine_identity, key=audit_key, result=audit_record), store.secret)))
             path.write_bytes(E.canonical(E.sign(dict(legacy, authority=engine_identity), store.secret)))
             expect('VELDO-0208 landing/fleet-refuses-missing-provenance',
                    'missing_evidence:gate/authenticated_reuse_required' in landing.judge(sample))
             path.write_bytes(raw)
+            for audit_key, audit_record in audit_records:
+                (storepath / (audit_key + '.json')).write_bytes(E.canonical(E.sign(
+                    dict(payload, key=audit_key, result=audit_record), store.secret)))
             wrong = dict(record, input_digest='d' * 64)
             bad_payload = dict(payload, result=wrong)
             path.write_bytes(E.canonical(E.sign(bad_payload, store.secret)))
