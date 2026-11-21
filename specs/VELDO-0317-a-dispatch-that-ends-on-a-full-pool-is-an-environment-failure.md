@@ -98,3 +98,15 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-20: implemented on VELDO-0334 with registered falsifiers and proof under proof/VELDO-0317/.
   Dispatch accounting and the factory loop join the footprint: they own the charged attempt and the
   automatic repeat. Status remains ready pending the lead gate and independent review.
+
+- 2026-11-21: fix round 1 after independent review (one high, one medium-high, four low), restacked on
+  the fix rounds of VELDO-0316 and VELDO-0334. The attempt number of a dispatch is never issued twice:
+  an environment failure is given back as a separate refunded count on the unit's index slot, so the
+  charged count stays where it was and the clean rerun is the newest build the floor reads. The andon
+  stops the automatic repeat and refuses no dispatch, in report mode or in act; it is one inbox request
+  to the project owner, cleared by the owner's signed answer the inbox records (rerun dispatches the
+  station once more behind admission, acknowledge closes it and leaves the unit stopped). The next
+  brief names only the worktree of an environment_failure:no_space end the ledger still holds live. The
+  last classification and its count live on the index slot the exit transaction writes, read by key
+  range. An unconfirmed end after a standing repeat is a new run with a repeat of its own. The
+  footprint is unchanged. Status remains ready pending the lead gate and independent review.
