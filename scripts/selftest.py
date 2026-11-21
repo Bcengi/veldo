@@ -35,8 +35,9 @@ leg's aggregate line is composed from the target suites' counts only, and green 
 every shard passed and the isolation check held. run_scope.run_shards holds the dispatcher, the
 roots each shard gets, the check that runs in every gate and what it can attribute. --shard is
 not a selector a person runs: outside a leg, or without exactly one --suite, it is refused. A tree
-with no closure table (scripts/suites/requires.json) cannot be cut into shards, and its leg runs
-the ordered run and says so.
+with no closure table (scripts/suites/requires.json) cannot be cut into shards, and neither can
+the confined leg of a tree with no launcher (scripts/agent_sandbox.py) for its shards to take
+their Landlock layer from: such a leg runs the ordered run and says so.
 
 A FLAG TAKES ITS VALUE AS THE NEXT WORD, AND AN UNRECOGNISED FLAG IS A REFUSAL. `--suite=NAME`
 is not `--suite`, and until this was corrected it was recognised by nothing, so the equals form
@@ -275,6 +276,10 @@ if LEG and SHARD is None and SELECTOR is None:
         print("selftest leg %s: this tree has no closure table (scripts/suites/requires.json), so its "
               "suites cannot be cut into shards; running the ordered single-namespace run" % LEG,
               flush=True)
+    elif LEG == "confined" and not RS.shard_launcher(HERE.parent).is_file():
+        print("selftest leg confined: this tree has no launcher (scripts/agent_sandbox.py), which a "
+              "confined shard takes its Landlock layer from, so its suites cannot be confined as "
+              "shards; running the ordered single-namespace run", flush=True)
     else:
         SCOPE = RS.RunScope(None, [s["name"] for s in RUN], ORDER)
         try:
@@ -296,7 +301,7 @@ if SCOPE.partial and SHARD is None:
 if SHARD is not None and LEG == "confined":
     # In a confined leg the shard stacks its own Landlock layer on the leg's domain before any
     # suite code runs, and reports whether it holds: the dispatcher reddens a shard that does not.
-    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0])
+    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0], RS.shard_launcher(HERE.parent))
     SHARD.send(event="layer", in_force=_in_force, refused=_refused, detail=_detail)
 
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
