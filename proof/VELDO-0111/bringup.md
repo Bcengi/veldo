@@ -73,6 +73,21 @@ ticket's proof stays under 1 MB). Each is named here with its size and sha256 as
   on host speed; its 0.05 s deadline is the behaviour under test, not a wait for the host.
 - Home-directory paths in the retained diffs and in round3/README.md are rewritten.
 
+## Deadlines touched, and what each one guards (load rule)
+
+The ticket has no `manifest.json` (its record is `results.json` and the round records), so this section
+is the manifest's statement. The suite passed 13 rows before and after these changes: none of them
+was made to turn a failing row green. No row of suite 113_veldo_0111_census compares an elapsed time
+with a number.
+
+| Bound | Was | Is | The wait it guards | Why it is not a timing assertion |
+| --- | --- | --- | --- | --- |
+| `census(deadline=...)` default, used by every probe that ends on its own | 10 s | 120 s (`HANG_SECONDS`) | The collector's drain loop: `waitpid` on the traced root and every traced descendant, until the last of them has exited | The loop ends on the last exit event. When the bound is reached the census is reported INCOMPLETE (`drain_deadline`); the rows over these probes assert a COMPLETE capture, so a bound sized to a quiet host would turn a correct run red on a busy one. It detects a probe that never ends. |
+| `census()` largest accepted deadline | 60 s | 1200 s | Nothing waits on it: it is the argument check | It only admits the inventory probe's bound below. |
+| The supervisor's wait for the collector | deadline + 2 s | deadline + 120 s | `waitpid` on the collector process | The collector reports its own drain expiry in its receipt and then exits; this bound is reached only by a collector that hangs after its own deadline, and it is then killed and reported as `collector_death`. |
+| The inventory probe's `deadline` | 60 s | 600 s | The same drain loop, for the longest probe (every socket family, type and operation) | As the first row. |
+| The drain-expiry probe (`deadline=.05`) | root sleeps 10 s | root blocks in `signal.pause()` for ever | Nothing: 0.05 s is the behaviour under test, a drain that expires | The row asserts the outcome (INCOMPLETE on expiry), not a duration. The root never exits, so expiry is reached on any host; with `sleep(10)` a host slow enough to take 10 s to reach the drain loop would have seen the root exit first. |
+
 ## Status carried over unchanged
 
 The ticket is not accepted in full: AC2 qualification remains open (OPEN.md), the last independent
