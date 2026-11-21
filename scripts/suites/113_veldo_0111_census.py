@@ -129,6 +129,59 @@ except OSError as exc:
     ack(kind='unsupported',family=socket.AF_NETLINK,type=socket.SOCK_RAW,errno=exc.errno)
 '''
 
+COMPAT_PROBE = r'''
+import ctypes,json,mmap,os,socket,struct,sys
+code=mmap.mmap(-1,4096,prot=7)
+# i386 syscall(nr, a1..a5) through int 0x80: eax, ebx, ecx, edx, esi, edi.
+code.write(bytes.fromhex('53 89f8 89f3 4189ca 89d1 4489d2 4489c6 4489cf cd80 4898 5b c3'))
+sys32=ctypes.CFUNCTYPE(ctypes.c_long,ctypes.c_int,*[ctypes.c_ulong]*5)(ctypes.addressof(ctypes.c_char.from_buffer(code)))
+low=mmap.mmap(-1,8192,flags=mmap.MAP_PRIVATE|mmap.MAP_ANONYMOUS|0x40,prot=3)
+base=ctypes.addressof(ctypes.c_char.from_buffer(low))
+assert base<2**32
+def put(offset,data):
+    low[offset:offset+len(data)]=data
+    return base+offset
+def call(nr,*a):
+    return sys32(nr,*(list(a)+[0]*5)[:5])
+def ack(**v):
+    print(json.dumps(v),flush=True)
+mode=sys.argv[1]
+if mode=='direct':
+    fd=call(359,socket.AF_INET,socket.SOCK_STREAM,0)
+    assert call(361,fd,put(64,struct.pack('=H',2)+bytes(2)+socket.inet_aton('127.0.0.1')+bytes(8)),16)==0
+    assert call(363,fd,1)==0
+    ack(kind='listener',inode=os.readlink('/proc/self/fd/%d'%fd))
+    if os.getgid()<65536:
+        assert call(46,os.getgid())==0  # i386 setgid; native 46 is sendmsg
+    assert call(6,fd)==0
+elif mode=='clone-untraced':
+    result=call(120,0x800000|17)
+    if result==0:
+        os._exit(0)
+    ack(kind='cloned',result=result)
+else:
+    name='\0v111-compat-%d'%os.getpid()
+    receiver=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM); receiver.bind(name)
+    sender=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM); sender.connect(name)
+    listener=socket.socket(); listener.bind(('127.0.0.1',0)); listener.listen(1)
+    iov=put(128,struct.pack('<II',put(256,b'x'),1))
+    control=put(512,struct.pack('<Iii',16,socket.SOL_SOCKET,socket.SCM_RIGHTS)+struct.pack('<i',listener.fileno()))
+    message=put(1024,struct.pack('<7I',0,0,iov,1,control,16,0)+bytes(4))
+    if mode=='socketcall-sendmsg':
+        result=call(102,16,put(2048,struct.pack('<3I',sender.fileno(),message,0)))
+    elif mode=='direct-sendmsg':
+        result=call(370,sender.fileno(),message,0)
+    elif mode=='socketcall-sendmmsg':
+        result=call(102,20,put(2048,struct.pack('<4I',sender.fileno(),message,1,0)))
+    else:
+        result=call(345,sender.fileno(),message,1,0)
+    ack(kind='sent',result=result,listener=os.readlink('/proc/self/fd/%d'%listener.fileno()))
+    data,fds,_,_=socket.recv_fds(receiver,1,1)
+    for fd in fds:
+        os.close(fd)
+    for s in (receiver,sender,listener):
+        s.close()
+'''
 RING_HELPER = r'''
 import ctypes,json,os,sys
 libc=ctypes.CDLL(None,use_errno=True)
@@ -405,6 +458,27 @@ print(json.dumps(dict(before=bool(before),bound=bool(name),
     return evidence
 
 
+def objects_of(r):
+    return {o['identity']: o for o in r['sockets']}
+
+
+def native_inspected(census):
+    """Every native syscall number the collector's stop handlers compare nr with."""
+    import ast
+    tree = ast.parse(Path(census.__file__).read_text())
+    numbers = set(census.SOCKET_CALLS) | {key[0] for key in census.SCTP_UNQUALIFIED}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name in ('syscall', 'syscall_exit'):
+            for compare in ast.walk(node):
+                if isinstance(compare, ast.Compare) and isinstance(compare.left, ast.Name) \
+                        and compare.left.id == 'nr':
+                    for value in compare.comparators:
+                        items = value.elts if isinstance(value, (ast.Tuple, ast.Set)) else [value]
+                        numbers |= {i.value for i in items if isinstance(i, ast.Constant)
+                                    and isinstance(i.value, int)}
+    return numbers - {102}
+
+
 def finish_rows(census, r):
     return [census.consumer_rows(r, c) for c in census.CONSUMERS]
 
@@ -659,6 +733,7 @@ os.write(1,(json.dumps(dict(address=repr(sender.getsockname())))+'\n').encode())
     compat_code = EXTENDED_SOCKET_PROBE[EXTENDED_SOCKET_PROBE.index('code=mmap.mmap'):]
     compat_code = 'import ctypes,json,mmap,os,socket,struct\n' + compat_code
     compat_code = compat_code.replace('    os.close(fd)', '    args[:3]=[fd,0,0]; call(16,base)\n    os.close(fd)')
+    compat_code = compat_code.replace('call(16,base)', 'call(21,base)')  # no such socketcall operation
     compat, _ = run('compat_message', compat_code.replace("    ack(kind='socketcall',inode=os.readlink('/proc/self/fd/'+str(fd)))", '    pass'))
     emit('census/unsupported-address-and-compat', unix['capture_status'] == 'COMPLETE'
          and bool(acks) and not any(f['capability'] == 'implicit_address' for f in unix['failures'])
@@ -715,6 +790,38 @@ os.write(1,(json.dumps(dict(address=repr(sender.getsockname())))+'\n').encode())
          and [f['reason'] for f in unit.r['failures']] == [
              'measured task holds an io_uring instance (inherited descriptor 7)']
          and capabilities['io_uring'].get('refused_in_scope') is True)
+    # compat ABIs: direct i386 socket calls, an i386 call that would alias a
+    # native one, compat msghdr/cmsghdr layouts on socketcall and direct
+    # sendmsg/sendmmsg, and i386 clone with CLONE_UNTRACED.
+    compat_runs = {mode: run('compat_' + mode, COMPAT_PROBE, mode) for mode in (
+        'direct', 'socketcall-sendmsg', 'direct-sendmsg', 'socketcall-sendmmsg', 'direct-sendmmsg',
+        'clone-untraced')}
+    direct, direct_acks = compat_runs['direct']
+    compat_ok = (direct.get('root_status') == 0 and not direct['failures']
+                 and direct['capture_status'] == 'COMPLETE' and bool(direct_acks) and any(
+                     e['kind'] == 'service' and e['operation'] == 'listen' and e.get('abi') == 'i386'
+                     and objects_of(direct)[e['socket']]['inode'] == direct_acks[0]['inode']
+                     for e in direct['events']))
+    sends = {}
+    for mode in ('socketcall-sendmsg', 'direct-sendmsg', 'socketcall-sendmmsg', 'direct-sendmmsg'):
+        r, sent = compat_runs[mode]
+        reasons = [(f['capability'], f['reason']) for f in r['failures']]
+        transfers = [e for e in r['events'] if e['kind'] == 'descriptor_send']
+        sends[mode] = (r.get('root_status') == 0 and bool(sent) and sent[0]['result'] == 1
+                       and len(transfers) == 1 and [d['inode'] for d in transfers[0]['descriptors']]
+                       == [sent[0]['listener']] and reasons == [('escaped_reference',
+                       'SCM_RIGHTS send %d has no exclusively measured receiver' % transfers[0]['sequence'])])
+    untraced, cloned = compat_runs['clone-untraced']
+    inspected = native_inspected(census)
+    mapped = set(census.I386_SYSCALLS.values()) | set(census.I386_SOCKETCALL_ONLY)
+    evidence['compat'] = dict(sends=sends, inspected=sorted(inspected), unmapped=sorted(inspected - mapped),
+                              direct=direct['failures'], untraced=untraced['failures'])
+    emit('census/compat-abi-qualified', compat_ok and all(sends.values())
+         and not cloned and any(f['capability'] == 'trace_inheritance' for f in untraced['failures'])
+         and bool(inspected) and inspected <= mapped
+         and all(n < 0 for n in (census.I386_SYSCALLS.get(k, -1 - k) for k in range(500))
+                 if n not in census.I386_SYSCALLS.values())
+         and 'i386' in direct['qualification']['qualified_abis'])
     escape_results = []
     for nr in (56,435):
         escaped, acks = run('escape_' + str(nr), ESCAPE_PROBE, nr)

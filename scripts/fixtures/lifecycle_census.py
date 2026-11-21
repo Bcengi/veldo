@@ -8,7 +8,7 @@ registry and module aliases, and a measured socket whose kernel protocol was
 not discovered fails closed. Other retained gaps still make absence consumers
 stand down. See proof/VELDO-0111/OPEN.md.
 
-Linux UAPI: ptrace(2), PTRACE_GET_SYSCALL_INFO (Linux 5.3), x86_64 native ABI.
+Linux UAPI: ptrace(2), PTRACE_GET_SYSCALL_INFO (Linux 5.3), x86_64 native and i386 compat ABIs (int 0x80, socketcall).
 No privilege changes, compiler, packages, daemon or snapshot fallback.
 """
 
@@ -46,6 +46,22 @@ CONSUMERS = {
         "unavailable/no-write-needs-complete-observation"),
 }
 QUALIFICATION_FAMILIES = {1: "Unix", 2: "IPv4", 10: "IPv6", 16: "netlink"}
+# i386 (int 0x80 / 32-bit task) syscall numbers -> the native number with the
+# same semantics, for every native call the collector inspects. accept (43)
+# exists on i386 only as socketcall operation 5. Any other i386 call maps to a
+# negative number, so it can never alias a native one (i386 41 is dup).
+I386_SYSCALLS = {
+    5: 2, 6: 3, 41: 32, 63: 33, 55: 72, 221: 72, 330: 292, 359: 41, 360: 53, 361: 49,
+    362: 42, 363: 50, 364: 288, 365: 55, 366: 54, 367: 51, 368: 52, 369: 44, 370: 46,
+    371: 45, 372: 47, 373: 48, 337: 299, 417: 299, 345: 307, 120: 56, 435: 435, 354: 317,
+    295: 257, 437: 437, 438: 438, 436: 436, 425: 425, 426: 426, 427: 427}
+I386_SOCKETCALL_ONLY = frozenset((43,))
+# Message layouts: (msghdr stride for sendmmsg, msghdr size, control pointer and
+# length format/offset, cmsghdr header format, cmsg alignment).
+MESSAGE_LAYOUTS = {
+    'x86_64': dict(stride=64, size=56, control='<QQ', offset=32, header='<Qii', align=8),
+    'i386': dict(stride=32, size=28, control='<II', offset=16, header='<Iii', align=4),
+}
 # Native socket syscalls (socketcall is normalized to these numbers).
 SOCKET_CALLS = frozenset((41, 42, 43, 44, 45, 46, 47, 49, 50, 53, 288, 299, 307))
 
@@ -104,7 +120,7 @@ def receipt(request):
                 barriers=[], processes=[], events=[], sockets=[], failures=[],
                 lost_events=0, observer=dict(supervisor=os.getppid(), collector=os.getpid(),
                     comm=comm('self')),
-                qualification=dict(status="INCOMPLETE", qualified_abis=["x86_64"],
+                qualification=dict(status="INCOMPLETE", qualified_abis=["x86_64", "i386"],
                     gaps=[], reasons=[]),
                 metrics={})
 
@@ -823,26 +839,28 @@ class Collector:
                 return self.memory(pid, address, length)
         raise ObservationFailure('shared_socket_memory', 'send control mapping is not qualified')
 
-    def sent_controls(self, pid, pointer, count):
+    def sent_controls(self, pid, pointer, count, abi='x86_64'):
         if count > 1024:
             raise ObservationFailure('message_layout', 'sendmmsg vector exceeds qualified kernel bound')
+        layout = MESSAGE_LAYOUTS[abi]
+        header = struct.calcsize(layout['header'])
         messages = []
         for index in range(count):
-            message = self.message_memory(pid, pointer + index * 64, 56)
-            control_pointer, length = struct.unpack_from('<QQ', message, 32)
+            message = self.message_memory(pid, pointer + index * layout['stride'], layout['size'])
+            control_pointer, length = struct.unpack_from(layout['control'], message, layout['offset'])
             control = self.message_memory(pid, control_pointer, length)
             descriptors, offset = [], 0
-            while offset + 16 <= length:
-                size, level, kind = struct.unpack_from('<Qii', control, offset)
-                if size < 16 or offset + size > length:
+            while offset + header <= length:
+                size, level, kind = struct.unpack_from(layout['header'], control, offset)
+                if size < header or offset + size > length:
                     raise ObservationFailure('message_layout', 'invalid send ancillary length')
                 if (level, kind) == (socket.SOL_SOCKET, socket.SCM_RIGHTS):
-                    if (size - 16) % 4:
+                    if (size - header) % 4:
                         raise ObservationFailure('message_layout', 'unaligned SCM_RIGHTS descriptors')
-                    for start in range(offset + 16, offset + size, 4):
+                    for start in range(offset + header, offset + size, 4):
                         fd = struct.unpack_from('<i', control, start)[0]
                         descriptors.append(dict(fd=fd, inode=self.socket_at(pid, fd)))
-                offset += (size + 7) & ~7
+                offset += (size + layout['align'] - 1) & ~(layout['align'] - 1)
             messages.append(descriptors)
         return messages
 
@@ -889,16 +907,17 @@ class Collector:
             if nr & 0x40000000:
                 raise ObservationFailure("syscall_abi", "x32")
             abi = 'x86_64'
-            if arch == 0x40000003:
-                if nr != 102:
-                    raise ObservationFailure('compat_syscall', f'unqualified i386 syscall {nr}')
+            if arch == 0x40000003 and nr != 102:
+                # Compat arguments are 32-bit words; unmapped calls stay negative.
+                nr, args, abi = I386_SYSCALLS.get(nr, -1 - nr), [v & 0xffffffff for v in args], 'i386'
+            elif arch == 0x40000003:
                 # i386 socketcall arguments are unsigned 32-bit words. Normalize
                 # to native socket operation numbers after decoding the ABI.
                 operation, pointer = args[:2]
                 calls = {1:(41,3), 2:(49,3), 3:(42,3), 4:(50,2), 5:(43,3),
                          6:(51,3), 7:(52,3), 8:(53,4), 9:(44,4), 10:(45,4),
                          11:(44,6), 12:(45,6), 13:(48,2), 14:(54,5), 15:(55,5),
-                         18:(288,4)}
+                         16:(46,3), 17:(47,3), 18:(288,4), 19:(299,5), 20:(307,4)}
                 if operation not in calls:
                     raise ObservationFailure('compat_socketcall_message',
                                              f'unqualified socketcall operation {operation}')
@@ -916,7 +935,8 @@ class Collector:
             if nr in (3, 32, 33, 42, 43, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
                 entry["inode"] = self.socket_at(pid, args[0])
             if nr in (46, 307):
-                entry['sent_controls'] = self.sent_controls(pid, args[1], 1 if nr == 46 else args[2])
+                entry['sent_controls'] = self.sent_controls(pid, args[1], 1 if nr == 46 else args[2],
+                                                            'x86_64' if abi == 'x86_64' else 'i386')
             self.pending[pid] = entry
             # A task can deliberately escape tracing with CLONE_UNTRACED.
             flags = args[0] if nr == 56 else 0
