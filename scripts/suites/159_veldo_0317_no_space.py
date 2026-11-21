@@ -261,11 +261,13 @@ def _v317_suite():
                                                          {'pool': 'image', 'free': 1000, 'floor': 5}]
                               and f.ledger.hold(rec['contract']['space']['hold'])['state'] == 'released')
                         retained_state = f.ledger.item(receiver.run_census['worktree'])['state']
-                        if retained_state not in ('due', 'deferred') or not (work / 'unfinished.txt').is_file():
+                        # A ticket worktree is measured on run_finished and can remain present.
+                        retained_states = ('present', 'due', 'deferred', 'kept')
+                        if retained_state not in retained_states or not (work / 'unfinished.txt').is_file():
                             print('space317 retention', mode, retained_state, (work / 'unfinished.txt').is_file())
                         check('ac3/edit-kept', (work / 'unfinished.txt').is_file()
                               and (work / 'unfinished.txt').read_text() == 'unique uncommitted work'
-                              and retained_state in ('due', 'deferred'))
+                              and retained_state in retained_states)
                         launch, out = rerun(f, rec)
                         if mode == 'act':
                             check('ac1/behind-admission', launch is None and len(out['waiting']) == 1
