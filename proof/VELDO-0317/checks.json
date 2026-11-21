@@ -1,0 +1,32 @@
+[
+  {
+    "name": "lint",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/lint.txt"
+  },
+  {
+    "name": "template sync",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/template-sync.txt"
+  },
+  {
+    "name": "generated files",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/generated.txt"
+  },
+  {
+    "name": "personal setup",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/personal-setup.txt"
+  },
+  {
+    "name": "space boundary",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/space-boundary.txt"
+  },
+  {
+    "name": "spec contract",
+    "exit": 0,
+    "ref": "proof/VELDO-0317/spec-validation.txt"
+  }
+]
