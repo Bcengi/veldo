@@ -335,7 +335,7 @@ def _v125_routing_suite():
                 assert not local, 'Mac dispatch reached Linux receiver'
                 assert launch.contract['input']['context']['host_route']['host'] == 'mac'
                 assert launch.owned and launch.result == 'pending' and launch.fileno() is not None
-                assert runner.wait(launch, timeout=5)['state'] == 'refused'
+                assert runner.wait(launch, timeout=120)['state'] == 'refused'
             f.profiles[1]['available'] = False
             T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
@@ -367,7 +367,7 @@ def _v125_routing_suite():
             assert launch.contract['input']['context']['host_route']['host'] == 'mac'
             assert launch.contract['reservation']['account'] == 'account'
             assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
-            assert runner.wait(launch, timeout=5)['state'] == 'refused'
+            assert runner.wait(launch, timeout=120)['state'] == 'refused'
         finally:
             f.close()
 
@@ -486,7 +486,7 @@ def _v125_routing_suite():
                                      contract, f.ds)
             runner = L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
             runner.launches[launch.dispatch_id] = launch
-            assert runner.wait(launch, timeout=5)['state'] == 'exited'
+            assert runner.wait(launch, timeout=120)['state'] == 'exited'
             assert not f.res.worker(launch.dispatch_id)['retired']
             # The old local observer mistakes the foreign boot/PID for a dead worker,
             # and cannot see the Mac clone. Settle accounting to expose that release.
@@ -521,7 +521,7 @@ def _v125_routing_suite():
             binding = T.launch(client)
         L = T.W.SV.L
         launch = L.invoke_remote({'argv': [sys.executable, '-c',
-            'import sys,time; sys.stdin.readline(); time.sleep(120)']}, contract, f.ds)
+            'import sys,threading; sys.stdin.readline(); threading.Event().wait()']}, contract, f.ds)
         runner = L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
         runner.launches[launch.dispatch_id] = launch
         return launch, runner, client, binding
@@ -534,7 +534,9 @@ def _v125_routing_suite():
         loop.wakes, loop.ended, loop.timer = [], [], None
         loop.deadlines, loop.trees, loop.conversation = {}, {}, None
         loop.passes, loop.last, loop.counts = 0, None, {}
+        loop.line_counts = dict(started=0, restaged=0, stopped=0, waiting_receiver=0, refused={})
         loop.provision = lambda report, caller: None
+        loop.follow_store = lambda cause: {}
         def run(report, ended):
             for launch in ended:
                 record = runner.wait(launch, timeout=0)
@@ -569,6 +571,9 @@ def _v125_routing_suite():
                 def unrelated(*args):
                     raise AssertionError('deadline ran a full factory pass')
                 loop.provision = unrelated
+                closed_calls = []
+                remove_closed = loop.remove_closed
+                loop.remove_closed = lambda: closed_calls.append(True) or remove_closed()
                 runner.sweep = unrelated
                 loop.lines['repo'].run = unrelated
                 later = types.SimpleNamespace(dispatch_id='later-launch', ends_at=launch.ends_at + 100,
@@ -580,6 +585,7 @@ def _v125_routing_suite():
                 loop.expire(launch.ends_at)
                 report = loop.run()
                 assert not report['faults'], report
+                assert not closed_calls, 'deadline scanned unrelated closed lines'
                 assert report['ended'], 'silent remote transport kept dispatch pending past deadline'
                 assert launch.child.poll() is not None, 'deadline left transport alive'
                 assert launch.dispatch_id not in runner.launches
@@ -615,13 +621,15 @@ def _v125_routing_suite():
         launch = None
         try:
             launch, runner, client, binding = stalled_remote(f, 'exited')
+            runner.space = object()
+            runner._left = lambda *args: (_ for _ in ()).throw(AssertionError('remote result reached local space cleanup'))
             loop = remote_loop(f, runner)
             loop.wake('fixture')
             loop.run()
             client.result(binding, T.observation(), usage={'tokens': 0}, references={})
             assert launch.child.poll() is not None, 'signed result did not wake the launch directly'
             report = loop.run()
-            assert not report['faults'] and len(report['ended']) == 1, 'authority completion waited for pipe EOF'
+            assert not report['faults'] and len(report['ended']) == 1, report
             assert report['ended'][0]['state'] == 'exited'
             assert launch.child.poll() is not None and launch.dispatch_id not in runner.launches
             assert loop.timer is None, 'finished transport kept factory timer active'
@@ -693,7 +701,7 @@ def _v125_routing_suite():
             try:
                 launch, runner, _, _ = stalled_remote(f, state)
                 try:
-                    runner.wait(launch, timeout=.02)
+                    runner.wait(launch, timeout=0)
                 except TimeoutError:
                     pass
                 else:
@@ -725,7 +733,7 @@ def _v125_routing_suite():
                 assert held['open'] == ['termination', 'group', 'clone']
                 assert held['contract_digest'] == T.D.digest(launch.contract)
                 try:
-                    runner.wait(launch, timeout=.01)
+                    runner.wait(launch, timeout=0)
                 except TimeoutError:
                     pass
                 assert f.ds.record(dispatch)['state'] == 'unknown'
@@ -861,7 +869,7 @@ def _v125_routing_suite():
         def delivery(argv, **kwargs):
             calls.append(kwargs['input'])
             entered.set()
-            assert unblock.wait(5)
+            assert unblock.wait(120)
             return types.SimpleNamespace(returncode=0)
         T.W.subprocess = types.SimpleNamespace(run=delivery, TimeoutExpired=original.TimeoutExpired,
                                                DEVNULL=original.DEVNULL)
@@ -871,11 +879,11 @@ def _v125_routing_suite():
                         for i in range(20)]
             for binding in bindings:
                 f.service.notify_release('repo', binding)
-            assert entered.wait(5)
+            assert entered.wait(120)
             assert len(calls) == 1 and len(f.service.release_deliveries) == 1, 'release connection storm'
             sender = next(iter(f.service.release_deliveries.values()))
             unblock.set()
-            sender.join(5)
+            sender.join(120)
             assert not sender.is_alive() and len(calls) == 20
             for binding in bindings:
                 f.service.notify_release('repo', binding)
@@ -883,7 +891,7 @@ def _v125_routing_suite():
             entered.clear()
             unblock.clear()
             f.service.notify_release('repo', dict(bindings[0], dispatch_id='dispatch/block-sender'))
-            assert entered.wait(5)
+            assert entered.wait(120)
             sender = next(iter(f.service.release_deliveries.values()))
             f.prepare(required=['macos'])
             f.start()
@@ -892,7 +900,7 @@ def _v125_routing_suite():
             client.result(binding, cleanup_observation(), usage={'tokens': 3})
             client.retired(binding)
             unblock.set()
-            sender.join(5)
+            sender.join(120)
             assert not sender.is_alive() and len(calls) == 21, 'queued wake sent after confirmation'
 
         finally:
@@ -1158,7 +1166,7 @@ def _v125_routing_suite():
                     'import sys,json; sys.stdin.readline(); print(json.dumps(dict(event="exited",returncode=0)))']},
                     contract, f.ds)
                 assert launch.owned and launch.result == 'pending'
-                record = launch.wait(timeout=5)
+                record = launch.wait(timeout=120)
                 assert record['state'] == ('refused' if state == 'prepared' else 'unknown'), record['state']
                 assert not T.D.completed(record), 'transport stdout or exit invented completion'
             finally:

@@ -762,5 +762,29 @@
     "suite": "103_veldo_0124_macos",
     "row": "AC1/claude-wrapper-recheck",
     "ticket": "VELDO-0124"
+  },
+  "port-remote-local-space": {
+    "file": "control_launch.py",
+    "row": "AC3/remote-authority-end",
+    "before": "if self.space is not None and not getattr(launch, 'remote', False):",
+    "after": "if self.space is not None:",
+    "suite": "106_veldo_0125_routing",
+    "ticket": "VELDO-0125"
+  },
+  "port-deadline-scans-lines": {
+    "file": "control_service.py",
+    "row": "AC2/remote-factory-deadline",
+    "before": "stopped = [] if deadline_only else self.remove_closed()",
+    "after": "stopped = self.remove_closed()",
+    "suite": "106_veldo_0125_routing",
+    "ticket": "VELDO-0125"
+  },
+  "port-grouped-store-busy": {
+    "file": "control_store.py",
+    "row": "AC2/grouped-store-busy",
+    "before": "    _begin(conn, \"this handle cannot write (%s): grouped authority commands\")",
+    "after": "    conn.execute(\"BEGIN IMMEDIATE\")",
+    "suite": "105_veldo_0125_relay",
+    "ticket": "VELDO-0125"
   }
 }

@@ -4413,7 +4413,7 @@ class FactoryLoop:
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
         # VELDO-0188 AC3: a closed project's line whose runs have all ended leaves the loop.
-        stopped = self.remove_closed()
+        stopped = [] if deadline_only else self.remove_closed()
         if stopped:
             report.setdefault('lines', {'cause_pass': self.passes}).setdefault('stopped', []).extend(stopped)
         resets = [waiting['until'] for waiting in report['waiting'] if isinstance(waiting.get('until'), int)]
