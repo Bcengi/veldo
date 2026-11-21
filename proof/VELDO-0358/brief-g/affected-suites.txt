@@ -1,0 +1,114 @@
+# python3 scripts/selftest.py over the suites that load v171_tailscale.py or mutation_ownership.py, and the census suite
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 73_veldo_0139_factory_setup 74_veldo_0140_standing_delegation 85_veldo_0171_setup_api 86_veldo_0189_engine_upgrade 87_veldo_0170_receiver_trust 103_veldo_0142_git_identities 86_veldo_0186_setup_assets 98_veldo_0204_mutation_receipts 112_veldo_0215_case_deadlines 155_veldo_0304_space_boundary 158_veldo_0358_census
+  running     11 of 239 suites: 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 86_veldo_0186_setup_assets, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 98_veldo_0204_mutation_receipts, 103_veldo_0142_git_identities, 112_veldo_0215_case_deadlines, 155_veldo_0304_space_boundary, 158_veldo_0358_census
+  skipped     228: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_fl
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+Upgrading the installed factory engine: 29 files change, 109 are new, 0 are removed; the authority service will restart once.
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at /dev/shm/v170-hzuxzubr/xdg/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+  /tmp/tmpxa7vzshx: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpxa7vzshx/nocrit.md: no acceptance criteria
+  /tmp/tmpxa7vzshx/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpxa7vzshx/status.md: bad status: donezo
+  /tmp/tmpxa7vzshx/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpxa7vzshx/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpxa7vzshx/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpxa7vzshx/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpxa7vzshx/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpxa7vzshx/verdict.json: bad verdict: looks_fine
+  /tmp/tmp3i38qmpr/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmp3i38qmpr/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmp3i38qmpr/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmp3i38qmpr/fref.md: work W1: unknown feature ref F9
+  /tmp/tmp3i38qmpr/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmp3i38qmpr/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmp3i38qmpr/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmp3i38qmpr/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmp3i38qmpr/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmp3i38qmpr/dupspec.md: duplicate spec ids across work items
+  /tmp/tmp3i38qmpr/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmp3i38qmpr/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+VELDO-0139 suite seconds: 30.635
+VELDO-0172 fake/capture:0140_standing_delegation: 0 fake lines compared, events []
+VELDO-0140 suite seconds: 13.398
+VELDO-0172 fake/capture:0186_setup_assets: 0 fake lines compared, events []
+VELDO-0171 suite seconds: 11.384
+VELDO-0189 suite seconds: 68.513
+  SELFTEST FAIL: residue/86_veldo_0189_engine_upgrade: thread 'Thread-102 (serve)' alive (Thread); thread 'Thread-103 (serve)' alive (Thread)
+   unit: removed 1 leg-time file from /tmp/v215-2rqlwv2k/prune (authority checkout gone)
+  73_veldo_0139_factory_setup                     17 passed   30.64s
+  74_veldo_0140_standing_delegation                9 passed   13.40s
+  86_veldo_0186_setup_assets                      11 passed   21.37s
+  85_veldo_0171_setup_api                         18 passed   11.40s
+  86_veldo_0189_engine_upgrade                    34 passed   68.53s
+  87_veldo_0170_receiver_trust                    12 passed    8.86s
+  98_veldo_0204_mutation_receipts                 45 passed    1.03s
+  103_veldo_0142_git_identities                   23 passed   37.56s
+  112_veldo_0215_case_deadlines                   22 passed    0.36s
+  155_veldo_0304_space_boundary                   51 passed    8.50s
+  158_veldo_0358_census                            5 passed    8.46s
+selftest (PARTIAL, 11 of 239 suites): 283 passed, 1 failed in 210.18s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
