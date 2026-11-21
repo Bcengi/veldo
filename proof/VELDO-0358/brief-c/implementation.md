@@ -40,3 +40,17 @@ their own entries and read them at the point where each timer is armed.
 
 The canonical gate is excluded by the task instruction. Partial selftest runs
 are developer verification and do not establish a gate or landing verdict.
+
+The full mutation stage on implementation HEAD 30d6fa2a passed with 3,608 cases
+registered, executed and rejected, zero reused, zero invalid results and zero
+surviving workers. It ran all 1,200 controls and 3,608 mutants through the external
+host-heavy wrapper. Elapsed time was 8,551.707 seconds, recorded only as data.
+full-stage.txt binds the raw receipt by SHA256 and lists every case and killed
+row: 3,608 cases and 3,969 rows are unproven because this branch has no authority
+baseline yet. That list is the wave 2 input; the supplied-baseline fixture
+separately proves assertion and terminal classifications.
+
+current-tree-mutants.txt records all 35 Brief C registrations rejected on the
+same tree with both controls clean. All 3,608 inventory definitions also passed
+the exact-anchor check. Final lint, template sync and personal setup checks
+passed; personal setup found zero findings. The final commit adds proof only.
