@@ -337,13 +337,19 @@ def _v313_space_run_suite():
                     continue
             return out
 
-        def said_line(source, what, wanted):
+        def said_line(source, what, wanted, stays=None):
             """Wait on a supervisor's report for its first line that `wanted` takes; that line, or None
-            when the report ended without one."""
+            when the report ended without one, or when `stays` (a reading: true when the line cannot
+            come) holds."""
             def found():
                 lines = [one for one in report_lines(source) if isinstance(one, dict) and wanted(one)]
                 return bool(lines), lines[0] if lines else None
-            result = WAITS.wait(what, found, lambda: (source.closed, {'lines': report_lines(source)[-4:]}), [source])
+
+            def over():
+                if source.closed:
+                    return True, {'lines': report_lines(source)[-4:]}
+                return stays() if stays is not None else (False, None)
+            result = WAITS.wait(what, found, over, [source])
             return result.done_observation if result.done else None
         SP = load('v313_control_space', VELDO / 'control_space.py')
         S = load('v313_control_store', VELDO / 'control_store.py')
@@ -771,7 +777,7 @@ def _v313_space_run_suite():
             code = child.wait()  # it has ended: this collects it
             return ('ended' if code == status else 'exit %s' % code), code
 
-        def follow(wiring, given, then=None):
+        def follow(wiring, given, then=None, unread_is_foreign=False):
             """The run's end as the supervisor's follower makes it (_space_ended), which sleeps with no
             time limit on the exit of every holder. `then`, when given, is called once the end is
             asleep on them (just before its first sleep), so what it releases exits while the end
@@ -782,7 +788,9 @@ def _v313_space_run_suite():
             may be, and the end then waits for it, as it must. The suite does not wait with it: each
             time the end goes to sleep, a holder that another account owns (its owner read from the
             kernel) is evidence that the end cannot come in this fixture, and the row is red at once,
-            naming it. Any other end that never comes is hung at the wait hang bound."""
+            naming it; with `unread_is_foreign` (settled: an end held by processes that are no part of the
+            fixture) so is any holder nobody here could read. Any other end that never comes is hung at
+            the wait hang bound."""
             import signal
             now_row = row
 
@@ -799,7 +807,7 @@ def _v313_space_run_suite():
             def others():
                 held = CLI._space_judged(wiring, given).get('holders') or []
                 return [one for one in held if one.get('how') == 'unread'
-                        and owner_of(one.get('pid')) not in (None, os.getuid())]
+                        and (unread_is_foreign or owner_of(one.get('pid')) not in (None, os.getuid()))]
 
             def late(number, frame):
                 WAITS.hung('VELDO-0313 ' + now_row, 'the run\'s end (_space_ended)', 'follow',
@@ -823,8 +831,8 @@ def _v313_space_run_suite():
                     return CLI._space_ended(wiring, given)
             except HeldByOthers as held:
                 raise RuntimeError(
-                    'the run\'s end is asleep on processes of another account that hold the run: %s. On a host shared '
-                    'with other accounts and without the process reader, a process nobody here can read holds every '
+                    'the run\'s end is asleep on processes that are no part of the fixture and hold the run: %s. On a host '
+                    'shared with other sessions and without the process reader, a process nobody here can read holds every '
                     'run that began before it (fail closed). Run the suite in a process table of its own.'
                     % (held.args[0],)) from None
             finally:
@@ -841,7 +849,7 @@ def _v313_space_run_suite():
             does not come through here."""
             tries = 0
             while end.get('reason') == 'label_unread' and tries < 50:
-                end, tries = follow(wiring, given), tries + 1
+                end, tries = follow(wiring, given, unread_is_foreign=True), tries + 1
             return end
 
         def finish(wiring, given):
@@ -1245,18 +1253,50 @@ def _v313_space_run_suite():
             napping = temp / 'idle.pid'
             reading, writing = os.pipe()
             heard, told = os.pipe()
+            counted_read, counted_write = os.pipe()
             # The fixture is the wrapper of a raw supervisor: no ledger is part of this row. The
             # command waits for the suite's word (a latch), leaves a process held by another latch and
-            # exits.
+            # exits. The supervisor is the production file's own space_supervise, in a process of its
+            # own, with one stand-in: each pass over the process table (_space_holders) writes r, and
+            # each sleep of a poller writes w, on a pipe the row reads (VELDO-0358: what it does is
+            # counted between the events the row causes, never over a span of time).
+            counter = temp / 'idle_counter.py'
+            counter.write_text(
+                'import importlib.machinery, importlib.util, os, select, sys\n'
+                'path, told = sys.argv[1], int(sys.argv[2])\n'
+                'loader = importlib.machinery.SourceFileLoader("veldo_cli", path)\n'
+                'spec = importlib.util.spec_from_loader("veldo_cli", loader)\n'
+                'V = importlib.util.module_from_spec(spec)\n'
+                'loader.exec_module(V)\n'
+                'holders = V._space_holders\n'
+                'def counted(*given, **named):\n'
+                '    os.write(told, b"r")\n'
+                '    return holders(*given, **named)\n'
+                'V._space_holders = counted\n'
+                'real_poll = select.poll\n'
+                'class Told:\n'
+                '    def __init__(self):\n'
+                '        self.real = real_poll()\n'
+                '    def register(self, *given):\n'
+                '        return self.real.register(*given)\n'
+                '    def unregister(self, *given):\n'
+                '        return self.real.unregister(*given)\n'
+                '    def poll(self, *given):\n'
+                '        os.write(told, b"w")\n'
+                '        return self.real.poll(*given)\n'
+                'select.poll = Told\n'
+                'sys.exit(V.space_supervise(sys.argv[3:]))\n')
             idle = subprocess.Popen(
-                [sys.executable, '-B', str(PRODUCTION['veldo']), 'space', 'supervise', '--report', str(writing),
-                 '--control', str(heard), '--', 'sh', '-c',
+                [sys.executable, '-B', str(counter), str(PRODUCTION['veldo']), str(counted_write),
+                 '--report', str(writing), '--control', str(heard), '--', 'sh', '-c',
                  'read -r _ < "$1"; (read -r _ < "$2") </dev/null >/dev/null 2>&1 & echo $! > "$3"',
                  'sh', str(go), str(hold), str(napping)],
-                pass_fds=(writing, heard), env=dict(BASE), cwd=str(temp), stdin=subprocess.DEVNULL,
+                pass_fds=(writing, heard, counted_write), env=dict(BASE), cwd=str(temp), stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             os.close(writing)
             os.close(heard)
+            os.close(counted_write)
+            counted = WAITS.Readable(counted_read)
             idle_process = {'pid': idle.pid, 'started': (CLI._space_process(idle.pid) or {}).get('started')}
             idle_run = 'row:idle-' + os.urandom(4).hex()
             supervisors.append(dict(idle_process, run=idle_run))
@@ -1278,12 +1318,9 @@ def _v313_space_run_suite():
                 os.close(end_read)
                 idle_churn.append((made, end_write))
 
-            def used():
+            def cpu():
                 fields = Path('/proc/%d/stat' % idle.pid).read_text().rsplit(')', 1)[1].split()
-                reads = next(int(line.split()[1]) for line in Path('/proc/%d/io' % idle.pid).read_text().splitlines()
-                             if line.startswith('syscr:'))
-                return (int(fields[11]) + int(fields[12])) / os.sysconf('SC_CLK_TCK'), reads
-            at_go = used()
+                return (int(fields[11]) + int(fields[12])) / os.sysconf('SC_CLK_TCK')
             release(go)
             status_line = said_line(reported, 'the idle supervisor\'s status line', lambda one: 'status' in one)
             staying_line = said_line(reported, 'the idle supervisor\'s staying line', lambda one: 'staying' in one)
@@ -1292,34 +1329,46 @@ def _v313_space_run_suite():
             check(row, 'the supervisor stays on the process the command left and on the %d processes it cannot read '
                        '[%s %s %s]' % (CHURN, first_line, {how: hows.count(how) for how in set(hows)}, staying),
                   staying is True and 'descendant' in hows and hows.count('unread') >= CHURN)
-            # Pattern W (VELDO-0358): what the supervisor reads is counted between events the suite
-            # causes, never over a span of time. From the moment it said it sleeps, the suite ends the
-            # processes it cannot read one by one (each a wake of the supervisor), then ends what the
-            # command left (a read holder: its exit is read again, once) and takes the supervisor's
-            # last line. Its read calls over all of that are those of one pass over the table at most
-            # twice over (the pass it made at the command's exit, with the same table and the twelve
-            # more, measured here); a read at every wake is thirteen passes.
-            before = used()
-            one_pass = before[1] - at_go[1]
+
+            def sleeps_and_reads(after):
+                tail = bytes(counted.data)[after:]
+                return tail.count(b'w'), tail.count(b'r')
+            # Pattern W (VELDO-0358): from the supervisor's first sleep, the suite ends the processes it
+            # cannot read one by one; after each it waits for the supervisor's next sleep (the closing
+            # event of that wake) and counts the passes over the table it made in between.
+            def first_sleep():
+                data = bytes(counted.data)
+                last_read = data.rfind(b'r') + 1  # its sleep follows the passes it made at the command's exit
+                at = data.find(b'w', last_read)
+                return at >= 0, at + 1
+            first = WAITS.wait('the idle supervisor\'s first sleep', first_sleep,
+                               lambda: (counted.closed or idle.poll() is not None, {'exit': idle.poll()}), [counted])
+            mark, before = first.done_observation, cpu()
             for made, end_write in list(idle_churn):
                 idle_churn.remove((made, end_write))
+                slept = sleeps_and_reads(mark)[0]
                 os.close(end_write)
                 WAITS.wait('process %d of the churn to end' % made.pid, lambda made=made: made.poll() is not None,
                            sources=[WAITS.Pidfd(made)])
+                WAITS.wait('the idle supervisor to sleep again after process %d ended' % made.pid,
+                           lambda slept=slept: sleeps_and_reads(mark)[0] > slept,
+                           lambda: (counted.closed or idle.poll() is not None, {'exit': idle.poll()}), [counted])
+            churned, spent = sleeps_and_reads(mark), cpu() - before
             through = present(idle_process)
             release(hold)
+            # Its last line comes once nothing holds the run; on a host shared with other sessions it
+            # stays instead on processes nobody here can read that started after it (fail closed), which
+            # are no part of the fixture: then no line can come, and stays_or_ends below names them.
             last_line = said_line(reported, 'the idle supervisor\'s last line',
-                                  lambda one: one.get('staying') is False or 'end' in one)
-            after = used() if present(idle_process) else None
-            spent = (after[0] - before[0], after[1] - before[1]) if after else None
-            check(row, 'while those %d processes ended, the staying supervisor made no pass over the process table: '
-                       'to its last line it read the table once, at the exit of what the command left, with read calls '
-                       'of at most twice the one pass it made at the command\'s exit [stayed through %s; last line %s; '
-                       'read calls %s of a pass of %d; cpu %s s, data only]'
-                  % (CHURN, through, last_line, spent and spent[1], one_pass, spent and round(spent[0], 2)),
-                  through and last_line is not None and spent is not None and one_pass > 0
-                  and spent[1] <= 2 * one_pass)
+                                  lambda one: one.get('staying') is False or 'end' in one,
+                                  lambda: (lambda held: (bool(held), {'unread': held[:6]}))(
+                                      unread_by(idle_process, idle_run) if present(idle_process) else []))
+            check(row, 'while those %d processes ended one by one, the staying supervisor woke and slept again at each '
+                       'exit and made no pass over the process table [stayed through %s; sleeps %d, passes %d; last line '
+                       '%s; cpu %.2f s, data only]' % (CHURN, through, churned[0], churned[1], last_line, spent),
+                  through and churned[0] >= CHURN and churned[1] == 0)
             os.close(reading)
+            os.close(counted_read)
             how, said = stays_or_ends(idle_process, idle_run, child=idle, status=0)
             check(row, 'when the fixture ends what the command left the supervisor ends with the command\'s status, '
                        'or stays on processes this account cannot read that started after it [%s %s]' % (how, said),
