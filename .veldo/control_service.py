@@ -287,6 +287,45 @@ import sys
 import tempfile
 import time
 
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _deadline(name, value, kind='deadline'):
+    """Register this module's timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    return value if TIMERS is None else TIMERS.register('control_service.' + name, value, 'control_service', kind)
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_service.' + name)
+
+
+# VELDO-0358 AC15: the service's giving-up deadlines, from the timers table: a kept request's answer is offered
+# to its client for REPLY_SECONDS; a systemctl, ssh-keygen key generation or principals lookup is given
+# SYSTEMCTL_SECONDS, KEYGEN_SECONDS or PRINCIPALS_SECONDS; the reconcile command waits RECONCILE_SECONDS for the
+# service's answer. The configuration's `timers_profile` ({except, hang_seconds}) selects a profile before
+# anything is armed, and the service's start record (the observation `timers`) reports the effective values.
+
 HERE = Path(__file__).resolve().parent
 
 
@@ -376,7 +415,11 @@ ASK_SECONDS = 7 * 86400
 GRANT_KIND = 'land_approval'
 GRANT_CHOICES = ('grant', 'stop')
 ACCEPT_SECONDS = 0.25
-REPLY_SECONDS = 1.0  # the longest a kept request's answer is offered to its client, as CC.serve_one's
+REPLY_SECONDS = _deadline('REPLY_SECONDS', 1.0)  # the longest a kept request's answer is offered to its client
+SYSTEMCTL_SECONDS = _deadline('SYSTEMCTL_SECONDS', 60)
+KEYGEN_SECONDS = _deadline('KEYGEN_SECONDS', 30)
+PRINCIPALS_SECONDS = _deadline('PRINCIPALS_SECONDS', 10)
+RECONCILE_SECONDS = _deadline('RECONCILE_SECONDS', 300)
 # VELDO-0161: how long a repository record whose taking on faulted unexpectedly waits before it is judged again.
 ADOPTION_RETRY_SECONDS = 5.0
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
@@ -916,7 +959,7 @@ class Systemctl:
     def run(self, args):
         env = C.tool_environment()
         proc = subprocess.run(['systemctl', '--user'] + list(args), capture_output=True, text=True,
-                              timeout=60, env=env, stdin=subprocess.DEVNULL)
+                              timeout=timer('SYSTEMCTL_SECONDS'), env=env, stdin=subprocess.DEVNULL)
         return proc.returncode, proc.stdout, proc.stderr
 
 
@@ -1125,7 +1168,7 @@ def make_space_keys(paths):
             if not os.path.lexists(paths[name]):
                 made.append(paths[name])
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-' + name,
-                                '-f', paths[name]], check=True, capture_output=True, timeout=30,
+                                '-f', paths[name]], check=True, capture_output=True, timeout=timer('KEYGEN_SECONDS'),
                                stdin=subprocess.DEVNULL)
                 os.chmod(paths[name], 0o600)
     except BaseException:
@@ -1248,7 +1291,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             os.chmod(directory, BIN_MODE)
         if not os.path.lexists(journal):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
-                            '-f', journal], check=True, capture_output=True, timeout=30, stdin=subprocess.DEVNULL)
+                            '-f', journal], check=True, capture_output=True, timeout=timer('KEYGEN_SECONDS'), stdin=subprocess.DEVNULL)
             generated = True
             os.chmod(journal, 0o600)
         _write(os.path.join(config_dir, 'enrollment_signers'), laid['signers'], 0o600)
@@ -1554,7 +1597,7 @@ def find_principals(signature, signers):
         sig.write_text(signature)
         allowed.write_text(signers)
         proc = subprocess.run(['ssh-keygen', '-Y', 'find-principals', '-s', str(sig), '-f', str(allowed)],
-                              capture_output=True, text=True, timeout=10, stdin=subprocess.DEVNULL)
+                              capture_output=True, text=True, timeout=timer('PRINCIPALS_SECONDS'), stdin=subprocess.DEVNULL)
     return [line.strip() for line in proc.stdout.splitlines() if line.strip()] if proc.returncode == 0 else []
 
 
@@ -1848,7 +1891,7 @@ class Service:
                         judge.clock = lambda at=reply['at']: at
                     response = reply['authority'].judge(reply['request'], reply['uid'])
                     self.observe_response(response)
-                conn.settimeout(REPLY_SECONDS)
+                conn.settimeout(timer('REPLY_SECONDS'))
                 conn.sendall(json.dumps(response).encode('utf-8'))
             except Exception as error:  # noqa: BLE001 - one kept request never ends the service
                 with contextlib.suppress(Exception):
@@ -4426,10 +4469,26 @@ def close_socket(path, identity):
             os.unlink(path)
 
 
+def apply_timers_profile(profile):
+    """Select the profile a configuration names (VELDO-0358 AC15): every timer of the table but `except` at
+    `hang_seconds`. None, or no table beside this module, selects nothing."""
+    if isinstance(profile, dict) and TIMERS is not None:
+        TIMERS.set_profile(profile.get('except'), hang_seconds=profile.get('hang_seconds', TIMERS.WAIT_HANG_SECONDS))
+
+
+def tell_passes(config, service):
+    """VELDO-0358: after a channel pass, the service's pass counts as its STATUS to the user manager (sd_notify),
+    so a reader waits on that notification and never on a clock. Nothing listening is not an error."""
+    channel = getattr(service.channel, 'passes', None) if service.channel is not None else None
+    with contextlib.suppress(OSError):
+        notify('STATUS=serving %s; channel passes %s' % (config['unit'], channel))
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
     config = load_config(config_path)
+    apply_timers_profile(config.get('timers_profile'))  # VELDO-0358 AC15: before any timer of this process is armed
     lock = acquire(config['lock'], config)
     try:
         conn = S.open_store(config['store_path'])
@@ -4445,6 +4504,9 @@ def serve(config_path):
             if previous is not None and not keep:
                 S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
+            # VELDO-0358 AC15: the start record, with the effective values of the timers table in this process.
+            service._log({'kind': 'service', 'operation': 'timers', 'at': time.time(), 'domain_uuid': service.domain,
+                          'pid': os.getpid(), 'timers': TIMERS.report() if TIMERS is not None else None})
             # VELDO-0323: what a space worker closes in itself. Nothing else it inherits is closed.
             service.space_owned.append(lock)
             # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
@@ -4543,6 +4605,7 @@ def serve(config_path):
                     if service.channel is not None and not stopping and time.monotonic() >= next_pass:
                         service.channel_pass()
                         next_pass = time.monotonic() + CH.POLL_SECONDS
+                        tell_passes(config, service)
                     if service.loop is not None and not stopping and service.loop.run() is not None:
                         # VELDO-0312: what a factory loop pass committed (the PM's complete of an item).
                         service.space_pass()
@@ -4601,7 +4664,7 @@ def reconcile_cli(argv=None):
                        parameters={'project': args.project})
         packet = {'command': command, 'signature': sign(_organ('control_store').canonical_bytes(command))}
         response = client.send(workspace, packet, enrollment,
-            trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=300)
+            trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=timer('RECONCILE_SECONDS'))
         result = response.get('result') if response.get('accepted') else response
         print(json.dumps(result, sort_keys=True))
         return 0 if result.get('ok') else 1
