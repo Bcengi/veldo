@@ -16443,8 +16443,8 @@ def cases():
 
     # VELDO-0317: each stated falsifier runs the same real dispatch/cleanup suite.
     space317 = '159_veldo_0317_no_space.py'
-    add(317, 'space317-charge-attempt', space317, 'control_dispatch.py',
-        "                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))\n",
+    refund317 = "                index = dict(index, refunded=index.get('refunded', 0) + 1)\n"
+    add(317, 'space317-charge-attempt', space317, 'control_dispatch.py', refund317,
         "                index = dict(index)  # defect: charge the environment failure\n",
         ['space317/ac1/not-charged'])
     add(317, 'space317-text-alone', space317, 'control_space_admission.py',
@@ -16462,25 +16462,55 @@ def cases():
         "consecutive=consecutive, retry=consecutive < 3,\n"
         "                andon=classification == NO_SPACE and consecutive >= 3,\n",
         ['space317/ac4/two-stop'])
-    add(317, 'space317-omit-next-brief', space317, 'control_launch.py',
-        "        payload = admission.brief(self.dispatches.conn, coordinates, payload)\n",
+    brief317 = ("        payload = admission.brief(self.dispatches.unit_slots(unit), "
+                "(self.space or {}).get('ledger'), payload)\n")
+    add(317, 'space317-omit-next-brief', space317, 'control_launch.py', brief317,
         "        # defect: next run never learns where the work is\n", ['space317/ac3/next-brief'])
     add(317, 'space317-write-verdict', space317, 'control_launch.py',
         "            self.report = None if unjudged else self._artifact(termination, cause)\n",
         "            self.report = self._artifact(termination, cause)\n", ['space317/artifact/no-verdict'])
     add(317, 'space317-no-owner-request', space317, 'control_service.py',
-        "        if inbox.read(aid) is None:\n            brief = ('Andon:",
-        "        if False:\n            brief = ('Andon:", ['space317/ac4/owner-request'])
-    add(317, 'space317-refund-hides-latest', space317, 'control_service.py',
-        "if key not in found or record.get('ordinal', contract.get('attempt', 0)) > found[key].get(\n"
-        "                        'ordinal', found[key]['contract'].get('attempt', 0)):",
-        "if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):",
-        ['space317/history/latest'])
-
+        "            owner, opened = self.open_question(inbox, alias, contract['unit'], brief, SPACE_ANDON_CHOICES,\n",
+        "            owner, opened = None, {'ok': False, 'reason': 'defect'}\n"
+        "            _never = (lambda *a: None)(inbox, alias, contract['unit'], brief, SPACE_ANDON_CHOICES,\n",
+        ['space317/ac4/owner-request'])
     add(317, 'space317-unwired-receiver', space317, 'control_launch.py',
         "            self.space = receiver_space(self)\n",
         "            self.space = None  # defect: installed receivers never classify\n",
         ['space317/wiring/installed-receiver'])
+    # Fix round 1. Review finding 1: the refund must not hand the refunded attempt's number out again.
+    add(317, 'space317-reissue-refunded-attempt', space317, 'control_dispatch.py', refund317,
+        "                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))"
+        "  # defect: the rerun takes the failed attempt's number\n",
+        ['space317/ac1/rerun-accepted'])
+    # Review finding 2: the andon refuses no dispatch, and the owner's recorded answer clears it.
+    add(317, 'space317-andon-refuses-dispatch', space317, 'control_launch.py', brief317,
+        "        if admission.last_end(self.dispatches.unit_slots(unit)).get('consecutive', 0) >= 2:\n"
+        "            raise D.Refused('environment_failure:no_space', 'defect: the andon refuses every dispatch')\n"
+        + brief317, ['space317/ac4/later-dispatch-open'])
+    add(317, 'space317-andon-never-cleared', space317, 'control_service.py',
+        "        if not admission['admitted']:\n            report['stopped'].append(entry)\n",
+        "        if True:  # defect: the owner's answer clears nothing\n            report['stopped'].append(entry)\n",
+        ['space317/ac4/owner-clears'])
+    # Review finding 3: the brief names only a no-space end's worktree, and only while its item is live.
+    add(317, 'space317-brief-any-end', space317, 'control_space_admission.py',
+        "    if failure.get('classification') == NO_SPACE and path:\n",
+        "    if path:  # defect: an unconfirmed end's worktree is claimed as kept work\n",
+        ['space317/ac3/brief-no-space-only'])
+    add(317, 'space317-brief-dead-item', space317, 'control_space_admission.py',
+        "            if held is not None and held[2].get('kind') == 'worktree' and held[2].get('state') in RETAINED_STATES:\n",
+        "            if True:  # defect: a worktree the ledger no longer holds is still claimed\n",
+        ['space317/ac3/brief-live-only'])
+    # Review finding 4: the state is read from the unit's own slots by their key range.
+    add(317, 'space317-slots-unbounded', space317, 'control_dispatch.py',
+        "'SELECT data FROM entities WHERE id >= ? AND id < ? AND kind = ?', (prefix, prefix[:-1] + '-', INDEX_KIND))]",
+        "'SELECT data FROM entities WHERE id >= ? AND ? != id AND kind = ?', (prefix, prefix[:-1] + '-', INDEX_KIND))]",
+        ['space317/history/unit-scoped', 'space317/history/bounded-read'])
+    # Review finding 5: an unconfirmed end after a standing repeat is a new run with a repeat of its own.
+    add(317, 'space317-unconfirmed-count-carries', space317, 'control_space_admission.py',
+        "        consecutive = 2 if prior.get('classification') == UNCONFIRMED and prior.get('retry') else 1\n",
+        "        consecutive = prior.get('consecutive', 0) + 1 if prior.get('classification') == UNCONFIRMED else 1\n",
+        ['space317/history/unconfirmed-new-run'])
 
     # VELDO-0334: the three stated falsifiers and the ledger/Signal boundaries they need.
     space334 = '158_veldo_0334_space_freed.py'

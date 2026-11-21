@@ -261,18 +261,12 @@ class Output:
         self.tails[stream] = data[-64:]
 
 
-def previous(conn, contract, station=None):
-    """Last exited run of this unit in journal order, across restarts and refunded attempts."""
-    for (raw,) in conn.execute(
-            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY journal.seq DESC"):
-        for entry in json.loads(raw).values():
-            record = entry.get('data') or {}
-            other = record.get('contract') or {}
-            if (entry.get('kind') == 'dispatch' and record.get('state') == 'exited'
-                    and all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
-                    and (station is None or other.get('station') == station)):
-                return record
-    return {}
+def last_end(slots, station=None):
+    """The space state the latest end of this unit left on its index slots (dispatch.unit_slots): of every
+    station, or of one. The exit transaction writes it, so no record and no journal row is read for it."""
+    states = [slot['space'] for slot in slots if isinstance(slot.get('space'), dict)
+              and (station is None or slot.get('station') == station)]
+    return max(states, key=lambda state: state['seq'], default={})
 
 
 def classify(space, contract, unsuccessful, found, worktree=None):
@@ -299,27 +293,63 @@ def classification(pools):
     return NO_SPACE if short else UNCONFIRMED
 
 
-def disposition(conn, contract, observation):
-    """Derive the retry bounds from committed ends, never a process-local counter."""
+def disposition(slots, contract, observation):
+    """Derive the retry bounds from committed ends, never a process-local counter.
+
+    Environment failures count in a row over the unit, whatever station ended and whoever started the run.
+    An unconfirmed end is repeated once: the end after one that was given its repeat is that repeat and
+    stands, and the end after a standing one is a new run with a repeat of its own.
+    """
     classification = observation['classification']
-    prior = previous(conn, contract, None if classification == NO_SPACE else contract['station'])
-    prior = prior.get('space_failure') or {}
-    consecutive = prior.get('consecutive', 0) + 1 if prior.get('classification') == classification else 1
+    if classification == NO_SPACE:
+        prior = last_end(slots)
+        consecutive = prior.get('consecutive', 0) + 1 if prior.get('classification') == NO_SPACE else 1
+    else:
+        prior = last_end(slots, contract['station'])
+        consecutive = 2 if prior.get('classification') == UNCONFIRMED and prior.get('retry') else 1
     return dict(observation, consecutive=consecutive, retry=consecutive < 2,
                 andon=classification == NO_SPACE and consecutive >= 2,
                 taxonomy='unavailable_service' if classification == NO_SPACE else 'unknown_outcome')
 
 
-def brief(conn, contract, payload):
-    """Carry retained work into the next packet, including a later station of the ticket."""
-    retained = []
-    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='dispatch'"):
-        record = json.loads(raw)
-        other, failure = record.get('contract') or {}, record.get('space_failure') or {}
-        path = failure.get('worktree')
-        if (path and all(other.get(k) == contract.get(k) for k in ('domain', 'repository', 'unit'))
-                and path not in retained):
-            retained.append(path)
+RETAINED = 8  # worktree paths a slot remembers; the brief names only those still live in the ledger
+RETAINED_STATES = ('present', 'due', 'deferred', 'kept')
+
+
+def ended(slots, contract, failure):
+    """The space state an exited end leaves on its own index slot, or None when there is none to keep.
+
+    A no-space end records its classification and count. Any other exited end is written only when it
+    ends a chain (the unit's latest state, or this station's, still names a classification), so a unit
+    that never met a full pool carries nothing.
+    """
+    own = last_end(slots, contract['station'])
+    latest = last_end(slots)
+    if not failure and not own.get('classification') and not latest.get('classification'):
+        return None
+    failure = failure or {}
+    retained = list(own.get('retained') or [])
+    path = failure.get('worktree')
+    if failure.get('classification') == NO_SPACE and path:
+        retained = ([kept for kept in retained if kept != path] + [path])[-RETAINED:]
+    return {'seq': latest.get('seq', 0) + 1, 'classification': failure.get('classification'),
+            'consecutive': failure.get('consecutive', 0), 'retry': bool(failure.get('retry')), 'retained': retained}
+
+
+def brief(slots, ledger, payload):
+    """Carry retained work into the next packet, including a later station of the ticket.
+
+    Only the worktree of an environment_failure:no_space end is named, and only while the ledger still
+    holds it as a live item: a worktree that was removed, or whose work landed, is no longer claimed.
+    """
+    if ledger is None:
+        return payload
+    retained = set()
+    for slot in slots:
+        for path in (slot.get('space') or {}).get('retained') or []:
+            held = ledger._at('path:' + path)
+            if held is not None and held[2].get('kind') == 'worktree' and held[2].get('state') in RETAINED_STATES:
+                retained.add(path)
     if not retained:
         return payload
     return dict(payload if isinstance(payload, dict) else {'payload': payload}, retained_worktrees=sorted(retained),

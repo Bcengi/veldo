@@ -369,6 +369,8 @@ WORK_SCHEMA = 'veldo.factory_work/v1'
 ROLE_FIELDS = ('identity', 'adapter', 'configuration', 'seconds', 'payload')
 ASK_KIND = 'account_limit_rerun'
 ASK_CHOICES = ('rerun', 'stop')
+SPACE_ANDON_KIND = 'space_andon'           # VELDO-0317: the owner's request after two environment failures
+SPACE_ANDON_CHOICES = ('rerun', 'acknowledge')
 # VELDO-0185 AC4: a login the Line cannot read here (Line.login_now), left to the pool and the receiver's check.
 UNCHECKED = 'unchecked:'
 ASK_SECONDS = 7 * 86400
@@ -3176,8 +3178,7 @@ class Line:
             workflow = payload.get('workflow') if isinstance(payload, dict) else None
             node = workflow.get('node') if isinstance(workflow, dict) else None
             for key in [key] + ([key + (node,)] if isinstance(node, str) else []):
-                if key not in found or record.get('ordinal', contract.get('attempt', 0)) > found[key].get(
-                        'ordinal', found[key]['contract'].get('attempt', 0)):
+                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
                     found[key] = record
         return found
 
@@ -3713,27 +3714,43 @@ class Line:
         return self.ask(record, decision, invocation, report)
 
     def space_andon(self, record, report):
-        """A durable stop and one owner request after two confirmed full-pool ends.
+        """The andon after two environment failures in a row for one unit (VELDO-0317 AC4, design 8.9).
 
-        The dispatch record stops preparation even before this request can be delivered.
-        Repeated passes and service restarts find the same inbox request.
+        It stops the automatic repeat and nothing else: no later dispatch of the unit is refused for it. The
+        stop is the end's own record, so a restart finds it; the andon is one inbox request to the unit's
+        project owner, opened once. It is cleared by the owner's signed answer, which the inbox records:
+        `rerun` dispatches the station once more, behind admission like any other run, and `acknowledge`
+        closes it and leaves the unit stopped. Until an admitted answer the pass reports it awaiting.
         """
         contract, failure = record['contract'], record['space_failure']
         alias = 'space-andon-' + hashlib.sha256(record['dispatch_id'].encode()).hexdigest()[:24]
         inbox = self.service.inbox(self.repository)
         aid = I.assignment_id(self.repository, alias)
         entry = {'repository': self.repository, 'unit': contract['unit'], 'station': contract['station'],
-                 'dispatch_id': record['dispatch_id'], 'reason': 'environment_failure:no_space', 'andon': True}
-        report['stopped'].append(entry)
-        if inbox.read(aid) is None:
+                 'dispatch_id': record['dispatch_id'], 'reason': 'environment_failure:no_space', 'andon': True,
+                 'assignment_id': aid}
+        item = inbox.read(aid)
+        if item is None:
+            report['stopped'].append(entry)
             brief = ('Andon: two consecutive environment failures for unit %s. Automatic repeats have stopped. '
-                     'The worktree %s holds its uncommitted changes. Pool readings: %s.'
+                     'The worktree %s holds its uncommitted changes. Pool readings: %s. Answer rerun to dispatch '
+                     'the station once more, or acknowledge to close this andon and leave the unit stopped.'
                      % (contract['unit'], failure.get('worktree'), json.dumps(failure['pools'], sort_keys=True)))
-            owner, opened = self.open_question(inbox, alias, contract['unit'], brief, ['acknowledge'],
-                {'kind': 'space_andon', 'ref': record['dispatch_id'], 'digest': S.digest_of(failure)},
+            owner, opened = self.open_question(inbox, alias, contract['unit'], brief, SPACE_ANDON_CHOICES,
+                {'kind': SPACE_ANDON_KIND, 'ref': record['dispatch_id'], 'digest': S.digest_of(failure)},
                 'space-andon/' + record['dispatch_id'])
             report['asked'].append(dict(entry, owner=owner, outcome=opened.get('ok') is True,
                                         refusal=None if opened.get('ok') else opened.get('reason')))
+            return None
+        admission = inbox.admit(aid)
+        if not admission['admitted']:
+            report['stopped'].append(entry)
+            report.setdefault('awaiting', []).append(dict(entry, reason=admission['reason']))
+            return None
+        ruling = (((item.get('data') or {}).get('answer')) or {}).get('ruling')
+        if ruling == SPACE_ANDON_CHOICES[0]:
+            return self.rerun(record, report)
+        report['stopped'].append(dict(entry, andon=False, cleared=True, ruling=ruling))
         return None
 
     def another_account(self, record, report):

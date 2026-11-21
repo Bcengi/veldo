@@ -195,6 +195,14 @@ def index_id(domain, repository, unit, station):
     return 'dispatch-active:' + json.dumps([domain, repository, unit, station], separators=(',', ':'))
 
 
+def unit_slots(conn, coordinates):
+    """The index slots of one unit, one per station it was ever dispatched at: read by the range of their
+    ids in the primary key, never by a scan of the records or the journal (VELDO-0317)."""
+    prefix = index_id(coordinates['domain'], coordinates['repository'], coordinates['unit'], '')[:-3]
+    return [json.loads(raw) for (raw,) in conn.execute(
+        'SELECT data FROM entities WHERE id >= ? AND id < ? AND kind = ?', (prefix, prefix[:-1] + '-', INDEX_KIND))]
+
+
 def digest(value):
     return S.digest_of(value)
 
@@ -531,11 +539,12 @@ def transition(conn, params, before):
         record = {'schema': SCHEMA, 'dispatch_id': params['dispatch_id'], 'state': 'prepared',
                   'contract': contract, 'contract_digest': digest(contract), 'receiver': None, 'process': None,
                   'termination': None, 'refusal': None, 'stop': None, 'reason': None,
-                  'history': [dict(history, state='prepared')],
-                  'ordinal': index.get('runs', index.get('attempts', 0)) + 1}
+                  'history': [dict(history, state='prepared')]}
         slot = {'domain': contract['domain'], 'repository': contract['repository'], 'unit': contract['unit'],
-                'station': contract['station'], 'dispatch_id': params['dispatch_id'], 'attempts': contract['attempt'],
-                'runs': record['ordinal']}
+                'station': contract['station'], 'dispatch_id': params['dispatch_id'], 'attempts': contract['attempt']}
+        # VELDO-0317: the attempt number never repeats; what a no-space end gave back and the unit's last
+        # space classification stay on the slot across preparations.
+        slot.update({name: index[name] for name in ('refunded', 'space') if name in index})
         return {rid: {'kind': RECORD_KIND, 'data': record}, iid: {'kind': INDEX_KIND, 'data': slot}}
     if not current or current['kind'] != RECORD_KIND:
         raise Refused('missing_dispatch', rid)
@@ -582,7 +591,7 @@ def transition(conn, params, before):
                 raise Refused('invalid_input', 'a no-space end binds its classification and pool measurements')
             if admission.classification(observation['pools']) != observation['classification']:
                 raise Refused('invalid_input', 'the no-space classification disagrees with its measurements')
-            record['space_failure'] = admission.disposition(conn, contract, observation)
+            record['space_failure'] = admission.disposition(unit_slots(conn, contract), contract, observation)
             record['reason'] = observation['classification']
             if record['space_failure']['retry'] or record['space_failure']['andon']:
                 if params.get('artifact') is not None:
@@ -611,7 +620,12 @@ def transition(conn, params, before):
         index = (before.get(iid) or {}).get('data') or {}
         if index.get('dispatch_id') == record['dispatch_id']:
             if (record.get('space_failure') or {}).get('classification') == 'environment_failure:no_space':
-                index = dict(index, attempts=max(0, index.get('attempts', 0) - 1))
+                index = dict(index, refunded=index.get('refunded', 0) + 1)
+            if target == 'exited':
+                ended = _organ('control_space_admission').ended(
+                    unit_slots(conn, contract), contract, record.get('space_failure'))
+                if ended is not None:
+                    index = dict(index, space=ended)
             changes[iid] = {'kind': INDEX_KIND, 'data': dict(index, dispatch_id=None, released_by=target)}
     return changes
 
@@ -663,8 +677,19 @@ class Dispatches:
         return row[0] if row else None
 
     def attempts(self, unit, station):
+        """The number of the last dispatch prepared for this unit and station. It never goes down, so no two
+        records of a unit and station share an attempt number."""
         entry = _entity(self.conn, index_id(self.domain, self.repository, unit, station))
         return (entry or {}).get('data', {}).get('attempts', 0)
+
+    def charged(self, unit, station):
+        """The attempts this unit and station were charged: every prepared dispatch but the ones that ended
+        environment_failure:no_space (VELDO-0317 AC1), which the exit transaction gives back."""
+        data = (_entity(self.conn, index_id(self.domain, self.repository, unit, station)) or {}).get('data', {})
+        return data.get('attempts', 0) - data.get('refunded', 0)
+
+    def unit_slots(self, unit):
+        return unit_slots(self.conn, {'domain': self.domain, 'repository': self.repository, 'unit': unit})
 
     def status(self):
         """Metrics: accepted and refused commands, and the dispatches pending or stopped."""

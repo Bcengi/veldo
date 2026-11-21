@@ -26,11 +26,13 @@ def _v317_suite():
         'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     rows = {name: [] for name in (
-        'ac1/not-charged', 'ac1/behind-admission', 'ac1/numbers-before-cleanup',
-        'ac2/repeated-once', 'ac2/repeat-red', 'ac3/edit-kept', 'ac3/next-brief',
-        'ac4/two-stop', 'ac4/restart-stop', 'ac4/owner-request',
+        'ac1/not-charged', 'ac1/behind-admission', 'ac1/numbers-before-cleanup', 'ac1/rerun-accepted',
+        'ac2/repeated-once', 'ac2/repeat-red', 'ac3/edit-kept', 'ac3/next-brief', 'ac3/brief-no-space-only',
+        'ac3/brief-live-only', 'ac4/two-stop', 'ac4/restart-stop', 'ac4/owner-request',
+        'ac4/later-dispatch-open', 'ac4/owner-clears',
         'classify/controls', 'classify/streams', 'classify/unread', 'history/reset',
-        'history/latest', 'artifact/no-verdict', 'wiring/installed-receiver')}
+        'history/latest', 'history/unit-scoped', 'history/bounded-read', 'history/unconfirmed-new-run',
+        'artifact/no-verdict', 'wiring/installed-receiver')}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -47,7 +49,7 @@ def _v317_suite():
     with patch.object(subprocess, 'run', side_effect=generous_run):
         with tempfile.TemporaryDirectory(prefix='veldo-0317-') as temporary:
             root = Path(temporary)
-            mods = root / 'installed'
+            mods = root / '.veldo'  # the floor module loads its organs from .veldo beside its parent
             mods.mkdir()
             for source in (ROOT / '.veldo').glob('*.py'):
                 shutil.copyfile(source, mods / source.name)
@@ -60,8 +62,9 @@ def _v317_suite():
                 spec.loader.exec_module(module)
                 return module
 
-            L, SV, ADM, SP, CFG, YAML, K = map(load, ('control_launch', 'control_service',
-                'control_space_admission', 'control_space', 'control_space_config', 'yamlish', 'control_space_kinds'))
+            L, SV, ADM, SP, CFG, YAML, K, FLOOR = map(load, ('control_launch', 'control_service',
+                'control_space_admission', 'control_space', 'control_space_config', 'yamlish', 'control_space_kinds',
+                'dispatch'))
             D, S, CM = L.D, L.D.S, L.D.CM
             D._claim_bound = lambda conn, contract: None  # fixture eligibility/claim authority
             key = root / 'owner'
@@ -79,7 +82,7 @@ def _v317_suite():
                     self.state = self.root / 'state'
                     (self.repo / '.veldo').mkdir(parents=True)
                     self.state.mkdir()
-                    self.now, self.serial, self.started = time.time(), 0, []
+                    self.now, self.serial, self.started, self.items = time.time(), 0, [], {}
                     gp = load('git_process')
                     for args in (['init', '-q', '-b', 'main'], ['add', '.'], ['commit', '--allow-empty', '-q', '-m', 'fixture']):
                         gp.run(['git', '-C', str(self.repo), *args], check=True, capture_output=True,
@@ -192,6 +195,35 @@ def _v317_suite():
                 obj.open_question = lambda *args: ('owner', {'ok': True})
                 return obj
 
+            IDS = {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store'}
+
+            def owner_line(f, conn=None):
+                # The Line over the real signed inbox: the owner's project, the service's key, one store.
+                obj = line(f)
+                if conn is not None:
+                    obj.service.conn = conn
+                else:
+                    f.put('project:project', 'project', {'owner': 'owner'})
+                    f.put('runner-key', 'verification_key', dict(principal='runner',
+                        public_key=key.with_suffix('.pub').read_text(), effective_at=0, revoked_at=None))
+                obj.service.store, obj.service.principal, obj.service.generation = 'store', 'runner', 1
+                obj.service.sign, obj.service.config = f.sign, {'journal_key': str(key)}
+                obj.service.inbox = lambda repository: SV.Service.inbox(obj.service, repository)
+                obj.open_question = types.MethodType(SV.Line.open_question, obj)
+                return obj
+
+            def requests(conn):
+                return [json.loads(raw) for (raw,) in conn.execute(
+                    'SELECT data FROM entities WHERE kind=?', (SV.I.ENTITY_KIND,))]
+
+            def answer(f, obj, request, ruling):
+                # The owner's own signed answer, applied by the real inbox (VELDO-0064).
+                f.serial += 1
+                body = dict(IDS, operation='answer', alias=request['alias'], principal='owner',
+                            command_id='answer/' + str(f.serial), nonce='answer/' + str(f.serial),
+                            request_version=request['request_version'], ruling=ruling)
+                return obj.service.inbox('repository').apply({'command': body, 'signature': sign(S.canonical_bytes(body))})
+
             def end(f, free=0, text='No space left on device', code=1, contract=None, stream='stderr', edits=True):
                 contract = contract or f.prepare()
                 did, digest = contract['dispatch_id'], D.digest(contract)
@@ -205,6 +237,7 @@ def _v317_suite():
                 made = f.ledger.declare('worktree', {'path': str(work)}, owner, 'seam', start=contract['source']['commit'])
                 assert made['ok'], made
                 assert f.ledger.confirm(made['item'])['ok']
+                f.items[str(work)] = made['item']
                 run = f.root / ('run-' + str(len(f.started)))
                 scratch = f.ledger.declare('scratch', {'path': str(run)}, owner, 'seam')
                 assert scratch['ok'], scratch
@@ -254,7 +287,8 @@ def _v317_suite():
                     try:
                         rec, work, run, receiver = end(f)
                         failure = rec.get('space_failure') or {}
-                        check('ac1/not-charged', f.dispatches.attempts('unit', 'build') == 0)
+                        check('ac1/not-charged', f.dispatches.charged('unit', 'build') == 0
+                              and f.dispatches.attempts('unit', 'build') == 1)
                         check('ac1/numbers-before-cleanup', failure.get('classification') == ADM.NO_SPACE
                               and failure.get('taxonomy') == 'unavailable_service'
                               and failure.get('pools') == [{'pool': 'host', 'free': 0, 'floor': 20},
@@ -279,9 +313,46 @@ def _v317_suite():
                         check('ac3/next-brief', str(work) in payload.get('retained_worktrees', [])
                               and 'uncommitted changes' in payload.get('space_recovery', '')
                               and (work / 'unfinished.txt').exists())
+                        if launch is None:
+                            continue
+                        # Review finding 1: the rerun has a number of its own, so the floor's newest build is
+                        # the clean one and its acceptance finds the build dispatch.
+                        f.started.pop()
+                        clean, _, _, _ = end(f, free=1000, text='built', code=0, contract=launch.contract, edits=False)
+                        bound = clean['contract']['claim'] or {}
+                        params = {'domain': 'domain', 'repository': 'repository', 'unit': 'unit'}
+                        try:
+                            accepted = FLOOR._build_dispatch(f.conn, params, bound.get('holder'), bound.get('generation'))
+                        except FLOOR.FloorRefused as error:
+                            print('space317 floor', mode, error)
+                            accepted = None
+                        numbers = [r['contract']['attempt'] for r in FLOOR._dispatches(
+                            f.conn, 'domain', 'repository', 'unit', 'build')]
+                        check('ac1/rerun-accepted', D.completed(clean) and numbers == [2, 1]
+                              and accepted is not None and accepted['dispatch_id'] == clean['dispatch_id']
+                              and L.D.RES is not None and load('control_reservation_runtime').boundary(
+                                  clean['contract']) == 'retry'
+                              and f.dispatches.charged('unit', 'build') == 1
+                              and line(f).latest()[('unit', 'build')]['dispatch_id'] == clean['dispatch_id'])
                     finally:
                         f.close()
             row('ac1/not-charged', confirmed)
+
+            def released():
+                # Review finding 3: the brief names a kept worktree only while the ledger holds it as a
+                # live item; once it is gone, no later brief claims it.
+                f = Fixture('released', 'report')
+                try:
+                    _, work, _, _ = end(f)
+                    before = f.prepare(station='review')['input']['payload']
+                    gone = f.ledger.gone(f.items[str(work)])
+                    assert gone['ok'], gone
+                    after = f.prepare()['input']['payload']
+                    check('ac3/brief-live-only', before.get('retained_worktrees') == [str(work)]
+                          and 'retained_worktrees' not in after and 'space_recovery' not in after)
+                finally:
+                    f.close()
+            row('ac3/brief-live-only', released)
 
             def unconfirmed():
                 f = Fixture('unconfirmed')
@@ -290,6 +361,10 @@ def _v317_suite():
                     launch, _ = rerun(f, rec)
                     check('ac2/repeated-once', (rec.get('space_failure') or {}).get('classification') == ADM.UNCONFIRMED
                           and launch is not None and len(f.started) == 2)
+                    # Review finding 3: an unconfirmed end is no environment failure; its worktree is not claimed.
+                    check('ac3/brief-no-space-only', launch is not None
+                          and 'retained_worktrees' not in launch.contract['input']['payload']
+                          and 'space_recovery' not in launch.contract['input']['payload'])
                     if launch is None:
                         return
                     # The fixture receiver only records its start count; the real reap/finish runs now.
@@ -302,52 +377,127 @@ def _v317_suite():
                           and not second['space_failure']['andon']
                           and third is None and not out['asked'] and len(f.started) == 2)
                     check('history/latest', line(f).latest()[('unit', 'build')]['dispatch_id'] == second['dispatch_id'])
+                    # Review finding 5: the repeat stood. A run started afresh that ends unconfirmed is a new
+                    # run with a repeat of its own, not a third of the same chain.
+                    fresh, _, _, _ = end(f, free=1000, text='No space left on device; a later run')
+                    again, _ = rerun(f, fresh)
+                    check('history/unconfirmed-new-run', fresh['space_failure']['classification'] == ADM.UNCONFIRMED
+                          and fresh['space_failure']['consecutive'] == 1 and fresh['space_failure']['retry']
+                          and again is not None and len(f.started) == 4)
                 finally:
                     f.close()
             row('ac2/repeat-red', unconfirmed)
 
             def bounded():
-                f = Fixture('bounded', 'report')
-                try:
-                    first, _, _, _ = end(f)
-                    launch, _ = rerun(f, first)
-                    assert launch is not None
-                    f.started.pop()
-                    second, _, _, _ = end(f, contract=launch.contract)
-                    obj = line(f)
-                    f.put('project:project', 'project', {'owner': 'owner'})
-                    f.put('runner-key', 'verification_key', dict(principal='runner',
-                        public_key=key.with_suffix('.pub').read_text(), effective_at=0, revoked_at=None))
-                    obj.service.store, obj.service.principal, obj.service.generation = 'store', 'runner', 1
-                    obj.service.sign, obj.service.config = f.sign, {'journal_key': str(key)}
-                    obj.service.inbox = lambda repository: SV.Service.inbox(obj.service, repository)
-                    obj.open_question = types.MethodType(SV.Line.open_question, obj)
-                    third, out = rerun(f, second, obj)
-                    again, repeated = rerun(f, second, obj)
-                    check('ac4/two-stop', third is None and again is None and len(f.started) == 2
-                          and bool(out['stopped']) and second['space_failure']['consecutive'] == 2)
-                    requests = [json.loads(raw) for (raw,) in f.conn.execute(
-                        'SELECT data FROM entities WHERE kind=?', (SV.I.ENTITY_KIND,))]
-                    check('ac4/owner-request', len(requests) == 1 and len(out['asked']) == 1 and not repeated['asked']
-                          and out['asked'][0]['outcome'] and requests[0]['owner'] == 'owner'
-                          and 'Andon' in requests[0]['brief'])
-                    check('history/latest', obj.latest()[('unit', 'build')]['dispatch_id'] == second['dispatch_id'])
-                    # A fresh connection and Runner still cannot prepare a third run, even with space free.
-                    f.conn.close()
-                    f.conn = S.open_store(str(f.state / 'store.sqlite3'))
-                    f.dispatches = D.Dispatches(S, f.conn, domain='domain', repository='repository',
-                                                principal='runner', signer='runner', sign=f.sign)
-                    f.runner.dispatches = f.dispatches
-                    f.free['host'] = 1000
-                    stopped = False
+                for mode in ('report', 'act'):
+                    f = Fixture('bounded-' + mode, mode)
+                    conn = None
                     try:
-                        f.prepare()
-                    except D.Refused as error:
-                        stopped = error.code == ADM.NO_SPACE
-                    check('ac4/restart-stop', stopped and f.dispatches.attempts('unit', 'build') == 0)
+                        first, _, _, _ = end(f)
+                        if mode == 'act':
+                            f.free['host'] = 1000
+                            assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
+                        launch, _ = rerun(f, first)
+                        assert launch is not None
+                        f.started.pop()
+                        second, _, _, _ = end(f, contract=launch.contract)
+                        obj = owner_line(f)
+                        third, out = rerun(f, second, obj)
+                        again, repeated = rerun(f, second, obj)
+                        check('ac4/two-stop', third is None and again is None and len(f.started) == 2
+                              and bool(out['stopped']) and second['space_failure']['consecutive'] == 2
+                              and second['space_failure']['andon'])
+                        asked = requests(f.conn)
+                        check('ac4/owner-request', len(asked) == 1 and len(out['asked']) == 1 and not repeated['asked']
+                              and out['asked'][0]['outcome'] and asked[0]['owner'] == 'owner'
+                              and 'Andon' in asked[0]['brief'] and asked[0]['choices'] == ['rerun', 'acknowledge']
+                              and [w['reason'] for w in repeated.get('awaiting', [])] == ['not_answered'])
+                        check('history/latest', obj.latest()[('unit', 'build')]['dispatch_id'] == second['dispatch_id'])
+                        # A restart (a second connection, a new Line) finds the same stop and the same request.
+                        conn = S.open_store(str(f.state / 'store.sqlite3'))
+                        restarted = owner_line(f, conn)
+                        stored = D.Dispatches(S, conn, domain='domain', repository='repository', principal='runner',
+                                              signer='runner', sign=f.sign).record(second['dispatch_id'])
+                        after, seen = rerun(f, stored, restarted)
+                        check('ac4/restart-stop', after is None and len(f.started) == 2 and not seen['asked']
+                              and bool(seen['stopped']) and len(requests(conn)) == 1
+                              and f.dispatches.charged('unit', 'build') == 0)
+                        conn.close()
+                        conn = None
+                        # Review finding 2: the andon stops the repeats and refuses no dispatch. While it is not
+                        # cleared, another station of the unit prepares: in report mode with the pool still
+                        # short (nothing is blocked there), in act mode once admission has the space.
+                        if mode == 'act':
+                            f.free['host'] = 1000
+                            assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
+                        opened = None
+                        try:
+                            opened = f.prepare(station='review')
+                        except D.Refused as error:
+                            print('space317 later dispatch', mode, error.code)
+                        check('ac4/later-dispatch-open', opened is not None and opened['station'] == 'review'
+                              and len(requests(f.conn)) == 1)
+                        # The defined, recorded clear: the owner's signed answer in the inbox.
+                        ruling = 'rerun' if mode == 'report' else 'acknowledge'
+                        answered = answer(f, obj, asked[0], ruling)
+                        cleared, shown = rerun(f, second, obj)
+                        record = requests(f.conn)[0]
+                        recorded = (record.get('answer') or {}).get('ruling') == ruling and answered.get('ok') is True
+                        if not recorded:
+                            print('space317 answer', mode, answered)
+                        if mode == 'report':
+                            # rerun: the station is dispatched once more, with the next attempt number.
+                            check('ac4/owner-clears', recorded and cleared is not None and len(f.started) == 3
+                                  and cleared.contract['attempt'] == 3 and not shown.get('awaiting')
+                                  and not shown['asked'])
+                        else:
+                            # acknowledge: closed and left stopped; the owner's next dispatch is prepared.
+                            entry = (shown['stopped'] or [{}])[-1]
+                            later = None
+                            try:
+                                later = f.prepare()
+                            except D.Refused as error:
+                                print('space317 after acknowledge', error.code)
+                            check('ac4/owner-clears', recorded and cleared is None and len(f.started) == 2
+                                  and entry.get('cleared') is True and entry.get('ruling') == 'acknowledge'
+                                  and not shown.get('awaiting') and not shown['asked']
+                                  and later is not None and later['attempt'] == 3)
+                    finally:
+                        if conn is not None:
+                            conn.close()
+                        f.close()
+            row('ac4/two-stop', bounded)
+
+            def scoped():
+                # Review finding 4: the state is on the unit's own index slots, read by their key range.
+                f = Fixture('scoped', 'report')
+                try:
+                    end(f, contract=f.prepare(unit='unit2'))
+                    end(f, free=1000, text='built', code=0, contract=f.prepare(unit='uni'), edits=False)
+                    own, _, _, _ = end(f)
+                    check('history/unit-scoped', own['space_failure']['consecutive'] == 1
+                          and own['space_failure']['retry'] and not own['space_failure']['andon'])
+                    statements = []
+                    f.conn.set_trace_callback(statements.append)
+                    try:
+                        slots = f.dispatches.unit_slots('unit')
+                        ADM.disposition(slots, own['contract'], {'classification': ADM.NO_SPACE, 'pools': [],
+                                                                 'worktree': None})
+                        ADM.ended(slots, own['contract'], None)
+                        ADM.brief(f.dispatches.unit_slots('uni'), f.ledger, {})
+                    finally:
+                        f.conn.set_trace_callback(None)
+                    plans = [' '.join(str(part[-1]) for part in f.conn.execute(
+                        'EXPLAIN QUERY PLAN ' + sql)) for sql in statements]
+                    check('history/bounded-read', len(statements) == 2
+                          and all('SEARCH' in plan and 'id>? AND id<?' in plan and 'SCAN' not in plan for plan in plans)
+                          and [(slot['unit'], slot['station']) for slot in slots] == [('unit', 'build')]
+                          and not hasattr(ADM, 'previous'))
+                    if not all('id>? AND id<?' in plan for plan in plans):
+                        print('space317 plans', plans)
                 finally:
                     f.close()
-            row('ac4/two-stop', bounded)
+            row('history/unit-scoped', scoped)
 
             def controls():
                 f = Fixture('controls')

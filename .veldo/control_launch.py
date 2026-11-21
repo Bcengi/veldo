@@ -1763,12 +1763,10 @@ class Runner:
                                      self.dispatches.repository, configuration)
         except CFG.Refused as error:
             raise D.Refused(error.code) from None
+        # VELDO-0317: the classification blocks nothing here, in report mode or in act (design 8.9): an andon
+        # stops the automatic repeat (Line.limited), never a later dispatch. The brief names kept work.
         admission = _organ('control_space_admission')
-        coordinates = {'domain': self.dispatches.domain, 'repository': self.dispatches.repository, 'unit': unit}
-        prior = admission.previous(self.dispatches.conn, coordinates)
-        if (prior.get('space_failure') or {}).get('andon'):
-            raise D.Refused('environment_failure:no_space', 'andon: two consecutive environment failures')
-        payload = admission.brief(self.dispatches.conn, coordinates, payload)
+        payload = admission.brief(self.dispatches.unit_slots(unit), (self.space or {}).get('ledger'), payload)
         decided = dict(context or {}, holder=holder)
         decision = self.gate.require(station, unit, context=decided)
         held = self.dispatches.active(unit, station)
@@ -2740,7 +2738,8 @@ class Receiver:
                 unsuccessful = unsuccessful or not document.get('complete')
             observation = admission.classify(self.space, contract, unsuccessful, True,
                 (getattr(self, 'space_run', None) or {}).get('worktree'))
-        self.space_failure = admission.disposition(self.conn, contract, observation) if observation else None
+        self.space_failure = (admission.disposition(D.unit_slots(self.conn, contract), contract, observation)
+                              if observation else None)
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
