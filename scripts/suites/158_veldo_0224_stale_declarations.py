@@ -26,6 +26,8 @@ def _v224_stale():
     C = module(ROOT / "scripts" / "case_reuse.py", 'case_reuse')
     gate = module(ROOT / "scripts" / "check_gate_mutations.py", 'check_gate_mutations')
     P = module(ROOT / "scripts" / "propose_case_inputs.py", 'propose_case_inputs')
+    if not leg_runs():
+        return
     M, I, R = C.M, C.I, C.R
     materializer = gate.load(ROOT / 'scripts/mutation_observer.py')
     suite_body = ("ns = {}; exec(SUBJECT.read_text(), ns)\n"
@@ -233,5 +235,4 @@ def _v224_stale():
         row('candidate-store-refused', refused and not (top / 'bad-candidate').exists())
 
 
-if leg_runs():
-    _v224_stale()
+_v224_stale()
