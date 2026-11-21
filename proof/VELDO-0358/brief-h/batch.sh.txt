@@ -30,16 +30,18 @@ print('%s: base %d labels (%d failed), now %d labels (%d failed), missing %s, ad
 PY
     done; stamp end; } 2>&1 | clean > "$OUT/rows-kept.txt" ;;
 mutants)
-  { stamp start; mkdir -p "$S/diffs" "$S/workers"
-    python3 scripts/check_teeth_mutations.py --diff-dir "$S/diffs" --worker-log-dir "$S/workers" --jobs 6 \
-      --case wave358-browser-expectation-restored --case wave358-browser-fixed-wait-restored \
-      --case wave358-browser-test-limit-restored --case timers358-browser-profile-skipped \
-      --case wait358-browser-watchdog-total-time --case wait358-browser-watchdog-silent
-    echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/mutants-h.txt"
-  { for f in "$S"/diffs/*; do echo "== $(basename "$f")"; cat "$f"; done; } 2>&1 | clean > "$OUT/mutant-diffs.txt"
-  { stamp start; mkdir -p "$S/workers131"
-    python3 scripts/check_teeth_mutations.py --finding 131 --worker-log-dir "$S/workers131" --jobs 6
-    echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/mutants-131.txt" ;;
+  # The gate's own stage entry (scripts/check_gate_mutations.py): suites 120, 121 and 124 are of the unconfined leg
+  # (they need the package registry), which the registry's developer entry does not run.
+  CASES="wave358-browser-expectation-restored wave358-browser-fixed-wait-restored wave358-browser-test-limit-restored timers358-browser-profile-skipped wait358-browser-watchdog-total-time wait358-browser-watchdog-silent"
+  { stamp start
+    python3 scripts/check_gate_mutations.py $(for c in $CASES; do printf -- '--case %s ' "$c"; done) --worker-log-dir "$S/workers" --receipt "$S/receipt-h.json" > "$S/stage-h.txt" 2>&1
+    echo "exit status $?"; grep -v '^{' "$S/stage-h.txt"; python3 "$OUT/verdicts.py.txt" "$S/receipt-h.json"
+    stamp end; } 2>&1 | clean > "$OUT/mutants-h.txt"
+  python3 "$OUT/verdicts.py.txt" --diffs "$WT" $CASES 2>&1 | clean > "$OUT/mutant-diffs.txt"
+  { stamp start
+    python3 scripts/check_gate_mutations.py --finding 131 --worker-log-dir "$S/workers131" --receipt "$S/receipt-131.json" > "$S/stage-131.txt" 2>&1
+    echo "exit status $?"; grep -v '^{' "$S/stage-131.txt"; python3 "$OUT/verdicts.py.txt" "$S/receipt-131.json"
+    stamp end; } 2>&1 | clean > "$OUT/mutants-131.txt" ;;
 affected)
   { stamp start
     for suite in 113_veldo_0145_ui 118_veldo_0159_mcp_credential_form 119_veldo_0163_role_team_form 122_veldo_0131_factory_screens_wide \
