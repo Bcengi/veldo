@@ -89,7 +89,8 @@ def _v113_work_suite():
                     return request(*args, **kwargs)
             cli._request_work = no_store_request
             error = io.StringIO()
-            with contextlib.redirect_stderr(error):
+            with contextlib.redirect_stderr(error), patch(
+                        'sqlite3.connect', side_effect=AssertionError('client opened a store')):
                 result = cli.cmd_work(repo_root=base / 'not-a-repository', trust=trust)
             expect('VELDO-0113 work/unenrolled/' + str(index),
                    result != 0 and 'unenrolled_workspace' in error.getvalue())
@@ -100,7 +101,8 @@ def _v113_work_suite():
                     helper.make_dead_socket(address)
                 before = database.read_bytes()
                 error = io.StringIO()
-                with contextlib.redirect_stderr(error):
+                with contextlib.redirect_stderr(error), patch(
+                        'sqlite3.connect', side_effect=AssertionError('client opened a store')):
                     result = cli.cmd_work(repo_root=workspace, principal='owner', sign=signer('owner'), trust=trust)
                 expect('VELDO-0113 work/refuses/' + str(index) + '/' + state,
                        result != 0 and 'authority_unavailable' in error.getvalue()
@@ -138,9 +140,14 @@ def _v113_work_suite():
             listener.close()
             try:
                 assert os.read(ready, 1) == b'R'
-                result = cli._request_work(str(workspace), 'configured', 'owner', signer('owner'), trust)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output), patch(
+                        'sqlite3.connect', side_effect=AssertionError('client opened a store')):
+                    status = cli.cmd_work(repo_root=workspace, account='configured',
+                                          principal='owner', sign=signer('owner'), trust=trust)
+                result = json.loads(output.getvalue())
                 expect('VELDO-0113 work/authority-queues/' + str(index),
-                       result == dict(ok=True, state='queued', repository_uuid='repository'))
+                       status == 0 and result == dict(ok=True, state='queued', repository_uuid='repository'))
                 for account, who, principal, reason in (
                         ('other', 'owner', 'owner', 'unsupported_configuration:work_account'),
                         (None, 'outsider', 'owner', 'command_signature_invalid'),
