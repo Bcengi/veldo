@@ -1,0 +1,14 @@
+{
+  "run": "round11-routing-corrected-106_veldo_0125_routing",
+  "log": "proof/VELDO-0125/b2-crash-events/routing-corrected.txt",
+  "log_sha256": "fe01f2551c702fd4de8f6afb44be473c76f4d24fff94c631725d9d791ec1fcd0",
+  "complete": true,
+  "passed": 138,
+  "failed": 0,
+  "seconds": 107.07,
+  "correction": "The retained log is the completed corrected round 11 routing invocation, not partial output of a stopped run. Its suite line reports 112 routing rows plus 26 prerequisite rows. The prior README statement that this log was stopped immediately is incorrect. The log alone does not establish when an overlapping process was stopped; no such timing claim is made here.",
+  "restored_0124_sha256": "4fd6fb60497ccb0c8cf4892a22049b724fb6b1c71415bd585cbd559fcb635f5f",
+  "source_log_sha256": "5d73d9e9c2419f8de0ded2a488d3251b0d0c0816ec7b32dbd64ea6ec3d041d7e",
+  "source_0124_sha256": "987feec48aaff54fa5c1049062c92f8e793315813fec1f9b5c296f1b4570a8bb",
+  "port_redaction": "2026-11-21: imported historical copies remove personal home paths; source byte digests retained separately. Historical suite snapshot is not the current event suite."
+}

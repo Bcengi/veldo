@@ -74,6 +74,14 @@ def service_authority(conn, command):
             and (member.get('expires_at') is None or (number(now) and now < member['expires_at'])))
 
 
+def protect(store, conn):
+    """Bind the reservation records to this file's transition (VELDO-0125); the worker relay's
+    authority declares it, for the reason control_dispatch.protect gives."""
+    store.declare_owners(conn, 'reservations',
+        kinds={'subscription_reservation': ('subscription_reservation',)},
+        module=__file__, adopt_existing=True)
+
+
 class Reservations:
     def __init__(self, store, conn, *, domain, repository, principal, authorize,
                  signer, sign, generation=1, observe=lambda event: None, subject_kind='project'):
@@ -313,6 +321,16 @@ class Reservations:
         return self._run(command_id, 'window', self._policy_id('account', account),
                          dict(window_id=window_id, unit=unit, remaining=remaining, reset_at=reset_at, watermark=watermark), now)
 
+    def hold_remote(self, dispatch, host, contract_digest, *, now):
+        """Durable cleanup obligations, committed with the remote acceptance."""
+        current = self.worker(dispatch)
+        if current and (current.get('remote_hold') or current['retired']):
+            return current
+        return self._run('remote-hold/' + dispatch, 'remote_hold',
+                         entity('worker', [self.domain, identity(dispatch)]),
+                         dict(host=identity(host), contract_digest=identity(contract_digest),
+                              open=['termination', 'group', 'clone']), now)
+
     def retire(self, command_id, dispatch, lifecycle, *, now):
         """lifecycle(dispatch) is the trusted runner's actual group/cleanup/outcome observer."""
         self._lifecycle = lifecycle
@@ -423,10 +441,32 @@ class Reservations:
                           and r['state'] in ('pending', 'unknown')]
             value.setdefault('windows', {})[p['window_id']] = dict(p, outstanding=unresolved, store_watermark=self.conn.execute(
                 'SELECT COALESCE(MAX(seq),0) FROM journal').fetchone()[0])
+        elif action == 'remote_hold':
+            if not current or current['type'] != 'worker' or current['retired']:
+                raise Refused('missing_worker')
+            value = dict(current, remote_hold=p)
         elif action == 'retire':
             if not current or current['type'] != 'worker':
                 raise Refused('missing_worker')
             observation = self._lifecycle(current['dispatch'])
+            if current.get('remote_hold'):
+                # Linux kernel observations cannot discharge a Mac obligation. The assigned
+                # receiver's signed result is committed in this transaction before retirement.
+                row = self.conn.execute('SELECT data FROM entities WHERE id=? AND kind=?',
+                                        ('worker:' + current['dispatch'], 'worker_observation')).fetchone()
+                remote = json.loads(row[0]) if row else {}
+                release = remote.get('release') or {}
+                cleanup = release.get('cleanup') or (remote.get('observation') or {}).get('cleanup') or {}
+                if ((not release and remote.get('state') not in ('exited', 'refused', 'unknown')) or
+                        remote.get('host') != current['remote_hold']['host'] or
+                        remote.get('contract_digest') != current['remote_hold']['contract_digest'] or
+                        observation.get('observer') not in (release.get('principal'), remote.get('principal')) or
+                        remote.get('release_state') != 'confirmed' or
+                        remote.get('retirement_confirmation') != (remote.get('commands') or [{}])[-1].get('command_id') or
+                        (remote.get('commands') or [{}])[-1].get('operation') != 'worker_retired' or
+                        observation != remote.get('retirement') or
+                        any(cleanup.get(key) is not True for key in ('terminated', 'cleaned', 'clone_removed'))):
+                    raise Refused('missing_evidence:remote_cleanup')
             if observation.get('terminated') is not True:
                 raise Refused('worker_alive')
             if observation.get('cleaned') is not True:
@@ -438,6 +478,8 @@ class Reservations:
             if any(r['state'] not in ('settled', 'unknown') for r in calls):
                 raise Refused('missing_accounting')
             value = dict(current, retired=True, retirement=observation)
+            if value.get('remote_hold'):
+                value['remote_hold'] = dict(value['remote_hold'], open=[], released_by=self._command['command_id'])
         elif action == 'release_account':
             if not current or current['type'] != 'worker' or current['retired']:
                 raise Refused('missing_worker')

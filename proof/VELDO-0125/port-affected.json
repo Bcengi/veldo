@@ -1,0 +1,828 @@
+{
+  "01_warp_0101_reviewer_notes": [
+    "init_scaffold"
+  ],
+  "03_plugin_extension_loading_runner": [
+    "init_scaffold"
+  ],
+  "101_veldo_0208_landing_reuse": [
+    "init_scaffold"
+  ],
+  "103_veldo_0142_git_identities": [
+    "control_launch",
+    "control_service",
+    "control_store"
+  ],
+  "104_veldo_0164_scoped_reads": [
+    "init_scaffold"
+  ],
+  "105_veldo_0182_memory": [
+    "control_claim",
+    "control_launch"
+  ],
+  "106_veldo_0185_dispatch_setup": [
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_service",
+    "init_scaffold"
+  ],
+  "107_veldo_0153_identity_push": [
+    "init_scaffold"
+  ],
+  "109_veldo_0161_adoption": [
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_service",
+    "init_scaffold"
+  ],
+  "110_veldo_0143_new_project": [
+    "authority_contract",
+    "control_launch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "113_veldo_0080_defects": [
+    "init_scaffold"
+  ],
+  "113_veldo_0112_registered_clients": [
+    "control_claim",
+    "control_dispatch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "113_veldo_0117_domain_store": [
+    "authority_contract",
+    "control_service",
+    "control_store"
+  ],
+  "113_veldo_0145_ui": [
+    "authority_contract",
+    "control_membership",
+    "init_scaffold"
+  ],
+  "114_veldo_0216_concurrent_stages": [
+    "init_scaffold"
+  ],
+  "116_veldo_0188_project_lines": [
+    "control_launch",
+    "control_service"
+  ],
+  "117_veldo_0227_ui_location": [
+    "control_service",
+    "init_scaffold"
+  ],
+  "123_veldo_0174_conversations": [
+    "control_launch",
+    "control_service"
+  ],
+  "127_veldo_0234_https_port": [
+    "control_service",
+    "init_scaffold"
+  ],
+  "127_veldo_0241_unit_workflows": [
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "127_veldo_0254_secret_scan": [
+    "control_launch",
+    "control_service"
+  ],
+  "127_veldo_0259_installation": [
+    "control_service"
+  ],
+  "128_veldo_0235_land_locally": [
+    "control_membership",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "128_veldo_0247_check_join": [
+    "control_store"
+  ],
+  "128_veldo_0254_confined_runner": [
+    "control_launch"
+  ],
+  "129_veldo_0239_batch_landing": [
+    "control_assignment",
+    "control_claim",
+    "control_service",
+    "init_scaffold"
+  ],
+  "129_veldo_0247_line": [
+    "control_service",
+    "control_store"
+  ],
+  "129_veldo_0254_canary_launch": [
+    "authority_contract",
+    "control_launch",
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "129_veldo_0260_checkout_in_step": [
+    "control_membership",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "132_veldo_0297_space_ledger": [
+    "control_store"
+  ],
+  "133_veldo_0326_space_principals": [
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "134_veldo_0331_space_mode": [
+    "control_membership",
+    "control_store"
+  ],
+  "137_veldo_0330_space_rules": [
+    "control_store"
+  ],
+  "138_veldo_0300_space_remove": [
+    "control_store"
+  ],
+  "139_veldo_0301_space_signal": [
+    "control_membership",
+    "control_store"
+  ],
+  "140_veldo_0345_space_keep": [
+    "control_membership",
+    "control_store"
+  ],
+  "142_veldo_0303_space_paths": [
+    "control_launch",
+    "control_membership",
+    "control_store",
+    "init_scaffold"
+  ],
+  "143_veldo_0305_space_census": [
+    "control_launch",
+    "control_membership",
+    "control_store"
+  ],
+  "144_veldo_0306_space_docker": [
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "145_veldo_0307_space_docker_ownership": [
+    "control_membership",
+    "control_store"
+  ],
+  "146_veldo_0308_run_finished": [
+    "control_launch",
+    "control_membership",
+    "control_store"
+  ],
+  "147_veldo_0310_landed_contained": [
+    "control_membership",
+    "control_store",
+    "init_scaffold"
+  ],
+  "148_veldo_0311_git_hooks": [
+    "control_membership",
+    "control_store"
+  ],
+  "149_veldo_0312_ticket_ended": [
+    "control_assignment",
+    "control_service"
+  ],
+  "150_veldo_0329_hook_install": [
+    "control_membership",
+    "control_store"
+  ],
+  "150_veldo_0350_end_write": [
+    "control_dispatch",
+    "control_launch"
+  ],
+  "151_veldo_0313_space_run": [
+    "control_launch",
+    "control_membership",
+    "control_store"
+  ],
+  "153_veldo_0302_space_creators": [
+    "control_launch",
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "153_veldo_0309_gate_space": [
+    "control_membership",
+    "control_store"
+  ],
+  "153_veldo_0314_session_hooks": [
+    "control_membership",
+    "control_store"
+  ],
+  "153_veldo_0323_hook_events": [
+    "control_service",
+    "init_scaffold"
+  ],
+  "153_veldo_0328_images": [
+    "control_membership",
+    "control_store"
+  ],
+  "153_veldo_0336_run_worktree": [
+    "control_membership",
+    "control_store"
+  ],
+  "153_veldo_0337_verdict_recorded": [
+    "control_dispatch",
+    "control_launch",
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "153_veldo_0341_docker_protection": [
+    "control_membership",
+    "control_store"
+  ],
+  "154_veldo_0324_batch_sandbox": [
+    "control_membership",
+    "control_store"
+  ],
+  "154_veldo_0335_released": [
+    "control_service"
+  ],
+  "155_veldo_0304_space_boundary": [
+    "control_launch",
+    "control_service"
+  ],
+  "156_veldo_0315_reconcile": [
+    "control_service"
+  ],
+  "16_warp_1403_sizing_pass": [
+    "init_scaffold"
+  ],
+  "26_veldo_0009_install_stamp": [
+    "init_scaffold"
+  ],
+  "33_veldo_0020_authority": [
+    "source branch affected inventory",
+    "authority_contract"
+  ],
+  "36_veldo_0023_journal": [
+    "source branch affected inventory",
+    "control_store"
+  ],
+  "37_veldo_0024_replica": [
+    "source branch affected inventory",
+    "control_store"
+  ],
+  "38_veldo_0025_membership": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_membership",
+    "control_store"
+  ],
+  "39_veldo_0026_revocation": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_membership",
+    "control_store"
+  ],
+  "46_veldo_0029_enrollment": [
+    "source branch affected inventory",
+    "control_store"
+  ],
+  "51_parser_boundary": [
+    "init_scaffold"
+  ],
+  "52_writer_boundary": [
+    "init_scaffold"
+  ],
+  "56_veldo_0027_signing": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_membership",
+    "control_store"
+  ],
+  "58_veldo_0028_effects": [
+    "source branch affected inventory",
+    "control_service"
+  ],
+  "58_veldo_0031_claims": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_claim",
+    "control_membership",
+    "control_store"
+  ],
+  "58_veldo_0035_snapshots": [
+    "source branch affected inventory",
+    "control_store",
+    "init_scaffold"
+  ],
+  "58_veldo_0036_reservations": [
+    "source branch affected inventory",
+    "control_reservations",
+    "control_store"
+  ],
+  "58_veldo_0046_notifications": [
+    "source branch affected inventory",
+    "control_store",
+    "init_scaffold"
+  ],
+  "59_veldo_0031_review": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_claim",
+    "control_membership",
+    "control_store"
+  ],
+  "59_veldo_0037_aliases": [
+    "source branch affected inventory",
+    "control_service",
+    "control_store"
+  ],
+  "59_veldo_0043_graph": [
+    "source branch affected inventory",
+    "control_store",
+    "init_scaffold"
+  ],
+  "60_veldo_0052_eligibility": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_store"
+  ],
+  "60_veldo_0053_architecture": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_store"
+  ],
+  "60_veldo_0064_inbox": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "61_scope_covers": [
+    "source branch affected inventory",
+    "control_membership"
+  ],
+  "62_veldo_0039_dispatch": [
+    "source branch affected inventory",
+    "control_dispatch",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "62_veldo_0045_runtime": [
+    "init_scaffold"
+  ],
+  "62_veldo_0054_decisions": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_store"
+  ],
+  "62_veldo_0065_presentations": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_assignment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "63_veldo_0040_containment": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "63_veldo_0049_floor": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_launch",
+    "control_reservations",
+    "control_store"
+  ],
+  "63_veldo_0066_attribution": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "64_veldo_0050_proof": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_launch",
+    "control_membership",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "65_veldo_0067_edges": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "65_veldo_0132_workflow": [
+    "source branch affected inventory",
+    "control_dispatch",
+    "control_launch",
+    "control_store"
+  ],
+  "66_veldo_0042_clones": [
+    "source branch affected inventory",
+    "control_dispatch",
+    "control_store",
+    "init_scaffold"
+  ],
+  "66_veldo_0047_authority": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "66_veldo_0051_events": [
+    "source branch affected inventory",
+    "control_store",
+    "init_scaffold"
+  ],
+  "67_veldo_0041_heartbeat": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "67_veldo_0056_candidates": [
+    "source branch affected inventory",
+    "control_dispatch",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "67_veldo_0135_offers": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_store"
+  ],
+  "68_veldo_0126_intake": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "68_veldo_0134_acceptance": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_membership",
+    "control_store"
+  ],
+  "68_veldo_0136_hints": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim"
+  ],
+  "69_veldo_0058_gate_output": [
+    "init_scaffold"
+  ],
+  "69_veldo_0068_settlement": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "69_veldo_0133_dispositions": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_assignment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "70_veldo_0057_landing": [
+    "source branch affected inventory",
+    "control_store",
+    "init_scaffold"
+  ],
+  "70_veldo_0069_bindings": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_launch",
+    "control_store"
+  ],
+  "70_veldo_0073_activation": [
+    "init_scaffold"
+  ],
+  "71_veldo_0076_projects": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "71_veldo_0130_api": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "71_veldo_0138_channel_service": [
+    "source branch affected inventory",
+    "control_service",
+    "init_scaffold"
+  ],
+  "72_veldo_0075_andon": [
+    "init_scaffold"
+  ],
+  "72_veldo_0077_objectives": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "72_veldo_0128_reports": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_dispatch",
+    "control_launch",
+    "control_reservations",
+    "control_service",
+    "init_scaffold"
+  ],
+  "73_veldo_0078_backlog": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "73_veldo_0089_team": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "73_veldo_0139_factory_setup": [
+    "source branch affected inventory",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_service",
+    "init_scaffold"
+  ],
+  "74_veldo_0140_standing_delegation": [
+    "source branch affected inventory",
+    "control_membership",
+    "control_service"
+  ],
+  "75_veldo_0062_accounts": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_reservations",
+    "control_store"
+  ],
+  "75_veldo_0150_own_message_acceptance": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim"
+  ],
+  "76_veldo_0079_grooming": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "init_scaffold"
+  ],
+  "77_veldo_0149_adopted_activation": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_store"
+  ],
+  "78_veldo_0060_claude_adapter": [
+    "source branch affected inventory",
+    "control_dispatch",
+    "control_launch",
+    "control_store",
+    "init_scaffold"
+  ],
+  "78_veldo_0160_account_pool": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "79_veldo_0061_codex_adapter": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_reservations",
+    "control_store",
+    "init_scaffold"
+  ],
+  "80_veldo_0155_claude_baseline": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_store"
+  ],
+  "81_veldo_0156_codex_baseline": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_store"
+  ],
+  "82_veldo_0085_decomposition": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "82_veldo_0129_worker_wiring": [
+    "source branch affected inventory",
+    "control_launch",
+    "init_scaffold"
+  ],
+  "82_veldo_0141_execution_record": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_dispatch",
+    "control_launch",
+    "control_membership",
+    "control_reservations",
+    "control_service",
+    "control_store"
+  ],
+  "82_veldo_0144_mcp_catalog": [
+    "source branch affected inventory",
+    "control_service",
+    "init_scaffold"
+  ],
+  "82_veldo_0165_launch_hygiene": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_store"
+  ],
+  "82_veldo_0173_tool_registry": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_store"
+  ],
+  "83_veldo_0154_factory_loop": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_assignment",
+    "control_claim",
+    "control_launch",
+    "control_membership",
+    "control_reservations",
+    "control_service",
+    "control_store"
+  ],
+  "83_veldo_0166_usage_windows": [
+    "source branch affected inventory",
+    "control_launch"
+  ],
+  "84_veldo_0169_project_handouts": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_store"
+  ],
+  "85_veldo_0158_credential_delivery": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_channel_enrollment",
+    "control_launch",
+    "control_membership",
+    "control_service",
+    "control_store"
+  ],
+  "85_veldo_0171_setup_api": [
+    "source branch affected inventory",
+    "control_channel_enrollment",
+    "control_claim",
+    "control_service",
+    "init_scaffold"
+  ],
+  "86_veldo_0127_agent_configuration": [
+    "source branch affected inventory",
+    "control_launch"
+  ],
+  "86_veldo_0148_re_land": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_claim",
+    "control_launch",
+    "control_membership",
+    "control_reservations",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "86_veldo_0168_text": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_service",
+    "init_scaffold",
+    "project_runner_macos"
+  ],
+  "86_veldo_0186_setup_assets": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_service"
+  ],
+  "86_veldo_0189_engine_upgrade": [
+    "source branch affected inventory",
+    "control_claim",
+    "control_launch",
+    "control_service",
+    "control_store",
+    "init_scaffold"
+  ],
+  "87_veldo_0127_codex_delivery": [
+    "source branch affected inventory",
+    "control_launch"
+  ],
+  "87_veldo_0170_receiver_trust": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_launch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "91_veldo_0151_specialists": [
+    "source branch affected inventory",
+    "control_assignment",
+    "control_claim",
+    "control_store",
+    "init_scaffold"
+  ],
+  "91_veldo_0167_setup_records": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "92_veldo_0088_pm_cycles": [
+    "source branch affected inventory",
+    "authority_contract",
+    "control_dispatch",
+    "control_launch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "93_veldo_0152_intake_routes": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_service"
+  ],
+  "94_veldo_0162_configuration_routes": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_service",
+    "init_scaffold"
+  ],
+  "95_veldo_0203_owner_revisions": [
+    "source branch affected inventory",
+    "control_launch",
+    "control_membership",
+    "control_service",
+    "init_scaffold"
+  ],
+  "96_veldo_0204_reservation_policies": [
+    "source branch affected inventory",
+    "control_reservations",
+    "control_service",
+    "init_scaffold"
+  ]
+}

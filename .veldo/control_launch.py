@@ -1943,7 +1943,8 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None, space=None, observe=None, admission=None):
+                 profile=None, space=None, observe=None, admission=None, worker_profiles=None, local_host=None,
+                 remote_receivers=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None where
         # the installation has none. With it, a leftover run directory goes through Signal and not by a delete here.
@@ -1951,6 +1952,8 @@ class Runner:
         self.admission = admission
         self.space_waiting_accounts = {}
         self.receiver, self.account = receiver, account
+        self.remote_receivers = remote_receivers or {}
+        self.worker_profiles, self.local_host = worker_profiles, local_host or socket.gethostname()
         self.clock = clock or time.time
         self.observations = []
         self.observe = observe or (lambda event: None)
@@ -1985,6 +1988,15 @@ class Runner:
             ended = False
         return space_retry(self.space, dispatch_id, 'runner.retirement', but=but, ended=ended)
 
+    @property
+    def remote_retirements(self):
+        """Unreleased remote obligations survive both Runner and service restarts."""
+        return {record['dispatch']: record['remote_hold']
+                for record in self.reservations._records().values()
+                if record['type'] == 'worker' and not record['retired'] and record.get('remote_hold')
+                and record['context']['domain'] == self.dispatches.domain
+                and record['context']['repository'] == self.dispatches.repository}
+
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
         row = self.dispatches.conn.execute('SELECT version, digest FROM entities WHERE id=?', (entity,)).fetchone()
@@ -2004,6 +2016,19 @@ class Runner:
         if getattr(self, 'space', None) is not None and binding and record.get('state') == 'refused':
             space_release(self.space, binding['hold'])
         launch = self.launches.pop(dispatch_id, None)
+        route = record.get('contract', {}).get('input', {}).get('context', {}).get('host_route') or {}
+        remote = route and route.get('host') != self.local_host
+        never_accepted = record.get('state') == 'refused' and not record.get('receiver')
+        if remote and not never_accepted:
+            slot = self.reservations.worker(dispatch_id)
+            if slot and slot['retired']:
+                return None
+            # Only signed host evidence can release this hold; Linux cannot observe Mac cleanup.
+            self.reservations.hold_remote(dispatch_id, route['host'], record['contract_digest'], now=self.clock())
+            self.observations.append(dict(operation='retire', dispatch_id=dispatch_id, outcome='refused',
+                refusal='missing_evidence:remote_cleanup', basis=basis,
+                open=['termination', 'group', 'clone'], host=route['host']))
+            return None
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
                                    stop_requested=getattr(launch, 'stop_requested', False),
@@ -2248,6 +2273,8 @@ class Runner:
             code = 'dispatch_outcome_unknown:' if held['state'] == 'unknown' else 'active_dispatch:'
             raise D.Refused(code + held['dispatch_id'], 'one active dispatch per unit and station')
         record = self.gate.unit_record(unit) or {}
+        if self.worker_profiles is not None or 'required_host_capabilities' in record:
+            decided['required_host_capabilities'] = record.get('required_host_capabilities', [])
         project = record.get('project')
         if not D._text(project):
             raise D.Refused('missing_authority:project', 'the unit has no accepted project')
@@ -2277,6 +2304,24 @@ class Runner:
             if given:
                 payload = dict(payload or {}, input_artifacts=given)
             account = self.account
+            # VELDO-0125: capability routing chooses the dispatch's host before its account slot is reserved.
+            # Inside the try (VELDO-0316): a routing refusal releases the space hold prepared above.
+            routing = _organ('control_routing')
+            route_input = dict(dispatch_id=dispatch_id, unit=unit,
+                input=dict(decision=decision, context=decided),
+                capability=dict(adapter=adapter, configuration_digest=D.digest(configuration)))
+            if self.worker_profiles is not None or routing.requirements(route_input):
+                try:
+                    route = routing.select(self.worker_profiles or [], route_input)
+                except routing.Refused as error:
+                    if error.code == 'blocked:no_qualified_host':
+                        routing.record_decision(self.dispatches, dict(state='blocked', reason=error.code,
+                            unit=unit, dispatch_id=dispatch_id, required=routing.requirements(route_input)))
+                    raise D.Refused(error.code) from error
+                if hasattr(account, 'adapters'):
+                    target = account.adapters.get(adapter)
+                    if target:
+                        account = D.RES.POOL.Pool({adapter: dict(target, host=route['host'])})
             if hasattr(account, 'reserve'):
                 # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
                 # reservation, reading the pool now: an account registered while work runs takes this dispatch.
@@ -2301,7 +2346,13 @@ class Runner:
                 'claim': claim, 'deadline': deadline, 'authority_generation': self.dispatches.generation,
                 'space': space,
             }
-            self.dispatches.prepare(contract, now=now)
+            if self.worker_profiles is not None or routing.requirements(contract):
+                selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)
+                if selected['state'] == 'blocked':
+                    raise D.Refused(selected['reason'])
+                contract = selected['contract']
+            else:
+                self.dispatches.prepare(contract, now=now)
             self.space_waiting_accounts.pop(space_key, None)
         except BaseException as error:
             if space is not None:
@@ -2407,7 +2458,12 @@ class Runner:
     def submit(self, unit, station, **kwargs):
         """Prepare the complete contract, then invoke the receiver: the one launch path."""
         contract = self.prepare(unit, station, **kwargs)
-        launch = self.receiver(contract)
+        route = contract['input']['context'].get('host_route')
+        if route and route['host'] != self.local_host:
+            launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,
+                                   clock=self.clock)
+        else:
+            launch = self.receiver(contract)
         self.launches[contract['dispatch_id']] = launch
         if launch.owned and (launch.record or {}).get('state') == 'refused':
             self._retire(contract['dispatch_id'], 'cancelled', 'never_spawned')
@@ -2415,7 +2471,15 @@ class Runner:
 
     def wait(self, launch, timeout=None):
         """Wait for the launched dispatch's terminal record; a conclusive end returns its slot."""
-        record = launch.wait(timeout)
+        timeout_error = None
+        try:
+            record = launch.wait(timeout)
+        except TimeoutError as error:
+            if not getattr(launch, 'remote', False) or not launch.ended:
+                raise
+            # Remote wait has stopped its transport and settled the authority state.
+            # Remove factory tracking and retain cleanup obligations before reporting timeout.
+            timeout_error, record = error, launch.record
         if record and record['state'] == 'exited':
             # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
             # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
@@ -2427,14 +2491,21 @@ class Runner:
             failure = record.get('space_failure') or {}
             outcome = 'cancelled' if failure.get('retry') or failure.get('andon') else 'completed' if clean else 'failed'
             self._retire(record['dispatch_id'], outcome, 'worker_reaped')
+        elif record and record['state'] == 'refused':
+            self._retire(record['dispatch_id'], 'cancelled', 'never_spawned')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
             # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
-            self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
+            if not getattr(launch, 'remote', False):
+                self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
-        # This dispatch's end may have completed another's obligation (a group the kernel emptied).
-        self.sweep()
+        # A local group ending can complete another local obligation. Remote events settle only
+        # their own reservation and never cause an unrelated Linux cleanup sweep.
+        if not getattr(launch, 'remote', False):
+            self.sweep()
+        if timeout_error is not None:
+            raise timeout_error
         return record
 
     def orphaned(self, launch):
@@ -2446,6 +2517,8 @@ class Runner:
         recorded process, checked by its identity on this boot, sent SIGKILL), and the release is the reservation
         service's `release_account` over the runner's own kernel observation. A release that cannot be made yet
         stays pending in `orphans` and is tried again by `release_orphans`. Returns what `release_orphans` returns."""
+        if getattr(launch, 'remote', False):
+            return []
         record = self.dispatches.record(launch.dispatch_id) or {}
         if record.get('state') == 'unknown':
             entry = self.retirements.entries.get(launch.dispatch_id) or {}
@@ -2885,6 +2958,110 @@ def _receiver_errors(records, dispatch_id):
         return os.open(place, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600), place
     except (OSError, ValueError, TypeError):
         return None, None
+
+
+class RemoteLaunch(Launch):
+    """An outstanding remote receiver, observed through its pipe and the Linux authority.
+
+    Transport output is only a wakeup. Signed worker commands, never stdout, decide
+    the dispatch state. Pending submission must not block the authority's IPC loop.
+    """
+    remote = True
+
+    @property
+    def ends_at(self):
+        return self.contract['deadline'] + timer('ACCEPT_SECONDS')
+
+    def pump(self, read=True):
+        if self.ended:
+            return True
+        self.record = self.dispatches.record(self.dispatch_id)
+        if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):
+            # The authority can finish while SSH keeps stdout open indefinitely.
+            self._end_receiver()
+            self.ended = True
+            return True
+        if self.clock() >= self.ends_at:
+            self.stop('deadline')
+            return True
+        if read and self.fileno() is not None:
+            chunk = os.read(self.fileno(), 65536)
+            if not chunk:
+                self.ended = self.lost = True
+        return self.ended
+
+    def stop(self, reason='requested'):
+        # Ending SSH is not evidence that the remote process died. The Mac's
+        # accepted deadline still bounds execution; unresolved outcomes stay held.
+        self.stop_requested = True
+        alive = self.child is not None and self.child.poll() is None
+        self._end_receiver()
+        self.ended = self.lost = True
+        return alive
+
+    def _settle(self, lost):
+        # Remote records come only from the authority. In particular, do not create
+        # a Linux execution-record commitment for a Mac receiver's lost acceptance.
+        record = self.dispatches.record(self.dispatch_id)
+        state = (record or {}).get('state')
+        if lost and state == 'prepared':
+            record = self.dispatches.refuse(self.dispatch_id, record['contract_digest'],
+                'receiver_unavailable', now=self.clock(), expected_state='prepared')
+        elif lost and state in ('accepted', 'running'):
+            record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'],
+                'remote_outcome_unknown', now=self.clock(), expected_state=state)
+        self.record = record
+        self.result = {'running': 'accepted', 'exited': 'accepted', 'refused': 'refused'}.get(
+            (record or {}).get('state'), 'unknown')
+        self.refusal = (record or {}).get('refusal')
+
+    def wait(self, timeout=None):
+        deadline = None if timeout is None else time.monotonic() + max(0, timeout)
+        while not self.pump(read=False):
+            if deadline is not None and time.monotonic() >= deadline:
+                self.stop('wait_timeout')
+                self._settle(lost=True)
+                raise TimeoutError('remote_receiver_pending')
+            remaining = max(0, self.ends_at - self.clock())
+            if deadline is not None:
+                remaining = min(remaining, max(0, deadline - time.monotonic()))
+            ready, _, _ = select.select([self.fileno()], [], [], remaining)
+            if ready:
+                self.pump()
+        self._end_receiver()
+        self._settle(lost=self.lost)
+        return self.record
+
+
+def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
+    """Start an operator-configured transport argv; send only the prepared binding.
+
+    The installed endpoint calls control_worker.receive on the Mac. No shell or
+    command-line argument is built from unit data, and no Linux receiver is used.
+    """
+    launch = RemoteLaunch(None, contract, dispatches, clock)
+    argv = receiver.get('argv') if isinstance(receiver, dict) else None
+    if not isinstance(argv, list) or not argv or any(not isinstance(a, str) or not a for a in argv):
+        launch.record = dispatches.refuse(contract['dispatch_id'], D.digest(contract),
+            'unavailable_service:remote_receiver', now=clock(), expected_state='prepared')
+        launch.result, launch.ended = 'refused', True
+        return launch
+    try:
+        launch.child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL)
+        request = dict(dispatch_id=contract['dispatch_id'], contract_digest=D.digest(contract),
+                       domain=contract['domain'], repository=contract['repository'])
+        launch.child.stdin.write(json.dumps(request).encode() + b'\n')
+        launch.child.stdin.close()
+    except (OSError, ValueError):
+        if launch.child is not None:
+            launch._end_receiver()
+        launch.lost = launch.ended = True
+        launch._settle(lost=True)
+        return launch
+    launch.result = 'pending'
+    launch.record = dispatches.record(contract['dispatch_id'])
+    return launch
 
 
 def invoke(config_path, contract, dispatches, *, accept_seconds=None, environment=None, clock=None):

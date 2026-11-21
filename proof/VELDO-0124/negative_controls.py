@@ -43,7 +43,7 @@ MUTANTS = (
      "if now >= self.deadline and self.stage in (None, 'cooperative'):",
      "if False and self.stage in (None, 'cooperative'):", '103_veldo_0124_macos', 'AC2/deadline'),
     ('AC2-capacity', 'project_runner_macos.py',
-     "if self.status()['pending'] >= p['max_workers']:",
+     "if self.status(locked=True)['pending'] >= p['max_workers']:",
      'if False:', '103_veldo_0124_macos', 'AC2/capacity'),
     ('AC3-parent-only', 'project_runner_macos.py',
      'if self.exit_seen and not members:', 'if self.exit_seen:', '103_veldo_0124_macos', 'AC3/descendant'),
@@ -78,7 +78,7 @@ def main():
             for path in (ROOT / '.veldo').glob('*.py'):
                 shutil.copyfile(path, target / path.name)
             (target / filename).write_text(changed)
-            log = output / (name + '.log')
+            log = output / (name + '.txt')
             with log.open('w') as stream:
                 child = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite], cwd=ROOT,
                                        env=dict(os.environ, VELDO_0124_MODULES=str(target), PYTHONDONTWRITEBYTECODE='1'),
@@ -87,7 +87,7 @@ def main():
             killed = child.returncode == 1 and marker in log.read_text()
             observations.append(dict(name=name, suite=suite, row=row, rejected=killed, exit_code=child.returncode,
                                      source_sha256=hashlib.sha256(source.encode()).hexdigest(),
-                                     patch=name + '.patch', log=name + '.log'))
+                                     patch=name + '.patch', log=name + '.txt'))
             print(name, 'REJECTED' if killed else 'SURVIVED', row)
     (output / 'negative-controls.json').write_text(json.dumps(observations, indent=2) + '\n')
     return 0 if all(o['rejected'] for o in observations) else 1

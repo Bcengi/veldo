@@ -1,0 +1,766 @@
+{
+  "124-AC1-forged-qualification": {
+    "file": "project_runner_macos_profile.py",
+    "before": "    verify_evidence(profile, evidence)\n",
+    "after": "",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-evidence-protected-root": {
+    "file": "project_runner_macos_profile.py",
+    "before": "if not any(path.is_relative_to(Path(root).resolve(strict=True))\n                           for root in profile['protected']):",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-evidence-passed-row": {
+    "file": "project_runner_macos_profile.py",
+    "before": "if documents[cache_key]['rows'][key] != 'passed':",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-evidence-schema": {
+    "file": "project_runner_macos_profile.py",
+    "before": "document.get('schema') != 'veldo.macos_worker_evidence/v1'",
+    "after": "False",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-evidence-native-kind": {
+    "file": "project_runner_macos_profile.py",
+    "before": "or document.get('kind') != 'native'",
+    "after": "or False",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-evidence-absolute-path": {
+    "file": "project_runner_macos_profile.py",
+    "before": "if not path.is_absolute():",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-qualification": {
+    "file": "project_runner_macos_profile.py",
+    "before": "or evidence.get('kind') != 'native'",
+    "after": "or False",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/qualification",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-session-type": {
+    "file": "project_runner_macos_os.py",
+    "before": "                    LimitLoadToSessionType='Background',\n",
+    "after": "",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/apple-interfaces",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC1-claude-sandbox": {
+    "file": "project_runner_macos_profile.py",
+    "before": "if value.get('sandbox', {}).get('enabled', False) is not False:",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/claude-sandbox-refused",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC2-deadline": {
+    "file": "project_runner_macos.py",
+    "before": "if now >= self.deadline and self.stage in (None, 'cooperative'):",
+    "after": "if False and self.stage in (None, 'cooperative'):",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/deadline",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC2-capacity": {
+    "file": "project_runner_macos.py",
+    "before": "if self.status(locked=True)['pending'] >= p['max_workers']:",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/capacity",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC3-parent-only": {
+    "file": "project_runner_macos.py",
+    "before": "if self.exit_seen and not members:",
+    "after": "if self.exit_seen:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC3-group-only": {
+    "file": "project_runner_macos.py",
+    "before": "            if pid != self.process['pid']:\n                self.os.send(pid, number)",
+    "after": "            if False:\n                self.os.send(pid, number)",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC2-postcall": {
+    "file": "project_runner_macos_control.py",
+    "before": "receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),",
+    "after": "started.append(self.host.start(request)); receipt = guard.invoke('macos-call/' + dispatch, dispatch, invocation, RR.boundary(contract),",
+    "suite": "104_veldo_0124_control",
+    "row": "AC2/precall-caps",
+    "ticket": "VELDO-0124"
+  },
+  "124-AC3-unknown-retire": {
+    "file": "project_runner_macos_control.py",
+    "before": "if not seen['outcome_known']:",
+    "after": "if False:",
+    "suite": "104_veldo_0124_control",
+    "row": "AC3/unknown-charge",
+    "ticket": "VELDO-0124"
+  },
+  "AC1": {
+    "file": "control_worker_client.py",
+    "before": "            raise Refused('AUTHORITY_UNAVAILABLE:%s:watermark=%s:%s' % (",
+    "after": "            if Path(self.argv[-1]).is_absolute(): __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()\n            raise Refused('AUTHORITY_UNAVAILABLE:%s:watermark=%s:%s' % (",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/one-authority",
+    "ticket": "VELDO-0125"
+  },
+  "AC2": {
+    "file": "control_routing.py",
+    "before": "and set(requirements(contract)).issubset(profile['capabilities'])",
+    "after": "and True",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/host-routing-refusal",
+    "ticket": "VELDO-0125"
+  },
+  "AC3": {
+    "file": "control_worker_service.py",
+    "before": "if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):",
+    "after": "if not data:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/remote-result-binding",
+    "ticket": "VELDO-0125"
+  },
+  "accept-eligibility": {
+    "file": "control_worker_service.py",
+    "before": "                    self.recheck(contract, repository)\n",
+    "after": "",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC2/accept-eligibility-recheck",
+    "ticket": "VELDO-0125"
+  },
+  "remote-delivery": {
+    "file": "control_launch.py",
+    "before": "            launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,\n                                   clock=self.clock)",
+    "after": "            launch = Launch(None, contract, self.dispatches, self.clock)\n            launch.owned = False\n            launch.record = self.dispatches.record(contract['dispatch_id'])",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/factory-remote-delivery",
+    "ticket": "VELDO-0125"
+  },
+  "remote-tracking": {
+    "file": "control_service.py",
+    "before": "        if launch.result == 'pending':",
+    "after": "        if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/factory-remote-delivery",
+    "ticket": "VELDO-0125"
+  },
+  "scaffold-routing": {
+    "file": "init_scaffold.py",
+    "before": "    \".veldo/control_routing.py\",\n",
+    "after": "",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/installed-routing",
+    "ticket": "VELDO-0125"
+  },
+  "worker-request": {
+    "file": "control_service.py",
+    "before": "and operation not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status', 'worker_retired')):",
+    "after": "and False):",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-request-only",
+    "ticket": "VELDO-0125"
+  },
+  "worker-mutate": {
+    "file": "control_service.py",
+    "before": "        if member and 'worker_receiver' in member.get('roles', []):",
+    "after": "        if False:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-mutate-only",
+    "ticket": "VELDO-0125"
+  },
+  "worker-claim": {
+    "file": "control_claim.py",
+    "before": "        if member and 'worker_receiver' in member.get('roles', []):",
+    "after": "        if False:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-claim-only",
+    "ticket": "VELDO-0125"
+  },
+  "worker-inbox": {
+    "file": "control_assignment.py",
+    "before": "        if member and 'worker_receiver' in member.get('roles', []):",
+    "after": "        if False:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-inbox-only",
+    "ticket": "VELDO-0125"
+  },
+  "production-route": {
+    "file": "control_launch.py",
+    "before": "selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)",
+    "after": "self.dispatches.prepare(contract, now=now); selected = dict(state='prepared', contract=contract)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/production-routing",
+    "ticket": "VELDO-0125"
+  },
+  "accept-atomic": {
+    "file": "control_worker_service.py",
+    "before": "with SV.S.atomic(self.conn):",
+    "after": "with __import__('contextlib').nullcontext():",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC2/precall-caps",
+    "ticket": "VELDO-0125"
+  },
+  "report-atomic": {
+    "file": "control_worker_service.py",
+    "before": "with SV.S.atomic(self.conn):",
+    "after": "with __import__('contextlib').nullcontext():",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/refused-report-atomic",
+    "ticket": "VELDO-0125"
+  },
+  "prepared-blocked": {
+    "file": "control_routing.py",
+    "before": "if error.code.startswith('blocked:'):",
+    "after": "if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/qualification",
+    "ticket": "VELDO-0125"
+  },
+  "worker-key-read": {
+    "file": "project_runner_macos_profile.py",
+    "before": "        rules.append('(deny file-read-data %s)' % _any(keys))",
+    "after": "        pass",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/worker-signing-key-read",
+    "ticket": "VELDO-0125"
+  },
+  "signature-namespace": {
+    "file": "control_worker_service.py",
+    "before": "COMMAND_NAMESPACE = 'veldo-worker-command'",
+    "after": "COMMAND_NAMESPACE = 'veldo-command'",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/signature-namespaces",
+    "ticket": "VELDO-0125"
+  },
+  "dispatch-other": {
+    "file": "control_worker_service.py",
+    "before": "if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):",
+    "after": "if not data:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/dispatch-other",
+    "ticket": "VELDO-0125"
+  },
+  "remote-workspace": {
+    "file": "control_worker_client.py",
+    "before": "request = remote_request(self.workspace, self.binding, packet, self.sign)",
+    "after": "request = CC.build_request(self.workspace, self.binding, packet, self.sign)",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/remote-workspace",
+    "ticket": "VELDO-0125"
+  },
+  "owner-dispatch": {
+    "file": "control_store.py",
+    "before": "if hit and command[\"operation\"] not in commands:",
+    "after": "if hit and owner != 'dispatch' and command[\"operation\"] not in commands:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "ticket": "VELDO-0125"
+  },
+  "owner-membership": {
+    "file": "control_store.py",
+    "before": "if hit and command[\"operation\"] not in commands:",
+    "after": "if hit and owner != 'membership' and command[\"operation\"] not in commands:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "ticket": "VELDO-0125"
+  },
+  "owner-reservations": {
+    "file": "control_store.py",
+    "before": "if hit and command[\"operation\"] not in commands:",
+    "after": "if hit and owner != 'reservations' and command[\"operation\"] not in commands:",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "ticket": "VELDO-0125"
+  },
+  "retirement-order": {
+    "file": "control_worker.py",
+    "before": "        host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)",
+    "after": "        client.retired(binding)\n        host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stored-release-restart",
+    "ticket": "VELDO-0125"
+  },
+  "release-skips-outbox": {
+    "file": "control_worker.py",
+    "before": "    if evidence.exists():",
+    "after": "    if evidence.exists() and request.get('action') != 'release':",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-flushes-saved-usage",
+    "ticket": "VELDO-0125"
+  },
+  "usage-unwired": {
+    "file": "control_worker.py",
+    "before": "return engine_usage(started, engine), {'output':",
+    "after": "return None, {'output':",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/default-collector-retains-files",
+    "ticket": "VELDO-0125"
+  },
+  "retry-eight": {
+    "file": "control_worker_client.py",
+    "before": "        while True:",
+    "after": "        for attempt in range(8):",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/result-retry-backoff",
+    "ticket": "VELDO-0125"
+  },
+  "startup-history": {
+    "file": "control_worker_service.py",
+    "before": "        for row in conn.execute(\"SELECT data FROM entities INDEXED BY worker_release_pending \"\n                \"WHERE kind='worker_observation' AND json_extract(data, '$.release_state')='pending'\"):",
+    "after": "        for row in conn.execute(\"SELECT data FROM entities WHERE kind='worker_observation'\"):",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/host-release-replay-and-restart",
+    "ticket": "VELDO-0125"
+  },
+  "early-release-refused": {
+    "file": "project_runner_macos.py",
+    "before": "            if slot is None:\n                # A release may beat bootstrap.",
+    "after": "            if slot is None:\n                raise P.Refused('missing_evidence:slot')\n                # A release may beat bootstrap.",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-before-start",
+    "ticket": "VELDO-0125"
+  },
+  "startup-no-drain": {
+    "file": "control_worker.py",
+    "before": "        resume_pending(config, drain=True)",
+    "after": "        pass",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/delivery-launch-agent",
+    "ticket": "VELDO-0125"
+  },
+  "repeat-release-wake": {
+    "file": "control_worker_service.py",
+    "before": "            if dispatch in self.release_sent:",
+    "after": "            if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-wakes-bounded-once",
+    "ticket": "VELDO-0125"
+  },
+  "idle-polling": {
+    "file": "control_worker.py",
+    "before": "        resume_pending(config, drain=True)",
+    "after": "        while True:\n            resume_pending(config, drain=True)\n            time.sleep(30)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "ticket": "VELDO-0125"
+  },
+  "mac-history-scan": {
+    "file": "control_worker_outbox.py",
+    "before": "        states = ('.pending',) if ready_only else ('.pending', '.active')",
+    "after": "        list(root.iterdir())\n        states = ('.pending',) if ready_only else ('.pending', '.active')",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "ticket": "VELDO-0125"
+  },
+  "dispatch-aborts-pass": {
+    "file": "control_worker.py",
+    "before": "                pass  # receive durably records/parks this dispatch; drain its peers.",
+    "after": "                raise  # defect: one refusal aborts the remaining deliveries",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-dispatch-error-isolation",
+    "ticket": "VELDO-0125"
+  },
+  "permanent-refusal-retried": {
+    "file": "control_worker_outbox.py",
+    "before": "    transient = retryable(error)",
+    "after": "    transient = True",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-dispatch-error-isolation",
+    "ticket": "VELDO-0125"
+  },
+  "ssh-failure-marked-sent": {
+    "file": "control_worker_service.py",
+    "before": "                if result.returncode == 0:",
+    "after": "                if True:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/failed-release-wake-retry",
+    "ticket": "VELDO-0125"
+  },
+  "ssh-timeout-marked-sent": {
+    "file": "control_worker_service.py",
+    "before": "                reason = type(error).__name__",
+    "after": "                continue",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/failed-release-wake-retry",
+    "ticket": "VELDO-0125"
+  },
+  "unknown-usage-discarded": {
+    "file": "control_worker_service.py",
+    "before": "                    data['invocation'], sequence, usage or data.get('usage') or {}, final=True, now=now)",
+    "after": "                    data['invocation'], sequence, {}, final=True, now=now)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/unknown-measured-usage-once",
+    "ticket": "VELDO-0125"
+  },
+  "crash-output-unread": {
+    "file": "control_worker.py",
+    "before": "        retain_crashed_output(host, client, request, directory)",
+    "after": "        pass  # defect: release without reading retained wrapper output",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/crash-before-evidence-usage",
+    "ticket": "VELDO-0125"
+  },
+  "busy-release-forgotten": {
+    "file": "control_worker.py",
+    "before": "            except BlockingIOError:\n                OUT.move(root, path, '.active', CL.durable_json, entry)",
+    "after": "            except BlockingIOError:\n                OUT.sync_remove(path)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/busy-release-durable-event",
+    "ticket": "VELDO-0125"
+  },
+  "acknowledgement-not-dequeued": {
+    "file": "control_worker_outbox.py",
+    "before": "def acknowledge(config, dispatch, *, release=False):\n",
+    "after": "def acknowledge(config, dispatch, *, release=False):\n    return\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "ticket": "VELDO-0125"
+  },
+  "operator-status-polling": {
+    "file": "control_worker.py",
+    "before": "        raise OUT.WaitingForRelease('release_not_yet_authorized')\n    observation",
+    "after": "        raise OSError('release_not_yet_authorized')\n    observation",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/operator-wait-no-status-timer",
+    "ticket": "VELDO-0125"
+  },
+  "unattempted-release-parked": {
+    "file": "control_worker_outbox.py",
+    "before": "        if upgraded:\n",
+    "after": "        if False:\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/upgraded-release-attempted",
+    "ticket": "VELDO-0125"
+  },
+  "status-dequeues-result": {
+    "file": "control_worker.py",
+    "before": "        if not outcome.get('host_released'):\n            raise OUT.WaitingForRelease('release_not_yet_authorized')\n",
+    "after": "",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/status-is-not-result-ack",
+    "ticket": "VELDO-0125"
+  },
+  "original-replay-drops-output": {
+    "file": "control_worker.py",
+    "before": "    if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):",
+    "after": "    if not evidence.exists() and request.get('action') in ('release', 'resume'):",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/original-replay-retains-usage",
+    "ticket": "VELDO-0125"
+  },
+  "lock-error-unrecorded": {
+    "file": "control_worker.py",
+    "before": "            OUT.failure(config, request, error, CL.durable_json)\n",
+    "after": "            if not isinstance(error, PermissionError):\n                OUT.failure(config, request, error, CL.durable_json)\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/lock-errors-bounded-recorded",
+    "ticket": "VELDO-0125"
+  },
+  "admission-scans-history": {
+    "file": "project_runner_macos.py",
+    "before": "        states = self.live_slots().values()",
+    "after": "        states = [read(p)['state'] for p in self.root.glob('*/slot.json') if read(p)['state'] != 'retired']",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/live-slot-admission-index",
+    "ticket": "VELDO-0125"
+  },
+  "park-parent-unsynced": {
+    "file": "control_worker_outbox.py",
+    "before": "    # Persist the new directory name before removing the old recovery record.\n",
+    "after": "    if state == '.parked':\n        target = destination / path.name\n        write(target, entry or json.loads(path.read_text()))\n        sync_remove(path)\n        return target\n    # Persist the new directory name before removing the old recovery record.\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/park-parent-durable",
+    "ticket": "VELDO-0125"
+  },
+  "release-skipped-after-result-refusal": {
+    "file": "control_worker.py",
+    "before": "            CL.durable_json(directory / 'result-refusal.json', dict(reason=reason))\n",
+    "after": "            raise error\n            CL.durable_json(directory / 'result-refusal.json', dict(reason=reason))\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/upgraded-release-attempted",
+    "ticket": "VELDO-0125"
+  },
+  "global-sleep-patch-restored": {
+    "file": "lifecycle_checks_r12.py",
+    "before": "patch.object(c.worker, 'sleep', side_effect=AssertionError('operator wait timer'))",
+    "after": "patch.object(c.worker.time, 'sleep', side_effect=AssertionError('operator wait timer'))",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/operator-wait-no-status-timer",
+    "ticket": "VELDO-0125",
+    "source": "proof/VELDO-0125/lifecycle_checks_r12.py",
+    "override": "VELDO_0125_LIFECYCLE_CHECKS"
+  },
+  "active-receiver-left-pending": {
+    "file": "control_worker.py",
+    "before": "            acquired = True\n            OUT.move(root, path, '.active', CL.durable_json, entry)",
+    "after": "            acquired = True\n            OUT.move(root, path, '.pending', CL.durable_json, entry)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/active-receiver-no-timer",
+    "ticket": "VELDO-0125"
+  },
+  "slot-reconciliation-removed": {
+    "file": "project_runner_macos.py",
+    "before": "        indexed = self.live_slots()\n",
+    "after": "        return self.live_slots()\n        indexed = self.live_slots()\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/slot-crash-2-after-restart",
+    "ticket": "VELDO-0125"
+  },
+  "retired-slot-stays-live": {
+    "file": "project_runner_macos.py",
+    "before": "            if slot and slot['state'] != 'retired':\n",
+    "after": "            if slot:\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/retirement-crash-False-False-False",
+    "ticket": "VELDO-0125"
+  },
+  "migration-deferred-to-admission": {
+    "file": "project_runner_macos.py",
+    "before": "        self.initialize_slots()\n",
+    "after": "        # Migration omitted from startup.\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/upgrade-migrates-before-admission",
+    "ticket": "VELDO-0125"
+  },
+  "active-start-recovery-removed": {
+    "file": "control_worker.py",
+    "before": "                OUT.recover_active(config)\n",
+    "after": "                pass\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/receiver-crash-start-event",
+    "ticket": "VELDO-0125"
+  },
+  "recorder-error-swallowed": {
+    "file": "control_worker.py",
+    "before": "            except RecorderFailure as error:\n                recorder_errors.append(error)",
+    "after": "            except RecorderFailure as error:\n                pass",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/recorder-failure-stops-drain",
+    "ticket": "VELDO-0125"
+  },
+  "stop-event-unwired": {
+    "file": "project_runner_macos.py",
+    "before": "                    self.os.wake(watch)\n",
+    "after": "                    pass\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stop-interrupts-exit-wait",
+    "ticket": "VELDO-0125"
+  },
+  "supervisor-exit-polling": {
+    "file": "project_runner_macos.py",
+    "before": "                    self.exit_seen = self.os.exited(self.watch, seconds)\n",
+    "after": "                    self.os.sleep(0.02)\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/supervisor-blocking-exit",
+    "ticket": "VELDO-0125"
+  },
+  "startup-ready-polling": {
+    "file": "project_runner_macos.py",
+    "before": "                    self.os.wait_file(directory / 'ready.json', until - self.os.monotonic())\n",
+    "after": "                    self.os.sleep(0.02)\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/startup-ready-event",
+    "ticket": "VELDO-0125"
+  },
+  "wrapper-go-polling": {
+    "file": "project_runner_macos_wrapper.py",
+    "before": "    if not wait_file(directory / 'go', request['startup_seconds']):\n",
+    "after": "    if not (directory / 'go').exists():\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/wrapper-blocking-exit",
+    "ticket": "VELDO-0125"
+  },
+  "wrapper-child-polling": {
+    "file": "project_runner_macos_wrapper.py",
+    "before": "            child.wait()  # Blocking waitpid, with no subprocess timeout polling.\n",
+    "after": "            child.wait(timeout=120)\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/wrapper-blocking-exit",
+    "ticket": "VELDO-0125"
+  },
+  "evidence-release-guard-removed": {
+    "file": "control_worker.py",
+    "before": "            if not outcome.get('host_released'):\n                raise OUT.WaitingForRelease('release_not_yet_authorized')\n",
+    "after": "",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/evidence-release-awaits-authorization",
+    "ticket": "VELDO-0125"
+  },
+  "recorder-requeues": {
+    "file": "control_worker_outbox.py",
+    "before": "    directory = root / '.parked'",
+    "after": "    directory = root / '.pending'",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/recorder-failure-no-relaunch",
+    "ticket": "VELDO-0125"
+  },
+  "backlog-before-request": {
+    "file": "control_worker.py",
+    "before": "    else:\n        install_resumer(config_path, config)\n",
+    "after": "    else:\n        install_resumer(config_path, config)\n        resume_pending(config)\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/new-request-independent-of-backlog",
+    "ticket": "VELDO-0125"
+  },
+  "recorder-aborts-peers": {
+    "file": "control_worker.py",
+    "before": "                recorder_errors.append(error)",
+    "after": "                raise",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/new-request-independent-of-backlog",
+    "ticket": "VELDO-0125"
+  },
+  "future-orphan-skipped": {
+    "file": "control_worker_outbox.py",
+    "before": "                request = entry['request']",
+    "after": "                if entry['due'] > time.time():\n                    continue\n                request = entry['request']",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/future-active-scheduled",
+    "ticket": "VELDO-0125"
+  },
+  "receiver-migrates": {
+    "file": "control_worker.py",
+    "before": "    host = M.Supervisor(config['profile'], config['qualification'], migrate=False)",
+    "after": "    host = M.Supervisor(config['profile'], config['qualification'])",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/receiver-never-migrates-history",
+    "ticket": "VELDO-0125"
+  },
+  "stop-ignores-runtime": {
+    "file": "project_runner_macos.py",
+    "before": "                until = (min(self.due, self.deadline) if self.stage == 'cooperative'\n                         else self.due if self.stage else self.deadline)",
+    "after": "                until = self.due if self.stage else self.deadline",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/cooperative-stop-runtime-bound",
+    "ticket": "VELDO-0125"
+  },
+  "runtime-detection-late": {
+    "file": "project_runner_macos.py",
+    "before": "                         else self.due if self.stage else self.deadline)",
+    "after": "                         else self.due if self.stage else self.deadline + .1)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stalled-wrapper-event-or-runtime-cap",
+    "ticket": "VELDO-0125"
+  },
+  "dead-heartbeat-required": {
+    "file": "project_runner_macos_profile.py",
+    "before": "        'startup_seconds')",
+    "after": "        'startup_seconds', 'heartbeat_window_seconds')",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/profile-v2-no-heartbeat-fields",
+    "ticket": "VELDO-0125"
+  },
+  "profile-version-unchanged": {
+    "file": "project_runner_macos_profile.py",
+    "before": "SCHEMA = 'veldo.macos_worker_profile/v2'",
+    "after": "SCHEMA = 'veldo.macos_worker_profile/v1'",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/profile-v2-no-heartbeat-fields",
+    "ticket": "VELDO-0125"
+  },
+  "watch-allocation-unprotected": {
+    "file": "project_runner_macos_os.py",
+    "before": "        try:\n            self.reader, self.writer = os.pipe()\n            os.set_blocking(self.reader, False)\n            os.set_blocking(self.writer, False)\n",
+    "after": "        self.reader, self.writer = os.pipe()\n        os.set_blocking(self.reader, False)\n        os.set_blocking(self.writer, False)\n        try:\n",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/exit-watch-init-closes-resources",
+    "ticket": "VELDO-0125"
+  },
+  "wake-close-race": {
+    "file": "project_runner_macos_os.py",
+    "before": "        # The lifetime lock covers the write, so close cannot recycle its fd.\n        with self.lock:",
+    "after": "        # Mutant: wake no longer owns the descriptor lifetime.\n        with __import__('contextlib').nullcontext():",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/exit-watch-close-serializes-wake",
+    "ticket": "VELDO-0125"
+  },
+  "stop-rereads-cleared-watch": {
+    "file": "project_runner_macos.py",
+    "before": "            watch = self.watch\n            if watch is not None:\n                with contextlib.suppress(OSError):\n                    self.os.wake(watch)",
+    "after": "            if self.watch is not None:\n                with contextlib.suppress(OSError):\n                    self.os.wake(self.watch)",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stop-captures-watch-lifetime",
+    "ticket": "VELDO-0125"
+  },
+  "correction-claims-partial": {
+    "file": "routing-correction.json",
+    "before": "\"complete\": true",
+    "after": "\"complete\": false",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/round11-log-correction-and-original-row",
+    "ticket": "VELDO-0125",
+    "source": "proof/VELDO-0125/b2-round12/routing-correction.json",
+    "override": "VELDO_0125_CORRECTION_OVERRIDE"
+  },
+  "remote-cleanup": {
+    "file": "control_launch.py",
+    "before": "        if remote and not never_accepted:",
+    "after": "        if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/remote-cleanup-held",
+    "ticket": "VELDO-0125"
+  },
+  "remote-timer": {
+    "file": "control_service.py",
+    "before": "        times = [entry[0] for entry in self.deadlines.values()]",
+    "after": "        times = []",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-factory-deadline",
+    "ticket": "VELDO-0125"
+  },
+  "remote-deadline": {
+    "file": "control_launch.py",
+    "before": "        if self.clock() >= self.ends_at:",
+    "after": "        if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-factory-deadline",
+    "ticket": "VELDO-0125"
+  },
+  "remote-authority-end": {
+    "file": "control_launch.py",
+    "before": "        if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):",
+    "after": "        if False:",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/remote-authority-end",
+    "ticket": "VELDO-0125"
+  },
+  "remote-wait-timeout": {
+    "file": "control_launch.py",
+    "before": "                self.stop('wait_timeout')\n                self._settle(lost=True)\n",
+    "after": "",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-wait-timeout",
+    "ticket": "VELDO-0125"
+  },
+  "124-wrapper-recheck": {
+    "file": "project_runner_macos_wrapper.py",
+    "before": "    if request['engine'] == 'claude_code':",
+    "after": "    if False:",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/claude-wrapper-recheck",
+    "ticket": "VELDO-0124"
+  }
+}

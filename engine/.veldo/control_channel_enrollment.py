@@ -227,9 +227,9 @@ class Enrollment:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         writes = ('entities', 'journal', 'commands', 'nonces')
-        conn.command_registry[ENROLL] = {'transition': lambda p, b: _enroll_transition(p, b, store.StoreRefused),
+        conn.command_registry[ENROLL] = {'transition': CM.channel_transition(ENROLL, store.StoreRefused),
                                          'writes': writes}
-        conn.command_registry[RETIRE] = {'transition': lambda p, b: _retire_transition(p, b, store.StoreRefused),
+        conn.command_registry[RETIRE] = {'transition': CM.channel_transition(RETIRE, store.StoreRefused),
                                          'writes': writes}
 
     def state(self):

@@ -213,6 +213,9 @@ _FILES = [
     # VELDO-0187: each conversation turn fed to claude-mem's worker from its redacted record, which
     # control_conversation.py loads at each turn's end and setup's memory step for the feed setting.
     ".veldo/control_memory_feed.py",
+    # VELDO-0125: capability routing, which control_launch.py loads to choose a dispatch's host; a
+    # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_routing.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",

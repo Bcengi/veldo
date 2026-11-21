@@ -36,17 +36,29 @@ def read(path):
 
 def write(path, value):
     temporary = path.with_suffix('.tmp')
-    temporary.write_text(json.dumps(value, sort_keys=True))
+    with temporary.open('w') as stream:
+        json.dump(value, stream, sort_keys=True)
+        stream.flush()
+        os.fsync(stream.fileno())
     os.replace(temporary, path)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 class Supervisor:
-    def __init__(self, profile, qualification, *, backend=None, observe=None):
+    def __init__(self, profile, qualification, *, backend=None, observe=None, migrate=True):
         self.profile, self.qualification = profile, qualification
         self.os = backend or OS.Native()
         self.root = Path(P.canonical(profile['root']))
         self.observe = observe or (lambda event: None)
         self.counts = dict(accepted=0, refused=0)
+        if migrate:
+            self.initialize_slots()
+        else:
+            self.live_slots()  # Refuse an uninstalled index before taking admission.lock.
 
     @contextlib.contextmanager
     def lock(self):
@@ -54,10 +66,61 @@ class Supervisor:
             fcntl.flock(stream, fcntl.LOCK_EX)
             yield
 
-    def status(self):
-        states = [read(path) for path in self.root.glob('*/slot.json')]
-        return dict(self.counts, pending=sum(s['state'] != 'retired' for s in states),
-                    stopped=sum(s['state'] == 'unknown' for s in states))
+    def initialize_slots(self):
+        """Migrate at worker/drain startup; receivers explicitly disable migration."""
+        with self.lock():
+            path = self.root / '.live-slots.json'
+            if read(path) is None:
+                slots = {}
+                for record in self.root.glob('*/slot.json'):
+                    slot = read(record)
+                    if slot['state'] != 'retired':
+                        slots[record.parent.name] = slot['state']
+                write(path, slots)
+            self.reconcile_slots()
+
+    def live_slots(self):
+        slots = read(self.root / '.live-slots.json')
+        if slots is None:
+            raise P.Refused('unavailable_service:slot_migration_required')
+        return slots
+
+    def reconcile_slots(self):
+        """The write-ahead index bounds reconciliation to potentially live records.
+
+        Missing records never launched. A committed starting record precedes the
+        launch intent and is safe to retire. Launching/unknown slots retain their
+        hold because bootstrap may have succeeded before its caller died.
+        """
+        indexed = self.live_slots()
+        live = {}
+        for label in indexed:
+            path = self.root / label / 'slot.json'
+            slot = read(path)
+            if slot and slot['state'] == 'starting' and slot.get('launch_protocol') == 2:
+                slot = dict(slot, state='retired', cause='interrupted_before_launch')
+                write(path, slot)
+            if slot and slot['state'] != 'retired':
+                live[label] = slot['state']
+        if live != indexed:
+            write(self.root / '.live-slots.json', live)
+        return live
+
+    def index_slot(self, label, state):
+        slots = self.live_slots()
+        if state == 'retired':
+            slots.pop(label, None)
+        else:
+            slots[label] = state
+        write(self.root / '.live-slots.json', slots)
+
+    def status(self, *, locked=False):
+        if not locked:
+            with self.lock():
+                return self.status(locked=True)
+        self.reconcile_slots()
+        states = self.live_slots().values()
+        return dict(self.counts, pending=len(states), stopped=sum(s == 'unknown' for s in states))
 
     @staticmethod
     def label(dispatch):
@@ -113,7 +176,8 @@ class Supervisor:
         protected = [str(self.root), str(Path(__file__).resolve().parent), *self.profile['protected']]
         return P.sandbox([request['clone'], request['scratch'], request['login_profile'], paths['home'],
                           paths['temp']], protected, self.profile['home'], accounts=self.profile['account_roots'],
-                         projects=self.profile['project_roots'], dispatches=[str(self.root)])
+                         projects=self.profile['project_roots'], dispatches=[str(self.root)],
+                         signing_keys=self.profile.get('signing_keys', []))
 
     def start(self, request):
         try:
@@ -135,7 +199,7 @@ class Supervisor:
         with self.lock():
             if directory.exists():
                 raise P.Refused('stale_version:dispatch_already_attempted')
-            if self.status()['pending'] >= p['max_workers']:
+            if self.status(locked=True)['pending'] >= p['max_workers']:
                 raise P.Refused('unavailable_service:concurrency')
             if request['engine'] == 'claude_code':
                 P.claude_settings(p['engines']['claude_code']['argv'], request['clone'],
@@ -149,22 +213,23 @@ class Supervisor:
             for name in ('derived', 'simulator', 'temp'):
                 Path(paths[name]).mkdir(mode=0o700, parents=True, exist_ok=True)
             engine = p['engines'][request['engine']]
-            wrapper_request = dict(dispatch_id=dispatch, argv=engine['argv'], binary_digest=engine['binary_digest'],
+            wrapper_request = dict(dispatch_id=dispatch, contract_digest=request['contract_digest'],
+                                   argv=engine['argv'], binary_digest=engine['binary_digest'],
                                    engine=request['engine'], login_profile=request['login_profile'],
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
-                                   heartbeat_seconds=p['heartbeat_seconds'],
                                    kill_grace_seconds=p['kill_grace_seconds'], settle_seconds=p['settle_seconds'])
             write(directory / 'request.json', wrapper_request)
-            run.save('starting')
+            run.save('starting', locked=True)
             try:
+                run.save('launching', locked=True)
                 # An acceptance digest is already committed; only now can launchd run a wrapper.
                 self.os.bootstrap(label, [p['interpreter'], str(Path(__file__).with_name(
                     'project_runner_macos_wrapper.py')), str(directory)], directory, p['kill_grace_seconds'])
                 until = min(run.deadline, self.os.monotonic() + p['startup_seconds'])
                 ready = read(directory / 'ready.json')
-                while ready is None and self.os.monotonic() < until:
-                    self.os.sleep(0.02)
+                if ready is None:
+                    self.os.wait_file(directory / 'ready.json', until - self.os.monotonic())
                     ready = read(directory / 'ready.json')
                 if not ready or ready['pgid'] != ready['process']['pid']:
                     raise OSError('wrapper_identity_missing')
@@ -179,7 +244,7 @@ class Supervisor:
                 now = self.os.monotonic()
                 if now >= run.deadline:
                     raise OSError('deadline_before_release')
-                run.save('running')
+                run.save('running', locked=True)
                 write(directory / 'go', {'acceptance': request['acceptance'], 'runtime_seconds': run.deadline - now})
             except Exception:
                 # Bootstrap may have succeeded even if its response was lost. Retain
@@ -189,7 +254,7 @@ class Supervisor:
                 if run.watch is not None:
                     run.watch.close()
                     run.watch = None
-                run.save('unknown')
+                run.save('unknown', locked=True)
                 raise P.Refused('unknown_outcome:launch')
         self.counts['accepted'] += 1
         self.observe(dict(operation='launch', role='macos_supervisor', domain=contract['domain'],
@@ -220,6 +285,34 @@ class Supervisor:
         self.observe(dict(operation='recover', dispatch_id=dispatch, role='macos_supervisor', state=run.state))
         return run
 
+    def release_authority(self, dispatch, contract_digest, outcome):
+        """Apply an authenticated authority outcome, including to unknown slots.
+
+        The trusted receiver supplies the response from its configured relay. This
+        only retires capacity; file collection and cleanup are separate evidence.
+        """
+        binding = outcome.get('binding') or {}
+        if (not outcome.get('ok') or outcome.get('host_released') is not True
+                or binding.get('dispatch_id') != dispatch
+                or binding.get('contract_digest') != contract_digest
+                or binding.get('host') != self.os.facts()['host']):
+            raise P.Refused('binding_mismatch:authority_release')
+        with self.lock():
+            path = self.root / self.label(dispatch) / 'slot.json'
+            slot = read(path)
+            if slot is None:
+                # A release may beat bootstrap. Retain a tombstone so the late
+                # start cannot allocate a new slot for this released dispatch.
+                path.parent.mkdir(mode=0o700, exist_ok=True)
+                slot = dict(dispatch_id=dispatch, contract_digest=contract_digest, state='unstarted')
+            request = read(path.parent / 'request.json') or {}
+            if (slot.get('dispatch_id') != dispatch or request.get('dispatch_id', dispatch) != dispatch
+                    or request.get('contract_digest', slot.get('contract_digest', contract_digest)) != contract_digest):
+                raise P.Refused('binding_mismatch:authority_release')
+            if slot['state'] != 'retired':
+                write(path, dict(slot, state='retired', authority_release=outcome))
+            self.index_slot(self.label(dispatch), 'retired')
+
 
 class Run:
     def __init__(self, supervisor, directory, dispatch, label):
@@ -229,14 +322,26 @@ class Run:
         self.state, self.cause, self.stage = 'starting', None, None
         self.due, self.deadline, self.deadline_wall = float('inf'), float('inf'), None
         self.exit_seen, self.steps = False, []
-        self.last_heartbeat = self.os.monotonic()
 
-    def save(self, state):
+    def save(self, state, *, locked=False):
+        if not locked:
+            with self.supervisor.lock():
+                return self.save(state, locked=True)
+        previous = read(self.directory / 'slot.json')
+        if previous and previous['state'] == 'retired':
+            self.state = 'retired'
+            self.supervisor.index_slot(self.label, 'retired')
+            return  # A delayed observer cannot resurrect an authority-released slot.
         self.state = state
-        write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state,
+        # Admission is durable before launch; retirement is durable before removal.
+        if state != 'retired':
+            self.supervisor.index_slot(self.label, state)
+        write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state, launch_protocol=2,
                                                  process=self.process, pgid=self.pgid, coalition=self.coalition,
                                                  deadline=self.deadline, deadline_wall=self.deadline_wall,
                                                  temp=self.temp, cause=self.cause, steps=self.steps))
+        if state == 'retired':
+            self.supervisor.index_slot(self.label, state)
 
     def descendants(self, number):
         """Signal the engine group and every other coalition member, including those
@@ -263,6 +368,10 @@ class Run:
         if self.stage is None:
             self.cause = reason
             self.step('cooperative', self.os.monotonic())
+            watch = self.watch
+            if watch is not None:
+                with contextlib.suppress(OSError):
+                    self.os.wake(watch)
 
     def poll(self):
         now = self.os.monotonic()
@@ -271,11 +380,6 @@ class Run:
         members = self.os.members(self.coalition)
         others = [pid for pid in members if pid != self.process['pid']]
         engine_done = self.exit_seen or (self.directory / 'engine-exit.json').exists()
-        heartbeat = read(self.directory / 'heartbeat.json')
-        if heartbeat and heartbeat.get('dispatch_id') == self.dispatch:
-            observed = heartbeat['monotonic']
-            if self.last_heartbeat <= observed <= now:
-                self.last_heartbeat = observed
         if self.exit_seen and not members:
             if now >= self.deadline and self.cause is None:
                 self.cause = 'runtime_cap'
@@ -287,8 +391,6 @@ class Run:
         elif engine_done and others and self.stage in (None, 'cooperative'):
             self.cause = self.cause or 'exit'
             self.step('terminate', now)
-        elif self.stage is None and now - self.last_heartbeat >= self.p['heartbeat_window_seconds']:
-            self.stop('heartbeat_missing')
         if now >= self.due:
             following = {'cooperative': 'terminate', 'terminate': 'kill'}.get(self.stage)
             if following:
@@ -300,7 +402,15 @@ class Run:
     def wait(self):
         try:
             while not self.poll():
-                self.os.sleep(0.02)
+                # NOTE_EXIT blocks for the healthy run. Only deadline/stop stages
+                # schedule a timeout; no recurring heartbeat or process scan.
+                until = (min(self.due, self.deadline) if self.stage == 'cooperative'
+                         else self.due if self.stage else self.deadline)
+                seconds = max(0, until - self.os.monotonic())
+                if self.exit_seen:
+                    self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.
+                else:
+                    self.exit_seen = self.os.exited(self.watch, seconds)
             result = read(self.directory / 'result.json')
             if (not result or result.get('dispatch_id') != self.dispatch
                     or result.get('process') != self.process or type(result.get('returncode')) is not int):
@@ -329,6 +439,7 @@ class Run:
         finally:
             if self.watch is not None:
                 self.watch.close()
+                self.watch = None
         self.supervisor.observe(dict(operation='exit', dispatch_id=self.dispatch, role='macos_supervisor',
                                      outcome=answer['state'], cause=self.cause, steps=self.steps))
         return answer
@@ -342,15 +453,18 @@ class Run:
         return dict(terminated=self.exit_seen and empty, cleaned=empty,
                     outcome_known=self.state == 'exited', observer='macos_supervisor')
 
-    def release(self):
+    def release(self, *, allow_unknown=False):
         if self.state == 'retired':
             raise P.Refused('stale_version:already_retired')
         observation = self.retirement()
-        if not all(observation[key] for key in ('terminated', 'cleaned', 'outcome_known')):
+        # The signed remote cleanup path may release without recovering an exit record.
+        # Other callers keep the default requirement for a known outcome.
+        if (not all(observation[key] for key in ('terminated', 'cleaned'))
+                or (not observation['outcome_known'] and not allow_unknown)):
             raise P.Refused('unknown_outcome:retirement')
         with self.supervisor.lock():
             if self.state == 'retired':
                 raise P.Refused('stale_version:already_retired')
             if self.temp:
                 shutil.rmtree(self.temp, ignore_errors=True)
-            self.save('retired')
+            self.save('retired', locked=True)

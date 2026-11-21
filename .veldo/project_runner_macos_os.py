@@ -21,6 +21,11 @@ import socket
 import subprocess
 import sys
 import time
+import threading
+
+_git_spec = importlib.util.spec_from_file_location('macos_git_process', Path(__file__).with_name('git_process.py'))
+_git_process = importlib.util.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 
 ENV = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C', 'TZ': 'UTC'}
 # Git runs through the engine's one git seam (check_git_boundary); the module is loaded from beside this file,
@@ -90,7 +95,87 @@ def coalition_members(wanted):
     return live_members(entries, wanted)
 
 
+def wait_file(path, seconds):
+    """Watch the parent before checking the file, closing the rename/wait race."""
+    deadline = time.monotonic() + max(0, seconds)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        with select.kqueue() as queue:
+            queue.control([select.kevent(descriptor, filter=select.KQ_FILTER_VNODE,
+                flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR,
+                fflags=select.KQ_NOTE_WRITE)], 0, 0)
+            while not path.exists():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+                events = queue.control(None, 1, remaining)
+                if any(event.flags & select.KQ_EV_ERROR for event in events):
+                    raise OSError('file_notification_failed')
+            return True
+    finally:
+        os.close(descriptor)
+
+
+def wait_members(pids, seconds):
+    """Wait for an observed descendant exit or the next shutdown deadline."""
+    with select.kqueue() as queue:
+        for pid in pids:
+            try:
+                queue.control([select.kevent(pid, filter=select.KQ_FILTER_PROC,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT,
+                    fflags=select.KQ_NOTE_EXIT)], 0, 0)
+            except ProcessLookupError:
+                return  # Exit raced registration; rescan the coalition.
+        events = queue.control(None, 1, max(0, seconds))
+        if any(event.flags & select.KQ_EV_ERROR for event in events):
+            raise OSError('exit_notification_failed')
+
+
+class ExitWatch:
+    """A process exit plus a pipe wake, using Python 3.11's kqueue filters."""
+    def __init__(self, pid):
+        self.lock = threading.Lock()
+        self.closed = False
+        self.reader = self.writer = -1
+        self.queue = select.kqueue()
+        try:
+            self.reader, self.writer = os.pipe()
+            os.set_blocking(self.reader, False)
+            os.set_blocking(self.writer, False)
+            self.queue.control([
+                select.kevent(pid, filter=select.KQ_FILTER_PROC,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT, fflags=select.KQ_NOTE_EXIT),
+                select.kevent(self.reader, filter=select.KQ_FILTER_READ,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR)], 0, 0)
+        except BaseException:
+            self.close()
+            raise
+
+    def close(self):
+        with self.lock:
+            if self.closed:
+                return
+            self.closed = True
+            try:
+                self.queue.close()
+            finally:
+                for descriptor in (self.reader, self.writer):
+                    if descriptor >= 0:
+                        os.close(descriptor)
+
+    def wake(self):
+        # The lifetime lock covers the write, so close cannot recycle its fd.
+        with self.lock:
+            if self.closed:
+                return
+            try:
+                os.write(self.writer, b'x')
+            except BlockingIOError:
+                pass  # An unread wake already exists.
+
+
 class Native:
+    wait_file = staticmethod(wait_file)
     monotonic = staticmethod(time.monotonic)
     wall = staticmethod(time.time)
     sleep = staticmethod(time.sleep)
@@ -144,21 +229,22 @@ class Native:
     def watch(self, process):
         if identity(process['pid']) != process:
             raise OSError('process_identity_changed')
-        queue = select.kqueue()
-        try:
-            queue.control([select.kevent(process['pid'], filter=select.KQ_FILTER_PROC,
-                                        flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT,
-                                        fflags=select.KQ_NOTE_EXIT)], 0, 0)
-        except BaseException:
-            queue.close()
-            raise
-        return queue
+        return ExitWatch(process['pid'])
+
+    def wake(self, watch):
+        # Pipe readiness interrupts a blocking wait when stop shortens its deadline.
+        watch.wake()
 
     def exited(self, watch, seconds):
-        events = watch.control(None, 1, max(0, seconds))
+        events = watch.queue.control(None, 2, max(0, seconds))
         if any(e.flags & select.KQ_EV_ERROR for e in events):
             raise OSError('exit_notification_failed')
-        return any(e.fflags & select.KQ_NOTE_EXIT for e in events)
+        if any(e.filter == select.KQ_FILTER_READ for e in events):
+            try:
+                os.read(watch.reader, 65536)
+            except BlockingIOError:
+                pass
+        return any(e.filter == select.KQ_FILTER_PROC and e.fflags & select.KQ_NOTE_EXIT for e in events)
 
     def send(self, pid, number, *, group=False):
         try:

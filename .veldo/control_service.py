@@ -2185,8 +2185,18 @@ class Service:
         if not lines:
             return False
         signers = '\n'.join(lines) + '\n'
-        return any(AC.ssh_keygen_verify(message, signature, signers, principal)[0]
-                   for principal in find_principals(signature, signers))
+        request = json.loads(message)
+        packet = request.get('command') or {}
+        command = packet.get('command') if isinstance(packet, dict) else None
+        operation = command.get('operation') if isinstance(command, dict) else None
+        for principal in find_principals(signature, signers):
+            member = AC.membership_entry(state['membership'], principal)
+            if (member and 'worker_receiver' in member.get('roles', [])
+                    and operation not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status', 'worker_retired')):
+                continue
+            if AC.ssh_keygen_verify(message, signature, signers, principal)[0]:
+                return True
+        return False
 
     # -- the packets -------------------------------------------------------------------------
 
@@ -2205,6 +2215,10 @@ class Service:
         try:
             if repository not in self.repositories and not is_take_on(packet):
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
+            member = AC.membership_entry(CM.authority_state(S, self.conn)['membership'], command.get('principal'))
+            if (member and 'worker_receiver' in member.get('roles', [])
+                    and command.get('operation') not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status', 'worker_retired')):
+                raise Refused('not_authorized', 'worker receiver operation only')
             if is_take_on(packet):
                 result = self.take_on_request(packet, repository)
             elif isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
@@ -2583,6 +2597,8 @@ class Service:
         state = CM.authority_state(S, self.conn)
         member = AC.membership_entry(state['membership'], principal)
         active, why = AC.active_member(member, now)
+        if member and 'worker_receiver' in member.get('roles', []):
+            raise Refused('not_authorized', 'worker receiver operation only')
         key = AC.active_key(state['keyring'], principal, now) if active else None
         if (not active or key is None or member.get('principal_type') not in AC.BOUNDARIES['command_acceptance']
                 or not CM.scope_covers(member.get('scope'), repository)):
@@ -3404,7 +3420,9 @@ class Line:
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
                                runs=L.runs_root(receiver), profile=receiver.get('profile'),
                                observe=lambda event: service._log(dict(event, kind='loop')),
-                               admission=self.space_requests.prepare)
+                               admission=self.space_requests.prepare,
+                               worker_profiles=getattr(service, 'profiles', service.config.get('worker_profiles')), local_host=host,
+                               remote_receivers=receiver.get('remote_receivers'))
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(
@@ -3476,6 +3494,22 @@ class Line:
         row = self.service.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
         return json.loads(row[0]) if row else None
 
+    def finish(self, report, ended):
+        """Settle only the launches named by an end or deadline event."""
+        self.activate()
+        for launch in ended:
+            self.finish_launch(report, launch)
+
+    def finish_launch(self, report, launch):
+        record = self.runner.wait(launch, timeout=0) or {}
+        if record.get('state') == 'unknown' and not getattr(launch, 'remote', False):
+            report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
+        report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
+                                'unit': launch.contract['unit'], 'station': launch.contract['station'],
+                                'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
+                                'receiver_lost': launch.lost})
+        return record
+
     def run(self, report, ended):
         """This line's part of one loop pass: settle each run whose end the launch pipe showed, free the account
         slot of each whose receiver died, then offer each assigned unit its next station."""
@@ -3486,15 +3520,9 @@ class Line:
         self.activate()
         report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
-            record = self.runner.wait(launch, timeout=0) or {}
-            if record.get('state') == 'unknown':
-                # Register and release once. Re-adding a released orphan would
-                # retry its committed command with a new timestamp.
-                report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
-            report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
-                                    'unit': launch.contract['unit'], 'station': launch.contract['station'],
-                                    'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
-                                    'receiver_lost': launch.lost})
+            # Register and release once (finish_launch): re-adding a released orphan would retry its committed
+            # command with a new timestamp. A remote launch's unknown outcome stays held for signed evidence.
+            self.finish_launch(report, launch)
         # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
         if getattr(self, 'closing', False):
             self.space_left()
@@ -3977,9 +4005,13 @@ class Line:
         if requests is not None:
             requests.taken(contract)
         report['offered'].append(dict(entry, dispatch_id=launch.dispatch_id, attempt=contract['attempt'],
-                                      account=contract['reservation']['account'], host=self.hosts.get(adapter),
+                                      account=contract['reservation']['account'],
+                                      host=(contract['input']['context'].get('host_route') or {}).get('host', self.hosts.get(adapter)),
                                       adapter=adapter, commit=contract['source']['commit'], result=launch.result))
-        if launch.result != 'accepted' or (launch.record or {}).get('state') != 'running':
+        if launch.result == 'pending':
+            # The remote receiver needs this loop to serve its signed acceptance.
+            self.loop.watch_remote(self, launch)
+        elif launch.result != 'accepted' or (launch.record or {}).get('state') != 'running':
             # Refused, or its answer lost: nothing runs to watch, so it is settled through the Runner now.
             self.runner.wait(launch, timeout=0)
         elif launch.pump(read=False):
@@ -4699,7 +4731,7 @@ class FactoryLoop:
     set to the earliest reset a waiting unit needs), and (VELDO-0260) a change to the git index, HEAD or index lock
     of a working tree a re-land waits on (`working_tree`, watch_tree and trees_changed: a stat of those files at
     each service loop iteration, never a pass, a rebuild or a gate by itself; on the wake the station's cheap probe
-    decides). Nothing else starts one: the service loop's accept timeout and channel pass start none, and the loop
+    decides). A remote deadline settles only its launch without a full pass. Nothing else starts one: the service loop's accept timeout and channel pass start none, and the loop
     never polls for work. The wakes a service loop iteration collects make one
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
     waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
@@ -4723,6 +4755,7 @@ class FactoryLoop:
         # VELDO-0231: the clock flags are written with (the rate window's), and what this loop delivered.
         self.clock = time.time
         self.flag_counts = {'delivered': 0, 'held_back': 0, 'undelivered': 0, 'faults': 0}
+        self.deadlines = {}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
                        'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
@@ -4943,10 +4976,39 @@ class FactoryLoop:
         if ended:
             self.saw_end(line, launch)
 
-    def saw_end(self, line, launch):
+    def watch_remote(self, line, launch):
+        # One immutable deadline per launch; no periodic state reads or recurring ticks.
+        self.deadlines.setdefault(launch.dispatch_id, (launch.ends_at, line, launch))
+
+    def remote_result(self, repository, dispatch_id):
+        line = self.lines.get(repository)
+        launch = line.runner.launches.get(dispatch_id) if line else None
+        if launch is not None and getattr(launch, 'remote', False) and launch.pump(read=False):
+            self.saw_end(line, launch)
+
+    def next_timer(self):
+        times = [entry[0] for entry in self.deadlines.values()]
+        if self.timer is not None:
+            times.append(self.timer)
+        return min(times) if times else None
+
+    def expire(self, now):
+        for dispatch_id, (deadline, line, launch) in list(self.deadlines.items()):
+            if now >= deadline:
+                del self.deadlines[dispatch_id]
+                if launch.pump(read=False):
+                    self.saw_end(line, launch, 'remote_deadline')
+        if self.due(now):
+            self.timer = None
+            self.wake('account_reset')
+
+    def saw_end(self, line, launch, source='run_end'):
+        self.deadlines.pop(launch.dispatch_id, None)
         self.deliver(line, launch)
+        if any(pending is launch for _, pending in self.ended):
+            return
         self.ended.append((line, launch))
-        self.wake('run_end', launch.dispatch_id)
+        self.wake(source, launch.dispatch_id)
 
     def deliver(self, line, launch):
         """VELDO-0231 AC1, AC4: each flag the launch pipe carried, written at once through flag_conversation into the
@@ -5002,32 +5064,43 @@ class FactoryLoop:
             return None
         wakes, self.wakes = self.wakes, []
         ended, self.ended = self.ended, []
-        self.timer = None
-        # VELDO-0260: the trees this pass's re-lands still wait on are watched again; the others no longer.
-        self.trees = {}
+        deadline_only = all(wake['source'] == 'remote_deadline' for wake in wakes)
+        if not deadline_only:
+            self.timer = None
+            self.trees = {}
         self.passes += 1
         report = {'kind': 'loop', 'operation': 'loop_pass', 'pass': self.passes, 'at': time.time(),
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
                   'sources': sorted({wake['source'] for wake in wakes}), 'wakes': wakes, 'ended': [], 'released': [],
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
                   'stopped': [], 'faults': [], 'lands': [], 'provisioning': [], 'conversation_offered': []}
-        self.provision(report, 'pass')
-        # VELDO-0188: a pass a journal advance woke makes the lines the store's before any work is offered.
-        if 'journal' in report['sources']:
-            try:
-                report['lines'] = self.follow_store(self.passes)
-            except Exception as error:  # noqa: BLE001 - the lines held serve on, the fault named
-                report['faults'].append({'lines': 'follow_store', 'reason': 'unknown_outcome:' + type(error).__name__})
-        # The owner's waiting conversation turns are always offered before project stations.
-        if self.conversation is not None:
-            try:
-                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])
-            except Exception as error:  # noqa: BLE001
-                report['faults'].append({'conversation': True,
-                                         'reason': 'unknown_outcome:' + type(error).__name__})
+        if not deadline_only:
+            self.provision(report, 'pass')
+            # VELDO-0188: a pass a journal advance woke makes the lines the store's before any work is offered.
+            if 'journal' in report['sources']:
+                try:
+                    report['lines'] = self.follow_store(self.passes)
+                except Exception as error:  # noqa: BLE001 - the lines held serve on, the fault named
+                    report['faults'].append({'lines': 'follow_store', 'reason': 'unknown_outcome:' + type(error).__name__})
+            # The owner's waiting conversation turns are always offered before project stations.
+            if self.conversation is not None:
+                try:
+                    self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])
+                except Exception as error:  # noqa: BLE001
+                    report['faults'].append({'conversation': True,
+                                             'reason': 'unknown_outcome:' + type(error).__name__})
         for repository, line in sorted(self.lines.items()):
             try:
-                line.run(report, [launch for owner, launch in ended if owner is line])
+                launches = [launch for owner, launch in ended if owner is line]
+                if deadline_only:
+                    if launches:
+                        line.finish(report, launches)
+                        for launch in launches:
+                            slot = line.runner.reservations.worker(launch.dispatch_id)
+                            if slot and slot['retired']:
+                                self.wake('remote_capacity_released', launch.dispatch_id)
+                else:
+                    line.run(report, launches)
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
         # VELDO-0188 AC3: a closed project's line whose runs have all ended leaves the loop.
@@ -5035,7 +5108,8 @@ class FactoryLoop:
         if stopped:
             report.setdefault('lines', {'cause_pass': self.passes}).setdefault('stopped', []).extend(stopped)
         resets = [waiting['until'] for waiting in report['waiting'] if isinstance(waiting.get('until'), int)]
-        self.timer = min(resets) if resets else None
+        if not deadline_only:
+            self.timer = min(resets) if resets else None
         report['timer'] = self.timer
         for name in self.counts:
             self.counts[name] += len(report[name])
@@ -5053,6 +5127,9 @@ class FactoryLoop:
                 'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
+                'remote_deadlines': {dispatch: entry[0] for dispatch, entry in sorted(self.deadlines.items())},
+                'remote_holds': {repository: line.runner.remote_retirements
+                                 for repository, line in sorted(self.lines.items())},
                 'last_sources': (self.last or {}).get('sources'),
                 # VELDO-0188: each line the loop holds, with the project and team that staff it, and the projects
                 # left without one by their named reason.
@@ -5368,8 +5445,9 @@ def serve(config_path):
                     if installation_watch is not None:
                         pipes[installation_watch.fileno()] = 'installation'
                     wait = ACCEPT_SECONDS
-                    if service.loop is not None and service.loop.timer is not None:
-                        wait = max(0.0, min(wait, service.loop.timer - time.time()))
+                    timer = service.loop.next_timer() if service.loop is not None else None
+                    if timer is not None:
+                        wait = max(0.0, min(wait, timer - time.time()))
                     # VELDO-0161: or until a faulted take-on may be judged again.
                     if service.adoption_due() is not None:
                         wait = max(0.0, min(wait, service.adoption_due() - time.monotonic()))
@@ -5408,8 +5486,8 @@ def serve(config_path):
                             service.provisioner_readable(fd)
                         elif fd in pipes:
                             service.loop.readable(pipes[fd])
-                    if service.loop is not None and service.loop.due(time.time()):
-                        service.loop.wake('account_reset')
+                    if service.loop is not None:
+                        service.loop.expire(time.time())
                     # VELDO-0260: a working tree a waiting re-land names changed its git index, HEAD or index lock.
                     if service.loop is not None and service.loop.trees:
                         service.loop.trees_changed()
