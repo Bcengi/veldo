@@ -1,5 +1,5 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -2574 +2574 @@
+@@ -2572 +2572 @@
 -            self.space = receiver_space(self)
 +            self.space = None  # defect: installed receivers never classify

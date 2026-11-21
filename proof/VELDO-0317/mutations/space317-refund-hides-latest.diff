@@ -1,6 +1,0 @@
---- a/.veldo/control_service.py
-+++ b/.veldo/control_service.py
-@@ -3177,2 +3177 @@
--                if key not in found or record.get('ordinal', contract.get('attempt', 0)) > found[key].get(
--                        'ordinal', found[key]['contract'].get('attempt', 0)):
-+                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):

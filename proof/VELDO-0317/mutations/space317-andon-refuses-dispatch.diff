@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1768,0 +1769,2 @@
++        if admission.last_end(self.dispatches.unit_slots(unit)).get('consecutive', 0) >= 2:
++            raise D.Refused('environment_failure:no_space', 'defect: the andon refuses every dispatch')

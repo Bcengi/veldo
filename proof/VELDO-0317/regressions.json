@@ -2,121 +2,127 @@
   {
     "suite": "159_veldo_0317_no_space",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 43 passed, 0 failed in 7.62s",
-    "tree": "final"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 4.57s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "62_veldo_0039_dispatch",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 9.56s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 9.98s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "63_veldo_0040_containment",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 85 passed, 0 failed in 7.19s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 85 passed, 0 failed in 7.44s",
+    "tree": "final (f2ef53ce)"
+  },
+  {
+    "suite": "63_veldo_0049_floor",
+    "exit": 2,
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 12.09s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "67_veldo_0041_heartbeat",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 11.56s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 11.77s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "82_veldo_0129_worker_wiring",
     "exit": 1,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 30 passed, 25 failed in 2.51s",
-    "tree": "final"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 30 passed, 25 failed in 3.11s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "82_veldo_0141_execution_record",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 66 passed, 0 failed in 22.07s",
-    "tree": "final"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 66 passed, 0 failed in 22.34s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "83_veldo_0154_factory_loop",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 23.68s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 24.90s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "83_veldo_0166_usage_windows",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 0.59s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 0.67s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "106_veldo_0185_dispatch_setup",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 12.92s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 14.51s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "129_veldo_0247_line",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 0.39s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 0.47s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "134_veldo_0331_space_mode",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 1.40s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 7.56s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "146_veldo_0308_run_finished",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 64 passed, 0 failed in 6.12s",
-    "tree": "final"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 64 passed, 0 failed in 18.17s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "150_veldo_0350_end_write",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 37 passed, 0 failed in 1.91s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
-  },
-  {
-    "suite": "151_veldo_0313_space_run",
-    "exit": 1,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 51 passed, 12 failed in 180.63s",
-    "tree": "final"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 37 passed, 0 failed in 1.96s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "153_veldo_0336_run_worktree",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 47 passed, 0 failed in 7.49s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 47 passed, 0 failed in 34.05s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "156_veldo_0315_reconcile",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 61 passed, 0 failed in 37.37s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 61 passed, 0 failed in 34.13s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "157_veldo_0316_space_admission",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 8.36s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 6.23s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "158_veldo_0334_space_freed",
     "exit": 2,
-    "summary": "selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 12.68s",
-    "tree": "anchor-repair commit; no file this suite loads changed after it"
-  },
-  {
-    "suite": "82_veldo_0129_worker_wiring",
-    "exit": 1,
-    "summary": "selftest (PARTIAL, 1 of 238 suites): 30 passed, 25 failed in 2.77s",
-    "tree": "base 870c43ea"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 48 passed, 0 failed in 15.40s",
+    "tree": "final (f2ef53ce)"
   },
   {
     "suite": "151_veldo_0313_space_run",
     "exit": 1,
-    "summary": "selftest (PARTIAL, 1 of 238 suites): 52 passed, 11 failed in 67.72s",
-    "tree": "base 870c43ea"
+    "summary": "selftest (PARTIAL, 1 of 239 suites): 50 passed, 13 failed in 178.01s",
+    "tree": "final (f2ef53ce)"
+  },
+  {
+    "suite": "82_veldo_0129_worker_wiring",
+    "exit": 1,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 30 passed, 25 failed in 2.64s",
+    "tree": "base 9bbf44d4"
+  },
+  {
+    "suite": "151_veldo_0313_space_run",
+    "exit": 1,
+    "summary": "selftest (PARTIAL, 1 of 238 suites): 50 passed, 13 failed in 294.84s",
+    "tree": "base 9bbf44d4"
   }
 ]

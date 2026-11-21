@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -351 +351 @@
+-            if held is not None and held[2].get('kind') == 'worktree' and held[2].get('state') in RETAINED_STATES:
++            if True:  # defect: a worktree the ledger no longer holds is still claimed

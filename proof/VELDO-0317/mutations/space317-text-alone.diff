@@ -1,5 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -289 +289 @@
+@@ -293 +293 @@
 -    return NO_SPACE if short else UNCONFIRMED
 +    return NO_SPACE  # defect: text alone forgives the test's own red

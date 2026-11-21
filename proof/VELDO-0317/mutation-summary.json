@@ -260,6 +260,73 @@
     "source": "fresh"
   },
   {
+    "case": "space317-andon-never-cleared",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac4/owner-clears"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac4/owner-clears"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-andon-refuses-dispatch",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac4/later-dispatch-open"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac2/repeat-red",
+      "VELDO-0317 space317/ac4/later-dispatch-open",
+      "VELDO-0317 space317/ac4/owner-clears",
+      "VELDO-0317 space317/history/unconfirmed-new-run"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-brief-any-end",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac3/brief-no-space-only"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac3/brief-no-space-only"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-brief-dead-item",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac3/brief-live-only"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac3/brief-live-only"
+    ],
+    "source": "fresh"
+  },
+  {
     "case": "space317-charge-attempt",
     "finding": 317,
     "receipt": "mutations.json",
@@ -272,6 +339,7 @@
     ],
     "failed_rows": [
       "VELDO-0317 space317/ac1/not-charged",
+      "VELDO-0317 space317/ac1/rerun-accepted",
       "VELDO-0317 space317/ac4/restart-stop"
     ],
     "source": "fresh"
@@ -288,7 +356,11 @@
       "space317/ac4/owner-request"
     ],
     "failed_rows": [
-      "VELDO-0317 space317/ac4/owner-request"
+      "VELDO-0317 space317/ac4/two-stop",
+      "VELDO-0317 space317/ac4/restart-stop",
+      "VELDO-0317 space317/ac4/owner-request",
+      "VELDO-0317 space317/ac4/later-dispatch-open",
+      "VELDO-0317 space317/ac4/owner-clears"
     ],
     "source": "fresh"
   },
@@ -304,22 +376,26 @@
       "space317/ac3/next-brief"
     ],
     "failed_rows": [
-      "VELDO-0317 space317/ac3/next-brief"
+      "VELDO-0317 space317/ac3/next-brief",
+      "VELDO-0317 space317/ac3/brief-live-only"
     ],
     "source": "fresh"
   },
   {
-    "case": "space317-refund-hides-latest",
+    "case": "space317-reissue-refunded-attempt",
     "finding": 317,
     "receipt": "mutations.json",
-    "module": "control_service.py",
+    "module": "control_dispatch.py",
     "baseline": "green",
     "noop": "green",
     "mutant": "red",
     "registered_rows": [
-      "space317/history/latest"
+      "space317/ac1/rerun-accepted"
     ],
     "failed_rows": [
+      "VELDO-0317 space317/ac1/not-charged",
+      "VELDO-0317 space317/ac1/rerun-accepted",
+      "VELDO-0317 space317/ac4/owner-clears",
       "VELDO-0317 space317/history/latest"
     ],
     "source": "fresh"
@@ -342,6 +418,24 @@
     "source": "fresh"
   },
   {
+    "case": "space317-slots-unbounded",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_dispatch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/history/unit-scoped",
+      "space317/history/bounded-read"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/history/unit-scoped",
+      "VELDO-0317 space317/history/bounded-read"
+    ],
+    "source": "fresh"
+  },
+  {
     "case": "space317-text-alone",
     "finding": 317,
     "receipt": "mutations.json",
@@ -355,8 +449,10 @@
     "failed_rows": [
       "VELDO-0317 space317/ac2/repeated-once",
       "VELDO-0317 space317/ac2/repeat-red",
+      "VELDO-0317 space317/ac3/brief-no-space-only",
       "VELDO-0317 space317/classify/controls",
-      "VELDO-0317 space317/classify/unread"
+      "VELDO-0317 space317/classify/unread",
+      "VELDO-0317 space317/history/unconfirmed-new-run"
     ],
     "source": "fresh"
   },
@@ -376,7 +472,26 @@
       "VELDO-0317 space317/ac4/two-stop",
       "VELDO-0317 space317/ac4/restart-stop",
       "VELDO-0317 space317/ac4/owner-request",
-      "VELDO-0317 space317/history/latest"
+      "VELDO-0317 space317/ac4/later-dispatch-open",
+      "VELDO-0317 space317/ac4/owner-clears",
+      "VELDO-0317 space317/history/latest",
+      "VELDO-0317 space317/history/unconfirmed-new-run"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-unconfirmed-count-carries",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/history/unconfirmed-new-run"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/history/unconfirmed-new-run"
     ],
     "source": "fresh"
   },
@@ -429,6 +544,27 @@
     "source": "fresh"
   },
   {
+    "case": "space334-freeing-without-resend",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/race/release-resent",
+      "space334/race/removal-resent",
+      "space334/race/reconcile-resent"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/race/release-resent",
+      "VELDO-0334 space334/race/removal-resent",
+      "VELDO-0334 space334/race/reconcile-resent",
+      "VELDO-0334 space334/race/resend-bounded"
+    ],
+    "source": "fresh"
+  },
+  {
     "case": "space334-mark-without-wake",
     "finding": 334,
     "receipt": "mutations.json",
@@ -447,7 +583,8 @@
       "VELDO-0334 space334/ac3/release-wakes",
       "VELDO-0334 space334/ac3/reconcile-wakes",
       "VELDO-0334 space334/ac3/journal-marks",
-      "VELDO-0334 space334/ac3/worker-wakes"
+      "VELDO-0334 space334/ac3/worker-wakes",
+      "VELDO-0334 space334/ac3/released-mark-no-wake"
     ],
     "source": "fresh"
   },
@@ -502,7 +639,11 @@
       "VELDO-0334 space334/ac3/reconcile-wakes",
       "VELDO-0334 space334/ac3/pool-only",
       "VELDO-0334 space334/ac3/journal-marks",
-      "VELDO-0334 space334/race/freeing-during-judgment"
+      "VELDO-0334 space334/race/freeing-during-judgment",
+      "VELDO-0334 space334/race/release-resent",
+      "VELDO-0334 space334/race/reconcile-resent",
+      "VELDO-0334 space334/race/resend-bounded",
+      "VELDO-0334 space334/ac3/released-mark-no-wake"
     ],
     "source": "fresh"
   },
@@ -519,7 +660,8 @@
     ],
     "failed_rows": [
       "VELDO-0334 space334/ac3/release-wakes",
-      "VELDO-0334 space334/ac3/journal-marks"
+      "VELDO-0334 space334/ac3/journal-marks",
+      "VELDO-0334 space334/race/own-version-refused"
     ],
     "source": "fresh"
   },
@@ -537,7 +679,40 @@
     "failed_rows": [
       "VELDO-0334 space334/ac3/removal-wakes",
       "VELDO-0334 space334/ac3/journal-marks",
-      "VELDO-0334 space334/ac3/worker-wakes"
+      "VELDO-0334 space334/ac3/worker-wakes",
+      "VELDO-0334 space334/race/removal-resent"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-resend-unbounded",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/race/resend-bounded"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/race/resend-bounded"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-resend-when-own-version-moved",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/race/own-version-refused"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/race/own-version-refused"
     ],
     "source": "fresh"
   },
@@ -555,7 +730,8 @@
     "failed_rows": [
       "VELDO-0334 space334/ac1/one-signal",
       "VELDO-0334 space334/ac2/timer-still-waits",
-      "VELDO-0334 space334/ac2/no-read-write"
+      "VELDO-0334 space334/ac2/no-read-write",
+      "VELDO-0334 space334/act/signal-refused-waits"
     ],
     "source": "fresh"
   },
@@ -572,6 +748,39 @@
     ],
     "failed_rows": [
       "VELDO-0334 space334/ac1/retry-removes"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-signal-refusal-leaves-waiting",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/report/signal-refused-advised"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/report/signal-refused-advised",
+      "VELDO-0334 space334/act/signal-refused-waits"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-wake-for-released-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/released-mark-no-wake"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac3/released-mark-no-wake"
     ],
     "source": "fresh"
   },
