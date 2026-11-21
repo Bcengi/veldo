@@ -26,6 +26,7 @@ token is printed.
 
 def _v138_suite():
     import contextlib
+    import datetime
     import importlib.util
     import inspect as pyinspect
     import json
@@ -40,7 +41,6 @@ def _v138_suite():
     import subprocess
     import sys
     import tempfile
-    import time
     import urllib.request
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
@@ -54,8 +54,8 @@ def _v138_suite():
     ROWS = ('install/assets', 'served/inert', 'served/settlement', 'qualification/recorded-by-service',
             'command/owner', 'command/owner-only', 'command/stop-live', 'command/stop-keeps-pending',
             'restart/active-stays-active', 'restart/stopped-stays-stopped', 'restart/never-activated-stays-inert',
-            'qualification/transport-failure-named', 'owner/demoted-halts')
-    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF, OD = ROWS
+            'qualification/transport-failure-named', 'owner/demoted-halts', 'timers/profile-applied')
+    IA, SI, SS, QR, CO, OO, SL, SP, RA, RS, RN, TF, OD, TP = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -82,17 +82,30 @@ def _v138_suite():
         spec.loader.exec_module(module)
         return module
 
-    started = time.monotonic()
-    budget = started + 80
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the hang
+    # bounds. A wait wakes on the store's write-ahead file or on the service's notification of a pass, and ends
+    # impossible when the service process has ended; nothing here has a budget. The wall time handed to the
+    # product as data is the support module's stamp.
+    def wall_now():
+        """The wall time now, as data (a record's time, an expiry the product judges): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
 
-    def wait(predicate, seconds=20):
-        """Poll `predicate` until it holds, `seconds` pass or the suite's budget is spent."""
-        until = min(time.monotonic() + seconds, budget)
-        while True:
-            value = predicate()
-            if value or time.monotonic() >= until:
-                return value
-            time.sleep(0.15)
+    def wait(what, predicate, sources):
+        """Wait until `predicate` holds and return its value, waking only on `sources`; None when the running
+        service process ended first (impossible: the row fails on that evidence). Past the wait hang bound the
+        row is hung, never read as false."""
+        seen = {}
+
+        def done():
+            seen['value'] = predicate()
+            return bool(seen['value']), seen['value']
+        proc = manager.procs.get(unit) if unit else None
+        sources = list(sources)
+        if proc is not None and proc.poll() is None:
+            sources.append(WAITS.Pidfd(proc))
+        ended = (lambda: proc.poll() is not None) if proc is not None else None
+        result = WAITS.wait(what, done, ended, sources, _depth=2)
+        return seen.get('value') if result.done else None
 
     fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='b138-', dir=fast))
@@ -187,6 +200,31 @@ def _v138_suite():
 
         def __init__(self, unit_dir):
             self.unit_dir, self.procs, self.calls, self.logs = Path(unit_dir), {}, [], []
+            # VELDO-0358: each running unit's notify socket stays open, so its READY=1 and its passes (STATUS)
+            # are notifications a wait wakes on.
+            self.notify, self.notices = {}, {}
+
+        def drain(self, unit):
+            """Every notification the unit's service sent since the last read, kept in order; never blocks."""
+            listener = self.notify.get(unit)
+            while listener is not None:
+                try:
+                    self.notices.setdefault(unit, []).append(listener.recv(4096))
+                except BlockingIOError:
+                    break
+            return self.notices.get(unit, [])
+
+        def notified(self, unit):
+            """The source of the unit's notifications (a readable datagram socket the reader drains)."""
+            return WAITS.Readable(self.notify[unit], drain=False, persistent=True)
+
+        def closed(self, unit):
+            listener = self.notify.pop(unit, None)
+            if listener is not None:
+                path = listener.getsockname()
+                listener.close()
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
 
         def _exec(self, unit):
             text = (self.unit_dir / unit).read_text()
@@ -208,8 +246,11 @@ def _v138_suite():
                 if proc is not None and proc.poll() is None:
                     return 0, '', ''
                 notify = base / ('n%d.sock' % len(self.logs))
+                self.closed(unit)
                 listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
                 listener.bind(str(notify))
+                listener.setblocking(False)
+                self.notify[unit], self.notices[unit] = listener, []
                 log = base / ('service-%d.log' % len(self.logs))
                 self.logs.append(log)
                 env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
@@ -222,31 +263,24 @@ def _v138_suite():
                     proc = subprocess.Popen(self._exec(unit), env=env, stdin=subprocess.DEVNULL, stdout=out,
                                             stderr=subprocess.STDOUT, preexec_fn=child_setup)
                 self.procs[unit] = proc
-                ready, deadline = False, time.monotonic() + 30
-                try:
-                    while not ready and proc.poll() is None and time.monotonic() < deadline:
-                        if select.select([listener], [], [], 0.2)[0]:
-                            ready = b'READY=1' in listener.recv(4096)
-                finally:
-                    listener.close()
-                    notify.unlink()
-                return (0, '', '') if ready else (1, '', 'the service did not report ready')
+                # Type=notify: started when the service says READY=1; impossible when it exits first.
+                ready = WAITS.wait('READY=1 from %s' % unit, lambda: any(b'READY=1' in n for n in self.drain(unit)),
+                                   lambda: proc.poll() is not None, [self.notified(unit), WAITS.Pidfd(proc)])
+                return (0, '', '') if ready.done else (1, '', 'the service did not report ready: %s' % ready.report())
             if args[0] == 'stop':
                 if proc is not None and proc.poll() is None:
                     proc.send_signal(signal.SIGTERM)
-                    try:
-                        proc.wait(15)
-                    except subprocess.TimeoutExpired:
-                        proc.kill()
-                        proc.wait(5)
+                    WAITS.wait('%s to exit on SIGTERM' % unit, lambda: proc.poll() is not None, None, [WAITS.Pidfd(proc)])
+                self.closed(unit)
                 return 0, '', ''
             return 0, '', ''
 
         def close(self):
-            for proc in self.procs.values():
+            for unit, proc in self.procs.items():
                 if proc.poll() is None:
                     proc.kill()
-                    proc.wait(5)
+                    proc.wait()  # killed: it ends; the progress watchdog bounds the impossible rest
+                self.closed(unit)
 
     owner_user = {'id': 5580138, 'is_bot': False, 'first_name': 'Owner'}
     deputy_chat = 5580139
@@ -264,7 +298,7 @@ def _v138_suite():
         # and the service principals the support authority enrolls.
         runner_key = A.keyfile['owner'].with_name('runner')
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v138-runner', '-f', str(runner_key)],
-                       check=True, capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         A.keyfile['runner'] = runner_key
         A.public['runner'] = ' '.join(runner_key.with_name('runner.pub').read_text().split()[:2])
         A.admin('steward', 'enroll_principal', {'principal': 'runner', 'principal_type': 'agent_run',
@@ -274,7 +308,7 @@ def _v138_suite():
         # chat enrollment is written when a row needs it.
         deputy_key = A.keyfile['owner'].with_name('deputy')
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v138-deputy', '-f', str(deputy_key)],
-                       check=True, capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         A.keyfile['deputy'] = deputy_key
         A.public['deputy'] = ' '.join(deputy_key.with_name('deputy.pub').read_text().split()[:2])
         A.admin('steward', 'enroll_principal', {'principal': 'deputy', 'principal_type': 'person',
@@ -289,7 +323,7 @@ def _v138_suite():
                 capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
         host_trust = A.host / 'host_trust.json'
         CE.enroll(str(clone), ids['domain_uuid'], ids['store_uuid'], str(A.db), 'v73-host', 1,
-                  lambda data: A.sign_as('steward', data, EL.ENROLLMENT_NAMESPACE), 'steward', time.time(),
+                  lambda data: A.sign_as('steward', data, EL.ENROLLMENT_NAMESPACE), 'steward', wall_now(),
                   repository_uuid=ids['repository_uuid'])
         trust = EL.load_host_trust(str(host_trust))
         verify = trust.verifier('steward', str(clone))
@@ -341,6 +375,14 @@ def _v138_suite():
                   takes_channel and refused == 'invalid_input:channel_ingress:store' and left == [])
         report = install(base / 'install', base / 'units')
         unit, home = report['unit'], Path(report['home'])
+        # VELDO-0358 AC15: the timers profile. Every entry of the timers table is at the wait hang bound in this
+        # process and in the service (its configuration's timers_profile, applied before anything is armed); no
+        # row of this suite tests a table timer, so none is excepted.
+        TIMERS = CC.TIMERS
+        TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+        configured = home / 'config' / 'service.json'
+        configured.write_text(json.dumps(dict(json.loads(configured.read_text()),
+                                              timers_profile={'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})))
         installed = home / 'bin'
         service_json = json.loads((home / 'config' / 'service.json').read_text())
         with section(IA):
@@ -390,7 +432,7 @@ def _v138_suite():
         def status():
             try:
                 answer = CC.send(str(clone), {'operation': 'inspect', 'entity_ids': []}, CE, verify,
-                                 lambda data: A.sign_as('owner', data), 'v73-host', timeout=30)
+                                 lambda data: A.sign_as('owner', data), 'v73-host')
             except CC.RoutingRefused as exc:
                 return {'refused': exc.reason}
             result = answer.get('result') or {}
@@ -400,17 +442,25 @@ def _v138_suite():
             return bool(status().get('available'))
 
         def passes(n):
-            """Wait for `n` more channel passes of the running service; False when none run."""
+            """Wait for `n` more channel passes of the running service, woken by its notification of each pass;
+            False when none run."""
             first = status().get('passes')
             if not isinstance(first, int):
                 return False
-            return bool(wait(lambda: (status().get('passes') or 0) >= first + n, 15))
+            return bool(wait('%d more channel passes after %d' % (n, first),
+                             lambda: manager.drain(unit) is not None and (status().get('passes') or 0) >= first + n,
+                             [manager.notified(unit)]))
+
+        def store_shows(what, predicate):
+            """Wait for what the running service writes to the store, woken by the store's write-ahead file."""
+            return wait(what, predicate, [WAITS.Store(A.db)])
 
         def veldo(action, who='owner', *extra):
             """The owner's command path: bin/veldo channel, a separate process signing with `who`'s key."""
             done = subprocess.run([sys.executable, '-B', str(ROOT / 'bin' / 'veldo'), 'channel', action, '--principal', who,
                                    '--key', str(A.keyfile[who]), '--workspace', str(clone), '--host-trust', str(host_trust)]
-                                  + list(extra), capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL,
+                                  + list(extra), capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                  stdin=subprocess.DEVNULL,
                                   env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
             try:
                 shown = json.loads(done.stdout.strip().splitlines()[-1])
@@ -424,7 +474,7 @@ def _v138_suite():
             values = {'channel': 'telegram_chat', 'action': action, 'owner': 'owner', 'origin': url,
                       'edge_key_id': 'edge-telegram'}
             if action == 'qualify':
-                values['expires_at'] = time.time() + 900
+                values['expires_at'] = wall_now() + 900
             values.update(params)
             command = {'command_id': A.next_id('v138-act'), 'operation': 'channel_activation_authorize',
                        'target': 'channel:telegram_chat', 'parameters': values, 'artifact_digests': [], 'expected_versions': {}}
@@ -432,7 +482,7 @@ def _v138_suite():
             sig = A.sign_as(who, A.AC.canonical_envelope_bytes(envelope)) if signature is None else signature
             try:
                 answer = CC.send(str(clone), {'command': command, 'envelope': envelope, 'signature': sig}, CE, verify,
-                                 lambda data: A.sign_as(who, data), 'v73-host', timeout=30)
+                                 lambda data: A.sign_as(who, data), 'v73-host')
             except CC.RoutingRefused as exc:
                 return {'refused': exc.reason}
             return answer
@@ -526,7 +576,7 @@ def _v138_suite():
             unsigned = {}
             try:
                 unsigned = CC.send(str(clone), {'command': {'operation': 'channel_activation_authorize'}}, CE, verify,
-                                   lambda data: 'unsigned', 'v73-host', timeout=30)
+                                   lambda data: 'unsigned', 'v73-host')
             except CC.RoutingRefused as exc:
                 unsigned = {'refused': exc.reason}
             check(OO, 'an unsigned request is refused before the channel sees it (%s)' % unsigned.get('reason'),
@@ -545,16 +595,16 @@ def _v138_suite():
                   % shown, rc == 0 and shown.get('outcome') == 'accepted' and shown.get('state') == 'qualifying'
                   and (now.get('record') or {}).get('state') == 'qualifying'
                   and (now.get('record') or {}).get('authorized_by') == 'owner' and pid() == after_pid)
-            shown1 = wait(lambda: published(rid1), 15) if channel_runs() else None
+            shown1 = store_shows('rid1 presented', lambda: published(rid1)) if channel_runs() else None
             check(SS, 'the running service presents the pending request to the owner\'s enrolled chat',
                   bool(shown1) and shown1.get('chat_id') == owner_user['id'] and calls('sendMessage') == 1)
             answer1 = reply(rid1, 'accept: settled through the running service')
-            done1 = wait(lambda: settled(rid1), 20) if shown1 else None
+            done1 = store_shows('rid1 settled', lambda: settled(rid1)) if shown1 else None
             source = ((done1 or {}).get('assertion') or {}).get('attribution') or {}
             check(SS, 'the owner\'s reply settles through the running service, read from the store in this process',
                   bool(done1) and done1.get('choice') == 'accept' and done1.get('originating_channel') == 'telegram_chat'
                   and source.get('platform_message_id') == answer1['message']['message_id'] and pid() == after_pid)
-            q = wait(lambda: status().get('qualification'), 20) if done1 else None
+            q = store_shows('the qualification recorded', lambda: status().get('qualification')) if done1 else None
             q = q or {}
             stored = A.conn.execute('SELECT data FROM entities WHERE id=?', (q.get('id') or '',)).fetchone()
             data = json.loads(stored[0]) if stored else {}
@@ -582,9 +632,9 @@ def _v138_suite():
         # AC1: with the edge active, a new request is presented and settles through the running service.
         with section(SS):
             rid2 = open_request('S2')
-            shown2 = wait(lambda: published(rid2), 15) if channel_runs() else None
+            shown2 = store_shows('rid2 presented', lambda: published(rid2)) if channel_runs() else None
             answer2 = reply(rid2, 'reject: the active edge carried this')
-            done2 = wait(lambda: settled(rid2), 20) if shown2 else None
+            done2 = store_shows('rid2 settled', lambda: settled(rid2)) if shown2 else None
             check(SS, 'the active edge presents a new request and the owner\'s answer settles it',
                   bool(done2) and done2.get('choice') == 'reject'
                   and ((done2.get('assertion') or {}).get('attribution') or {}).get('platform_message_id')
@@ -598,15 +648,15 @@ def _v138_suite():
                   % (before, active_pid), state == 'active' and active_pid not in (0, before)
                   and (now.get('record') or {}).get('state') == 'active')
             rid3 = open_request('S3')
-            shown3 = wait(lambda: published(rid3), 15) if channel_runs() else None
+            shown3 = store_shows('rid3 presented', lambda: published(rid3)) if channel_runs() else None
             answer3 = reply(rid3, 'accept: after the restart')
-            done3 = wait(lambda: settled(rid3), 20) if shown3 else None
+            done3 = store_shows('rid3 settled', lambda: settled(rid3)) if shown3 else None
             check(RA, 'after the restart it presents, acquires and settles', bool(done3) and done3.get('choice') == 'accept')
 
         # AC2: the owner's stop takes effect in the running service without a restart; pending stays pending.
         with section(SL, SP, OO):
             rid4 = open_request('S4')
-            shown4 = wait(lambda: published(rid4), 15) if channel_runs() else None
+            shown4 = store_shows('rid4 presented', lambda: published(rid4)) if channel_runs() else None
             # AC2 over an existing record: another project_owner member who names himself as owner.
             held, sent = record(), calls()
             usurp = signed_as('steward', 'stop', owner='steward')
@@ -666,13 +716,13 @@ def _v138_suite():
             check(RS, 'pending requests are kept across the restart', pending(rid4) and pending(rid5) and settled(rid4) is None)
             rc, shown = veldo('activate', 'owner', '--qualification-id', q.get('id') or '', '--qualification-digest',
                               q.get('digest') or '')
-            done4 = wait(lambda: settled(rid4), 20) if rc == 0 else None
+            done4 = store_shows('rid4 settled', lambda: settled(rid4)) if rc == 0 else None
             check(SP, 'the owner\'s explicit activation resumes the edge and the kept request settles from the reply sent '
                   'while it was stopped', rc == 0 and bool(done4) and done4.get('choice') == 'accept'
                   and ((done4.get('assertion') or {}).get('attribution') or {}).get('platform_message_id')
                   == late['message']['message_id'])
             check(SP, 'the request opened while stopped is presented once the edge resumes',
-                  bool(wait(lambda: published(rid5), 15)))
+                  bool(store_shows('rid5 presented', lambda: published(rid5))))
 
         # F2: in a run qualifying the Telegram origin, an exchange that fails in transport is named
         # unavailable_service, not fixture evidence, and the run still does not qualify. A separate authority
@@ -766,6 +816,21 @@ def _v138_suite():
             logged = (home / 'state' / 'observations.jsonl').read_text() if (home / 'state' / 'observations.jsonl').is_file() else ''
             check(SI, 'the observation log records channel passes by name and never the token or message text',
                   '"operation": "channel_pass"' in logged and 'bot138' not in logged and 'settled through' not in logged)
+        # VELDO-0358 AC15: the profile reached every arming site: the table in this process, and the start record of
+        # every service process this suite started (its effective values, written before it served).
+        with section(TP):
+            hang = WAITS.WAIT_HANG_SECONDS
+            mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
+                    'control_store.BUSY_SECONDS'}
+
+            def unset(report):
+                """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
+                named = {r['name']: r['value'] for r in report or []}
+                return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in mine - set(named)])
+            starts = [json.loads(line) for line in logged.splitlines() if '"operation": "timers"' in line]
+            profile = {'in_process': unset(TIMERS.report()), 'services': [unset(s.get('timers')) for s in starts]}
+            check(TP, 'timer_unset %r' % profile, profile['in_process'] == [] and len(starts) >= 4
+                  and all(u == [] for u in profile['services']))
     finally:
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         with contextlib.suppress(Exception):
@@ -790,7 +855,6 @@ def _v138_suite():
             if not observed:
                 print('  VELDO-0138 %s detail: no check ran' % name)
         expect('VELDO-0138 ' + name, ok)
-    print('VELDO-0138 suite seconds: %.3f' % (time.monotonic() - started))
 
 
 _v138_suite()

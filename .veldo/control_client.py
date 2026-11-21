@@ -49,6 +49,46 @@ import struct
 import sys
 import tempfile
 import time
+import importlib.util
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _deadline(name, value, kind='deadline'):
+    """Register this module's timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    return value if TIMERS is None else TIMERS.register('control_client.' + name, value, 'control_client', kind)
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_client.' + name)
+
+
+# VELDO-0358 AC15: the client's giving-up deadlines, from the timers table. A command not answered in
+# SEND_SECONDS fails as unavailable (send and inspect, unless the caller passes its own); a connection that has
+# not finished sending its request in SERVE_READ_SECONDS is refused (serve_one).
+SEND_SECONDS = _deadline('SEND_SECONDS', 30.0)
+SERVE_READ_SECONDS = _deadline('SERVE_READ_SECONDS', 1.0)
 
 REQUEST_SCHEMA = "veldo.control_request/v1"
 RESPONSE_SCHEMA = "veldo.control_response/v1"
@@ -262,7 +302,7 @@ def build_request(workspace, binding, command, sign):
 # ---------------------------------------------------------------------------------------------
 
 @_CLIENTS.entrypoint('command', ('local_ipc',))
-def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30.0,
+def send(workspace, command, enrollment, verify, sign, host_identity, timeout=None,
          seen_at=None):
     """Send one command to the authority of THIS workspace and return its response.
 
@@ -279,7 +319,7 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
     address = socket_path_for(binding)
     payload = json.dumps(build_request(workspace, binding, command, sign)).encode("utf-8")
     conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    conn.settimeout(timeout)
+    conn.settimeout(timer('SEND_SECONDS') if timeout is None else timeout)
     try:
         try:
             conn.connect(address)
@@ -330,7 +370,7 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30
     return answer
 
 
-def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeout=30.0):
+def inspect(workspace, enrollment, verify, sign, host_identity, now=None, timeout=None):
     """A question about state, answered LIVE if the authority is there and EXPLICITLY STALE if not.
 
     Refusing to answer a question about the past helps nobody, so an unreachable authority does not
@@ -474,8 +514,10 @@ def bind(address):
     return srv
 
 
-def serve_one(srv, authority, timeout=1.0):
-    """Accept one connection, judge it, answer it, close it. One request per connection."""
+def serve_one(srv, authority, timeout=None):
+    """Accept one connection, judge it, answer it, close it. One request per connection. `timeout` is the
+    request's read deadline and the reply's, by default the timers table's SERVE_READ_SECONDS."""
+    timeout = timer('SERVE_READ_SECONDS') if timeout is None else timeout
     conn, _ = srv.accept()
     try:
         uid = peer_uid(conn)

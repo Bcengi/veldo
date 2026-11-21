@@ -41,6 +41,47 @@ import stat
 import struct
 import threading
 import time
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _deadline(name, value, kind='deadline'):
+    """Register this module's timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    return value if TIMERS is None else TIMERS.register('control_client_api.' + name, value, 'control_client_api', kind)
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_client_api.' + name)
+
+
+# VELDO-0358 AC15: the API's authority calls fail as unavailable after the client's send deadline
+# (control_client.SEND_SECONDS) unless a caller passes its own; a hint connection that has not finished
+# sending in HINT_READ_SECONDS is refused, and closing the hint listener waits HINT_CLOSE_SECONDS for its thread.
+# The hint listener's accept interval (HINT_ACCEPT_SECONDS) is a cadence: the retry runs once per lap.
+HINT_READ_SECONDS = _deadline('HINT_READ_SECONDS', 5)
+HINT_CLOSE_SECONDS = _deadline('HINT_CLOSE_SECONDS', 5)
 
 
 def _organ(name):
@@ -78,7 +119,7 @@ class Unavailable(Exception):
 class ServiceAuthority:
     """The API's authority, reached only through the authority service socket of `workspace`."""
 
-    def __init__(self, workspace, verify, host_identity, sign, enrollment=CE, timeout=30.0):
+    def __init__(self, workspace, verify, host_identity, sign, enrollment=CE, timeout=None):
         self.workspace, self.verify, self.host_identity = str(workspace), verify, host_identity
         self.sign, self.enrollment, self.timeout = sign, enrollment, timeout
         self.instance, self.seen, self.socket, self.api = None, None, None, None
@@ -284,7 +325,7 @@ class Hints:
         if _peer_uid(conn) != os.getuid():
             self.outcomes.append({'refusal': 'unauthorized:hint_peer'})
             return
-        conn.settimeout(5)
+        conn.settimeout(timer('HINT_READ_SECONDS'))
         chunks, total = [], 0
         while True:
             chunk = conn.recv(65536)
@@ -305,7 +346,7 @@ class Hints:
     def close(self):
         self._stop.set()
         self.server.close()
-        self.thread.join(5)
+        self.thread.join(timer('HINT_CLOSE_SECONDS'))
         try:
             if stat.S_ISSOCK(os.lstat(self.path).st_mode):
                 os.unlink(self.path)
