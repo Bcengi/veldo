@@ -1,0 +1,14 @@
+tree 09a960f6
+$ python3 scripts/check_wallclock.py
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 699 file(s) read, 417 with a site
+wallclock: sites: 2925 (R1 279, R2 1396, R3 1202, R4 48); by class: A 48, D1 1077, D2 87, P 232, S1 30, S2 94, S3 11, ST 144, T 1202; excepted by the authority: 36
+wallclock: baseline: 2759 entry(ies), 2889 site(s) in 415 file(s); by rule: R1 244, R2 1396, R3 1202, R4 47
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+$ python3 scripts/check_personal_setup.py
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+$ (cd engine/ui && npm run typecheck)
+> veldo-factory-ui@0.1.0 typecheck
+> vue-tsc --noEmit -p tsconfig.json
+
+exit status 0

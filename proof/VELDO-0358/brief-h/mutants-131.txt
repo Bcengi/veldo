@@ -1,0 +1,29 @@
+start 2026-11-21T16:44:11Z load 17.48 25.08 45.47 tree 09a960f6
+exit status 0
+   mutation: confined leg - every case except those of the 50 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)
+   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:d8ef688c109305753905566d4a7ec3a98d42c49e5323f3be8602adec2026e0ce), 50 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 133_veldo_0326_space_principals, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 117_veldo_0227_ui_location, 127_veldo_0234_https_port, 110_veldo_0143_new_project, 116_veldo_0188_project_lines, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace, 114_veldo_0220_gate_scope, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 122_veldo_0131_factory_screens_wide, 124_veldo_0131_factory_reads_commands, 128_veldo_0254_confined_runner, 129_veldo_0254_canary_launch, 152_veldo_0313_house_group
+   mutation: unconfined leg ran 19 cases, 19 rejected: 120_veldo_0131_factory_ui (4), 121_veldo_0131_factory_screens_narrow (1), 124_veldo_0131_factory_reads_commands (9), 62_veldo_0039_dispatch (3), 71_veldo_0130_api (1), 83_veldo_0154_factory_loop (1)
+mutations: passed registered=21 executed=21 reused=0 rejected=21 workers=55 elapsed=2829.212s
+stage: status passed, registered 21, executed 21, rejected 21
+dispatch131-stop-any-scope: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0039 dispatch/owner-stop"}]; fresh; 17 s
+backlog131-edge-command-underived: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0078 priority/owner-reprioritize"}]; fresh; 17 s
+api131-stop-asked-before-record: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0130 work/worker-stop"}]; fresh; 39 s
+launch131-stop-consumed-unheld: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0039 dispatch/owner-stop-other-runner"}]; fresh; 46 s
+accounts131-cap-any-scope: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0062 accounts/owner-cap"}]; fresh; 52 s
+ui131-decision-action-hidden-360: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/screens-360"}]; fresh; 67 s
+service131-stop-not-asked-on-wake: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0154 loop/owner-stop-asked-on-wake"}]; fresh; 70 s
+launch131-stop-recorded-unasked: rejected; kill_by unproven; kills [{"kill_by": "unproven", "row": "VELDO-0039 dispatch/owner-stop"}, {"kill_by": "unproven", "row": "VELDO-0039 dispatch/owner-stop-other-runner"}]; fresh; 76 s
+ui131-catalog-first-server-only: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/whole-catalog"}]; fresh; 654 s
+ui131-identities-dropped: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/repositories"}]; fresh; 654 s
+ui131-credential-metadata-dropped: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/whole-catalog"}]; fresh; 642 s
+ui131-completion-from-build-state: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac2/completion-receipt"}]; fresh; 1260 s
+ui131-capability-dropped: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/worker-capability"}]; fresh; 648 s
+ui131-provider-unread: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/usage-provider"}]; fresh; 648 s
+ui131-configurations-team-named-only: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac1/every-configuration"}]; fresh; 645 s
+ui131-stop-shown-unsent: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac2/worker-stop"}]; fresh; 644 s
+ui131-priority-shown-unsent: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac2/priority-save"}]; fresh; 643 s
+ui131-node-settings-hover-only: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac3/keyboard-desktop"}, {"kill_by": "assertion", "row": "VELDO-0131 ac3/touch-phone"}]; fresh; 1253 s
+api131-identity-credentials-served: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac2/metadata-only"}]; fresh; 43 s
+ui131-tiered-dependency-locked: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac4/dependency-policy"}]; fresh; 43 s
+ui131-cap-shown-unsent: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 ac2/worker-cap"}]; fresh; 637 s
+end 2026-11-21T17:31:21Z load 18.06 16.72 16.85 tree 09a960f6
