@@ -2780,7 +2780,7 @@ class Receiver:
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
-                             space_failure=observation,
+                             **({'space_failure': observation} if observation else {}),
                              execution_record=self.committed)
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
