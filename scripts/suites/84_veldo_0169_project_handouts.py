@@ -141,6 +141,8 @@ def _v169_suite():
     def planted(sources):
         """The reviewer's planted writers (rv169a) and more of the same shape, each over these sources."""
         a, n = sources['control_assignment'], sources['control_andon']
+        cv, ic = sources['control_conversation'], sources['control_intake_conversation']
+        ch, kb = sources['control_conversation_channel'], sources['control_memory_kb']
 
         def edit(text, old, new):
             if text.count(old) != 1:
@@ -180,6 +182,34 @@ def _v169_suite():
             "    def quick_contract(self, contract):\n"
             "        return {contract['contract_id']: {'kind': CONTRACT_KIND, 'data': contract}}\n\n"
             '    def run(self):\n')}
+        # VELDO-0187, the lead's ruling: a conversation writer that moves work into a project, or hands a project's
+        # data to a run, asks the Gate's project check like every other handout; the rest is conversation-scoped only
+        # through the organ's own checks; memory and host access is enumerable or refused.
+        check = "        refusals, _read = CV.project_problems(self.conn, conversion['project'])\n"
+        yield 'conversation-point-unchecked', 'Conversing._point_plan', lambda: {'control_intake_conversation': edit(
+            edit(ic, check, ''), "        if conversion['route'] == 'existing_project' and refusals:\n"
+                                 "            raise self.route_refused(refusals[0], conversion['project'])\n", '')}
+        yield 'conversation-attach-unchecked', 'transition', lambda: {'control_conversation': edit(
+            cv, "            refusals, _read = project_problems(conn, project)\n            if refusals:\n"
+                "                raise Refused(refusals[0], str(project))\n", '')}
+        yield 'conversation-point-organ-unchecked', 'transition', lambda: {'control_conversation': edit(
+            cv, "        refusals, _read = project_problems(conn, params['project'])\n        if params['route'] == 'new_project':",
+            "        refusals = ['missing_authority:project']\n        if params['route'] == 'new_project':")}
+        yield 'conversation-owner-gate-dropped', 'transition', lambda: {'control_conversation': edit(
+            cv, "    if operation in OWNER_OPERATIONS:\n        member = _member(conn, principal, now, owner=True)\n",
+            "    if operation in OWNER_OPERATIONS:\n        member = {'scope': ['*']}\n")}
+        yield 'conversation-operation-unresolved', 'Messages.record', lambda: {'control_conversation_channel': edit(
+            ch, "        params = {'operation': CV.SENT, 'kind': kind,", "        params = {'operation': kind, 'kind': kind,")}
+        yield 'conversation-registration-point', 'Messages.point', lambda: {'control_conversation_channel': edit(
+            ch, "    def _version(self, eid):\n",
+            "    def point(self, identity, project):\n"
+            "        return {'operation': CV.POINT, 'conversation': identity, 'project': project}\n\n"
+            "    def _version(self, eid):\n")}
+        yield 'conversation-registration-other-key', 'Messages.__init__', lambda: {'control_conversation_channel': edit(
+            ch, "        conn.command_registry[CV.OPERATION] = {'transaction_transition': CV.transition,",
+            "        conn.command_registry['messages'] = {'transaction_transition': CV.transition,")}
+        yield 'kb-attribute-guessed', 'call', lambda: {'control_memory_kb': edit(
+            kb, "    target = _function(module, attribute)\n", "    target = getattr(importlib.import_module(module), attribute)\n")}
         yield 'check-in-a-branch', 'Inbox._resume', lambda: {'control_assignment': edit(
             a, "        self._check_project(unit, entities, observation)\n        params['resume']",
             "        if params.get('urgent'):\n            self._check_project(unit, entities, observation)\n        params['resume']")}
@@ -198,9 +228,26 @@ def _v169_suite():
                 ('control_claim', 'handout', 'claim', CEN.ORGAN), ('control_assignment', 'handout', 'resume', CEN.ORGAN),
                 ('control_assignment', 'handout', 'unpark', CEN.ORGAN), ('control_andon', 'handout', None, CEN.CONSTRUCTOR),
                 ('control_assignment', 'nothing', 'park', CEN.ORGAN), ('control_claim', 'nothing', 'release', CEN.ORGAN),
-                ('control_heartbeat', 'nothing', 'renew', CEN.ORGAN)):
+                ('control_heartbeat', 'nothing', 'renew', CEN.ORGAN),
+                # VELDO-0187: the conversation writers, each by what it writes (the lead's ruling on VELDO-0169).
+                ('control_intake_conversation', 'handout', 'record_conversation_project', CEN.ORGAN),
+                ('control_conversation', 'handout', 'record_conversation_project', CEN.ORGAN),
+                ('control_conversation', 'handout', 'attach_conversation_project', CEN.ORGAN),
+                ('control_intake_conversation', 'conversation-scoped', 'send_conversation_message', CEN.ORGAN),
+                ('control_intake_conversation', 'conversation-scoped', 'open_conversation', CEN.ORGAN),
+                ('control_conversation_channel', 'conversation-scoped', 'record_conversation_message', CEN.ORGAN),
+                ('control_conversation_decisions', 'conversation-scoped', 'note_conversation_turn', CEN.ORGAN),
+                ('control_memory_kb', 'memory-scoped', None, 'getattr'),
+                ('control_factory_setup_memory', 'host-scoped', None, 'getattr')):
             check('census/writers', 'finds %s %s %s' % (module, classification, action or writer),
                   found(module, classification, action, writer))
+        # No conversation writer is a project handout without the Gate's project check (failures above), and none is
+        # unclassified: every reference to the conversation organ outside it is a handout or conversation-scoped.
+        conversation = [r for r in records if r.get('organ') == 'control_conversation']
+        check('census/writers', 'the conversation writers are classified: %d handouts, %d conversation-scoped'
+              % (sum(r['classification'] == 'handout' for r in conversation),
+                 sum(r['classification'] == 'conversation-scoped' for r in conversation)),
+              conversation and all(r['classification'] in ('handout', 'conversation-scoped') for r in conversation))
         for name, function, build in planted(sources):
             try:
                 change = build()

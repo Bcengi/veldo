@@ -1,0 +1,38 @@
+Red before VELDO-0187's production change, at 2cdc1dd3 (the merge and its receipts), with only the new suite, its fixtures and its registration added; each run: python3 scripts/selftest.py with the suite option naming 138_veldo_0187_claude_mem_feed, alone, in a systemd-run scope; exit 1 red.
+
+== 1. production as at 2cdc1dd3 (no feed module)
+  SELFTEST FAIL: VELDO-0187 AC1/record
+  SELFTEST FAIL: VELDO-0187 AC1/qualified
+  SELFTEST FAIL: VELDO-0187 AC1/unqualified
+  SELFTEST FAIL: VELDO-0187 AC1/loopback
+  SELFTEST FAIL: VELDO-0187 AC1/no-credential
+  SELFTEST FAIL: VELDO-0187 AC2/one-session
+  SELFTEST FAIL: VELDO-0187 AC2/record-order
+  SELFTEST FAIL: VELDO-0187 AC2/redaction
+  SELFTEST FAIL: VELDO-0187 AC2/feed-log
+  SELFTEST FAIL: VELDO-0187 AC3/found
+  SELFTEST FAIL: VELDO-0187 AC3/pending
+  SELFTEST FAIL: VELDO-0187 AC3/loop-pass
+  SELFTEST FAIL: VELDO-0187 observability
+selftest (PARTIAL, 1 of 202 suites): 26 passed, 13 failed in 0.03s
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/v187/wt-before/.veldo/control_memory_feed.py'
+
+== 2. control_memory_feed.py and the empty qualification record added, the conversation, service and setup wiring as at 2cdc1dd3
+  VELDO-0187 setup: None
+  VELDO-0187 turn 1: account-claude_code-1 completed {} []
+  VELDO-0187 turn 2: account-codex-1 completed dispatched {} []
+  VELDO-0187 search: {'catalog': {'blue harbour plan': False, 'lighthouse logbook': False}, 'assistant': {'blue harbour plan': False, 'lighthouse logbook': False}}
+  SELFTEST FAIL: VELDO-0187 AC1/record
+  SELFTEST FAIL: VELDO-0187 AC1/qualified
+  SELFTEST FAIL: VELDO-0187 AC1/unqualified
+  SELFTEST FAIL: VELDO-0187 AC1/loopback
+  SELFTEST FAIL: VELDO-0187 AC1/no-credential
+  SELFTEST FAIL: VELDO-0187 AC2/one-session
+  SELFTEST FAIL: VELDO-0187 AC2/record-order
+  SELFTEST FAIL: VELDO-0187 AC2/redaction
+  SELFTEST FAIL: VELDO-0187 AC2/feed-log
+  SELFTEST FAIL: VELDO-0187 AC3/found
+  SELFTEST FAIL: VELDO-0187 AC3/pending
+  SELFTEST FAIL: VELDO-0187 AC3/loop-pass
+  SELFTEST FAIL: VELDO-0187 observability
+selftest (PARTIAL, 1 of 202 suites): 26 passed, 13 failed in 12.21s

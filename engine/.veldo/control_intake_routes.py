@@ -246,16 +246,9 @@ class Routes:
         return changes, reads
 
     def _point_conversation(self, conversion, pid, changes, reads):
-        """VELDO-0180: the conversation, still open, points at the project its owner's command made it the work of."""
-        CV = self.CI.CV
-        cid = CV.conversation_id(conversion['conversation'])
-        try:
-            planned = CV.transition(self.conn, {'operation': CV.POINT, 'conversation': conversion['conversation'],
-                                                'principal': conversion['owner'], 'project': conversion['project'],
-                                                'route': conversion['route'], 'proposal': pid,
-                                                'command': conversion['command']}, {cid: self._entity(cid)})
-        except CV.Refused as error:
-            raise self.route_refused(error.code, error.detail) from None
+        """VELDO-0180: the conversation, still open, points at the project its owner's command made it the work of
+        (planned by Conversing._point_plan, which asks the Gate's project check first, VELDO-0187)."""
+        cid, planned = self._point_plan(conversion, pid)
         changes.update(planned)
         reads.append(cid)
 

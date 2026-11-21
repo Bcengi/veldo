@@ -404,6 +404,8 @@ def _v142_suite():
                             receiver.login = None
                             # VELDO-0182: no memory handed off, as Receiver.__init__ and each dispatch start it.
                             receiver.memory = None
+                            # VELDO-0176: no held conversation session to place, as Receiver.__init__ starts it.
+                            receiver.held_session = None
                             receiver.binding = (dict(argv=['git', '-C', str(work), 'commit', '--allow-empty', '-qm', 'spawn worker'],
                                 environment=dict(injection, **{L.ENGINE_RUNTIME: str(base / 'runtime'),
                                     L.ENGINE_OVERRIDES: json.dumps(injection)}), path='fixture', sha256='fixture')

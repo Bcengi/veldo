@@ -61,6 +61,7 @@
     {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture)"},
     {"suite": "134_veldo_0179_conversation_screens", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the conversation harness"},
     {"suite": "135_veldo_0179_conversation_layout", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) at four widths against the conversation harness"},
-    {"suite": "130_veldo_0183_memory_servers", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture), and the memory store servers as user units"}
+    {"suite": "130_veldo_0183_memory_servers", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture), and the memory store servers as user units"},
+    {"suite": "138_veldo_0187_claude_mem_feed", "reason": "systemd user manager: the Codex turn runs contained in its own transient scope, the only run the receiver delivers its catalog credential to"}
   ]
 }
