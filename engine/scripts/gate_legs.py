@@ -81,18 +81,23 @@ forge.
 
 THE LEG'S SHARDS (VELDO-0221). The candidate's dispatcher runs a leg's suites as parallel shards,
 and each shard claims its measured CPU and anonymous memory from the gate-wide ledger (VELDO-0216).
-So a declared leg's command is handed three things beside its leg variables, each set only here,
-the caller's always dropped. The ledger channel this runner inherited from the scheduler
-(VELDO_GATE_LEDGER_FD): the confined leg gets it through the launcher's --inherit, the unconfined
-leg as an inherited descriptor; the dispatcher keeps it from every shard, and scripts/selftest.py
-and scripts/run_scope.py are protected. The claims (VELDO_GATE_SHARD_CLAIMS): what each suite's
-shard measured in this leg's last passing unit stage, read from the leg-time store. And, in the
-unit stage, a pipe the dispatcher writes each passing shard's wall seconds, CPU seconds and peak
-anonymous memory to (VELDO_GATE_SHARD_METRICS_FD), which this runner records after a passing leg,
-under the same rule as the leg's own time: only the authority's own list reaches the owner's store.
-A suite with no measurement claims one core and 1 GiB. The manager is not claimed per shard: the
-unconfined leg's node already holds it for the leg (scripts/gate_graph.json), and the dispatcher
-admits the manifest's exclusive and shared manager suites inside that hold.
+THE LEDGER CHANNEL ITSELF NEVER REACHES A CANDIDATE COMMAND (VELDO_GATE_LEDGER_FD stays this
+runner's, as VELDO-0216 requires of every node). This runner asks the ledger on the dispatcher's
+behalf: a declared leg's command is handed a channel of its own (VELDO_GATE_SHARD_LEDGER_FD, a socket
+pair this runner serves while the leg runs; ShardClaims below), over which the dispatcher can only
+ask to start one named suite's shard and say that it ended. THE CLAIM IS THE AUTHORITY'S, never the
+candidate's: what that suite's shard measured in this leg's last passing unit stage, read here from
+the leg-time store, one core and 1 GiB for a suite never measured; the size a candidate names is not
+read. The same measurements are handed to the dispatcher (VELDO_GATE_SHARD_CLAIMS), which only
+orders its shards by them. In the unit stage the command also gets a pipe the dispatcher writes
+each passing shard's wall seconds, CPU seconds and peak anonymous memory to
+(VELDO_GATE_SHARD_METRICS_FD), which this runner records after a passing leg under the same rule as
+the leg's own time: only the authority's own list reaches the owner's store. The confined leg gets
+both descriptors through the launcher's --inherit, the unconfined leg as inherited descriptors; the
+dispatcher keeps them from every shard, and scripts/selftest.py and scripts/run_scope.py are
+protected. All three variables are set only here, the caller's always dropped. The manager is not
+claimed per shard: the unconfined leg's node already holds it for the leg (scripts/gate_graph.json),
+and the dispatcher admits the manifest's exclusive and shared manager suites inside that hold.
 """
 import argparse
 import hashlib
@@ -118,7 +123,10 @@ LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DE
 UNIT_SECONDS = 'VELDO_GATE_UNIT_SECONDS'
 # VELDO-0221: what a leg's shard dispatcher is handed (see the docstring).
 LEDGER_CHANNEL = 'VELDO_GATE_LEDGER_FD'
+SHARD_LEDGER = 'VELDO_GATE_SHARD_LEDGER_FD'
 SHARD_CLAIMS, SHARD_METRICS = 'VELDO_GATE_SHARD_CLAIMS', 'VELDO_GATE_SHARD_METRICS_FD'
+SHARD_CHANNELS = (SHARD_LEDGER, SHARD_METRICS)
+SHARD_UNMEASURED = {'cpu': 1.0, 'memory': 1 << 30}
 MEASURED_STAGE, BUDGETED_STAGE = 'unit', 'integration'
 LEG_TIMES = Path.home() / '.cache' / 'veldo' / 'gate-leg-seconds'
 RESOURCE_READ_MAX_AGE_DAYS = 30
@@ -174,7 +182,7 @@ def entries(document):
 
 def _env(leg=None, listed=(), digest=None, measured=None, claims=None):
     env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
-    for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST', SHARD_CLAIMS, SHARD_METRICS):
+    for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST', SHARD_CLAIMS, *SHARD_CHANNELS):
         env.pop(authority_variable, None)
     if leg:
         env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
@@ -417,15 +425,106 @@ def measurement(times, digest, leg, run):
             'fresh': 'this gate run' if item.get('run') == run else 'an earlier gate run'}
 
 
-def confined(root, command, env, channels=None):
+class ShardClaims:
+    """The leg's side of the gate ledger, served to the candidate's shard dispatcher (VELDO-0221).
+
+    The dispatcher writes one request per line, {operation: acquire | release, name: <suite>}, and
+    reads one reply, {granted: bool} or {error: text}. An acquire is forwarded to the gate ledger
+    with THIS runner's claim for that suite (`claims`, else SHARD_UNMEASURED); a refusal there is a
+    refusal here and the dispatcher asks again later. Nothing a candidate sends reaches the ledger
+    but a suite's name, checked first: a malformed line, a name that is no suite name, a second
+    acquire of a held name or a release of one not held is answered with an error and never
+    forwarded, because the scheduler fails a node whose channel carries an invalid request. What
+    the dispatcher still holds when the leg ends is released here, so a dispatcher that died does
+    not leave its node holding claims."""
+
+    def __init__(self, ledger, claims):
+        import socket
+        import threading
+        self.ledger = socket.socket(fileno=os.dup(int(ledger)))
+        self.stream = self.ledger.makefile('rwb', buffering=0)
+        self.claims, self.held, self.asked = dict(claims), set(), []
+        self.ours, self.theirs = socket.socketpair()
+        os.set_inheritable(self.theirs.fileno(), True)
+        self.thread = threading.Thread(target=self.serve, daemon=True)
+        self.thread.start()
+
+    def fileno(self):
+        return self.theirs.fileno()
+
+    def forward(self, operation, name, claim=None):
+        self.stream.write((json.dumps({'operation': operation, 'name': name, 'claim': claim}) + '\n').encode())
+        raw = self.stream.readline(65537)
+        if not raw or len(raw) > 65536:
+            raise OSError('the gate ledger closed its channel')
+        return json.loads(raw)
+
+    def answer(self, line):
+        try:
+            request = json.loads(line)
+            operation, name = request['operation'], request['name']
+        except (ValueError, TypeError, KeyError):
+            return {'error': 'malformed request'}
+        if not isinstance(name, str) or not SUITE.match(name) or len(name) > 100:
+            return {'error': 'not a suite name'}
+        if operation == 'acquire' and name not in self.held:
+            claim = dict(self.claims.get(name, SHARD_UNMEASURED))
+            reply = self.forward('acquire', name, {'cpu': claim['cpu'], 'memory': claim['memory'],
+                                                   'manager': 'none', 'ports': [], 'host_lock': 'none'})
+            self.asked.append((name, claim['cpu'], claim['memory'], reply.get('granted')))
+            if reply.get('granted') is True:
+                self.held.add(name)
+            return {'error': reply['error']} if 'error' in reply else {'granted': reply.get('granted') is True}
+        if operation == 'release' and name in self.held:
+            self.held.discard(name)
+            reply = self.forward('release', name)
+            return {'error': reply['error']} if 'error' in reply else {'granted': True}
+        return {'error': 'invalid operation, a second acquire or a foreign release'}
+
+    def serve(self):
+        try:
+            stream = self.ours.makefile('rwb', buffering=0)
+            for line in stream:
+                if len(line) > 4096:
+                    break
+                stream.write((json.dumps(self.answer(line)) + '\n').encode())
+        except (OSError, ValueError):
+            pass
+
+    def close(self):
+        """After the leg's command ended: stop serving and release what it still held."""
+        import socket
+        self.theirs.close()
+        try:
+            self.ours.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        self.thread.join(120)
+        self.ours.close()
+        for name in sorted(self.held):
+            try:
+                self.forward('release', name)
+            except (OSError, ValueError):
+                break
+        self.held.clear()
+        self.stream.close()
+        self.ledger.close()
+
+
+def _channels(env):
+    """The leg's descriptors named in an environment leg_run built: {variable: descriptor}."""
+    return {name: int(env[name]) for name in SHARD_CHANNELS if env.get(name, '').isdigit()}
+
+
+def confined(root, command, env):
     """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it. A
     leg's channels (VELDO-0221) cross the launcher by its --inherit, which gate_candidate.py does
     not take: the launcher is then started here with the same arguments gate_candidate.py gives it."""
+    channels = _channels(env)
     if not channels:
         return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
                                str(root), '--', 'bash', '-c', command], env=env,
                               stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
-    env = dict(env, **{name: str(fd) for name, fd in channels.items()})
     config = env.get('VELDO_AGENT_CONFIG', str(HERE / 'agent_sandbox.json'))
     inherit = [word for fd in channels.values() for word in ('--inherit', str(fd))]
     code = subprocess.run([sys.executable, '-I', '-S', str(HERE / 'agent_sandbox.py'), '--profile', 'gate',
@@ -455,13 +554,12 @@ def _launcher_fds():
 AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON', 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')
 
 
-def unconfined(root, command, env, channels=None):
+def unconfined(root, command, env):
     """The stage command outside every domain, in the candidate, as before VELDO-0208. A leg's
-    channels (VELDO-0221) are the only authority variables it keeps, as inherited descriptors."""
+    channels (VELDO-0221) reach it as inherited descriptors; the gate ledger's own never does."""
     env = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
-    env.update({name: str(fd) for name, fd in (channels or {}).items()})
     return subprocess.run(['bash', '-c', command], cwd=str(root), env=env, stdin=subprocess.DEVNULL,
-                          pass_fds=tuple((channels or {}).values())).returncode
+                          pass_fds=tuple(_channels(env).values())).returncode
 
 
 def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None):
@@ -490,21 +588,27 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
             print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
                   % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
                   else 'no unit %s leg measurement recorded' % leg), flush=True)
-        # VELDO-0221: the leg's shard dispatcher claims on the ledger this runner inherited, with the
-        # claims the last passing unit leg measured, and in the unit stage reports what it measures.
-        channels, metrics = {}, None
+        # VELDO-0221: the leg's shard dispatcher asks this runner for each shard's claim on the gate
+        # ledger, with the claims the last passing unit leg measured, and in the unit stage reports
+        # what it measures. See the docstring: the ledger's own channel stays here.
+        claims = read_shard_claims(times, digest, leg)
+        environment = _env(leg, listed, digest, handed, claims)
+        asking, metrics, write = None, None, None
         if os.environ.get(LEDGER_CHANNEL, '').isdigit():
-            channels[LEDGER_CHANNEL] = int(os.environ[LEDGER_CHANNEL])
+            asking = ShardClaims(os.environ[LEDGER_CHANNEL], claims)
+            environment[SHARD_LEDGER] = str(asking.fileno())
         if stage == MEASURED_STAGE:
             metrics, write = os.pipe()
-            channels[SHARD_METRICS] = write
+            os.set_inheritable(write, True)
+            environment[SHARD_METRICS] = str(write)
         started = time.monotonic()
         try:
-            code = runner(root, command, _env(leg, listed, digest, handed,
-                                              read_shard_claims(times, digest, leg)), channels)
+            code = runner(root, command, environment)
         finally:
-            if metrics is not None:
-                os.close(channels[SHARD_METRICS])
+            if write is not None:
+                os.close(write)
+            if asking is not None:
+                asking.close()
         seconds = time.monotonic() - started
         print('   %s: %s leg: %s (%.1fs)' % (stage, leg, 'pass' if code == 0 else 'FAIL', seconds),
               flush=True)

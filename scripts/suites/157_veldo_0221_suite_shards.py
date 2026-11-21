@@ -25,7 +25,7 @@ def _veldo_0221():
     GL = load(ROOT / "scripts" / "gate_legs.py", "v221_gate_legs")
     digest = "sha256:" + "0" * 64
     outer = ("VELDO_GATE_LEG", "VELDO_GATE_UNCONFINED", "VELDO_GATE_DECLARATION", "VELDO_GATE_FORCE_FRESH",
-             "VELDO_GATE_LEDGER_FD", "VELDO_GATE_SHARD_CLAIMS", "VELDO_GATE_SHARD_METRICS_FD",
+             "VELDO_GATE_LEDGER_FD", "VELDO_GATE_SHARD_LEDGER_FD", "VELDO_GATE_SHARD_CLAIMS", "VELDO_GATE_SHARD_METRICS_FD",
              "VELDO_GATE_UNIT_SECONDS", "VELDO_SUITE_ORDER")
     plain = {k: v for k, v in os.environ.items() if k not in outer}
 
@@ -510,7 +510,7 @@ def _veldo_0221():
                 managed, "unconfined",
                 ["01_exclusive", "02_shared", "03_shared", "04_exclusive", "05_shared", "06_none"],
                 listed="01_exclusive,02_shared,03_shared,04_exclusive,05_shared,06_none", tick=0.05, parallel=None,
-                extra={"V221_LOCK": str(lock), "VELDO_GATE_LEDGER_FD": str(theirs.fileno()),
+                extra={"V221_LOCK": str(lock), "VELDO_GATE_SHARD_LEDGER_FD": str(theirs.fileno()),
                        "VELDO_GATE_SHARD_CLAIMS": json.dumps(measured)})
         finally:
             theirs.close()
@@ -544,6 +544,43 @@ def _veldo_0221():
                # The measured suite is the longest known, so it is asked for after the unmeasured ones.
                and RS.handed_claims({"VELDO_GATE_SHARD_CLAIMS": json.dumps(measured)}) == {"02_shared": measured["02_shared"]})
 
+        # The gate ledger's own channel stays with the authority's leg runner, which asks it for each
+        # shard with ITS measured claim. Whatever size a candidate names is not read, and nothing but a
+        # checked suite name is forwarded.
+        gate_side, runner_side = socket.socketpair()
+        forwarded = []
+
+        def gate_ledger():
+            stream = gate_side.makefile("rwb", buffering=0)
+            for line in stream:
+                request = json.loads(line)
+                forwarded.append(request)
+                stream.write((json.dumps({"granted": request["name"] != "03_refused"}) + "\n").encode())
+        threading.Thread(target=gate_ledger, daemon=True).start()
+        asking = GL.ShardClaims(runner_side.fileno(), {"01_a": {"cpu": 2.5, "memory": 5000, "seconds": 10.0}})
+        client = RS.ShardLedger(asking.fileno())
+        answers = [client.acquire("01_a", {"cpu": 99.0, "memory": 1}), client.acquire("02_new", RS.SHARD_UNMEASURED),
+                   client.acquire("03_refused", RS.SHARD_UNMEASURED)]
+        for operation, name in (("acquire", "../x"), ("acquire", "01_a"), ("release", "04_never"), ("handoff", "01_a")):
+            try:
+                client.request(operation, name)
+                answers.append("answered")
+            except RS.LegRefused:
+                answers.append("refused")
+        client.release("01_a")
+        client.close()
+        asking.close()
+        gate_side.close()
+        runner_side.close()
+        seen = [(r["operation"], r["name"], (r["claim"] or {}).get("cpu"), (r["claim"] or {}).get("memory"))
+                for r in forwarded]
+        expect("VELDO-0221 AC4 suite-shards/ledger-stays-with-the-leg-runner: %r %r" % (answers, seen),
+               answers == [True, True, False, "refused", "refused", "refused", "refused"]
+               and seen == [("acquire", "01_a", 2.5, 5000), ("acquire", "02_new", 1.0, 1 << 30),
+                            ("acquire", "03_refused", 1.0, 1 << 30), ("release", "01_a", None, None),
+                            # what the dispatcher still held when the leg ended is released for it
+                            ("release", "02_new", None, None)])
+
         # What the authority's leg runner hands a leg and keeps from a candidate.
         store = top / "store"
         text = "\n".join([json.dumps({"suite": "01_a", "wall_seconds": 10.0, "cpu_seconds": 25.0, "peak_anon_bytes": 5000}),
@@ -558,7 +595,7 @@ def _veldo_0221():
         saved = dict(os.environ)
         try:
             os.environ.update({"VELDO_GATE_SHARD_CLAIMS": '{"forged": {"cpu": 99}}', "VELDO_GATE_SHARD_METRICS_FD": "7",
-                               "VELDO_GATE_LEDGER_FD": "8"})
+                               "VELDO_GATE_LEDGER_FD": "8", "VELDO_GATE_SHARD_LEDGER_FD": "9"})
             handed = GL._env("confined", ["a"], digest, None, kept)
             bare_env = GL._env()
         finally:
@@ -570,9 +607,9 @@ def _veldo_0221():
                 'spec = importlib.util.spec_from_file_location("first_use", sys.argv[1])\n'
                 'module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\n'
                 'fd = sys.argv[2]\n'
-                'print(json.dumps([list(module.shard_fds({"VELDO_GATE_LEG": "confined", "VELDO_GATE_LEDGER_FD": fd, '
-                '"VELDO_GATE_SHARD_METRICS_FD": "not-a-number"})), list(module.shard_fds({"VELDO_GATE_LEDGER_FD": fd})), '
-                'list(module.shard_fds({"VELDO_GATE_LEG": "confined", "VELDO_GATE_LEDGER_FD": "987654"}))]))\n')
+                'print(json.dumps([list(module.shard_fds({"VELDO_GATE_LEG": "confined", "VELDO_GATE_SHARD_LEDGER_FD": fd, '
+                '"VELDO_GATE_SHARD_METRICS_FD": "not-a-number"})), list(module.shard_fds({"VELDO_GATE_SHARD_LEDGER_FD": fd})), '
+                'list(module.shard_fds({"VELDO_GATE_LEG": "confined", "VELDO_GATE_SHARD_LEDGER_FD": "987654"}))]))\n')
         read_end, write_end = os.pipe()
         try:
             answer = subprocess.run([sys.executable, "-c", asks, str(ROOT / "scripts" / "check_first_use.py"),
@@ -600,9 +637,10 @@ def _veldo_0221():
                             "02_b": {"cpu": 0.1, "memory": 7000, "seconds": 100.0}}
                and GL.read_shard_claims(store, digest, "unconfined") == {}
                and json.loads(handed["VELDO_GATE_SHARD_CLAIMS"]) == kept
-               and "VELDO_GATE_SHARD_METRICS_FD" not in handed and "VELDO_GATE_LEDGER_FD" not in handed
-               and not [k for k in ("VELDO_GATE_SHARD_CLAIMS", "VELDO_GATE_SHARD_METRICS_FD", "VELDO_GATE_LEDGER_FD")
-                        if k in bare_env]
+               and not [k for k in ("VELDO_GATE_SHARD_METRICS_FD", "VELDO_GATE_LEDGER_FD",
+                                    "VELDO_GATE_SHARD_LEDGER_FD") if k in handed]
+               and not [k for k in ("VELDO_GATE_SHARD_CLAIMS", "VELDO_GATE_SHARD_METRICS_FD", "VELDO_GATE_LEDGER_FD",
+                                    "VELDO_GATE_SHARD_LEDGER_FD") if k in bare_env]
                and passed_on == [[write_end], [], []]
                and refusals == ["only the gate profile inherits a descriptor",
                                 "an inherited descriptor must be a pipe or a socket above the standard three",
