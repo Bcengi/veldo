@@ -16702,7 +16702,7 @@ def cases():
 
     # AC15 (the specification's falsifier): let the profile skip the client's 30 second send timeout.
     wave358f('timers358-profile-skips-client', '66_veldo_0047_authority.py', 'control_client.py',
-             "    conn.settimeout(timer('SEND_SECONDS') if timeout is None else timeout)\n",
+             "    conn.settimeout(_timer('SEND_SECONDS') if timeout is None else timeout)\n",
              "    conn.settimeout(_TIMER_DEFAULTS['SEND_SECONDS'] if timeout is None else timeout)  # defect: the profile skips it\n",
              ['timers/profile-applied'], '.veldo')
     # AC15: the service arms its timers at their production values whatever its configuration's profile says.
@@ -16712,7 +16712,7 @@ def cases():
              ['timers/profile-applied'], '.veldo')
     # AC15: the reply bound of a kept request back to the literal 1.0 instead of the table.
     wave358f('timers358-reply-literal', '71_veldo_0138_channel_service.py', 'control_service.py',
-             "                conn.settimeout(timer('REPLY_SECONDS'))\n",
+             "                conn.settimeout(_timer('REPLY_SECONDS'))\n",
              "                conn.settimeout(1.0)  # defect: the literal, not the table\n",
              ['wave1/no-sites'], '.veldo')
     # AC10: restore suite 71's suite budget and its waits' bound (80 s, 20 s), read by suite 66's census row.
