@@ -62,15 +62,15 @@ parsing, and even they add NO control logic: they assemble the real machinery an
 hand it the pieces.
 
 The no-rogue-processes boundary (feedback_no_rogue_processes, PLAN-0007 NG1):
-veldo work and veldo fleet assemble the real loop and launcher, but the intelligent
-build, the fresh-context review, and the worker-spawn primitive stay DELEGATED
-seams that FAIL LOUD without an agent or a real in-session start wired. This CLI
+veldo work sends a signed request to the already running authority and reports
+queued work. The authority owns its configured loop and all dispatch/store writes.
+veldo fleet assembles the launcher, whose worker-spawn primitive stays a delegated
+seam that fails loud without a real in-session start wired. This CLI
 spawns NOTHING detached, with one stated exception: the supervisor of a wrapped
 run (veldo space run) stays after the wrapper has returned for exactly as long as
 a process the wrapped command left behind is alive. It starts nothing, stops
-nothing and has no timer; it sleeps on their exit. Run bare with no agent wired, veldo work and veldo fleet
-fail loud, which is the honest behavior: they are the entry points an in-session
-agent drives.
+nothing and has no timer; it sleeps on their exit. An unavailable authority makes
+veldo work refuse; it never creates a replacement.
 
 An unknown subcommand, bad arguments, or an unknown account each fail loud (a
 nonzero exit and an honest message), never a silent no-op. Pure stdlib."""
