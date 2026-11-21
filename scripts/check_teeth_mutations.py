@@ -16616,6 +16616,33 @@ def cases():
         ['supersede/result-words-closed'])
     result[-1]['dir'] = 'scripts'
     # ==== end of VELDO-0358 brief B ====
+    # ==== VELDO-0358 BRIEF D: the load generator (AC12) and the load-proof leg (AC13) ====
+    # Each case is a criterion's falsifier, word for word from the specification.
+    leg358 = '160_veldo_0358_load_leg.py'
+
+    def load358(name, module, old, new, rows):
+        add(358, name, leg358, module, old, new, rows)
+        result[-1]['dir'] = 'scripts'
+
+    load358('load358-no-spinners', 'gate_load.py',
+            "        while True:  # the load: always runnable, never blocks\n            pass\n",
+            "        while True:  # defect: the spinners are started, stay alive and make no load\n"
+            "            signal.pause()\n",
+            ['load/level-by-construction'])
+    load358('load358-affinity-dropped', 'gate_load.py',
+            "    os.sched_setaffinity(0, spec['cpus'])  # the same CPUs the spinners are on\n",
+            "    pass  # defect: the leg's suites are not bound to the spinners' CPUs\n",
+            ['load/level-by-construction'])
+    load358('load358-red-is-rerun', 'gate_legs.py',
+            "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)  # one run is the verdict\n",
+            "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)\n"
+            "                        if outcome['verdict'] != 'pass':  # defect: a red suite is run again, the second result reported\n"
+            "                            outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)\n",
+            ['leg/proves-and-blocks'])
+    load358('load358-red-not-blocking', 'verify.sh',
+            '    echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1\n',
+            '    echo "   load-proof: FAIL"; FAIL=1  # defect: the gate goes on to the mutation stage\n',
+            ['leg/proves-and-blocks'])
 
     return result
 

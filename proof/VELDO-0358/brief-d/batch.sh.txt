@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Brief D's loaded runs, in one hold of the host lock: bash host_heavy.sh bash batch.sh.txt <worktree> <scratch>
+# 1 the suite through the dispatcher, 2 the four falsifiers, 3 the generator in a delegated cgroup scope,
+# 4 one real leg. Each writes its own log beside this file.
+set -u
+WT=$1; S=$2; OUT=$WT/proof/VELDO-0358/brief-d; cd "$WT" || exit 1
+stamp() { echo "$1 $(date -u +%FT%TZ) load $(cut -d' ' -f1-3 /proc/loadavg)"; }
+{ stamp start; python3 scripts/selftest.py --suite 160_veldo_0358_load_leg; echo "exit status $?"; stamp end; } > "$OUT/suite-160.txt" 2>&1
+{ stamp start; python3 "$OUT/drive_mutants.py.txt" "$WT"; echo "exit status $?"; stamp end; } > "$OUT/mutants.txt" 2>&1
+{ stamp start
+  mkdir -p "$S/cg"
+  systemd-run --user --scope -q -p Delegate=yes bash -c '
+    scope=$(cut -d: -f3 /proc/self/cgroup); base=/sys/fs/cgroup$scope
+    mkdir "$base/gate" && echo $$ > "$base/gate/cgroup.procs" && echo "+cpu +memory +pids" > "$base/cgroup.subtree_control"
+    echo "scope controllers for children: $(cat "$base/cgroup.subtree_control")"
+    python3 -I -S scripts/gate_load.py --slots 2 --write-dir "$1" --scope "$scope" --memory-high 67108864 \
+      -- python3 -I -S -c "
+import time
+from pathlib import Path
+print(\"suite cgroup:\", Path(\"/proc/self/cgroup\").read_text().strip().rsplit(\"/\", 1)[-1])
+block = bytearray(72 * 1024 * 1024)
+for i in range(0, len(block), 4096): block[i] = 1
+t = time.process_time()
+while time.process_time() - t < 1.5: pass
+print(\"suite touched 72 MiB under memory.high 64 MiB\")
+"
+    echo "exit status $?"; echo "cgroups left in the scope: $(ls -d "$base"/load-* 2>/dev/null | wc -l)"
+  ' _ "$S/cg"
+  stamp end; } > "$OUT/cgroup-scope.txt" 2>&1
+{ stamp start; from=$(date -u +%s)
+  python3 "$OUT/real_leg.py.txt" "$WT" "$S/brief-a" "$S/brief-b-baseline.json" "$S/real"
+  echo "wall seconds of the record runs and the leg together: $(( $(date -u +%s) - from ))"; stamp end; } > "$OUT/real-leg.txt" 2>&1
