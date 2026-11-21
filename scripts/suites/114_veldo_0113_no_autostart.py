@@ -45,6 +45,9 @@ if 'expect' in globals():
         else:
             expect('VELDO-0113 protocol ' + _v113_name + ': ' + _v113_json.dumps(_v113_detail),
                    _v113_row['status'] != 'FAIL')
+    expect('VELDO-0113 protocol unavailable/each-external-client-reaches-refusal',
+           all(c['outcome'].get('invoked') and c['outcome'].get('refused')
+               for c in _v113_result['cases'] if 'receipt' in c))
     expect('VELDO-0113 protocol unavailable/registry-state-product-is-exact',
            _v113_result['expected'] == sorted(_v113_result['completed'])
            and len(_v113_result['completed']) == len(set(_v113_result['completed'])))

@@ -120,6 +120,8 @@ def run(name, case=None, mode='baseline'):
         summary = retain(name, result)
         assert result['expected'] == sorted(result['completed'])
         assert len(result['expected']) == len(set(result['completed']))
+        assert all(c['outcome'].get('invoked') and c['outcome'].get('refused')
+                   for c in result['cases'] if 'receipt' in c), 'required client refusal did not complete'
         assert result['faults_driven'], 'observer fault matrix was not exercised'
         if mode == 'mutant':
             for row in case['rows']:
