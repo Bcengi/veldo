@@ -1,0 +1,7 @@
+case: v174-attach-outside-current-scope
+run: python3 scripts/check_gate_mutations.py with the case option naming v174-attach-outside-current-scope, alone, at 46fa5a94 (its anchor moved into attach_authority, indentation only); exit 0
+baseline: failed [], targets {'AC1/project-scope': [True]}
+noop: failed [], targets {'AC1/project-scope': [True]}
+mutant: failed ['VELDO-0174 AC1/project-scope'], targets {'AC1/project-scope': [False]}
+   mutation: unconfined leg ran 0 cases, 0 rejected: none
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=58.593s

@@ -1,0 +1,14 @@
+VELDO-0177 fix round 2 (F1): suite 128 AC3/scope, another owner's project 'foreign-unbound' (owner steward, execution_repository 'never-bound-here', in the owner's scope) attached by the owner; every project_source and bound_repository call the attach makes is recorded.
+
+== RED at 7818b2fd (the new check, the production module before the fix)
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmpf1wb9bky: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpf1wb9bky/proof4.json: criterion AC1 passed without evidence
+  VELDO-0177 detail: AC3/scope another owner's project with an unbound repository is refused by name, its repository never read [missing_evidence:project_repository [('project_source', 'foreign-unbound'), ('bound_repository', 'never-bound-here')]]
+  SELFTEST FAIL: VELDO-0177 AC3/scope
+  128_veldo_0177_conversation_workspace           14 passed    3.13s
+selftest (PARTIAL, 1 of 191 suites): 40 passed, 1 failed in 3.13s
+
+== GREEN at 655c9a09 (the fix) and after
+  128_veldo_0177_conversation_workspace           15 passed    3.14s
+selftest (PARTIAL, 1 of 191 suites): 41 passed, 0 failed in 3.14s
