@@ -392,9 +392,10 @@ def _v345_space_keep_suite():
 
         BEHIND = before_0347(P)
 
-        def send(event, subject, remover=Spy, **given):
-            # The keep step and the removers behind rules 1 to 6 are what this suite proves (before_0347).
-            given.setdefault('probe', BEHIND)
+        def send(event, subject, remover=Spy, behind=False, **given):
+            # With `behind`, the rules read with BEHIND (before_0347): only a row that plants an ignored
+            # path that is work to prove the keep step and the remover behind rules 1 to 6 passes it.
+            given.setdefault('probe', BEHIND if behind else P)
             given.setdefault('kinds', K)
             given.setdefault('emitter', EMITTER)
             given.setdefault('free', free)
@@ -1028,7 +1029,7 @@ def _v345_space_keep_suite():
         L.outcome(item, 'deferred', {'rule': 'unique_work', 'event': 'landed'})
         secret, secret_path = worktree('settings-only', {'scope': A, 'ticket': 'VELDO-9213'}, branch=False)
         (secret_path / 'settings.local').write_bytes(b'key = ' + MARKER + b'\n')
-        done = send('landed', {'ticket': 'VELDO-9213'}, keep=SAVING)
+        done = send('landed', {'ticket': 'VELDO-9213'}, keep=SAVING, behind=True)
         attempt_path = Path(L.snapshot_folder(secret)) / '1'
         check(ROW, 'a worktree whose only work is that ignored file is removed once the file is saved [%s]'
               % (outcome_of(done, secret),),
@@ -1108,7 +1109,7 @@ def _v345_space_keep_suite():
                 else:
                     setattr(KP, name, stand_in)
                 try:
-                    done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING)
+                    done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING, behind=True)
                 finally:
                     os.chmod(str(STORE), 0o700)
                     KP._write, KP._sync, KP._rename, KP._stored = (real['write'], real['sync'], real['rename'],
@@ -1127,7 +1128,7 @@ def _v345_space_keep_suite():
             KP._write, KP._sync, KP._rename, KP._stored, KP.BLOCK = (real['write'], real['sync'], real['rename'],
                                                                     real['stored'], real['block'])
             os.chmod(str(STORE), 0o700)
-        done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING)
+        done = send('landed', {'ticket': 'VELDO-9215'}, keep=SAVING, behind=True)
         counted = KP.attempts(L, item)
         check(ROW, 'the next attempt takes the next number, saves the file whole and removes the item once [%s %s]'
               % (named(done, item), numbers(item)),
@@ -1144,7 +1145,7 @@ def _v345_space_keep_suite():
         def killed_at(seam, ticket):
             KP.SEAM[seam] = die
             try:
-                send('landed', {'ticket': ticket}, keep=SAVING)
+                send('landed', {'ticket': ticket}, keep=SAVING, behind=True)
                 return False
             except Killed:
                 return True
@@ -1321,7 +1322,7 @@ def _v345_space_keep_suite():
                 states.append((identity, state_of(identity)))
                 return RM.remove(ledger, probe, identity, record, **given)
 
-        done = send('landed', {'ticket': 'VELDO-9222'}, remover=Watching)
+        done = send('landed', {'ticket': 'VELDO-9222'}, remover=Watching, behind=True)
         check(ROW, 'the worktree was removing while its remover ran [%s]' % (states,), states == [(tree, 'removing')])
         check(ROW, 'put back with an unsaved file, it is recorded as deferred with keep_failed and is not left '
               'removing [%s %s]' % (named(done, tree), state_of(tree)),
@@ -1334,7 +1335,7 @@ def _v345_space_keep_suite():
         item, path = scratch('run-222-used', owner)
         entry = process_entry(5222, RM.marked(str(path), item))  # a user the second probe finds
         try:
-            done = send('run_finished', {'run': 'run-222'})
+            done = send('run_finished', {'run': 'run-222'}, behind=True)
         finally:
             shutil.rmtree(entry)
         check(ROW, 'a folder its remover put back because it was in use is recorded as deferred with in_use, whole '
@@ -1532,7 +1533,7 @@ def _v345_space_keep_suite():
             (path / name).write_bytes(content)
             os.chmod(str(path / name), mode)
         before = tree_of(path)
-        done = send('landed', {'ticket': 'VELDO-9243'}, keep=SAVING)
+        done = send('landed', {'ticket': 'VELDO-9243'}, keep=SAVING, behind=True)
         saved = Path(L.snapshot_folder(item)) / '1'
         try:
             manifest = json.loads((saved / 'manifest.json').read_text())
@@ -1609,7 +1610,7 @@ def _v345_space_keep_suite():
         check(ROW, 'the ticket has no folder in the store yet', not ticket_folder.exists())
         KP._sync = store_sync_fails
         try:
-            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING, behind=True)
         finally:
             KP._sync = real_sync
         check(ROW, 'when the sync that puts the ticket\'s new folder on the disk fails the item is deferred as '
@@ -1640,7 +1641,7 @@ def _v345_space_keep_suite():
 
         KP._sync, KP._rename = watching_sync, watching_rename
         try:
-            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING, behind=True)
         finally:
             KP._sync, KP._rename = real_sync, real_rename
         check(ROW, 'the next attempt saves the file and removes the item [%s %s]' % (named(done, item), numbers(item)),

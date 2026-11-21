@@ -51,6 +51,11 @@ table changes a cell's action, the old item gets the old action and the new item
 whose table version the registry does not hold comes back with wait), ac4/registry-untouched (calls
 change neither the registry nor the records).
 
+ac1/whole-table-2 (table 2, the one every new item is declared under since VELDO-0347, is table 1 with
+exactly one row more, agent_repository_clone, which removes at run finished after the worktrees in it
+with a decision request for unique work: the other rows, the events and every kind's ends_on equal
+table 1's, and its forms are the three clone forms, each ending on run finished alone).
+
 kinds/ledger-accepts (the Ledger's checked_lifecycle accepts LIFECYCLE, which names the current version (2
 since VELDO-0347; the rows above read table 1, the table of section 5 as issued), the nine
 events and the ten kinds), kinds/pure (the module imports nothing and defines one function),
@@ -146,7 +151,7 @@ def _v298_space_kinds_suite():
     }
 
     ROWS = (tuple('ac1/%s/%s' % (row, event) for row in TABLE_ROWS for event in EVENTS)
-            + ('ac1/whole-table', 'ac2/deferred-build-folder-first', 'ac2/child-holds-worktree',
+            + ('ac1/whole-table', 'ac1/whole-table-2', 'ac2/deferred-build-folder-first', 'ac2/child-holds-worktree',
                'ac2/kept-child-holds-parent', 'ac2/looks-for-children', 'ac2/agent-repository-after-worktree', 'ac2/children-first', 'ac3/passes-to-queued-run',
                'ac3/removed-without', 'ac3/run-finished-only', 'ac4/keeps-its-version',
                'ac4/action-of-its-version', 'ac4/registry-untouched', 'kinds/ledger-accepts', 'kinds/pure',
@@ -266,6 +271,28 @@ def _v298_space_kinds_suite():
         check('ac1/whole-table', 'an item whose record ends on nothing gets nothing [%s]' % got, got == [])
         got = due('superseded', [('space:item:1', item('scratch'))])
         check('ac1/whole-table', 'an event the table does not hold gets nothing [%s]' % got, got == [])
+
+        # VELDO-0347 (review F7): table 2, the table a new item is declared under, as a whole.
+        first, second = K.REGISTRY['tables']['1'], K.REGISTRY['tables']['2']
+        check('ac1/whole-table-2', 'the current table is 2 [%s]' % K.REGISTRY['version'],
+              K.REGISTRY['version'] == '2' and K.LIFECYCLE['version'] == '2')
+        check('ac1/whole-table-2', 'its rows are table 1\'s and exactly agent_repository_clone [%s]'
+              % sorted(set(second['rows']) ^ set(first['rows'])),
+              set(second['rows']) - {'agent_repository_clone'} == set(first['rows'])
+              and 'agent_repository_clone' in second['rows'] and 'agent_repository_clone' not in first['rows'])
+        check('ac1/whole-table-2', 'every other row has table 1\'s cells, cell for cell',
+              all(second['rows'][name] == first['rows'][name] for name in first['rows']))
+        check('ac1/whole-table-2', 'the new row removes at run finished only, after the worktrees, a request '
+              'for unique work [%s]' % (second['rows']['agent_repository_clone'],),
+              second['rows']['agent_repository_clone'] == {'run_finished': {
+                  'action': 'remove', 'after': ['worktree'], 'unique_work': 'decision_request'}})
+        check('ac1/whole-table-2', 'its events and every kind\'s ends_on are table 1\'s',
+              second['events'] == first['events'] and second['ends_on'] == first['ends_on'])
+        check('ac1/whole-table-2', 'its forms are the three clone forms, each on run finished alone [%s]'
+              % (second.get('forms'),),
+              second.get('forms') == {'worker_clone': ['run_finished'], 'batch_clone': ['run_finished'],
+                                      'candidate_workspace': ['run_finished']}
+              and 'forms' not in first and K.LIFECYCLE['forms'] == second['forms'])
 
         # ---- AC2: children first, and what holds a worktree ---------------------------------------------
         W, B, A = 'space:item:w', 'space:item:b', 'space:item:a'

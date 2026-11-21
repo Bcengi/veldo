@@ -16,7 +16,11 @@ T = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(T)
 CRITERION = {'ignored': 'AC1', 'beneath-worktrees': 'AC2', 'logs': 'AC2', 'remote-ref': 'AC2',
              'folder-remover': 'AC3', 'without-snapshot': 'AC3', 'without-comparison': 'AC3',
-             'marked-name': 'AC3', 'measured-digest': 'AC4', 'beneath-the-item': 'AC5', 'formless': 'AC5'}
+             'marked-name': 'AC3', 'measured-digest': 'AC4', 'beneath-the-item': 'AC5', 'formless': 'AC5',
+             # Fix round 1: the review's findings, each by the criterion it guards.
+             'trunk-is-head': 'AC4', 'table-1-': 'AC3', 'unlistable': 'AC2', 'present-taken': 'AC2',
+             'table-2-not-whole': 'AC5', 'batch-clone-never': 'AC3', 'own-look-on-worktrees': 'AC5'}
+WORK = '161_veldo_0347_space_work.py'  # this ticket's suite: a case's red rows stay within its criterion
 
 
 def run(case, mode):
@@ -34,13 +38,17 @@ results, lines = [], ['# VELDO-0347 registered mutation cases (finding 347), eac
                       'materialize() and worker(): noop copy then mutant copy, target rows.']
 for case in [c for c in T.cases() if c['finding'] == 347]:
     noop, mutant = run(case, 'noop'), run(case, 'mutant')
-    red = sorted(set(name.split('VELDO-0347 ', 1)[-1] for name in mutant['failed_rows']))
-    noop_red = sorted(set(name.split('VELDO-0347 ', 1)[-1] for name in noop['failed_rows']))
-    as_expected = not noop_red and all(row in red for row in case['rows'])
-    results.append({'falsifier': case['name'], 'module': case['module'],
-                    'criterion': next(v for k, v in CRITERION.items() if k in case['name']),
+    red = sorted(set(name.split(' ', 1)[-1] for name in mutant['failed_rows']))
+    noop_red = sorted(set(name.split(' ', 1)[-1] for name in noop['failed_rows']))
+    criterion = next(v for k, v in CRITERION.items() if k in case['name'])
+    # Review F4: in this ticket's suite each row has its own guard, so a falsifier of one criterion turns
+    # only that criterion's rows red; the others still read green under the mutant.
+    within = (all(row.startswith(criterion.lower() + '/') for row in red) if case['suite'] == WORK else None)
+    as_expected = not noop_red and all(row in red for row in case['rows']) and within is not False
+    results.append({'falsifier': case['name'], 'module': case['module'], 'suite': case['suite'],
+                    'criterion': criterion, 'red_within_criterion': within,
                     'expected_red': case['rows'], 'red_rows': red,
-                    'red_details': [d for d in mutant['failed_details'] if d[0].split('VELDO-0347 ', 1)[-1] in case['rows']],
+                    'red_details': [d for d in mutant['failed_details'] if d[0].split(' ', 1)[-1] in case['rows']],
                     'noop_red_rows': noop_red, 'red_as_expected': as_expected})
     lines.append('%s noop rows %d targets %s failed %s' % (case['name'], noop['count'],
                  json.dumps({k: v for k, v in noop['targets'].items()}), noop_red))

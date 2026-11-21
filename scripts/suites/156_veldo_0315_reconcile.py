@@ -298,8 +298,9 @@ def _v315_suite():
                   (ever.get(str(batch)) or {}).get('form') == 'batch_clone'
                   and f.at(candidate)[1].get('form') == 'candidate_workspace')
             kept = git(f.repo, 'for-each-ref', '--contains', tip, 'refs/veldo/kept/') if not batch.exists() else ''
-            check(row, 'ended batch keeps its unique commit: in the clone, or on a kept ref of the main repository',
-                  (batch.exists() and git(batch, 'rev-parse', 'HEAD') == tip) or bool(kept))
+            check(row, 'ended batch is removed and its unique commit is on a kept ref of the main repository',
+                  not batch.exists() and (ever.get(str(batch)) or {}).get('state') == 'removed'
+                  and git(f.repo, 'cat-file', '-t', tip) == 'commit' and bool(kept.strip()))
             check(row, 'repository is never scratch or build output', f.at(mistaken)[1].get('owner') is None
                   and (mistaken / 'only-commit').exists())
 
