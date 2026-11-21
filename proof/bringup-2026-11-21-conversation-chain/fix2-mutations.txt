@@ -1,0 +1,27 @@
+Fix round 2 falsifiers: the gate's mutation driver, `python3 scripts/check_gate_mutations.py --case <name> ...`
+(the authority mutation stage's driver: its unconfined leg is the protected scripts/gate_unconfined.json, so a case of
+a suite that list names runs outside the worker confinement, as the gate runs it), through host_heavy at 3f37088d,
+2026-11-21, load about 70. Each case: its whole suite on the unchanged copy (baseline), on a no-op copy, and on the
+mutant; red rows listed.
+
+status passed, registered 7, executed 7, reused 0, rejected 7 (every mutant rejected), 21 workers, 299.6 s
+unconfined leg ran 1 case: store183-open-unchecked (130_veldo_0183_memory_servers)
+
+flag231-question-unmapped: baseline red [], noop red [], mutant red ['VELDO-0231 AC2/codex-launch', 'VELDO-0231 AC2/decisions', 'VELDO-0231 AC2/switch', 'VELDO-0231 AC3/answered', 'VELDO-0231 AC3/blocking', 'VELDO-0231 AC4/flood']; declared ['AC2/codex-launch']; 27.1s
+flag231-question-window-dropped: baseline red [], noop red [], mutant red ['VELDO-0231 AC3/blocking']; declared ['AC3/blocking']; 55.7s
+flag231-run-window-removed: baseline red [], noop red [], mutant red ['VELDO-0231 AC4/flood', 'VELDO-0231 AC4/per-run-cap']; declared ['AC4/flood']; 57.5s
+flag231-delivered-at-end: baseline red [], noop red [], mutant red ['VELDO-0231 AC1/at-once']; declared ['AC1/at-once']; 58.9s
+ask176-moved-unasked: baseline red [], noop red [], mutant red ['VELDO-0176 AC2/ask', 'VELDO-0176 AC2/wait', 'VELDO-0176 AC2/move', 'VELDO-0176 AC3/observability']; declared ['AC2/ask']; 65.0s
+clone175-into-initial-branch: baseline red [], noop red [], mutant red ['VELDO-0175 AC4/slash-attach', 'VELDO-0175 AC4/attach-initial-branch', 'VELDO-0175 AC4/observability']; declared ['AC4/attach-initial-branch']; 66.7s
+store183-open-unchecked: baseline red [], noop red [], mutant red ['VELDO-0183 AC4/open-refused']; declared ['AC4/open-refused']; 122.1s
+
+Round 1's two that the driver could not complete:
+- flag231-question-window-dropped was cut off at the 120 s worker floor (its defect showed only at the suite's hang
+  detector). Now read from events (a55a46e5): killed in 55.7 s, the whole suite.
+- store183-open-unchecked's baseline was red because round 1 ran the teeth driver directly
+  (check_teeth_mutations.py, a developer entry that confines every case). Its suite is one gate_unconfined.json
+  already names (it needs the host: factory setup's profile check reads the owner's user manager), and the gate's
+  driver runs it in that unconfined leg: clean baseline and no-op, the mutant red on its row.
+
+F10, applied in place to a scratch copy (git archive of the head, both .veldo and engine/.veldo control_service.py
+with the service intake's batch starter removed), suite 131_0175 alone through host_heavy: see fix2-suites.txt.

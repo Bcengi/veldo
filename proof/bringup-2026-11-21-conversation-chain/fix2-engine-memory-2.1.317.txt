@@ -1,0 +1,42 @@
+Fix round 2, review F5: what Claude Code 2.1.317's added memory machinery is, read from the qualified binary
+(runtime/engines.json: version 2.1.317, sha256 eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0),
+for VELDO-0184's reviewer to judge against AC1. Offsets are byte offsets in that file. Nothing here changes
+proof/VELDO-0184/engine-memory-forms.json, which its extractor writes.
+
+1. Account memory is served by an MCP server, not read from files.
+   @277361717  var Nj="memory",yLn=`mcp__${Nj}__memory_`        (the server name and its tools' prefix)
+   @277388131  function sEr(e,r){if(e!==Nj||r.scope!=="dynamic"||sd(r)||!("url"in r)...
+               var pe=/^\/v2\/ccr-sessions\/[A-Za-z0-9_-]+\/memory\/mcp$/   (a remote session's memory endpoint)
+   @278806626  function She(e){return e!==void 0&&sEr(e.name,e.config)}
+               function Sh(e,n){return e?.name===ta&&e.config.scope==="dynamic"&&e.config.type==="sdk"&&...}
+               function aut(e,n){return She(e)||Sh(e,n)||e?.name===ta&&sd(e.config)}
+   @277326655  function sd(e){return ...yt().cliOwnedConfigs.has(e)}   (a configuration the CLI itself registers)
+   @317812130  tools are marked accountMemory:aut(e,D.name), accountMemoryServer:Ue, per MCP connection
+   So a tool is account memory only on a connected MCP server named "memory" whose configuration is dynamic
+   (added at run time by a remote session's URL, an SDK host, or a first-party configuration the CLI owns).
+   accountMemoryLaunchMode, accountMemorySessionMode, accountMemoryReadKeys etc. are that server's session state
+   and display bookkeeping.
+
+   Why a Veldo run does not get it: the launch passes --strict-mcp-config with the run's own --mcp-config and no
+   SDK host or remote session (control_engine_claude baseline options, line 1444), so no dynamic "memory" server
+   is connected; and if one were, its mcp__memory__memory_* tools would be on the wire, where VELDO-0127 AC4's
+   comparison with the role's tools stops the run. It is not file memory: AC1's directory, setting and init-event
+   check (memory_paths {auto, team}) are about the auto-memory directory only, and stay correct for it.
+   Judgment for VELDO-0184's reviewer: record it in the forms file as "not file memory, off because no dynamic
+   memory server is connected under --strict-mcp-config, and its tools would fail AC4", or file a criterion.
+
+2. The directory-source loop's per-source gate admits flagSettings.
+   @278810269  function Rh(){let n=["policySettings","flagSettings",...lT()?["localSettings","projectSettings"]:[],
+               "userSettings"];for(let r of n){if(!Kt(r))continue;let s=be(r)?.autoMemoryDirectory;...
+   @276028382  function Mo(){let e=FJe(),n=Vo();...let t=new Set(e);t.add("flagSettings"),t.add("policySettings");
+               ...}function Kt(e){return Mo().includes(e)}
+   Kt(r) is "the source is enabled", and flagSettings and policySettings are always added, whatever
+   --setting-sources names. The handed settings file (--settings, flagSettings) is always read.
+
+3. The 2.1.281 literal no pattern reads (Uy, autoMemoryEnabled per source) is replaced, not lost.
+   @278808349  function gI(){let e=ft();if(e.autoMemoryEnabled!==void 0)return e.autoMemoryEnabled;return!0}
+               (the enabled_setting pattern the extractor found: the merged settings, flagSettings among them)
+   @278808415  function wh(){return cvr("autoMemoryEnabled")} and mI(): when managed policy sets autoMemoryEnabled
+               but cannot be read, auto memory is held off ("policy_unreadable"). That can only turn memory off; a
+               run that lists the item would then report no matching memory_paths and be stopped by name
+               (binding_mismatch:engine_memory, AC1/mismatch-stop), never run with memory elsewhere.

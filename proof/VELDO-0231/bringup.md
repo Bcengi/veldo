@@ -88,3 +88,8 @@ stage`), the third, in an untouched clone of the same commit, passed.
   source branch; the port's conflict resolutions above have had no review.
 - `proof/VELDO-0231/suites.txt`, `falsifiers.txt`, `red-at-8da5d061.txt` and the
   `mutation-flag231-*.txt` files are the source branch's runs and name its commits.
+
+Fix round 2 (2026-11-21): AC3's "immediate" is the qualify probe's event (the answer in the binary's next model
+request), not 5 s of wall time (review F6, specification History); AC3/blocking reads a dropped question window from
+events, so its falsifier is killed by the mutation driver in 56 s. See
+proof/bringup-2026-11-21-conversation-chain/README.md, fix round 2.

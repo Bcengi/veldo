@@ -186,3 +186,71 @@ Falsifiers of the rows whose waits changed:
     it is in `gate_unconfined.json`): `invalid_baseline`, independent of this change.
 
 Not run: `scripts/verify.sh` (by instruction) and the suites this round did not touch.
+
+## Fix round 2 (2026-11-21): F5, F6, F10, the falsifiers the driver could not complete, 133's stream waits
+
+Commits 5c46f6ed (133's stream waits), a55a46e5 (AC3/blocking by events), 631ed09e (F7 `os.mkdir`), 425443f0 and the
+round's last commit (F10's row), 3f37088d (F6). F4 stays with the lead.
+
+### F5 (VELDO-0184, Claude Code 2.1.317's account memory): evidence for the reviewer, nothing changed
+
+`fix2-engine-memory-2.1.317.txt` reads it from the qualified binary. Account memory is a connected MCP server named
+`memory` with a dynamic configuration (a remote session's memory URL, an SDK host, or a first-party configuration
+the CLI owns). It is not file memory. A Veldo run launches with `--strict-mcp-config` and its own `--mcp-config`,
+so no such server is connected; if one were, its `mcp__memory__memory_*` tools would be on the wire, where
+VELDO-0127 AC4 stops the run. The directory loop's gate `Kt(r)` is "the source is enabled", and `flagSettings`
+(the handed settings file) is always enabled. The 2.1.281 literal `Uy` is replaced by `gI()`, the
+`enabled_setting` pattern the extractor found. Not done: the forms file is the extractor's output and the judgment
+is VELDO-0184's reviewer's (a "not file memory, off because ..." entry, or a criterion). The file gives the reasons
+and offsets for it.
+
+### F6 (VELDO-0231 AC3, qualify's "immediate"): fixed, under the owner's rule (Telegram 42829)
+
+The probe now calls the binary's answer immediate when it is the call's output in the binary's very next request
+to the model (`control_engine_codex.IMMEDIATE = 'next_request'`). It no longer asks for 5 seconds of wall time.
+The record names the event (`answered_in`) in place of `within_seconds: 5`, and `qualify.PROBE_SECONDS` is a
+120 s hang detector. The specification's AC3 text and History say so, as AC1 did in round 1. Suite 127's
+probe rows require the event. Suite 126 reproduces `codex-qualification.json` from the real 0.166.0 binary byte
+for byte: its answer came in its next request. The four `proof/VELDO-0127/resources-*.json` fixtures carry
+`control_engine_codex.py`'s digest, so the qualify command rewrote them; each differs only in that digest line.
+The receiver's 60 s question window is still the runtime guard. Whether an owner restatement is wanted here, as
+for AC1, is the lead's call.
+
+### F7: `os.mkdir` made
+
+`conversation_clone` creates the work folder with `os.mkdir` before `git init` and refuses an existing path. A
+failed clone's `rmtree` can then only remove the call's own tree, never one another process made between the
+check and the init. The cost is four lines, and it makes the space-boundary entry's reason true by construction.
+
+### F10: a behavioral row
+
+In suite 131_0175 `AC1/service-feed`, the owner's `/batch factory`, acquired by the running service's channel
+pass, must come back as the batch starter's outcome (`batch`) with no intake proposal written. Applied in place
+with the starter removed from the service's intake, the row is red: the message becomes ordinary intake (`inbox`).
+
+### 133_0178's event-stream waits
+
+The 0.1 s drain and the 0.5 s idle are gone. The opening frame is waited for as an event, with a hang detector
+of 120 s or more. His stream reads the frame that carries the close. The colleague's stream reads up to a barrier
+frame: his own later command (a second conversation's opening). Stream frames are ordered, so whatever the close
+delivered him comes before that barrier. The hint socket's 2 s peer read is now a 120 s hang detector.
+
+### The two falsifiers round 1 could not complete through the driver
+
+- `flag231-question-window-dropped`: the suite now steps the blocking fake engine on a FIFO. The suite waits until
+  its own clock passes the moment the question was committed plus the window. That moment comes after the
+  receiver read the question, so the receiver's window has ended too. Then 'e': the engine writes a line on its
+  error stream, which the receiver keeps in the run's record in a pass after the window. Once that line is in the
+  record, 'o': the engine writes on. A receiver that keeps its window has stopped the run by the end of that pass.
+  One that dropped it records the question answered, and the run ends `completed` at once. Killed in 55.7 s.
+- `store183-open-unchecked`: round 1 ran `check_teeth_mutations.py` directly. That entry confines every case, so
+  the baseline of a suite that needs the host was red. The repository already declares this suite in
+  `scripts/gate_unconfined.json`, and the gate's driver (`check_gate_mutations.py`) runs its cases in that
+  unconfined leg. Through it, the baseline and no-op are clean and the mutant is red on its row.
+
+### Runs (`fix2-suites.txt`, `fix2-mutations.txt`)
+
+Every suite touched this round, and again the round-1 suites that ran before the last suite-127 commit, each alone
+through host_heavy (load 20 to 75). All pass except 86_0127's two live rows (F4). The bring-up falsifiers through the
+gate's mutation driver: all seven killed with clean baseline and no-op controls (299.6 s for the stage).
+Not run: `scripts/verify.sh` (by instruction).
