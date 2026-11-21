@@ -1,0 +1,36 @@
+== flag231-delivered-at-end: control_service.py, 'launch.ended = launch.lost = ended = True\n        self.deliver(line, launch)' -> 'launch.ended = launch.lost = ended = True' (rows AC1/at-once)
+  VELDO-0231 AC1 latencies (s): 7.734, 7.437, 7.140, 6.843, 6.546, 6.249, 5.952, 5.654, 5.357, 5.060
+  VELDO-0231 detail: AC1/at-once each within 2 seconds of the engine writing it: max 7.734; each committed while the dispatch is still running: ['exited']
+  SELFTEST FAIL: VELDO-0231 AC1/at-once
+  127_veldo_0231_run_flags                        16 passed   35.33s
+restored: True
+== flag231-question-unmapped: control_engine_codex.py, "'request_user_input_async': ['request_user_input_async', 'request_user_input']," -> "'request_user_input_async': ['request_user_input_async']," (rows AC2/codex-launch)
+  VELDO-0231 AC1 latencies (s): 0.013, 0.013, 0.008, 0.008, 0.013, 0.013, 0.013, 0.007, 0.013, 0.013
+  VELDO-0231 detail: AC2/codex-launch the Codex run with the asynchronous grant completes (outcome configuration_stop:codex_unexpected_tool; []); its flags are read in the recorded form and delivered
+  SELFTEST FAIL: VELDO-0231 AC2/codex-launch
+  VELDO-0231 detail: AC2/decisions the grant's tool mapping names both tools the switch delivers (module and record)
+  SELFTEST FAIL: VELDO-0231 AC2/decisions
+  VELDO-0231 detail: AC2/switch the wire set of both delivered tools equals the role's
+  SELFTEST FAIL: VELDO-0231 AC2/switch
+  VELDO-0231 detail: AC3/answered the run ends normally (configuration_stop:codex_unexpected_tool); its question is delivered as a flag with its text; the service records the question as answered
+  SELFTEST FAIL: VELDO-0231 AC3/answered
+  VELDO-0231 detail: AC3/blocking it was stopped by name, configuration_stop:wait_question; its question flag was delivered
+  SELFTEST FAIL: VELDO-0231 AC3/blocking
+  VELDO-0231 detail: AC4/flood exactly one of 500 is delivered: 0; the summary counts 499 held back (rate_limited:run_flag): {'read': None, 'held_back': None, 'delivered': None}; the flood run has a flag summary to restart with
+  SELFTEST FAIL: VELDO-0231 AC4/flood
+  127_veldo_0231_run_flags                        11 passed   23.86s
+restored: True
+== flag231-question-window-dropped: control_launch.py, 'if cause is None and code is None and flags is not None and flags.expired(now):' -> 'if False:  # defect: no question window' (rows AC3/blocking)
+  VELDO-0231 AC1 latencies (s): 0.013, 0.013, 0.013, 0.013, 0.008, 0.013, 0.013, 0.013, 0.013, 0.015
+  VELDO-0231 detail: AC3/blocking the blocking run is not running when the deadline passes (15.8s, None); it was stopped by name, configuration_stop:wait_question
+  SELFTEST FAIL: VELDO-0231 AC3/blocking
+  127_veldo_0231_run_flags                        16 passed   46.84s
+restored: True
+== flag231-run-window-removed: control_conversation.py, "if written and (written >= FLAG_LIMIT or at - summary['last_at'] < FLAG_WINDOW):" -> 'if False:  # defect: no per-run window' (rows AC4/flood)
+  VELDO-0231 AC1 latencies (s): 0.013, 0.013, 0.013, 0.014, 0.013, 0.008, 0.008, 0.013, 0.013, 0.013
+  VELDO-0231 detail: AC4/flood exactly one of 500 is delivered: 500; the summary counts 499 held back (rate_limited:run_flag): {'read': 500, 'held_back': 0, 'delivered': 500}; after a restart, a flag 61 seconds later (suite clock) is delivered naming 499
+  SELFTEST FAIL: VELDO-0231 AC4/flood
+  VELDO-0231 detail: AC4/per-run-cap a run delivers at most 20 flags, one per 60 seconds: 25; the first at once, the next only 60 seconds after it
+  SELFTEST FAIL: VELDO-0231 AC4/per-run-cap
+  127_veldo_0231_run_flags                        15 passed   33.78s
+restored: True

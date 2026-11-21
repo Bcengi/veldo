@@ -1,0 +1,28 @@
+VELDO-0231 on the line, ported onto c92969a0. Each suite alone: python3 scripts/selftest.py with the suite option (exit 2 is a passed partial run, exit 1 a run with a false row).
+exit 2 127_veldo_0231_run_flags
+  VELDO-0231 AC1 latencies (s): 0.014, 0.013, 0.013, 0.013, 0.007, 0.008, 0.014, 0.013, 0.013, 0.013
+  127_veldo_0231_run_flags                        17 passed   34.44s
+exit 1 86_veldo_0127_agent_configuration
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   71.76s
+exit 2 123_veldo_0174_conversations
+  123_veldo_0174_conversations                    38 passed   12.62s
+exit 2 87_veldo_0127_codex_delivery
+  87_veldo_0127_codex_delivery                   194 passed  121.06s
+exit 2 125_veldo_0230_engine_census
+  125_veldo_0230_engine_census                     8 passed   11.64s
+exit 2 126_veldo_0230_qualify_reproduces
+  126_veldo_0230_qualify_reproduces                4 passed  115.63s
+exit 2 82_veldo_0173_tool_registry
+  82_veldo_0173_tool_registry                     11 passed    2.93s
+exit 2 88_veldo_0127_feature_defaults
+  88_veldo_0127_feature_defaults                  25 passed   18.22s
+exit 2 90_veldo_0127_feature_profile
+  90_veldo_0127_feature_profile                    2 passed   24.65s
+exit 2 78_veldo_0160_account_pool
+  78_veldo_0160_account_pool                      34 passed   29.28s
+exit 2 106_veldo_0185_dispatch_setup
+  106_veldo_0185_dispatch_setup                   20 passed   13.96s
+exit 2 113_veldo_0117_domain_store
+  113_veldo_0117_domain_store                      3 passed   17.74s

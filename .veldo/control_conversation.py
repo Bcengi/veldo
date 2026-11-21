@@ -49,13 +49,23 @@ DISPATCH = 'dispatch_conversation_turn'
 END = 'end_conversation_turn'
 DEFER = 'wait_conversation_turn'
 OWNER_OPERATIONS = (OPEN, CLOSE, ROLE, ATTACH, MESSAGE)
-OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
 DEFAULT_ROLE = 'assistant'
 HEAD = 'default-team:head'
 DEFAULT_PREFIX = 'default-team:'
 WORKER_KIND = 'subscription_reservation'
+# VELDO-0231: a running agent's flag to the lead, and its run's flag summary.
+FLAG = 'flag_conversation'
+FLAG_KIND = 'conversation_flag'
+FLAG_SUMMARY_KIND = 'run_flag_summary'
+FLAG_SCHEMA = 'veldo.conversation_flag/v1'
+FLAG_TEXT = 2000
+FLAG_WINDOW = 60
+FLAG_LIMIT = 20
+RATE_LIMITED = 'rate_limited:run_flag'
+UNDELIVERED = 'undelivered:no_conversation'
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG)
 
 
 class Refused(Exception):
@@ -78,6 +88,67 @@ def conversation_id(identity):
 
 def turn_id(identity, sequence):
     return 'conversation-turn:%s:%d' % (identity, sequence)
+
+
+def flag_summary_id(dispatch_id):
+    return 'run-flags:' + str(dispatch_id)
+
+
+def flag_id(dispatch_id, number):
+    return 'conversation-flag:%s:%d' % (dispatch_id, number)
+
+
+def lead_conversation(conn, conversation=None, project=None):
+    """VELDO-0231 AC1: the conversation a run's flag goes to: the run's own conversation for a conversation turn,
+    else the open conversation attached to the run's project, the most recently opened when several are; None."""
+    if _text(conversation):
+        row = _conversation(conn, conversation)
+        return conversation if row is not None else None
+    if not _text(project):
+        return None
+    attached = [json.loads(raw) for (raw,) in conn.execute('SELECT data FROM entities WHERE kind=?', (KIND,))]
+    attached = [c for c in attached if c.get('status') == 'open' and c.get('project') == project]
+    if not attached:
+        return None
+    return max(attached, key=lambda c: (c.get('opened_at') or 0, str(c.get('id'))))['id']
+
+
+def _flag(conn, params, before, now):
+    """flag_conversation (VELDO-0231 AC1, AC4): one flag read from a running agent's stream, written by the
+    service principal. The per-run window is the summary's: a run's first flag at once, after it at most one per
+    FLAG_WINDOW seconds and FLAG_LIMIT per run; a flag beyond that is counted, not written."""
+    _member(conn, params.get('principal'), now, service=True)
+    dispatch_id, number, at = params.get('dispatch_id'), params.get('number'), params.get('at')
+    if (not _text(dispatch_id) or type(number) is not int or number < 1 or not _number(at)
+            or not _text(params.get('engine')) or not _text(params.get('means'))
+            or not isinstance(params.get('text'), str)):
+        raise Refused('invalid_input:conversation_flag')
+    sid = flag_summary_id(dispatch_id)
+    summary = copy.deepcopy((before.get(sid) or {}).get('data') or {
+        'schema': FLAG_SCHEMA, 'dispatch_id': dispatch_id, 'read': 0, 'delivered': 0, 'undelivered': 0,
+        'held_back': 0, 'held_since_last': 0, 'last_at': None})
+    summary['read'] += 1
+    if summary['read'] != number:
+        raise Refused('stale_subject:conversation_flag')
+    written = summary['delivered'] + summary['undelivered']
+    if written and (written >= FLAG_LIMIT or at - summary['last_at'] < FLAG_WINDOW):
+        summary['held_back'] += 1
+        summary['held_since_last'] += 1
+        summary['outcome'] = RATE_LIMITED
+        return {sid: {'kind': FLAG_SUMMARY_KIND, 'data': summary}}
+    target = lead_conversation(conn, params.get('conversation'), params.get('project'))
+    text = params['text'][:FLAG_TEXT]
+    record = {'schema': FLAG_SCHEMA, 'dispatch_id': dispatch_id, 'number': number, 'conversation': target,
+              'project': params.get('project'), 'engine': params['engine'], 'means': params['means'],
+              'text': text, 'length': len(params['text']), 'synchronous': bool(params.get('synchronous')),
+              'account': params.get('account'), 'sequence': params.get('sequence'),
+              'read_at': params.get('read_at'), 'at': at,
+              'held_back_since_last': summary['held_since_last'],
+              'refusal': None if target is not None else UNDELIVERED}
+    summary['delivered' if target is not None else 'undelivered'] += 1
+    summary.update(held_since_last=0, last_at=at, outcome='delivered' if target is not None else UNDELIVERED)
+    return {sid: {'kind': FLAG_SUMMARY_KIND, 'data': summary},
+            flag_id(dispatch_id, number): {'kind': FLAG_KIND, 'data': record}}
 
 
 def _row(conn, identity):
@@ -145,6 +216,8 @@ def role_at(conn, name):
 def transition(conn, params, before):
     operation, now = params.get('operation'), time.time()
     identity, principal = params.get('conversation'), params.get('principal')
+    if operation == FLAG:
+        return _flag(conn, params, before, now)
     if operation not in OPERATIONS or not _text(identity):
         raise Refused('invalid_input:conversation')
     cid = conversation_id(identity)
@@ -394,6 +467,73 @@ class Conversations:
         self._run(DEFER, identity, {'sequence': sequence, 'dispatch_id': dispatch_id,
                                    'refusal': refusal}, now=now)
         return _turn(self.conn, identity, sequence)['data']
+
+    def flag(self, dispatch_id, *, engine, means, text, at, read_at=None, sequence=None, account=None,
+             synchronous=False, conversation=None, project=None):
+        """VELDO-0231: write one flag a running agent raised (flag_conversation, the service principal). Returns
+        {outcome, conversation, flag (the record, None when held back), summary}; the observation names the
+        conversation, the run's flag count and its held back count, never the text."""
+        sid = flag_summary_id(dispatch_id)
+        row = _row(self.conn, sid)
+        number = ((row or {}).get('data') or {}).get('read', 0) + 1
+        fid = flag_id(dispatch_id, number)
+        params = {'operation': FLAG, 'conversation': conversation, 'project': project, 'dispatch_id': dispatch_id,
+                  'number': number, 'engine': engine, 'means': means, 'text': text, 'at': at, 'read_at': read_at,
+                  'sequence': sequence, 'account': account, 'synchronous': bool(synchronous),
+                  'domain': self.domain, 'principal': self.principal}
+        command_id = 'conversation/%s/%s/%d' % (FLAG, dispatch_id, number)
+        command = {'command_id': command_id, 'principal': self.principal, 'operation': OPERATION,
+                   'parameters': params, 'artifact_digests': [], 'nonce': 'conversation/' + command_id,
+                   'expected_versions': {sid: row['version'] if row else 0, fid: 0}}
+        event = {'schema': FLAG_SCHEMA, 'operation': FLAG, 'dispatch_id': dispatch_id, 'engine': engine,
+                 'means': means, 'length': len(text) if isinstance(text, str) else None, 'sequence': sequence,
+                 'account': account, 'command_id': command_id}
+        try:
+            receipt = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+        except (Refused, self.store.StoreRefused) as error:
+            self.observe(dict(event, outcome='refused', refusal=error.code))
+            if isinstance(error, Refused):
+                raise
+            raise Refused(error.code, getattr(error, 'detail', '')) from None
+        summary = _row(self.conn, sid)['data']
+        written = _row(self.conn, fid)
+        record = written['data'] if written and written['kind'] == FLAG_KIND else None
+        outcome = summary.get('outcome')
+        self.observe(dict(event, outcome=outcome, conversation=(record or {}).get('conversation'),
+                          flags=summary['read'], held_back=summary['held_back'], watermark=receipt['seq'],
+                          latency=(at - read_at) if record is not None and _number(read_at) else None))
+        return {'outcome': outcome, 'conversation': (record or {}).get('conversation'), 'flag': record,
+                'summary': summary}
+
+    def flags(self, conversation=None, dispatch_id=None):
+        """The flag records, of one conversation or one run (the undelivered ones have no conversation), in order."""
+        found = [json.loads(raw) for (raw,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (FLAG_KIND,))]
+        found = [f for f in found if (conversation is None or f.get('conversation') == conversation)
+                 and (dispatch_id is None or f.get('dispatch_id') == dispatch_id)]
+        return sorted(found, key=lambda f: (f.get('at') or 0, f['dispatch_id'], f['number']))
+
+    def flag_summary(self, dispatch_id):
+        row = _row(self.conn, flag_summary_id(dispatch_id))
+        return copy.deepcopy(row['data']) if row else None
+
+    def flag_counts(self):
+        """VELDO-0231 metrics: flags read, delivered, held back and undelivered, per engine and means, and each
+        delivered flag's latency from the receiver reading it to its commit."""
+        counts = {}
+        for (raw,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (FLAG_KIND,)):
+            flag = json.loads(raw)
+            key = '%s/%s' % (flag.get('engine'), flag.get('means'))
+            entry = counts.setdefault(key, {'delivered': 0, 'undelivered': 0, 'latencies': []})
+            if flag.get('conversation') is None:
+                entry['undelivered'] += 1
+            else:
+                entry['delivered'] += 1
+                if _number(flag.get('read_at')):
+                    entry['latencies'].append(round(flag['at'] - flag['read_at'], 6))
+        summaries = [json.loads(raw) for (raw,) in self.conn.execute(
+            'SELECT data FROM entities WHERE kind=?', (FLAG_SUMMARY_KIND,))]
+        return {'read': sum(s.get('read', 0) for s in summaries),
+                'held_back': sum(s.get('held_back', 0) for s in summaries), 'by_means': counts}
 
     def status(self):
         conversations = []
