@@ -1,0 +1,10 @@
+--- a/bin/veldo
++++ b/bin/veldo
+@@ -300,6 +300,7 @@
+     retains the library/test loop seam; the command line cannot inject one.
+     """
+     if dispatcher is None:
++        dispatcher = _dispatch().Dispatcher(repo_root=repo_root, eligibility=eligibility, calls=calls)
+         if capabilities or scope or max_units != 10000 or calls is not None:
+             raise _work().CL.ClaimStopped("unsupported_configuration:work_options")
+         if sign is None and key is not None:
