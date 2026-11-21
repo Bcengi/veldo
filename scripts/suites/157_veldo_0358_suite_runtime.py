@@ -558,38 +558,70 @@ expect("watchdog/progress-not-total: %r" % (_v358_f5,),
        and _v358_f5["leg"]["rows"] == {"fx_leg_one": 3, "fx_leg_two": 3, "fx_leg_three": 3})
 
 
-# ------------------------------------------------------------------------ the opened-files record
+# ------------------------------------------------------------------------ the opened-files claims
+# The dispatcher writes NO record (the authority takes it: scripts/gate_legs.py TakeOpened, suite 160). Handed
+# an append descriptor in VELDO_OPENED_LEDGER_FD, it claims there what each suite opened; without one it
+# claims nothing anywhere, whatever an old variable names; and no process a suite starts sees the descriptor.
 
 _v358_OPENS = {
     "fx_opens": '''_name = "v358" + "_computed"
 exec(compile((ROOT / "scripts" / "suites" / (_name + ".txt")).read_text(), "computed", "exec"))
 expect("fx/opened", V358_COMPUTED == 1)
 ''',
-    "fx_quiet": '''expect("fx/quiet", True)
+    "fx_quiet": '''import os as _fx_os, subprocess as _fx_sp, sys as _fx_sys
+_fx_code = ("import os\\n"
+            "links = []\\n"
+            "for f in os.listdir('/proc/self/fd'):\\n"
+            "    try:\\n"
+            "        links.append(os.path.basename(os.readlink('/proc/self/fd/' + f)))\\n"
+            "    except OSError:\\n"
+            "        pass\\n"
+            "print(sorted(k for k in os.environ if 'OPENED' in k), 'ledger' in links)\\n")
+_fx_child = _fx_sp.run([_fx_sys.executable, "-c", _fx_code], capture_output=True, text=True)
+print("FX CHILD " + _fx_child.stdout.strip())
+expect("fx/quiet", "VELDO_OPENED_LEDGER_FD" not in _fx_os.environ)
 ''',
 }
 
 
 def _v358_record():
+    import os as _o
     with _v358_tempfile.TemporaryDirectory(prefix="v358-record-") as d:
         base = _v358_tree(_v358_Path(d) / "repo", _v358_OPENS)
         (base / "scripts" / "suites" / "v358_computed.txt").write_text("V358_COMPUTED = 1\n")
-        record = _v358_Path(d) / "opened.json"
-        run = _v358_run(base, list(_v358_OPENS), VELDO_OPENED_FILES=str(record))
+        ledger = _v358_Path(d) / "ledger"
+        fd = _o.open(str(ledger), _o.O_WRONLY | _o.O_CREAT | _o.O_APPEND | _o.O_CLOEXEC, 0o600)
+        argv = [_v358_sys.executable, str(base / "scripts" / "selftest.py"), "--suite", "fx_opens", "--suite", "fx_quiet"]
         try:
-            data = _v358_json.loads(record.read_text())
-        except (OSError, ValueError) as error:
-            data = {"error": str(error)}
-        return {"rc": run.returncode, "record": data}
+            run = _v358_subprocess.run(argv, cwd=str(base), capture_output=True, text=True, stdin=_v358_subprocess.DEVNULL,
+                                       env=_v358_clean_env(VELDO_OPENED_LEDGER_FD=str(fd)), pass_fds=(fd,))
+        finally:
+            _o.close(fd)
+        claims = {}
+        try:
+            for line in ledger.read_text().splitlines():
+                item = _v358_json.loads(line)
+                claims.setdefault(item["suite"], []).extend(item["paths"])
+        except (OSError, ValueError, KeyError) as error:
+            claims = {"error": str(error)}
+        child = [l for l in run.stdout.splitlines() if l.startswith("FX CHILD ")]
+        # The old writer's variable, with no descriptor: nothing is written there or anywhere.
+        old = _v358_Path(d) / "old-record.json"
+        quiet = _v358_run(base, list(_v358_OPENS), VELDO_OPENED_FILES=str(old))
+        return {"rc": run.returncode, "claims": claims, "child": child,
+                "old_rc": quiet.returncode, "old_written": old.exists() or _v358_Path(str(old) + ".lock").exists(),
+                "old_stderr": quiet.stderr[-400:]}
 
 
 _v358_f6 = _v358_record()
 expect("record/opened-files: %r" % (_v358_f6,),
        _v358_f6["rc"] == _v358_PASSED
-       and _v358_f6["record"].get("fx_opens") == ["scripts/suites/fx_opens.py", "scripts/suites/v358_computed.txt"]
-       and _v358_f6["record"].get("fx_quiet") == ["scripts/suites/fx_quiet.py"]
-       and "scripts/suites/support/waits.py" in _v358_f6["record"].get("shared", [])
-       and not any("__pycache__" in p for paths in _v358_f6["record"].values() for p in paths))
+       and _v358_f6["claims"].get("fx_opens") == ["scripts/suites/fx_opens.py", "scripts/suites/v358_computed.txt"]
+       and _v358_f6["claims"].get("fx_quiet") == ["scripts/suites/fx_quiet.py"]
+       and "scripts/suites/support/waits.py" in _v358_f6["claims"].get("shared", [])
+       and not any("__pycache__" in p for paths in _v358_f6["claims"].values() for p in paths)
+       and _v358_f6["child"] == ["FX CHILD [] False"]
+       and _v358_f6["old_rc"] == _v358_PASSED and not _v358_f6["old_written"])
 
 
 # ------------------------------------------------------------------------- the port holder (C11)

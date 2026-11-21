@@ -2189,7 +2189,7 @@ def scratch_creation(space, environ):
         raise RuntimeError('unavailable_service:space_ledger: ' + str(error)) from error
 
 
-def launch(config_path, worktree, command, profile="agent", client=None, *, space=None):
+def launch(config_path, worktree, command, profile="agent", client=None, *, space=None, inherit=()):
     """Run confined, with scratch owned by the recorded run when its label is given.
 
     A recorded launcher declares before mkdir and leaves removal to run finished.
@@ -2213,7 +2213,7 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
                 scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
-            code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
+            code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop, inherit)
         except Interrupted:
             code = None
         except CredentialRecovery as error:
@@ -2247,7 +2247,7 @@ def launcher_write_problem(grants):
     return None
 
 
-def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None):
+def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None, inherit=()):
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -2333,7 +2333,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             except Exception as error:
                 print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
         borrow.code = run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots,
-                               after=after)
+                               inherit=inherit, after=after)
         return borrow.code
 
 
@@ -2518,6 +2518,21 @@ def tracer_problem(status=None):
     fields = dict(line.split(':', 1) for line in status.splitlines() if ':' in line)
     if fields.get('TracerPid', '').strip() != '0':
         return 'it is traced (TracerPid %s); only a declared case runs traced' % fields.get('TracerPid', '').strip()
+    return None
+
+
+def kept_descriptor_problem(fd):
+    """Why `fd` may not be handed into a gate tree, or None (VELDO-0358). The one descriptor a gate run
+    keeps is the authority's opened-files ledger: a regular file this process may only append to, so the
+    tree gains no read and no other write by it (scripts/gate_legs.py TakeOpened)."""
+    try:
+        info, flags = os.fstat(fd), fcntl.fcntl(fd, fcntl.F_GETFL)
+    except OSError as error:
+        return 'descriptor %d: %s' % (fd, error.strerror)
+    if fd < 3 or not stat.S_ISREG(info.st_mode):
+        return 'descriptor %d is not a regular file' % fd
+    if flags & os.O_ACCMODE != os.O_WRONLY or not flags & os.O_APPEND:
+        return 'descriptor %d is not append-only' % fd
     return None
 
 
@@ -2938,13 +2953,22 @@ def main():
     parser.add_argument('--client', help='the agent CLI whose files the run receives (a key of '
                         'clients in the configuration: claude, codex); none without it')
     parser.add_argument('--worktree', required=True)
+    parser.add_argument('--keep-fd', type=int, help='gate profile: the authority\'s opened-files ledger, '
+                        'an append-only descriptor the tree keeps (VELDO-0358)')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        return launch(args.config, args.worktree, command, args.profile, args.client)
+        inherit = ()
+        if args.keep_fd is not None:
+            problem = ('only the gate profile keeps a descriptor' if args.profile != 'gate'
+                       else kept_descriptor_problem(args.keep_fd))
+            if problem:
+                raise ValueError(problem)
+            inherit = (args.keep_fd,)
+        return launch(args.config, args.worktree, command, args.profile, args.client, inherit=inherit)
     except CredentialRecovery as error:
         print(recovery_message(error), file=sys.stderr, flush=True)
         return RECOVERY_EXIT

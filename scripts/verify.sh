@@ -23,7 +23,7 @@ git() {
 # VELDO_GATE_UNIT_SECONDS (VELDO-0214), the unit leg time it hands an integration leg, with them.
 veldo_candidate() {
   env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION -u VELDO_GATE_UNIT_SECONDS \
-    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+    -u VELDO_OPENED_LEDGER_FD python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
 # THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07). A stage the
 # authority's scripts/gate_unconfined.json declares, with exactly its declared command, runs as two
@@ -43,11 +43,14 @@ veldo_expect_leg() {
     [ "$?" = 1 ] || VELDO_LEGS_EXPECTED="${VELDO_LEGS_EXPECTED:+$VELDO_LEGS_EXPECTED,}$1"
   fi
 }
+# VELDO-0358: the unit stage's opened-files record is TAKEN BY THE AUTHORITY (gate_legs.py --take-opened)
+# into this gate's own file outside the candidate, VELDO_OPENED_RECORD; the candidate never writes it.
 veldo_stage() {
   if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
     veldo_expect_leg "$1" "$2"
+    _veldo_take=(); [ "$1" != unit ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1" \
-      --record "$VELDO_LEGS_RECORD" -- "$2"
+      --record "$VELDO_LEGS_RECORD" "${_veldo_take[@]}" -- "$2"
   else veldo_candidate bash -c "$2"; fi
 }
 
@@ -99,8 +102,17 @@ veldo_load_leg() {
   echo "== load-proof"
   [ "$MUTATION_RAN" = 0 ] || echo "   load-proof: the graph scheduler ran the mutation stage before this leg"
   _veldo_load_record=$(mktemp); _veldo_load_from=$(date -u +%s)
+  # The record this gate's unit stage took (above) is written beside the stamp by the authority, over
+  # whatever is there, and the leg reads it. Without one the leg reads the authority's last record.
   set --
-  [ ! -f "$VELDO_OUT/opened_files.json" ] || set -- --opened "$VELDO_OUT/opened_files.json"
+  if [ -s "$VELDO_OPENED_RECORD" ]; then
+    if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --publish-opened "$VELDO_OUT/opened_files.json" \
+         --opened-part "$VELDO_OPENED_RECORD"; then
+      echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1; VELDO_LOAD_FIELD=',"load":null'
+      return 0
+    fi
+    set -- --opened "$VELDO_OUT/opened_files.json"
+  fi
   if python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --load-proof --root "$(pwd -P)" \
        --record "$_veldo_load_record" "$@"; then
     echo "   load-proof: pass"
@@ -309,8 +321,9 @@ CHECK_wallclock="required:python3 scripts/check_wallclock.py"
 VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
 VELDO_LEGS_RECORD=$(mktemp)
+VELDO_OPENED_RECORD=$(mktemp)
 VELDO_LEGS_EXPECTED=""
-trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; veldo_space_exit' EXIT
+trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "$VELDO_OPENED_RECORD"; veldo_space_exit' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
 # VELDO-0358 AC13: the load-proof leg's slot (below), the authority's own command like the mutation stage.
 CHECK_load="required:authority load-proof leg"
@@ -361,7 +374,7 @@ TODAY=$(date -u +%Y-%m-%d)
 VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
-  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "$VELDO_OPENED_RECORD"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
   _veldo_stages=()
   for _veldo_name in $ORDER; do
     _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"

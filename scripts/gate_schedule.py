@@ -456,11 +456,20 @@ def stage_error(receipt):
 
 
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None, load_record=None,
-                load_opened=None):
+                load_opened=None, opened_parts=None):
+    """A node's command. With `opened_parts` (the scheduler's private directory), each unit node's
+    gate_legs.py takes its leg's opened-files record into opened.<leg>.json there (VELDO-0358 C18: the
+    authority takes it, never the candidate), and the load node is started only after the authority has
+    merged those parts into `load_opened` (beside the stamp, replacing what is there), which it reads."""
     if stage == LOAD:
         argv = [sys.executable, '-I', '-S', str(HERE / 'gate_legs.py'), '--load-proof', '--root', str(root),
                 '--record', str(load_record)]
-        if load_opened is not None and Path(load_opened).is_file():
+        parts = sorted(Path(opened_parts).glob('opened.*.json')) if opened_parts is not None else []
+        if parts:
+            target = Path(load_opened) if load_opened is not None else Path(opened_parts) / 'opened_files.json'
+            load_module('gate_legs').publish_opened(target, parts)
+            argv += ['--opened', str(target)]
+        elif load_opened is not None and Path(load_opened).is_file():
             argv += ['--opened', str(load_opened)]
         return argv
     if stage == 'mutation':
@@ -471,6 +480,8 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
                 '--stage', stage, '--record', str(record)]
         if leg:
             argv += ['--leg', leg]
+        if stage == 'unit' and opened_parts is not None:
+            argv += ['--take-opened', str(Path(opened_parts) / ('opened.%s.json' % (leg or 'whole')))]
         if stage == 'integration' and prior_times:
             argv += ['--prior-times', str(prior_times)]
         return argv + ['--', command]
@@ -611,7 +622,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
                     argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times,
-                                       directory / 'load.record', load_opened)
+                                       directory / 'load.record', load_opened, directory)
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
                     if inputs:

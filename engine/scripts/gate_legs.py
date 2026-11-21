@@ -46,6 +46,13 @@ stamp and the gate event: it is visible on every run, never silent.
       proven set in its own process under the load of scripts/gate_load.py. Exit 1 on any failed or
       hung row and on load_not_applied. --load-stamp <file> [--wall <seconds>] prints the stamp's
       "load" value from the leg's record.
+  gate_legs.py --root <candidate> --stage unit --record <file> --take-opened <record> -- <command>
+      The unit stage as above, and the opened-files record TAKEN BY THE AUTHORITY (VELDO-0358 C18; the
+      section THE OPENED-FILES RECORD IS THE AUTHORITY'S below), written to <record> by this process
+      once every leg has ended. The candidate never writes it.
+  gate_legs.py --publish-opened <record> --opened-part <part> [--opened-part <part>]
+      Merge the parts the unit legs took into <record> ($VELDO_OUT/opened_files.json, beside the
+      stamp), replacing whatever is there; run by the authority just before the load-proof leg.
   gate_legs.py --stamp <file> [--expect <stage,stage>]
       The stamp's "unconfined" value: the declaration's digest and the entries each stage ran
       unconfined. With --expect, a record that is missing, empty, unreadable or does not hold
@@ -94,7 +101,9 @@ import os
 from pathlib import Path
 import re
 import select
+import shutil
 import signal
+import struct
 import subprocess
 import sys
 import tempfile
@@ -167,6 +176,7 @@ def entries(document):
 
 def _env(leg=None, listed=(), digest=None, measured=None):
     env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
+    env.pop(OPENED_FD, None)  # a caller's ledger descriptor too: only TakeOpened hands one in (VELDO-0358)
     for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST'):
         env.pop(authority_variable, None)
     if leg:
@@ -332,11 +342,14 @@ def measurement(times, digest, leg, run):
             'fresh': 'this gate run' if item.get('run') == run else 'an earlier gate run'}
 
 
-def confined(root, command, env):
-    """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it."""
+def confined(root, command, env, keep=None):
+    """The stage command in the gate's domain, exactly as verify.sh's veldo_candidate runs it. `keep`, the
+    authority's opened-files ledger (an append descriptor), is the one further descriptor handed in."""
+    held = ['--keep-fd', str(keep)] if keep is not None else []
     return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
-                           str(root), '--', 'bash', '-c', command], env=env,
-                          stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
+                           str(root), *held, '--', 'bash', '-c', command], env=env,
+                          stdin=subprocess.DEVNULL,
+                          pass_fds=(*_launcher_fds(), *(() if keep is None else (keep,)))).returncode
 
 
 def _launcher_fds():
@@ -357,14 +370,233 @@ def _launcher_fds():
 AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON', 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')
 
 
-def unconfined(root, command, env):
+def unconfined(root, command, env, keep=None):
     """The stage command outside every domain, in the candidate, as before VELDO-0208."""
     env = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
     return subprocess.run(['bash', '-c', command], cwd=str(root), env=env,
-                          stdin=subprocess.DEVNULL).returncode
+                          stdin=subprocess.DEVNULL, pass_fds=() if keep is None else (keep,)).returncode
 
 
-def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None):
+# ---- THE OPENED-FILES RECORD IS THE AUTHORITY'S (VELDO-0358 C18; the lead's decision on integration
+# finding 2) ------------------------------------------------------------------------------------------
+#
+# The record says, per suite, which files under scripts/ and proof/ the suite opened. It decides what the
+# load-proof leg runs and how often (the proven set, the changed suites) and the census's scope, so the
+# candidate it judges must not write it. It is TAKEN HERE, by the authority, on the unconfined side, and
+# written by this process alone, once every leg of the stage has ended (the record path is the gate's
+# own, outside the candidate: verify.sh's mktemp, the scheduler's private directory). Nothing the
+# candidate writes anywhere is read as the record. Two observations go into it:
+#
+#   WHAT WAS OPENED, seen from outside. An inotify watch on every directory under the candidate's
+#   scripts/ and proof/, held by this process, sees each open of a file there by any process, the
+#   confined ones included (the kernel reports it on the file, whatever domain opened it). No candidate
+#   code takes part. A compiled module read from __pycache__ counts as its source.
+#
+#   WHICH SUITE OPENED IT, claimed by the dispatcher. Per-suite attribution cannot be seen from outside
+#   on this host: the gate's tree refuses to start under a tracer (VELDO-0210 AC7), an unprivileged
+#   fanotify listener is told no other process's pid, and the scheduler runs the unit legs beside the
+#   integration stage. So the protected dispatcher (scripts/selftest.py) claims it, exactly as the
+#   coordinator's ownership ledger takes a worker's claims (VELDO-0208, scripts/mutation_ownership.py):
+#   this process creates the ledger file in a private directory no domain is granted, hands each leg
+#   only an append descriptor to it (VELDO_OPENED_LEDGER_FD), and reads it after the leg. Every line is a
+#   claim, not a fact. A line of any other shape than the dispatcher writes is an error and the stage is
+#   red. A claimed file that was never seen opened, or is not a file of the candidate, is dropped and
+#   counted; so is nothing else.
+OPENED_FD = 'VELDO_OPENED_LEDGER_FD'
+OPENED_AREAS = ('scripts', 'proof')
+_IN_OPEN, _IN_MOVED_TO, _IN_CREATE = 0x20, 0x80, 0x100
+_IN_Q_OVERFLOW, _IN_IGNORED, _IN_ONLYDIR, _IN_DONT_FOLLOW, _IN_ISDIR = 0x4000, 0x8000, 0x1000000, 0x2000000, 0x40000000
+
+
+class OpenWatch:
+    """The files under the candidate's scripts/ and proof/ opened while this watch is held, as the kernel
+    reports them to this process. Event driven: the reader thread wakes on an event or on stop()."""
+
+    def __init__(self, root):
+        import ctypes
+        self.root = Path(root).resolve()
+        self.libc = ctypes.CDLL(None, use_errno=True)
+        self.fd = self.libc.inotify_init1(os.O_CLOEXEC | os.O_NONBLOCK)
+        if self.fd < 0:
+            raise OSError(ctypes.get_errno(), 'inotify_init1')
+        self.directories, self.opened, self.late, self.overflowed = {}, set(), set(), False
+        self.wake, self.waker = os.pipe2(os.O_CLOEXEC)
+        for area in OPENED_AREAS:
+            if (self.root / area).is_dir():
+                self._tree(self.root / area, late=False)
+        self.thread = threading.Thread(target=self._read, name='veldo-opened-watch', daemon=True)
+        self.thread.start()
+
+    def _tree(self, top, late):
+        for directory, names, _ in os.walk(str(top)):  # never follows a link out of the candidate
+            self._watch(Path(directory), late)
+
+    def _watch(self, directory, late):
+        wd = self.libc.inotify_add_watch(self.fd, os.fsencode(str(directory)),
+                                         _IN_OPEN | _IN_CREATE | _IN_MOVED_TO | _IN_ONLYDIR | _IN_DONT_FOLLOW)
+        if wd >= 0:  # a directory gone before its watch was added has nothing left to open
+            relative = directory.relative_to(self.root).as_posix()
+            self.directories[wd] = relative
+            if late:
+                # Made while the watch runs: a file in it may have been opened before its watch existed.
+                self.late.add(relative)
+
+    def _read(self):
+        poller = select.poll()
+        poller.register(self.fd, select.POLLIN)
+        poller.register(self.wake, select.POLLIN)
+        while True:
+            ready = {fd for fd, _ in poller.poll()}  # an event or the stop; no bound of its own
+            self._drain()
+            if self.wake in ready:
+                return
+
+    def _drain(self):
+        while True:
+            try:
+                data = os.read(self.fd, 1 << 16)
+            except BlockingIOError:
+                return
+            offset = 0
+            while offset < len(data):
+                wd, mask, _, size = struct.unpack_from('iIII', data, offset)
+                name = os.fsdecode(data[offset + 16:offset + 16 + size].split(b'\0', 1)[0])
+                offset += 16 + size
+                if mask & _IN_Q_OVERFLOW:
+                    self.overflowed = True
+                    continue
+                if mask & _IN_IGNORED:
+                    self.directories.pop(wd, None)
+                    continue
+                directory = self.directories.get(wd)
+                if directory is None or not name:
+                    continue
+                if mask & _IN_ISDIR:
+                    if mask & (_IN_CREATE | _IN_MOVED_TO):
+                        self._tree(self.root / directory / name, late=True)
+                    continue
+                if mask & _IN_OPEN:
+                    parent = directory
+                    if directory.rsplit('/', 1)[-1] == '__pycache__' and '.cpython-' in name:
+                        # The module's compiled form was read in place of its source.
+                        parent, name = directory.rsplit('/', 1)[0], name.split('.cpython-', 1)[0] + '.py'
+                    self.opened.add(parent + '/' + name)
+
+    def stop(self):
+        """What was seen: (opened paths, directories made meanwhile, whether the kernel's queue overflowed)."""
+        os.write(self.waker, b'x')
+        self.thread.join()  # it returns on the byte just written
+        for fd in (self.fd, self.wake, self.waker):
+            os.close(fd)
+        return self.opened, self.late, self.overflowed
+
+
+def opened_record(root, claims, opened, late=(), overflowed=False):
+    """(record, dropped): the dispatcher's claims (the ledger's text) kept where the authority saw the file
+    opened, as {suite: sorted repository-relative paths}. Invalid on a line of any other shape."""
+    root = Path(root).resolve()
+    record, dropped = {}, {'never_opened': 0, 'not_a_file': 0}
+    for number, line in enumerate(claims.splitlines(), 1):
+        try:
+            item = json.loads(line)
+        except ValueError:
+            raise Invalid('opened-files claim %d is not JSON' % number)
+        if (not isinstance(item, dict) or set(item) != {'suite', 'paths'} or not isinstance(item['suite'], str)
+                or not SUITE.match(item['suite']) or not isinstance(item['paths'], list)):
+            raise Invalid('opened-files claim %d is not {"suite": name, "paths": [path, ...]}' % number)
+        kept = record.setdefault(item['suite'], set())
+        for path in item['paths']:
+            parts = path.split('/') if isinstance(path, str) else []
+            if (not parts or os.path.normpath(path) != path or parts[0] not in OPENED_AREAS
+                    or '..' in parts or '__pycache__' in parts):
+                raise Invalid('opened-files claim %d names %r, not a path under scripts/ or proof/' % (number, path))
+            if not (overflowed or path in opened or any(path.startswith(d + '/') for d in late)):
+                dropped['never_opened'] += 1
+                continue
+            real = (root / path).resolve()
+            if not real.is_file() or root not in real.parents:
+                dropped['not_a_file'] += 1
+                continue
+            kept.add(path)
+    return {name: sorted(paths) for name, paths in sorted(record.items())}, dropped
+
+
+def write_opened(path, record):
+    """Replace `path` with the record, atomically: a link or file planted there is replaced, never followed."""
+    path = Path(path)
+    fd, pending = tempfile.mkstemp(prefix='.opened-', dir=str(path.parent))
+    try:
+        with os.fdopen(fd, 'w') as handle:
+            json.dump(record, handle, indent=1, sort_keys=True)
+            handle.write('\n')
+        os.replace(pending, str(path))
+    finally:
+        if os.path.exists(pending):
+            os.unlink(pending)
+
+
+def publish_opened(target, parts):
+    """The parts the unit legs took, merged, written to `target` (beside the stamp). Invalid on a part that
+    is not a record."""
+    merged = {}
+    for part in parts:
+        try:
+            record = json.loads(Path(part).read_text())
+        except (OSError, ValueError) as error:
+            raise Invalid('unreadable opened-files part %s: %s' % (part, error))
+        if not isinstance(record, dict) or not all(isinstance(v, list) for v in record.values()):
+            raise Invalid('opened-files part %s is not suite name to paths' % part)
+        for name, paths in record.items():
+            merged.setdefault(name, set()).update(paths)
+    write_opened(target, {name: sorted(paths) for name, paths in sorted(merged.items())})
+
+
+class TakeOpened:
+    """The authority's taking of the record for one stage run: the ledger and the watch, then the record."""
+
+    def __init__(self, root, target):
+        self.root, self.target = Path(root), Path(target)
+        self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
+        self.ledger = self.directory / 'ledger'
+        self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
+        self.watch = OpenWatch(root)
+
+    def env(self, env):
+        return dict(env, **{OPENED_FD: str(self.fd)})
+
+    def finish(self, stage, code):
+        """Write the record; the stage's status, red when the ledger holds a line no dispatcher writes."""
+        opened, late, overflowed = self.watch.stop()
+        os.close(self.fd)
+        try:
+            record, dropped = opened_record(self.root, self.ledger.read_text(), opened, late, overflowed)
+        except (Invalid, OSError) as error:
+            print('   %s: the opened-files record was not taken: %s; the stage is RED' % (stage, error), flush=True)
+            return 1
+        finally:
+            shutil.rmtree(str(self.directory), ignore_errors=True)
+        write_opened(self.target, record)
+        print('   %s: opened-files record taken by the authority: %d suites, %d files%s%s' % (
+            stage, len(record), len({p for paths in record.values() for p in paths}),
+            ''.join('; %d claim%s dropped (%s)' % (n, '' if n == 1 else 's', why.replace('_', ' '))
+                    for why, n in sorted(dropped.items()) if n),
+            '; the kernel dropped events, so no claim was checked against them' if overflowed else ''),
+            flush=True)
+        return code
+
+
+def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None,
+              take_opened=None, taking=None):
+    """One gate stage (above). With `take_opened`, the authority takes the opened-files record while it runs."""
+    if take_opened and taking is None:
+        taking = TakeOpened(root, take_opened)
+        code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking)
+        return taking.finish(stage, code)
+    keep = taking.fd if taking else None
+
+    def handed_env(env):
+        return taking.env(env) if taking else env
+
     try:
         document, digest = load(path)
     except Invalid as error:
@@ -374,7 +606,7 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     declared = document['stages'].get(stage)
     if declared is None or declared != command:
         # Not a declared leg: the whole stage is confined, and no caller variable reaches it.
-        return confined(root, command, _env())
+        return confined(root, command, handed_env(_env()), keep)
     listed = entries(document)
     whole = [e for e in document['suites'] if 'rows' not in e]
     if leg != 'unconfined':
@@ -385,13 +617,13 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     run = str(record)
 
     def leg_run(leg, runner):
-        handed = (prior.get(leg) if prior is not None else measurement(times, digest, leg, run)) if stage == BUDGETED_STAGE else None
+        measured = (prior.get(leg) if prior is not None else measurement(times, digest, leg, run)) if stage == BUDGETED_STAGE else None
         if stage == BUDGETED_STAGE:
             print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
-                  % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
+                  % (leg, measured['seconds'], measured['fresh'], measured['at']) if measured
                   else 'no unit %s leg measurement recorded' % leg), flush=True)
         started = time.monotonic()
-        code = runner(root, command, _env(leg, listed, digest, handed))
+        code = runner(root, command, handed_env(_env(leg, listed, digest, measured)), keep)
         seconds = time.monotonic() - started
         print('   %s: %s leg: %s (%.1fs)' % (stage, leg, 'pass' if code == 0 else 'FAIL', seconds),
               flush=True)
@@ -885,6 +1117,9 @@ def main(argv=None):
     parser.add_argument('--declared', action='store_true')
     parser.add_argument('--load-proof', action='store_true')
     parser.add_argument('--opened')
+    parser.add_argument('--take-opened')
+    parser.add_argument('--publish-opened')
+    parser.add_argument('--opened-part', action='append', default=[])
     parser.add_argument('--load-stamp')
     parser.add_argument('--wall', type=int)
     parser.add_argument('command', nargs=argparse.REMAINDER)
@@ -906,6 +1141,14 @@ def main(argv=None):
             print('gate legs: %s; the gate is RED' % error, file=sys.stderr)
             return 1
         return 0
+    if args.publish_opened is not None:
+        try:
+            publish_opened(args.publish_opened, args.opened_part)
+        except (Invalid, OSError) as error:
+            print('gate legs: the opened-files record was not published: %s; the gate is RED' % error,
+                  file=sys.stderr)
+            return 1
+        return 0
     if args.load_proof:
         if not (args.root and args.record):
             parser.error('--load-proof needs --root and --record')
@@ -918,7 +1161,8 @@ def main(argv=None):
     if not (args.root and args.stage and args.record) or len(command) != 1:
         parser.error('--root, --stage, --record and exactly one command string are required')
     prior = json.loads(args.prior_times.read_text()) if args.prior_times else None
-    return run_stage(args.root, args.stage, command[0], args.record, leg=args.leg, prior=prior)
+    return run_stage(args.root, args.stage, command[0], args.record, leg=args.leg, prior=prior,
+                     take_opened=args.take_opened)
 
 
 if __name__ == '__main__':
