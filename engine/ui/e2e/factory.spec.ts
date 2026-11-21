@@ -695,7 +695,12 @@ test('ac2/metadata-only: the catalog and repositories reads serve metadata, neve
   const bodies: Record<string, string> = {}
   page.on('response', async (response) => {
     const name = routeOf(response.request().method(), response.url(), factory.domain)
-    if (name === 'mcp.list' || name === 'repositories.read') bodies[name] = await response.text().catch(() => '')
+    if (name !== 'mcp.list' && name !== 'repositories.read') return
+    // An answer the page abandoned (it left the screen while a re-read was still arriving) has no body to read, and
+    // an empty string in its place is not what the API served. The bodies judged are the ones read whole: under
+    // load an abandoned re-read used to overwrite the body already read, and the row failed on the empty string.
+    const body = await response.text().catch(() => null)
+    if (body !== null) bodies[name] = body
   })
   await page.goto(factory.origin + '/repositories')
   await expect(page.locator('[data-identity="work"]')).toBeVisible()
