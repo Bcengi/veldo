@@ -1,0 +1,4 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -2505,0 +2506 @@
++        shutil.rmtree(self.space_run['worktree'])  # defect: lose the unfinished edit

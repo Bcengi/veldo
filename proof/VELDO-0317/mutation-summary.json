@@ -1,0 +1,594 @@
+[
+  {
+    "case": "dispatch-exit-lands-unit",
+    "finding": 39,
+    "receipt": "regression-mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "dispatch/terminal-not-completion"
+    ],
+    "failed_rows": [
+      "VELDO-0039 dispatch/terminal-not-completion"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "retire-no-sweep-on-prepare",
+    "finding": 41,
+    "receipt": "regression-mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "retirement/unknown-outcome"
+    ],
+    "failed_rows": [
+      "VELDO-0041 retirement/unknown-outcome",
+      "VELDO-0041 retirement/observations"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "record-exit-uncommitted",
+    "finding": 141,
+    "receipt": "regression-mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "route/committed"
+    ],
+    "failed_rows": [
+      "VELDO-0141 route/committed"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-accept-released",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_dispatch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/accept/released-hold"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/accept/released-hold"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-admission-at-acceptance",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac2/pre-reservation"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac2/pre-reservation",
+      "VELDO-0316 space316/ac2/waiting-pass",
+      "VELDO-0316 space316/ac3/advised-counts",
+      "VELDO-0316 space316/ac3/started-advised",
+      "VELDO-0316 space316/ac4/declared-first",
+      "VELDO-0316 space316/ac4/digest",
+      "VELDO-0316 space316/ac4/five-before-measured",
+      "VELDO-0316 space316/ac4/last-five",
+      "VELDO-0316 space316/ac4/legacy",
+      "VELDO-0316 space316/ac4/project-station",
+      "VELDO-0316 space316/accept/released-hold",
+      "VELDO-0316 space316/release/cancelled",
+      "VELDO-0316 space316/release/measurements",
+      "VELDO-0316 space316/release/preparation-failed"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-block-report",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac3/started-advised"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac3/advised-counts",
+      "VELDO-0316 space316/ac3/started-advised"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-declared-ignored",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac4/declared-first"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac4/declared-first",
+      "VELDO-0316 space316/ac4/digest",
+      "VELDO-0316 space316/ac4/legacy",
+      "VELDO-0316 space316/accept/released-hold"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-digest-omits-space",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_dispatch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac4/digest"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac4/digest"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-first-five",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac4/last-five"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac4/last-five"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-ignore-floor",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac1/boundaries"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac1/boundaries",
+      "VELDO-0316 space316/ac1/metrics",
+      "VELDO-0316 space316/ac1/numbers",
+      "VELDO-0316 space316/ac1/second-pool",
+      "VELDO-0316 space316/ac2/pre-reservation",
+      "VELDO-0316 space316/ac2/stable-hold",
+      "VELDO-0316 space316/ac2/waiting-pass",
+      "VELDO-0316 space316/ac3/started-advised",
+      "VELDO-0316 space316/ac4/declared-first",
+      "VELDO-0316 space316/ac4/digest",
+      "VELDO-0316 space316/ac4/five-before-measured",
+      "VELDO-0316 space316/ac4/legacy",
+      "VELDO-0316 space316/accept/released-hold"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-ignore-others",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac1/boundaries"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac1/boundaries",
+      "VELDO-0316 space316/ac1/numbers"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-measure-after-one",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac4/five-before-measured"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac4/declared-first",
+      "VELDO-0316 space316/ac4/digest",
+      "VELDO-0316 space316/ac4/five-before-measured",
+      "VELDO-0316 space316/ac4/legacy",
+      "VELDO-0316 space316/accept/released-hold"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-no-measurement-at-end",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/release/measurements"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/release/measurements"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space316-wait-is-refused",
+    "finding": 316,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space316/ac2/waiting-pass"
+    ],
+    "failed_rows": [
+      "VELDO-0316 space316/ac2/pre-reservation",
+      "VELDO-0316 space316/ac2/waiting-pass"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-charge-attempt",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_dispatch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac1/not-charged"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac1/not-charged",
+      "VELDO-0317 space317/ac4/restart-stop"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-no-owner-request",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac4/owner-request"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac4/owner-request"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-omit-next-brief",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac3/next-brief"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac3/next-brief"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-refund-hides-latest",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/history/latest"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/history/latest"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-remove-worktree",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac3/edit-kept"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac3/edit-kept",
+      "VELDO-0317 space317/ac3/next-brief"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-text-alone",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac2/repeat-red"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac2/repeated-once",
+      "VELDO-0317 space317/ac2/repeat-red",
+      "VELDO-0317 space317/classify/controls",
+      "VELDO-0317 space317/classify/unread"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-third-attempt",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/ac4/two-stop"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/ac2/repeat-red",
+      "VELDO-0317 space317/ac4/two-stop",
+      "VELDO-0317 space317/ac4/restart-stop",
+      "VELDO-0317 space317/ac4/owner-request",
+      "VELDO-0317 space317/history/latest"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-unwired-receiver",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/wiring/installed-receiver"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/wiring/installed-receiver"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space317-write-verdict",
+    "finding": 317,
+    "receipt": "mutations.json",
+    "module": "control_launch.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space317/artifact/no-verdict"
+    ],
+    "failed_rows": [
+      "VELDO-0317 space317/artifact/no-verdict"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-clear-newer-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/race/freeing-during-judgment"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/race/freeing-during-judgment"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-mark-without-wake",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/removal-wakes",
+      "space334/ac3/release-wakes",
+      "space334/ac3/reconcile-wakes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac2/clear-after-judgment",
+      "VELDO-0334 space334/ac3/removal-wakes",
+      "VELDO-0334 space334/ac3/release-wakes",
+      "VELDO-0334 space334/ac3/reconcile-wakes",
+      "VELDO-0334 space334/ac3/journal-marks",
+      "VELDO-0334 space334/ac3/worker-wakes"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-never-clear-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac2/clear-after-judgment"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac2/clear-after-judgment",
+      "VELDO-0334 space334/ac3/journal-marks"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-read-every-offer",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac2/timer-still-waits",
+      "space334/ac2/no-read-write"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac2/timer-still-waits",
+      "VELDO-0334 space334/ac2/no-read-write"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-reconcile-without-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/reconcile-wakes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac2/clear-after-judgment",
+      "VELDO-0334 space334/ac3/reconcile-wakes",
+      "VELDO-0334 space334/ac3/pool-only",
+      "VELDO-0334 space334/ac3/journal-marks",
+      "VELDO-0334 space334/race/freeing-during-judgment"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-release-without-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/release-wakes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac3/release-wakes",
+      "VELDO-0334 space334/ac3/journal-marks"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-removal-without-mark",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/removal-wakes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac3/removal-wakes",
+      "VELDO-0334 space334/ac3/journal-marks",
+      "VELDO-0334 space334/ac3/worker-wakes"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-retry-every-offer",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space_admission.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac1/one-signal"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac1/one-signal",
+      "VELDO-0334 space334/ac2/timer-still-waits",
+      "VELDO-0334 space334/ac2/no-read-write"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-retry-without-ending-action",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_space_signal.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac1/retry-removes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac1/retry-removes"
+    ],
+    "source": "fresh"
+  },
+  {
+    "case": "space334-worker-without-space-pass",
+    "finding": 334,
+    "receipt": "mutations.json",
+    "module": "control_service.py",
+    "baseline": "green",
+    "noop": "green",
+    "mutant": "red",
+    "registered_rows": [
+      "space334/ac3/worker-wakes"
+    ],
+    "failed_rows": [
+      "VELDO-0334 space334/ac3/worker-wakes"
+    ],
+    "source": "fresh"
+  }
+]

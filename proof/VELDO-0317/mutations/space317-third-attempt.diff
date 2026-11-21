@@ -1,0 +1,7 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -298,2 +298,2 @@
+-    return dict(observation, consecutive=consecutive, retry=consecutive < 2,
+-                andon=classification == NO_SPACE and consecutive >= 2,
++    return dict(observation, consecutive=consecutive, retry=consecutive < 3,
++                andon=classification == NO_SPACE and consecutive >= 3,

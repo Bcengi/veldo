@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1771 +1771 @@
+-        payload = admission.brief(self.dispatches.conn, coordinates, payload)
++        # defect: next run never learns where the work is
