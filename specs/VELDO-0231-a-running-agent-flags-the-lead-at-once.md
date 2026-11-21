@@ -69,25 +69,32 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      A flag a running agent raises reaches the lead's conversation within 2 seconds of the engine writing
-      it, naming the run id (the dispatch id), the engine and the text, and the run goes on. The path has
-      no wait or timer of its own: the launch receiver's poll loop reads the engine's stream as it comes
-      (control_launch), reads a flag in it through the engine's module, and writes one flag event on its
-      launch pipe at once; the service's factory loop has that pipe in its poll set (VELDO-0154) and writes
-      the flag through one new conversation command (flag_conversation, the service principal, in
-      control_conversation) as a flag record in the store, so the time is two pipe wakeups and one store
-      commit. The 2 second bound is that path's measured time with margin for a loaded gate host, and the
-      suite measures it: a fake engine stamps the time immediately before it writes each of 10 flags, keeps
-      running and printing for 5 seconds after the last, then ends normally; the suite requires every
-      flag's commit time minus its stamp under 2 seconds, each flag committed while the dispatch is still
-      running, and the run's outcome the same as with no flag; the measured values are kept in the proof.
+      A flag a running agent raises reaches the lead's conversation at once, naming the run id (the dispatch
+      id), the engine and the text, and the run goes on. "At once" is an ordering criterion, never a number of
+      seconds: the flag is committed in the same dispatch cycle of the service loop that reads it, with no wait,
+      poll or pass between the two. The path has no wait or timer of its own: the launch receiver's poll loop
+      reads the engine's stream as it comes (control_launch), reads a flag in it through the engine's module,
+      and writes one flag event on its launch pipe at once; the service's factory loop has that pipe in its poll
+      set (VELDO-0154), and in the one cycle in which the poll set finds the pipe readable it takes the flag event
+      and writes the flag through one new conversation command (flag_conversation, the service principal, in
+      control_conversation) as a flag record in the store. The suite proves it by the order of events in the
+      record of the loop's dispatch cycles: a fake engine writes 10 flags, writing nothing more after each until
+      it reads that flag's commit (an acknowledgement the suite writes as the commit returns), then ends
+      normally; the suite requires each flag's commit to be in the same cycle that took its flag event off the
+      launch pipe, each flag committed before the next is taken, each committed while the dispatch is still
+      running and its run not ended, and the run's outcome the same as with no flag. The time from the engine
+      writing each flag to its commit is measured and kept in the proof as recorded data, never judged in this
+      functional gate: a latency requirement, if one is wanted, is a paired A/B measurement in VELDO-0358's
+      paired performance stage, never an absolute bound here.
       The lead's conversation is the run's own conversation for a conversation turn, and for a project run
       the open conversation attached to the run's project (VELDO-0174's attach command), the most recently
       opened one when several are; with none, the flag is kept as a record with no conversation, counted,
       and named undelivered:no_conversation. Text is kept to its first 2000 characters.
     falsified_by: >
       Deliver flags only when the run's end is read (in saw_end) instead of when the flag event arrives,
-      and the suite's row fails: no flag record exists while the dispatch is still running.
+      and the suite's row fails on event order: each flag is committed in a later dispatch cycle than the one
+      that took it off the launch pipe, after its run has ended, and no flag record exists while the dispatch
+      is still running.
   - id: AC2
     text: >
       Each engine flags with what it has, each granted through runtime/capability-decisions.json with its
@@ -210,3 +217,14 @@ record with the local ssh-keygen journal signer, and Veldo is standard library o
 signature is not available. The intent, nothing outward, is unchanged. Footprint adds
 scripts/suites/78_veldo_0160_account_pool.py, whose allowlist row lists the in-run tools literally and
 gains SendUserMessage.
+
+2026-11-21: AC1 restated by the lead, a LEAD DECISION under the owner's rule that no gate depends on machine
+speed (Telegram 42829, 2026-11-20), from the bring-up line's review (finding F3). The criterion "within 2
+seconds of the engine writing it", judged by wall clock in the functional gate, failed once under load, and its
+companion "committed while the dispatch is still running" rested on the fake engine running 5 seconds after its
+last flag. Both are now ordering criteria proven by event order in the record: the flag is committed in the same
+dispatch cycle that reads it, with no wait, poll or pass between them, and the fake engine does not write on or
+end until it has read each commit. The intent ("at once", the run goes on) and the path are unchanged; the
+measured times stay in the proof as recorded data. Any real latency requirement moves to a paired A/B
+measurement (VELDO-0358's paired performance stage), never an absolute bound in the functional gate. The suite
+row AC1/at-once and the falsifier are updated to match.
