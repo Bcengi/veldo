@@ -1,0 +1,29 @@
+Commit 94fd75e6, scratch clone, through host_heavy.sh
+  157_veldo_0217_declarations                     13 passed    1.14s
+selftest (PARTIAL, 1 of 237 suites): 39 passed, 0 failed in 1.14s
+  100_veldo_0207_case_reuse                       91 passed    8.49s
+selftest (PARTIAL, 1 of 237 suites): 117 passed, 0 failed in 8.49s
+  101_veldo_0208_landing_reuse                   190 passed  255.12s
+selftest (PARTIAL, 1 of 237 suites): 216 passed, 0 failed in 255.12s
+  104_veldo_0210_mutation_workers                  7 passed  128.31s
+selftest (PARTIAL, 1 of 237 suites): 33 passed, 0 failed in 128.31s
+  98_veldo_0204_mutation_receipts                 45 passed    0.57s
+selftest (PARTIAL, 1 of 237 suites): 71 passed, 0 failed in 0.57s
+  99_veldo_0205_reuse                             29 passed    1.73s
+selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 1.73s
+  112_veldo_0215_case_deadlines                   17 passed    0.26s
+selftest (PARTIAL, 1 of 237 suites): 43 passed, 0 failed in 0.26s
+  114_veldo_0216_concurrent_stages                26 passed   25.88s
+selftest (PARTIAL, 1 of 237 suites): 52 passed, 0 failed in 25.88s
+  115_veldo_0219_measured_admission               31 passed    4.16s
+selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 4.16s
+  127_veldo_0259_installation                     20 passed   17.33s
+selftest (PARTIAL, 1 of 237 suites): 46 passed, 0 failed in 17.33s
+  155_veldo_0304_space_boundary                   51 passed    6.04s
+selftest (PARTIAL, 1 of 237 suites): 77 passed, 0 failed in 6.04s
+mutations: passed registered=5 executed=5 reused=0 rejected=5 workers=11 elapsed=8.032s
+proposed check_review_mutations.py:17 exits 0,0,0,0 reads 840 non-file none
+failed check_teeth_mutations.py:limit-unreported incomplete file-read trace
+proposed check_review_mutations.py:15 exits 0,0,0,0 reads 841 non-file none
+failed check_teeth_mutations.py:account-codex-old-tables incomplete file-read trace
+proposed check_teeth_mutations.py:effects-worker-scope exits 0,0,0,0 reads 8519 non-file host_socket

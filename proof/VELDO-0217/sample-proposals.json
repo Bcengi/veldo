@@ -1,0 +1,304 @@
+{
+  "cases": [
+    {
+      "files": 841,
+      "identity": "check_review_mutations.py:15",
+      "non_file": [],
+      "read_digests": 841,
+      "runs": [
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [],
+          "observation": "67edfee47c31e4db874c4c37a244ccc83485ba2dd1655870345794b8ff973324",
+          "reads": "eeacedd010079ce516d2d538143a721ac14a73d13bfe879fb1591ff3a433d562",
+          "seconds": 2.67,
+          "trace": "b749842c57aa673cae7b49cb139ad4c013dfef29156323799f147410b73f6a75"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [],
+          "observation": "67edfee47c31e4db874c4c37a244ccc83485ba2dd1655870345794b8ff973324",
+          "reads": "eeacedd010079ce516d2d538143a721ac14a73d13bfe879fb1591ff3a433d562",
+          "seconds": 2.769,
+          "trace": "196206ed19e4e989aeaa1a7675b19afba796f2e077f9907f8e058991d0f74c02"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "noop",
+          "non_file": [],
+          "observation": "67edfee47c31e4db874c4c37a244ccc83485ba2dd1655870345794b8ff973324",
+          "reads": "eeacedd010079ce516d2d538143a721ac14a73d13bfe879fb1591ff3a433d562",
+          "seconds": 2.342,
+          "trace": "748c879db3891e130f86dc8e68bda76bacd32f86f658bac83f9e5eb751672f06"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "mutant",
+          "non_file": [],
+          "observation": "62d94bbac785043ebd3f93892b0edf0f1c2773d3869e1154f299a862813b94df",
+          "reads": "eeacedd010079ce516d2d538143a721ac14a73d13bfe879fb1591ff3a433d562",
+          "seconds": 5.937,
+          "trace": "040654c3a2f4e873f57b2596bbc7b6232302ae8acda7f7ac91005863849a5b5a"
+        }
+      ],
+      "stale_before": [
+        "no_recorded_inputs"
+      ],
+      "undeclared_before": [
+        811,
+        [
+          "scripts/suites/support/compiled_sources.py",
+          "scripts/suites/support/git_identity.py",
+          "scripts/suites/support/graph_stage.py",
+          "scripts/suites/support/hermetic_git.py",
+          "scripts/suites/support/identity_wire.py",
+          "scripts/suites/support/setup_runtime.py",
+          "scripts/suites/support/v169_census.py",
+          "scripts/suites/support/v169_rows.py",
+          "scripts/suites/support/v171_tailscale.py",
+          "scripts/suites/support/v174_journey.py",
+          "scripts/suites/support/v73_authority.py"
+        ]
+      ]
+    },
+    {
+      "files": 840,
+      "identity": "check_review_mutations.py:17",
+      "non_file": [],
+      "read_digests": 840,
+      "runs": [
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [],
+          "observation": "d81a1faa54c2ac0877e7cbe665319ff7d1049c5dbf808230995150862e6f7716",
+          "reads": "76f915eed63effb9c66aa754edc731285298e53bd26ed92a1ac3dbe53a4ae9a8",
+          "seconds": 1.316,
+          "trace": "0915851c43b499271dc7817ca090b6bd05112c456546e5a2ec3a21f7e6129526"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [],
+          "observation": "d81a1faa54c2ac0877e7cbe665319ff7d1049c5dbf808230995150862e6f7716",
+          "reads": "76f915eed63effb9c66aa754edc731285298e53bd26ed92a1ac3dbe53a4ae9a8",
+          "seconds": 1.266,
+          "trace": "96621dc7d4a101b643d49ee4ec8df094c2b1c1685998153bacd67cf5334e9462"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "noop",
+          "non_file": [],
+          "observation": "d81a1faa54c2ac0877e7cbe665319ff7d1049c5dbf808230995150862e6f7716",
+          "reads": "76f915eed63effb9c66aa754edc731285298e53bd26ed92a1ac3dbe53a4ae9a8",
+          "seconds": 1.265,
+          "trace": "aa58bf2a0a4ad5685b4956016e390a2307b973b373584641b72506f20852302f"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "mutant",
+          "non_file": [],
+          "observation": "825d903b322471863d9cded0e6c3ad7bb22be3d9d26687d5d988ccd03d13bed7",
+          "reads": "76f915eed63effb9c66aa754edc731285298e53bd26ed92a1ac3dbe53a4ae9a8",
+          "seconds": 1.265,
+          "trace": "7f9cdc966516b8257bc994ec1bc46db89623b189fcb02c613e834b2c46cf22fa"
+        }
+      ],
+      "stale_before": [
+        "no_recorded_inputs"
+      ],
+      "undeclared_before": [
+        811,
+        [
+          "scripts/suites/support/compiled_sources.py",
+          "scripts/suites/support/git_identity.py",
+          "scripts/suites/support/graph_stage.py",
+          "scripts/suites/support/hermetic_git.py",
+          "scripts/suites/support/identity_wire.py",
+          "scripts/suites/support/setup_runtime.py",
+          "scripts/suites/support/v169_census.py",
+          "scripts/suites/support/v169_rows.py",
+          "scripts/suites/support/v171_tailscale.py",
+          "scripts/suites/support/v174_journey.py",
+          "scripts/suites/support/v73_authority.py"
+        ]
+      ]
+    },
+    {
+      "files": 8519,
+      "identity": "check_teeth_mutations.py:effects-worker-scope",
+      "non_file": [
+        "host_socket"
+      ],
+      "read_digests": 8519,
+      "runs": [
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [
+            "host_socket"
+          ],
+          "observation": "6a7d4896bc7bc1455fac9f3c9b19e684328be9b90ae131065cfa822ef557d687",
+          "reads": "0e00e103409aa33bc20356157c8602cff381d51932ff9dd5f29a6941a57f84d9",
+          "seconds": 72.941,
+          "trace": "6c0923c11cbba39c83695732690dc40d5f3afffc718065f616fb4d335cdd1977"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "baseline",
+          "non_file": [
+            "host_socket"
+          ],
+          "observation": "6a7d4896bc7bc1455fac9f3c9b19e684328be9b90ae131065cfa822ef557d687",
+          "reads": "e7598bb6931a102d4011d6076fc58def424301516381a068c8c73b5e58910685",
+          "seconds": 72.967,
+          "trace": "cd25b9c920c4341b05437187d5e435498120f616ce3e5ff5ee8e5515f11b3939"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "noop",
+          "non_file": [
+            "host_socket"
+          ],
+          "observation": "6a7d4896bc7bc1455fac9f3c9b19e684328be9b90ae131065cfa822ef557d687",
+          "reads": "af9667999c518f0bd5f7b1cae5fb8faa454700fae8e20c97a64d6e8c3399e6a5",
+          "seconds": 72.885,
+          "trace": "104964a8e42f7195823a111397984fd8f22dc693ca27217b612eb9d66acbe521"
+        },
+        {
+          "error": null,
+          "exit": 0,
+          "mode": "mutant",
+          "non_file": [
+            "host_socket"
+          ],
+          "observation": "504667fb9941b4e104b329852139d8ce24d7f7a3989935f22bafd1e118103ab4",
+          "reads": "e7598bb6931a102d4011d6076fc58def424301516381a068c8c73b5e58910685",
+          "seconds": 73.257,
+          "trace": "72de5a2075288fb62cf7100c7e7510889f3480e36f43ed95c2c2db86987caee2"
+        }
+      ],
+      "stale_before": [
+        "no_recorded_inputs"
+      ],
+      "undeclared_before": [
+        8483,
+        [
+          "scripts/suites/support/git_identity.py",
+          "scripts/suites/support/graph_stage.py",
+          "scripts/suites/support/hermetic_git.py",
+          "scripts/suites/support/identity_wire.py",
+          "scripts/suites/support/setup_runtime.py",
+          "scripts/suites/support/v107_authority_runner.py",
+          "scripts/suites/support/v169_census.py",
+          "scripts/suites/support/v169_rows.py",
+          "scripts/suites/support/v171_tailscale.py",
+          "scripts/suites/support/v174_journey.py",
+          "scripts/suites/support/v73_authority.py"
+        ]
+      ]
+    }
+  ],
+  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "failures": [
+    [
+      "check_teeth_mutations.py:limit-unreported",
+      "incomplete file-read trace"
+    ],
+    [
+      "check_teeth_mutations.py:account-codex-old-tables",
+      "incomplete file-read trace"
+    ]
+  ],
+  "inventory": {
+    "confined": 2552,
+    "registered": 3605
+  },
+  "schema": "veldo.case-proposals/v1",
+  "stale": {
+    "check_review_mutations.py:13": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:14": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:15": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:16": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:17": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:account-codex-old-tables": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:alias-floor-ignores-history": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:command-only": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:disposition-every-question-to-project-owner": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:effects-worker-scope": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:enrolled-discovery-ignores-ancestors": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:formats172-census-drops-conform": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:limit-unreported": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:projection-notice-beside-presentation": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:question-not-sent": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:receiver-gate-untrusted": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:report-completion-handler-omitted": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:role127-delivery-comparison-skipped": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:text168-legacy-chunker-changed": [
+      "no_recorded_inputs"
+    ]
+  },
+  "summary": {
+    "current": 3,
+    "declared": 19,
+    "failed": 2,
+    "non_file_classes": {
+      "host_socket": 1
+    },
+    "peak_runs": 10,
+    "proposed": 3,
+    "reviewed": 0,
+    "stale": 16,
+    "wall_seconds": 158.848,
+    "worker_seconds": 1259.941
+  }
+}
