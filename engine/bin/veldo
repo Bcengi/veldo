@@ -267,8 +267,11 @@ def _request_work(workspace, account, principal, sign, trust):
     import json
     import uuid
     client = _mod("veldo_work_client", ".veldo/control_claim_client.py")
-    binding = client.E.read_binding(workspace)
-    if binding is None:
+    try:
+        binding = client.E.read_binding(workspace)
+    except client.E.EnrollmentRefused as error:
+        raise client.CL.ClaimStopped("unenrolled_workspace") from error
+    if not isinstance(binding, dict) or client.E.binding_problems(binding):
         raise client.CL.ClaimStopped("unenrolled_workspace")
     if trust is None:
         raise client.CL.ClaimStopped("host_trust_required")

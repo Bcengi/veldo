@@ -88,6 +88,11 @@ def _v113_work_suite():
                 with patch('sqlite3.connect', side_effect=AssertionError('client opened a store')):
                     return request(*args, **kwargs)
             cli._request_work = no_store_request
+            error = io.StringIO()
+            with contextlib.redirect_stderr(error):
+                result = cli.cmd_work(repo_root=base / 'not-a-repository')
+            expect('VELDO-0113 work/unenrolled/' + str(index),
+                   result != 0 and 'unenrolled_workspace' in error.getvalue())
             for state in helper.STATES:
                 if Path(address).exists():
                     Path(address).unlink()
