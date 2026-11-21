@@ -45,6 +45,7 @@ CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
 
 def _v60_suite():
     import contextlib
+    import datetime
     import hashlib
     import importlib.util
     import json
@@ -88,8 +89,14 @@ def _v60_suite():
             'contained/stop-cooperative', 'contained/stop-forced', 'contained/stop-descendant',
             'contained/artifact', 'contained/exit-record', 'contained/engines-protected',
             'contained/rehash-before-exec',
-            'format/fake-lines', 'format/fake-argv')
+            'format/fake-lines', 'format/fake-argv', 'timers/profile-applied')
     rows = {name: [] for name in ROWS}
+
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the hang
+    # bounds; the wall time it hands the product as data is the support module's stamp.
+    def now():
+        """The wall time now, as data (a record's time, a deadline the product judges): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -135,7 +142,6 @@ def _v60_suite():
     conform_spec.loader.exec_module(conform_formats)
     live_step = fake_formats.live_step
 
-    started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     base = Path(tempfile.mkdtemp(prefix='v60-', dir=runtime if os.path.isdir(runtime) else None))
     # The contained rows' transient scopes live in a slice of this run's own, stopped at its end.
@@ -161,6 +167,10 @@ def _v60_suite():
         S = load('v60_store', mods / 'control_store.py')
         L = load('v60_launch', mods / 'control_launch.py')
         D = L.D
+        # VELDO-0358 AC15: the timers profile: every entry of the table at the wait hang bound, here and in the
+        # receiver and its wrapper (the receiver's configuration names it); no row of this suite tests a table timer.
+        TIMERS = L.TIMERS
+        TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
         RES = D.RES
         ACC = getattr(RES, 'ACC', None)
         E = getattr(L, 'ENGINES', {}).get('claude_code')  # the receiver's own load of the engine module
@@ -177,7 +187,8 @@ def _v60_suite():
         private = state / 'keys'
         private.mkdir(parents=True, mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                       stdin=subprocess.DEVNULL)
 
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
@@ -219,7 +230,7 @@ def _v60_suite():
             fields, _ = attempt(lambda: HELPER.registration(account, host=HOST, root=str(helper_root)))
             if fields and accounts is not None:
                 accounts.register('register/' + account, fields['account'], fields['provider'], fields['label'],
-                                  fields['profiles'], now=time.time())
+                                  fields['profiles'], now=now())
 
         def roles_only(conn, command):
             row = conn.execute('SELECT data FROM entities WHERE id=?', (command['principal'],)).fetchone()
@@ -229,14 +240,14 @@ def _v60_suite():
                                         sign=sign)
         BIG = dict(capacity=50, invocations=200, wall_seconds=10 ** 7)
         for account in profiles:
-            reservations.configure('policy/' + account, 'account', account, dict(BIG), now=time.time())
+            reservations.configure('policy/' + account, 'account', account, dict(BIG), now=now())
         projects = set()
 
         def project(name, **caps):
             if name not in projects:
                 projects.add(name)
                 put('project:' + name, 'project', dict(name=name))
-                reservations.configure('policy/' + name, 'project', name, dict(BIG, **caps), now=time.time())
+                reservations.configure('policy/' + name, 'project', name, dict(BIG, **caps), now=now())
             return name
 
         def admitted(unit, proj='journey-60', **caps):
@@ -247,7 +258,7 @@ def _v60_suite():
             put('backlog:' + unit, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
             put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest='sha256:scope-' + unit))
             reservations.configure('policy/' + unit, 'unit', unit,
-                                   dict(dict(capacity=5, invocations=20, wall_seconds=10 ** 6), **caps), now=time.time())
+                                   dict(dict(capacity=5, invocations=20, wall_seconds=10 ** 6), **caps), now=now())
             cid = CLM.claim_id(REPOSITORY, unit)
             serial[0] += 1
             S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
@@ -339,8 +350,9 @@ for step in payload.get('script') or []:
         out.flush()
         sys.stdout.buffer.write(data)
         sys.stdout.flush()
-    elif 'sleep' in step:
-        time.sleep(step['sleep'])
+    elif 'hold' in step:
+        while True:  # held until its stop ends it: no clock
+            signal.pause()
     elif 'ignore_term' in step:
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
     elif 'probe' in step:
@@ -354,16 +366,15 @@ for step in payload.get('script') or []:
             handle.write(json.dumps([step['probe'], outcome]) + chr(10))
     elif 'descendant' in step:
         # The descendant says it is ready once its SIGTERM disposition is set, so a stop never races its start.
-        body = ('import sys, time; open(sys.argv[1], "w").close(); time.sleep(%%d)' if step.get('cooperative') else
-                'import signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); open(sys.argv[1], "w").close(); '
-                'time.sleep(%%d)')
-        ready = markers / ('ready-%%d-%%d' %% (os.getpid(), len(children)))
-        child = subprocess.Popen([sys.executable, '-c', body %% step['descendant'], str(ready)], stdin=subprocess.DEVNULL,
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        # It says so on a pipe the engine reads (no clock), then is held until a signal ends it.
+        body = ('import os, signal' + chr(10) + ('' if step.get('cooperative') else
+                'signal.signal(signal.SIGTERM, signal.SIG_IGN)' + chr(10)) +
+                'os.write(1, b"r")' + chr(10) + 'while True:' + chr(10) + '    signal.pause()' + chr(10))
+        child = subprocess.Popen([sys.executable, '-c', body], stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                  start_new_session=bool(step.get('escape')))
-        until = time.monotonic() + 10
-        while not ready.exists() and time.monotonic() < until:
-            time.sleep(0.01)
+        child.stdout.read(1)
+        child.stdout.close()
         children.append({'pid': child.pid, 'start': start(child.pid), 'escape': bool(step.get('escape'))})
         # Written whole, as the engine's own marker is: the suite reads this file while it waits for the
         # descendant, and a file opened for writing is empty before it is written.
@@ -372,7 +383,8 @@ for step in payload.get('script') or []:
     elif 'signal' in step:
         out.close()
         os.kill(os.getpid(), step['signal'])
-        time.sleep(5)
+        while True:  # the signal ends it
+            signal.pause()
 out.close()
 (markers / ('%%d.done' %% os.getpid())).write_text('done')
 sys.exit(payload.get('code', 0))
@@ -478,6 +490,7 @@ sys.exit(payload.get('code', 0))
         receiver_config = {'host_trust': str(receiver_host_trust),
             'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
+            'timers_profile': {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS},
             'host': HOST, 'receipts': str(receipts), 'artifacts': str(artifacts), 'state_root': str(factory),
             'adapters': {
                 'claude': {'identity': 'reported', 'engine': 'claude_code', 'executable': pinned_exe, 'argv': wrapper},
@@ -545,7 +558,7 @@ sys.exit(payload.get('code', 0))
         def invoke(contract):
             if contract['capability']['adapter'] == 'claude-clone' or '-contained' in contract['capability']['adapter']:
                 provisioned[contract['dispatch_id']] = clones.create(contract)
-            launch = L.invoke(using[0], contract, dispatches, accept_seconds=30)
+            launch = L.invoke(using[0], contract, dispatches)
             if '-contained' in contract['capability']['adapter']:
                 contained_launches.append(launch)
             return launch
@@ -571,7 +584,7 @@ sys.exit(payload.get('code', 0))
             if resume:
                 payload['resume'] = resume
             return dict(holder=HOLDER, source=str(src), revision='HEAD', payload=payload, adapter=adapter,
-                        configuration=CONFIGURATION, deadline=time.time() + deadline)
+                        configuration=CONFIGURATION, deadline=now() + deadline)
 
         def run(account, unit, adapter, script, wait=True, **kwargs):
             launch = runner(account).submit(unit, 'build', **job(adapter, script, **kwargs))
@@ -591,25 +604,25 @@ sys.exit(payload.get('code', 0))
                     found.append(data)
             return found
 
-        def marker_wait(dispatch_id, timeout=15.0, children=0):
-            # A dispatch that ended or was refused writes no more markers: a broken build fails fast.
-            end = time.time() + timeout
-            while time.time() < end:
-                found = engine_markers(dispatch_id)
-                if found and len(found[0]['children']) >= children:
-                    return found[0]
-                if rec(dispatch_id).get('state') in ('refused', 'exited', 'unknown'):
-                    return found[0] if found else {}
-                time.sleep(0.02)
-            return {}
+        def marker_wait(dispatch_id, children=0):
+            """The engine's marker (with at least `children` descendants listed), waited for on the markers directory
+            and the store (VELDO-0358): impossible once the dispatch has ended or was refused, since nothing of it is
+            left to write one; the markers are then read once more and that reading is the answer."""
+            found = []
 
-        def spawned(dispatch_id, timeout=0.0):
-            end = time.time() + timeout
-            while True:
-                found = [p for p in sorted(markers.glob('spawn-*')) if p.read_text() == dispatch_id]
-                if found or time.time() >= end:
-                    return len(found)
-                time.sleep(0.02)
+            def written():
+                found[:] = engine_markers(dispatch_id)
+                return bool(found) and len(found[0]['children']) >= children
+
+            def ended():
+                return rec(dispatch_id).get('state') in ('refused', 'exited', 'unknown') and not written()
+            WAITS.wait('the marker of the engine of %s' % dispatch_id, written, ended,
+                       [WAITS.PathAppears(markers / '.any-marker'), WAITS.Store(db)])
+            return found[0] if found else {}
+
+        def spawned(dispatch_id):
+            """How many engines of a dispatch started, read as it is now (no wait): read after its terminal record."""
+            return len([p for p in sorted(markers.glob('spawn-*')) if p.read_text() == dispatch_id])
 
         def rec(dispatch_id):
             return dispatches.record(dispatch_id) or {}
@@ -1097,7 +1110,7 @@ sys.exit(payload.get('code', 0))
         with region('stop/requested', 'lifecycle/registration'):
             proj = project('p-stop', tokens=10 ** 6)
             launch, _ = run('acct-60b', admitted('VELDO-6004-stop', proj), 'claude',
-                            [c_init(), c_msg('m-stop', 4, 4), {'descendant': 60}, {'sleep': 30}] + normal()[1:],
+                            [c_init(), c_msg('m-stop', 4, 4), {'descendant': 60}, {'hold': True}] + normal()[1:],
                             wait=False)
             own = marker_wait(launch.dispatch_id, children=1)
             asked = launch.stop('owner')
@@ -1134,7 +1147,7 @@ sys.exit(payload.get('code', 0))
 
         with region('stop/descendant-alive'):
             launch, _ = run('acct-60b', admitted('VELDO-6005-escape'), 'claude',
-                            [c_init(), {'descendant': 60, 'escape': True}, {'sleep': 30}] + normal()[1:], wait=False)
+                            [c_init(), {'descendant': 60, 'escape': True}, {'hold': True}] + normal()[1:], wait=False)
             own = marker_wait(launch.dispatch_id, children=1)
             launch.stop('owner')
             record = runner('acct-60b').wait(launch)
@@ -1166,7 +1179,8 @@ sys.exit(payload.get('code', 0))
                       and None not in (reserved_at, ran_at) and reserved_at < ran_at)
             for boundary, resume in (('retry', None), ('follow_on', SESSION)):
                 launch, record = run('acct-60a', unit, 'claude', normal(), resume=resume)
-                late = spawned(launch.dispatch_id, timeout=2.0) or bool(marker_wait(launch.dispatch_id, timeout=0.3))
+                # Pattern W: the absence is read after the refusal's terminal record, with no wait.
+                late = spawned(launch.dispatch_id) or bool(engine_markers(launch.dispatch_id))
                 check('caps/before-launch', '%s past the unit\'s invocation cap: refused before launch, nothing spawned '
                       '[%s, %s]' % (boundary, (record or {}).get('refusal'), late),
                       (record or {}).get('refusal') == 'missing_authority:allowance:usage_cap:unit:invocations'
@@ -1196,7 +1210,7 @@ sys.exit(payload.get('code', 0))
                   invocation(first.dispatch_id).get('state') == 'unknown'
                   and (record or {}).get('refusal') == 'missing_authority:allowance:unknown_allowance:tokens'
                   and nothing_ran(launch.dispatch_id))
-            reset = int(time.time()) + 3600
+            reset = int(now()) + 3600
             run('acct-60b', admitted('VELDO-6007-window-a'), 'claude', [c_init(), c_rate('rejected', reset)] + normal()[1:])
             launch, record = run('acct-60b', admitted('VELDO-6007-window-b'), 'claude', normal())
             window = ((ACC.read(writer, 'acct-60b') if ACC else {}) or {}).get('windows', {}).get('five_hour') or {}
@@ -1209,16 +1223,14 @@ sys.exit(payload.get('code', 0))
 
         with region('caps/stop-at-cap'):
             unit = admitted('VELDO-6008-cap', tokens=1000)
-            began = time.monotonic()
-            launch, record = run('acct-60a', unit, 'claude', [c_init(), c_msg('m-a', 400, 200), {'sleep': 0.2},
-                                                              c_msg('m-b', 400, 200), {'sleep': 30}, c_result(800, 400, 2)])
-            elapsed = time.monotonic() - began
+            launch, record = run('acct-60a', unit, 'claude', [c_init(), c_msg('m-a', 400, 200),
+                                                              c_msg('m-b', 400, 200), {'hold': True}, c_result(800, 400, 2)])
             own = engine_markers(launch.dispatch_id)
             call = invocation(launch.dispatch_id)
             check('caps/stop-at-cap', 'the report that reached the token cap stopped the worker, which never '
-                  'finished; the invocation is cancelled with what the CLI reported and its wall time [%.1f s, %s, %s]'
-                  % (elapsed, (launch.supervision or {}).get('cause'), call.get('observed')),
-                  len(own) == 1 and own[0]['done'] is False and elapsed < 20
+                  'finished; the invocation is cancelled with what the CLI reported and its wall time [%s, %s]'
+                  % ((launch.supervision or {}).get('cause'), call.get('observed')),
+                  len(own) == 1 and own[0]['done'] is False
                   and (launch.supervision or {}).get('cause') == 'usage_cap' and call.get('outcome') == 'cancelled'
                   and call.get('observed', {}).get('tokens') == 1200 and call.get('charge', {}).get('invocations') == 1
                   and call.get('charge', {}).get('wall_seconds', 0) > 0
@@ -1253,13 +1265,13 @@ sys.exit(payload.get('code', 0))
                       'start': lambda: x_normal('thread-' + os.urandom(3).hex())[:2]}}
         STOPS = {
             # The engine ends on the cooperative request; its descendant ends on the group's SIGTERM.
-            'cooperative': lambda: [{'descendant': 60, 'cooperative': True}, {'sleep': 30}],
+            'cooperative': lambda: [{'descendant': 60, 'cooperative': True}, {'hold': True}],
             # The engine ignores the request and its descendant, started first, ends on the group's SIGTERM:
             # only the kill ends the engine.
-            'forced': lambda: [{'descendant': 60, 'cooperative': True}, {'ignore_term': True}, {'sleep': 30}],
+            'forced': lambda: [{'descendant': 60, 'cooperative': True}, {'ignore_term': True}, {'hold': True}],
             # The engine ends on the request and leaves a descendant that ignores every SIGTERM: only the
             # group's kill ends it, and the dispatch must not be recorded ended while it lives.
-            'descendant': lambda: [{'descendant': 60}, {'sleep': 30}]}
+            'descendant': lambda: [{'descendant': 60}, {'hold': True}]}
         runs60 = {}
         engine_dirs_resolved = [str(Path(x).resolve()) for x in engines_dirs]
         with region(*CONTAINED):
@@ -1276,17 +1288,36 @@ sys.exit(payload.get('code', 0))
                     launch, _ = run(case['account'], admitted('VELDO-6012-%s-%s' % (engine, stop)), case['adapter'],
                                     case['start']() + script(), wait=False)
                     own = marker_wait(launch.dispatch_id, children=1)
-                    asked_at = time.monotonic()
+                    asked_at = WAITS.stamp()
                     asked = launch.stop('owner')
                     record = runner(case['account']).wait(launch)
-                    ended_at = time.monotonic()
+                    ended_at = WAITS.stamp()
                     kids = (engine_markers(launch.dispatch_id) or [{}])[0].get('children') or []
                     # What was alive the moment the dispatch's end was read.
                     living = {'engine': bool(own) and alive(own['pid'], own['start']),
                               'descendant': any(alive(k['pid'], k['start']) for k in kids)}
                     escaped.extend(kids)
-                    runs60[(engine, stop)] = (launch, record or {}, {'asked': asked, 'took': ended_at - asked_at,
+                    runs60[(engine, stop)] = (launch, record or {}, {'asked': asked, 'asked_at': asked_at, 'ended_at': ended_at,
                                                                      'own': own, 'kids': kids, 'living': living})
+
+            # VELDO-0358 AC15: every timer of the table at the wait hang bound where it was used: in this process, and
+            # in each engine's contained run, in its receiver's and its wrapper's start records (the running message).
+            hang = WAITS.WAIT_HANG_SECONDS
+            needed = {'control_launch.ACCEPT_SECONDS', 'control_launch.RECEIVER_EXIT_SECONDS',
+                      'control_containment.SETTLE_SECONDS', 'control_heartbeat.SETUP_SECONDS',
+                      'control_engine_claude.LOGIN_SECONDS', 'control_engine_claude.INIT_SECONDS',
+                      'control_engine_codex.LOGIN_SECONDS'}
+            reports = {'in_process': TIMERS.report()}
+            for engine in ENGINE_CASES:
+                running = next((m for m in runs60[(engine, 'normal')][0].messages
+                                if isinstance(m, dict) and m.get('event') == 'running'), {})
+                for where in ('receiver', 'wrapper'):
+                    reports[engine + ':' + where] = (running.get('timers') or {}).get(where)
+            for where, report in sorted(reports.items()):
+                unset = sorted(r['name'] for r in report or [] if r['value'] != hang)
+                absent = sorted(needed - {r['name'] for r in report or []})
+                check('timers/profile-applied', '%s: every timer at the hang bound [timer_unset %s, absent %s]'
+                      % (where, unset, absent), report and not unset and not absent)
 
             for engine, case in ENGINE_CASES.items():
                 launch, record, (probe, engine_probes) = runs60[(engine, 'normal')]
@@ -1413,16 +1444,16 @@ sys.exit(payload.get('code', 0))
                           and found.get('complete') is False and (rec(launch.dispatch_id).get('artifact') or {}).get(
                               'complete') is False)
                     if stop == 'cooperative':
-                        check(row, '%s: it ended on the cooperative request, never killed, well within the graces '
-                              '[%s, %.2fs, %s]' % (engine, steps, seen['took'], termination),
-                              'kill' not in steps and steps[:1] == ['cooperative'] and seen['took'] < 5
+                        check(row, '%s: it ended on the cooperative request, never killed [%s, %s]'
+                              % (engine, steps, termination),
+                              'kill' not in steps and steps[:1] == ['cooperative']
                               and termination.get('signal') == int(signal.SIGTERM))
                     elif stop == 'forced':
                         check(row, '%s: an engine ignoring the request is killed with its group after the configured '
-                              'graces, within their bound [%s, %.2fs, %s]' % (engine, steps, seen['took'], termination),
+                              'graces, never before them [%s, %s]' % (engine, steps, termination),
                               steps == ['cooperative', 'terminate', 'kill'] and termination.get('signal') == int(signal.SIGKILL)
                               and supervision.get('graces') == {'stop_grace_seconds': GRACE, 'kill_grace_seconds': GRACE}
-                              and 2 * GRACE - 0.1 <= seen['took'] <= 2 * GRACE + 4.0)
+                              and seen['ended_at'].at_least(seen['asked_at'], 2 * GRACE - 0.1))
                     else:
                         check(row, '%s: the engine ended on the request and its descendant outlived the group\'s '
                               'SIGTERM: only the kill ended it, and the dispatch was recorded ended after [%s, %s]'
@@ -1479,7 +1510,7 @@ sys.exit(payload.get('code', 0))
                                      if getattr(launch, 'receiver_log', None)
                                      and Path(launch.receiver_log).is_file() else None),
                     'record_history': [(h.get('state'), h.get('at')) for h in record.get('history', [])],
-                    'checked_at': time.time()}
+                    'checked_at': now()}
             check(row, '%s: never a completion: its artifact is not complete, its invocation and slot failed, and the '
                   'file is back at its qualified bytes [%s, %s, %s]' % (label, found.get('verdict'),
                                                                        invocation(launch.dispatch_id).get('outcome'),
@@ -1504,7 +1535,7 @@ sys.exit(payload.get('code', 0))
                 for path in (ready, release, scanned, spaced):
                     path.unlink(missing_ok=True)
                 receiver = base / 'held_receiver.py'
-                receiver.write_text('''import json, sys, time
+                receiver.write_text('''import ctypes, json, os, select, sys
 from pathlib import Path
 sys.path.insert(0, %r)
 import control_launch as L
@@ -1528,11 +1559,14 @@ def held_end(receiver, contract, event):
         receiver.space = object()
         receiver._space_end = space_end
         ready.write_text(contract['dispatch_id'])
-        deadline = time.monotonic() + 30
+        # Held until the test releases it, woken only by inotify on the release file's directory.
+        libc = ctypes.CDLL(None, use_errno=True)
+        fd = libc.inotify_init1(os.O_CLOEXEC)
+        libc.inotify_add_watch(fd, str(release.parent).encode(), 0x100 | 0x80 | 0x8)
         while not release.is_file():
-            if time.monotonic() >= deadline:
-                raise TimeoutError('test did not release report_end')
-            time.sleep(.01)
+            select.select([fd], [], [])
+            os.read(fd, 65536)
+        os.close(fd)
     report_end(receiver, contract, event)
 L.run_end_scan, L.report_end = scan, held_end
 L.main()
@@ -1543,13 +1577,14 @@ L.main()
                 def after_end(launch, lost):
                     if not lost:
                         if phase == 'finished':
-                            launch.child.wait(timeout=30)
+                            WAITS.wait('the receiver of %s to exit' % launch.dispatch_id,
+                                       lambda: launch.child.poll() is not None, sources=[WAITS.Pidfd(launch.child)])
                         else:
-                            deadline = time.monotonic() + 30
-                            while not ready.is_file():
-                                if launch.child.poll() is not None or time.monotonic() >= deadline:
-                                    raise AssertionError('receiver never reached its exit record')
-                                time.sleep(.01)
+                            reached = WAITS.wait('the receiver of %s to record its exit' % launch.dispatch_id,
+                                                 ready.is_file, lambda: launch.child.poll() is not None,
+                                                 [WAITS.PathAppears(ready), WAITS.Pidfd(launch.child)])
+                            if not reached.done:
+                                raise AssertionError('receiver never reached its exit record: ' + reached.report())
                             check(row, 'the receiver is alive between record and scan/space end',
                                   launch.child.poll() is None and not scanned.exists() and not spaced.exists())
                         settle(launch, lost)
@@ -1774,21 +1809,24 @@ L.main()
             fake_capture = conform_formats.conform_fake(locals(), '0060_claude_adapter')
             # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
             with contextlib.suppress(Exception):
-                subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
+                subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True,
+                               timeout=WAITS.WAIT_HANG_SECONDS, env=tools,
                                stdin=subprocess.DEVNULL)
             with contextlib.suppress(Exception):
                 mine = sorted({CT.unit_name(launch.dispatch_id) for launch in contained_launches})
                 listed = subprocess.run(['systemctl', '--user', 'list-units', '--all', '--plain', '--no-legend', *mine],
-                                        capture_output=True, text=True, timeout=20, env=tools, stdin=subprocess.DEVNULL)
+                                        capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS, env=tools,
+                                        stdin=subprocess.DEVNULL)
                 loaded = [line.split()[0] for line in listed.stdout.splitlines() if line.split()]
                 if mine and loaded:
-                    subprocess.run(['systemctl', '--user', 'reset-failed', *loaded], capture_output=True, timeout=20,
+                    subprocess.run(['systemctl', '--user', 'reset-failed', *loaded], capture_output=True,
+                                   timeout=WAITS.WAIT_HANG_SECONDS,
                                    env=tools, stdin=subprocess.DEVNULL)
             for launch in contained_launches:
                 with contextlib.suppress(Exception):
                     if launch.child is not None and launch.child.poll() is None:
                         launch.child.kill()
-                        launch.child.wait(timeout=10)
+                        launch.child.wait()  # killed above, or already ended
             for kid in escaped:
                 with contextlib.suppress(OSError):
                     stat = Path('/proc/%d/stat' % kid['pid']).read_text()
@@ -1803,6 +1841,8 @@ L.main()
             shutil.rmtree(str(base), ignore_errors=True)
         finally:
             compiled.close()
+            with contextlib.suppress(NameError):
+                TIMERS.reset_profile()
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
@@ -1819,7 +1859,6 @@ L.main()
     for line in conform_formats.describe('0060_claude_adapter', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0060_claude_adapter', bool(fake_capture[1]) and not fake_capture[0])
-    print('VELDO-0060 suite seconds: %.3f' % (time.monotonic() - started))
 
 
 # The owner's session. The gate's mutation stage runs every suite without XDG_RUNTIME_DIR; the receiver, its
