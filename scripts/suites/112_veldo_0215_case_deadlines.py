@@ -346,7 +346,13 @@ def _v215_case_deadlines():
         home = scratch / 'real'
         home.mkdir()
         blocked_script = home / 'blocking_child.py'
-        blocked_script.write_text('import os\nr,w=os.pipe()\nprint("blocking read",flush=True)\nos.read(r,1)\n')
+        # __index__ runs inside os.read: after readiness, its call frame is already
+        # on the stack, even if the scheduler pauses the child before the kernel read.
+        blocked_script.write_text('import os\nimport resource\n'
+            'resource.setrlimit(resource.RLIMIT_CORE, (0,0))\nr,w=os.pipe()\n'
+            'class ReadyFD:\n    def __index__(self):\n'
+            '        print("blocking read",flush=True)\n        return r\n'
+            'os.read(ReadyFD(),1)\n')
         real_popen, real_load = subprocess.Popen, gate.load
         pool = gate.SuiteResources({'suites': [{'file': 'sample.py'}], 'resource_capacities': {}})
         hang_clock = [0]
@@ -374,7 +380,7 @@ def _v215_case_deadlines():
             and not workers.active and workers.outcomes[0]['returncode'] == -6
             and workers.outcomes[0]['hang_seconds'] == 3
             and 'Current thread' in workers.outcomes[0].get('stderr_tail', '')
-            and 'blocking_child.py", line 4' in workers.outcomes[0].get('stack_dump', ''))
+            and 'blocking_child.py", line 9' in workers.outcomes[0].get('stack_dump', ''))
 
         observer = gate.load(ROOT / "scripts" / "mutation_observer.py")
         clock = [0]
@@ -420,7 +426,7 @@ def _v215_case_deadlines():
             and heavy_clock[0] == 10
             and long_stage['status'] == 'passed' and long_stage['elapsed'] > 21600
             and error == 'control_failed' and 'Current thread' in workers.outcomes[0].get('stderr_tail', '')
-            and 'blocking_child.py", line 4' in workers.outcomes[0].get('stack_dump', ''))
+            and 'blocking_child.py", line 9' in workers.outcomes[0].get('stack_dump', ''))
 
         outcomes = []
         for kind in ('assertion', 'terminal', 'hung', 'not_run', 'control', 'unproven'):
