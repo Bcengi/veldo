@@ -212,12 +212,17 @@ def _v224_stale():
         row('never-published', good['seeded'] and good['old_unchanged'] and good['no_hits'] and good['clean_hit']
             and good['receipt']['reused'] == 0
             and all(r and r['case']['identity'] not in stale_names for r in good['new_records'])
-            and all(r['key'] is None for r in receipts if r['identity'] in stale_names), detail)
+            and all(r['key'] is None for r in receipts if r['identity'] in stale_names),
+            repr(dict(states=detail, reused=good['receipt']['reused'], clean_hit=good['clean_hit'],
+                      published=[r['case']['identity'] for r in good['new_records'] if r],
+                      stale_keys={r['identity']: r['key'] for r in receipts if r['identity'] in stale_names})))
         row('authority-store', good['unchanged'] and {e['identity'] for e in good['entries']} == stale_names
             and set(good['selected']) == stale_names
             and all(e['declaration'] == C.declaration_digest(document['cases'][e['identity']])
                     and e['gate_run'] == good['receipt']['gate_run'] and e['reason'] for e in good['entries'])
-            and good['receipt']['authority_stale_count'] == 5, detail)
+            and good['receipt']['authority_stale_count'] == 5,
+            repr(dict(states=detail, candidate_unchanged=good['unchanged'],
+                      stored=[e['identity'] for e in good['entries']], selected=sorted(good['selected']))))
         row('stale-reasons', any('helper.py' in e['reason'] for e in good['entries'])
             and any('optional-declared' in e['reason'] for e in good['entries'])
             and any('appeared' in e['reason'] for e in good['entries']), repr(good['entries']))
