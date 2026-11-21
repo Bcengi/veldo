@@ -1,5 +1,9 @@
 # VELDO-0113 implementation and evidence
 
+Status: blocked, not accepted. The three census-backed absence obligations stand
+down on INCOMPLETE qualification. The construction row fails at both shipped
+CLI sites, and the missing store-write grant is reported as an explicit gap.
+
 The lead decision of 2026-11-21 is recorded in the specification History. The
 original direct-store counterexample remains in `contract-gap.txt` and
 `reproduce_contract_gap.py`; it explains the amendment and is not an absence
@@ -91,6 +95,14 @@ and listener falsifiers must stand down on this host under the literal contract;
 a captured effect alone cannot substitute for the required false consumer row.
 The initial evaluator allowed that substitution; it was corrected after the
 first process drive. Earlier diagnostic results are not acceptance evidence.
+
+The full-matrix live captures completed, but the proof writer initially compared
+Python fault tuples with their JSON-decoded lists and failed its round-trip
+assertion after saving the complete JSON. Original run failures remain in the
+`*-run.txt` files. The corrected writer compares canonical JSON bytes, and
+`run_checks.py --reassess NAME` explicitly assesses a saved receipt without a new
+observer invocation. Reassessment does not turn those writer failures into valid
+live red/green drives. Source and original JSON digests remain bound and checked.
 
 Receipt archives use lossless shared capability tables and an LZMA payload
 inside a gzip JSON envelope to stay below the proof size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
