@@ -1,0 +1,2 @@
+specs/VELDO-0224-a-stale-declaration-runs-the-case-fresh-instead-of-failing-the-gate.md: pass
+specs/VELDO-0207-declared-case-reuse.md: pass
