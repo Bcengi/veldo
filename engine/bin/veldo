@@ -286,7 +286,8 @@ def _request_work(workspace, account, principal, sign, trust):
         raise client.CL.ClaimStopped(error.reason) from error
     result = response.get("result") if response.get("accepted") else response
     if not isinstance(result, dict) or not result.get("ok"):
-        raise client.CL.ClaimStopped((result or {}).get("reason", "malformed_response"))
+        reason = result.get("reason", "malformed_response") if isinstance(result, dict) else "malformed_response"
+        raise client.CL.ClaimStopped(reason)
     return result
 
 
