@@ -1,109 +1,83 @@
 {
-  "status": "FAIL",
+  "status": {
+    "reason": [],
+    "status": "PASS"
+  },
   "sites": [
     {
       "file": ".veldo/control_launch.py",
       "line": 2295,
-      "constructor": "Dispatches",
-      "expression": "D.Dispatches(S, self.conn, domain=config['domain'], repository=repository, principal=config['principal'], signer=config['principal'], sign=lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE), generation=config.get('authority_generation', 1), subject_kind=receiver_kind)",
-      "source_digest": "03ce1fc2768cc72a37fac4b86c4e2f7cb435cb4a6e4b6be26b6c592b1652320d"
+      "constructor": "Dispatches"
     },
     {
       "file": ".veldo/control_launch_work.py",
       "line": 148,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(L.S, self.conn, **common)",
-      "source_digest": "4d4b4740466a48fde7dd1a12e3b744ab8b4494bb261c1404619c182ac43f6dcc"
+      "constructor": "Dispatches"
     },
     {
       "file": ".veldo/control_service.py",
-      "line": 3172,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(S, service.conn, **common)",
-      "source_digest": "b07949ee99b9e11ee22ca7c9ec2e00ff531fdbc6735540a9825ce44b7c8e04f8"
+      "line": 3207,
+      "constructor": "Dispatches"
     },
     {
       "file": ".veldo/control_service.py",
-      "line": 3904,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(S, self.service.conn, **common, subject_kind='conversation')",
-      "source_digest": "b07949ee99b9e11ee22ca7c9ec2e00ff531fdbc6735540a9825ce44b7c8e04f8"
+      "line": 3939,
+      "constructor": "Dispatches"
     },
     {
       "file": ".veldo/control_service_api.py",
       "line": 214,
-      "constructor": "Dispatches",
-      "expression": "AUTH.DP.Dispatches(self.S, self.conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'], principal=principal, signer=principal, sign=sign, generation=generation, observe=self.observe_mcp)",
-      "source_digest": "bedb53a465869aae36861593fe8ec9a5238813061219c9a32be381c2f02013fd"
+      "constructor": "Dispatches"
     },
     {
       "file": ".veldo/dispatch.py",
       "line": 574,
-      "constructor": "Dispatcher",
-      "expression": "Dispatcher(repo_root=repo_root, hooks=hooks, reviewer=reviewer, lander=lander, worker_id=worker_id, claims_root=claims_root, fail_status=fail_status, eligibility=eligibility, calls=calls, authority=authority)",
-      "source_digest": "194eef62c47881ca732ce7c8da12a1bd03fecfa39399a46c63374a4af457a3c8"
-    },
-    {
-      "file": "bin/veldo",
-      "line": 285,
-      "constructor": "Dispatcher",
-      "expression": "_dispatch().Dispatcher(repo_root=repo_root, eligibility=gate, calls=calls)",
-      "source_digest": "4deb784fd26cfe1bc8d0a8d97ec6add28bd6fc52fdd6f72846d8f9ad775fde7a"
+      "constructor": "Dispatcher"
     },
     {
       "file": "engine/.veldo/control_launch.py",
       "line": 2295,
-      "constructor": "Dispatches",
-      "expression": "D.Dispatches(S, self.conn, domain=config['domain'], repository=repository, principal=config['principal'], signer=config['principal'], sign=lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE), generation=config.get('authority_generation', 1), subject_kind=receiver_kind)",
-      "source_digest": "03ce1fc2768cc72a37fac4b86c4e2f7cb435cb4a6e4b6be26b6c592b1652320d"
+      "constructor": "Dispatches"
     },
     {
       "file": "engine/.veldo/control_launch_work.py",
       "line": 148,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(L.S, self.conn, **common)",
-      "source_digest": "4d4b4740466a48fde7dd1a12e3b744ab8b4494bb261c1404619c182ac43f6dcc"
+      "constructor": "Dispatches"
     },
     {
       "file": "engine/.veldo/control_service.py",
-      "line": 3172,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(S, service.conn, **common)",
-      "source_digest": "b07949ee99b9e11ee22ca7c9ec2e00ff531fdbc6735540a9825ce44b7c8e04f8"
+      "line": 3207,
+      "constructor": "Dispatches"
     },
     {
       "file": "engine/.veldo/control_service.py",
-      "line": 3904,
-      "constructor": "Dispatches",
-      "expression": "L.D.Dispatches(S, self.service.conn, **common, subject_kind='conversation')",
-      "source_digest": "b07949ee99b9e11ee22ca7c9ec2e00ff531fdbc6735540a9825ce44b7c8e04f8"
+      "line": 3939,
+      "constructor": "Dispatches"
     },
     {
       "file": "engine/.veldo/control_service_api.py",
       "line": 214,
-      "constructor": "Dispatches",
-      "expression": "AUTH.DP.Dispatches(self.S, self.conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'], principal=principal, signer=principal, sign=sign, generation=generation, observe=self.observe_mcp)",
-      "source_digest": "bedb53a465869aae36861593fe8ec9a5238813061219c9a32be381c2f02013fd"
+      "constructor": "Dispatches"
     },
     {
       "file": "engine/.veldo/dispatch.py",
       "line": 574,
-      "constructor": "Dispatcher",
-      "expression": "Dispatcher(repo_root=repo_root, hooks=hooks, reviewer=reviewer, lander=lander, worker_id=worker_id, claims_root=claims_root, fail_status=fail_status, eligibility=eligibility, calls=calls, authority=authority)",
-      "source_digest": "194eef62c47881ca732ce7c8da12a1bd03fecfa39399a46c63374a4af457a3c8"
-    },
-    {
-      "file": "engine/bin/veldo",
-      "line": 285,
-      "constructor": "Dispatcher",
-      "expression": "_dispatch().Dispatcher(repo_root=repo_root, eligibility=gate, calls=calls)",
-      "source_digest": "4deb784fd26cfe1bc8d0a8d97ec6add28bd6fc52fdd6f72846d8f9ad775fde7a"
+      "constructor": "Dispatcher"
     }
   ],
-  "problems": [
-    "outside_authority:bin/veldo:285",
-    "outside_authority:engine/bin/veldo:285"
-  ],
-  "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-  "discovery": "recursive AST of shipped module, front-door and operational-script trees; constructor alias closure"
+  "discovery": "Recursive source census of both runtime module trees, both CLI directories, and operational scripts; test harnesses excluded. No CLI exemption. Full source inventory and digests are in the reconstructed baseline receipt.",
+  "falsifiers": {
+    "autostart113-construction-outside-authority": {
+      "reason": [
+        "outside_authority:.veldo/claim.py:62"
+      ],
+      "status": "FAIL"
+    },
+    "autostart113-cli-direct-construction": {
+      "reason": [
+        "outside_authority:bin/veldo:307"
+      ],
+      "status": "FAIL"
+    }
+  }
 }

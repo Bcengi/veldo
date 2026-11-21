@@ -94,3 +94,38 @@ pipes, process completion and observation barriers; new deadlines are 1200-secon
 hang detectors. The census coordinates at most four independent observer
 processes, each with private arguments and launch acknowledgements. Selected
 selftests remain partial runs, not canonical gate evidence.
+
+Final rerun after the CLI fix (2026-11-21): `restored-full-matrix` completes all
+42 cases, all 22 external refusals and all 176 fault drives. Construction is PASS.
+The two structural mutations independently fail at `.veldo/claim.py:62` and
+`bin/veldo:307`; final restoration returns construction to PASS. The
+incomplete-as-success mutation makes its named row FAIL with
+`incomplete_census_accepted`. The fallback and listener mutations capture 18
+terminal forbidden births and 18 service events respectively, but their named
+absence rows remain STANDS DOWN. Their proof-driver assertions therefore fail;
+these are blocked drives, not valid AC1/AC2 rejections.
+
+The standard finding-113 coordinator reran all four previous cases and the new
+CLI case: five registered, five executed, zero valid rejections, all five
+`invalid_baseline`. Its eight baseline/no-op controls now PASS the construction
+boundary. Their only failed assertions are
+`unavailable/each-external-client-reaches-refusal` and
+`unavailable/full-fault-matrix-is-exercised`. In all 22 external cases the observer
+fails at arming `PTRACE_TRACEME`: `root did not reach pre-exec stop`, with stderr
+`[Errno 1] Operation not permitted`; outcomes are `invocation_incomplete`.
+The standard sandbox denies ptrace in `scripts/agent_sandbox.py`. It cannot
+complete the actual invocation or exercise the requested later observer faults.
+This is separate from the dependency's incomplete qualification on the unrestricted
+host. No confinement exemption was added. `gate-mutations.txt` records the actual
+coordinator result and `mutation-worker-findings.txt` retains per-worker findings,
+including representative refusal details and all affected identities. No workers
+survived coordinator cleanup.
+
+Selected selftest diagnostics are green for 0113, 0112, 0111, 0109, authority,
+factory loop, and the added work client. Suite 115 has 26 new passing checks.
+The initial CLI regression exposed suite 114 rebinding the shared runner's ROOT;
+that was fixed, and the rerun has 1425 passed, zero failed. These selected runs
+remain partial diagnostics, not canonical unit/gate acceptance evidence. Current
+lint and template synchronization pass. The earlier `suite-*.txt`,
+`selftest-0113.txt`, and isolated `structural-controls.txt` are historical
+implementation diagnostics; current full-matrix results are identified above.
