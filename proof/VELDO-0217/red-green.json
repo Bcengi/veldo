@@ -119,6 +119,32 @@
     },
     {
       "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-record-bound"
+      ],
+      "name": "declarations217-review-anywhere",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-record-bound"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-record-bound"
+      ],
+      "name": "declarations217-review-unbound",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-record-bound"
+      ]
+    },
+    {
+      "baseline_failed": [],
       "module": ".veldo/policy.yaml",
       "mutant_failed": [
         "VELDO-0217 declarations/review-records-protected"
@@ -158,16 +184,16 @@
     }
   ],
   "command": "python3 scripts/check_gate_mutations.py --finding 217 (through host_heavy.sh, scratch clone of the commit)",
-  "commit": "a75a05163765950264585fb90261c44c4a9603a6",
+  "commit": "a7d82428470d753856ae89ca12abb49ab4eb85a5",
   "legs": [
     "confined"
   ],
   "schema": "veldo.red-green/v1",
   "spec_id": "VELDO-0217",
   "stage": {
-    "executed": 12,
-    "registered": 12,
-    "rejected": 12,
+    "executed": 14,
+    "registered": 14,
+    "rejected": 14,
     "reused": 0,
     "scope": "selected",
     "status": "passed"
