@@ -1,0 +1,934 @@
+{
+  "row": "census/external-reference-needs-destruction-observer",
+  "passed": true,
+  "cases": [
+    {
+      "family": 1,
+      "passed": true,
+      "acknowledgement": {
+        "family": 1,
+        "address": "\u0000v111-held-748606",
+        "inode": "socket:[4146205257]",
+        "local_close_acknowledged": true
+      },
+      "receipt": {
+        "schema": "veldo.lifecycle-census/1",
+        "input_identity": "VELDO-0111/external-reference/1",
+        "input_digest": "e55539a417a0b5ac04c56e674979b391b96bb543338646bf81f1fe94b08f6be0",
+        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "fixture_version": "veldo.lifecycle-census/1",
+        "host": {
+          "kernel": "7.0.0-38-generic",
+          "machine": "x86_64",
+          "python": "3.12.3",
+          "system": "Linux"
+        },
+        "status": "INCOMPLETE",
+        "capture_status": "COMPLETE",
+        "state": "drained",
+        "barriers": [
+          {
+            "name": "armed_before_exec",
+            "time_ns": 2924274538575943,
+            "sequence": 1
+          },
+          {
+            "name": "call_returned",
+            "time_ns": 2924275309203939,
+            "sequence": 10
+          },
+          {
+            "name": "descendants_drained",
+            "time_ns": 2924275309205420,
+            "sequence": 10
+          }
+        ],
+        "processes": [
+          {
+            "identity": "748606:1",
+            "pid": 748606,
+            "current_tid": 748606,
+            "parent": null,
+            "root": true,
+            "operation": "root",
+            "terminal": 10,
+            "birth": 1,
+            "execs": [
+              2
+            ],
+            "comm": "python3"
+          }
+        ],
+        "failures": [
+          {
+            "capability": "protocol_inventory_bounds",
+            "reason": "bounded protocol discovery does not fully qualify the four required families",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "operation_configuration",
+            "reason": "available socket needs a qualified address or operation configuration",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "io_uring_socket_effects",
+            "reason": "shared ring completions are not correlated to traced socket identities",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "socket_destruction",
+            "reason": "terminal drain bounds socket destruction but does not timestamp it",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "shared_socket_memory",
+            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+            "category": "observation_incomplete",
+            "state": "drained"
+          }
+        ],
+        "lost_events": 0,
+        "consumer_rows": {
+          "VELDO-0113": [
+            {
+              "name": "unavailable/no-client-starts-the-authority",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-client-hosts-a-listener",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-auto-start-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0114": [
+            {
+              "name": "relay/one-endpoint-one-judgement",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-listener-during-call",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-second-process",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/listener-proof-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0122": [
+            {
+              "name": "filesystem/transient-and-escaped-writes-are-seen",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-transient-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-out-of-directory-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-write-needs-complete-observation",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ]
+        }
+      },
+      "socket": {
+        "identity": "socket:[4146205257]:1",
+        "inode": "socket:[4146205257]",
+        "family": 1,
+        "type": 1,
+        "protocol": 0,
+        "address": "010000763131312d68656c642d373438363036",
+        "created": 3,
+        "closed": {
+          "barrier": "descendants_drained",
+          "exact": false
+        },
+        "references": [],
+        "abi": "x86_64",
+        "descriptor_closes": [
+          8
+        ]
+      },
+      "service_and_close_events": [
+        {
+          "sequence": 4,
+          "time_ns": 2924275290786031,
+          "kind": "bind",
+          "task": "748606:1",
+          "socket": "socket:[4146205257]:1",
+          "family": 1,
+          "address": "010000763131312d68656c642d373438363036"
+        },
+        {
+          "sequence": 5,
+          "time_ns": 2924275291943228,
+          "kind": "service",
+          "task": "748606:1",
+          "socket": "socket:[4146205257]:1",
+          "family": 1,
+          "type": 1,
+          "operation": "listen",
+          "address": "010000763131312d68656c642d373438363036",
+          "abi": "x86_64"
+        },
+        {
+          "sequence": 8,
+          "time_ns": 2924275301835346,
+          "kind": "close",
+          "task": "748606:1",
+          "inode": "socket:[4146205257]",
+          "socket": "socket:[4146205257]:1",
+          "fd": 3
+        }
+      ],
+      "destruction_reasons": [
+        {
+          "capability": "socket_destruction",
+          "reason": "terminal drain bounds socket destruction but does not timestamp it",
+          "evidence": {
+            "identities": [
+              "socket:[4146205257]:1",
+              "socket:[4146205258]:2"
+            ]
+          }
+        }
+      ],
+      "witness": {
+        "receiver_outside_scope": true,
+        "queued_socket_live_after_drain": true,
+        "held_socket_live_after_drain": true,
+        "census_returned_ns": 2924275328175739,
+        "queued_live_ns": 2924275328231653,
+        "holder_live_ns": 2924275328320088,
+        "external_release_ack_ns": 2924275328323084,
+        "exact_destruction_observed": false
+      }
+    },
+    {
+      "family": 2,
+      "passed": true,
+      "acknowledgement": {
+        "family": 2,
+        "address": [
+          "127.0.0.1",
+          38217
+        ],
+        "inode": "socket:[4146218129]",
+        "local_close_acknowledged": true
+      },
+      "receipt": {
+        "schema": "veldo.lifecycle-census/1",
+        "input_identity": "VELDO-0111/external-reference/2",
+        "input_digest": "16c5a6184b0f16a79f3711730d3a031b974d494f31ca2bbef7af5b577de96fe2",
+        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "fixture_version": "veldo.lifecycle-census/1",
+        "host": {
+          "kernel": "7.0.0-38-generic",
+          "machine": "x86_64",
+          "python": "3.12.3",
+          "system": "Linux"
+        },
+        "status": "INCOMPLETE",
+        "capture_status": "COMPLETE",
+        "state": "drained",
+        "barriers": [
+          {
+            "name": "armed_before_exec",
+            "time_ns": 2924280029628935,
+            "sequence": 1
+          },
+          {
+            "name": "call_returned",
+            "time_ns": 2924280801676790,
+            "sequence": 10
+          },
+          {
+            "name": "descendants_drained",
+            "time_ns": 2924280801678855,
+            "sequence": 10
+          }
+        ],
+        "processes": [
+          {
+            "identity": "755411:1",
+            "pid": 755411,
+            "current_tid": 755411,
+            "parent": null,
+            "root": true,
+            "operation": "root",
+            "terminal": 10,
+            "birth": 1,
+            "execs": [
+              2
+            ],
+            "comm": "python3"
+          }
+        ],
+        "failures": [
+          {
+            "capability": "protocol_inventory_bounds",
+            "reason": "bounded protocol discovery does not fully qualify the four required families",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "operation_configuration",
+            "reason": "available socket needs a qualified address or operation configuration",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "io_uring_socket_effects",
+            "reason": "shared ring completions are not correlated to traced socket identities",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "socket_destruction",
+            "reason": "terminal drain bounds socket destruction but does not timestamp it",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "shared_socket_memory",
+            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+            "category": "observation_incomplete",
+            "state": "drained"
+          }
+        ],
+        "lost_events": 0,
+        "consumer_rows": {
+          "VELDO-0113": [
+            {
+              "name": "unavailable/no-client-starts-the-authority",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-client-hosts-a-listener",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-auto-start-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0114": [
+            {
+              "name": "relay/one-endpoint-one-judgement",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-listener-during-call",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-second-process",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/listener-proof-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0122": [
+            {
+              "name": "filesystem/transient-and-escaped-writes-are-seen",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-transient-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-out-of-directory-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-write-needs-complete-observation",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ]
+        }
+      },
+      "socket": {
+        "identity": "socket:[4146218129]:1",
+        "inode": "socket:[4146218129]",
+        "family": 2,
+        "type": 1,
+        "protocol": 0,
+        "address": "020000007f0000010000000000000000",
+        "created": 3,
+        "closed": {
+          "barrier": "descendants_drained",
+          "exact": false
+        },
+        "references": [],
+        "abi": "x86_64",
+        "descriptor_closes": [
+          8
+        ]
+      },
+      "service_and_close_events": [
+        {
+          "sequence": 4,
+          "time_ns": 2924280782226256,
+          "kind": "bind",
+          "task": "755411:1",
+          "socket": "socket:[4146218129]:1",
+          "family": 2,
+          "address": "020000007f0000010000000000000000"
+        },
+        {
+          "sequence": 5,
+          "time_ns": 2924280784506292,
+          "kind": "service",
+          "task": "755411:1",
+          "socket": "socket:[4146218129]:1",
+          "family": 2,
+          "type": 1,
+          "operation": "listen",
+          "address": {
+            "ip": "127.0.0.1",
+            "port": 38217,
+            "sockaddr_hex": "020000007f0000010000000000000000"
+          },
+          "abi": "x86_64"
+        },
+        {
+          "sequence": 8,
+          "time_ns": 2924280794353198,
+          "kind": "close",
+          "task": "755411:1",
+          "inode": "socket:[4146218129]",
+          "socket": "socket:[4146218129]:1",
+          "fd": 3
+        }
+      ],
+      "destruction_reasons": [
+        {
+          "capability": "socket_destruction",
+          "reason": "terminal drain bounds socket destruction but does not timestamp it",
+          "evidence": {
+            "identities": [
+              "socket:[4146218129]:1",
+              "socket:[4146218131]:2"
+            ]
+          }
+        }
+      ],
+      "witness": {
+        "receiver_outside_scope": true,
+        "queued_socket_live_after_drain": true,
+        "held_socket_live_after_drain": true,
+        "census_returned_ns": 2924280818907094,
+        "queued_live_ns": 2924280819044463,
+        "holder_live_ns": 2924280819124212,
+        "external_release_ack_ns": 2924280819128153,
+        "exact_destruction_observed": false
+      }
+    },
+    {
+      "family": 10,
+      "passed": true,
+      "acknowledgement": {
+        "family": 10,
+        "address": [
+          "::1",
+          57639,
+          0,
+          0
+        ],
+        "inode": "socket:[4146230567]",
+        "local_close_acknowledged": true
+      },
+      "receipt": {
+        "schema": "veldo.lifecycle-census/1",
+        "input_identity": "VELDO-0111/external-reference/10",
+        "input_digest": "e0daba664ad9ef43f200194b5699e696d7881e31ef5ae88a0e7b725feac877bd",
+        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "fixture_version": "veldo.lifecycle-census/1",
+        "host": {
+          "kernel": "7.0.0-38-generic",
+          "machine": "x86_64",
+          "python": "3.12.3",
+          "system": "Linux"
+        },
+        "status": "INCOMPLETE",
+        "capture_status": "COMPLETE",
+        "state": "drained",
+        "barriers": [
+          {
+            "name": "armed_before_exec",
+            "time_ns": 2924285510942801,
+            "sequence": 1
+          },
+          {
+            "name": "call_returned",
+            "time_ns": 2924286296626575,
+            "sequence": 10
+          },
+          {
+            "name": "descendants_drained",
+            "time_ns": 2924286296628719,
+            "sequence": 10
+          }
+        ],
+        "processes": [
+          {
+            "identity": "762529:1",
+            "pid": 762529,
+            "current_tid": 762529,
+            "parent": null,
+            "root": true,
+            "operation": "root",
+            "terminal": 10,
+            "birth": 1,
+            "execs": [
+              2
+            ],
+            "comm": "python3"
+          }
+        ],
+        "failures": [
+          {
+            "capability": "protocol_inventory_bounds",
+            "reason": "bounded protocol discovery does not fully qualify the four required families",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "operation_configuration",
+            "reason": "available socket needs a qualified address or operation configuration",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "io_uring_socket_effects",
+            "reason": "shared ring completions are not correlated to traced socket identities",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "socket_destruction",
+            "reason": "terminal drain bounds socket destruction but does not timestamp it",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "shared_socket_memory",
+            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+            "category": "observation_incomplete",
+            "state": "drained"
+          }
+        ],
+        "lost_events": 0,
+        "consumer_rows": {
+          "VELDO-0113": [
+            {
+              "name": "unavailable/no-client-starts-the-authority",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-client-hosts-a-listener",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-auto-start-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0114": [
+            {
+              "name": "relay/one-endpoint-one-judgement",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-listener-during-call",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-second-process",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/listener-proof-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0122": [
+            {
+              "name": "filesystem/transient-and-escaped-writes-are-seen",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-transient-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-out-of-directory-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-write-needs-complete-observation",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ]
+        }
+      },
+      "socket": {
+        "identity": "socket:[4146230567]:1",
+        "inode": "socket:[4146230567]",
+        "family": 10,
+        "type": 1,
+        "protocol": 0,
+        "address": "0a000000000000000000000000000000000000000000000100000000",
+        "created": 3,
+        "closed": {
+          "barrier": "descendants_drained",
+          "exact": false
+        },
+        "references": [],
+        "abi": "x86_64",
+        "descriptor_closes": [
+          8
+        ]
+      },
+      "service_and_close_events": [
+        {
+          "sequence": 4,
+          "time_ns": 2924286275258350,
+          "kind": "bind",
+          "task": "762529:1",
+          "socket": "socket:[4146230567]:1",
+          "family": 10,
+          "address": "0a000000000000000000000000000000000000000000000100000000"
+        },
+        {
+          "sequence": 5,
+          "time_ns": 2924286277881201,
+          "kind": "service",
+          "task": "762529:1",
+          "socket": "socket:[4146230567]:1",
+          "family": 10,
+          "type": 1,
+          "operation": "listen",
+          "address": {
+            "ip": "::1",
+            "port": 57639,
+            "sockaddr_hex": "0a000000000000000000000000000000000000000000000100000000"
+          },
+          "abi": "x86_64"
+        },
+        {
+          "sequence": 8,
+          "time_ns": 2924286288352880,
+          "kind": "close",
+          "task": "762529:1",
+          "inode": "socket:[4146230567]",
+          "socket": "socket:[4146230567]:1",
+          "fd": 3
+        }
+      ],
+      "destruction_reasons": [
+        {
+          "capability": "socket_destruction",
+          "reason": "terminal drain bounds socket destruction but does not timestamp it",
+          "evidence": {
+            "identities": [
+              "socket:[4146230567]:1",
+              "socket:[4146230568]:2"
+            ]
+          }
+        }
+      ],
+      "witness": {
+        "receiver_outside_scope": true,
+        "queued_socket_live_after_drain": true,
+        "held_socket_live_after_drain": true,
+        "census_returned_ns": 2924286312209091,
+        "queued_live_ns": 2924286312332161,
+        "holder_live_ns": 2924286312401341,
+        "external_release_ack_ns": 2924286312405478,
+        "exact_destruction_observed": false
+      }
+    },
+    {
+      "family": 16,
+      "passed": true,
+      "acknowledgement": {
+        "family": 16,
+        "address": [
+          769704,
+          0
+        ],
+        "inode": "socket:[4146232970]",
+        "local_close_acknowledged": true
+      },
+      "receipt": {
+        "schema": "veldo.lifecycle-census/1",
+        "input_identity": "VELDO-0111/external-reference/16",
+        "input_digest": "11415615cf9489d69b896d43f30ef7a54eda7d657ea549a44aa37840c2820075",
+        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "fixture_version": "veldo.lifecycle-census/1",
+        "host": {
+          "kernel": "7.0.0-38-generic",
+          "machine": "x86_64",
+          "python": "3.12.3",
+          "system": "Linux"
+        },
+        "status": "INCOMPLETE",
+        "capture_status": "COMPLETE",
+        "state": "drained",
+        "barriers": [
+          {
+            "name": "armed_before_exec",
+            "time_ns": 2924291004270335,
+            "sequence": 1
+          },
+          {
+            "name": "call_returned",
+            "time_ns": 2924291759118755,
+            "sequence": 10
+          },
+          {
+            "name": "descendants_drained",
+            "time_ns": 2924291759120437,
+            "sequence": 10
+          }
+        ],
+        "processes": [
+          {
+            "identity": "769704:1",
+            "pid": 769704,
+            "current_tid": 769704,
+            "parent": null,
+            "root": true,
+            "operation": "root",
+            "terminal": 10,
+            "birth": 1,
+            "execs": [
+              2
+            ],
+            "comm": "python3"
+          }
+        ],
+        "failures": [
+          {
+            "capability": "protocol_inventory_bounds",
+            "reason": "bounded protocol discovery does not fully qualify the four required families",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "operation_configuration",
+            "reason": "available socket needs a qualified address or operation configuration",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "io_uring_socket_effects",
+            "reason": "shared ring completions are not correlated to traced socket identities",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "socket_destruction",
+            "reason": "terminal drain bounds socket destruction but does not timestamp it",
+            "category": "observation_incomplete",
+            "state": "drained"
+          },
+          {
+            "capability": "shared_socket_memory",
+            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+            "category": "observation_incomplete",
+            "state": "drained"
+          }
+        ],
+        "lost_events": 0,
+        "consumer_rows": {
+          "VELDO-0113": [
+            {
+              "name": "unavailable/no-client-starts-the-authority",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-client-hosts-a-listener",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-auto-start-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0114": [
+            {
+              "name": "relay/one-endpoint-one-judgement",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-listener-during-call",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/no-second-process",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "relay/listener-proof-needs-census",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ],
+          "VELDO-0122": [
+            {
+              "name": "filesystem/transient-and-escaped-writes-are-seen",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-transient-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-out-of-directory-write",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            },
+            {
+              "name": "unavailable/no-write-needs-complete-observation",
+              "status": "STANDS DOWN",
+              "reason": "census_incomplete"
+            }
+          ]
+        }
+      },
+      "socket": {
+        "identity": "socket:[4146232970]:1",
+        "inode": "socket:[4146232970]",
+        "family": 16,
+        "type": 3,
+        "protocol": 2,
+        "address": "100021930000000000000000",
+        "created": 3,
+        "closed": {
+          "barrier": "descendants_drained",
+          "exact": false
+        },
+        "references": [],
+        "abi": "x86_64",
+        "descriptor_closes": [
+          8
+        ]
+      },
+      "service_and_close_events": [
+        {
+          "sequence": 4,
+          "time_ns": 2924291741929103,
+          "kind": "bind",
+          "task": "769704:1",
+          "socket": "socket:[4146232970]:1",
+          "family": 16,
+          "address": "100021930000000000000000"
+        },
+        {
+          "sequence": 5,
+          "time_ns": 2924291741943421,
+          "kind": "service",
+          "task": "769704:1",
+          "socket": "socket:[4146232970]:1",
+          "family": 16,
+          "type": 3,
+          "operation": "bind",
+          "address": "100021930000000000000000",
+          "abi": "x86_64"
+        },
+        {
+          "sequence": 8,
+          "time_ns": 2924291751783531,
+          "kind": "close",
+          "task": "769704:1",
+          "inode": "socket:[4146232970]",
+          "socket": "socket:[4146232970]:1",
+          "fd": 3
+        }
+      ],
+      "destruction_reasons": [
+        {
+          "capability": "socket_destruction",
+          "reason": "terminal drain bounds socket destruction but does not timestamp it",
+          "evidence": {
+            "identities": [
+              "socket:[4146232970]:1",
+              "socket:[4146234289]:2"
+            ]
+          }
+        }
+      ],
+      "witness": {
+        "receiver_outside_scope": true,
+        "queued_socket_live_after_drain": true,
+        "held_socket_live_after_drain": true,
+        "census_returned_ns": 2924291773662221,
+        "queued_live_ns": 2924291773700153,
+        "holder_live_ns": 2924291773735823,
+        "external_release_ack_ns": 2924291773740521,
+        "exact_destruction_observed": false
+      }
+    }
+  ],
+  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+}
