@@ -204,9 +204,15 @@ proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
 - The instance name extends the engine's fixed unit prefix instead of preceding it. It is read from
   the shard's runtime directory, and by an installed service from its own unit's name, not from the
   installation's configuration as AC2's text says (lead decision 9 below).
-- Three unconfined suites are given no instance name (run_scope.UNNAMED: 85_veldo_0171_setup_api,
-  86_veldo_0189_engine_upgrade, 117_veldo_0227_ui_location): each lays a host down with an older
+- Six unconfined suites are given no instance name (run_scope.UNNAMED: 85_veldo_0171_setup_api,
+  86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 106_veldo_0185_dispatch_setup,
+  117_veldo_0227_ui_location, 127_veldo_0234_https_port): each lays a host down with an older
   engine from this repository's history, which cannot carry a name. This needs the owner's decision.
+- In an unconfined leg a shard's private runtime directory stands inside the real runtime
+  directory, in a directory of the leg's own, because the engine refuses a protected target beneath
+  a temporary directory and nineteen suites stand their fixtures in XDG_RUNTIME_DIR.
+- A shard names an XDG base directory in its environment only when the leg's environment names it;
+  one the leg leaves unset has its default beneath the shard's private HOME, as in the ordered run.
 - Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED), and
   alone: no other shard runs beside it.
 - AC3's unit check judges only this instance's units, by the leg's prefix or by reference to a

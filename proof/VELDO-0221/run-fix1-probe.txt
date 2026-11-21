@@ -1,0 +1,6 @@
+=== leg confined passed 2 failed 0 charged {}
+   PROBE-B {"read_A_secret": "A-secret", "write_A_home": "refused PermissionError", "signal_A": "refused PermissionError", "connect_A_path_socket": "CONNECTED", "connect_A_abstract": "refused PermissionError"}
+   PROBE-A signals=0 connections=1 foreign_file_in_my_home=False
+=== leg unconfined passed 2 failed 0 charged {}
+   PROBE-B {"read_A_secret": "A-secret", "write_A_home": "WROTE", "signal_A": "SENT", "connect_A_path_socket": "CONNECTED", "connect_A_abstract": "CONNECTED"}
+   PROBE-A signals=1 connections=2 foreign_file_in_my_home=True

@@ -1,32 +1,51 @@
-Ordered single-suite runs (python3 scripts/selftest.py --suite NAME) on the final code, 2026-11-21.
-exit=2 is a partial run that passed; a partial run never exits 0.
-157_veldo_0221_suite_shards exit=2 6s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 41 passed, 0 failed in 5.64s
-14_warp_0717_subset_runner exit=2 15s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 53 passed, 0 failed in 15.27s
-47_veldo_0107_ipc exit=2 1s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 49 passed, 0 failed in 0.90s
-113_veldo_0115_authority_store exit=2 8s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 30 passed, 0 failed in 7.90s
-113_veldo_0112_registered_clients exit=2 9s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 29 passed, 0 failed in 8.99s
-111_veldo_0214_first_use_budget exit=2 2s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 36 passed, 0 failed in 1.81s
-114_veldo_0216_concurrent_stages exit=2 31s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 52 passed, 0 failed in 30.71s
-153_veldo_0333_leg_time_store exit=2 0s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 39 passed, 0 failed in 0.05s
-155_veldo_0304_space_boundary exit=2 8s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 77 passed, 0 failed in 8.45s
-154_veldo_0324_batch_sandbox exit=2 7s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 6.56s
-102_veldo_0210_agent_profile_runtime exit=2 25s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 263 passed, 0 failed in 23.99s
-63_veldo_0040_containment exit=2 7s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 85 passed, 0 failed in 7.59s
-66_veldo_0047_authority exit=2 17s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 56 passed, 0 failed in 16.98s
-85_veldo_0171_setup_api exit=2 15s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 44 passed, 0 failed in 14.48s
-117_veldo_0227_ui_location exit=2 10s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 33 passed, 0 failed in 9.99s
-73_veldo_0139_factory_setup exit=2 32s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 43 passed, 0 failed in 31.67s
-49_veldo_0109_unavailable exit=2 1s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 31 passed, 0 failed in 0.47s
-115_veldo_0219_measured_admission exit=2 4s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 57 passed, 0 failed in 4.23s
-98_veldo_0204_mutation_receipts exit=2 1s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 71 passed, 0 failed in 0.53s
-101_veldo_0208_landing_reuse exit=2 262s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 216 passed, 0 failed in 262.76s
-104_veldo_0210_mutation_workers exit=2 132s 0 failed-rows selftest (PARTIAL, 1 of 237 suites): 33 passed, 0 failed in 131.86s
+VELDO-0221 fix round 1: ordered single-suite runs (python3 scripts/selftest.py --suite NAME), by hand, 2026-11-21.
+exit=2 is a partial run that passed; a partial run never exits 0. These ran at commit e8505cc7, in three series at once,
+beside the falsifier run and a leg; the later commits changed scripts/run_scope.py, scripts/check_space_boundary.py and suite 157,
+and every suite below ran again inside the paired whole-leg runs at the final commit (legs.md), sharded and ordered.
 
-Light gate checks on the final code:
-exit 0 :: bash scripts/check_lint.sh :: lint: pass (1247 python, 40 shell, 2.62s)
-exit 0 :: bash scripts/check_generated.sh :: generated: pass (after proof/WARP-0716/crossing-state.md was regenerated for the final scripts/selftest.py; it was stale, exit 1, before that)
+114_veldo_0216_concurrent_stages exit=2 35s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 52 passed, 0 failed in 34.04s
+115_veldo_0219_measured_admission exit=2 8s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 57 passed, 0 failed in 8.14s
+153_veldo_0333_leg_time_store exit=2 1s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 39 passed, 0 failed in 0.13s
+111_veldo_0214_first_use_budget exit=2 2s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 36 passed, 0 failed in 1.81s
+14_warp_0717_subset_runner exit=2 15s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 53 passed, 0 failed in 15.48s
+47_veldo_0107_ipc exit=2 2s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 1.80s
+49_veldo_0109_unavailable exit=2 2s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 1.71s
+98_veldo_0204_mutation_receipts exit=2 3s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 71 passed, 0 failed in 2.33s
+155_veldo_0304_space_boundary exit=2 20s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 77 passed, 0 failed in 19.59s
+113_veldo_0115_authority_store exit=2 21s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 30 passed, 0 failed in 20.65s
+113_veldo_0112_registered_clients exit=2 13s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 29 passed, 0 failed in 13.37s
+63_veldo_0040_containment exit=2 11s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 85 passed, 0 failed in 10.86s
+66_veldo_0047_authority exit=2 16s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 15.88s
+85_veldo_0171_setup_api exit=2 12s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 44 passed, 0 failed in 11.91s
+117_veldo_0227_ui_location exit=2 10s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 33 passed, 0 failed in 9.39s
+73_veldo_0139_factory_setup exit=2 47s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 43 passed, 0 failed in 47.75s
+86_veldo_0189_engine_upgrade exit=2 70s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 60 passed, 0 failed in 70.36s
+71_veldo_0130_api exit=2 26s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 71 passed, 0 failed in 25.68s
+102_veldo_0210_agent_profile_runtime exit=1 92s 7 failed-rows selftest (PARTIAL, 1 of 239 suites): 256 passed, 7 failed in 92.14s
+154_veldo_0324_batch_sandbox exit=2 12s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 55 passed, 0 failed in 11.06s
+101_veldo_0208_landing_reuse exit=2 347s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 216 passed, 0 failed in 347.31s
+104_veldo_0210_mutation_workers exit=2 141s 0 failed-rows selftest (PARTIAL, 1 of 239 suites): 33 passed, 0 failed in 141.06s
+151_veldo_0313_space_run exit=1 63s 5 failed-rows selftest (PARTIAL, 1 of 239 suites): 58 passed, 5 failed in 63.08s
+
+Two suites failed rows in these by-hand runs:
+- 102_veldo_0210_agent_profile_runtime: 7 rows about the launcher's handling of signals (scratch/SIGHUP-..., scratch/term-ignoring-tree-killed-after-grace)
+  failed once, with three series and the falsifier run going. Run again alone at the same commit:
+  selftest (PARTIAL, 1 of 239 suites): 263 passed, 0 failed in 25.12s
+- 151_veldo_0313_space_run: 5 rows failed, and a second run alone failed 5 rows, three of them different ones. It is a suite of the confined
+  leg, and by hand it runs outside the launcher, where its rows read this host's real space ledger (its output names 12582912000 bytes
+  held by other runs). Inside the launcher, as the confined leg's first shard, alone: see legs.md.
+
+The three parts of the split suite, each alone, at the commit of the split:
+15_warp_1404_historical_analogy selftest (PARTIAL, 1 of 239 suites): 77 passed, 0 failed in 205.69s
+15_warp_1404_historical_analogy_audit_b selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 212.60s
+15_warp_1404_historical_analogy_audit_c selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 212.57s
+Before the split the one suite asserted 83 rows of its own; after it 51 + 16 + 16 (each line above includes the 26 rows of the shared preamble).
+
+Suite 157 at the final commit: suite-green.txt. Light gate checks at the final commit:
+exit 0 :: bash scripts/check_lint.sh :: lint: pass (1249 python, 40 shell, 2.57s)
+exit 0 :: bash scripts/check_generated.sh :: generated: pass
 exit 0 :: python3 scripts/check_personal_setup.py :: personal setup: 0 finding(s)
 exit 0 :: bash scripts/check_template_sync.sh :: template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
 exit 0 :: python3 scripts/check_space_boundary.py :: Space boundary: pass
 exit 0 :: bash scripts/check_docs.sh :: docs hygiene: pass
-exit 0 :: python3 scripts/secret_inventory.py :: secret inventory: 0 outstanding (0 exposed in reachable history), 331 dispositioned, 454140 advisory, 454471 s
+exit 0 :: python3 .veldo/validate.py all :: 
