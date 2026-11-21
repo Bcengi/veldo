@@ -48,7 +48,8 @@ def retain(name, result):
                    receipt_sha256=hashlib.sha256(data).hexdigest())
     (DESTINATION / (name + '.json.gz')).write_bytes(gzip.compress(
         json.dumps(archive, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
-    assert read_receipts(DESTINATION / (name + '.json.gz')) == result
+    assert json.dumps(read_receipts(DESTINATION / (name + '.json.gz')),
+                      sort_keys=True, separators=(',', ':')).encode() == data
     summary = dict(name=name, rows=result['rows'], metrics=result['metrics'],
                    qualification=result['qualification'], faults_ok=result['faults_ok'],
                    receipt_sha256=hashlib.sha256(data).hexdigest())
