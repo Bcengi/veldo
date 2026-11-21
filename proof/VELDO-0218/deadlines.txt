@@ -3,7 +3,7 @@ remote_run[pc2 7e5df75c6ad1 21:59:04]: bundle 4.0K (12 base commit(s) on the nod
 remote_run[pc2 7e5df75c6ad1 21:59:05]: run rr20261121215903-0cc0 started on dmitry-pc2 (Update deadline fixture to record fresh audit timings); node log <home>/remote-run/runs/rr20261121215903-0cc0/log
 [remote_run pc2 21:59:05] run rr20261121215903-0cc0 selected node pc2 (Linux-x86_64)
 [remote_run pc2 21:59:07] setup 2s; 7e5df75c6ad1f8e496046d801bdb63331339463f in <home>/remote-run/runs/rr20261121215903-0cc0/work; python 3.12.13, node 22.22.0
-[remote_run pc2 21:59:07] command: /usr/bin/python3 -B scripts/selftest.py --suite 112_veldo_0215_case_deadlines 
+[remote_run pc2 21:59:07] command: /usr/bin/python3 -B scripts/selftest.py --suite 112_veldo_0215_case_deadlines
 ==============================================================================
 PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
 ==============================================================================

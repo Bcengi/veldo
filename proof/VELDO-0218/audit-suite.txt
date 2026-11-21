@@ -3,7 +3,7 @@ remote_run[mac a10718ae49e3 21:49:35]: bundle 4.0K (3 base commit(s) on the node
 remote_run[mac a10718ae49e3 21:49:35]: run rr20261121214934-56c9 started on dmitry@100.88.156.52 (Document audit receipt contract and conservative detection probabiliti); node log <home>/remote-run/runs/rr20261121214934-56c9/log
 [remote_run mac 21:49:35] run rr20261121214934-56c9 selected node mac (Darwin-arm64)
 [remote_run mac 21:49:37] setup 2s; a10718ae49e3ba495a56ca08068055d1a791a173 in <home>/remote-run/runs/rr20261121214934-56c9/work; python 3.12.13, node 22.22.0
-[remote_run mac 21:49:37] command: python3 -B scripts/selftest.py --suite 159_veldo_0218_reuse_audit 
+[remote_run mac 21:49:37] command: python3 -B scripts/selftest.py --suite 159_veldo_0218_reuse_audit
 ==============================================================================
 PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
 ==============================================================================
