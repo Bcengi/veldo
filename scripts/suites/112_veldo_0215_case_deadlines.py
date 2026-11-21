@@ -402,7 +402,20 @@ def _v215_case_deadlines():
         finally:
             os.close(ack_r)
             os.close(ack_w)
-        row('watchdog/progress-not-total', all(kept) and progress.expired()
+        # Actual readiness, using a descriptor beyond select's fixed fd_set.
+        import fcntl
+        low, writer = os.pipe()
+        high = fcntl.fcntl(low, fcntl.F_DUPFD_CLOEXEC, 2048)
+        try:
+            os.write(writer, b'R')
+            try:
+                high_ready = observer.wait_readable([high], observer.WAIT_HANG_SECONDS) == {high}
+            except ValueError:
+                high_ready = False
+        finally:
+            for fd in (low, writer, high):
+                os.close(fd)
+        row('watchdog/progress-not-total', high_ready and all(kept) and progress.expired()
             and heavy.returncode == 0 and heavy_lines == [str(i).encode() for i in range(10)]
             and heavy_clock[0] == 10
             and long_stage['status'] == 'passed' and long_stage['elapsed'] > 21600

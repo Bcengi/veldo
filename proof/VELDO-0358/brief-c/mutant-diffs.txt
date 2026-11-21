@@ -222,3 +222,10 @@ CASE firstuse358-watchdog-hidden
 @@ -315 +315 @@
 -    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out or "Timeout (" in proc.stderr:
 +    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out:
+
+CASE wait358-descriptor-ceiling
+--- mutation_observer.py
++++ mutation_observer.py
+@@ -52 +52 @@
+-    return {fd for fd, events in poller.poll(seconds * 1000)}
++    return set(select.select(fds, [], [], seconds)[0])

@@ -18202,6 +18202,10 @@ def cases():
         ' or "Timeout (" in proc.stderr:',
         ':', ['first-use/watchdog-is-not-preexisting'])
     result[-1]['dir'] = 'scripts'
+    add(358, 'wait358-descriptor-ceiling', '112_veldo_0215_case_deadlines.py', 'mutation_observer.py',
+        'return {fd for fd, events in poller.poll(seconds * 1000)}',
+        'return set(select.select(fds, [], [], seconds)[0])', ['watchdog/progress-not-total'])
+    result[-1]['dir'] = 'scripts'
     # END VELDO-0358 BRIEF C
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
