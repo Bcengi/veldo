@@ -1,5 +1,8 @@
 """VELDO-0334: event-driven admission on real ledger, Runner and factory loop.
 
+Fix round 1 rows: a second writer on its own connection commits inside the freeing command's
+own store call (an event, never a delay); a refused retry Signal; a released hold's older mark.
+
 Fixture clock is stopped. Worker completion uses a pipe, never a sleep; every
 subprocess timeout is a 120-second hang detector. Eligibility and account policy
 are fixture seams; Signal, removal rules, dispatch and journal wakes are production.
@@ -33,7 +36,10 @@ def _v334_suite():
         'ac2/timer-still-waits', 'ac2/no-read-write', 'ac2/clear-after-judgment',
         'ac3/removal-wakes', 'ac3/release-wakes', 'ac3/reconcile-wakes',
         'ac3/pool-only', 'ac3/nonfreeing-no-mark', 'ac3/journal-marks',
-        'race/freeing-during-judgment', 'ac3/worker-wakes')}
+        'race/freeing-during-judgment', 'ac3/worker-wakes',
+        'race/release-resent', 'race/removal-resent', 'race/reconcile-resent',
+        'race/own-version-refused', 'race/resend-bounded',
+        'report/signal-refused-advised', 'act/signal-refused-waits', 'ac3/released-mark-no-wake')}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
@@ -176,7 +182,15 @@ def _v334_suite():
                 return {kind: self.conn.execute('SELECT count(*) FROM entities WHERE kind=?', (kind,)).fetchone()[0]
                         for kind in ('dispatch', 'dispatch_active', 'subscription_reservation')}
 
+            def second(self):
+                # Another writer of the same store on its own connection, as the forked space worker is.
+                self.second_conn = S.open_store(str(self.state / 'store.sqlite3'))
+                return SP.Ledger(S, self.second_conn, 'runner', self.sign, config=self.config,
+                    projects=[self.project], state_root=str(self.state), host='fixture', lifecycle=K.LIFECYCLE)
+
             def close(self):
+                if getattr(self, 'second_conn', None) is not None:
+                    self.second_conn.close()
                 self.conn.close()
 
         def run(row, body):
@@ -186,8 +200,8 @@ def _v334_suite():
                 check(row, False)
                 print('space334 detail', row, type(error).__name__, str(error))
 
-        def wired(name):
-            f = Fixture(name)
+        def wired(name, mode='act'):
+            f = Fixture(name, mode)
             f.reads, f.signals, f.logs = [], [], []
             def free(pool):
                 f.reads.append(pool['name'])
@@ -325,6 +339,152 @@ def _v334_suite():
             finally:
                 f.close()
         run('ac1/retry-removes', retry_removes)
+
+        # Fix round 1 (F1). A second writer commits between the freeing command's read of the waiters
+        # and its commit. The interleaving is an event, the first writer's own store call: no clock.
+        def interleaved(f, operation, between, body):
+            real, sent = S.execute, []
+            def execute(conn, command, *args, **kwargs):
+                if conn is f.conn and command['operation'] == operation:
+                    sent.append(command['command_id'])
+                    between(len(sent))
+                return real(conn, command, *args, **kwargs)
+            with patch.object(S, 'execute', execute):
+                return body(), sent
+
+        def counts():
+            return {key: 0 for key in SP.RECONCILE_COUNTS}
+
+        def resent(kind):
+            f = wired('resent-' + kind)
+            try:
+                removed, _path = item(f, 'output')
+                assert f.ledger.place_hold('running', {'host': 1}, {'host': 'default'}, scope=f.scope)['ok']
+                assert f.ledger.admit('running', 'admitted')['ok']
+                identity = waiting(f)
+                other = f.second()
+                def between(attempt):
+                    if attempt != 1:
+                        return
+                    if kind == 'release':
+                        # The waiter's version moves: another freeing write marks it.
+                        assert other.reconcile('console', [], [], counts())['ok']
+                    else:
+                        # A hold nobody had read is placed on the pool.
+                        assert other.place_hold('new', {'host': 5}, {'host': 'default'}, scope=f.scope)['ok']
+                if kind == 'removal':
+                    result, sent = interleaved(f, SP.OUTCOME, between,
+                                               lambda: f.ledger.outcome(removed, 'removed', {'freed': 890}))
+                    ended = f.ledger.item(removed)['state'] == 'removed' and f.ledger.hold('new')['freed']
+                elif kind == 'release':
+                    result, sent = interleaved(f, SP.RELEASE, between, lambda: f.ledger.release('running'))
+                    ended = f.ledger.hold('running')['state'] == 'released'
+                else:
+                    result, sent = interleaved(f, SP.RECONCILE, between,
+                                               lambda: f.ledger.reconcile('console', [], [], counts()))
+                    ended = f.ledger.hold('new')['freed']
+                if not result['ok']:
+                    print('space334 detail', kind, result)
+                check('race/' + kind + '-resent', result['ok'] and ended and len(sent) == 2
+                      and f.ledger.hold(identity)['freed'] and f.ledger.observations[-1].get('attempts') == 2
+                      and f.ledger.observations[-1]['outcome'] == 'accepted')
+            finally:
+                f.close()
+        for kind in ('release', 'removal', 'reconcile'):
+            run('race/' + kind + '-resent', lambda kind=kind: resent(kind))
+
+        def own_version():
+            f = wired('own-version')
+            try:
+                assert f.ledger.place_hold('running', {'host': 1}, {'host': 'default'}, scope=f.scope)['ok']
+                assert f.ledger.admit('running', 'admitted')['ok']
+                identity = waiting(f)
+                other = f.second()
+                def between(attempt):
+                    # The released hold itself moves (and so does the waiter it marks).
+                    if attempt == 1:
+                        assert other.release('running')['ok']
+                result, sent = interleaved(f, SP.RELEASE, between, lambda: f.ledger.release('running', used={'host': 7}))
+                check('race/own-version-refused', not result['ok'] and result['reason'] == 'stale_version'
+                      and len(sent) == 1 and f.ledger.hold('running').get('used') != {'host': 7}
+                      and f.ledger.hold(identity)['freed'])
+            finally:
+                f.close()
+        run('race/own-version-refused', own_version)
+
+        def bounded():
+            f = wired('bounded')
+            try:
+                assert f.ledger.place_hold('running', {'host': 1}, {'host': 'default'}, scope=f.scope)['ok']
+                assert f.ledger.admit('running', 'admitted')['ok']
+                waiting(f)
+                other = f.second()
+                limit = SP.FREEING_ATTEMPTS
+                def between(attempt):
+                    # A writer that wins every race, a few more times than the bound allows.
+                    if attempt <= limit + 3:
+                        assert other.reconcile('console', [], [], counts())['ok']
+                result, sent = interleaved(f, SP.RELEASE, between, lambda: f.ledger.release('running'))
+                check('race/resend-bounded', not result['ok'] and result['reason'] == 'stale_version'
+                      and len(sent) == limit and limit > 1 and f.ledger.hold('running')['state'] == 'admitted')
+                # Nothing was consumed by the refused attempts: the same release commits once the writer rests.
+                check('race/resend-bounded', f.ledger.release('running')['ok']
+                      and f.ledger.hold('running')['state'] == 'released')
+            finally:
+                f.close()
+        run('race/resend-bounded', bounded)
+
+        # Fix round 1 (F2). The one retry is refused by the ledger; the hold is judged all the same.
+        def signal_refused(mode, row):
+            f = wired('signal-refused-' + mode, mode)
+            try:
+                counted = f.ledger.signal
+                def refused(event, subject, **kwargs):
+                    if event == 'admission_requested':
+                        f.signals.append((event, subject))
+                        return {'ok': False, 'reason': 'space_not_permitted:space_signal', 'detail': 'fixture'}
+                    return counted(event, subject, **kwargs)
+                f.ledger.signal = refused
+                f.free['host'] = 110
+                report = pass_from(f, 'journal')
+                identity = next(iter(f.ledger.holds()))
+                hold = f.ledger.hold(identity)
+                again = pass_from(f, 'run_end')
+                asked = f.signals == [('admission_requested', {'pool': 'host'})] and hold['retry_asked']
+                if mode == 'report':
+                    check(row, asked and hold['state'] == 'advised' and hold['reason']['pool'] == 'host'
+                          and bool(report['offered']) and not report['waiting'] and not again['waiting']
+                          and len(f.started) == 1)
+                else:
+                    check(row, asked and hold['state'] == 'waiting' and hold['reason']['pool'] == 'host'
+                          and bool(report['waiting']) and bool(again['waiting']) and not f.started)
+            finally:
+                f.close()
+        run('report/signal-refused-advised', lambda: signal_refused('report', 'report/signal-refused-advised'))
+        run('act/signal-refused-waits', lambda: signal_refused('act', 'act/signal-refused-waits'))
+
+        # Fix round 1 (F3). A marked hold that is released carries its older mark; nobody waits, no wake.
+        def released_mark():
+            f = wired('released-mark')
+            try:
+                identity = waiting(f)
+                f.service.space_seen = f.service.watermark()
+                f.loop.wakes.clear()
+                assert f.ledger.reconcile('console', [], [], counts())['ok']
+                f.service.space_pass()
+                woken = [w for w in f.loop.wakes if w['source'] == 'space']
+                f.loop.wakes.clear()
+                assert f.ledger.release(identity)['ok']
+                (raw,) = f.conn.execute('SELECT transition FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+                carried = json.loads(raw)['space:hold:' + identity]['data']
+                f.service.space_pass()
+                check('ac3/released-mark-no-wake', len(woken) == 1 and carried['state'] == 'released'
+                      and carried['freed'] is True and not f.loop.wakes
+                      and f.service.space_seen == f.service.watermark()
+                      and not any(entry.get('operation') == 'space_pass' for entry in f.logs))
+            finally:
+                f.close()
+        run('ac3/released-mark-no-wake', released_mark)
 
         def no_freeing():
             f = wired('no-freeing')
