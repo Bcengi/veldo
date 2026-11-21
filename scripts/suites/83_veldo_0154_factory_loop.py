@@ -1080,8 +1080,10 @@ sys.exit(chosen['code'])
                   and waiting['timer'] == reset)
             again = offered(woke, U['L4'], 'build')
             check('loop/reset-timer-wake', 'at the reset the timer started a pass whose only source is the reset, and it '
-                  'offered the waiting unit on the account the reset freed [%s, %s]'
-                  % ((woke or {}).get('sources'), [(o['account'], o['attempt']) for o in again]),
+                  'offered the waiting unit on the account the reset freed [%s, %s; that pass: %s]'
+                  % ((woke or {}).get('sources'), [(o['account'], o['attempt']) for o in again],
+                     json.dumps({k: (woke or {}).get(k) for k in ('pass', 'at', 'refused', 'waiting', 'released', 'faults',
+                                                                  'provisioning', 'timer')}, default=str)[:1500]),
                   woke is not None and woke['sources'] == ['account_reset'] and woke['at'] >= reset and len(again) == 1
                   and again[0]['account'] == dig(first_run, 'contract', 'reservation', 'account') and again[0]['attempt'] == 2)
             check('loop/no-other-timer', 'with the unit waiting, no journal advance and no run ending, no pass started for '
