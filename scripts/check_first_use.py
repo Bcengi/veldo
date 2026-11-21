@@ -281,6 +281,27 @@ def _copy(src, dest, what):
     return dest
 
 
+# VELDO-0221: the channels the authority's leg runner hands a leg's shard dispatcher. The nested
+# dispatcher is that dispatcher, so in a leg it is handed them on; outside a leg there are none.
+SHARD_CHANNELS = ("VELDO_GATE_LEDGER_FD", "VELDO_GATE_SHARD_METRICS_FD")
+
+
+def shard_fds(environ):
+    """The descriptors of SHARD_CHANNELS this run inherited in a gate leg, to hand the nested run."""
+    if environ.get("VELDO_GATE_LEG") not in ("confined", "unconfined"):
+        return ()
+    found = []
+    for name in SHARD_CHANNELS:
+        value = environ.get(name, "")
+        if value.isdigit():
+            try:
+                os.fstat(int(value))
+            except OSError:
+                continue
+            found.append(int(value))
+    return tuple(found)
+
+
 def _child_env():
     """The environment a nested run gets. VELDO_SUITE_ORDER is dropped because an inherited
     diagnostic ordering would silently change what this measurement ran, and the unit-leg
@@ -339,7 +360,7 @@ def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
     try:
         proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
                               capture_output=True, text=True, env=_child_env(),
-                              timeout=budget, pass_fds=launcher_fds())
+                              timeout=budget, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))
     except subprocess.TimeoutExpired:
         raise CannotAnswer("the %s run did not finish inside its budget of %.0fs" % (label, budget))
     except OSError as e:

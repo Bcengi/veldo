@@ -2238,8 +2238,11 @@ def scratch_creation(space, environ):
         raise RuntimeError('unavailable_service:space_ledger: ' + str(error)) from error
 
 
-def launch(config_path, worktree, command, profile="agent", client=None, *, space=None):
+def launch(config_path, worktree, command, profile="agent", client=None, *, space=None, inherit=()):
     """Run confined, with scratch owned by the recorded run when its label is given.
+
+    `inherit` (VELDO-0221) names descriptors the gate profile's command keeps: the channels the
+    authority's leg runner hands a leg's shard dispatcher. No other profile takes any.
 
     A recorded launcher declares before mkdir and leaves removal to run finished.
     Without a space environment it removes its own scratch at its own end. Killed
@@ -2262,7 +2265,8 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
                 scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
-            code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
+            code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop,
+                                   inherit=inherit)
         except Interrupted:
             code = None
         except CredentialRecovery as error:
@@ -2296,7 +2300,15 @@ def launcher_write_problem(grants):
     return None
 
 
-def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None):
+def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None, inherit=()):
+    if inherit and profile != 'gate':
+        raise ValueError('only the gate profile inherits a descriptor')
+    for descriptor in inherit:
+        # A channel is a pipe or a socket pair the authority made, above the standard three; a file,
+        # a directory or a device named here would be a way around the domain's own grants.
+        mode = os.fstat(descriptor).st_mode
+        if descriptor < 3 or not (stat.S_ISFIFO(mode) or stat.S_ISSOCK(mode)):
+            raise ValueError('an inherited descriptor must be a pipe or a socket above the standard three')
     policy = policy_module()
     config_path, config = policy.configuration(config_path)
     authority = Path(__file__).resolve().parents[1]
@@ -2382,7 +2394,7 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
             except Exception as error:
                 print('agent sandbox: agent state check stopped: %r' % error, file=sys.stderr, flush=True)
         borrow.code = run_tree(worktree, command, env, grants, profile, protected, scratch, stop, roots,
-                               after=after)
+                               inherit=tuple(inherit), after=after)
         return borrow.code
 
 
@@ -2987,13 +2999,16 @@ def main():
     parser.add_argument('--client', help='the agent CLI whose files the run receives (a key of '
                         'clients in the configuration: claude, codex); none without it')
     parser.add_argument('--worktree', required=True)
+    parser.add_argument('--inherit', type=int, action='append', default=[], metavar='FD',
+                        help='a pipe or socket the gate profile\'s command keeps (the leg runner\'s '
+                        'channels to a shard dispatcher); repeatable')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     try:
         if not command:
             raise ValueError('an agent command is required after --')
-        return launch(args.config, args.worktree, command, args.profile, args.client)
+        return launch(args.config, args.worktree, command, args.profile, args.client, inherit=args.inherit)
     except CredentialRecovery as error:
         print(recovery_message(error), file=sys.stderr, flush=True)
         return RECOVERY_EXIT
