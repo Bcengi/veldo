@@ -3,7 +3,7 @@
  "spec_id": "VELDO-0206",
  "commit": "6de078204de81d3ad63e3a34d9624d9f7c0360f5",
  "tree": "32409b9a031a2bb85e93e366dcfa3985554d91e4",
- "producer": "Claude implementation agent (build 4d65609e to ad8df006, fix round 1 at 6de07820); not an independent reviewer",
+ "producer": "Claude implementation agent (build 4d65609e to ad8df006, fix round 1 at 6de07820, fix round 2 at 3adaae2e); not an independent reviewer",
  "produced_at": "2026-11-21T10:15:54.263718+00:00",
  "criteria": [
   {
@@ -18,12 +18,12 @@
     {
      "type": "integration",
      "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
-     "detail": "The real dispatcher over the fixture: every qualified suite runs in a process of its own with its prerequisite closure; state an earlier suite leaves cannot hide a failure (the review's counterexample: red in the first run, after the earlier suite changes, and under force fresh, nothing stored); a changed prerequisite input runs the dependent fresh; a fresh dependent executes its prerequisite in its own process; new inputs hit once observed."
+     "detail": "The real dispatcher over the fixture: every qualified suite runs in a process of its own with its prerequisite closure; state an earlier suite leaves cannot hide a failure (the review's counterexample: red in the first run, after the earlier suite changes, and under force fresh, nothing stored); a changed prerequisite input runs the dependent fresh; a fresh dependent executes its prerequisite in its own process; new inputs hit once observed. Files left outside the repository cannot reach a qualified suite (the fix-check P2): each isolated process has a home, temporary folder and run directory of its own, so the first, warm and force-fresh gates agree."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0206/teeth.json",
-     "detail": "Declared: suite206-key-drops-prerequisite-state turns suite-reuse/closure false. Also key-omits-input-content, stale-qualification-accepted, environment-not-in-key, root-not-in-key, unconfined-suite-reusable, dispatcher-skips-prerequisite, qualified-suite-runs-in-shared-namespace, prerequisite-of-shared-suite-isolated, candidate-qualifies-itself."
+     "detail": "Declared: suite206-key-drops-prerequisite-state turns suite-reuse/closure false. Also key-omits-input-content, stale-qualification-accepted, environment-not-in-key, root-not-in-key, unconfined-suite-reusable, dispatcher-skips-prerequisite, qualified-suite-runs-in-shared-namespace, prerequisite-of-shared-suite-isolated, candidate-qualifies-itself, isolated-suite-shares-home-and-temp."
     }
    ]
   },
