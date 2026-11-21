@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "619bd957165360f6267b40d7c90af11035118c1a",
+  "implementation_commit": "476cded5a139b4df3310a407d6b371f01ce5828a",
   "base": "6b322350",
   "date": "2026-11-21",
   "affected": {
@@ -37,6 +37,8 @@
     "failed": 0,
     "suites": 4,
     "load_workers": 0,
-    "host_reserved_idle": false
+    "host_reserved_idle": false,
+    "executed_at_commit": "ca522cf8",
+    "subject_note": "Production and suite bytes unchanged at the subsequent proof commits; the later harness edit affects only added load-worker cleanup."
   }
 }
