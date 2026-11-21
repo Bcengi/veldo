@@ -17251,7 +17251,7 @@ def cases():
     # worker clone is removed without the snapshot; its files are deleted without the comparison; the
     # folder is left under its marked name at that stop. AC4: the digest recorded at the measurement
     # is used. AC5: rule 6 looks beneath the item only; an item with no form gets the clone's row.
-    space347 = '157_veldo_0347_space_work.py'
+    space347 = '161_veldo_0347_space_work.py'
 
     def work347(name, module, old, new, rows, also=()):
         add(347, name, space347, module, old, new, rows, also)
@@ -17280,8 +17280,8 @@ def cases():
             "        bytes=_folder(ctx, identity, record, record['locator']['path'], own=True)),  # defect\n",
             ['ac3/commit-kept'])
     work347('space347-worker-clone-without-snapshot', 'control_space_keep.py',
-            "    worker = record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'\n",
-            "    worker = False  # defect: a worker clone's files are not saved\n",
+            "    worker = (record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'\n",
+            "    worker = (False  # defect: a worker clone's files are not saved\n",
             ['ac3/worker-snapshot'])
     work347('space347-delete-without-comparison', 'control_space_remove.py',
             "        before_file = _worker_comparison(ctx, record, kept, seen)\n",
@@ -17305,6 +17305,49 @@ def cases():
             "                            'events': list((self.lifecycle.get('forms') or {}).get(\n"
             "                                form or ('worker_clone' if kind == 'agent_repository' else None))  # defect\n",
             ['ac5/clone-row'])
+    # Fix round 1 (the independent review's F1 to F8), each a falsifier of its own row.
+    work347('space347-trunk-is-head', 'control_space_remove.py',
+            "    trunk = _declared_trunk(ctx, record, main)\n",
+            "    trunk = 'HEAD'  # defect: the main repository's HEAD is taken as the trunk\n",
+            ['ac4/declared-trunk'])
+    work347('space347-table-1-judged-by-form', 'control_space_signal.py',
+            "    if kind == 'agent_repository' and record.get('form') in CLONE_FORMS and _clone_row(record):\n",
+            "    if kind == 'agent_repository' and record.get('form') in CLONE_FORMS:  # defect: form alone\n",
+            ['ac3/table-1-keeps-its-handling'])
+    work347('space347-table-1-snapshot-by-form', 'control_space_keep.py',
+            "              and _clone_row(record))\n",
+            "              )  # defect: the form alone takes the snapshot\n",
+            ['ac3/table-1-keeps-its-handling'])
+    work347('space347-table-1-compared-by-form', 'control_space_remove.py',
+            "    if record.get('form') in SNAPSHOT_FORMS and _clone_row(record):\n",
+            "    if record.get('form') in SNAPSHOT_FORMS:  # defect: the form alone picks the comparison\n",
+            ['ac3/table-1-keeps-its-handling'],
+            also=[("        if private and record.get('form') in SNAPSHOT_FORMS and _clone_row(record):\n",
+                   "        if private and record.get('form') in SNAPSHOT_FORMS:  # defect\n")])
+    work347('space347-unlistable-opened-everywhere', 'control_space_signal.py',
+            "        if _sandbox_scratch(record):\n",
+            "        if record.get('kind') in HOLDS_UNLESS_CLEAN:  # defect: every scratch opens a shut folder\n",
+            ['ac2/unreadable'])
+    work347('space347-present-taken-for-reachable', 'control_space_probe.py',
+            "                if said.strip():\n"
+            "                    return no('no ref of the local remote %s reaches %s' % (name, commit))\n",
+            "                if False:  # defect: an object the remote holds counts, reached or not\n"
+            "                    pass\n",
+            ['ac2/unreachable-in-remote'])
+    add(347, 'space347-table-2-not-whole', '135_veldo_0298_space_kinds.py', 'control_space_kinds.py',
+        "CLONE = {'action': 'remove', 'after': ['worktree'], 'unique_work': 'decision_request'}\n",
+        "CLONE = {'action': 'remove', 'unique_work': 'decision_request'}  # defect: not after its worktrees\n",
+        ['ac1/whole-table-2'])
+    add(347, 'space347-batch-clone-never-removed', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
+        "        if record['form'] in SNAPSHOT_FORMS:\n            return None\n",
+        "        if record['form'] == 'batch_clone':\n"
+        "            return {'cases': [1]}  # defect: a batch clone is never removed, its clone left whole\n"
+        "        if record['form'] in SNAPSHOT_FORMS:\n            return None\n",
+        ['ac1/private-forms'])
+    add(347, 'space347-own-look-on-worktrees', '138_veldo_0300_space_remove.py', 'control_space_signal.py',
+        "OWN_REPOSITORY_KINDS = ('worktree', 'agent_repository')\n",
+        "OWN_REPOSITORY_KINDS = ('agent_repository',)  # defect: a worktree's own folder holds it\n",
+        ['work/commit-in-the-gap'])
 
     return result
 

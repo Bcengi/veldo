@@ -133,6 +133,7 @@ def _v300_space_remove_suite():
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
     }
     VELDO = ROOT / '.veldo'
 
@@ -201,7 +202,7 @@ def _v300_space_remove_suite():
             return None
     try:
         RM = load('v300_control_space_remove', PRODUCTION['control_space_remove.py'])
-        SIG = load('v300_control_space_signal', VELDO / 'control_space_signal.py')
+        SIG = load('v300_control_space_signal', PRODUCTION['control_space_signal.py'])
         SP = load('v300_control_space', VELDO / 'control_space.py')
         S = load('v300_control_store', VELDO / 'control_store.py')
         CFG = load('v300_control_space_config', VELDO / 'control_space_config.py')
@@ -394,7 +395,10 @@ def _v300_space_remove_suite():
             an item of another kind whose own folder is a repository; that ticket's suite proves both. The
             rows that use this probe prove what stands behind rules 1 to 6 (the remover's own last look and
             the keep step's save), so here the rules read the work tree as they did before that ticket:
-            case 3 without the ignored paths, and no own-folder look. The remover still reads the real one."""
+            case 3 without the ignored paths, and no own-folder look. The remover still reads the real one.
+            Only the rows that plant such work pass it, each by name (behind=True): work/ignored-files,
+            work/worktree-second-probe, work/repository-in-a-folder and work/adopted-build-output. Every
+            other row runs the whole chain on the real probe."""
             def unique_work(path, landed=(), shared=None, run=None, **declared):
                 facts = probe.unique_work(path, landed, shared, run, **declared)
                 if facts.get('read') is not True:
@@ -408,10 +412,11 @@ def _v300_space_remove_suite():
 
         BEHIND = before_0347(P)
 
-        def through(identity, keep=None):
-            """The removal through the whole rule chain, this remover as rule 7. The rules read with
-            BEHIND (before_0347): every row that uses this proves what the remover does behind them."""
-            return SIG.rules(L, BEHIND, identity, L.item(identity),
+        def through(identity, keep=None, behind=False):
+            """The removal through the whole rule chain, this remover as rule 7. With `behind`, the rules
+            read with BEHIND (before_0347): only a row that plants an ignored path that is work or an
+            own-folder repository to prove what the remover does behind the rules passes it, by name."""
+            return SIG.rules(L, BEHIND if behind else P, identity, L.item(identity),
                              tool=RM.tool(L, P, free=free, keep=keep, run=client, proc=str(PROC)),
                              owner_live=lambda owner: ENDED, run=client, proc=str(PROC),
                              borrow_root=str(temp / 'borrowed'))
@@ -758,7 +763,7 @@ def _v300_space_remove_suite():
         (path / 'build' / 'output.bin').write_bytes(b'o' * 100)
         check(ROW, 'git sees the worktree as clean: all three are ignored [%r]' % git(path, 'status', '--porcelain'),
               git(path, 'status', '--porcelain') == '')
-        answer, said = refused_by_tool(through(item, keeper([])))
+        answer, said = refused_by_tool(through(item, keeper([]), behind=True))
         check(ROW, 'rules 1 to 6 pass and the remover refuses, keep_failed [%s]' % (answer,),
               answer == (False, 'tool', 6, 'keep_failed'))
         check(ROW, 'it names the two files that are work and not the build output [%s]' % (said.get('unsaved'),),
@@ -769,12 +774,12 @@ def _v300_space_remove_suite():
               and (path / 'build' / 'output.bin').is_file() and listed(path) and not os.path.lexists(mark))
         stale = saved(path, 'notes-private.md', 'settings.local')
         answer, said = refused_by_tool(through(item, keeper([], snapshot=stale, then=lambda where: (
-            Path(where) / 'settings.local').write_text('changed after the snapshot\n'))))
+            Path(where) / 'settings.local').write_text('changed after the snapshot\n')), behind=True))
         check(ROW, 'a file changed after the snapshot refuses too, and the change is still there [%s %s]'
               % (answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
               and said.get('unsaved') == ['settings.local']
               and text_of(path / 'settings.local') == 'changed after the snapshot\n' and listed(path))
-        answer = through(item, keeper([], snapshot=saved(path, 'notes-private.md', 'settings.local')))
+        answer = through(item, keeper([], snapshot=saved(path, 'notes-private.md', 'settings.local')), behind=True)
         check(ROW, 'with a snapshot that holds both as they are, the worktree goes [%s]' % (answer.get('passed'),),
               answer.get('ok') is True and not path.exists() and not os.path.lexists(mark) and not listed(path))
 
@@ -816,7 +821,7 @@ def _v300_space_remove_suite():
         (PROC / '4343' / 'maps').write_text('')
         (PROC / '4343' / 'cwd').symlink_to(mark)
         (path / 'settings.local').write_text('ignored work in a worktree someone is in\n')
-        answer, said = refused_by_tool(through(item, keeper([], snapshot=saved(path, 'settings.local'))))
+        answer, said = refused_by_tool(through(item, keeper([], snapshot=saved(path, 'settings.local')), behind=True))
         shutil.rmtree(PROC / '4343')
         check(ROW, 'a process found in the worktree under its marked name: rules 1 to 6 pass, the remover defers in_use [%s]'
               % (answer,), answer == (False, 'tool', 6, 'in_use')
@@ -859,7 +864,7 @@ def _v300_space_remove_suite():
         item, path = scratch('is-a-repository')
         git(path, 'init', '-q', '-b', 'main')
         only = commit(path, 'only.txt', 'the only copy of this commit\n', 'held nowhere else')
-        answer, said = refused_by_tool(through(item))
+        answer, said = refused_by_tool(through(item, behind=True))
         check(ROW, 'a scratch folder that is a git repository: rules 1 to 6 pass and the remover refuses [%s %s]'
               % (answer, said.get('said')), answer == (False, 'tool', 6, 'remove_refused')
               and 'git repository' in str(said.get('said')))
@@ -1089,7 +1094,7 @@ def _v300_space_remove_suite():
         planted(path)
         check(ROW, 'the worktree is an item reconcile adopted, and git sees it as clean [%s]' % (made.get('reason'),),
               made.get('ok') is True and L.item(item)['adopted'] is True and git(path, 'status', '--porcelain') == '')
-        result = through(item, keeper([]))
+        result = through(item, keeper([]), behind=True)
         answer, said = refused_by_tool(result)
         check(ROW, 'adopted: the remover refuses keep_failed and names the file in the committed-ignore folder, '
               'not the declared build output [%s %s %s]' % (result.get('rule'), answer, said.get('unsaved')),
@@ -1097,12 +1102,12 @@ def _v300_space_remove_suite():
         check(ROW, 'the file is still there, byte for byte, in the worktree at its own path',
               text_of(path / 'build' / 'NOTES.md') == NOTES and listed(path)
               and not os.path.lexists(RM.marked(str(path), item)))
-        answer = through(item, keeper([], snapshot=saved(path, 'build/NOTES.md')))
+        answer = through(item, keeper([], snapshot=saved(path, 'build/NOTES.md')), behind=True)
         check(ROW, 'with a snapshot that holds the file the adopted worktree goes, its declared build output with it [%s]'
               % (answer.get('passed'),), answer.get('ok') is True and not path.exists() and not listed(path))
         item, path = worktree('recorded-tree')
         planted(path)
-        answer = through(item, keeper([]))
+        answer = through(item, keeper([]), behind=True)
         check(ROW, 'in a worktree recorded when it was made the same folder is build output (design 6.3) [%s]'
               % (answer.get('passed'),), L.item(item)['adopted'] is False and answer.get('ok') is True
               and not path.exists())
