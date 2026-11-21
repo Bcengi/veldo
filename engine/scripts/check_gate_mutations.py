@@ -866,7 +866,10 @@ class Workers:
                     record['undeclared_absent_sockets'] = undeclared
             except tracer.UndeclaredInput as undeclared_input:
                 stale = str(undeclared_input)
-                self.case_reuse.mark_stale(job['case'], stale)
+                try:
+                    self.case_reuse.mark_stale(job['case'], str(undeclared_input))
+                except (OSError, ValueError) as store_error:
+                    error = Refused('stale_store_error', str(store_error))
                 record['declaration_stale'] = stale
             except tracer.IncompleteTrace as incomplete:
                 # A thread ended inside a call (a case that SIGKILLs its own child): the confined
@@ -1428,6 +1431,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             signal.signal(signal.SIGALRM, previous)
         receipt['declaration_stale'] = list(getattr(reuse, 'stale', {}).values())
         receipt['stale_count'] = len(receipt['declaration_stale'])
+        receipt['gate_run'] = getattr(reuse, 'gate_run', None)
+        receipt['authority_stale_count'] = (len(reuse_module.M.stale_entries(reuse.store.directory))
+            if hasattr(reuse, 'stale') and reuse.store and reuse.store.secret is not None else 0)
         receipt['worker_outcomes'] = workers.outcomes
         failed_workers = [o for o in workers.outcomes if 'error' in o]
         receipt['invalid_results'].extend(failed_workers)

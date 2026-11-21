@@ -90,6 +90,8 @@ def mark_stale(store, *, identity, declaration, gate_run, reason):
     """Write a stale finding beside authenticated results, using the same private store boundary.
     The audit calls this same API for mismatches. No candidate or worker path is an output.
     """
+    if not all(isinstance(value, str) and value for value in (identity, declaration, gate_run, reason)):
+        raise ValueError('invalid stale finding')
     if store.secret is None:
         raise ValueError('authority stale store unavailable')
     directory = store.directory / 'stale'

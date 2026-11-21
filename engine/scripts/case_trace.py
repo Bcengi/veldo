@@ -26,7 +26,7 @@ PENDING_CALL = re.compile(r'^\d+ ([a-zA-Z0-9_]+|\?\?\?)\(')
 
 
 class UndeclaredInput(ValueError):
-    """A closed trace found an input outside the declaration: rerun the case fresh."""
+    """A trace found an input outside the declaration: rerun the case fresh."""
 
 
 class IncompleteTrace(ValueError):
