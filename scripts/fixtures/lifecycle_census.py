@@ -2,10 +2,11 @@
 
 The supervisor and collector are outside the measured scope. Only the TRACEME
 root and inherited ptrace children belong to it. No process-name exclusions.
-Receipts distinguish event capture from full host qualification. In particular,
-the current operation inventory is NOT an exhaustive Linux protocol inventory.
-Until that gap is closed, absence consumers must stand down even on a healthy
-capture. See proof/VELDO-0111/OPEN.md.
+Receipts distinguish event capture from full host qualification. Protocol
+discovery inside the four families is reconciled against the kernel's protocol
+registry and module aliases, and a measured socket whose kernel protocol was
+not discovered fails closed. Other retained gaps still make absence consumers
+stand down. See proof/VELDO-0111/OPEN.md.
 
 Linux UAPI: ptrace(2), PTRACE_GET_SYSCALL_INFO (Linux 5.3), x86_64 native ABI.
 No privilege changes, compiler, packages, daemon or snapshot fallback.
@@ -222,17 +223,101 @@ def unqualified_family(family):
                 reason=f'{name} ({family}) is outside the Unix, IPv4, IPv6 and netlink qualification universe')
 
 
+# Discovery bounds per family. IP protocol numbers above 255 exist (MPTCP 262,
+# SMC 256); the inet bound leaves headroom above every registered number.
+PROTOCOL_BOUNDS = {1: 16, 2: 1024, 10: 1024, 16: 64}
+# Kernel protocol registry names (/proc/net/protocols) inside the four families,
+# with the protocol number each one is created by. None: the whole family range.
+REGISTERED_PROTOCOLS = {
+    'TCP': (2, 6), 'UDP': (2, 17), 'UDP-Lite': (2, 136), 'RAW': (2, None), 'PING': (2, 1),
+    'MPTCP': (2, 262), 'INET_SMC': (2, 256), 'SCTP': (2, 132), 'L2TP/IP': (2, 115),
+    'TCPv6': (10, 6), 'UDPv6': (10, 17), 'UDPLITEv6': (10, 136), 'RAWv6': (10, None),
+    'PINGv6': (10, 58), 'MPTCPv6': (10, 262), 'INET6_SMC': (10, 256), 'SCTPv6': (10, 132),
+    'L2TP/IPv6': (10, 115), 'UNIX': (1, 0), 'UNIX-STREAM': (1, 0), 'NETLINK': (16, None)}
+# Registry names that belong to families outside the qualification universe.
+# Their sockets fail as family_not_qualified. Any other name is unexplained.
+OTHER_FAMILY_PROTOCOLS = frozenset((
+    'SMC', 'SMC6', 'KCM', 'AF_VSOCK', 'NFC_LLCP', 'NFC_RAW', 'PHONET', 'RXRPC', 'LLC', 'PPPOE',
+    'KEY', 'VCC', 'DDP', 'RFCOMM', 'QIPCRTR', 'ALG', 'BNEP', 'SCO', 'L2CAP', 'HCI', 'PACKET',
+    'XDP', 'MCTP', 'PPTP', 'PPPOL2TP', 'TIPC', 'RDS', 'CAN_RAW', 'CAN_BCM', 'CAN_ISOTP',
+    'CAN_J1939', 'X25', 'ROSE', 'NETROM', 'AX25', 'IEEE-802.15.4-RAW', 'IEEE-802.15.4-MAC',
+    'IUCV', 'HIDP', 'CMTP', 'ISO', 'ATMPVC', 'ATMSVC', 'PNPIPE'))
+
+
+def scanned_protocols(family):
+    if family in PROTOCOL_BOUNDS:
+        return range(PROTOCOL_BOUNDS[family])
+    return (0,)
+
+
+def reconcile_registry(protocols_text, aliases_text):
+    """Every registered or autoloadable protocol of the four families must lie
+    inside the discovered bounds. Unknown registry names fail closed."""
+    unexplained, registered, aliases = [], [], []
+    if protocols_text is None:
+        unexplained.append(dict(source='/proc/net/protocols', reason='unreadable'))
+    for line in (protocols_text or '').splitlines()[1:]:
+        if not line.split():
+            continue
+        name = line.split()[0]
+        if name in OTHER_FAMILY_PROTOCOLS:
+            continue
+        if name not in REGISTERED_PROTOCOLS:
+            unexplained.append(dict(source='/proc/net/protocols', name=name,
+                                    reason='registered protocol has no known family mapping'))
+            continue
+        family, protocol = REGISTERED_PROTOCOLS[name]
+        registered.append(dict(name=name, family=family, protocol=protocol))
+        if protocol is not None and protocol not in scanned_protocols(family):
+            unexplained.append(dict(source='/proc/net/protocols', name=name, family=family,
+                                    protocol=protocol, reason='outside the discovered bounds'))
+    if aliases_text is None:
+        unexplained.append(dict(source='modules.alias', reason='unreadable'))
+    for line in (aliases_text or '').splitlines():
+        words = line.split()
+        if len(words) < 2 or words[0] != 'alias' or not words[1].startswith('net-pf-'):
+            continue
+        parts = words[1].split('-')
+        try:
+            family = int(parts[2])
+            protocol = int(parts[4]) if len(parts) > 4 and parts[3] == 'proto' else None
+        except (IndexError, ValueError):
+            unexplained.append(dict(source='modules.alias', alias=words[1], reason='undecoded alias'))
+            continue
+        if family not in QUALIFICATION_FAMILIES:
+            continue
+        aliases.append(dict(alias=words[1], family=family, protocol=protocol))
+        if protocol is not None and protocol not in scanned_protocols(family):
+            unexplained.append(dict(source='modules.alias', alias=words[1], family=family,
+                                    protocol=protocol, reason='outside the discovered bounds'))
+    return dict(registered=registered, aliases=aliases, unexplained=unexplained)
+
+
+def read_text(path):
+    try:
+        return Path(path).read_text()
+    except OSError:
+        return None
+
+
+def kernel_triple(fd):
+    """The kernel's (family, type, protocol) for a descriptor, not syscall arguments."""
+    with socket.fromfd(fd, socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+        return [sock.getsockopt(socket.SOL_SOCKET, option)
+                for option in (socket.SO_DOMAIN, socket.SO_TYPE, socket.SO_PROTOCOL)]
+
+
 def host_inventory():
     """Bounded discovery with generated safe operations and exact kernel errors.
 
-    No Linux API enumerates every socket protocol, including autoloadable ones.
-    The bounds remain explicit and prevent a claim of host-wide exhaustion.
+    No Linux API enumerates socket protocols directly. The bounds are therefore
+    reconciled with the kernel's protocol registry and module aliases; the
+    inventory is exhaustive only when nothing registered lies outside them.
+    Measured sockets are also checked against the discovered kernel triples.
     """
     inventory, operations = [], []
     for family in range(46):
-        protocols = range(256) if family in (2, 10) else range(32) if family == 16 else (0,)
-        if family in (2, 10):
-            protocols = (*protocols, 262)  # MPTCP is outside the 8-bit IP range.
+        protocols = scanned_protocols(family)
         for kind in (1, 2, 3, 4, 5, 6, 10):
             for protocol in protocols:
                 ctypes.set_errno(0)
@@ -242,6 +327,10 @@ def host_inventory():
                 inventory.append(cell)
                 if fd < 0:
                     continue
+                try:
+                    cell['kernel'] = kernel_triple(fd)
+                except OSError as exc:
+                    cell['kernel_errno'] = exc.errno
                 if family not in QUALIFICATION_FAMILIES:
                     os.close(fd)
                     continue
@@ -272,13 +361,18 @@ def host_inventory():
                 finally:
                     if fd >= 0:
                         os.close(fd)
+    registry = reconcile_registry(read_text('/proc/net/protocols'),
+                                  read_text(f'/lib/modules/{platform.release()}/modules.alias'))
     return dict(family_limit=46, qualification_families=list(QUALIFICATION_FAMILIES),
                 not_qualified_families=[unqualified_family(f) for f in range(46)
                                         if f not in QUALIFICATION_FAMILIES],
                 types=[1, 2, 3, 4, 5, 6, 10],
-                protocol_scope={'inet': [0, 255, 262], 'netlink': [0, 31], 'other': [0]},
-                exhaustive=False, combinations=inventory, operation_probes=operations,
-                io_uring=io_uring_probe())
+                protocol_scope={'unix': [0, PROTOCOL_BOUNDS[1] - 1], 'inet': [0, PROTOCOL_BOUNDS[2] - 1],
+                                'netlink': [0, PROTOCOL_BOUNDS[16] - 1], 'other': [0]},
+                registry=registry, exhaustive=not registry['unexplained'] and all(
+                    'kernel' in c for c in inventory if c['available']
+                    and c['family'] in QUALIFICATION_FAMILIES),
+                combinations=inventory, operation_probes=operations, io_uring=io_uring_probe())
 
 
 def qualify(r, inventory):
@@ -289,7 +383,16 @@ def qualify(r, inventory):
     if not inventory['exhaustive']:
         gap('protocol_inventory_bounds', 'bounded protocol discovery does not fully qualify the four required families',
             dict(qualification_families=inventory['qualification_families'],
-                 protocol_scope=inventory['protocol_scope']))
+                 protocol_scope=inventory['protocol_scope'],
+                 unexplained=(inventory.get('registry') or {}).get('unexplained')))
+    # Refuse explicitly: a measured socket whose kernel triple was not discovered.
+    discovered = {tuple(c['kernel']) for c in inventory.get('combinations', []) if c.get('kernel')}
+    undiscovered = [dict(identity=o.get('identity'), kernel=o.get('kernel_triple'))
+                    for o in r['sockets'] if o.get('family') in QUALIFICATION_FAMILIES
+                    and tuple(o.get('kernel_triple') or ()) not in discovered]
+    if undiscovered:
+        gap('protocol_inventory_bounds', 'measured socket protocol is outside the discovered inventory',
+            dict(sockets=undiscovered))
     for probe in inventory['operation_probes']:
         if probe.get('gap'):
             gap(probe['gap'], 'available socket needs a qualified address or operation configuration', probe)
@@ -444,6 +547,7 @@ class Collector:
                 raise OSError(errno.EBADF, 'release observer not armed')
             dup = self.duplicate(pid, fd, obj['inode'])
             try:
+                obj['kernel_triple'] = kernel_triple(dup)
                 self.release.register(dup, 0)
             finally:
                 os.close(dup)
