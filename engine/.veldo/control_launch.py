@@ -2009,7 +2009,10 @@ def _await_gone(group, process, bound):
     poller, armed = select.poll(), set()
     for fd, kind in fds.items():
         if kind == 'cgroup.events':
-            os.read(fd, 4096)  # read once, so the next change is the one that wakes
+            try:
+                os.read(fd, 4096)  # read once, so the next change is the one that wakes
+            except OSError:  # removed since it was opened (ENODEV): the group is gone, nothing will come from it
+                continue
             poller.register(fd, select.POLLPRI | select.POLLERR)
         else:
             poller.register(fd, select.POLLIN)
