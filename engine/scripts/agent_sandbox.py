@@ -600,6 +600,48 @@ class Broker:
         opened.append(fd)
         return fd
 
+    # VELDO-0221: the variables a gate leg's dispatcher gives each shard its private roots in
+    # (scripts/run_scope.py SHARD_ROOTS), and the two arguments its shard interpreter is started with.
+    SHARD_ROOT_VARIABLES = (b'TMPDIR', b'HOME', b'XDG_CONFIG_HOME', b'XDG_DATA_HOME', b'XDG_CACHE_HOME',
+                            b'XDG_STATE_HOME', b'XDG_RUNTIME_DIR')
+    SHARD_ARGUMENTS = (b'--shard', b'--shard-root')
+
+    def _shard_roots(self, tid):
+        """The private roots of the gate-leg shard the caller runs in, or None when it runs in none
+        (VELDO-0221). A shard's own Landlock layer refuses it every write outside its roots, but a
+        bind is performed HERE, outside that layer, beneath this domain's roots, which hold every
+        shard's. So the caller's nearest ancestor that is a shard interpreter is found by its
+        arguments, and its roots are the ones the dispatcher started it with. A process that left
+        its shard's ancestry (reparented to the tree's init) is judged by the domain's roots alone,
+        as before. This only ever narrows: the domain's roots are still required."""
+        pid = tid
+        for _level in range(64):
+            if pid <= 1:
+                return None
+            try:
+                arguments = Path('/proc/%d/cmdline' % pid).read_bytes().split(b'\0')
+                if all(word in arguments for word in self.SHARD_ARGUMENTS):
+                    environment = dict(item.split(b'=', 1) for item in
+                                       Path('/proc/%d/environ' % pid).read_bytes().split(b'\0') if b'=' in item)
+                    roots = [environment[name] for name in self.SHARD_ROOT_VARIABLES
+                             if environment.get(name, b'').startswith(b'/')]
+                    return roots or None
+                fields = Path('/proc/%d/stat' % pid).read_bytes().rsplit(b')', 1)[1].split()
+                pid = int(fields[1])
+            except (OSError, ValueError, IndexError):
+                return None
+        return None
+
+    def _within_shard(self, tid, address):
+        """Refuse a bind whose path lies outside the caller's shard's roots; nothing for a caller in
+        no shard."""
+        roots = self._shard_roots(tid)
+        if roots is None:
+            return
+        path = address[2:].split(b'\0', 1)[0]
+        if not any(path.startswith(root.rstrip(b'/') + b'/') for root in roots):
+            raise OSError(errno.EACCES, 'Unix address outside the shard\'s roots')
+
     def _address(self, raw, opened, bind=False):
         """The address this process uses for the caller's raw sockaddr, or None for a bind it
         hands to the helper with the caller's own path (returned second)."""
@@ -659,6 +701,7 @@ class Broker:
             if not self._valid(notification):
                 return None
             if path is not None:
+                self._within_shard(tid, path)
                 self._bind_path(sock, path)
                 return 0
             call = libc.connect if number == 42 else libc.bind

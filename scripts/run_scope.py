@@ -732,6 +732,9 @@ SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "dead
 SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
                ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
 SHARD_PROBES = "p"
+# The two arguments a shard interpreter is started with. The gate launcher's broker knows a shard by
+# them (scripts/agent_sandbox.py Broker._shard_roots) and holds its binds to its roots.
+SHARD_ARGUMENTS = ("--shard", "--shard-root")
 MANAGER_SOCKETS = ("bus", "systemd/private")
 # What a shard does not inherit: the dispatcher's own channels and inputs, a diagnostic order, and
 # the other spellings of the temporary directory, which would outrank the shard's own TMPDIR.
@@ -1420,7 +1423,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         try:
             process = subprocess.Popen(
                 [python, str(root / "scripts" / "selftest.py"), "--suite", job["name"],
-                 "--shard", str(report_w), "--shard-root", str(directory)],
+                 SHARD_ARGUMENTS[0], str(report_w), SHARD_ARGUMENTS[1], str(directory)],
                 env=env, stdin=subprocess.DEVNULL, stdout=output_w, stderr=output_w,
                 pass_fds=(report_w, *passes), process_group=0)
         finally:
