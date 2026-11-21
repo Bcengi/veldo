@@ -582,12 +582,21 @@ for name in (observer,'pgrep'):
     # The root never returns on its own, so expiry does not depend on how fast this host is.
     hanging, _ = run('deadline', 'import signal\nwhile True: signal.pause()', deadline=.05)
     results.append(hanging['status'] == 'INCOMPLETE' and hanging['capture_status'] == 'INCOMPLETE')
-    for value in (None, {}, {'status': 'COMPLETE'}, dict(empty, status='COMPLETE'),
-                  dict(empty, status='COMPLETE', failures=[], qualification=None),
-                  dict(empty, status='COMPLETE', failures=[], qualification={
-                      'status':'COMPLETE', 'gaps':[], 'inventory':{'exhaustive':True}}, barriers=None)):
+    # Each value breaks one validity condition of a real receipt. The empty call
+    # may itself be a COMPLETE receipt now that the host qualifies, so forging
+    # status alone is no longer a broken receipt.
+    forged = dict(empty, status='COMPLETE', capture_status='COMPLETE')
+    for value in (None, {}, {'status': 'COMPLETE'},
+                  dict(forged, failures=[dict(capability='synthetic', reason='synthetic')]),
+                  dict(forged, qualification=None), dict(forged, lost_events=1),
+                  dict(forged, qualification=dict(empty['qualification'], gaps=['synthetic'])),
+                  dict(forged, qualification=dict(empty['qualification'], inventory=dict(
+                      empty['qualification']['inventory'], exhaustive=False))),
+                  dict(forged, barriers=None), dict(forged, state='collecting')):
         results.extend(all(row['status'] == 'STANDS DOWN' for row in census.consumer_rows(value,c))
                        for c in expected_names)
+    results.append(all(row['status'] == ('READY' if empty['status'] == 'COMPLETE' else 'STANDS DOWN')
+                       for c in expected_names for row in census.consumer_rows(empty, c)))
     emit('census/incomplete-is-not-empty', all(results))
 
     inventory, combinations = run('inventory', INVENTORY_PROBE, deadline=600)
@@ -641,10 +650,11 @@ for name in (observer,'pgrep'):
     for family, bound in ((1, 1024), (2, 4096), (10, 4096), (16, 1024)):
         for kind in (1, 2, 3, 4, 5, 6, 10):
             for protocol in (*range(bound), *extremes):
-                try:
-                    probe = socket.socket(family, kind | socket.SOCK_CLOEXEC, protocol)
-                except OSError:
+                # libc, not socket.socket: Python turns protocol -1 into the default.
+                fd = census.LIBC.socket(family, kind | socket.SOCK_CLOEXEC, protocol)
+                if fd < 0:
                     continue
+                probe = socket.socket(fileno=fd)
                 with probe:
                     accepted += 1
                     triple = tuple(probe.getsockopt(socket.SOL_SOCKET, o)
