@@ -122,6 +122,11 @@ def _v358_census():
             'scripts/fx/position_unknown_receiver.py': (
                 'def finish(worker):\n    worker.join(5)\n',
                 'R3', ('method.join argument 0 5', ':2 in finish')),
+            # A short bound under the hang constant's name is no hang bound (integration, lead).
+            'scripts/fx/rule_timeout_renamed.py': (
+                'import subprocess\nWAIT_HANG_SECONDS = 5\n\n\ndef child():\n'
+                '    return subprocess.run(["git", "status"], timeout=WAIT_HANG_SECONDS)\n',
+                'R3', ('keyword timeout WAIT_HANG_SECONDS', ':6 in child')),
         }
         allowed = {
             'scripts/fx/allowed.py': (
@@ -138,6 +143,10 @@ def _v358_census():
                 '    threading.Event().wait()\n'
                 '    slow_enough = elapsed >= 2\n'
                 '    return ", ".join(parts), os.path.join(a, b), d.get(k), d.get(k, 5), slow_enough\n'),
+            # The hang constant defined in the file that uses it, at the contract's value (integration, lead).
+            'scripts/fx/allowed_own_constant.py': (
+                'import subprocess\nWAIT_HANG_SECONDS = 600\n\n\ndef child():\n'
+                '    return subprocess.run(["git", "status"], timeout=WAIT_HANG_SECONDS)\n'),
         }
         candidate, authority = top / 'rules' / 'candidate', top / 'rules' / 'authority'
         write(candidate, {rel: source for rel, (source, _, _) in sites.items()})
@@ -145,7 +154,7 @@ def _v358_census():
         lists(authority, baseline=[])
         code, out = census(candidate, authority)
         missed = [rel for rel, (_, rule, words) in sites.items() if not named(out, 'wallclock_site', rule, rel, *words)]
-        spurious = [line for line in out.splitlines() if 'scripts/fx/allowed.py' in line]
+        spurious = [line for line in out.splitlines() if 'scripts/fx/allowed' in line]
         counted = len([line for line in out.splitlines() if line.startswith('wallclock: wallclock_site ')])
         each = code == 1 and not missed and not spurious and counted == len(sites)
 

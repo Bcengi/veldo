@@ -16503,6 +16503,13 @@ def cases():
             "    if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):\n",
             "    if False:  # defect: a node after a red load-proof leg is started\n",
             ['leg/graph-blocks'])
+    # Integration (lead): a hang constant defined in the file that uses it is the hang bound only at the
+    # contract's value. Accept it at any value.
+    add(358, 'wall358-hang-name-any-value', '158_veldo_0358_census.py', 'check_wallclock.py',
+        "        if named in CONTRACT_HANG and self.number(value) in (None, CONTRACT_HANG[named]):\n",
+        "        if named in CONTRACT_HANG:  # defect: any value under the name is a hang bound\n",
+        ['census/each-rule'])
+    result[-1]['dir'] = 'scripts'
     # BEGIN VELDO-0358 BRIEF C: verdict, progress, holders and timers.
     # Preserved VELDO-0214 measurement and provenance falsifiers.
     suite214 = '111_veldo_0214_first_use_budget.py'

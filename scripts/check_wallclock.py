@@ -67,6 +67,7 @@ KINDS = ('lower_bound', 'timer_fires', 'subject', 'supplied_clock')
 # sleep inside a string.
 CLASSES = ('S1', 'S2', 'S3', 'ST', 'P', 'D1', 'D2', 'T', 'A')
 WAIT_HANG, PROCESS_HANG = 'WAIT_HANG_SECONDS', 'PROCESS_HANG_SECONDS'
+CONTRACT_HANG = {WAIT_HANG: 600, PROCESS_HANG: 3600}  # the hang constants' values, contracts.md
 # The one module R1 to R3 do not apply to: the wait primitive and its stamp.
 SUPPORT = 'scripts/suites/support/waits.py'
 # The engine files of the design's section 4.8, read for R3 only: a numeric timeout there is a
@@ -355,6 +356,13 @@ class Python:
 
     def timeout(self, node, value, form, strict):
         if isinstance(value, ast.Constant) and value.value is None:
+            return
+        # A hang constant by its name, also when the file defines it (and the name then resolves to a
+        # number): it is the hang bound only at the contract's value (VELDO-0358 contracts.md).
+        named = (self.dotted(value) or '').split('.')[-1]
+        if named in CONTRACT_HANG and self.number(value) in (None, CONTRACT_HANG[named]):
+            if named == PROCESS_HANG and not self.heavy(node):
+                self.add('R3', node, form + ' %s on a child that is not heavy' % named, 'T')
             return
         number = self.number(value)
         if number is not None:
