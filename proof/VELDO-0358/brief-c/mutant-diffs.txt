@@ -215,3 +215,10 @@ CASE wait358-child-watchdog-total-time
 +++ mutation_observer.py
 @@ -37 +36,0 @@
 -        self.last = self.clock()
+
+CASE firstuse358-watchdog-hidden
+--- check_first_use.py
++++ check_first_use.py
+@@ -315 +315 @@
+-    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out or "Timeout (" in proc.stderr:
++    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out:

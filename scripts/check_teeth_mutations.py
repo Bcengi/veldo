@@ -18198,6 +18198,10 @@ def cases():
         'not all(ok is True for _, ok in honest) or noop != honest',
         'not all(bool(ok) for _, ok in honest) or False', ['verdict/kill-by-evidence'])
     result[-1]['dir'] = 'scripts'
+    add(358, 'firstuse358-watchdog-hidden', '111_veldo_0214_first_use_budget.py', 'check_first_use.py',
+        ' or "Timeout (" in proc.stderr:',
+        ':', ['first-use/watchdog-is-not-preexisting'])
+    result[-1]['dir'] = 'scripts'
     # END VELDO-0358 BRIEF C
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads

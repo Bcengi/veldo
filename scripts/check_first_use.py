@@ -333,7 +333,7 @@ def _run_suite(tree, label):
     except OSError as e:
         raise CannotAnswer("could not run the %s suite: %s" % (label, e))
     out = proc.stdout + proc.stderr
-    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out:
+    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out or "Timeout (" in proc.stderr:
         raise CannotAnswer("the %s run has hung or unreached rows: %s" % (label, out[-2000:]))
     names = [ln.split(FAIL_MARK, 1)[1].strip() for ln in out.splitlines() if FAIL_MARK in ln]
     summary = [ln for ln in out.splitlines() if ln.startswith(SUMMARY_PREFIX) and "passed," in ln]
