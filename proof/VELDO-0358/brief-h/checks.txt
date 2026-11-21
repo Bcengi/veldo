@@ -1,4 +1,4 @@
-tree 09a960f6
+tree 60bc58dd (with the proof files of this commit in the working tree)
 $ python3 scripts/check_wallclock.py
 wallclock: scope: no opened-files record: every file under scripts/ and proof/; 699 file(s) read, 417 with a site
 wallclock: sites: 2925 (R1 279, R2 1396, R3 1202, R4 48); by class: A 48, D1 1077, D2 87, P 232, S1 30, S2 94, S3 11, ST 144, T 1202; excepted by the authority: 36
@@ -12,3 +12,9 @@ $ (cd engine/ui && npm run typecheck)
 > vue-tsc --noEmit -p tsconfig.json
 
 exit status 0
+$ every registered case of finding 131 and of brief H materializes (its text is still in its subject)
+27 of 27 cases materialize
+$ python3 scripts/selftest.py --suite 120_veldo_0131_factory_ui (and 121, 124)
+  120_veldo_0131_factory_ui                       16 passed   58.02s
+  121_veldo_0131_factory_screens_narrow            5 passed   91.78s
+  124_veldo_0131_factory_reads_commands           10 passed   51.47s

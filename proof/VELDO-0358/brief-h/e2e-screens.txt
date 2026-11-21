@@ -2,7 +2,7 @@ start 2026-11-21T16:35:20Z load 27.15 56.85 66.19 tree 09a960f6
 
 Running 1 test using 1 worker
 
-  ✓  1 e2e/screens.spec.ts:38:1 › section 7 screenshots from the production build, seeded demonstration data (5.3s)
+  ok  1 e2e/screens.spec.ts:38:1 > section 7 screenshots from the production build, seeded demonstration data (5.3s)
 
   1 passed (8.7s)
 exit status 0

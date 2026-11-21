@@ -1,0 +1,59 @@
+start 2026-11-21T20:02:04Z load 30.25 34.30 35.91 tree 60bc58dd
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 858793, "slots": 4, "spinners": [858761, 858764, 858765, 858766, 858767, 858768, 858773, 858775, 858778, 858782, 858785, 858789], "writers": [858792]}
+120_veldo_0131_factory_ui run 1: green 120_veldo_0131_factory_ui                       16 passed  211.28s
+120_veldo_0131_factory_ui run 2: green 120_veldo_0131_factory_ui                       16 passed  213.72s
+120_veldo_0131_factory_ui run 3: green 120_veldo_0131_factory_ui                       16 passed  211.40s
+120_veldo_0131_factory_ui run 4: green 120_veldo_0131_factory_ui                       16 passed  212.38s
+120_veldo_0131_factory_ui run 5: green 120_veldo_0131_factory_ui                       16 passed  179.07s
+120_veldo_0131_factory_ui run 6: green 120_veldo_0131_factory_ui                       16 passed  179.17s
+120_veldo_0131_factory_ui run 7: green 120_veldo_0131_factory_ui                       16 passed  178.37s
+120_veldo_0131_factory_ui run 8: green 120_veldo_0131_factory_ui                       16 passed  178.63s
+120_veldo_0131_factory_ui run 9: green 120_veldo_0131_factory_ui                       16 passed  190.54s
+120_veldo_0131_factory_ui run 10: green 120_veldo_0131_factory_ui                       16 passed  191.02s
+120_veldo_0131_factory_ui run 11: green 120_veldo_0131_factory_ui                       16 passed  193.33s
+120_veldo_0131_factory_ui run 12: green 120_veldo_0131_factory_ui                       16 passed  188.99s
+120_veldo_0131_factory_ui run 13: green 120_veldo_0131_factory_ui                       16 passed  195.00s
+120_veldo_0131_factory_ui run 14: green 120_veldo_0131_factory_ui                       16 passed  194.22s
+120_veldo_0131_factory_ui run 15: green 120_veldo_0131_factory_ui                       16 passed  194.49s
+120_veldo_0131_factory_ui run 16: green 120_veldo_0131_factory_ui                       16 passed  191.54s
+120_veldo_0131_factory_ui run 17: green 120_veldo_0131_factory_ui                       16 passed  179.56s
+120_veldo_0131_factory_ui run 18: green 120_veldo_0131_factory_ui                       16 passed  176.87s
+120_veldo_0131_factory_ui run 19: green 120_veldo_0131_factory_ui                       16 passed  179.92s
+120_veldo_0131_factory_ui run 20: green 120_veldo_0131_factory_ui                       16 passed  175.74s
+120_veldo_0131_factory_ui run 21: green 120_veldo_0131_factory_ui                       16 passed  187.33s
+120_veldo_0131_factory_ui run 22: green 120_veldo_0131_factory_ui                       16 passed  186.90s
+120_veldo_0131_factory_ui run 23: green 120_veldo_0131_factory_ui                       16 passed  185.28s
+120_veldo_0131_factory_ui run 24: green 120_veldo_0131_factory_ui                       16 passed  184.35s
+120_veldo_0131_factory_ui run 25: green 120_veldo_0131_factory_ui                       16 passed  177.76s
+120_veldo_0131_factory_ui run 26: green 120_veldo_0131_factory_ui                       16 passed  175.81s
+120_veldo_0131_factory_ui run 27: green 120_veldo_0131_factory_ui                       16 passed  174.99s
+120_veldo_0131_factory_ui run 28: green 120_veldo_0131_factory_ui                       16 passed  173.80s
+120_veldo_0131_factory_ui run 29: green 120_veldo_0131_factory_ui                       16 passed  190.02s
+120_veldo_0131_factory_ui run 30: green 120_veldo_0131_factory_ui                       16 passed  187.99s
+120_veldo_0131_factory_ui run 31: green 120_veldo_0131_factory_ui                       16 passed  188.92s
+120_veldo_0131_factory_ui run 32: green 120_veldo_0131_factory_ui                       16 passed  188.23s
+120_veldo_0131_factory_ui run 33: green 120_veldo_0131_factory_ui                       16 passed  188.37s
+120_veldo_0131_factory_ui run 34: green 120_veldo_0131_factory_ui                       16 passed  187.47s
+120_veldo_0131_factory_ui run 35: green 120_veldo_0131_factory_ui                       16 passed  189.88s
+120_veldo_0131_factory_ui run 36: green 120_veldo_0131_factory_ui                       16 passed  186.46s
+120_veldo_0131_factory_ui run 37: green 120_veldo_0131_factory_ui                       16 passed  193.38s
+120_veldo_0131_factory_ui run 38: green 120_veldo_0131_factory_ui                       16 passed  194.79s
+120_veldo_0131_factory_ui run 39: green 120_veldo_0131_factory_ui                       16 passed  190.88s
+120_veldo_0131_factory_ui run 40: green 120_veldo_0131_factory_ui                       16 passed  188.60s
+120_veldo_0131_factory_ui run 41: green 120_veldo_0131_factory_ui                       16 passed  190.30s
+120_veldo_0131_factory_ui run 42: green 120_veldo_0131_factory_ui                       16 passed  192.16s
+120_veldo_0131_factory_ui run 43: green 120_veldo_0131_factory_ui                       16 passed  188.88s
+120_veldo_0131_factory_ui run 44: green 120_veldo_0131_factory_ui                       16 passed  186.43s
+120_veldo_0131_factory_ui run 45: green 120_veldo_0131_factory_ui                       16 passed  196.40s
+120_veldo_0131_factory_ui run 46: green 120_veldo_0131_factory_ui                       16 passed  195.22s
+120_veldo_0131_factory_ui run 47: green 120_veldo_0131_factory_ui                       16 passed  195.09s
+120_veldo_0131_factory_ui run 48: green 120_veldo_0131_factory_ui                       16 passed  194.78s
+120_veldo_0131_factory_ui run 49: green 120_veldo_0131_factory_ui                       16 passed  149.06s
+120_veldo_0131_factory_ui run 50: green 120_veldo_0131_factory_ui                       16 passed  149.15s
+TOTAL 120_veldo_0131_factory_ui: 50 green, 0 red of 50
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000428875, "slowdown": 5.174, "waited_ns": 4175496624}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 593.817, "pid": 858761}, {"alive": true, "cpu": 16, "cpu_seconds": 593.811, "pid": 858764}, {"alive": true, "cpu": 16, "cpu_seconds": 593.804, "pid": 858765}, {"alive": true, "cpu": 17, "cpu_seconds": 528.676, "pid": 858766}, {"alive": true, "cpu": 17, "cpu_seconds": 528.678, "pid": 858767}, {"alive": true, "cpu": 17, "cpu_seconds": 528.674, "pid": 858768}, {"alive": true, "cpu": 18, "cpu_seconds": 490.772, "pid": 858773}, {"alive": true, "cpu": 18, "cpu_seconds": 490.767, "pid": 858775}, {"alive": true, "cpu": 18, "cpu_seconds": 490.764, "pid": 858778}, {"alive": true, "cpu": 19, "cpu_seconds": 488.78, "pid": 858782}, {"alive": true, "cpu": 19, "cpu_seconds": 488.774, "pid": 858785}, {"alive": true, "cpu": 19, "cpu_seconds": 488.769, "pid": 858789}], "spinners_per_cpu": 3, "writers": [{"alive": true, "bytes": 750545534976, "cpu_seconds": 227.177, "files": 2795, "pid": 858792}]}
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 6306.1s (least 488.769s)
+load: 1 writers: 1 alive to the end, bytes written [750545534976]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000428875, "slowdown": 5.174, "waited_ns": 4175496624} (data, no verdict)
+exit status 0
+end 2026-11-21T20:42:29Z load 31.15 35.63 37.97 tree 60bc58dd
