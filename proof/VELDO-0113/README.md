@@ -25,7 +25,8 @@ before invoking the observer. Their identities are causal birth slots, not
 executable-name exemptions. Each lookup's exact argv and root parent are fixed in
 advance. A fixture-controlled wrapper acknowledges its PID and parent, then execs
 the real Git binary in the same process. Those acknowledgements join one-to-one
-to census birth identities; missing, extra, duplicate or mismatched births cannot
+to census birth identities using their observed birth-to-exit intervals, including
+PID reuse; missing, extra, duplicate or mismatched births cannot
 be waived by a process name. Every service event in the measured scope is
 forbidden. The endpoint fixture is already dead and outside that scope.
 
@@ -81,6 +82,10 @@ size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
 and verifies its original SHA-256. No home path is rewritten inside a receipt;
 the driver refuses to retain one. Human-readable diagnostic output replaces any
 user home prefix with `<user-home>`.
+
+The consumer coordinates at most four independent observer subprocesses at once.
+Each case has private arguments and launch acknowledgements, and the endpoint
+state stays fixed until all cases finish.
 
 All new synchronization uses pipes, waits or terminal process observations. New
 deadlines are 1200-second hang detectors; the consumer enlarges the dependency's
