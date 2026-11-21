@@ -2,9 +2,12 @@
 
 One file per reviewed batch, written by an independent reviewer under the repository's L2 rule, never
 by the builder or the proposer. A declaration in scripts/mutation_case_inputs.json is qualified only
-when its `review` field names a record here whose entry for that case binds the declaration's digest
-and its proposal's trace digests (case_reuse.review_matches), and every mechanical condition of AC2
-holds. The reviewed flag lands in scripts/mutation_case_inputs.json, a protected path, so each batch
+when its `review` field names a record here (a record under any other path grants nothing), its
+`review_sha256` field equals the sha256 of that record's exact bytes, the record's entry for that case
+binds the declaration's digest and its proposal's trace digests (case_reuse.review_matches), and every
+mechanical condition of AC2 holds. The owner sets `review`, `review_sha256` and `reviewed: true`
+together, after the record is written; changing a record afterwards un-qualifies every declaration
+that binds it until the owner re-binds it. The reviewed flag lands in scripts/mutation_case_inputs.json, a protected path, so each batch
 also carries the owner's commit-bound approval. The records themselves are a protected path too
 (`proof/VELDO-0217/reviews/*` in .veldo/policy.yaml), so writing or changing one needs the same
 approval.
