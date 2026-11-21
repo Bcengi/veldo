@@ -1265,12 +1265,12 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         if state_root is not None:
             config['state_root'] = os.path.abspath(str(state_root))
         _write(config_path, _json(config), 0o600)
-        if CC.instance_name():
+        if C.instance_name():
             # VELDO-0221: the installed engine runs under the user manager's environment, so the
             # instance name this installer was configured with goes beside its configuration, where
-            # control_client.instance_name reads it. No production installation has one.
-            _write(os.path.join(config_dir, CC.INSTANCE_FILE),
-                   _json({'schema': CC.INSTANCE_SCHEMA, 'prefix': CC.instance_name()}), 0o600)
+            # control_containment.instance_name reads it. No production installation has one.
+            _write(os.path.join(config_dir, C.INSTANCE_FILE),
+                   _json({'schema': C.INSTANCE_SCHEMA, 'prefix': C.instance_name()}), 0o600)
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
         created.append(unit_path)
