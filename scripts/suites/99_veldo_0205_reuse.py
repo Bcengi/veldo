@@ -358,6 +358,7 @@ def _v205_reuse():
                and all(d['executed'] == 1 and d['reused'] == 0 for d in warm['drivers'].values())
                and all(r['key'] and r['source'] == 'fresh' and r['audited'] for r in warm['case_receipts']))
         # Corrupt one entry. That case executes again and its peer is audited.
+        stage_keys = list(captured[-1].keys.values())
         broken_key = captured[-1].keys[cases[0]['identity']]
         (stage_cache / (broken_key + '.json')).write_bytes(b'corrupt')
         mixed = run()
@@ -410,9 +411,10 @@ def _v205_reuse():
             mutant = types.ModuleType('controlled_coordinator_' + label)
             mutant.__file__ = str(ROOT / 'scripts/check_gate_mutations.py')
             exec(compile(source.replace(old, new), mutant.__file__, 'exec'), mutant.__dict__)
-            # Remove the corrupt record and repopulate it through the production path.
-            (stage_cache / (broken_key + '.json')).unlink(missing_ok=True)
-            (stage_cache / (broken_key + '.json.conflict')).unlink(missing_ok=True)
+            # Reset this fixture's corrupt and audit-revoked records, then repopulate normally.
+            for key in stage_keys:
+                (stage_cache / (key + '.json')).unlink(missing_ok=True)
+                (stage_cache / (key + '.json.conflict')).unlink(missing_ok=True)
             run()
             original_gate = gate
             gate = mutant
