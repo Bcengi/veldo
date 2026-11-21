@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0124",
-  "commit": "619bd957165360f6267b40d7c90af11035118c1a",
+  "commit": "476cded5a139b4df3310a407d6b371f01ce5828a",
   "producer": "Codex implementation agent",
   "produced_at": "2026-11-21",
   "veldo_version": "3.10.1",
@@ -278,7 +278,7 @@
     "needs_review": "scripts/check_space_boundary.py: the line's VELDO-0304 check refused Run.release, which removes the run's per-dispatch TMPDIR with shutil.rmtree. The entry REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')] was added by the bring-up, not by a design 6.10 review. The Mac worker host has no space ledger; whether its folders should be declared to one is undecided."
   },
   "port_2026_11_21": {
-    "commit": "619bd957165360f6267b40d7c90af11035118c1a",
+    "commit": "476cded5a139b4df3310a407d6b371f01ce5828a",
     "base": "6b322350",
     "decisions": [
       "Exit events replace heartbeat polling; profile v2 needs new qualification.",
