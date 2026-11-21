@@ -179,3 +179,20 @@ running with the owner's authority, beyond the shared locations AC3 names.
 The integration stage's nested run uses the same dispatcher, so its legs shard the same way; its
 budget input from VELDO-0214 becomes the 1800-second floor because the measured unit leg time falls
 far below 900 seconds.
+
+## Build notes (2026-11-21)
+
+Recorded by the build, for the owner and the reviewer. The evidence and the reasons are in
+proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
+
+- AC3's unconfined check attributes what it finds: an entry at the top of the system temporary
+  directory that nothing ties to a shard is printed and not charged, because other sessions and
+  this gate's own launchers make entries there throughout a leg.
+- The instance name extends the engine's fixed unit prefix instead of preceding it, and no
+  unconfined suite of this repository is given one yet: suites 66, 85 and 117 fail with one set.
+- Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED).
+- The one measured confined leg took 678.6 seconds, over AC4's 600: suite
+  15_warp_1404_historical_analogy alone takes 634 seconds in an ordered run.
+- Two paths outside the footprint were edited because a gate check requires it:
+  scripts/check_space_boundary.py (two table entries) and proof/WARP-0716/crossing-state.md
+  (regenerated).

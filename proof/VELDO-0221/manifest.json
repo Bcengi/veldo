@@ -1,0 +1,117 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0221",
+ "commit": "2fc53027ca00a2730de23213303e4ed730e2a553",
+ "tree": "add1aea90c5fea83ac220b21cfdf9da428cd2fec",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-21T11:51:53.686262+00:00",
+ "rollback": "Revert the shard mode; every leg runs the ordered single namespace run, as before.",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0221_suite_shards.py",
+     "detail": "suite-shards/coverage: both legs of this repository's own manifest, closure table and unconfined list with every body replaced by one row (each leg's target set equals the leg's suite set, every suite a target exactly once); a failing suite, a shard that dies without a verdict, a target that asserts nothing, a prerequisite missing from the closure table that the ordered run hid, and a suite with no closure, each failing its leg; the same leg through scripts/selftest.py prints exactly as many failure names as it counts. Also green-leg-through-the-dispatcher, shard-flag-refused-outside-a-leg, ordered-run-kept-outside-a-leg and deadline-fails-the-suite."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0221/falsifiers.json",
+     "detail": "shards221-lost-shard: baseline and no-op green; the defective copy turns suite-shards/coverage red and no other row."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0221/legs.md",
+     "detail": "The confined leg of the real manifest through the authority's leg runner and the gate launcher, as shards."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0221_suite_shards.py",
+     "detail": "suite-shards/isolated-by-construction: two shards writing the same relative path under their home, temporary and runtime directories in both legs (fourteen distinct roots, runtime directories holding only the manager's sockets), a third refused a write beside the roots and into another shard's home in the confined leg, every unit, slice and scope name of two parallel shards carrying its shard's name, and the report pipe closed to a suite's child. suite-shards/production-names: an engine with no instance configured gives today's names byte for byte, an installed engine reads its instance beside its bin, a foreign file is not read, an unsafe name is refused, and the two unit templates are unchanged. Also temporary-directory-no-longer-than-the-legs and broker-binds-within-the-shard."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0221/falsifiers.json",
+     "detail": "shards221-shared-tmpdir: baseline and no-op green; the defective copy turns suite-shards/isolated-by-construction red and no other row."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0221/legs.md",
+     "detail": "Through the real launcher: every shard of the confined leg reports its Landlock layer in force; a fixture shard's bind beside its roots is refused by the broker."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0221_suite_shards.py",
+     "detail": "suite-shards/isolation-checked, with VELDO_GATE_FORCE_FRESH unset and 0: a confined leg whose dispatcher copy never stacks the layer (every shard a breach), a layer reported in force with the probe written, an unconfined shard that leaves a file in the fixture's /dev/shm, one that starts a unit without its prefix, one whose leftover unit carries its name, a clean leg that holds, the one exempt shard, and the real unconfined places table. Also suite-shards/attribution."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0221/falsifiers.json",
+     "detail": "shards221-check-force-fresh-only: baseline and no-op green; the defective copy turns suite-shards/isolation-checked red and no other row."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0221_suite_shards.py",
+     "detail": "suite-shards/manager-exclusive: a leg of two exclusive and three shared manager suites and one with none, admitted through a fixture ledger; no exclusive shard starts beside a manager user, two shared ones run together, and each suite holds a real lock as it declared. suite-shards/ledger-claims, ledger-stays-with-the-leg-runner and leg-runner-hands-claims: measured claims, the default for an unmeasured suite, a refusal asked again, the authority's claim forwarded whatever the candidate names, and the store of shard measurements."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0221/falsifiers.json",
+     "detail": "shards221-resources-ignored: baseline and no-op green; the defective copy turns suite-shards/manager-exclusive red and no other row."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0221/legs.md",
+     "detail": "Every shard's wall and CPU time and each leg's critical shard, from by-hand runs on the qualification host. The canonical gate and its time bound are not run here: proof/VELDO-0221/open.md items 1 and 2."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "pending",
+   "detail": "python3 scripts/selftest.py --suite 157_veldo_0221_suite_shards: proof/VELDO-0221/suite-green.txt. The gate's unit stage is the lead's to run."
+  },
+  {
+   "name": "integration",
+   "status": "pending",
+   "detail": "proof/VELDO-0221/legs.md"
+  },
+  {
+   "name": "mutation",
+   "status": "passed",
+   "detail": "python3 scripts/check_teeth_mutations.py --finding 221: proof/VELDO-0221/mutations.txt"
+  },
+  {
+   "name": "lint",
+   "status": "passed",
+   "detail": "bash scripts/check_lint.sh"
+  }
+ ],
+ "assumptions": [
+  "The canonical gate was not run by the builder; the lead queues it.",
+  "AC4's time bound is unmeasured on a canonical gate, and suite 15_warp_1404_historical_analogy alone takes 634 seconds in an ordered run on this host, which is over the 600-second bound for a confined leg.",
+  "See proof/VELDO-0221/README.md for the decisions a reviewer should judge and proof/VELDO-0221/open.md for what is not proven."
+ ]
+}

@@ -1,0 +1,19 @@
+selftest shard 01 85_veldo_0171_setup_api: closure 85_veldo_0171_setup_api; roots /tmp/slt42c891/01*; 18 passed, 0 failed; wall 19.0s cpu 14.3s peak 262 MiB
+selftest shard 00 66_veldo_0047_authority: closure 66_veldo_0047_authority; roots /tmp/slt42c891/00*; 30 passed, 0 failed; wall 19.9s cpu 12.8s peak 316 MiB
+selftest shard 02 71_veldo_0130_api: closure 71_veldo_0130_api; roots /tmp/slt42c891/02*; 45 passed, 0 failed; wall 39.1s cpu 26.6s peak 262 MiB
+selftest shard 04 74_veldo_0140_standing_delegation: closure 74_veldo_0140_standing_delegation; roots /tmp/slt42c891/04*; 9 passed, 0 failed; wall 15.3s cpu 9.6s peak 284 MiB
+selftest shard 03 86_veldo_0189_engine_upgrade: closure 86_veldo_0189_engine_upgrade; roots /tmp/slt42c891/03*; 34 passed, 0 failed; wall 92.1s cpu 78.3s peak 303 MiB
+  SELFTEST FAIL: suite-shard 71_veldo_0130_api isolation_breach
+     isolation_breach: unit v4077c7c7aaa.slice appeared during the leg and was left behind, and carries no shard's prefix
+  SELFTEST FAIL: suite-shard 71_veldo_0130_api isolation_breach
+     isolation_breach: unit v4077c7c7aab.slice appeared during the leg and was left behind, and carries no shard's prefix
+  SELFTEST FAIL: suite-shard 86_veldo_0189_engine_upgrade isolation_breach
+     isolation_breach: unit v4077c7c7aaa.slice appeared during the leg and was left behind, and carries no shard's prefix
+  SELFTEST FAIL: suite-shard 86_veldo_0189_engine_upgrade isolation_breach
+     isolation_breach: unit v4077c7c7aab.slice appeared during the leg and was left behind, and carries no shard's prefix
+selftest leg unconfined: 5 shard(s), parallelism 2 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 86_veldo_0189_engine_upgrade 92.1s; wall 412.6s
+   isolation note, not charged: /dev/shm: /dev/shm/v40-cwvn_yk2 (a live process of another tree holds it (pid 80903))
+   isolation note, not charged: temporary directory: /tmp/veldo-census-0oswenqj (nothing ties it to a shard)
+   isolation note, not charged: temporary directory: /tmp/veldo-census-aw1scoiq (nothing ties it to a shard)
+   isolation note, not charged: temporary directory: /tmp/veldo-census-tukow3e7 (nothing ties it to a shard)
+RESULT passed=136 failed=4 wall=413.7s

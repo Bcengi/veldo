@@ -1,0 +1,134 @@
+{
+ "schema": "veldo-0221.falsifiers/v1",
+ "command": "python3 scripts/check_teeth_mutations.py --finding 221",
+ "cases": [
+  {
+   "case": "shards221-lost-shard",
+   "mode": "baseline",
+   "rows_observed": 41,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/coverage"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "why": []
+  },
+  {
+   "case": "shards221-lost-shard",
+   "mode": "noop",
+   "rows_observed": 41,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/coverage"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "why": []
+  },
+  {
+   "case": "shards221-lost-shard",
+   "mode": "mutant",
+   "rows_observed": 41,
+   "failed_rows": [
+    "VELDO-0221 AC1 suite-shards/coverage"
+   ],
+   "registered_rows": [
+    "suite-shards/coverage"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     false
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "0cc36190bf435d85f679286d511a7fc34a2487e01bfc7a789f847a68838ae177",
+   "why": [
+    "a shard that died without a verdict was charged []; a missing prerequisite was charged []; counts 4 passed, 2 failed, not 4 and 4; through the dispatcher: exit 1, 2 failure names, last lines [\"selftest leg confined: 6 shard(s), parallelism 20 (no gate ledger: this host's usable cores), peak 6 running; isolation check held; critical shard 06_undeclared 0.2s; wall 0.2s\", 'selftest: 4 passed, 2 faile"
+   ]
+  },
+  {
+   "case": "shards221-shared-tmpdir",
+   "mode": "mutant",
+   "rows_observed": 41,
+   "failed_rows": [
+    "VELDO-0221 AC1 suite-shards/coverage",
+    "VELDO-0221 suite-shards/green-leg-through-the-dispatcher",
+    "VELDO-0221 suite-shards/deadline-fails-the-suite",
+    "VELDO-0221 AC2 suite-shards/isolated-by-construction",
+    "VELDO-0221 suite-shards/temporary-directory-no-longer-than-the-legs",
+    "VELDO-0221 AC3 suite-shards/isolation-checked"
+   ],
+   "registered_rows": [
+    "suite-shards/isolated-by-construction"
+   ],
+   "targets": {
+    "suite-shards/isolated-by-construction": [
+     false
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "b10f308ab7a15fe78311297648ad3d084dddcb561b98143775ae7309f75da876",
+   "why": [
+    "confined leg: 189 targets, 189 expected, 189 passed, 188 failed; good, closure or failing suite miscounted: {'01_good': [('isolation_breach', \"its Landlock layer was not in force (the probe write outside the shard's roots succeeded)\")], '02_closure': [('isolation_breach', \"its Landlock layer was not in force (the probe write outside the shard's roots succeeded)\")], '03_fails': [('isolation_breach'",
+    "s roots succeeded)\n  SELFTEST FAIL: suite-shard 02_b isolation_breach\n     isolation_breach: its Landlock layer was not in force (the probe write outside the shard's roots succeeded)\nselftest leg confined: 2 shard(s), parallelism 20 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 01_a 0.1s; wall 0.1s\nselftest: 2 passed, 2 failed",
+    "{'01_hangs': [('deadline_exceeded', 'it ran past its deadline of 1s and was ended'), ('isolation_breach', \"its Landlock layer was not in force (the probe write outside the shard's roots succeeded)\")]}",
+    "unconfined: the two writers did not both pass: {} ['selftest shard 01 02_second: closure 02_second; roots /tmp/v221-scratch/teeth/logs2/3/sjwk4a_zw/01*; 5 passed, 1 failed; wall 0.1s cpu 0.1s peak 36 MiB', '  SELFTEST FAIL: the path is new in my own root: TMPDIR', 'V221-ROOTS 02_second {\"HOME\": \"/tmp/v221-scratch/teeth/logs2/3/sjwk4a_zw/01h\", \"TMPDIR\": \"/tmp/v221-scratch/teeth/logs2/3\", \"XDG_CONFI",
+    "{'01_first': {'HOME': '/tmp/v221-scratch/teeth/logs2/3/s69b8tb8t/00h', 'TMPDIR': '/tmp/v221-scratch/teeth/logs2/3/v221-135s_uos/veldo-agent-fixture0/tmp', 'XDG_CONFIG_HOME': '/tmp/v221-scratch/teeth/logs2/3/s69b8tb8t/00c', 'XDG_DATA_HOME': '/tmp/v221-scratch/teeth/logs2/3/s69b8tb8t/00d', 'XDG_CACHE_HOME': '/tmp/v221-scratch/teeth/logs2/3/s69b8tb8t/00k', 'XDG_STATE_HOME': '/tmp/v221-scratch/teeth/l",
+    "the exempt shard: {'151_veldo_0313_space_run': 'True', '02_layered': 'True'} {'02_layered': [('isolation_breach', \"its Landlock layer was not in force (the probe write outside the shard's roots succeeded)\")]} ['151_veldo_0313_space_run']"
+   ]
+  },
+  {
+   "case": "shards221-check-force-fresh-only",
+   "mode": "mutant",
+   "rows_observed": 41,
+   "failed_rows": [
+    "VELDO-0221 AC3 suite-shards/isolation-checked"
+   ],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/isolation-checked": [
+     false
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "e0dba913a71a6a40f6acfe9adea6e768ea8bca032ce1f18b2fea000874306fbe",
+   "why": [
+    "force-fresh None: charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': [], '04_prefixed_unit': [], '05_tidy': []}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': [], '04_prefixed_unit': [], '05_tidy': []}"
+   ]
+  },
+  {
+   "case": "shards221-resources-ignored",
+   "mode": "mutant",
+   "rows_observed": 41,
+   "failed_rows": [
+    "VELDO-0221 AC4 suite-shards/manager-exclusive"
+   ],
+   "registered_rows": [
+    "suite-shards/manager-exclusive"
+   ],
+   "targets": {
+    "suite-shards/manager-exclusive": [
+     false
+    ]
+   },
+   "module_digest_before": "41dc3f51fdddf47428ce7f1f734fa1868df0146e9ad34368b7379ed0c2682e1a",
+   "module_digest_run": "83078f72e51c2158e3f2aed567f3624b3c28e249e1a88360dfcf77ec08d27c19",
+   "why": [
+    "[\"03_shared started beside ['01_exclusive']\", \"04_exclusive started beside ['01_exclusive', '03_shared']\", \"05_shared started beside ['01_exclusive', '03_shared', '04_exclusive']\", \"02_shared started beside ['01_exclusive', '03_shared', '04_exclusive', '05_shared']\"] ['01_exclusive', '03_shared', '04_exclusive', '05_shared', '06_none', '02_shared'] failed=2 {}"
+   ]
+  }
+ ]
+}
