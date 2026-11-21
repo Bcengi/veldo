@@ -264,7 +264,7 @@ class Output:
 def previous(conn, contract, station=None):
     """Last exited run of this unit in journal order, across restarts and refunded attempts."""
     for (raw,) in conn.execute(
-            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC"):
+            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY journal.seq DESC"):
         for entry in json.loads(raw).values():
             record = entry.get('data') or {}
             other = record.get('contract') or {}

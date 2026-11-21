@@ -47,3 +47,10 @@ run exposed a fixture assertion that incorrectly required deferred state in
 report mode, where the ledger correctly records due. The edit survived; the
 assertion now accepts both retained states. The host-heavy wrapper serializes
 loaded runs. Proof text uses relative paths or redacted roots. Full gate pending.
+
+The subsequent controls exposed a fixture UUID patch that also replaced the
+ledger's command IDs. The patch now replaces only the launcher's UUID binding,
+so deterministic dispatch order cannot collide with ledger commands. The
+run-finished regression also exposed unnecessary terminal inspection on ordinary
+ends. Inspection now requires both enabled space management and an observed
+no-space marker. The original failing diagnostics are retained in this bundle.
