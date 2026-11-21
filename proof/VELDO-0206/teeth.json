@@ -1,0 +1,388 @@
+{
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 206 --jobs 4 (through the host heavy-run wrapper)",
+ "commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4",
+ "exit_code": 0,
+ "last_line": "mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=30 elapsed=60.671s",
+ "status": "passed",
+ "registered": 22,
+ "executed": 22,
+ "rejected": 22,
+ "reused": 0,
+ "scope": "selected",
+ "declared_falsifiers": {
+  "AC1": "suite206-key-drops-prerequisite-state",
+  "AC2": "suite206-partial-run-published",
+  "AC3": "suite206-fresh-failure-ignored-after-hit"
+ },
+ "cases": [
+  {
+   "case": "suite206-key-omits-input-content",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/own-input-content-misses",
+    "suite-reuse/closure/input-added-misses"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/own-input-content-misses",
+    "VELDO-0206 suite-reuse/closure/input-added-misses",
+    "VELDO-0206 suite-reuse/closure/input-deleted-misses",
+    "VELDO-0206 suite-reuse/closure/input-mode-misses",
+    "VELDO-0206 suite-reuse/closure/dependent-input-misses-dependent-only",
+    "VELDO-0206 suite-reuse/closure/prerequisite-input-misses-dependent",
+    "VELDO-0206 suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh",
+    "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
+    "VELDO-0206 suite-reuse/closure",
+    "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
+    "VELDO-0206 suite-reuse/receipts/planted-stale-record-is-never-a-hit",
+    "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-key-drops-prerequisite-state",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/prerequisite-input-misses-dependent",
+    "suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/prerequisite-input-misses-dependent",
+    "VELDO-0206 suite-reuse/closure/manifest-entry-misses-suite-and-dependent",
+    "VELDO-0206 suite-reuse/closure/changed-prerequisite-state-runs-the-dependent-fresh",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-environment-not-in-key",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/base-environment-misses-all",
+    "suite-reuse/closure/declared-environment-misses-declarer"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/base-environment-misses-all",
+    "VELDO-0206 suite-reuse/closure/declared-environment-misses-declarer",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-stale-qualification-accepted",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/suite-code-edit-is-unknown",
+    "suite-reuse/closure/shared-namespace-edit-is-unknown"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/suite-code-edit-is-unknown",
+    "VELDO-0206 suite-reuse/closure/prerequisite-code-edit-is-unknown",
+    "VELDO-0206 suite-reuse/closure/shared-namespace-edit-is-unknown",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-root-not-in-key",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/another-root-misses-all"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/another-root-misses-all",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-unconfined-suite-reusable",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/unconfined-leg-suite-and-dependent-are-unknown"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/unconfined-leg-suite-and-dependent-are-unknown",
+    "VELDO-0206 suite-reuse/closure"
+   ]
+  },
+  {
+   "case": "suite206-partial-run-published",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/selector-run-is-not-stored"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-dispatcher-skips-prerequisite",
+   "module": "run_scope.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
+    "VELDO-0206 suite-reuse/closure/new-inputs-hit-once-observed",
+    "VELDO-0206 suite-reuse/closure",
+    "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
+    "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
+    "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
+    "VELDO-0206 suite-reuse/receipts/planted-stale-record-is-never-a-hit",
+    "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red",
+    "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-partial-record-accepted",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/signed-record-of-anything-but-a-full-passing-run-runs-fresh"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/signed-record-of-anything-but-a-full-passing-run-runs-fresh",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-unfinished-run-published",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/timed-out-run-is-not-stored"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/timed-out-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-failed-run-published",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/failed-run-is-not-stored"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/failed-run-is-not-stored",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-selector-run-reused",
+   "module": "run_scope.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/cached-selector-run-cannot-verify"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/cached-selector-run-cannot-verify",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-other-root-plan-honored",
+   "module": "run_scope.py",
+   "rows": [
+    "suite-reuse/pass-only",
+    "suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for",
+    "VELDO-0206 suite-reuse/pass-only"
+   ]
+  },
+  {
+   "case": "suite206-fresh-failure-ignored-after-hit",
+   "module": "selftest.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/fresh-failure-stays-red-beside-hits"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-settlement-ignores-fresh-failure",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/fresh-failure-stays-red-beside-hits"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-reused-counted-as-fresh",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/cold-warm-and-mixed-counts-are-exact",
+    "VELDO-0206 suite-reuse/receipts/stamp-carries-the-reused-count-and-landing-refuses-it",
+    "VELDO-0206 suite-reuse/receipts/fresh-failure-stays-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass",
+    "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts/gate-fresh-failure-is-red-beside-hits",
+    "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-force-fresh-ignored",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/force-fresh-reads-and-writes-no-record"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
+    "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-unauthenticated-reuse-accepted",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-missing-suite-accepted",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red",
+    "suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/every-suite-is-accounted-for-or-the-settlement-is-red",
+    "VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass",
+    "VELDO-0206 suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-input-race-ignored",
+   "module": "gate_reuse.py",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/inputs-changed-during-the-stage-bind-nothing",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-gate-ignores-settlement",
+   "module": "verify.sh",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/gate-is-red-when-a-passing-stage-leaves-a-suite-unaccounted",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-gate-drops-reused-count",
+   "module": "verify.sh",
+   "rows": [
+    "suite-reuse/receipts",
+    "suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/receipts/gate-plans-settles-and-stamps-the-suite-stage",
+    "VELDO-0206 suite-reuse/receipts"
+   ]
+  }
+ ]
+}

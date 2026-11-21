@@ -1,0 +1,80 @@
+[
+ {
+  "name": "unit and integration: suite 157",
+  "command": "python3 scripts/selftest.py --suite 157_veldo_0206_suite_reuse",
+  "scope": "partial",
+  "exit_code": 2,
+  "summary": [
+   "157_veldo_0206_suite_reuse: 55 passed; with the 26 checks of the shared preamble 81 passed, 0 failed. A green selected run returns 2 by design.",
+   "The rows drive the production gate_reuse.py, selftest.py and run_scope.py over a fixture repository with the VELDO-0205 store, and the production verify.sh (serial path) over the same fixture."
+  ],
+  "at_commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4"
+ },
+ {
+  "name": "gate script and dispatcher regression",
+  "command": "python3 -B scripts/selftest.py --suite <name>, one suite at a time",
+  "scope": "partial",
+  "summary": [
+   "== 14_warp_0717_subset_runner",
+   "selftest (PARTIAL, 1 of 237 suites): 53 passed, 0 failed in 13.94s",
+   "== 99_veldo_0205_reuse",
+   "selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 1.77s",
+   "== 114_veldo_0216_concurrent_stages",
+   "selftest (PARTIAL, 1 of 237 suites): 52 passed, 0 failed in 25.64s",
+   "== 153_veldo_0309_gate_space",
+   "selftest (PARTIAL, 1 of 237 suites): 50 passed, 0 failed in 22.15s",
+   "== 113_veldo_0220_gate_host",
+   "selftest (PARTIAL, 1 of 237 suites): 29 passed, 0 failed in 5.47s",
+   "== 114_veldo_0220_gate_scope",
+   "selftest (PARTIAL, 1 of 237 suites): 27 passed, 0 failed in 2.90s",
+   "== 101_veldo_0208_landing_reuse",
+   "selftest (PARTIAL, 1 of 237 suites): 216 passed, 0 failed in 330.20s"
+  ],
+  "at_commit": "4d65609e and later; the files these suites read did not change afterwards"
+ },
+ {
+  "name": "fast checks",
+  "summary": [
+   "bash scripts/check_lint.sh: lint: pass (1247 python, 40 shell)",
+   "bash scripts/check_template_sync.sh: pass (325 pairs)",
+   "bash scripts/check_generated.sh: every line pass after proof/WARP-0716/crossing-state.md was regenerated",
+   "python3 scripts/check_personal_setup.py: 0 finding(s)",
+   "python3 scripts/check_space_boundary.py: pass",
+   "python3 scripts/check_git_boundary.py: pass (after 1c the tool tuple was reordered; it failed once before that)",
+   "python3 scripts/check_parser_boundary.py and check_writer_boundary.py: pass"
+  ],
+  "at_commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4"
+ },
+ {
+  "name": "the two suites that failed rows in the whole-suite run",
+  "scope": "partial",
+  "summary": [
+   "Whole run (shared host, 85 minutes): 102_veldo_0210_agent_profile_runtime 7 failed rows, 151_veldo_0313_space_run 9 failed rows; 10556 passed, 16 failed.",
+   "102_veldo_0210_agent_profile_runtime alone on this branch: 263 passed, 0 failed.",
+   "151_veldo_0313_space_run alone on this branch: 54 passed, 9 failed. The same suite alone on the base commit 23318512, without any change of this ticket: 56 passed, 7 failed, with a different set of rows. Its failures are not caused by this change; they were not investigated further.",
+   "== 102_veldo_0210_agent_profile_runtime",
+   "selftest (PARTIAL, 1 of 237 suites): 263 passed, 0 failed in 25.49s",
+   "== 151_veldo_0313_space_run",
+   "  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: the run's end sleeps until the process the command left exits, and is made then: that process had written its last line when the end returned [",
+   "  SELFTEST FAIL: VELDO-0313 supervise/report-loss-end-is-made: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3180119, 'started': 290862042, 'ho",
+   "  SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-end-is-made: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3212278, 'started': 290",
+   "  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3340519, 'started': 290890873, 'how': '",
+   "  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that shows no block for it has not read what it carries: the run stays open, its file is there and the hold is held [label_unread [{'pid",
+   "  SELFTEST FAIL: VELDO-0313 fix4/docker-objects-are-items: at run finished both go through the engine's own stop and remove, with no force option; another run's container and the one with no label hav",
+   "  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 127 for bdko/no-such-program, and the run's hold is released and its scratch root removed [127 admitted ]",
+   "  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space",
+   "  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]",
+   "selftest (PARTIAL, 1 of 237 suites): 54 passed, 9 failed in 442.17s",
+   "base 23318512:",
+   "  SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3",
+   "  SELFTEST FAIL: VELDO-0313 ac1/build-output-has-item-and-goes",
+   "  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid':",
+   "  SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-open-file-in-worktree: it holds a file of the run's worktree open, in the build folder that is the run's ",
+   "  SELFTEST FAIL: VELDO-0313 fix4/docker-objects-are-items: at run finished both go through the engine's own stop and remove, with no force option; another run's",
+   "  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo s",
+   "  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]",
+   "selftest (PARTIAL, 1 of 236 suites): 56 passed, 7 failed in 296.49s"
+  ],
+  "at_commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4"
+ }
+]
