@@ -1,0 +1,20 @@
+Initial direct-driver attempt; no mutants executed.
+{
+  "schema": "veldo.mutation-stage/v1",
+  "status": "failed",
+  "error": "driver_error",
+  "detail": "driver_error: 67_veldo_0041_heartbeat.py:control_launch.py:False:baseline: worker exit 1",
+  "registered": 5,
+  "executed": 0,
+  "rejected": 0,
+  "worker_invocations": 4,
+  "surviving_workers": 0,
+  "raw_output_sha256": "4d4368adb81ad5b6f7db8263690a00f8e086e5a0fcc4741065744a147288b092",
+  "failed_worker": {
+    "name": "67_veldo_0041_heartbeat.py:control_launch.py:False:baseline",
+    "leg": "confined",
+    "mode": "baseline",
+    "returncode": 1,
+    "stderr_tail": "Traceback (most recent call last):\n  File \"<checkout>/scripts/reuse_worker.py\", line 116, in <module>\n  File \"<checkout>/scripts/reuse_worker.py\", line 99, in main\n  File \"<checkout>/scripts/reuse_worker.py\", line 106, in observe\n  File \"<checkout>/scripts/mutation_observer.py\", line 104, in worker\n  File \"/tmp/veldo-mutations-rz57v1_n/input/scripts/suites/67_veldo_0041_heartbeat.py\", line 1020, in <module>\n    _v41_suite()\n  File \"/tmp/veldo-mutations-rz57v1_n/input/scripts/suites/67_veldo_0041_heartbeat.py\", line 75, in _v41_suite\n    with tempfile.TemporaryDirectory(prefix='v41-', dir=runtime if os.path.isdir(runtime) else None) as directory:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/tempfile.py\", line 1021, in __init__\n    self.name = mkdtemp(suffix, prefix, dir)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/tempfile.py\", line 523, in mkdtemp\n    _os.mkdir(file, 0o700)\nPermissionError: [Errno 13] Permission denied: '/run/user/<uid>/v41-nffbmt2b'\n"
+  }
+}

@@ -1,0 +1,9 @@
+command: python3 scripts/selftest.py --suite 151_veldo_0313_space_run
+exit_code: 1
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: the hold is released and the wrapper sent run finished [released None]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that shows a block with another start time has not read what it carries: the run stays open, its file is there and the hold is held [label_unread [{'pid': 2888463, 'started': 290779356, 'how': 'unread'}, {'pid': 2888470, 'started': 290779371, 'how': 'unread'}]]
+  SELFTEST FAIL: VELDO-0313 fix3/the-house-group: the end follows its exit: the group is read empty, run finished is sent and the scratch root goes [{'read': True, 'populated': False, 'pids': []} None []]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 4194304000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+selftest (PARTIAL, 1 of 242 suites): 58 passed, 5 failed in 58.56s

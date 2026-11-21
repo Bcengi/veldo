@@ -1,0 +1,10 @@
+[
+  {
+    "suite": "151_veldo_0313_space_run",
+    "exit_code": 1,
+    "passed": false,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 58 passed, 5 failed in 58.56s",
+    "output_sha256": "9e2cdcfeb101431a4a2d2fb83177afac94cebd1ef7a6279a457e8b2024628442",
+    "load_workers": 0
+  }
+]

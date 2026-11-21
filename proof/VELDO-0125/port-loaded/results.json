@@ -1,0 +1,34 @@
+[
+  {
+    "suite": "103_veldo_0124_macos",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 56 passed, 0 failed in 5.42s",
+    "output_sha256": "1a63f1bb1bb644c1790a6b1667c7e57e665b2c6802da33c71a6e5574d8c384f3",
+    "load_workers": 8
+  },
+  {
+    "suite": "104_veldo_0124_control",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 3.84s",
+    "output_sha256": "b2f6b22e594dd9bd426b34ae40738ce1026f6748b15f0d68183fd8810f05b00d",
+    "load_workers": 8
+  },
+  {
+    "suite": "105_veldo_0125_relay",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 8.00s",
+    "output_sha256": "6e904fb9a66e2fb1620e612ea31857444962e9874fa683487d4a552e13eaf816",
+    "load_workers": 8
+  },
+  {
+    "suite": "106_veldo_0125_routing",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 272 passed, 0 failed in 85.59s",
+    "output_sha256": "a114d9610a9993c41729099ee081054054489c0f7d0bdb2cf2236ba03b004c38",
+    "load_workers": 8
+  }
+]
