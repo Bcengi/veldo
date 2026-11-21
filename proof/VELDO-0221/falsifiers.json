@@ -3,205 +3,17 @@
  "command": "python3 scripts/check_teeth_mutations.py --finding 221",
  "summary": {
   "status": "passed",
-  "registered": 15,
-  "executed": 15,
-  "rejected": 15,
+  "registered": 18,
+  "executed": 18,
+  "rejected": 18,
   "reused": 0
  },
  "cases": [
   {
-   "case": "shards221-resources-ignored",
-   "mode": "baseline",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/manager-exclusive"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-resources-ignored",
-   "mode": "noop",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/manager-exclusive"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-resources-ignored",
-   "mode": "mutant",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [
-    "VELDO-0221 AC4 suite-shards/manager-exclusive"
-   ],
-   "registered_rows": [
-    "suite-shards/manager-exclusive"
-   ],
-   "targets": {
-    "suite-shards/manager-exclusive": [
-     false
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "5d744daa0d24d8dd0ef7742f1c18a9b88c9419a775e730620afffd0f47827e39",
-   "why": [
-    [
-     "VELDO-0221 AC4 suite-shards/manager-exclusive",
-     "[\"03_shared started beside ['01_exclusive']\", \"04_exclusive started beside ['01_exclusive', '03_shared']\", \"05_shared started beside ['01_exclusive', '03_shared', '04_exclusive']\", \"02_shared started beside ['01_exclusive', '03_shared', '04_exclusive', '05_shared']\"] ['01_exclusive', '03_shared', '04_exclusive', '05_shared', '06_none', '02_shared'] failed=0 {}"
-    ]
-   ]
-  },
-  {
-   "case": "shards221-oversized-claim-forwarded",
-   "mode": "baseline",
-   "module": "gate_schedule.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/leg-node-claims-only-its-dispatcher"
-   ],
-   "targets": {
-    "suite-shards/leg-node-claims-only-its-dispatcher": [
-     true
-    ]
-   },
-   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
-   "module_digest_run": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
-   "why": []
-  },
-  {
-   "case": "shards221-oversized-claim-forwarded",
-   "mode": "noop",
-   "module": "gate_schedule.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/leg-node-claims-only-its-dispatcher"
-   ],
-   "targets": {
-    "suite-shards/leg-node-claims-only-its-dispatcher": [
-     true
-    ]
-   },
-   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
-   "module_digest_run": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
-   "why": []
-  },
-  {
-   "case": "shards221-oversized-claim-forwarded",
-   "mode": "mutant",
-   "module": "gate_schedule.py",
-   "rows_observed": 49,
-   "failed_rows": [
-    "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher"
-   ],
-   "registered_rows": [
-    "suite-shards/leg-node-claims-only-its-dispatcher"
-   ],
-   "targets": {
-    "suite-shards/leg-node-claims-only-its-dispatcher": [
-     false
-    ]
-   },
-   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
-   "module_digest_run": "5bae9fbd4b44cdf4ea935b84d89d70c1b6e52b3c17238f57c9a1b6b4bbaf772a",
-   "why": [
-    [
-     "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher",
-     "{'grants': [True, True, True], 'huge': 'the gate ledger refused the acquire of 04_huge: invalid_resource_requirement: claim exceeds capacity', 'shards': {'passed': 3, 'failed': 0, 'parallelism': None, 'peak': 3}} [('grant', 'mutation'), ('grant', 'unit.confined'), ('grant', 'unit.unconfined'), ('release', 'unit.unconfined'), ('dispatcher', 'unit.confined'), ('grant', 'unit.confined/01_a'), ('grant', 'unit.confined/02_b'), ('grant', 'unit.confined/03_c'), ('release', 'unit.confined/01_a'), ('rele"
-    ]
-   ]
-  },
-  {
-   "case": "shards221-check-force-fresh-only",
-   "mode": "baseline",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-check-force-fresh-only",
-   "mode": "noop",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-check-force-fresh-only",
-   "mode": "mutant",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [
-    "VELDO-0221 AC3 suite-shards/isolation-checked",
-    "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg"
-   ],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/isolation-checked": [
-     false
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "3ebfaba04e63b04fe8b3cc00df8fe5fc37a4b17d78ec39708631625901049c0c",
-   "why": [
-    [
-     "VELDO-0221 AC3 suite-shards/isolation-checked",
-     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': [], '05_tidy': [], '06_leaves_scope': []}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': [], '05_tidy': [], '06_leaves_scope': []}; the unnamed shards: {} ['V221-UNNAMED False', '   shard 86_veldo_0189_engine_upgrade ran without an instance name: its rows upgrade hosts laid down by the engines of c"
-    ],
-    [
-     "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg",
-     "{} ['selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-9uueulbc/8/skejksn0a/01*; instance 9d49c4a801_02_b; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', 'selftest shard 00 01_a: closure 01_a; roots /tmp/veldo-mutations-9uueulbc/8/skejksn0a/00*; instance 9d49c4a800_01_a; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', 'selftest shard 02 03_refers: closure 03_refers; roots /tmp/veldo-mutations-9uueulbc/8/skejksn0a/02*; instance 9d49c4a802_03_refers; 1 passed, 0 failed; w"
-    ]
-   ]
-  },
-  {
    "case": "shards221-leg-claim-counts-shards",
    "mode": "baseline",
    "module": "gate_schedule.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/leg-node-claims-only-its-dispatcher"
@@ -219,7 +31,7 @@
    "case": "shards221-leg-claim-counts-shards",
    "mode": "noop",
    "module": "gate_schedule.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/leg-node-claims-only-its-dispatcher"
@@ -237,7 +49,7 @@
    "case": "shards221-leg-claim-counts-shards",
    "mode": "mutant",
    "module": "gate_schedule.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher"
    ],
@@ -254,7 +66,68 @@
    "why": [
     [
      "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher",
-     "{'grants': [False, False, False], 'huge': False, 'shards': None} [('grant', 'mutation'), ('grant', 'unit.confined'), ('grant', 'unit.unconfined'), ('release', 'unit.unconfined'), ('refuse', 'unit.confined/01_a'), ('refuse', 'unit.confined/02_b'), ('refuse', 'unit.confined/03_c'), ('clamp', 'unit.confined/04_huge'), ('refuse', 'unit.confined/04_huge'), ('release', 'unit.confined'), ('release', 'mutation')] [{'cpu': 7.0, 'memory': 21474836480, 'manager': 'none', 'ports': [], 'host_lock': 'none'}] "
+     "{'grants': [False, False, False], 'huge': False, 'shards': None} [('grant', 'mutation'), ('grant', 'unit.confined'), ('grant', 'unit.unconfined'), ('refuse', 'unit.confined/01_a'), ('release', 'unit.unconfined'), ('refuse', 'unit.confined/02_b'), ('refuse', 'unit.confined/03_c'), ('clamp', 'unit.confined/04_huge'), ('refuse', 'unit.confined/04_huge'), ('release', 'mutation'), ('release', 'unit.confined')] [{'cpu': 7.0, 'memory': 21474836480, 'manager': 'none', 'ports': [], 'host_lock': 'none'}] {'cpu_rate': 8.3, 'peak_anon_bytes': 8589934592, 'dispatcher': False}"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-unprefixed-unit-allowed",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-unprefixed-unit-allowed",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-unprefixed-unit-allowed",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC3 suite-shards/isolation-checked"
+   ],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/isolation-checked": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "889834a6659ed33e14c1a9ce91277f64fcb6bf3cb5260246ce2499fcfd983579",
+   "why": [
+    [
+     "VELDO-0221 AC3 suite-shards/isolation-checked",
+     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': [], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': ['isolation_breach']}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': [], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': ['isolation_breach']}"
     ]
    ]
   },
@@ -262,7 +135,7 @@
    "case": "shards221-lost-shard",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/coverage"
@@ -272,15 +145,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-lost-shard",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/coverage"
@@ -290,15 +163,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-lost-shard",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 AC1 suite-shards/coverage"
    ],
@@ -310,12 +183,271 @@
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "58a05b8cad2e72f39d87d131e3b4a3d541fbd92d151acfbea6fc28fe583165aa",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "ccdd3d74404a8979590cc40025686827a3df79c9733a1a7cf77cb2bcba5c784e",
    "why": [
     [
      "VELDO-0221 AC1 suite-shards/coverage",
-     "a shard that died without a verdict was charged []; a missing prerequisite was charged []; counts 4 passed, 2 failed, not 4 and 4; through the dispatcher: exit 1, 2 failure names, last lines ['   the dispatcher itself: 0.1s CPU, peak 39 MiB; shards ended at 0.2s, the isolation check took 0.0s; instance token 584544ab', 'selftest: 4 passed, 2 failed']; the missing prerequisite the ordered run hid: ordered exit 0, shards charged {}"
+     "a shard that died without a verdict was charged []; a missing prerequisite was charged []; counts 4 passed, 2 failed, not 4 and 4; through the dispatcher: exit 1, 2 failure names, last lines ['   the dispatcher itself: 0.1s CPU, peak 40 MiB; shards ended at 0.2s, the isolation check took 0.0s; instance token 428aef98', 'selftest: 4 passed, 2 failed']; the missing prerequisite the ordered run hid: ordered exit 0, shards charged {}"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-check-force-fresh-only",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-check-force-fresh-only",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-check-force-fresh-only",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC3 suite-shards/isolation-checked",
+    "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg",
+    "VELDO-0221 AC3 suite-shards/unattributed-temporary-entry-is-recorded-not-charged",
+    "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard"
+   ],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/isolation-checked": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "69dc914578e284cbe4d663a9f8dd4d47c37665306f22a8ccdafc30c00ae165d3",
+   "why": [
+    [
+     "VELDO-0221 AC3 suite-shards/isolation-checked",
+     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': [], '05_tidy': [], '06_leaves_scope': []}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': [], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': [], '05_tidy': [], '06_leaves_scope': []}; the unnamed shards: {} ['V221-UNNAMED False', '   shard 86_veldo_0189_engine_upgrade ran without an instance name: its rows upgrade hosts laid down by the engines of commits 8bc34e94 and 971186ac, which name their units without an instance (20 rows failed with a name set)', '   shard 117_veldo_0227_ui_location ran without an instance name: its row ui/upgrade-pre-change runs the current engine over a host laid down by the engine before VELDO-0227, which names its unit without an instance (1 row failed with a name set)']"
+    ],
+    [
+     "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg",
+     "{} ['selftest shard 00 01_a: closure 01_a; roots /tmp/veldo-mutations-o0gl_3c_/8/skb3vpddy/00*; instance b9ac148600_01_a; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', 'selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-o0gl_3c_/8/skb3vpddy/01*; instance b9ac148601_02_b; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', 'selftest shard 02 03_refers: closure 03_refers; roots /tmp/veldo-mutations-o0gl_3c_/8/skb3vpddy/02*; instance b9ac148602_03_refers; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', \"selftest leg unconfined: 3 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 3 running; isolation check held; critical shard 01_a 0.0s; wall 0.1s\", '   the dispatcher itself: 1.3s CPU, peak 44 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token b9ac1486']"
+    ],
+    [
+     "VELDO-0221 AC3 suite-shards/unattributed-temporary-entry-is-recorded-not-charged",
+     "{} [] ['selftest shard 00 01_a: closure 01_a; roots /tmp/veldo-mutations-o0gl_3c_/8/sgc4be28n/00*; instance 5704cb5300_01_a; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', 'selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-o0gl_3c_/8/sgc4be28n/01*; instance 5704cb5301_02_b; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', \"selftest leg unconfined: 2 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 2 running; isolation check held; critical shard 01_a 0.0s; wall 0.1s\", '   the dispatcher itself: 1.3s CPU, peak 44 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token 5704cb53']"
+    ],
+    [
+     "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard",
+     "{} [] ['held-entry', 'left-28c8b71803_04_named', 'orphan-entry', 'refers']"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-resources-ignored",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/manager-exclusive"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-resources-ignored",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/manager-exclusive"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-resources-ignored",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC4 suite-shards/manager-exclusive"
+   ],
+   "registered_rows": [
+    "suite-shards/manager-exclusive"
+   ],
+   "targets": {
+    "suite-shards/manager-exclusive": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "7b86f8259b83711fd2bf3eff42b680ed858b1731533dbb956e8230f215c3cede",
+   "why": [
+    [
+     "VELDO-0221 AC4 suite-shards/manager-exclusive",
+     "[\"03_shared started beside ['01_exclusive']\", \"04_exclusive started beside ['01_exclusive', '03_shared']\", \"05_shared started beside ['01_exclusive', '03_shared', '04_exclusive']\", \"02_shared started beside ['01_exclusive', '03_shared', '04_exclusive', '05_shared']\"] ['01_exclusive', '03_shared', '04_exclusive', '05_shared', '06_none', '02_shared'] failed=1 {}"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-foreign-units-judged",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/other-sessions-units-are-not-judged"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-foreign-units-judged",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/other-sessions-units-are-not-judged"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-foreign-units-judged",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC3 suite-shards/other-sessions-units-are-not-judged"
+   ],
+   "registered_rows": [
+    "suite-shards/other-sessions-units-are-not-judged"
+   ],
+   "targets": {
+    "suite-shards/other-sessions-units-are-not-judged": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "32bc54bb30baeff3893328aa22638e9037bca12a930834610ea4b03b9024e5b0",
+   "why": [
+    [
+     "VELDO-0221 AC3 suite-shards/other-sessions-units-are-not-judged",
+     "{'(the leg)': [('isolation_breach', \"unit veldo-authority-0a1b2c3d00_01_clean-0123456789abcdef.service was started without its shard's prefix (it refers to a shard's roots); the suites that ran when it first appeared: 01_clean, 05_tidy\"), ('isolation_breach', \"unit veldo-authority-fedcba9876543210.service was started without its shard's prefix (it refers to a shard's roots); the suites that ran when it first appeared: 01_clean, 05_tidy\"), ('isolation_breach', \"unit veldo-workers_0a1b2c3d00_01_clean.slice was started without its shard's prefix (it refers to a shard's roots); the suites that ran when it first appeared: 01_clean, 05_tidy\"), ('isolation_breach', 'unit run-u777.service appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_clean, 05_tidy'), ('isolation_breach', 'unit v0a1b2c3d.slice appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_clean, 05_tidy')]} [] ['     isolation_breach: unit v0a1b2c3d.slice appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_clean, 05_tidy', \"selftest leg unconfined: 2 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 01_clean 0.0s; wall 0.1s\", '   the dispatcher itself: 1.3s CPU, peak 44 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token b903239e']"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-oversized-claim-forwarded",
+   "mode": "baseline",
+   "module": "gate_schedule.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/leg-node-claims-only-its-dispatcher"
+   ],
+   "targets": {
+    "suite-shards/leg-node-claims-only-its-dispatcher": [
+     true
+    ]
+   },
+   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
+   "module_digest_run": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
+   "why": []
+  },
+  {
+   "case": "shards221-oversized-claim-forwarded",
+   "mode": "noop",
+   "module": "gate_schedule.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/leg-node-claims-only-its-dispatcher"
+   ],
+   "targets": {
+    "suite-shards/leg-node-claims-only-its-dispatcher": [
+     true
+    ]
+   },
+   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
+   "module_digest_run": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
+   "why": []
+  },
+  {
+   "case": "shards221-oversized-claim-forwarded",
+   "mode": "mutant",
+   "module": "gate_schedule.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher"
+   ],
+   "registered_rows": [
+    "suite-shards/leg-node-claims-only-its-dispatcher"
+   ],
+   "targets": {
+    "suite-shards/leg-node-claims-only-its-dispatcher": [
+     false
+    ]
+   },
+   "module_digest_before": "a5c66ef27493b710692e96f9e38cde529f673adb2b512a1b5f51cb7ee9373b28",
+   "module_digest_run": "5bae9fbd4b44cdf4ea935b84d89d70c1b6e52b3c17238f57c9a1b6b4bbaf772a",
+   "why": [
+    [
+     "VELDO-0221 AC4 suite-shards/leg-node-claims-only-its-dispatcher",
+     "{'grants': [True, True, True], 'huge': 'the gate ledger refused the acquire of 04_huge: invalid_resource_requirement: claim exceeds capacity', 'shards': {'passed': 3, 'failed': 0, 'parallelism': None, 'peak': 3}} [('grant', 'mutation'), ('grant', 'unit.confined'), ('grant', 'unit.unconfined'), ('release', 'unit.unconfined'), ('dispatcher', 'unit.confined'), ('grant', 'unit.confined/01_a'), ('grant', 'unit.confined/02_b'), ('grant', 'unit.confined/03_c'), ('release', 'unit.confined/01_a'), ('release', 'unit.confined/02_b'), ('release', 'unit.confined/03_c'), ('grant', 'unit.confined/01_a'), ('grant', 'unit.confined/02_b'), ('grant', 'unit.confined/03_c')] [] {'cpu_rate': None, 'peak_anon_bytes': None, 'dispatcher': None}"
     ]
    ]
   },
@@ -323,7 +455,7 @@
    "case": "shards221-shared-tmpdir",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/isolated-by-construction"
@@ -333,15 +465,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-shared-tmpdir",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/isolated-by-construction"
@@ -351,15 +483,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-shared-tmpdir",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 AC1 suite-shards/coverage",
     "VELDO-0221 suite-shards/green-leg-through-the-dispatcher",
@@ -376,215 +508,108 @@
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "8f62b234bbc690bf1b8973ca5377938f8b25d95d092936809d00678a1520e805",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "13bbd19f86c9ced1e60bff1bfd7fc87d6b797ca33a2cd72fb35e2912b54b2436",
    "why": [
     [
      "VELDO-0221 AC1 suite-shards/coverage",
-     "through the dispatcher: exit 1, 10 failure names, last lines ['   the dispatcher itself: 0.1s CPU, peak 39 MiB; shards ended at 0.2s, the isolation check took 0.0s; instance token 73dc19ce', 'selftest: 4 passed, 10 failed']"
+     "through the dispatcher: exit 1, 10 failure names, last lines ['   the dispatcher itself: 0.0s CPU, peak 40 MiB; shards ended at 0.3s, the isolation check took 0.0s; instance token 897f0b20', 'selftest: 4 passed, 10 failed']"
     ],
     [
      "VELDO-0221 suite-shards/green-leg-through-the-dispatcher",
-     "ce (the probe write outside the shard's roots succeeded)\nselftest leg confined: 2 shard(s), parallelism 20 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 01_a 0.1s; wall 0.1s\n   the dispatcher itself: 0.0s CPU, peak 40 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token a2562241\nselftest: 2 passed, 2 failed"
+     "ce (the probe write outside the shard's roots succeeded)\nselftest leg confined: 2 shard(s), parallelism 20 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 01_a 0.1s; wall 0.1s\n   the dispatcher itself: 0.1s CPU, peak 40 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token 53c0ea51\nselftest: 2 passed, 2 failed"
     ],
     [
      "VELDO-0221 AC2 suite-shards/isolated-by-construction",
-     "unconfined: the two writers did not both pass: {} ['  SELFTEST FAIL: the path is new in my own root: TMPDIR', 'V221-ROOTS 02_second {\"HOME\": \"/tmp/veldo-mutations-9uueulbc/7/sf980wcvz/01h\", \"TMPDIR\": \"/tmp/veldo-mutations-9uueulbc/7/v221-3oui_vr6/leg-bkihlshl/tmp\", \"XDG_CONFIG_HOME\": \"/tmp/veldo-mutations-9uueulbc/7/sf980wcvz/01c\", \"XDG_DATA_HOME\": \"/tmp/veldo-mutations-9uueulbc/7/sf980wcvz/01d\", \"XDG_CACHE_HOME\": \"/tmp/veldo-mutations-9uueulbc/7/sf980wcvz/01k\", \"XDG_STATE_HOME\": \"/tmp/veldo-mut"
+     "unconfined: the two writers did not both pass: {} ['selftest shard 00 01_first: closure 01_first; roots /tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00*; instance e049281000_01_first; 6 passed, 0 failed; wall 0.1s cpu 0.1s peak 41 MiB', 'V221-ROOTS 01_first {\"HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00h\", \"TMPDIR\": \"/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/leg-f5vns5gh/tmp\", \"XDG_CONFIG_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00c\", \"XDG_DATA_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00d\", \"XDG_CACHE_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00k\", \"XDG_STATE_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00s\", \"XDG_RUNTIME_DIR\": \"/tmp/veldo-mutations-o0gl_3c_/7/sqttucgyn/00r\"}', 'V221-RUNTIME 01_first [\"bus\", \"systemd\", \"systemd/private\", \"systemd/user\", \"veldo-instance.json\"]', 'V221-NAMES 01_first {\"authority\": \"veldo-authority-e049281000_01_first-80299d9f61a53f56.service\", \"api\": \"veldo-api-e049281000_01_first-80299d9f61a53f56.service\", \"slice\": \"veldo-workers_e049281000_01_first.slice\", \"scope\": \"veldo-dispatch-e049281000_01_first-539ed001eef41a4c78b4182d5dfa70e3.scope\", \"instance\": \"e049281000_01_first\", \"same_rule\": true}', \"selftest leg unconfined: 3 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 3 running; isolation check held; critical shard 01_first 0.1s; wall 0.1s\", '   the dispatcher itself: 0.9s CPU, peak 41 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token e0492810']; confined: the two writers did not both pass: {} ['  SELFTEST FAIL: the path is new in my own root: TMPDIR', 'V221-ROOTS 01_first {\"HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00h\", \"TMPDIR\": \"/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/leg-1_e0x71w/tmp\", \"XDG_CONFIG_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00c\", \"XDG_DATA_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00d\", \"XDG_CACHE_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00k\", \"XDG_STATE_HOME\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00s\", \"XDG_RUNTIME_DIR\": \"/tmp/veldo-mutations-o0gl_3c_/7/sokx2azin/00r\"}', 'V221-RUNTIME 01_first [\"bus\", \"systemd\", \"systemd/private\", \"systemd/user\", \"veldo-instance.json\"]', 'V221-NAMES 01_first {\"authority\": \"veldo-authority-0c7e820500_01_first-80299d9f61a53f56.service\", \"api\": \"veldo-api-0c7e820500_01_first-80299d9f61a53f56.service\", \"slice\": \"veldo-workers_0c7e820500_01_first.slice\", \"scope\": \"veldo-dispatch-0c7e820500_01_first-539ed001eef41a4c78b4182d5dfa70e3.scope\", \"instance\": \"0c7e820500_01_first\", \"same_rule\": true}', \"selftest leg confined: 3 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 3 running; isolation check held; critical shard 01_first 0.1s; wall 0.1s\", '   the dispatcher itself: 1.0s CPU, peak 42 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token 0c7e8205']; a shard names an XDG directory its leg does not, or inherits the leg's: [{'HOME': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/01h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/leg-w37l1ave/tmp', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/01d', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/01r'}, {'HOME': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/00h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/leg-w37l1ave/tmp', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/00d', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/7/sen1db87b/00r'}]"
     ],
     [
      "VELDO-0221 suite-shards/temporary-directory-no-longer-than-the-legs",
-     "{'02_second': {'HOME': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01h', 'TMPDIR': '/tmp/veldo-mutations-9uueulbc/7/v221-3oui_vr6/veldo-agent-fixture0/tmp', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-9uueulbc/7/snungscz1/01r'}, '01_fir"
+     "{'01_first': {'HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/veldo-agent-fixture0/tmp', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/00r'}, '02_second': {'HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/veldo-agent-fixture0/tmp', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/7/s4y9cemba/01r'}} {} []"
     ],
     [
      "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
-     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-9uueulbc/7/v221-3oui_vr6/fixture-run-user/veldo-leg-c1b06f49-mvz5s1b3/00'), PosixPath('/tmp/veldo-mutations-9uueulbc/7/v221-3oui_vr6/fixture-run-user/veldo-leg-c1b06f49-mvz5s1b3/01')], [PosixPath('/tmp/veldo-mutations-9uueulbc/7/sa76u129b/00h'), PosixPath('/tmp/veldo-mutations-9uueulbc/7/sa76u129b/01h')], 'c1b06f49', 1, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd"
+     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/fixture-run-user/veldo-leg-22b6d13c-bh645bdc/00'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/v221-psk253sa/fixture-run-user/veldo-leg-22b6d13c-bh645bdc/01')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/snz2ibfd9/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/snz2ibfd9/01h')], '22b6d13c', 1, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']]), 'confined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/sb12ba_z1/00r'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/sb12ba_z1/01r')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/sb12ba_z1/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/7/sb12ba_z1/01h')], '26528500', 1, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']])} []"
     ],
     [
      "VELDO-0221 AC3 suite-shards/isolation-checked",
-     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': []}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': []}; the unnamed shards: {} ['V221-UNNAMED False', '   shard 86_veldo_0189_engine_upgrade ran withou"
+     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': []}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['isolation_breach'], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': []}; the unnamed shards: {} ['V221-UNNAMED False', '   shard 86_veldo_0189_engine_upgrade ran without an instance name: its rows upgrade hosts laid down by the engines of commits 8bc34e94 and 971186ac, which name their units without an instance (20 rows failed with a name set)', '   shard 117_veldo_0227_ui_location ran without an instance name: its row ui/upgrade-pre-change runs the current engine over a host laid down by the engine before VELDO-0227, which names its unit without an instance (1 row failed with a name set)']"
     ]
    ]
   },
   {
-   "case": "shards221-unprefixed-unit-allowed",
+   "case": "shards221-unconfined-shard-unnamed",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/isolation-checked"
+    "suite-shards/isolated-by-construction"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-unprefixed-unit-allowed",
+   "case": "shards221-unconfined-shard-unnamed",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/isolation-checked"
+    "suite-shards/isolated-by-construction"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-unprefixed-unit-allowed",
+   "case": "shards221-unconfined-shard-unnamed",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
-    "VELDO-0221 AC3 suite-shards/isolation-checked"
+    "VELDO-0221 AC2 suite-shards/isolated-by-construction",
+    "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
+    "VELDO-0221 AC3 suite-shards/isolation-checked",
+    "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "registered_rows": [
-    "suite-shards/isolation-checked"
+    "suite-shards/isolated-by-construction"
    ],
    "targets": {
-    "suite-shards/isolation-checked": [
+    "suite-shards/isolated-by-construction": [
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "e025abbe601068b885a0391db6d88dae86852156bdf6448646dc9a4c0e13993e",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "2b70fcd426772f827c087ae5a8d1a438b9b1578e4e3153c8aeec1b0dadf56aaa",
    "why": [
+    [
+     "VELDO-0221 AC2 suite-shards/isolated-by-construction",
+     "unconfined: a runtime directory holds more than the manager's sockets: {'02_second': ['bus', 'systemd', 'systemd/private', 'systemd/user'], '01_first': ['bus', 'systemd', 'systemd/private', 'systemd/user']}; unconfined: 02_second names something without its instance name: {'authority': 'veldo-authority-80299d9f61a53f56.service', 'api': 'veldo-api-80299d9f61a53f56.service', 'slice': 'veldo-workers.slice', 'scope': 'veldo-dispatch-539ed001eef41a4c78b4182d5dfa70e3.scope', 'instance': '', 'same_rule': True}; unconfined: 01_first names something without its instance name: {'authority': 'veldo-authority-80299d9f61a53f56.service', 'api': 'veldo-api-80299d9f61a53f56.service', 'slice': 'veldo-workers.slice', 'scope': 'veldo-dispatch-539ed001eef41a4c78b4182d5dfa70e3.scope', 'instance': '', 'same_rule': True}; unconfined: the two shards would name a unit alike: {'02_second': {'authority': 'veldo-authority-80299d9f61a53f56.service', 'api': 'veldo-api-80299d9f61a53f56.service', 'slice': 'veldo-workers.slice', 'scope': 'veldo-dispatch-539ed001eef41a4c78b4182d5dfa70e3.scope', 'instance': '', 'same_rule': True}, '01_first': {'authority': 'veldo-authority-80299d9f61a53f56.service', 'api': 'veldo-api-80299d9f61a53f56.service', 'slice': 'veldo-workers.slice', 'scope': 'veldo-dispatch-539ed001eef41a4c78b4182d5dfa70e3.scope', 'instance': '', 'same_rule': True}}"
+    ],
+    [
+     "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
+     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/v221-23c3gkxo/fixture-run-user/veldo-leg-06a00e23-s8fdgml0/00'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/v221-23c3gkxo/fixture-run-user/veldo-leg-06a00e23-s8fdgml0/01')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/sgqs0ko_w/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/sgqs0ko_w/01h')], '06a00e23', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user'], ['bus', 'systemd', 'systemd/private', 'systemd/user']]), 'confined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/s7l2v3lox/00r'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/s7l2v3lox/01r')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/s7l2v3lox/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/14/s7l2v3lox/01h')], '5f791e34', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']])} []"
+    ],
     [
      "VELDO-0221 AC3 suite-shards/isolation-checked",
-     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': [], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': ['isolation_breach']}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': [], '04_prefixed_unit': ['isolation_breach'], '05_tidy': [], '06_leaves_scope': ['isolation_breach']}"
-    ]
-   ]
-  },
-  {
-   "case": "shards221-foreign-units-judged",
-   "mode": "baseline",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/other-sessions-units-are-not-judged"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-foreign-units-judged",
-   "mode": "noop",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/other-sessions-units-are-not-judged"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-foreign-units-judged",
-   "mode": "mutant",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [
-    "VELDO-0221 AC3 suite-shards/other-sessions-units-are-not-judged"
-   ],
-   "registered_rows": [
-    "suite-shards/other-sessions-units-are-not-judged"
-   ],
-   "targets": {
-    "suite-shards/other-sessions-units-are-not-judged": [
-     false
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "6651b8c336d85a0cfa04b2b8cc2b40a74dae06565eb4dafa8f5de879ebad0b76",
-   "why": [
+     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['no_verdict'], '04_prefixed_unit': ['no_verdict'], '05_tidy': [], '06_leaves_scope': ['no_verdict']}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['no_verdict'], '04_prefixed_unit': ['no_verdict'], '05_tidy': [], '06_leaves_scope': ['no_verdict']}"
+    ],
     [
-     "VELDO-0221 AC3 suite-shards/other-sessions-units-are-not-judged",
-     "{'(the leg)': [('isolation_breach', \"unit veldo-authority-0a1b2c3d00_01_clean-0123456789abcdef.service was started without its shard's prefix (it refers to a shard's roots); the suites that ran when it first appeared: 01_clean, 05_tidy\"), ('isolation_breach', \"unit veldo-authority-fedcba9876543210.service was started without its shard's prefix (it refers to a shard's roots); the suites that ran when it first appeared: 01_clean, 05_tidy\"), ('isolation_breach', \"unit veldo-workers_0a1b2c3d00_01_cl"
-    ]
-   ]
-  },
-  {
-   "case": "shards221-unlayered-beside-others",
-   "mode": "baseline",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-unlayered-beside-others",
-   "mode": "noop",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/coverage": [
-     true
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "why": []
-  },
-  {
-   "case": "shards221-unlayered-beside-others",
-   "mode": "mutant",
-   "module": "run_scope.py",
-   "rows_observed": 49,
-   "failed_rows": [
-    "VELDO-0221 AC3 suite-shards/isolation-checked"
-   ],
-   "registered_rows": [
-    "suite-shards/isolation-checked"
-   ],
-   "targets": {
-    "suite-shards/isolation-checked": [
-     false
-    ]
-   },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "36e62f5474d2f4ea09ccd171abc9aa5b564ec4a0fdf6feb86577579167f3c64d",
-   "why": [
-    [
-     "VELDO-0221 AC3 suite-shards/isolation-checked",
-     "the exempt shard did not run alone: [('start', '02_layered', [], False), ('start', '03_layered', ['02_layered'], False), ('start', '151_veldo_0313_space_run', ['02_layered', '03_layered'], False), ('end', '151_veldo_0313_space_run', ['02_layered', '03_layered'], None), ('end', '02_layered', ['03_layered'], None), ('end', '03_layered', [], None)]; the exempt shard: {'151_veldo_0313_space_run': 'True', '02_layered': 'False', '03_layered': 'False'} {} ['151_veldo_0313_space_run']"
+     "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard",
+     "{'04_named': [('no_verdict', 'its process ended (exit 1) without reporting a verdict')], '05_held': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/14/v221-23c3gkxo/fixture-tmp/held-entry was left behind (a process of the shard's own tree held it when it appeared)\")], '03_refers': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/14/v221-23c3gkxo/fixture-tmp/refers was left behind (it refers to a shard's roots)\")]} [{'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/14/v221-23c3gkxo/fixture-tmp/orphan-entry', 'suspects': ['01_a', '02_b', '03_refers', '04_named', '05_held']}] ['held-entry', 'orphan-entry', 'refers']"
     ]
    ]
   },
@@ -592,7 +617,7 @@
    "case": "shards221-signal-unscoped",
    "mode": "baseline",
    "module": "agent_sandbox.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/no-signal-between-shards"
@@ -610,7 +635,7 @@
    "case": "shards221-signal-unscoped",
    "mode": "noop",
    "module": "agent_sandbox.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/no-signal-between-shards"
@@ -628,7 +653,7 @@
    "case": "shards221-signal-unscoped",
    "mode": "mutant",
    "module": "agent_sandbox.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 AC2 suite-shards/no-signal-between-shards"
    ],
@@ -650,63 +675,63 @@
    ]
   },
   {
-   "case": "shards221-orphan-entry-allowed",
+   "case": "shards221-tree-tie-dropped",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/unattributed-entry-fails-the-leg"
+    "suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-orphan-entry-allowed",
+   "case": "shards221-tree-tie-dropped",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/unattributed-entry-fails-the-leg"
+    "suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-orphan-entry-allowed",
+   "case": "shards221-tree-tie-dropped",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
-    "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg"
+    "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "registered_rows": [
-    "suite-shards/unattributed-entry-fails-the-leg"
+    "suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "targets": {
-    "suite-shards/unattributed-entry-fails-the-leg": [
+    "suite-shards/own-temporary-entry-fails-its-shard": [
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "9ca765204c6d9d0c04cdda6621a888731885f9f0b9f825c14e85c358841d139d",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "e746e141c24c83137bf24a0496ba98d69b8c73bf23235548f0ae069ad13dbafe",
    "why": [
     [
-     "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg",
-     "{'03_refers': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-9uueulbc/17/v221-6yk3xxsg/fixture-tmp/refers was left behind (it refers to a shard's roots)\")]} ['selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-9uueulbc/17/sht18h4o0/01*; instance c902b7e301_02_b; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', '  SELFTEST FAIL: suite-shard 03_refers isolation_breach', \"     isolation_breach: temporary directory: /tmp/veldo-mutations-9uueulbc/17/v221-6yk3xxsg/f"
+     "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard",
+     "{'04_named': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/19/v221-gnuu64jk/fixture-tmp/left-f7cea77603_04_named was left behind (its name carries the shard's instance name)\")], '03_refers': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/19/v221-gnuu64jk/fixture-tmp/refers was left behind (it refers to a shard's roots)\")]} [{'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/19/v221-gnuu64jk/fixture-tmp/held-entry', 'suspects': ['05_held']}, {'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/19/v221-gnuu64jk/fixture-tmp/orphan-entry', 'suspects': ['01_a', '02_b', '03_refers', '04_named', '05_held']}] ['held-entry', 'left-f7cea77603_04_named', 'orphan-entry', 'refers']"
     ]
    ]
   },
@@ -714,7 +739,7 @@
    "case": "shards221-deadline-from-start",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/deadline-runs-from-the-last-progress"
@@ -724,15 +749,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-deadline-from-start",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/deadline-runs-from-the-last-progress"
@@ -742,15 +767,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-deadline-from-start",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 suite-shards/deadline-runs-from-the-last-progress"
    ],
@@ -762,8 +787,8 @@
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "04465fe77203d3a1be35066ff359879abf31af59e84e98dec13a3eb14b58c9e1",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "f787667dae5aa714dd40516dee9c487bacd262b64626a52f4b769b2f85d5e46d",
    "why": [
     [
      "VELDO-0221 suite-shards/deadline-runs-from-the-last-progress",
@@ -772,134 +797,251 @@
    ]
   },
   {
-   "case": "shards221-runtime-beneath-temporary",
+   "case": "shards221-unattributed-temporary-entry-charged",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/runtime-directory-outside-the-temporary-directory"
+    "suite-shards/unattributed-temporary-entry-is-recorded-not-charged"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-runtime-beneath-temporary",
+   "case": "shards221-unattributed-temporary-entry-charged",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/runtime-directory-outside-the-temporary-directory"
+    "suite-shards/unattributed-temporary-entry-is-recorded-not-charged"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-runtime-beneath-temporary",
+   "case": "shards221-unattributed-temporary-entry-charged",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
-    "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory"
+    "VELDO-0221 AC3 suite-shards/unattributed-temporary-entry-is-recorded-not-charged",
+    "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "registered_rows": [
-    "suite-shards/runtime-directory-outside-the-temporary-directory"
+    "suite-shards/unattributed-temporary-entry-is-recorded-not-charged"
    ],
    "targets": {
-    "suite-shards/runtime-directory-outside-the-temporary-directory": [
+    "suite-shards/unattributed-temporary-entry-is-recorded-not-charged": [
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "7b5ec03a28f2b7ce2f0a0924b758dda65ef1efafa1163dadb03b8f434ad1cdf7",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "2a1595fa55b558b490928e119975eeb3f2441bb5a33c04168a3ca751b0003f74",
    "why": [
     [
-     "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
-     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-9uueulbc/20/sy9ugoh32/00r'), PosixPath('/tmp/veldo-mutations-9uueulbc/20/sy9ugoh32/01r')], [PosixPath('/tmp/veldo-mutations-9uueulbc/20/sy9ugoh32/00h'), PosixPath('/tmp/veldo-mutations-9uueulbc/20/sy9ugoh32/01h')], '3c1954dc', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']]), 'confined': ([PosixPath('/tmp/veldo-mutations-9uueulbc/20/"
+     "VELDO-0221 AC3 suite-shards/unattributed-temporary-entry-is-recorded-not-charged",
+     "{'(the leg)': [('isolation_breach', 'temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/orphan-entry appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_a, 02_b')]} [] ['selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-o0gl_3c_/20/sz3e6qbpj/01*; instance 017464e101_02_b; 1 passed, 0 failed; wall 0.1s cpu 0.0s peak 44 MiB', '  SELFTEST FAIL: suite-shard-leg unconfined isolation_breach', '     isolation_breach: temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/orphan-entry appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_a, 02_b', \"selftest leg unconfined: 2 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 2 running; isolation check FAILED: isolation_breach; critical shard 02_b 0.1s; wall 0.1s\", '   the dispatcher itself: 1.4s CPU, peak 44 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token 017464e1']"
+    ],
+    [
+     "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard",
+     "{'05_held': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/held-entry was left behind (a process of the shard's own tree held it when it appeared)\")], '04_named': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/left-9002eb6703_04_named was left behind (its name carries the shard's instance name)\")], '03_refers': [('isolation_breach', \"temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/refers was left behind (it refers to a shard's roots)\")], '(the leg)': [('isolation_breach', 'temporary directory: /tmp/veldo-mutations-o0gl_3c_/20/v221-yckvy4uj/fixture-tmp/orphan-entry appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 01_a, 02_b, 03_refers, 04_named, 05_held')]} [] ['held-entry', 'left-9002eb6703_04_named', 'orphan-entry', 'refers']"
     ]
    ]
   },
   {
-   "case": "shards221-unconfined-shard-unnamed",
+   "case": "shards221-own-temporary-entry-allowed",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/isolated-by-construction"
+    "suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-unconfined-shard-unnamed",
+   "case": "shards221-own-temporary-entry-allowed",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
-    "suite-shards/isolated-by-construction"
+    "suite-shards/own-temporary-entry-fails-its-shard"
    ],
    "targets": {
     "suite-shards/coverage": [
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
-   "case": "shards221-unconfined-shard-unnamed",
+   "case": "shards221-own-temporary-entry-allowed",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
-    "VELDO-0221 AC2 suite-shards/isolated-by-construction",
-    "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
+    "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard"
+   ],
+   "registered_rows": [
+    "suite-shards/own-temporary-entry-fails-its-shard"
+   ],
+   "targets": {
+    "suite-shards/own-temporary-entry-fails-its-shard": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "136279c1e6ddfb6294fa8e27158ee83e1f2e1b8f702513d9f38b2f63cce2a8d0",
+   "why": [
+    [
+     "VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard",
+     "{} [{'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/18/v221-qqa259er/fixture-tmp/held-entry', 'suspects': ['03_refers', '04_named', '05_held']}, {'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/18/v221-qqa259er/fixture-tmp/left-171ff6a103_04_named', 'suspects': ['03_refers', '04_named', '05_held']}, {'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/18/v221-qqa259er/fixture-tmp/orphan-entry', 'suspects': ['01_a', '02_b', '03_refers', '04_named', '05_held']}, {'place': 'temporary directory', 'path': '/tmp/veldo-mutations-o0gl_3c_/18/v221-qqa259er/fixture-tmp/refers', 'suspects': ['03_refers', '04_named', '05_held']}] ['held-entry', 'left-171ff6a103_04_named', 'orphan-entry', 'refers']"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-orphan-entry-allowed",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/unattributed-entry-fails-the-leg"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-orphan-entry-allowed",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/unattributed-entry-fails-the-leg"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-orphan-entry-allowed",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg"
+   ],
+   "registered_rows": [
+    "suite-shards/unattributed-entry-fails-the-leg"
+   ],
+   "targets": {
+    "suite-shards/unattributed-entry-fails-the-leg": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "becdd6dc64965c2766e8af3a045028dcb4fb68db1c936a3ed2e52dae2d2284df",
+   "why": [
+    [
+     "VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg",
+     "{'03_refers': [('isolation_breach', \"/dev/shm: /tmp/veldo-mutations-o0gl_3c_/17/v221-1l3q3o7l/fixture-tmp/refers was left behind (it refers to a shard's roots)\")]} ['selftest shard 01 02_b: closure 02_b; roots /tmp/veldo-mutations-o0gl_3c_/17/sbslma0qu/01*; instance 4376c7d201_02_b; 1 passed, 0 failed; wall 0.0s cpu 0.0s peak 44 MiB', '  SELFTEST FAIL: suite-shard 03_refers isolation_breach', \"     isolation_breach: /dev/shm: /tmp/veldo-mutations-o0gl_3c_/17/v221-1l3q3o7l/fixture-tmp/refers was left behind (it refers to a shard's roots)\", \"selftest leg unconfined: 3 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 3 running; isolation check FAILED: isolation_breach; critical shard 02_b 0.0s; wall 0.1s\", '   the dispatcher itself: 1.3s CPU, peak 44 MiB; shards ended at 0.1s, the isolation check took 0.0s; instance token 4376c7d2', '   isolation note, not charged: /dev/shm: /tmp/veldo-mutations-o0gl_3c_/17/v221-1l3q3o7l/fixture-tmp/orphan-entry appeared during the leg, was left behind and could be tied to no shard']"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-unlayered-beside-others",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-unlayered-beside-others",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/isolation-checked"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-unlayered-beside-others",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
     "VELDO-0221 AC3 suite-shards/isolation-checked"
    ],
    "registered_rows": [
-    "suite-shards/isolated-by-construction"
+    "suite-shards/isolation-checked"
    ],
    "targets": {
-    "suite-shards/isolated-by-construction": [
+    "suite-shards/isolation-checked": [
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "7c0f4f3f6a307be3719991701a9753f8e17b4007e97ada55a07c94a551cb7a59",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "012631e0a27cc6135cee443685f80a34d0d15669738311addedbcb9bd21a69f0",
    "why": [
     [
-     "VELDO-0221 AC2 suite-shards/isolated-by-construction",
-     "unconfined: a runtime directory holds more than the manager's sockets: {'02_second': ['bus', 'systemd', 'systemd/private', 'systemd/user'], '01_first': ['bus', 'systemd', 'systemd/private', 'systemd/user']}; unconfined: 02_second names something without its instance name: {'authority': 'veldo-authority-80299d9f61a53f56.service', 'api': 'veldo-api-80299d9f61a53f56.service', 'slice': 'veldo-workers.slice', 'scope': 'veldo-dispatch-539ed001eef41a4c78b4182d5dfa70e3.scope', 'instance': '', 'same_rule"
-    ],
-    [
-     "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
-     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-9uueulbc/14/v221-69wv0i4p/fixture-run-user/veldo-leg-eb8b5348-3ydvk3q_/00'), PosixPath('/tmp/veldo-mutations-9uueulbc/14/v221-69wv0i4p/fixture-run-user/veldo-leg-eb8b5348-3ydvk3q_/01')], [PosixPath('/tmp/veldo-mutations-9uueulbc/14/sxlxlsh3r/00h'), PosixPath('/tmp/veldo-mutations-9uueulbc/14/sxlxlsh3r/01h')], 'eb8b5348', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user'], ['bus', 'systemd', 'systemd/private', 'systemd/user']]), 'confine"
-    ],
-    [
      "VELDO-0221 AC3 suite-shards/isolation-checked",
-     "force-fresh None: charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['no_verdict'], '04_prefixed_unit': ['no_verdict'], '05_tidy': [], '06_leaves_scope': ['no_verdict']}; force-fresh '0': charged {'01_clean': [], '02_leaves_shm': ['isolation_breach'], '03_starts_unit': ['no_verdict'], '04_prefixed_unit': ['no_verdict'], '05_tidy': [], '06_leaves_scope': ['no_verdict']}"
+     "the exempt shard did not run alone: [('start', '02_layered', [], False), ('start', '03_layered', ['02_layered'], False), ('start', '151_veldo_0313_space_run', ['02_layered', '03_layered'], False), ('end', '151_veldo_0313_space_run', ['02_layered', '03_layered'], None), ('end', '02_layered', ['03_layered'], None), ('end', '03_layered', [], None)]; the exempt shard: {'151_veldo_0313_space_run': 'True', '02_layered': 'False', '03_layered': 'False'} {} ['151_veldo_0313_space_run']"
     ]
    ]
   },
@@ -907,7 +1049,7 @@
    "case": "shards221-xdg-always-named",
    "mode": "baseline",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/isolated-by-construction"
@@ -917,15 +1059,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-xdg-always-named",
    "mode": "noop",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [],
    "registered_rows": [
     "suite-shards/isolated-by-construction"
@@ -935,15 +1077,15 @@
      true
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
    "why": []
   },
   {
    "case": "shards221-xdg-always-named",
    "mode": "mutant",
    "module": "run_scope.py",
-   "rows_observed": 49,
+   "rows_observed": 51,
    "failed_rows": [
     "VELDO-0221 AC2 suite-shards/isolated-by-construction"
    ],
@@ -955,12 +1097,73 @@
      false
     ]
    },
-   "module_digest_before": "4de8d4e28b742a6cd83496285d01739b8ca6ca7a17a04e86e409f64768558e74",
-   "module_digest_run": "550a509008fdba44cec74018e3f6d685db6a300375d8055ca9cba8ff7a16deba",
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "2562a8c9553c87f79380693ea79f906341cb51c9b320a988476c288e5e047dd4",
    "why": [
     [
      "VELDO-0221 AC2 suite-shards/isolated-by-construction",
-     "a shard names an XDG directory its leg does not, or inherits the leg's: [{'HOME': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00h', 'TMPDIR': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-9uueulbc/19/s2q190qhi/00s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutati"
+     "a shard names an XDG directory its leg does not, or inherits the leg's: [{'HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/01r'}, {'HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00h', 'TMPDIR': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00', 'XDG_CONFIG_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00c', 'XDG_DATA_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00d', 'XDG_CACHE_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00k', 'XDG_STATE_HOME': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00s', 'XDG_RUNTIME_DIR': '/tmp/veldo-mutations-o0gl_3c_/22/srnw_nycp/00r'}]"
+    ]
+   ]
+  },
+  {
+   "case": "shards221-runtime-beneath-temporary",
+   "mode": "baseline",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/runtime-directory-outside-the-temporary-directory"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-runtime-beneath-temporary",
+   "mode": "noop",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [],
+   "registered_rows": [
+    "suite-shards/runtime-directory-outside-the-temporary-directory"
+   ],
+   "targets": {
+    "suite-shards/coverage": [
+     true
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "why": []
+  },
+  {
+   "case": "shards221-runtime-beneath-temporary",
+   "mode": "mutant",
+   "module": "run_scope.py",
+   "rows_observed": 51,
+   "failed_rows": [
+    "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory"
+   ],
+   "registered_rows": [
+    "suite-shards/runtime-directory-outside-the-temporary-directory"
+   ],
+   "targets": {
+    "suite-shards/runtime-directory-outside-the-temporary-directory": [
+     false
+    ]
+   },
+   "module_digest_before": "76c66307fb0788d56c801743c7fefb5f2e7e46452a43e1420e65e7b627b96a8e",
+   "module_digest_run": "0ae2457faaae3546923952f791791a58755125612b99643d379db29c1c4f988b",
+   "why": [
+    [
+     "VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory",
+     "{'unconfined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/sa4bqrvi6/00r'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/sa4bqrvi6/01r')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/sa4bqrvi6/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/sa4bqrvi6/01h')], '7a9291c4', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']]), 'confined': ([PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/s3bzogp_3/00r'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/s3bzogp_3/01r')], [PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/s3bzogp_3/00h'), PosixPath('/tmp/veldo-mutations-o0gl_3c_/23/s3bzogp_3/01h')], 'e8f85a60', 0, [], [['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json'], ['bus', 'systemd', 'systemd/private', 'systemd/user', 'veldo-instance.json']])} []"
     ]
    ]
   }
