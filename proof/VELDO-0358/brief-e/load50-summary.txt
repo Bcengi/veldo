@@ -1,0 +1,13 @@
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 1273970, "slots": 4, "spinners": [1273267, 1273297, 1273365, 1273401, 1273439, 1273483, 1273607, 1273627, 1273668, 1273722, 1273808, 1273882], "writers": [1273946]}
+62_veldo_0039_dispatch: 50 runs, 49 with 0 failed
+      1   SELFTEST FAIL: VELDO-0039 dispatch/service-principals-only
+      1   SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema
+63_veldo_0040_containment: 50 runs, 50 with 0 failed
+78_veldo_0060_claude_adapter: 50 runs, 50 with 0 failed
+106_veldo_0185_dispatch_setup: 50 runs, 49 with 0 failed
+      1   SELFTEST FAIL: VELDO-0185 every-account: every unit was built and reviewed, each to a completion [{'claude-a': [('v185-u1', 'build', 'refused', False, 'missing_authority:account_login:claude-a')], '
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000569487, "slowdown": 5.2, "waited_ns": 4202861930}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 841.864, "pid": 1273267}, {"alive": true, "cpu": 16, "cpu_seconds": 841.866, "pid": 1273297}, {"alive": true, "cpu": 16, "cpu_seconds": 841.865, "pid": 1273365}, {"alive": true, "cpu": 17, "cpu_seconds": 799.827, "pid": 1273401}, {"alive": true, "cpu": 17, "cpu_seconds": 799.827, "pid": 1273439}, {"alive": true, "cpu": 17, "cpu_seconds": 799.828, "pid": 1273483}, {"alive
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 9560.0s (least 770.304s)
+load: 1 writers: 1 alive to the end, bytes written [1748588560384]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000569487, "slowdown": 5.2, "waited_ns": 4202861930} (data, no verdict)
+exit 0
