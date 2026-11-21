@@ -1,0 +1,26 @@
+====================================================================================================
+CASE wait261-impossible-returns-none targets ['wait/expiry-report']
+baseline rc 0 rows 48 failed [] targets {'wait/expiry-report': [True]}
+noop rc 0 rows 48 failed [] targets {'wait/expiry-report': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -508 +508 @@
+-    if result.done:
++    if result.done or result.impossible:  # defect: a wait that cannot succeed reports nothing
+mutant rc 0 rows 48 failed ['VELDO-0261 AC2 wait/expiry-report'] targets {'wait/expiry-report': [False]}
+   detail VELDO-0261 AC2 wait/expiry-report wait_for given a condition that never holds and a terminal condition that comes (its producer exited, on the producer's pidfd) returns the report, as the impossible outcome, naming what it waited for, the caller's former bound and its source, the last observation of both conditions and the source it woke on (report: None; polls: 2)
+RESULT wait261-impossible-returns-none REJECTED {'baseline': True, 'noop': True, 'mutant': True}
+====================================================================================================
+CASE wait261-expiry-returns-false targets ['wait/expiry-hung']
+baseline rc 0 rows 48 failed [] targets {'wait/expiry-hung': [True]}
+noop rc 0 rows 48 failed [] targets {'wait/expiry-hung': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -485,0 +486 @@
++                return Result('expired', name, where, done_obs, terminal_obs, [], bound)  # defect
+mutant rc 0 rows 48 failed ['VELDO-0261 AC2 wait/expiry-hung'] targets {'wait/expiry-hung': [False]}
+   detail VELDO-0261 AC2 wait/expiry-hung wait_for given a condition that never holds and no terminal condition never returns a report or a false result once the wait hang bound passes: its process ends with the hung status and a SELFTEST HUNG line naming the wait, the line it waits at, the bound and the last observation (status 0; hung line: ''; stdout tail: 'RETURNED "expired for a condition that never holds (<string>:10), bound 1 s (waits.WAIT_HANG_SECONDS); last observed: done={\'poll\': 2}, terminal=None; sources: none (the caller once bounded this at 0.3 s: the row bound)"\n')
+RESULT wait261-expiry-returns-false REJECTED {'baseline': True, 'noop': True, 'mutant': True}
+ALL REJECTED

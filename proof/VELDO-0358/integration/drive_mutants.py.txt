@@ -1,0 +1,63 @@
+"""The integration's falsifiers, driven through the mutation driver's own worker (brief A's driver, taking
+case names). Each named case runs in baseline, no-op and mutant mode; the diff shows the mutant landed.
+Usage: python3 drive_mutants.py.txt <repository root> <case name>..."""
+import difflib
+import importlib.util as u
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+root = Path(sys.argv[1]).resolve()
+s = u.spec_from_file_location('t', root / 'scripts/check_teeth_mutations.py')
+m = u.module_from_spec(s)
+s.loader.exec_module(m)
+names = sys.argv[2:]
+cases = [c for c in m.cases() if c['name'] in names]
+missing = set(names) - {c['name'] for c in cases}
+ok = not missing
+if missing:
+    print('NOT REGISTERED', sorted(missing))
+
+
+def worker(case, mutant=None):
+    cmd = [sys.executable, str(root / 'scripts/check_teeth_mutations.py'), '--worker', case['name']]
+    if mutant:
+        cmd += ['--mutant', str(mutant)]
+    p = subprocess.run(cmd, capture_output=True, text=True, cwd=str(root), stdin=subprocess.DEVNULL)
+    try:
+        return p.returncode, json.loads(p.stdout.strip().splitlines()[-1]), p.stdout
+    except Exception:
+        return p.returncode, None, p.stdout[-2000:] + p.stderr[-2000:]
+
+
+for case in cases:
+    print('=' * 100)
+    print('CASE', case['name'], 'targets', case['rows'])
+    verdict = {}
+    for mode in ('baseline', 'noop', 'mutant'):
+        d = tempfile.mkdtemp(prefix='v358-int-mut-')
+        info = m.materialize(case, mode, d)
+        if mode == 'mutant':
+            before = info['source'].read_text().splitlines()
+            after = Path(info['mutant']).read_text().splitlines() if Path(info['mutant']).is_file() else []
+            print('DIFF (proves the mutant landed):')
+            print('\n'.join(difflib.unified_diff(before, after, 'subject', 'mutant', n=0, lineterm='')))
+        rc, res, raw = worker(case, info['mutant'])
+        if res is None:
+            print(mode, 'rc', rc, 'NO JSON:', raw)
+            verdict[mode] = None
+            continue
+        print(mode, 'rc', rc, 'rows', res['count'], 'failed', res['failed_rows'], 'targets', res['targets'])
+        for row, detail in res['failed_details']:
+            print('   detail', row, detail[:700])
+        verdict[mode] = all(v == [True] for v in res['targets'].values()) if res['targets'] else False
+        if mode == 'mutant':
+            verdict[mode] = any(False in v for v in res['targets'].values())
+    good = verdict.get('baseline') and verdict.get('noop') and verdict.get('mutant')
+    print('RESULT', case['name'], 'REJECTED' if good else 'NOT REJECTED', verdict)
+    ok = ok and bool(good)
+print('ALL REJECTED' if ok else 'NOT ALL REJECTED')
+sys.exit(0 if ok else 1)
