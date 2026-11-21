@@ -423,8 +423,11 @@ class Host:
         run = Path(tempfile.mkdtemp(prefix='v204s-'))
         observations = self.base / 'v204-serve-observations.jsonl'
         config = self.base / 'v204-serve.json'
+        # VELDO-0117: this hand-written configuration names its own domain registry. The default is found from
+        # the installer's layout (two directories above the observations), which this fixture does not have.
         config.write_text(json.dumps(dict(self.config, socket=str(run / 'authority.sock'),
-                                          observations=str(observations))))
+                                          observations=str(observations),
+                                          domain_registry=str(self.base / 'v204-serve-domains.sqlite3'))))
         config.chmod(0o600)
         errors = self.base / 'v204-serve.err'
         notification = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)

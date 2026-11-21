@@ -32,7 +32,37 @@ the line, so its diff was ported, not replayed commit by commit):
 
 ## Results on the new base
 
-Alone on the port: suite 113_veldo_0117_domain_store 3 rows passed, 46_veldo_0029_enrollment 7 rows
-passed, and mutant v117-registration-not-atomic is killed with the event-based overlap check.
-The three heavy steps (red-before, green-after, teeth) are recorded in manifest.json and the
-summaries once they have run through the host lock.
+Ported at 10d4ba11. Each run below is one suite alone or one step of `heavy_runs.sh`.
+
+- Suite 113_veldo_0117_domain_store: 3 rows passed. Suite 46_veldo_0029_enrollment: 7 rows passed.
+- `heavy_summary.py red-before --base 0b767d26`: pass. On the four product modules of the line
+  before this ticket all three rows are red on their named checks (red-before.summary.json).
+- `heavy_summary.py green-after --runs 3`: pass, three runs (green-after.summary.json).
+- Teeth: `v117-registration-not-atomic` run alone and killed. The step for all ten mutants is a
+  loaded run and did not get the host lock in this session (queued twice for two hours each behind
+  a gate and other holders). It is still owed: `bash proof/VELDO-0117/heavy_runs.sh` through the
+  lock. `teeth.summary.json` is the source branch's run.
+- The 53 suites that name `control_service` or `control_factory_setup`, each alone at the bring-up
+  head: all pass, three of them after a change this ticket made necessary (next section).
+
+`heavy_summary.py` writes its summaries itself: the line has no `validate.write_proof_summary`
+(that writer is VELDO-0270's and VELDO-0270 is not on the line). The record has the same fields.
+
+## Needs review: the registry's default path and three suites
+
+The service registers its store in `domains.sqlite3`, found two directories above the
+configuration's `observations` file. That is the install root in the installer's layout only.
+
+- 85_veldo_0171_setup_api, row rerun/over-0139-host, listed exactly the files a rerun adds
+  outside the installed engine. The started service now adds the registry (and SQLite's -shm and
+  -wal while it is open). The row sets those three names apart and checks the registry is there.
+- 123_veldo_0174_conversations (fixture `scripts/suites/support/v174_journey.py`): its services
+  keep `observations` directly in their home, so services of several scratch roots resolved to one
+  registry, and the second store of the fixture's one domain was refused `domain_store_conflict`
+  (AC2/restart-turns). Each fixture service now names its own `domain_registry`.
+- 96_veldo_0204_reservation_policies (fixture `proof/VELDO-0204/host.py`): the default resolved to
+  a directory the fixture could not write, and the service did not start. Same remedy.
+
+A hand-written configuration with another layout gets a registry outside its own tree. Whether
+the default should be derived another way (from `state_root`, say) is a question for the ticket,
+not settled by the bring-up.
