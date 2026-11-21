@@ -1,0 +1,13 @@
+Mutation case ui179-send-hidden-360 run alone, unconfined, through the driver's own entries: check_teeth_mutations.materialize() for
+the no-op and the mutant copy and 'python3 scripts/check_teeth_mutations.py --worker ui179-send-hidden-360 [--mutant PATH]' for baseline,
+no-op and mutant (the runner is quoted in proof/VELDO-0179/alone.py), in a transient user scope (MemoryMax=8G,
+MemorySwapMax=0). Through scripts/check_gate_mutations.py the case runs in the confined leg until suites 134 and 135
+are on scripts/gate_unconfined.json (see OPEN.md).
+
+case: ui179-send-hidden-360 | suite: 135_veldo_0179_conversation_layout.py | module: engine/ui/src/views ConversationView.vue | rows: ['ac3/screens-360']
+at: 51a51023
+baseline: exit 0, 89s, module sha256 e26a3d66e7283b26, 35 rows observed, failed rows [], target rows green {'ac3/screens-360': True}
+noop: exit 0, 90s, module sha256 e26a3d66e7283b26, 35 rows observed, failed rows [], target rows green {'ac3/screens-360': True}
+mutant: exit 0, 101s, module sha256 fdc79dfdbc90c589, 35 rows observed, failed rows ['VELDO-0179 ac3/screens-360'], target rows green {'ac3/screens-360': False}
+   VELDO-0179 ac3/screens-360 detail: its browser test ran and passed [['failed']; +   "conversation-empty: above the keyboard send covered by screen-bar", | +   "conversation-waiting: primary action [data-testid=\"message-send\"] not visible", | +   "conversation-waiting: above the keyboard send covered by screen-bar", | +   "conversation: primary action [data-testid=\"message-send\"] not visible", | +   "conversation: above the keyboard send covered by screen-bar", | + ]]
+verdict: KILLED (baseline and no-op green, every target row red under the mutant)

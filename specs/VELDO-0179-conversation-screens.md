@@ -12,7 +12,7 @@ work: W139
 plan_revision: 4
 depends_on: [VELDO-0131, VELDO-0145, VELDO-0178]
 placement: [loop, distribution]
-protected_paths: []
+protected_paths: ["scripts/gate_unconfined.json"]
 footprint:
   - "engine/ui/**"
   - "packs/*/ui/**"
@@ -25,6 +25,7 @@ footprint:
   - "specs/VELDO-0179-conversation-screens.md"
   - "specs/index.md"
   - "proof/VELDO-0179/*"
+  - "scripts/gate_unconfined.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -44,7 +45,7 @@ acceptance_criteria:
       Claim: The owner starts, continues, changes the role of, attaches a project to and closes
       conversations in the UI, and every message and reply is shown as written, with the running turn's
       state, entirely through the API. Set and completeness: The
-      React shell of VELDO-0145 gains a conversations list (open first, then closed, each with its opening
+      Vue 3 shell of VELDO-0145 gains a conversations list (open first, then closed, each with its opening
       words, role and last activity) and a conversation screen showing every turn in order with the owner's
       message, the reply and the outcome, a waiting or running marker on the current turn, and a message box
       that posts through `messages.send` with the `conversation` field; "New conversation" posts through
@@ -102,7 +103,7 @@ each turn does, as he watches his assistant in the terminal today.
 ## Context
 
 W139 of [PLAN-0019 revision 4](../plans/PLAN-0019-dark-factory.md), Release 1 stage 5. VELDO-0145 owns
-the React shell, the run terminal and the decisions screen under PLAN-0019 C16; VELDO-0178 the API it
+the Vue 3 shell, the run terminal and the decisions screen under PLAN-0019 C16; VELDO-0178 the API it
 reads. A draft: only the owner marks it ready.
 
 ## Out of scope
@@ -133,3 +134,8 @@ marks a specification ready.
 depends_on adds VELDO-0131, whose rules AC3 applies. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: amended by the lead after the build (proof/VELDO-0179/OPEN.md items 1 and 4). The shell is Vue 3, the
+house stack in engine/ui since VELDO-0229, so "React shell" now reads "Vue 3 shell"; nothing else in AC1 changes.
+The two browser suites join the gate's unconfined list, scripts/gate_unconfined.json, a protected file that needs
+the owner's approval at landing.

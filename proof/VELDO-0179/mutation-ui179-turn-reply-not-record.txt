@@ -1,0 +1,13 @@
+Mutation case ui179-turn-reply-not-record run alone, unconfined, through the driver's own entries: check_teeth_mutations.materialize() for
+the no-op and the mutant copy and 'python3 scripts/check_teeth_mutations.py --worker ui179-turn-reply-not-record [--mutant PATH]' for baseline,
+no-op and mutant (the runner is quoted in proof/VELDO-0179/alone.py), in a transient user scope (MemoryMax=8G,
+MemorySwapMax=0). Through scripts/check_gate_mutations.py the case runs in the confined leg until suites 134 and 135
+are on scripts/gate_unconfined.json (see OPEN.md).
+
+case: ui179-turn-reply-not-record | suite: 134_veldo_0179_conversation_screens.py | module: engine/ui/src/views ConversationTurnView.vue | rows: ['ac2/terminal']
+at: 51a51023
+baseline: exit 0, 55s, module sha256 44fd9bebbecb1152, 33 rows observed, failed rows [], target rows green {'ac2/terminal': True}
+noop: exit 0, 52s, module sha256 44fd9bebbecb1152, 33 rows observed, failed rows [], target rows green {'ac2/terminal': True}
+mutant: exit 0, 73s, module sha256 d6484898abf1efbd, 33 rows observed, failed rows ['VELDO-0179 ac2/terminal'], target rows green {'ac2/terminal': False}
+   VELDO-0179 ac2/terminal detail: its browser test ran and passed [['failed']; Timeout:  30000ms | Call log: |   - Expect "toHaveCount" locator('[data-testid="lines"] li.tline').filter({ hasText: 'cat deploy.env' }) with timeout 30000ms |   - waiting for locator('[data-testid="lines"] li.tline').filter({ hasText: 'cat deploy.env' }) |     64 ? locator resolved to 0 elements |        - unexpected value "0"]
+verdict: KILLED (baseline and no-op green, every target row red under the mutant)

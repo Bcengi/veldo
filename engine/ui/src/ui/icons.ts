@@ -7,6 +7,7 @@ export const ICONS = [
   'i-lucide-layout-dashboard',
   'i-lucide-square-terminal',
   'i-lucide-inbox',
+  'i-lucide-messages-square',
   'i-lucide-server',
   'i-lucide-id-card',
   'i-lucide-users',

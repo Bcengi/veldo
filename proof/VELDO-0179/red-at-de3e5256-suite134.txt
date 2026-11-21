@@ -1,0 +1,36 @@
+Red record: suite 134 at the base de3e5256 (no conversation screens), with this change's tests laid over it
+(harness, browser specs, suites 134 and 135, manifest and requires from 92648d3e; suite 134 with its tightened unit row).
+Command: python3 scripts/selftest.py --suite <suite> in a transient user scope (MemoryMax=8G, MemorySwapMax=0).
+
+Running as unit: run-rcd1f5d8c2f3c4df7b05f98133ebf3510.scope; invocation ID: 1ed38a10e51a41cda1b553178be8b053
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 134_veldo_0179_conversation_screens
+  running     1 of 197 suites: 134_veldo_0179_conversation_screens
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  VELDO-0179 unit/conversations detail: the conversation screens' unit specs pass [3 passed, 0 of them the conversation screens', failed []; ]
+  SELFTEST FAIL: VELDO-0179 unit/conversations: the conversation screens' unit specs pass [3 passed, 0 of them the conversation screens', failed []; ]
+  VELDO-0179 ac1/journey detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac1/journey: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac1/as-written detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac1/as-written: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac1/stale-version detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac1/stale-version: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac1/list detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac1/list: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac1/api-only detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac1/api-only: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac2/terminal detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac2/terminal: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+VELDO-0179 suite seconds: 111.361
+  134_veldo_0179_conversation_screens              0 passed  111.36s
+selftest (PARTIAL, 1 of 197 suites): 26 passed, 7 failed in 111.36s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

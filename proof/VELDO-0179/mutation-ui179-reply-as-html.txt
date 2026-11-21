@@ -1,0 +1,13 @@
+Mutation case ui179-reply-as-html run alone, unconfined, through the driver's own entries: check_teeth_mutations.materialize() for
+the no-op and the mutant copy and 'python3 scripts/check_teeth_mutations.py --worker ui179-reply-as-html [--mutant PATH]' for baseline,
+no-op and mutant (the runner is quoted in proof/VELDO-0179/alone.py), in a transient user scope (MemoryMax=8G,
+MemorySwapMax=0). Through scripts/check_gate_mutations.py the case runs in the confined leg until suites 134 and 135
+are on scripts/gate_unconfined.json (see OPEN.md).
+
+case: ui179-reply-as-html | suite: 134_veldo_0179_conversation_screens.py | module: engine/ui/src/views ConversationView.vue | rows: ['ac1/as-written']
+at: 51a51023
+baseline: exit 0, 49s, module sha256 e26a3d66e7283b26, 33 rows observed, failed rows [], target rows green {'ac1/as-written': True}
+noop: exit 0, 45s, module sha256 e26a3d66e7283b26, 33 rows observed, failed rows [], target rows green {'ac1/as-written': True}
+mutant: exit 0, 88s, module sha256 18fab1a7260450a0, 33 rows observed, failed rows ['VELDO-0179 ac1/as-written'], target rows green {'ac1/as-written': False}
+   VELDO-0179 ac1/as-written detail: its browser test ran and passed [['failed']; Timeout:  30000ms | Call log: |   - Expect "toHaveText" getByTestId('turn-1').getByTestId('turn-reply') with timeout 30000ms |   - waiting for getByTestId('turn-1').getByTestId('turn-reply') |     59 ? locator resolved to <p class="conv-text" data-testid="turn-reply">?</p> |        - unexpected value "Fixed in migrate & seed; see this ."]
+verdict: KILLED (baseline and no-op green, every target row red under the mutant)
