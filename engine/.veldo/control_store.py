@@ -145,7 +145,7 @@ def _deadline(name, value, kind='deadline'):
     return value if TIMERS is None else TIMERS.register('control_store.' + name, value, 'control_store', kind)
 
 
-def timer(name):
+def _timer(name):
     """The effective value of this module's timer `name` now: the table's, under any profile."""
     return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_store.' + name)
 
@@ -443,11 +443,11 @@ def open_store(path, mode="rw", mounts_text=None, allow_unbackfilled=False):
         if problems:
             raise StoreRefused("unsupported_filesystem", "; ".join(problems))
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        conn = sqlite3.connect(target, isolation_level=None, timeout=timer('BUSY_SECONDS'), factory=StoreConnection)
+        conn = sqlite3.connect(target, isolation_level=None, timeout=_timer('BUSY_SECONDS'), factory=StoreConnection)
     else:
         if not os.path.exists(target):
             raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
-        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=timer('BUSY_SECONDS'),
+        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=_timer('BUSY_SECONDS'),
                                factory=StoreConnection)
     conn.execute("PRAGMA foreign_keys=ON")
     if mode == "rw":
