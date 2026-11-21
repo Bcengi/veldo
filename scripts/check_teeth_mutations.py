@@ -18257,6 +18257,49 @@ def cases():
         ['admission/qualification-capture'])
     result[-1]['dir'] = 'proof/VELDO-0219'
     # END VELDO-0358 BRIEF C
+    # ==== VELDO-0358 BRIEF H: browser tests (AC10 and AC15 for suites 120, 121 and 124; AC5 for a browser run) ====
+    # Each case is one of brief H's criteria falsified. All run in suite 121, the lightest of the three: it lays the
+    # browser tests' own files over its scratch copy through literal anchors (E2E) and reads them in its census row.
+    def wave358h(name, directory, module, old, new, rows):
+        add(358, name, '121_veldo_0131_factory_screens_narrow.py', module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC10: restore the ten second expectation of the browser configuration.
+    wave358h('wave358-browser-expectation-restored', 'engine/ui', 'playwright.config.ts',
+             "  expect: { timeout: WAIT_HANG_MS },\n",
+             "  expect: { timeout: 10_000 },  // defect: an expectation gives up after ten seconds\n",
+             ['wave1/no-sites'])
+    # AC10: restore the fixed wait after the hover in the layout specification.
+    wave358h('wave358-browser-fixed-wait-restored', 'engine/ui/e2e', 'layout.spec.ts',
+             "    await button.hover()\n"
+             "    // The fill transitions: it is read once the page says its transitions have ended (the page settled signal).\n"
+             "    await settled(page)\n",
+             "    await button.hover()\n"
+             "    await page.waitForTimeout(250)  // defect: a fixed wait in place of the page's own state\n",
+             ['wave1/no-sites'])
+    # AC10: restore a limit on one test's total time.
+    wave358h('wave358-browser-test-limit-restored', 'engine/ui/e2e', 'factory.spec.ts',
+             "  test(`ac1/screens-${viewport.width}: every screen row and state at ${viewport.width}px`, async ({ browser, factory }) => {\n",
+             "  test(`ac1/screens-${viewport.width}: every screen row and state at ${viewport.width}px`, async ({ browser, factory }) => {\n"
+             "    test.setTimeout(600_000)  // defect: the test is ended for its total time\n",
+             ['wave1/no-sites'])
+    # AC15: the harness leaves the product's timers at their own values (the profile is not selected).
+    wave358h('timers358-browser-profile-skipped', 'engine/ui/e2e', 'harness.py',
+             "            self.timers.set_profile(None, hang_seconds=WAIT_HANG_SECONDS)\n",
+             "            pass  # defect: the timers profile is reported and never selected\n",
+             ['timers/profile-applied'])
+    # AC5 (a browser run): the run's bound is armed once, so it counts from the run's start.
+    wave358h('wait358-browser-watchdog-total-time', 'engine/ui/e2e', 'fixtures.ts',
+             "    this.timers.clear(this.timer)\n"
+             "    this.timer = this.timers.set(() => this.hung(), this.bound)\n",
+             "    if (this.timer === null) this.timer = this.timers.set(() => this.hung(), this.bound)  // defect: armed once\n",
+             ['browser/hang-by-progress'])
+    # AC5 (a browser run): the run is ended without saying what was in flight.
+    wave358h('wait358-browser-watchdog-silent', 'engine/ui/e2e', 'fixtures.ts',
+             " In flight: ${[...this.flying.values()].join('; ') || 'nothing'}.`,\n",
+             "`,  // defect: the run is ended and nothing in flight is named\n",
+             ['browser/hang-by-progress'])
+    # ==== end of VELDO-0358 brief H ====
 
     # ==== VELDO-0358 BRIEF G: space run, isolation and ownership (AC10 for suites 151_veldo_0313 and 66_veldo_0042,
     # scripts/suites/support/v171_tailscale.py and scripts/mutation_ownership.py) ====

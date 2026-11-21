@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import type { Browser, Page, Route } from '@playwright/test'
-import { expect, guard, routeOf, signIn, test, type FactoryUi } from './factory-fixtures'
+import { expect, guard, routeOf, settled, signIn, test, unique, type FactoryUi } from './factory-fixtures'
 
 /**
  * VELDO-0131: the factory screens on phone and desktop. Each test's title begins with its row name (the Python
@@ -266,21 +266,6 @@ async function measure(page: Page, primary: string | null, phone: boolean): Prom
   )
 }
 
-/** Count, in the page itself, the requests it has sent and the API has not yet answered. The returned wait
- * ends when there is none: what a screen shows next is then what the API said before, never after. */
-async function unanswered(page: Page) {
-  await page.addInitScript(() => {
-    const w = window as unknown as { __unanswered: number }
-    const send = window.fetch.bind(window)
-    w.__unanswered = 0
-    window.fetch = (...args: Parameters<typeof fetch>) => {
-      w.__unanswered += 1
-      return send(...args).finally(() => (w.__unanswered -= 1))
-    }
-  })
-  return () => page.waitForFunction(() => (window as unknown as { __unanswered: number }).__unanswered === 0)
-}
-
 async function pageAs(browser: Browser, factory: FactoryUi, who: string, viewport: { width: number; height: number }) {
   const phone = viewport.width < 768
   const context = await browser.newContext({ viewport, hasTouch: phone, isMobile: phone })
@@ -292,7 +277,6 @@ async function pageAs(browser: Browser, factory: FactoryUi, who: string, viewpor
 for (const viewport of WIDTHS) {
   const phone = viewport.width < 768
   test(`ac1/screens-${viewport.width}: every screen row and state at ${viewport.width}px`, async ({ browser, factory }) => {
-    test.setTimeout(600_000)
     const failures: string[] = []
     const pages = new Map<string, Page>()
     for (const render of renders()) {
@@ -334,7 +318,6 @@ for (const viewport of WIDTHS) {
 }
 
 test('ac2/live: assignment, step and tool call, stop, gate and review, and completion reach the open screens', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   await page.goto(factory.origin + '/workers')
   await expect(page.getByTestId('workers')).toBeVisible()
@@ -363,9 +346,11 @@ test('ac2/live: assignment, step and tool call, stop, gate and review, and compl
   const options = page.getByTestId('gate-new').locator('option')
   const before = await options.count()
   const red = 'suite 120: ac1/screens-360 red\nGATE: RED (7a7a7a7)\n'
+  // The observation's times are the factory's own clock's: the test reads none.
+  const at = await factory.now()
   await factory.upsert('gate-observation:131-live', 'gate_observation', {
     schema: 'veldo.gate_observation/v1', command: ['bash', 'scripts/verify.sh'], commit: '7a7a7a7'.repeat(5) + 'ab', exit: 1, stdout: red,
-    stderr: '', terminal: 'GATE: RED (7a7a7a7)', green: false, started_at: Date.now() / 1000 - 60, finished_at: Date.now() / 1000, capture: 'e2e',
+    stderr: '', terminal: 'GATE: RED (7a7a7a7)', green: false, started_at: at - 60, finished_at: at, capture: 'e2e',
     domain: 'e2e-domain', repository: 'e2e-repository',
   })
   await expect(options).toHaveCount(before + 1)
@@ -403,7 +388,7 @@ test('ac2/message-intake: a message from the projects screen reaches the common 
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   const watch = await guard(page)
   await page.goto(factory.origin + '/projects/project-a')
-  const text = `Export the import report as CSV ${Date.now()}`
+  const text = `Export the import report as CSV ${unique()}`
   await page.getByTestId('message-text').first().fill(text)
   await page.getByTestId('message-send').first().click()
   await expect(page.getByTestId('message-answer')).toBeVisible()
@@ -437,16 +422,16 @@ test('ac2/decision-settlement: an inline answer settles once; a stale presentati
 })
 
 test('ac2/refusals: an answer from a member outside the project\'s scope is refused beside the action; a workflow outside the scope shows none', async ({ browser, factory }) => {
-  const alias = `rf${Date.now() % 100000}`
+  const alias = `rf${unique()}`
   const { request } = await factory.control<{ request: string }>('/request/open', { alias, owner: 'mover' })
   const page = await pageAs(browser, factory, 'mover', { width: 390, height: 844 })
-  const answered = await unanswered(page)
   await page.goto(factory.origin + '/decisions/' + request)
   await expect(page.getByTestId('decision')).toBeVisible()
   // The page reads the inbox twice as it opens (the shell for its badge, then this screen), and the decision
   // is on screen from the first answer. A read answered after the scope has moved no longer lists it, and the
-  // screen then rightly takes it away. So the scope moves once every read the page has sent is answered.
-  await answered()
+  // screen then rightly takes it away. So the scope moves once every read the page has sent is answered
+  // (the page settled signal of the fixtures).
+  await settled(page)
   await factory.control('/member/scope', { principal: 'mover', scope: ['project-b'] })
   await page.locator('[data-choice="accept"]').click()
   await page.getByTestId('rationale').fill('Answering after my scope moved.')
@@ -464,7 +449,6 @@ test('ac2/refusals: an answer from a member outside the project\'s scope is refu
 })
 
 test('ac2/api-only: every request is a published route of this origin and nothing is kept in storage or the URL', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   const watch = await guard(page)
   for (const s of SCREENS) {
@@ -482,7 +466,6 @@ test('ac2/api-only: every request is a published route of this origin and nothin
 })
 
 test('ac3/keyboard-desktop: the owner\'s task path by keyboard only', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   // Backlog: reorder from the keyboard (Enter on Move up, Alt+Down on a row's button), announced.
   await page.goto(factory.origin + '/backlog')
@@ -538,7 +521,6 @@ test('ac3/keyboard-desktop: the owner\'s task path by keyboard only', async ({ b
 })
 
 test('ac3/touch-phone: the owner\'s task path by touch on a phone', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const page = await pageAs(browser, factory, 'owner', { width: 390, height: 844 })
   const big = async (selector: string) => {
     const box = await page.locator(selector).first().boundingBox()
@@ -621,7 +603,6 @@ test('ac3/stale-save: a workflow save from an older version is refused beside Sa
 const PAIR = [{ width: 1280, height: 860 }, { width: 390, height: 844 }]
 
 test('ac1/repositories: the read-only identities and repositories, a table on a desktop and cards on a phone', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   for (const viewport of PAIR) {
     const page = await pageAs(browser, factory, 'owner', viewport)
     await page.goto(factory.origin + '/repositories')
@@ -647,7 +628,6 @@ test('ac1/repositories: the read-only identities and repositories, a table on a 
 })
 
 test('ac1/every-configuration: every stored role revision and skill is listed, a role no team names too', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   for (const viewport of PAIR) {
     const page = await pageAs(browser, factory, 'owner', viewport)
     await page.goto(factory.origin + '/configuration')
@@ -663,7 +643,6 @@ test('ac1/every-configuration: every stored role revision and skill is listed, a
 })
 
 test('ac1/whole-catalog: every catalog server and every credential record by label, set at and set by', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   for (const viewport of PAIR) {
     const page = await pageAs(browser, factory, 'owner', viewport)
     await page.goto(factory.origin + '/catalog')
@@ -684,7 +663,6 @@ test('ac1/whole-catalog: every catalog server and every credential record by lab
 })
 
 test('ac1/usage-provider: each account names its provider and usage breaks down by provider', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   for (const viewport of PAIR) {
     const page = await pageAs(browser, factory, 'owner', viewport)
     await page.goto(factory.origin + '/usage')
@@ -699,7 +677,6 @@ test('ac1/usage-provider: each account names its provider and usage breaks down 
 })
 
 test('ac1/worker-capability: each worker shows its capability, and the missing cap command is named', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   for (const viewport of PAIR) {
     const page = await pageAs(browser, factory, 'owner', viewport)
     await page.goto(factory.origin + '/workers')
@@ -714,7 +691,6 @@ test('ac1/worker-capability: each worker shows its capability, and the missing c
 })
 
 test('ac2/metadata-only: the catalog and repositories reads serve metadata, never a credential reference or value', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   const bodies: Record<string, string> = {}
   page.on('response', async (response) => {
@@ -748,27 +724,24 @@ async function holdStream(page: Page) {
 
 /** Open the backlog and wait for it. When it is not shown, the failure says what the page showed in its place:
  * where it was, each panel's state and words, what the page logged, and every request that was not a built asset
- * with its answer or its failure, in order. "element(s) not found" alone (gate 11) names no cause. */
+ * with its answer or its failure, in the order they happened (no times: the order is the evidence). "element(s) not found" alone (gate 11) names no cause. */
 async function openBacklog(page: Page, factory: FactoryUi, what: string) {
-  const began = Date.now()
   const seen: string[] = []
   const short = (url: string) => new URL(url).pathname.replace(/^\/api\/v1\/domains\/[^/]+/, '')
   const built = (url: string) => new URL(url).pathname.startsWith('/assets/')
-  const sent = (r: { url(): string; method(): string }) => void (built(r.url()) || seen.push(`${Date.now() - began} > ${r.method()} ${short(r.url())}`))
-  const answered = (r: { url(): string; status(): number }) => void (built(r.url()) || seen.push(`${Date.now() - began} < ${r.status()} ${short(r.url())}`))
-  const failed = (r: { url(): string; failure(): { errorText: string } | null }) => void seen.push(`${Date.now() - began} x ${short(r.url())} ${r.failure()?.errorText}`)
-  const logged = (m: { type(): string; text(): string }) => void (m.type() === 'error' && seen.push(`${Date.now() - began} console ${m.text().slice(0, 200)}`))
-  const raised = (error: Error) => void seen.push(`${Date.now() - began} raised ${String(error).slice(0, 200)}`)
+  const sent = (r: { url(): string; method(): string }) => void (built(r.url()) || seen.push(`> ${r.method()} ${short(r.url())}`))
+  const answered = (r: { url(): string; status(): number }) => void (built(r.url()) || seen.push(`< ${r.status()} ${short(r.url())}`))
+  const failed = (r: { url(): string; failure(): { errorText: string } | null }) => void seen.push(`x ${short(r.url())} ${r.failure()?.errorText}`)
+  const logged = (m: { type(): string; text(): string }) => void (m.type() === 'error' && seen.push(`console ${m.text().slice(0, 200)}`))
+  const raised = (error: Error) => void seen.push(`raised ${String(error).slice(0, 200)}`)
   page.on('request', sent).on('response', answered).on('requestfailed', failed).on('console', logged).on('pageerror', raised)
   try {
     await page.goto(factory.origin + '/backlog')
     // The page says when its read is over: the screen's panel leaves "loading" for ready, empty or error (or the
     // page leaves the backlog, as it does for a session that ended). That is what is waited for, for as long as
-    // the read takes; what the page shows then is judged at once.
+    // the read takes (the wait hang bound is its only limit); what the page shows then is judged at once.
     await page.waitForFunction(
       () => location.pathname !== '/backlog' || !!document.querySelector('.screen .state-ready, .screen .state-error, .screen .state-empty'),
-      null,
-      { timeout: 120_000 },
     )
     await expect(page.getByTestId('backlog')).toBeVisible()
   } catch (error) {
@@ -780,7 +753,7 @@ async function openBacklog(page: Page, factory: FactoryUi, what: string) {
       .catch((reason) => ({ panels: [], words: `the page could not be read: ${String(reason).slice(0, 120)}` }))
     const first = String((error as Error).message ?? error).replace(/\u001b\[[0-9;]*m/g, '').split('\n').filter(Boolean).slice(0, 2).join(' / ')
     throw new Error(
-      `the backlog was not shown (${what}) after ${Date.now() - began} ms: ${first}; the page was at ${page.url()}, ` +
+      `the backlog was not shown (${what}): ${first}; the page was at ${page.url()}, ` +
         `its panels ${JSON.stringify(shown.panels)}, its words ${JSON.stringify(shown.words)}, its requests ${JSON.stringify(seen)}`,
     )
   } finally {
@@ -792,7 +765,6 @@ async function openBacklog(page: Page, factory: FactoryUi, what: string) {
 // own command through the authenticated API: accepted, a stale version refused beside the control, an unauthorized
 // member refused beside the control. These run last: they change the harness's ranks, a run and the cap.
 test('ac2/priority-save: Save priority order sends each rank at its version; stale and unauthorized saves are refused beside Save', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const desk = { width: 1280, height: 860 }
   const moveFirst = async (page: Page, id: string, what: string) => {
     await openBacklog(page, factory, what)
@@ -832,7 +804,6 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
 })
 
 test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; stale and unauthorized stops are refused beside the card', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const desk = { width: 1280, height: 860 }
   const { dispatch } = await factory.control<{ dispatch: string }>('/dispatch/new', { unit: 'VELDO-9181', key: 'stop131', count: 2 })
   const { dispatch: elsewhere } = await factory.control<{ dispatch: string }>('/dispatch/new', { unit: 'VELDO-9182', key: 'stopb131', project: 'project-b', count: 2 })
@@ -878,7 +849,6 @@ test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; s
 })
 
 test('ac2/worker-cap: Save cap sets the account\'s run cap at its version; stale and unauthorized caps are refused beside the control', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const desk = { width: 1280, height: 860 }
   const capTo = async (page: Page, value: string) => {
     const row = page.locator('[data-account="owner-plan"]')

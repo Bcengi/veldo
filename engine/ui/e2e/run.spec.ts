@@ -104,8 +104,8 @@ test('live: lines appear as the worker prints them, and a dropped connection res
   await factory.control('/record/drop', { key: made.key })
   await factory.control('/record/append', { key: made.key, start: 4, count: 2 })
   await factory.control('/record/append', { key: made.key, start: 6, count: 2 })
-  await expect(page.locator('.terminal-reconnects')).toBeVisible({ timeout: 15_000 })
-  await expect(page.getByTestId('line-count')).toHaveText('18 lines', { timeout: 15_000 })
+  await expect(page.locator('.terminal-reconnects')).toBeVisible()
+  await expect(page.getByTestId('line-count')).toHaveText('18 lines')
   const record = await recordOf(factory, made.key)
   expect(record.length).toBe(18)
   await compareLineByLine(page, record)
@@ -171,7 +171,7 @@ test('run header: the run\'s state, elapsed time, engine and model, host and sta
   await page.goto(factory.origin + '/runs/' + state.dispatches.live)
   await expect(page.getByTestId('run-status')).toContainText('Running')
   const first = await page.getByTestId('elapsed').textContent()
-  await expect.poll(() => page.getByTestId('elapsed').textContent(), { timeout: 5000 }).not.toBe(first)
+  await expect.poll(() => page.getByTestId('elapsed').textContent()).not.toBe(first)
 })
 
 test('compact gutter: each line\'s sequence, its time since the first line and an inline kind tag on the content\'s row', async ({ page, factory }) => {

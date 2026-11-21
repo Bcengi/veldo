@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import type { Page } from '@playwright/test'
-import { ROOT, expect, guard, signIn, test } from './fixtures'
+import { ROOT, expect, guard, settled, signIn, test } from './fixtures'
 
 /**
  * VELDO-0229 AC5 (Telegram 38234 and 38235, section 7): screenshots of the production build against the factory
@@ -29,13 +29,13 @@ async function shoot(page: Page, name: string, theme: 'light' | 'dark') {
   await page.evaluate((t) => localStorage.setItem('veldo.theme', t), theme)
   await page.reload()
   await page.evaluate(() => document.fonts.ready)
-  await page.waitForTimeout(400)
+  // Drawn: every read answered, no panel loading, no transition running (the page settled signal).
+  await settled(page)
   await label(page)
   await page.screenshot({ path: path.join(OUT, `${name}.png`), type: 'png', fullPage: false })
 }
 
 test('section 7 screenshots from the production build, seeded demonstration data', async ({ browser, factory }) => {
-  test.setTimeout(240_000)
   mkdirSync(OUT, { recursive: true })
   const ids = await factory.state()
   const desk = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 })
@@ -58,7 +58,7 @@ test('section 7 screenshots from the production build, seeded demonstration data
   // The record opens at its edit, so the Monaco diff is on screen.
   await page.locator('[data-seq="7"]').evaluate((e) => e.scrollIntoView({ block: 'start' }))
   await expect(page.locator('[data-seq="7"] .monaco-diff-editor')).toBeVisible()
-  await page.waitForTimeout(600)
+  await settled(page)
   await label(page)
   await page.screenshot({ path: path.join(OUT, '3-run-detail-diff-dark-1440.png'), type: 'png' })
 
