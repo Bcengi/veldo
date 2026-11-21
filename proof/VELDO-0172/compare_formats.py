@@ -3,10 +3,23 @@ import ast
 import copy
 import json
 from pathlib import Path
+import importlib.util
 import re
+import select
 import subprocess
-import selectors
 import sys
+
+
+def _waits():
+    """The wait primitive (VELDO-0358): the instance the suite process holds as `waits`, else the one under
+    scripts/suites/support. A child is given the wait hang bound and nothing shorter; a wait wakes on events."""
+    if 'waits' not in sys.modules:
+        path = Path(__file__).resolve().parents[2] / 'scripts' / 'suites' / 'support' / 'waits.py'
+        spec = importlib.util.spec_from_file_location('waits', str(path))
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['waits'] = module
+        spec.loader.exec_module(module)
+    return sys.modules['waits']
 
 
 def event_name(line):
@@ -359,24 +372,30 @@ def observe_fake(local, suite_name, table, capture):
         prefix = b''
         with subprocess.Popen(args + suffix, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, cwd=base, env=env) as child:
+            waits = _waits()
             if close:
-                stdout, stderr = child.communicate(opening, timeout=15)
+                stdout, stderr = child.communicate(opening, timeout=waits.WAIT_HANG_SECONDS)
             else:
                 child.stdin.write(opening)
                 child.stdin.flush()
-                with selectors.DefaultSelector() as selector:
-                    selector.register(child.stdout, selectors.EVENT_READ)
-                    if not selector.select(15):
-                        child.kill()
-                        child.communicate()
-                        problems.append(engine + ':fake:handshake-timeout')
-                        continue
+
+                def said():  # its first line, or the end of its output (its exit closes it)
+                    return bool(select.select([child.stdout], [], [], 0)[0])
+
+                def silent():  # it has exited and nothing can be read: no handshake will come
+                    return child.poll() is not None and not said()
+                heard = waits.wait('the %s fake\'s handshake line' % engine, said, silent,
+                                   [waits.Readable(child.stdout, drain=False), waits.Pidfd(child)])
+                if not heard.done:
+                    child.communicate()
+                    problems.append(engine + ':fake:handshake-none')
+                    continue
                 prefix = child.stdout.readline()
                 guard.feed(prefix)
                 release = guard.release()
                 if release is None:
                     problems.append(engine + ':fake:handshake-refused')
-                stdout, stderr = child.communicate(release or b'', timeout=15)
+                stdout, stderr = child.communicate(release or b'', timeout=waits.WAIT_HANG_SECONDS)
             run = subprocess.CompletedProcess(args, child.returncode, (prefix + stdout).decode(), stderr.decode())
         if run.returncode:
             problems.append(engine + ':fake:exit')
@@ -427,7 +446,8 @@ def observe_fake(local, suite_name, table, capture):
                 problems.append('assistant:fake:streamed-output-count')
         else:
             login = subprocess.run([sys.executable, str(executable), 'login', 'status', '-c', 'cli_auth_credentials_store="file"'],
-                                   env=env, cwd=base, input='', capture_output=True, text=True, timeout=15)
+                                   env=env, cwd=base, input='', capture_output=True, text=True,
+                                   timeout=waits.WAIT_HANG_SECONDS)
             for stream in ('stdout', 'stderr'):
                 if bool(getattr(login, stream)) != capture['taps']['codex_login_status'][stream]['present']:
                     problems.append('login_status:' + stream + ':fake:wrong-stream')
