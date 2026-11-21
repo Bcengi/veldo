@@ -11,6 +11,10 @@ depends_on: [VELDO-0109, VELDO-0111, VELDO-0112]
 placement: [contracts, fleet]
 protected_paths: []
 footprint:
+  - "bin/veldo"
+  - "engine/bin/veldo"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_service.py"
   - ".veldo/control_client.py"
   - "engine/.veldo/control_client.py"
   - ".veldo/claim.py"
@@ -157,3 +161,16 @@ in the History and ticket proof.
   eight observer faults for each external registry/state case (176 drives).
   Verify each intended failure's phase, category and capability separately from
   stand-down propagation. Earlier two-fault observations are partial diagnostics.
+
+- 2026-11-21: Lead decision 2, resuming from `dda93452`: the CLI construction
+  is an architecture gap, with no census exemption. Route `cmd_work` through
+  the authenticated control client and add its authority operation beside the
+  existing service operations. The CLI requests a wake of the authority's
+  configured work loop and reports `queued`, not completed work; it cannot
+  supply local execution configuration. The authority verifies the owner's
+  signature, repository scope and optional configured builder account before
+  queuing the wake. Add a falsifier restoring direct construction in `bin/veldo`.
+  Keep the process-specific store-write grant as GAP for a separate security
+  ticket. VELDO-0111's incomplete AC2 qualification remains a separate dependency
+  blocker; rows requiring COMPLETE receipts stay blocked. Re-run the four
+  previously invalid-baseline mutation cases after fixing the CLI boundary.
