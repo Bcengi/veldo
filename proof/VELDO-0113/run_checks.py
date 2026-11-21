@@ -135,24 +135,29 @@ def run(name, case=None, mode='baseline'):
         module = load(root / 'scripts/fixtures/no_autostart.py', 'consumer_proof')
         result = module.qualify(root)
         summary = retain(name, result)
-        assert result['expected'] == sorted(result['completed'])
-        assert len(result['expected']) == len(set(result['completed']))
-        assert all(c['outcome'].get('invoked') and c['outcome'].get('refused')
-                   for c in result['cases'] if 'receipt' in c), 'required client refusal did not complete'
-        assert result['faults_driven'], 'observer fault matrix was not exercised'
-        if mode == 'mutant':
-            for row in case['rows']:
-                assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
-            if case['name'] == 'autostart113-reaped-fallback':
-                assert any(c.get('effects', {}).get('forbidden_births') for c in result['cases'])
-                assert all(p['terminal'] for c in result['cases']
-                           for p in c.get('effects', {}).get('forbidden_births', []))
-            if case['name'] == 'autostart113-transient-abstract-listener':
-                assert any(c.get('effects', {}).get('services') for c in result['cases'])
-        else:
-            assert all(row['status'] != 'FAIL' for row in result['rows'].values()), summary
-            assert result['faults_ok'] and all(result['protocol_controls'].values())
+        check_result(result, case if mode == 'mutant' else None)
         return summary
+
+
+def check_result(result, case=None):
+    """Assess complete saved JSON as well as a newly captured result."""
+    assert result['expected'] == sorted(result['completed'])
+    assert len(result['expected']) == len(set(result['completed']))
+    assert all(c['outcome'].get('invoked') and c['outcome'].get('refused')
+               for c in result['cases'] if 'receipt' in c), 'required client refusal did not complete'
+    assert result['faults_driven'], 'observer fault matrix was not exercised'
+    if case:
+        for row in case['rows']:
+            assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
+        if case['name'] == 'autostart113-reaped-fallback':
+            assert any(c.get('effects', {}).get('forbidden_births') for c in result['cases'])
+            assert all(p['terminal'] for c in result['cases']
+                       for p in c.get('effects', {}).get('forbidden_births', []))
+        if case['name'] == 'autostart113-transient-abstract-listener':
+            assert any(c.get('effects', {}).get('services') for c in result['cases'])
+    else:
+        assert all(row['status'] != 'FAIL' for row in result['rows'].values()), result['rows']
+        assert result['faults_ok'] and all(result['protocol_controls'].values())
 
 
 def main():
@@ -160,10 +165,17 @@ def main():
     parser.add_argument('--case')
     parser.add_argument('--control', choices=('baseline', 'restored'))
     parser.add_argument('--label')
+    parser.add_argument('--reassess', help='assess saved JSON; does not rerun the observer')
     args = parser.parse_args()
     teeth = load(ROOT / 'scripts/check_teeth_mutations.py', 'teeth_proof')
     definitions = [c for c in teeth.cases() if c['finding'] == 113]
-    if args.control:
+    if args.reassess:
+        case = next((c for c in definitions if c['name'] == args.reassess), None)
+        assert case or args.reassess in ('baseline', 'restored', 'restored-full-matrix')
+        print('SAVED RECEIPT ASSESSMENT; no new observer invocation', flush=True)
+        result = read_receipts(DESTINATION / (args.reassess + '.json.gz'))
+        check_result(result, case)
+    elif args.control:
         run(args.label or args.control)
     elif args.case:
         case = next(c for c in definitions if c['name'] == args.case)
