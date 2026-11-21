@@ -1,0 +1,17 @@
+# Final full unit leg, one dispatcher process over every suite, through host_heavy.sh, at 6f125f98 (briefs A, B, D, C and the lead fixes)
+# started 2026-11-21T09:30:02Z, load then 7.67 23.73 31.66; no VELDO_OPENED_FILES (the gate sets none)
+# lines kept: every SELFTEST FAIL/HUNG/NOT RUN line (cut at 400 characters) and the totals
+  SELFTEST FAIL: residue/66_veldo_0042_clones: thread 'Thread-13157 (serve)' alive (Thread); thread 'Thread-13158 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/86_veldo_0189_engine_upgrade: thread 'Thread-14688 (serve)' alive (Thread); thread 'Thread-14689 (serve)' alive (Thread)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-s4yokizq/tmp-parent/veldo-agent-5wazrilv', 'pid': 2450236}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-5wazrilv', 'veldo-agent-ujwv_ns6']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: tus); kept privately at /tmp/v210-profile-s4yokizq/state-home/veldo/borrowed-logins/veldo-agent-ujwv_ns6; restore it with: python3 ~/projects/veldo-worktrees/veldo-0358/scripts/agent_sandbox.py restore-login /tmp/v210-profile-s4yokizq/state-home/veldo/borrowed-logins/veldo-agent-ujwv_ns6
+  SELFTEST FAIL: VELDO-0313 supervise/report-loss-end-is-made: the end of that run is made as the follower makes it: run finished is sent, the scratch root is removed and the hold is released [None ['deferred'] released]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that is refused, whatever its table holds has not read what it carries: the run stays open, its file is there and the hold is held [label_unread [{'pid': 4186069, 'started': 291710959, 'how': 'unread'}, {'pid': 4186101, 'started': 291710970, 'how': 'unread'}, {'pid': 4186105, 'started': 291710970, 'how': 'unread'}, {'pid': 4186163, 's
+  SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-open-file-in-worktree: it holds a file of the run's worktree open, in the build folder that is the run's item there: the build folder is not removed, deferred as in use by the same rule, and the file is on disk whole; the probe names the worker by its open file, for the build folder and for the worktree; the scratch root, which it does not hol
+selftest: 10768 passed, 12 failed
+exit status 1
