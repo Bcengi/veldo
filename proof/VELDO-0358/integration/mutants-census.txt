@@ -1,0 +1,14 @@
+====================================================================================================
+CASE wall358-hang-name-any-value targets ['census/each-rule']
+baseline rc 0 rows 31 failed [] targets {'census/each-rule': [True]}
+noop rc 0 rows 31 failed [] targets {'census/each-rule': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -363 +363 @@
+-        if named in CONTRACT_HANG and self.number(value) in (None, CONTRACT_HANG[named]):
++        if named in CONTRACT_HANG:  # defect: any value under the name is a hang bound
+mutant rc 0 rows 31 failed ['VELDO-0358 census/each-rule'] targets {'census/each-rule': [False]}
+   detail VELDO-0358 census/each-rule {'missed': ['scripts/fx/rule_timeout_renamed.py'], 'spurious': [], 'counted': [16, 17], 'exit': 1, 'baselined': [0, 16], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0,
+RESULT wall358-hang-name-any-value REJECTED {'baseline': True, 'noop': True, 'mutant': True}
+ALL REJECTED

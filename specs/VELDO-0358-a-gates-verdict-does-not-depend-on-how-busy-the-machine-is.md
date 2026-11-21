@@ -91,6 +91,15 @@ footprint:
   - scripts/gate_schedule.py
   - engine/scripts/gate_schedule.py
   - scripts/check_space_boundary.py
+  - proof/VELDO-0219/local_check.py
+  - proof/VELDO-0219/qualification.py
+  - scripts/suites/53_veldo_0123_mutations.py
+  - scripts/suites/97_veldo_0204_gate_resources.py
+  - scripts/suites/98_veldo_0204_mutation_receipts.py
+  - scripts/suites/99_veldo_0205_reuse.py
+  - scripts/suites/100_veldo_0207_case_reuse.py
+  - scripts/suites/111_veldo_0214_first_use_budget.py
+  - scripts/suites/115_veldo_0219_measured_admission.py
   - scripts/suites/01_warp_0101_reviewer_notes.py
   - scripts/suites/38_veldo_0025_membership.py
   - scripts/suites/93_veldo_0152_intake_routes.py
