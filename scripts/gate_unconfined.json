@@ -58,10 +58,10 @@
     {"suite": "129_veldo_0254_canary_launch", "reason": "real launches in transient systemd scopes under the owner's user manager, as 85_veldo_0158"},
     {"suite": "152_veldo_0313_house_group", "reason": "systemd user manager: a wrapped run's command is started in the house's own transient scope under the owner's user manager and its group is read under /sys/fs/cgroup"},
     {"suite": "128_veldo_0177_conversation_workspace", "reason": "systemd user manager: each conversation turn runs contained in its own transient scope under the run's own slice"},
-    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture)"},
+    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup's profile check reads the owner's user manager on the host VELDO-0171's fixture installs (systemctl --user show), and refuses a profile without the user manager; the fixture's units are started by its stand-in manager, not installed on the host"},
     {"suite": "134_veldo_0179_conversation_screens", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the conversation harness"},
     {"suite": "135_veldo_0179_conversation_layout", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) at four widths against the conversation harness"},
-    {"suite": "130_veldo_0183_memory_servers", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture), and the memory store servers as user units"},
+    {"suite": "130_veldo_0183_memory_servers", "reason": "systemd user manager: factory setup's profile check reads the owner's user manager on the host VELDO-0171's fixture installs (systemctl --user show), and refuses a profile without the user manager; the fixture's units, the memory store servers among them, are started by its stand-in manager, not installed on the host"},
     {"suite": "138_veldo_0187_claude_mem_feed", "reason": "systemd user manager: the Codex turn runs contained in its own transient scope, the only run the receiver delivers its catalog credential to"}
   ]
 }
