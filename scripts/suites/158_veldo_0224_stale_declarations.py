@@ -136,12 +136,12 @@ def _v224_stale():
 
         def drive(label, fail=False, force=False):
             candidate, cache = top / label, top / (label + '-store')
+            configuration = dict(fixture_version=gate.FIXTURE_VERSION, capacities=None,
+                                 worker_environment=gate.fixed_env('<private-worker-home>'))
             # An earlier valid record for every case, authenticated by the real store.
             with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: dict(paths=paths)), \
                  patch.object(C, 'sensitivity_proved', return_value=True):
-                old = original_session(candidate, files, cases, 'head',
-                    dict(fixture_version=gate.FIXTURE_VERSION, capacities=None,
-                         worker_environment=gate.fixed_env('<private-worker-home>')), cache_directory=cache)
+                old = original_session(candidate, files, cases, 'head', configuration, cache_directory=cache)
                 seeded = [old.publish(c, record(c, old), gate.validate_result) for c in cases]
             current = dict(files)
             current.pop('optional-declared')
@@ -186,10 +186,11 @@ def _v224_stale():
             # A subsequent gate cannot hit earlier records, including an otherwise unchanged key.
             with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: dict(paths=paths)), \
                  patch.object(C, 'sensitivity_proved', return_value=True):
-                later = original_session(candidate, current, cases, 'another-gate', {}, cache_directory=cache)
+                later = original_session(candidate, current, cases, 'another-gate', configuration, cache_directory=cache)
                 no_hits = all(later.lookup(c, gate.validate_result) is None for c in cases[:-1])
+                clean_hit = later.lookup(cases[-1], gate.validate_result) is not None
             return dict(receipt=receipt, seeded=all(seeded), launched=list(launched), entries=entries,
-                        new_records=new_records, no_hits=no_hits, selected=selected,
+                        new_records=new_records, no_hits=no_hits, clean_hit=clean_hit, selected=selected,
                         unchanged=R.tree_identity(candidate) == before, released=all(released),
                         old_unchanged=all((cache / n).read_bytes() == b for n, b in existing.items()))
 
@@ -205,7 +206,7 @@ def _v224_stale():
             and all(r['source'] == 'fresh' and r['validated'] and r['reason'] == 'declaration_stale'
                     for r in receipts if r['identity'] in stale_names)
             and bad['receipt']['status'] == 'failed' and bad['receipt']['error'] == 'invalid_baseline', detail)
-        row('never-published', good['seeded'] and good['old_unchanged'] and good['no_hits']
+        row('never-published', good['seeded'] and good['old_unchanged'] and good['no_hits'] and good['clean_hit']
             and good['receipt']['reused'] == 0
             and all(r and r['case']['identity'] not in stale_names for r in good['new_records'])
             and all(r['key'] is None for r in receipts if r['identity'] in stale_names), detail)
