@@ -121,3 +121,15 @@ fixture setup. The relay main adapter has no timeout argument, so its forward
 call's default is enlarged to the same hang bound in the measured process. No new
 sleep-based assertion is used. Loaded checks run through the external host-heavy
 wrapper. No canonical gate, independent review or owner approval is claimed.
+
+The standard mutation coordinator completed finding 113: four cases registered,
+four executed, zero valid rejections, ten workers, and no surviving workers. Its
+result is `invalid_baseline`. Confined controls failed the construction boundary,
+real-refusal and full-fault assertions. The confinement filter denies ptrace at
+`scripts/agent_sandbox.py:199`; no owner-controlled exemption was added. See
+`gate-mutations.txt` and `mutation-worker-findings.txt` for the actual findings.
+
+Selected selftests are retained as partial-run diagnostics only. They are not
+canonical unit verification or acceptance evidence. The selected VELDO-0109,
+VELDO-0111 and VELDO-0112 runs had zero assertion failures. VELDO-0113's construction
+failure remains explicit. Lint and the personal-setup sweep are separate checks.
