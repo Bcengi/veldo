@@ -48,8 +48,7 @@ def main():
             workers.append(worker)
         for suite in args.suites:
             command = [sys.executable, 'scripts/selftest.py', '--suite', suite]
-            result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=1800,
-                                    env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
+            result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=1800)
             raw = result.stdout + result.stderr
             if args.raw_dir:
                 args.raw_dir.mkdir(parents=True, exist_ok=True)
