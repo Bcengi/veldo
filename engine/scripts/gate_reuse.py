@@ -359,7 +359,7 @@ def suite_required_runtime(environment):
     import sys
     import sysconfig
     required = [Path(sys.executable).resolve(), Path(sysconfig.get_path('stdlib')).resolve()]
-    for tool in ('git', 'sh', 'bash'):
+    for tool in ('sh', 'bash', 'git'):
         found = shutil.which(tool, path=environment.get('PATH') or '/usr/bin:/bin')
         if found:
             required.append(Path(found).resolve())
