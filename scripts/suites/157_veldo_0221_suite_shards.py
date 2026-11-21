@@ -967,6 +967,7 @@ def _veldo_0221():
         # leg has finished (it waits for the leg's file). The leg asks for three one-core shards at
         # once, then runs three real shards through the dispatcher that each wait for the other two.
         GS = load(ROOT / "scripts" / "gate_schedule.py", "v221_gate_schedule")
+        GS.HERE = ROOT / "scripts"  # the leg runner beside the shipped scheduler, wherever this copy stands
         sched = top / "schedule"
         sched.mkdir()
         barrier = sched / "barrier"
@@ -1046,10 +1047,10 @@ def _veldo_0221():
             def close(self):
                 pass
 
-        def scheduled(number, source=None):
+        def scheduled(number):
             """One run of the real scheduler over the fixture graph; (its result, what the leg said,
             what it recorded for the leg node)."""
-            module = GS if source is None else load(source, "v221_gate_schedule_%d" % number)
+            module = GS
             out = sched / ("run-%d" % number)
             out.mkdir()
             store = out / "store"
