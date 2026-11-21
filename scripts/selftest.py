@@ -568,10 +568,15 @@ if os.environ.get(OPENED_ENV):
 # row starting or ending (re-armed at every row, so a leg of any length is never ended for being long),
 # and writes every thread's stack before it does. A hung wait or a fired watchdog prints SELFTEST HUNG
 # and every row not reached as SELFTEST NOT RUN; both are red.
-WAITS = _protected("waits", SUITES / "support" / "waits.py")
-WAITS.arm_watchdog()
-if os.environ.get(OPENED_ENV):
-    WAITS.RUNTIME.before_exit.append(_write_opened)
+# A copy of this dispatcher that a suite lays in a fixture tree with no support module beside it (several
+# suites test the dispatcher itself that way) runs without the runtime: no watchdog and no residue rows.
+# In this repository the module is always there, and every converted suite needs it.
+WAITS = None
+if (SUITES / "support" / "waits.py").is_file():
+    WAITS = _protected("waits", SUITES / "support" / "waits.py")
+    WAITS.arm_watchdog()
+    if os.environ.get(OPENED_ENV):
+        WAITS.RUNTIME.before_exit.append(_write_opened)
 
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
@@ -606,10 +611,11 @@ for _i, _s in enumerate(RUN):
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
     shared.__dict__["__suite_file__"] = str(_p)
     _OPENER[0] = _s["name"]
-    _left_before = WAITS.residue_snapshot()
-    # The rows not reached, should this suite hang: the suites this process still runs itself.
-    WAITS.begin_suite(_s["name"], _p, [(_n["name"], SUITES / _n["file"]) for _n in RUN[_i + 1:]
-                                       if _n["name"] not in REUSED and _n["name"] not in ISOLATED])
+    if WAITS is not None:
+        _left_before = WAITS.residue_snapshot()
+        # The rows not reached, should this suite hang: the suites this process still runs itself.
+        WAITS.begin_suite(_s["name"], _p, [(_n["name"], SUITES / _n["file"]) for _n in RUN[_i + 1:]
+                                           if _n["name"] not in REUSED and _n["name"] not in ISOLATED])
     _before, _failed, _t = shared.PASS, shared.FAIL, time.monotonic()
     if _s["name"] == _TARGET:
         # Everything printed before this line belongs to the closure, everything after to the target.
@@ -624,9 +630,10 @@ for _i, _s in enumerate(RUN):
     # next suite. It is a row of that suite: its counts, its account line and its shard verdict carry it,
     # so a suite that leaves something is never settled or stored as passing. Counted apart only for
     # the refusal below of a leg whose suites asserted nothing.
-    _left = WAITS.residue(_left_before)
-    shared.expect("residue/%s%s" % (_s["name"], ": " + "; ".join(_left) if _left else ""), not _left)
-    _RESIDUE_ROWS += 1
+    if WAITS is not None:
+        _left = WAITS.residue(_left_before)
+        shared.expect("residue/%s%s" % (_s["name"], ": " + "; ".join(_left) if _left else ""), not _left)
+        _RESIDUE_ROWS += 1
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
     _SUITE_COUNTS.append([_s["name"], shared.PASS - _before, shared.FAIL - _failed])
     _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
@@ -638,9 +645,12 @@ for _i, _s in enumerate(RUN):
 
 
 _OPENER[0] = os.path.splitext(MANIFEST["shared"])[0]
-WAITS.disarm_watchdog()
-for _hook in WAITS.RUNTIME.before_exit:
-    _hook()
+if WAITS is not None:
+    WAITS.disarm_watchdog()
+    for _hook in WAITS.RUNTIME.before_exit:
+        _hook()
+elif os.environ.get(OPENED_ENV):
+    _write_opened()
 
 if SHARD is not None:
     # The shard's verdict: the target's own counts and labels, and how many rows of its closure or

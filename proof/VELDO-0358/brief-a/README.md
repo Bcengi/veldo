@@ -62,24 +62,42 @@ host), so a waiter on any timer shorter than that wakes several times per gap: t
 ## Runs
 
 - suite-157.txt: the suite alone through the dispatcher, 7 rows green.
-- affected-suites.txt: 58_veldo_0031_claims, 59_veldo_0031_review, 82_veldo_0085_decomposition (ForkFlag,
-  ForkBarrier) green; 38 crashes (below).
-- full-unit-run.txt: every suite but 38 in one dispatcher process with the watchdog, the residue rows and
-  the record on, through scripts/host_heavy.sh. See that file.
+- mutants.txt: the six cases, each through the mutation driver's own worker.
+- affected-suites.txt: 58, 59 and 82 (ForkFlag, ForkBarrier) green; 38 crashes (below).
+- full-unit-run-44e436f1.txt: every suite but 38 in one dispatcher process, watchdog, residue rows and
+  opened-files record on, through scripts/host_heavy.sh (4,616 s; 10,703 passed, 36 failed; no hang; the
+  record has 237 keys). Its reds, sorted:
+  - caused by this brief, fixed in the next commit: suites 14 and 101 lay copies of selftest.py and
+    shared.py in fixture trees with no support module beside them (FileNotFoundError on waits.py). Both
+    files now run without the runtime when support/waits.py is not beside them (no watchdog and no
+    residue rows in such a copy; a wait there is refused by name). Suite 107's VELDO-0153 audit could not
+    read this brief's registration helper (`**extra`); the block now uses the plain add and result[-1]
+    form. reruns-after-fix.txt: 101 and 107 green; 14 keeps one red, which is suite 01's residue (below).
+  - residue rows, the check doing its job (files outside this brief): 01_warp_0101_reviewer_notes (three
+    listening sockets: its HTTP servers are shut down but never closed), 66_veldo_0042_clones and
+    86_veldo_0189_engine_upgrade (serve threads; expected by the brief, for F and G),
+    93_veldo_0152_intake_routes (a child not reaped), 113_veldo_0145_ui (a serve_forever thread and its
+    listener), 127_veldo_0254_secret_scan, 128_veldo_0254_confined_runner, 141_veldo_0344_process_reader
+    (serve threads). Suite 14's `--upto` row runs suite 01 and so is red until 01 closes its servers.
+  - not caused by this brief: 102_veldo_0210_agent_profile_runtime (VELDO-0210 scratch rows) and
+    151_veldo_0313_space_run (VELDO-0313 rows) fail the same way at the base commit e3451130
+    (reruns-after-fix.txt); 151 is brief G's.
+- The full run was not repeated after the fix (the gate lock queue held it for hours); the fixed suites
+  were rerun one by one.
 
 ## Reported to the lead (not fixed here: outside this brief's files)
 
 1. Suite 38_veldo_0025_membership, row "VELDO-0261 AC2 wait/expiry-report" (lines 493-522), and its
    registered mutant wait261-expiry-returns-none (scripts/check_teeth_mutations.py, finding 261 block)
    test exactly the behavior AC1 removes: wait_for returning a report when a 0.3 s bound runs out. The row
-   execs shared.py's wait_for alone in an empty namespace, which now raises NameError (WAITS), and that
-   crash ends the dispatcher, so every later suite of the leg is not run. The mutant's anchor text no
+   execs shared.py's wait_for alone in an empty namespace, which now raises (no wait primitive there), and
+   that crash ends the dispatcher, so every later suite of the leg is not run. The mutant's anchor text no
    longer exists in shared.py ("mutation anchor moved"). Suite 38 is in no brief and not in the spec's
-   footprint. A fix consistent with AC1: restate the row as "an expired wait is hung, never false"
-   (it is covered by waits/three-outcomes) and retire or re-anchor the 261 mutant. The design's section
-   4.3 lists 38:522 as a lower bound that stays; that line is this row.
-2. Suite 62_veldo_0039_dispatch (brief E) calls shared.wait_for twice with no source: it now runs on
+   footprint. A fix consistent with AC1: restate the row as "an expired wait is hung, never false" (it is
+   covered by waits/three-outcomes) and retire or re-anchor the 261 mutant. The design's section 4.3 lists
+   38:522 as a lower bound that stays; that line is this row.
+2. Residue reds outside briefs F and G: suites 01, 93, 113, 127, 128 and 141 (above). Until they are fixed
+   the unit leg is red on their residue rows, and suite 14's `--upto` row with 01.
+3. Suite 62_veldo_0039_dispatch (brief E) calls shared.wait_for twice with no source: it now runs on
    waits.LegacyInterval with the wait hang bound in place of its 10 s and computed bounds, until E converts
    it.
-3. Residue reds seen in the full run, by suite, are listed in full-unit-run.txt for briefs F and G (the
-   brief expects 66_veldo_0042_clones and 86_veldo_0189_engine_upgrade).
