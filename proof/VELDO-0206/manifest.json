@@ -1,0 +1,107 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0206",
+ "commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4",
+ "tree": "8b20b2bfdb9949ba87ae59a93776d4a0f2bed9d9",
+ "producer": "Claude implementation agent (build 4d65609e to ad8df006); not an independent reviewer",
+ "produced_at": "2026-11-21T08:42:48.378190+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "suite-reuse/closure and its 30 sub-rows: a cold run is all fresh, an untouched qualified suite hits, and each changed input misses exactly the suites it reaches: own input content, added, deleted and mode-changed files, a prerequisite input (the dependent misses too), the manifest entry, the dispatcher, a tool tree, the authority, base and declared environment values, a qualification, another root. Unknown closures get no key: edited suite, prerequisite or shared code, an unqualified prerequisite, a missing closure, a suite of the unconfined leg, an unreviewed state, an unreadable registry. Reverting every change restores every key."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "The real dispatcher over the fixture: a changed prerequisite input runs the dependent fresh, a fresh dependent executes its reusable prerequisite (reported fresh, prerequisite_of_fresh), and the new inputs hit once observed."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0206/teeth.json",
+     "detail": "Declared: suite206-key-drops-prerequisite-state turns suite-reuse/closure false. Also key-omits-input-content, stale-qualification-accepted, environment-not-in-key, root-not-in-key, unconfined-suite-reusable, dispatcher-skips-prerequisite."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "suite-reuse/pass-only and its sub-rows, each through the VELDO-0205 store and the real dispatcher: a passing run is stored and reused; a failed run, a run ended early (stopped when the suite said it got there, no sleep) and a selector run store nothing; a selector run over a warm store still executes, exits 2 and prints no aggregate line; edited, truncated, emptied, re-checksummed and other-suite records, and nine signed records of anything but a full passing run, run fresh; an unusable store runs fresh."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "A plan is honored only by the run it was made for: a reordered run, another root, the unconfined leg, a suite the list names and a malformed plan leave nothing out."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0206/teeth.json",
+     "detail": "Declared: suite206-partial-run-published turns suite-reuse/pass-only false. Also partial-record-accepted, unfinished-run-published, failed-run-published, selector-run-reused, other-root-plan-honored."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "suite-reuse/receipts and its sub-rows: exact cold, warm and mixed counts with every manifest suite and its key; force fresh reads and writes no record; the stamp carries the reused count and the landing verifier refuses it; kept, renamed and re-signed stale records are never a hit; a fresh failure is red beside hits; a forged, missing, doubled, foreign or unfinished account and inputs changed during the stage make the settlement red; both legs are covered."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/157_veldo_0206_suite_reuse.py",
+     "detail": "The production verify.sh over the fixture, serial path: cold green with unit 0, warm green with reused.unit 5 in stamp and event, force fresh runs every suite, a fresh failure beside five hits is GATE RED, and a passing stage that leaves a suite unaccounted is GATE RED. Scheduler-shaped node output is settled by the gate's own command."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0206/whole-suite.json",
+     "detail": "The real plan and settlement over the whole production suite: 237 suites accounted for, all fresh, none qualified. The run itself was red on two suites that fail without this change; see README."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0206/teeth.json",
+     "detail": "Declared: suite206-fresh-failure-ignored-after-hit turns suite-reuse/receipts false. Also settlement-ignores-fresh-failure, reused-counted-as-fresh, force-fresh-ignored, unauthenticated-reuse-accepted, missing-suite-accepted, input-race-ignored, gate-ignores-settlement, gate-drops-reused-count."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 157_veldo_0206_suite_reuse: 55 rows, 81 checks with the shared preamble, 0 failed; partial exit 2."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite drives the real dispatcher, store and gate script; seven gate and dispatcher suites passed alone (proof/VELDO-0206/targeted-tests.json)."
+  },
+  {
+   "name": "teeth",
+   "status": "passed",
+   "command": "python3 -B scripts/check_teeth_mutations.py --finding 206: registered=22 executed=22 rejected=22, confined workers."
+  },
+  {
+   "name": "whole suite",
+   "status": "failed",
+   "command": "python3 -B scripts/selftest.py under a real plan: 10556 passed, 16 failed in suites 102 and 151; 102 passes alone, 151 fails alone on the base commit too."
+  }
+ ],
+ "assumptions": [
+  "Criteria stay pending until the lead runs the canonical gate. scripts/verify.sh, the integration stage and the gate under the graph scheduler were not run.",
+  "No production suite is qualified, so no gate reuses a suite yet and no speedup is claimed.",
+  "The graph path is covered by settling scheduler-shaped node output and by reading scripts/gate_schedule.py; VELDO-0358 changes that file on other branches and the node log names must be held at combine.",
+  "Suite 151_veldo_0313_space_run fails rows on this host with and without this change; the lead should expect it in the gate."
+ ],
+ "rollback": "Revert suite reuse and keep mutation reuse and its authenticated store independently usable: revert the commits of this build. Records already in the store are then unused; none exists for a production suite."
+}

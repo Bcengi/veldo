@@ -1,0 +1,43 @@
+{
+ "what": "The whole unit suite (no selector, no leg) under a plan made by the real suite-plan step for this checkout, then the real suite-settle step over its output. It is not the gate: no confinement, no legs, no other stage.",
+ "commands": [
+  "python3 -I -S scripts/gate_reuse.py suite-plan --root <checkout> --state <state>",
+  "VELDO_SUITE_REUSE=<plan> python3 -B scripts/selftest.py > <state>/unit.log 2>&1",
+  "python3 -I -S scripts/gate_reuse.py suite-settle --root <checkout> --state <state> --logs <state> --stage-status <pass or FAIL>"
+ ],
+ "commit": "ad8df0063e8616df67ed6f3fab21601111ee9ea4",
+ "tree_status_before": "",
+ "tree_status_after": "",
+ "started": "2026-11-21T07:04:26Z",
+ "ended": "2026-11-21T08:29:06Z",
+ "selftest_exit_code": 1,
+ "settle_exit_code": 0,
+ "aggregate_line": [
+  "selftest: 10556 passed, 16 failed"
+ ],
+ "failing_rows": [
+  "SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-y5tn3omm/tmp-parent/veldo-agent-sd_2q_vv', 'pid': 2593596}",
+  "SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh",
+  "SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s",
+  "SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143",
+  "SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143",
+  "SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-sd_2q_vv', 'veldo-agent-x0c2iwel']",
+  "SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: us); kept privately at /tmp/v210-profile-y5tn3omm/state-home/veldo/borrowed-logins/veldo-agent-x0c2iwel; restore it with: python3 ~/projects/veldo-worktrees/veldo-0206b/scripts/agent_sandbox.py restore-login /tmp/v21",
+  "SELFTEST FAIL: VELDO-0313 supervise/report-loss-end-is-made: the end of that run is made as the follower makes it: run finished is sent, the scratch root is removed and the hold is released [None ['deferred'] admitted]",
+  "SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-end-is-made: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3074910, 'started': 290811681, 'how': 'supervisor'}, {'pid': 3092777, 'started': 290818052, 'how': 'unread'}, {'pid': 3097503",
+  "SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that read this run's label in its environment: the process is the run's, named by the label; the run stays open and nothing is written [label_carried [{'pid': 3113324, 'started': 290828013, 'how': 'label'}, {'pid': 3113433, 'started': 290",
+  "SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-cwd-in-scratch: its working directory is the run's scratch root, and the scratch root is not removed: the item is deferred as in use by the rule that reads what processes hold, its deferral names the worker alone, by its working directory, as the ",
+  "SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-open-file-in-worktree: it holds a file of the run's worktree open, in the build folder that is the run's item there: the build folder is not removed, deferred as in use by the same rule, and the file is on disk whole; the probe names the worker by",
+  "SELFTEST FAIL: VELDO-0313 fix4/docker-objects-are-items: at run finished both go through the engine's own stop and remove, with no force option; another run's container and the one with no label have no item and are still on the engine [['deferred', 'removed'] ['built-by-the-run', 'another-runs', 'm",
+  "SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 0 for exit 0, and the run's hold is released and its scratch root removed [0 released ]",
+  "SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 8388608000, floor 20971520000 (byte",
+  "SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]"
+ ],
+ "settlement_count_line": [
+  "suite reuse: failed; registered=237 fresh=237 reused=0 not_run=0 qualified=0 published=0 force_fresh=false"
+ ],
+ "suite_lines": 237,
+ "sources": [
+  "fresh"
+ ]
+}
