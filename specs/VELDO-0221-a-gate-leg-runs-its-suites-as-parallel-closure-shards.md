@@ -40,6 +40,8 @@ footprint:
   - specs/VELDO-0221-a-gate-leg-runs-its-suites-as-parallel-closure-shards.md
   - specs/index.md
   - proof/VELDO-0221/*
+  - scripts/check_space_boundary.py
+  - proof/WARP-0716/crossing-state.md
 behavior_bearing: true
 observability:
   logs: Each shard prints its target suite, its closure, its private roots, its pass and fail counts and its wall time; each leg prints its shard count, its parallelism and its isolation check result with every leaked or foreign item named.
@@ -193,6 +195,7 @@ proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
 - Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED).
 - The one measured confined leg took 678.6 seconds, over AC4's 600: suite
   15_warp_1404_historical_analogy alone takes 634 seconds in an ordered run.
-- Two paths outside the footprint were edited because a gate check requires it:
-  scripts/check_space_boundary.py (two table entries) and proof/WARP-0716/crossing-state.md
-  (regenerated).
+- The build added two paths to this footprint, its last two entries, because a gate check requires
+  each edit: scripts/check_space_boundary.py (two table entries for the dispatcher's temporary
+  directory) and proof/WARP-0716/crossing-state.md (regenerated for the dispatcher's digest). The
+  shape gate refuses a diff that touches a path its specification does not declare.
