@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
-import { SCREENS, UI, expect, guard, signIn, test, type Factory } from './fixtures'
+import { SCREENS, UI, expect, guard, settled, signIn, test, unique, type Factory } from './fixtures'
 
 /**
  * VELDO-0145 AC4: the shell, the enrollment and sign-in screen, the run screen and the decisions screen at
@@ -235,7 +235,7 @@ const RENDERS: Render[] = [
   {
     name: 'decision-refused',
     async open(page, factory) {
-      const alias = `dl${Date.now() % 100000}`
+      const alias = `dl${unique()}`
       const { request } = await factory.control<{ request: string }>('/request/open', {
         alias,
         brief: 'Admit VELDO-9156, the stale lock sweeper, into the backlog?',
@@ -372,7 +372,6 @@ async function setTheme(page: Page, theme: Theme) {
 for (const viewport of [...PHONES, ...DESKTOPS]) {
   const phone = viewport.width < 768
   test(`every screen and state at ${viewport.width}px, light and dark`, async ({ browser, factory }) => {
-    test.setTimeout(300_000)
     const ids = await factory.state()
     const failures: string[] = []
     const sessions = new Map<string, Page>()
@@ -455,7 +454,7 @@ test('phone decisions: the inline answer action is visible, unclipped and works 
 })
 
 test('keyboard only on desktop: sign in, open a decision and answer it without a pointer', async ({ browser, factory }) => {
-  const { request } = await factory.control<{ request: string }>('/request/open', { alias: `dk${Date.now() % 100000}` })
+  const { request } = await factory.control<{ request: string }>('/request/open', { alias: `dk${unique()}` })
   const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
   const page = await context.newPage()
   await signIn(page, factory)
@@ -489,7 +488,7 @@ test('keyboard only on desktop: sign in, open a decision and answer it without a
 
 test('touch on phone: open a run and a decision from the bottom bar and answer by tapping', async ({ browser, factory }) => {
   const ids = await factory.state()
-  const { request } = await factory.control<{ request: string }>('/request/open', { alias: `dt${Date.now() % 100000}` })
+  const { request } = await factory.control<{ request: string }>('/request/open', { alias: `dt${unique()}` })
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
   const page = await context.newPage()
   await signIn(page, factory)
@@ -565,7 +564,7 @@ test('phone terminal: the record gets the screen, the headline unclipped, the st
 
 test('desktop decisions: the most urgent decision is open, and the list scrolls on its own', async ({ browser, factory }) => {
   const ids = await factory.state()
-  for (let n = 0; n < 12; n += 1) await factory.control('/request/open', { alias: `dq${Date.now() % 100000}${n}`, deadline_hours: 200 + n })
+  for (let n = 0; n < 12; n += 1) await factory.control('/request/open', { alias: `dq${unique()}${n}`, deadline_hours: 200 + n })
   const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
   const page = await context.newPage()
   await signIn(page, factory)
@@ -660,7 +659,8 @@ for (const theme of ['light', 'dark'] as Theme[]) {
     const rest = await colors()
     expect(contrastOf(rest.fg, rest.bg), `at rest ${JSON.stringify(rest)}`).toBeGreaterThanOrEqual(4.5)
     await button.hover()
-    await page.waitForTimeout(250)
+    // The fill transitions: it is read once the page says its transitions have ended (the page settled signal).
+    await settled(page)
     const hover = await colors()
     expect(hover.bg, 'hover changes the fill').not.toBe(rest.bg)
     expect(contrastOf(hover.fg, hover.bg), `on hover ${JSON.stringify(hover)}`).toBeGreaterThanOrEqual(4.5)
@@ -670,7 +670,7 @@ for (const theme of ['light', 'dark'] as Theme[]) {
     for (let n = 0; n < 6 && !(await button.evaluate((e) => e === document.activeElement)); n += 1) await page.keyboard.press('Tab')
     expect(await button.evaluate((e) => e === document.activeElement && e.matches(':focus-visible'))).toBe(true)
     // Nuxt UI's buttons transition their colors, the outline's included: read it once settled.
-    await page.waitForTimeout(300)
+    await settled(page)
     const ring = await button.evaluate((e) => {
       const s = getComputedStyle(e)
       return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), color: s.outlineColor, page: getComputedStyle(document.body).backgroundColor }

@@ -53,6 +53,37 @@ keyboard focus outline in both themes, and that no request leaves the origin and
 the Iconify API or a font CDN. `e2e/screens.spec.ts` takes the proof's screenshots on request
 (`VELDO_SCREENS_0229=1`), labeled as seeded demonstration data; it is skipped otherwise.
 
+## Time in browser tests (VELDO-0358)
+
+A browser test's verdict must be the same on an idle machine and on one several times slower, so no
+test, fixture or configuration sleeps, reads a clock, or names a duration of its own.
+
+- **Two durations only**, exported by `e2e/fixtures.ts`: `WAIT_HANG_MS` (600 s) bounds one wait from its
+  start (an expectation, an action, a navigation, the harness's ready line or exit); `PROCESS_HANG_MS`
+  (3600 s) bounds the run from its last progress. Never pass a `timeout` option, never call
+  `test.setTimeout`, `page.waitForTimeout` or `Date.now`. The gate's census
+  (`scripts/check_wallclock.py`) refuses each of them.
+- **No test has a limit on its total time** (`timeout: 0` in `playwright.config.ts`). The `Progress`
+  reporter (the default export of `e2e/fixtures.ts`) re-arms the process hang bound at every test and
+  step event and ends the run only when none happened for that long, naming every test and step still
+  in flight with its source line. A Python suite that runs the browser tests sets `VELDO_E2E_PROGRESS`,
+  so each event is also a line on the run's output, which is what the suite counts its own bound from.
+- **Wait for the page's own state, never for an interval.** An expectation waits on what the page
+  shows. Where a test must act or read "after the page is done", it awaits `settled(page)`, the page
+  settled signal that stands in every page of every test: no request unanswered (the page counts its
+  own, to the end of each answer's body; its event streams are not requests), no `StatePanel` loading,
+  no finite animation or transition running. A panel that does not say its state through `StatePanel`
+  gets that first; the test does not get a timer.
+- **The harness starts and stops on events.** `startHarness` waits for the ready line or the exit,
+  whichever comes first; `stopHarness` closes its input and waits for its exit. Either one reaching the
+  wait hang bound ends the harness and is reported as hung.
+- **Data, not clocks.** A name that must be new is `unique()`. A time written into a record is the
+  factory's own clock, `await factory.now()`. In `e2e/harness.py` the wall time handed to the product is
+  the suites' support stamp (`wall()`).
+- **Product timers.** The harness selects the timers profile in its organs' timers table before it
+  loads them (every giving-up deadline at the wait hang bound) and reports the profile and the
+  effective values in its ready line; the suites' row `timers/profile-applied` reads that report.
+
 ## The factory harness
 
 `e2e/harness.py` builds a real factory in a temporary directory: a real SQLite store and membership

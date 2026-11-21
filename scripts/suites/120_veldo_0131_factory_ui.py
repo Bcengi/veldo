@@ -3,7 +3,7 @@ terminal and decisions, VELDO-0159's server form and VELDO-0163's role and team 
 
 Run: python3 scripts/selftest.py --suite 120_veldo_0131_factory_ui
 
-Only shared ROOT and expect are consumed. The UI source (engine/ui) is copied into scratch with the production
+Only shared ROOT, expect and WAITS (the support module) are consumed. The UI source (engine/ui) is copied into scratch with the production
 copies named in PRODUCTION below laid over it (the registered mutation driver substitutes each of them here), its
 locked dependencies are the checkout's engine/ui/node_modules (or `npm ci --prefer-offline` into the scratch copy
 when the checkout has none), and it is built with the package's own build script (vue-tsc, then vite). Then:
@@ -31,6 +31,17 @@ when the checkout has none), and it is built with the package's own build script
   models' records in their writers' stored shapes. Each test's title begins with its row name; a row is green
   only when its test ran and passed.
 
+VELDO-0358 (a gate's verdict does not depend on how busy the machine is). Every child this suite starts (the
+install, the build, the unit run, the browser run) is a heavy child: WAITS.run_heavy, with no bound on its total
+time, ended only after the process hang bound has passed with no output from it, and then reported as hung. The
+browser run writes a line at each test and step (VELDO_E2E_PROGRESS), so that bound counts from its last step.
+Rows added:
+- timers/profile-applied (AC15): the harness the browser tests ran against selected the timers profile in its
+  organs' timers table before loading them and reported it in its ready line; every effective value it reported,
+  the harness's own sentinel entry among them, is the wait hang bound (timer_unset otherwise).
+- wave1/no-sites (AC10): the wall-clock census over the browser configuration, fixtures, specifications and harness
+  named in E2E below and over suites 120, 121 and 124 finds no site outside the declared exceptions.
+
 Needs node (the nvm toolchain), the npm cache or a checkout node_modules, and system Chrome; without them every
 row fails by name. Writes only temporary files.
 """
@@ -46,9 +57,7 @@ def _v131_suite():
     import re
     from pathlib import Path
     import shutil
-    import subprocess
     import tempfile
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -87,8 +96,28 @@ def _v131_suite():
     BUILD = ('@axe-core/playwright', '@playwright/test', '@tailwindcss/vite', '@types/node', '@vitejs/plugin-vue',
              '@vue/test-utils', 'jsdom', 'vitest', 'vue-tsc', '@fontsource-variable/ibm-plex-sans',
              '@fontsource/ibm-plex-mono', '@iconify-json/lucide')
+    # VELDO-0358: the browser tests' own files (literal anchors: the registered mutation driver substitutes each of
+    # them here). They are laid over the scratch copy with PRODUCTION, and wave1/no-sites reads them.
+    E2E = {
+        'playwright.config.ts': ROOT / "engine/ui" / "playwright.config.ts",
+        'e2e/fixtures.ts': ROOT / "engine/ui/e2e" / "fixtures.ts",
+        'e2e/factory-fixtures.ts': ROOT / "engine/ui/e2e" / "factory-fixtures.ts",
+        'e2e/team-fixtures.ts': ROOT / "engine/ui/e2e" / "team-fixtures.ts",
+        'e2e/factory.spec.ts': ROOT / "engine/ui/e2e" / "factory.spec.ts",
+        'e2e/layout.spec.ts': ROOT / "engine/ui/e2e" / "layout.spec.ts",
+        'e2e/screens.spec.ts': ROOT / "engine/ui/e2e" / "screens.spec.ts",
+        'e2e/run.spec.ts': ROOT / "engine/ui/e2e" / "run.spec.ts",
+        'e2e/harness.py': ROOT / "engine/ui/e2e" / "harness.py",
+    }
+    SUITES = {
+        '120_veldo_0131_factory_ui.py': ROOT / "scripts/suites" / "120_veldo_0131_factory_ui.py",
+        '121_veldo_0131_factory_screens_narrow.py': ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py",
+        '124_veldo_0131_factory_reads_commands.py': ROOT / "scripts/suites" / "124_veldo_0131_factory_reads_commands.py",
+    }
+    WAVE = ('timers/profile-applied', 'wave1/no-sites')
+    ROWS = ROWS + WAVE
     rows = {name: [] for name in ROWS}
-    started = time.monotonic()
+    started = WAITS.stamp()
     UI = ROOT / 'engine' / 'ui'
     SKIP = {'node_modules', 'dist', 'test-results', 'playwright-report'}
 
@@ -100,7 +129,8 @@ def _v131_suite():
             check(row, label, condition)
 
     def tail(text, n=12):
-        lines = [line.strip() for line in (text or '').splitlines() if line.strip()]
+        lines = [line.strip() for line in (text or '').splitlines()
+                 if line.strip() and not line.startswith('e2e progress: ')]
         return ' | '.join(line.encode('ascii', 'replace').decode() for line in lines[-n:])[:900]
 
     def environment():
@@ -114,13 +144,60 @@ def _v131_suite():
             env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
         return env
 
-    def run(args, cwd, env=None, timeout=900):
+    def run(args, cwd, kind, env=None):
+        """One heavy child of `kind` (VELDO-0358): no bound on its total time. It is ended only after the process
+        hang bound has passed with no output from it, and that is said in what is returned."""
         try:
-            done = subprocess.run(args, cwd=str(cwd), env=dict(environment(), **(env or {})), capture_output=True,
-                                  text=True, timeout=timeout, stdin=subprocess.DEVNULL)
-            return done.returncode, (done.stdout or '') + (done.stderr or '')
-        except (OSError, subprocess.TimeoutExpired) as error:
+            done = WAITS.run_heavy(args, kind, cwd=str(cwd), env=dict(environment(), **(env or {})))
+        except OSError as error:
             return -1, '%s: %s' % (type(error).__name__, error)
+        out = (done.stdout or '') + (done.stderr or '')
+        if done.hung:
+            return -1, out + '\nHUNG: the %s wrote nothing for the process hang bound and was ended' % kind
+        return done.returncode, out
+
+    def census_row():
+        """wave1/no-sites: the census's own readers over the browser tests' files and the three suites."""
+        try:
+            spec = importlib.util.spec_from_file_location('v131_census', ROOT / 'scripts' / 'check_wallclock.py')
+            census = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(census)
+            found = []
+            for relative, source in E2E.items():
+                text, rel = Path(source).read_text(), 'engine/ui/' + relative
+                found += (census.Python(rel, text, census.RULES).scan() if relative.endswith('.py')
+                          else census.scan_script(rel, text, census.RULES))
+            for name, source in SUITES.items():
+                found += census.Python('scripts/suites/' + name, Path(source).read_text(), census.RULES).scan()
+            excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+            counts, first = census.counted(found)
+            over = sorted('%s:%s %s (%s)' % (first[k]['file'], first[k]['line'], k[1], first[k]['form'])
+                          for k, n in counts.items() if n > excepted.get(k, 0))
+        except Exception as error:  # noqa: BLE001
+            check('wave1/no-sites', 'the census could be run (%s: %s)' % (type(error).__name__, error), False)
+            return
+        check('wave1/no-sites', 'the census finds no site outside the declared exceptions in the browser tests\' '
+              'files and suites 120, 121 and 124 (wallclock_site %s)' % over[:8], not over)
+
+    def timers_row(path):
+        """timers/profile-applied: what each harness of the browser run said of the product's timers."""
+        hang = WAITS.WAIT_HANG_SECONDS
+        try:
+            said = [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()]
+        except (OSError, ValueError):
+            said = []
+        check('timers/profile-applied', 'a harness of the browser run reported its timers (%d)' % len(said), said)
+        for one in said:
+            timers = one.get('timers') or {}
+            values = {entry.get('name'): entry.get('value') for entry in timers.get('effective') or []}
+            unset = sorted(str(name) for name, value in values.items() if value != hang)
+            check('timers/profile-applied', '%s selected the profile of the wait hang bound with no timer excepted (%s)'
+                  % (one.get('harness'), timers.get('profile')),
+                  timers.get('profile') == {'except': None, 'hang_seconds': hang})
+            check('timers/profile-applied', '%s reports its own sentinel entry among the table\'s (%s)'
+                  % (one.get('harness'), sorted(map(str, values))), 'e2e_harness.SENTINEL_SECONDS' in values)
+            check('timers/profile-applied', '%s: every effective timer is the wait hang bound (timer_unset %s)'
+                  % (one.get('harness'), unset), not unset)
 
     def policy_rows():
         try:
@@ -150,7 +227,7 @@ def _v131_suite():
     def exercise(base):
         ui = base / 'engine' / 'ui'
         shutil.copytree(UI, ui, ignore=lambda d, names: [n for n in names if n in SKIP and Path(d) == UI])
-        for relative, source in PRODUCTION.items():
+        for relative, source in list(PRODUCTION.items()) + list(E2E.items()):
             target = ui / relative
             if Path(source).is_file():
                 target.write_bytes(Path(source).read_bytes())
@@ -168,16 +245,17 @@ def _v131_suite():
         if modules.is_dir():
             os.symlink(modules, ui / 'node_modules')
         else:
-            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui)
+            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, 'package install')
             if code != 0:
                 all_rows('the locked UI dependencies are installed (npm ci) [%s]' % tail(out),
-                         ('unit/factory', 'ac4/served-assets') + BROWSER)
+                         ('unit/factory', 'ac4/served-assets', 'timers/profile-applied') + BROWSER)
                 return
         dist = base / 'dist'
-        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui)
+        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui,
+                        'package install')  # the package's own build script, run by npm as its install is
         if code != 0 or not (dist / 'index.html').is_file():
             all_rows('the UI builds with its own build script (vue-tsc, then vite) [%s]' % tail(out),
-                     ('unit/factory', 'ac4/served-assets') + BROWSER)
+                     ('unit/factory', 'ac4/served-assets', 'timers/profile-applied') + BROWSER)
             return
 
         assets = [p for p in (dist / 'assets').rglob('*') if p.is_file() and p.suffix in ('.js', '.css')]
@@ -190,7 +268,7 @@ def _v131_suite():
         code, out = run(['npx', 'vitest', 'run'] + ['src/features/' + f for f in (
             'backlog', 'projects', 'proof', 'usage', 'configuration', 'catalog', 'workflow', 'workers', 'table',
             'repositories')] + ['src/api/actions.spec.ts']
-            + ['--reporter=json', '--outputFile=' + str(report)], ui, timeout=300)
+            + ['--reporter=json', '--outputFile=' + str(report)], ui, 'suite')
         try:
             unit = json.loads(report.read_text())
         except (OSError, ValueError):
@@ -202,9 +280,11 @@ def _v131_suite():
               code == 0 and unit.get('numPassedTests', 0) > 0 and unit.get('numFailedTests', 1) == 0 and not failed)
 
         e2e = base / 'e2e.json'
+        said = base / 'timers.jsonl'
+        browser_env = {'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs), 'VELDO_E2E_REPORT': str(e2e),
+                       'VELDO_E2E_PROGRESS': '1', 'VELDO_E2E_TIMERS': str(said)}
         code, out = run(['npx', 'playwright', 'test', 'e2e/factory.spec.ts', '--grep-invert', '|'.join(ELSEWHERE)],
-                        ui, env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
-                             'VELDO_E2E_REPORT': str(e2e)}, timeout=3000)
+                        ui, 'browser run', env=browser_env)
         try:
             browser = json.loads(e2e.read_text())
         except (OSError, ValueError):
@@ -226,13 +306,16 @@ def _v131_suite():
             check(row, 'its browser test ran and passed [%s%s]' % (
                 outcomes or 'not run: ' + tail(out, 6), ('; ' + tail(errors[0], 6)) if errors else ''),
                 outcomes == ['passed'])
+        timers_row(said)
 
     policy_rows()
+    census_row()
     try:
         with tempfile.TemporaryDirectory(prefix='v131-') as directory:
             exercise(Path(directory))
     except Exception as error:  # noqa: BLE001
-        all_rows('ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:250]))
+        all_rows('ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:250]),
+                 [row for row in ROWS if row != 'wave1/no-sites'])
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
         for label, one in observed:
@@ -242,7 +325,7 @@ def _v131_suite():
             print('  VELDO-0131 %s detail: no check ran' % name)
         failed = next((label for label, one in observed if not one), 'no check ran' if not observed else '')
         expect('VELDO-0131 ' + name + (': ' + failed if failed else ''), ok)
-    print('VELDO-0131 suite seconds: %.3f' % (time.monotonic() - started))
+    print('VELDO-0131 suite began %s, ended %s' % (started.iso(), WAITS.stamp().iso()))
 
 
 _v131_suite()
