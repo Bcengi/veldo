@@ -570,8 +570,14 @@ ISOLATION_BREACH = "isolation_breach"
 # failure with one FAIL line whose text is fixed, so two runs of one tree name it identically.
 SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "deadline_exceeded",
                   "prerequisite_failed", "exit_status", ISOLATION_BREACH)
-SHARD_ROOTS = (("HOME", "h"), ("TMPDIR", "t"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
+# A shard's roots are SIBLING directories of the leg's own temporary directory, named by the shard's
+# two-character tag: the temporary directory is the tag alone and every other root the tag and one
+# letter. THE NAMES ARE AS SHORT AS THEY CAN BE, because a suite binds local sockets beneath its
+# temporary directory and a socket path holds under 108 bytes: measured, one suite's path was 3
+# bytes over with a directory level per shard and a level per root, and fits with 2 to spare here.
+SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
                ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
+SHARD_PROBES = "p"
 MANAGER_SOCKETS = ("bus", "systemd/private")
 # What a shard does not inherit: the dispatcher's own channels and inputs, a diagnostic order, and
 # the other spellings of the temporary directory, which would outrank the shard's own TMPDIR.
@@ -705,11 +711,21 @@ def handed_claims(environ):
     return claims
 
 
+def shard_tag(index):
+    """A shard's tag: two characters for the first 1296 shards of a leg, its number after that."""
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    return digits[index // 36] + digits[index % 36] if index < 1296 else "%d" % index
+
+
+def roots_of(root):
+    """Every private root of the shard whose temporary directory is `root`."""
+    return {variable: Path(str(root) + leaf) for variable, leaf in SHARD_ROOTS}
+
+
 def shard_roots(base, index):
-    """(a shard's directory, {environment variable: its private root beneath it}). The names are
-    short on purpose: a suite's local socket path holds under 108 bytes."""
-    root = Path(base) / ("%03d" % index)
-    return root, {variable: root / leaf for variable, leaf in SHARD_ROOTS}
+    """(a shard's temporary directory, {environment variable: its private root})."""
+    root = Path(base) / shard_tag(index)
+    return root, roots_of(root)
 
 
 def link_manager(runtime, real):
@@ -790,7 +806,7 @@ def shard_probe(root):
     """The file the dispatcher expects a confined shard to be REFUSED: beside the shards' roots,
     inside what the leg's own domain may write, outside what this shard's layer grants."""
     root = Path(root)
-    return root.parent / "probe" / root.name
+    return root.parent / SHARD_PROBES / root.name
 
 
 # Landlock's filesystem write accesses (linux/landlock.h): write a file, remove a directory or a
@@ -857,7 +873,7 @@ def confine_shard(root):
     """Stack this shard's Landlock layer and prove it: (in force, the probe write was refused,
     what went wrong). Called before any suite code runs."""
     try:
-        write_layer([Path(root)])
+        write_layer(list(roots_of(root).values()))
     except Exception as error:  # noqa: BLE001 - any failure is reported, and the dispatcher reddens
         return False, False, "%s: %s" % (type(error).__name__, error)
     try:
@@ -995,10 +1011,14 @@ def _holders(path):
 
 def _shard_named(text, base, jobs):
     """The suite whose roots `text` mentions, or None."""
-    match = re.search(re.escape(str(base)) + r"/(\d{3})(?:/|$|\x00)", text)
-    if not match:
+    if str(base) not in text:
         return None
-    return next((job["name"] for job in jobs if job["index"] == int(match.group(1))), None)
+    letters = "".join(leaf for _variable, leaf in SHARD_ROOTS)
+    for job in jobs:
+        root = re.escape(str(Path(base) / shard_tag(job["index"])))
+        if re.search(root + "[" + letters + "]?(?![0-9A-Za-z_.-])", text):
+            return job["name"]
+    return None
 
 
 def attribute(kind, item, path, base, jobs, describe=None):
@@ -1175,7 +1195,7 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     hold. The keyword arguments after `environ` exist for a fixture leg: the real gate passes none.
     """
     # Every shard's roots stand in one temporary directory of this leg's own, which ends with it.
-    with tempfile.TemporaryDirectory(prefix="vs-", ignore_cleanup_errors=True) as directory:
+    with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory:
         return _run_shards(Path(directory), Path(root), leg, targets, environ, emit, requires, manifest,
                            places, units, describe, deadline, settle, parallel, python, tick)
 
@@ -1195,7 +1215,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             names.append(name)
     claims = handed_claims(environ)
     began = time.monotonic()
-    (base / "probe").mkdir(mode=0o700)
+    (base / SHARD_PROBES).mkdir(mode=0o700)
     jobs = []
     for index, name in enumerate(names):
         closure = requires.get(name)
@@ -1248,7 +1268,6 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
 
     def launch(job):
         directory, roots = shard_roots(base, job["index"])
-        directory.mkdir(mode=0o700)
         for path in roots.values():
             path.mkdir(mode=0o700)
         linked = link_manager(roots["XDG_RUNTIME_DIR"], "/run/user/%d" % os.getuid())
@@ -1333,8 +1352,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         observe()
         job["result"] = result
         done.append(job)
-        say("selftest shard %03d %s: closure %s; roots %s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
-            % (job["index"], job["name"], ", ".join(job["closure"]), job["root"], result["passed"],
+        say("selftest shard %s %s: closure %s; roots %s*; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
+            % (shard_tag(job["index"]), job["name"], ", ".join(job["closure"]), job["root"], result["passed"],
                result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
                "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
                and result["layer"].get("refused") is True else ""))
