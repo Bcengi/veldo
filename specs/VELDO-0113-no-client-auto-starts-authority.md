@@ -18,6 +18,8 @@ footprint:
   - ".veldo/dispatch.py"
   - "engine/.veldo/dispatch.py"
   - "scripts/suites/*_veldo_0113_*.py"
+  - "scripts/fixtures/no_autostart.py"
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/49_veldo_0109_unavailable.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -108,3 +110,26 @@ and returns all three required consumer names as STANDS DOWN with
 Its open qualification obligations are documented in `proof/VELDO-0111/OPEN.md`;
 they cannot be reported as green by this consumer. Implementation and the three
 declared falsifier registrations remain outstanding.
+
+## History
+
+- 2026-11-21: Lead decision, resuming from `fcfe374c`: AC1's endpoint-refusal
+  premise applies to out-of-process registered clients. The registered
+  `control_dispatch:Dispatches.*` and dispatcher front doors marked `in_process`
+  are authority components; their AC1 obligation is proved by construction.
+  Retain every inventory identity, with a construction census covering each
+  in-process entry's class. Every production construction must be in the authority
+  modules; discover new sites on each run and falsify this row by adding a
+  construction outside those modules. Current Dispatches sites are
+  `control_service.py:3172,3904`, `control_service_api.py:214`,
+  `control_launch.py:2295`, and `control_launch_work.py:148`; Dispatcher is
+  constructed by its authority front door in `dispatch.py:574`.
+  Also report whether a non-authority process can open the store for writing.
+  There is currently no process-specific write grant: `control_store.open_store`
+  checks filesystem support and durability, not caller process identity, and
+  same-account code with filesystem access can open a writable connection.
+  This is an explicit gap, not an isolation claim. Keep the original direct-store
+  counterexample in this proof as the reason for this amendment.
+  All out-of-process registry/state cases retain the full VELDO-0111 census
+  requirement, including named stand-down on incomplete qualification. No
+  observer qualification is supplied or weakened by this amendment.
