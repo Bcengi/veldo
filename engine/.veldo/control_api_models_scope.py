@@ -3,6 +3,16 @@
 Unknown or unresolved kinds are universal-only. References are read in the authority's
 read transaction; journal changes use their committed data and the same reference rules.
 No withheld identity is logged or returned, including in redaction and integrity problems.
+
+VELDO-0178: a conversation has no project; its scope is its owner. A conversation's records (the conversation,
+its turns, the messages sent in it, the answers kept under the owner's messages and a flag delivered to it) and the
+dispatch of one of its turns, with every record of that turn's run (its unit's dispatch index, active or released,
+its reservations, and the policy a conversation's subject names) and the intake records naming it (the turn's intake
+source, a reading proposed in it), are visible to the conversation's owner alone, whatever the reader's scope, the
+universal one included; anyone else is withheld them as `conversation_owner`. Each is decided from its own link to
+its conversation, never from a field its run's end clears. A record that stays shared but names a conversation
+turn's dispatch (an account's usage windows, and the journal command id of the observation that wrote them) is
+served to anyone but the conversation's owner with that name null.
 """
 import copy
 import json
@@ -14,11 +24,99 @@ def field(data, path):
     return data
 
 
+# VELDO-0178: the kinds a conversation's records are kept as (control_conversation's KIND, TURN_KIND, SENT_KIND,
+# ANSWER_KIND and FLAG_KIND), each naming its conversation; a conversation turn's dispatch names it as its unit.
+CONVERSATION_KINDS = ('conversation', 'conversation_turn', 'conversation_message', 'conversation_answer',
+                      'conversation_flag')
+OWNER = 'conversation_owner'
+
+
+def conversation_of(conn, kind, data):
+    """The conversation a record belongs to, or None for a record of no conversation."""
+    if not isinstance(data, dict):
+        return None
+    if kind == 'conversation':
+        return data.get('id') if isinstance(data.get('id'), str) else ''
+    if kind in CONVERSATION_KINDS:
+        found = data.get('conversation')
+        # A flag delivered to no conversation (undelivered) belongs to none; every other record names one.
+        return found if isinstance(found, str) else (None if kind == 'conversation_flag' else '')
+    if kind == 'dispatch_active':
+        # Review-2026-11-04 finding 1: decided from its unit and station, which it keeps when its run ends and the
+        # index is released (dispatch_id None). A conversation turn's index is the only one with no repository and
+        # station `turn` (control_dispatch's contract rule); its unit is the conversation.
+        if data.get('station') == 'turn' and data.get('repository') is None:
+            return data.get('unit') if isinstance(data.get('unit'), str) else ''
+        if isinstance(data.get('dispatch_id'), str):
+            row = conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                               ('dispatch:' + data['dispatch_id'],)).fetchone()
+            return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+        return None
+    if kind == 'dispatch':
+        contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
+        if contract.get('subject_kind') == 'conversation':
+            return contract.get('unit') if isinstance(contract.get('unit'), str) else ''
+    if kind == 'subscription_reservation':
+        # A turn's worker and invocation reservations name the conversation as their unit (control_reservations'
+        # conversation context, kept when retired); a policy whose subject is a conversation is that conversation's.
+        context = data.get('context') if isinstance(data.get('context'), dict) else {}
+        if context.get('subject_kind') == 'conversation':
+            return context.get('unit') if isinstance(context.get('unit'), str) else ''
+        if (data.get('type') == 'policy' and data.get('scope') in ('project', 'unit')
+                and conversation_owner(conn, data.get('subject')) is not None):
+            return data['subject']
+        return None
+    if kind in ('intake_source', 'intake_proposal'):
+        # A message naming a conversation (its turn's intake source) and a reading proposed in one name it.
+        context = data.get('context') if isinstance(data.get('context'), dict) else {}
+        for found in (context.get('conversation'), data.get('conversation')):
+            if isinstance(found, str):
+                return found
+    return None
+
+
+def conversation_owner(conn, identity):
+    """The owner of a conversation, or None for an unknown one."""
+    if not isinstance(identity, str) or not identity:
+        return None
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('conversation:' + identity,)).fetchone()
+    return json.loads(row[1]).get('owner') if row and row[0] == 'conversation' else None
+
+
+def turn_dispatch(conn, dispatch_id):
+    """The conversation whose turn the run `dispatch_id` is, or None for no run of a conversation turn; decided
+    from the dispatch record the store holds, never from the id's shape."""
+    if not isinstance(dispatch_id, str) or not dispatch_id:
+        return None
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + dispatch_id,)).fetchone()
+    return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+
+
+def named_turns(conn, text):
+    """The conversations whose turn's dispatch `text` names (a journal command id built from a dispatch id, as an
+    account window observation's is). A dispatch id is a path opening with `dispatch`; each such run of segments
+    is looked up, longest first, and only a dispatch the store holds decides."""
+    found = []
+    if not isinstance(text, str) or 'dispatch/' not in text:
+        return found
+    parts = text.split('/')
+    for start, part in enumerate(parts):
+        if part != 'dispatch':
+            continue
+        for end in range(len(parts), start + 1, -1):
+            conversation = turn_dispatch(conn, '/'.join(parts[start:end]))
+            if conversation is not None:
+                found.append(conversation)
+                break
+    return found
+
+
 class ReaderScope:
-    def __init__(self, conn, membership, scope, rules):
+    def __init__(self, conn, membership, scope, rules, principal=None):
         self.conn, self.membership, self.scope, self.rules = conn, membership, scope, rules
-        self.withheld = {'out_of_scope': 0, 'no_project': 0}
-        self.records = {'out_of_scope': 0, 'no_project': 0}
+        self.principal = principal
+        self.withheld = {'out_of_scope': 0, 'no_project': 0, OWNER: 0}
+        self.records = {'out_of_scope': 0, 'no_project': 0, OWNER: 0}
 
     @property
     def universal(self):
@@ -71,7 +169,10 @@ class ReaderScope:
         return None
 
     def project_data(self, kind, data):
-        """Project metadata in a visible intake record follows the reader's scope too."""
+        """Project metadata in a visible intake record follows the reader's scope too, and a shared account's
+        usage windows name a conversation turn's dispatch to that conversation's owner alone (VELDO-0178)."""
+        if kind == 'account':
+            return self.account_data(data)
         if self.universal or kind not in ('intake_proposal', 'intake_question'):
             return data
         served = copy.deepcopy(data)
@@ -104,7 +205,46 @@ class ReaderScope:
         walk(served)
         return served
 
+    def owns(self, conversation):
+        return isinstance(self.principal, str) and conversation_owner(self.conn, conversation) == self.principal
+
+    def account_data(self, data):
+        """An account is shared, but the dispatch a usage window was observed on (`source_dispatch`) names the
+        conversation when it is a conversation turn's: served as null to everyone but that conversation's owner,
+        whatever the reader's scope (re-review 2026-11-11 finding A)."""
+        windows = data.get('windows') if isinstance(data, dict) else None
+
+        def foreign(window):
+            conversation = turn_dispatch(self.conn, window.get('source_dispatch')) if isinstance(window, dict) else None
+            return conversation is not None and not self.owns(conversation)
+        hidden = [name for name, window in (windows.items() if isinstance(windows, dict) else ()) if foreign(window)]
+        if not hidden:
+            return data
+        served = copy.deepcopy(data)
+        for name in hidden:
+            served['windows'][name]['source_dispatch'] = None
+        return served
+
+    def command(self, command_id):
+        """The journal command id the feed serves this reader: null when it names a conversation turn's dispatch
+        (an account window observation's does) and the reader does not own that conversation, whatever his scope."""
+        return None if any(not self.owns(c) for c in named_turns(self.conn, command_id)) else command_id
+
+    def owned(self, kind, data):
+        """None for a record of no conversation, else whether the reader is its conversation's owner."""
+        conversation = conversation_of(self.conn, kind, data)
+        if conversation is None:
+            return None
+        if kind == 'conversation':
+            owner = data.get('owner')
+        else:
+            owner = conversation_owner(self.conn, conversation)
+        return isinstance(self.principal, str) and owner == self.principal
+
     def reason(self, identity, kind, data):
+        owned = self.owned(kind, data)
+        if owned is not None:
+            return None if owned else OWNER
         if self.universal:
             return None
         if self.rules.get(kind) == ('shared',):

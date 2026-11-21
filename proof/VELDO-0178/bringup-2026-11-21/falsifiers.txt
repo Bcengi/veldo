@@ -1,0 +1,11 @@
+Each registered mutation case of finding 178 applied to the checkout's module at the head of the chain (VELDO-0187 ported), its suite run alone, the module restored byte for byte.
+178 [read178-domain-membership] control_api_authority.py rows AC1/other-member: RED on its row; false rows: VELDO-0178 AC1/list; VELDO-0178 AC1/other-member; VELDO-0178 AC1/observability; 133_veldo_0178_conversation_api 13 passed 3.82s; restored True
+178 [record178-project-alone] control_api_authority.py rows AC2/other-member: RED on its row; false rows: VELDO-0178 AC2/other-member; VELDO-0178 AC2/neither; VELDO-0178 AC2/observability; 133_veldo_0178_conversation_api 13 passed 3.49s; restored True
+178 [feed178-conversation-by-scope] control_api_models_scope.py rows AC1/events: RED on its row; false rows: VELDO-0178 AC1/other-member; VELDO-0178 AC1/events; 133_veldo_0178_conversation_api 14 passed 3.25s; restored True
+178 [index178-released-by-dispatch-id] control_api_models_scope.py rows AC1/events: RED on its row; false rows: VELDO-0178 AC1/events; 133_veldo_0178_conversation_api 15 passed 3.20s; restored True
+178 [account178-window-source-served] control_api_models_scope.py rows AC1/events: RED on its row; false rows: VELDO-0178 AC1/events; 133_veldo_0178_conversation_api 15 passed 3.27s; restored True
+
+Mutation cases of other findings that this ticket's port re-anchored, run the same way:
+141 [route-scope-unchecked] control_api_authority.py rows api/refusals,api/service-call: RED on its row; false rows: VELDO-0141 api/refusals; VELDO-0141 api/service-call; VELDO-0141 api/scope-before-existence; 82_veldo_0141_execution_record 37 passed 24.15s; restored True
+141 [route-service-call-unlisted] control_api_assertion.py rows api/service-call: RED on its row; false rows: VELDO-0141 api/service-call; 82_veldo_0141_execution_record 39 passed 23.20s; restored True
+164 [v164-events-unfiltered] control_api_authority.py rows events/member-A: RED on its row; false rows: VELDO-0164 reads/unrouted-intake; VELDO-0164 reads/observations; VELDO-0164 events/member-A; VELDO-0164 events/registration; VELDO-0164 events/publication; VELDO-0164 events/own-revocations; 104_veldo_0164_scoped_reads 11 passed 1.43s; restored True

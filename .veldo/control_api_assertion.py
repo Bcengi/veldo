@@ -74,6 +74,12 @@ OPERATIONS = {
     # the owner's screen showed. The authority admits a person only, and of persons only the owner.
     'reconcile_space': {'parameters': ('project',), 'boundary': 'command_acceptance'},
     'abandon_worktree': {'parameters': ('item', 'version'), 'boundary': 'command_acceptance'},
+    # VELDO-0178: the owner's conversation commands (control_conversation's OPEN, CLOSE, ROLE and ATTACH).
+    'open_conversation': {'parameters': ('role',), 'boundary': 'command_acceptance'},
+    'close_conversation': {'parameters': ('conversation', 'version'), 'boundary': 'command_acceptance'},
+    'change_conversation_role': {'parameters': ('conversation', 'version', 'role'), 'boundary': 'command_acceptance'},
+    'attach_conversation_project': {'parameters': ('conversation', 'version', 'project'),
+                                    'boundary': 'command_acceptance'},
 }
 
 CALL = 'api_call'
@@ -81,7 +87,9 @@ REQUEST_NAMESPACE = 'veldo-api-request'
 CALLS = {'apply': ('packet',), 'inspect': ('entity_ids',), 'read': ('model', 'principal'),
          'workflow': ('principal', 'workflow', 'version'), 'events': ('principal', 'after', 'limit'),
          'feed': ('after', 'limit'), 'subscribe': ('socket',),
-         'record': ('principal', 'dispatch_id', 'after', 'limit')}
+         'record': ('principal', 'dispatch_id', 'after', 'limit'),
+         # VELDO-0178: the reader's own conversations, or one of them.
+         'conversations': ('principal', 'conversation')}
 
 
 def canonical(value):

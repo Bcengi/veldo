@@ -139,9 +139,11 @@ IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host'
                      'default_visibility')
 SCOPE = _organ('control_api_models_scope')
 
-def reader_scope(conn, membership, scope):
+def reader_scope(conn, membership, scope, principal=None):
+    """The reader's scope; `principal` names the reader, the only one a conversation of his is visible to
+    (VELDO-0178)."""
     return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS + METADATA_READS
-                                                       for k in m.kinds})
+                                                       for k in m.kinds}, principal=principal)
 
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
 # one is a gap owned by the named specification.
@@ -169,6 +171,15 @@ ACTIONS = (
     # VELDO-0312 (design 6.6): the owner's Abandon of one worktree, the space ledger's signal for that item.
     Action('space_reconcile', 'space.reconcile', 'reconcile_space', 'control_space', 'RECONCILE', 'VELDO-0315'),
     Action('worktree_abandon', 'space.abandon', 'abandon_worktree', 'control_space', 'SIGNAL', 'VELDO-0312'),
+    # VELDO-0178: the owner's conversation commands, each VELDO-0174's typed conversation command.
+    Action('conversation_open', 'conversations.open', 'open_conversation', 'control_conversation', 'OPERATION',
+           'VELDO-0174'),
+    Action('conversation_close', 'conversations.close', 'close_conversation', 'control_conversation', 'OPERATION',
+           'VELDO-0174'),
+    Action('conversation_role', 'conversations.set_role', 'change_conversation_role', 'control_conversation',
+           'OPERATION', 'VELDO-0174'),
+    Action('conversation_attach', 'conversations.attach_project', 'attach_conversation_project',
+           'control_conversation', 'OPERATION', 'VELDO-0177'),
 )
 
 GAPS = (
