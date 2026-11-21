@@ -1,0 +1,18 @@
+== 66_veldo_0047_authority at 5bc570a0, load 14.80 14.25 25.39
+  SELFTEST FAIL: VELDO-0047 authority/installed-assets
+selftest (PARTIAL, 1 of 239 suites): 60 passed, 1 failed in 15.02s
+== 71_veldo_0138_channel_service at 5bc570a0, load 15.43 14.42 25.26
+selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 31.64s
+== 83_veldo_0154_factory_loop at 5bc570a0, load 16.34 14.74 25.02
+selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 83.19s
+== 86_veldo_0189_engine_upgrade at 5bc570a0, load 14.25 14.59 24.08
+selftest (PARTIAL, 1 of 239 suites): 62 passed, 0 failed in 67.09s
+== 110_veldo_0143_new_project at 5bc570a0, load 12.93 14.16 23.29
+selftest (PARTIAL, 1 of 239 suites): 138 passed, 0 failed in 40.93s
+== 93_veldo_0152_intake_routes at 5bc570a0, load 12.39 13.86 22.80
+selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 52.80s
+== 116_veldo_0188_project_lines at 5bc570a0, load 12.87 13.75 22.24
+selftest (PARTIAL, 1 of 239 suites): 54 passed, 0 failed in 27.74s
+== 36_veldo_0023_journal at 5bc570a0, load 13.18 13.75 22.02
+  SELFTEST FAIL: VELDO-0023 AC3 journal/replay-determinism: seven records of every transition kind (upsert, update, reserve, receipt, retire, effect) replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) into a state whose digest equals the live store's, with the
+selftest (PARTIAL, 1 of 239 suites): 43 passed, 1 failed in 2.11s

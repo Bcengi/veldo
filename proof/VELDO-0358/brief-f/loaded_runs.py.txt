@@ -1,0 +1,43 @@
+"""Fifty runs of each suite, each in its own process through the selector, eight at a time, under the generator
+this process was started by (gate_load.py). Per run: the exit status, the result line, every failed, hung and
+not-run row. A run is never repeated because it failed."""
+import json, os, queue, re, subprocess, sys, threading
+from pathlib import Path
+root, out, runs, slots = Path(sys.argv[1]), Path(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+suites = sys.argv[5:]
+jobs = queue.Queue()
+for i in range(runs):
+    for s in suites:
+        jobs.put((s, i))
+lock, results = threading.Lock(), []
+def work():
+    while True:
+        try:
+            suite, i = jobs.get_nowait()
+        except queue.Empty:
+            return
+        log = out / ('%s.%02d.txt' % (suite, i))
+        hang = out / 'hang' / ('%s.%02d' % (suite, i)); hang.mkdir(parents=True, exist_ok=True)
+        with open(log, 'w') as f:
+            p = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite], cwd=str(root), stdout=f,
+                               stderr=subprocess.STDOUT, env=dict(os.environ, VELDO_HANG_DIR=str(hang)))
+        text = log.read_text(errors='replace')
+        line = next((l for l in text.splitlines() if l.startswith('selftest (PARTIAL')), None)
+        bad = re.findall(r'^\s*(SELFTEST (?:FAIL|HUNG|NOT RUN)[^\n]{0,300})', text, re.M)
+        one = {'suite': suite, 'run': i, 'exit': p.returncode, 'result': line, 'red': bad}
+        with lock:
+            results.append(one)
+            with open(out / 'runs.jsonl', 'a') as f:
+                f.write(json.dumps(one) + '\n')
+threads = [threading.Thread(target=work) for _ in range(slots)]
+for t in threads: t.start()
+for t in threads: t.join()
+summary = {}
+for r in results:
+    s = summary.setdefault(r['suite'], {'runs': 0, 'green': 0, 'red': []})
+    s['runs'] += 1
+    green = r['result'] is not None and ' 0 failed' in r['result'] and not r['red']
+    s['green'] += int(green)
+    if not green:
+        s['red'].append([r['run'], r['result'], r['red'][:5]])
+print(json.dumps(summary, indent=1))

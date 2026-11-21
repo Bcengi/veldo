@@ -1,0 +1,14 @@
+Fifty runs of each of brief F's suites, each in its own process through the selector, eight at a time, under
+scripts/gate_load.py --slots 8 (loaded.sh.txt, loaded_runs.py.txt), in the scratch copy at 173a802b plus the
+scaffold line (lead item 1); suite 83's detail-only change of 5bc570a0 reached only the runs started after the first 72 of 250. No run repeated.
+start 2026-11-21T13:18:08Z load 15.58 17.85 23.66
+load: 8 CPUs [12, 13, 14, 15, 16, 17, 18, 19], 3 spinners per CPU: 24 of 24 alive to the end, CPU consumed 31364.7s (least 1100.507s)
+load: 2 writers: 2 alive to the end, bytes written [2425851215872, 2419677200384]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000487560, "slowdown": 4.777, "waited_ns": 3778536051} (data, no verdict)
+generator exit status 0
+end 2026-11-21T15:02:45Z load 38.48 43.94 47.91
+110_veldo_0143_new_project: 50 runs, 50 with no failed and no hung row; red: []
+66_veldo_0047_authority: 50 runs, 50 with no failed and no hung row; red: []
+71_veldo_0138_channel_service: 50 runs, 50 with no failed and no hung row; red: []
+83_veldo_0154_factory_loop: 50 runs, 49 with no failed and no hung row; red: [(9, ['SELFTEST FAIL: VELDO-0154 loop/reset-timer-wake'])]
+86_veldo_0189_engine_upgrade: 50 runs, 50 with no failed and no hung row; red: []
