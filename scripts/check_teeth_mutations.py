@@ -16628,7 +16628,7 @@ def cases():
         "        if record['form'] == 'batch_clone':\n"
         "            return {'cases': [1]}  # defect: a batch clone is never removed, its clone left whole\n"
         "        if record['form'] in SNAPSHOT_FORMS:\n            return None\n",
-        ['ac1/private-forms'])
+        ['space315/ac1/private-forms'])
     add(347, 'space347-own-look-on-worktrees', '138_veldo_0300_space_remove.py', 'control_space_signal.py',
         "OWN_REPOSITORY_KINDS = ('worktree', 'agent_repository')\n",
         "OWN_REPOSITORY_KINDS = ('agent_repository',)  # defect: a worktree's own folder holds it\n",
