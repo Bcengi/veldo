@@ -2357,6 +2357,11 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "114_veldo_0113_no_autostart",
+   "file": "114_veldo_0113_no_autostart.py",
+   "regions": "VELDO-0113"
   }
  ],
  "resource_capacities": {
