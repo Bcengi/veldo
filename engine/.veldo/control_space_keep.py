@@ -640,6 +640,19 @@ def _refused(failed, commands):
                  'said': failed.said, 'ref': None, 'git': None, 'commands': commands}, **failed.more)
 
 
+# The kind registry's tables that have no row for a clone's form (control_space_kinds: table 1). An item
+# keeps the table it was declared under: a worker clone declared under one of them is not snapshotted
+# here, and the remover's last look refuses it while its work tree holds work (VELDO-0347, review F2).
+TABLES_WITHOUT_CLONE_ROW = ('1',)
+
+
+def _clone_row(record):
+    """Whether the item was declared under a table that has a row for a clone's form."""
+    ends_on = record.get('ends_on')
+    version = ends_on.get('version') if isinstance(ends_on, dict) else None
+    return isinstance(version, str) and version not in TABLES_WITHOUT_CLONE_ROW
+
+
 def keep(ledger, identity, record, event=None, snapshot=False):
     """Carry out the keep step for the worktree or private repository item `identity`, whose ledger
     record is `record`: every commit it reaches on a kept ref in its main repository, read back; with
@@ -653,7 +666,8 @@ def keep(ledger, identity, record, event=None, snapshot=False):
               and (owner.get('run') or {}).get('station') == 'review')
     # A worker clone of a run that has ended is saved and removed with no request (VELDO-0347 AC3):
     # its uncommitted, untracked and ignored work goes to the snapshot store like review scratch.
-    worker = record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'
+    worker = (record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'
+              and _clone_row(record))
     snapshot = snapshot or review or worker
     try:
         kind = record.get('kind')

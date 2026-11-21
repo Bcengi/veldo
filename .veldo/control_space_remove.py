@@ -147,7 +147,8 @@ EVIDENCE A COPY HOLDS (remove_held, design 0.4, VELDO-0347). The folder or file 
 measured; then each regular file is opened with no link followed, read whole, and its SHA-256 taken
 from those bytes. It is unlinked, by name through the folder's descriptor, only when the store holds
 a blob with that digest (`held(sha256)`, given by the caller) or the file's git blob is among the
-objects the main repository's HEAD or one of its kept refs reaches, and only when the name still
+objects the main repository's declared trunk (the land entry's, given as `landing`; none declared,
+none counted) or one of its kept refs reaches, and only when the name still
 leads to the file that was read, unchanged while it was read. A digest from the measurement is never
 used. A store that cannot be read or a repository that cannot be read is no copy. The rest stays, and
 the item with it.
@@ -197,6 +198,18 @@ PLAIN = frozenset('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678
 # keep step saves the work tree of, compared file by file at the delete (AC3).
 CLEAN_CLONE_KINDS = ('scratch', 'build_output', 'review_run_scratch', 'review_run_build_output')
 SNAPSHOT_FORMS = ('worker_clone',)
+# The kind registry's tables that have no row for a clone's form (control_space_kinds: table 1). An item
+# keeps the table it was declared under, so an agent repository declared under one of them is handled as
+# its table says, whatever its form: no snapshot and no per-file comparison (VELDO-0347, review F2).
+TABLES_WITHOUT_CLONE_ROW = ('1',)
+
+
+def _clone_row(record):
+    """Whether the item reads a clone form's row: an agent repository of a clone's form declared under a
+    table that has the row. An item with no recorded table version reads none."""
+    version = (record.get('ends_on') or {}).get('version') if isinstance(record.get('ends_on'), dict) else None
+    return (record.get('kind') == 'agent_repository' and isinstance(version, str)
+            and version not in TABLES_WITHOUT_CLONE_ROW)
 
 
 class _Refusal(Exception):
@@ -766,7 +779,7 @@ def _last_look(ctx, record, kept, where):
                                more=max(0, len(linked) - NAMED))
         changed, work = ([], []) if bare else _looked(ctx, record, where)
         # git's own remove refuses a worktree's changed entries; nothing refuses a repository's.
-        if private and record.get('form') in SNAPSHOT_FORMS:
+        if private and record.get('form') in SNAPSHOT_FORMS and _clone_row(record):
             # A worker clone (VELDO-0347 AC3): what is in its work tree was saved by the keep step's
             # snapshot. Each changed path still on disk, and each ignored path that is work, must be
             # in it with the same mode and digest; a tracked file deleted from disk is in a commit.
@@ -899,7 +912,7 @@ def _r_agent_repository(ctx, identity, record, answer):
         if before_file is not None:
             _index_of(ctx, record, name, seen)
 
-    if record.get('form') in SNAPSHOT_FORMS:
+    if record.get('form') in SNAPSHOT_FORMS and _clone_row(record):
         # A worker clone of a run that has ended (VELDO-0347 AC3): its files were saved by the keep
         # step's snapshot; each is compared with the manifest immediately before it is deleted.
         answer['method'] = 'keep_snapshot_then_rename_probe_compare_delete'
@@ -1170,10 +1183,31 @@ def _scope_main(ctx, record):
     return None
 
 
+def _declared_trunk(ctx, record, main):
+    """The full ref of the trunk the work configuration's land entry declares for the main repository
+    (the spool's Local.trunk, the one place a trunk is read from), or None. The trunk is never guessed:
+    the main repository's HEAD, a branch that happens to be checked out, is not it (review F1)."""
+    landing = ctx.get('landing')
+    if landing is None:
+        return None
+    if not _SPOOL:
+        _SPOOL.append(_sibling('control_space_spool'))
+    spool = _SPOOL[0]
+    scope = (record.get('owner') or {}).get('scope') or {}
+    try:
+        name = spool.Local(ctx['ledger'], None, landing=landing).trunk(spool.canonical(main), scope)
+    except (KeyError, TypeError, ValueError, OSError):  # a declaration that cannot be read declares no trunk
+        return None
+    return spool.full_ref(name) if isinstance(name, str) and name else None
+
+
+_SPOOL = []  # the spool module, loaded at the first trunk read (the one place a trunk is read from)
+
+
 def _committed_blobs(ctx, record):
-    """Every object a commit reaches that the trunk (the main repository's HEAD) or a kept ref of the
-    main repository reaches, read now: (object ids, object format). A repository or a commit that
-    cannot be read gives nothing: no copy (design 0.4)."""
+    """Every object a commit reaches that the declared trunk or a kept ref of the main repository
+    reaches, read now: (object ids, object format). With no trunk declared, only the kept refs count.
+    A repository or a commit that cannot be read gives nothing: no copy (design 0.4)."""
     main = _scope_main(ctx, record)
     if not isinstance(main, str) or not os.path.isabs(main):
         return set(), None
@@ -1183,9 +1217,11 @@ def _committed_blobs(ctx, record):
     if algorithm not in ('sha1', 'sha256') or code != 0:
         return set(), None
     tips = refs.split('\n')[:-1]
-    code, head = _git(ctx['commands'], '-C', main, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
-    if code == 0 and head.strip():
-        tips.append(head.strip())
+    trunk = _declared_trunk(ctx, record, main)
+    if trunk is not None:
+        code, head = _git(ctx['commands'], '-C', main, 'rev-parse', '--verify', '--quiet', trunk + '^{commit}')
+        if code == 0 and head.strip():
+            tips.append(head.strip())
     if not tips:
         return set(), algorithm
     code, out = _git(ctx['commands'], '-C', main, 'rev-list', '--objects', '--no-object-names', '--stdin',
@@ -1395,7 +1431,7 @@ REMOVERS = {
 
 
 def remove(ledger, probe, identity, record, action='remove', free=None, keep=None, run=None, proc=None,
-           review_check=None, held=None):
+           review_check=None, held=None, landing=None):
     """Carry out one removal of the item `identity`, whose ledger record is `record`, by the remover
     of `action` and the item's kind, and return what it measured.
 
@@ -1406,6 +1442,9 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
     it saved, when it saved any}. `run` and `proc` are the probes' own parameters, the client runner
     and the process table; `run` also runs the engine's client. The remover's own git commands, the
     worktree move and remove among them, are run through the Git boundary and not through `run`.
+    `held(sha256)` is the store's reader and `landing` the work configuration's land entry (a mapping,
+    or a call that returns one, control_space_spool.Local), from which the evidence remover reads the
+    declared trunk; without it no trunk is counted as a copy (VELDO-0347 AC4).
 
     Returns {ok: True, ...} or the refusal {ok: False, reason, deferral, said, ...}, each with item,
     action, kind, method, bytes, bytes_source, pool, pool_free_before, pool_free_after, freed, host and
@@ -1417,7 +1456,7 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         return given(argv, cwd)
 
     ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc,
-           'commands': commands, 'review_check': review_check, 'held': held}
+           'commands': commands, 'review_check': review_check, 'held': held, 'landing': landing}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}
@@ -1434,11 +1473,11 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
     return dict(answer, ok=True)
 
 
-def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=None, held=None):
+def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=None, held=None, landing=None):
     """The remover in the form rule 7 calls: tool(identity, record)."""
     def call(identity, record):
         return remove(ledger, probe, identity, record, action=action, free=free, keep=keep, run=run, proc=proc,
-                      held=held)
+                      held=held, landing=landing)
     return call
 
 
