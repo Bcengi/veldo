@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -417,5 +417,7 @@
+     if resume:
+         organ('project_runner_macos').Supervisor(config['profile'], config['qualification'])
+-        resume_pending(config, drain=True)
++        while True:
++            resume_pending(config, drain=True)
++            sleep(30)
+     else:
+         install_resumer(config_path, config)

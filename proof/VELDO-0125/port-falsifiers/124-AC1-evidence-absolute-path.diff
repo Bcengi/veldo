@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -333,5 +333,5 @@
+                     raise ValueError('reference')
+                 path = Path(reference['path'])
+-                if not path.is_absolute():
++                if False:
+                     raise ValueError('absolute evidence path required')
+                 path = path.resolve(strict=True)

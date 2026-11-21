@@ -1,0 +1,16 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/upgraded-release-attempted
+passed 1 failed 0
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "binding_mismatch:remote_result"}
+
+MUTANT exit=1
+AC3/upgraded-release-attempted: AssertionError: unattempted release parked
+FAIL VELDO-0125 AC3/upgraded-release-attempted
+passed 0 failed 1
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "parked", "reason": "binding_mismatch:remote_result"}
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/lifecycle_checks_r12.py", line 182, in upgraded_release_attempted
+    assert len(pending) == 1 and pending[0]['request']['action'] == 'release', 'unattempted release parked'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unattempted release parked

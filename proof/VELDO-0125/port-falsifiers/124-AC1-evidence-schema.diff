@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -345,5 +345,5 @@
+                         raise ValueError('evidence digest')
+                     document = json.loads(raw)
+-                    if (document.get('schema') != 'veldo.macos_worker_evidence/v1'
++                    if (False
+                             or document.get('kind') != 'native'
+                             or any(document.get(field) != evidence[field]

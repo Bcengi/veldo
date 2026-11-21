@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC3/unknown-charge
+passed 1 failed 0
+
+MUTANT exit=1
+  AC3/unknown-charge: AssertionError: reservation retired with an unknown outcome
+FAIL VELDO-0124 AC3/unknown-charge
+passed 0 failed 1

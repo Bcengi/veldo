@@ -1,0 +1,12 @@
+[
+  {
+    "case": "124-AC2-deadline",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/deadline",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "3c7ab0f4b77e503316d14ee0b3d76dfc3ffc94f0906ef73ad995901042fa0407"
+  }
+]

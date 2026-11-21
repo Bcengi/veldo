@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC2/capacity
+passed 1 failed 0
+
+MUTANT exit=1
+  AC2/capacity: AssertionError: expected refusal: unavailable_service:concurrency
+FAIL VELDO-0124 AC2/capacity
+passed 0 failed 1

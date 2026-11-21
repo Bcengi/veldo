@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC3/descendant
+passed 1 failed 0
+
+MUTANT exit=1
+  AC3/descendant: AssertionError: 
+FAIL VELDO-0124 AC3/descendant
+passed 0 failed 1

@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC1/qualification
+passed 1 failed 0
+
+MUTANT exit=1
+  AC1/qualification: AssertionError: expected refusal: missing_evidence:macos_qualification
+FAIL VELDO-0124 AC1/qualification
+passed 0 failed 1

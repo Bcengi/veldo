@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC1/claude-sandbox-refused
+passed 1 failed 0
+
+MUTANT exit=1
+  AC1/claude-sandbox-refused: AssertionError: expected refusal: unsupported_configuration:claude_bash_sandbox
+FAIL VELDO-0124 AC1/claude-sandbox-refused
+passed 0 failed 1

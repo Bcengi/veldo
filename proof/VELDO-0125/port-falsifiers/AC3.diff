@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -282,5 +282,5 @@
+         else:
+             # Bind both request and stored claim before any dispatch or spend write.
+-            if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):
++            if not data:
+                 raise SV.Refused('binding_mismatch:remote_result')
+             if op == 'worker_launch':

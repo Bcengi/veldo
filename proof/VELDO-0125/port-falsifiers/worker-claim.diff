@@ -1,0 +1,9 @@
+--- control_claim.py
++++ control_claim.py
+@@ -277,5 +277,5 @@
+         now, principal = time.time(), command['principal']
+         member = AC.membership_entry(state['membership'], principal)
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:
+             raise S.StoreRefused('not_authorized', 'worker receiver operation only')
+         active, why = AC.active_member(member, now)

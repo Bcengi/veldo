@@ -1,0 +1,6 @@
+GREEN exit=0
+PASS VELDO-0124 AC2/deadline
+passed 1 failed 0
+
+MUTANT exit=124
+Hang detector expired; not a named rejection.

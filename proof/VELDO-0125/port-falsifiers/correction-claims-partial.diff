@@ -1,0 +1,9 @@
+--- routing-correction.json
++++ routing-correction.json
+@@ -3,5 +3,5 @@
+   "log": "proof/VELDO-0125/b2-crash-events/routing-corrected.txt",
+   "log_sha256": "fe01f2551c702fd4de8f6afb44be473c76f4d24fff94c631725d9d791ec1fcd0",
+-  "complete": true,
++  "complete": false,
+   "passed": 138,
+   "failed": 0,

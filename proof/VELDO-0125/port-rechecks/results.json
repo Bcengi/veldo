@@ -1,0 +1,18 @@
+[
+  {
+    "suite": "33_veldo_0020_authority",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 51 passed, 0 failed in 0.04s",
+    "output_sha256": "a71e5c77758d9269633199ae8d01412391ee08b95f479d120ba615607a707ecf",
+    "load_workers": 0
+  },
+  {
+    "suite": "36_veldo_0023_journal",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 43 passed, 0 failed in 5.50s",
+    "output_sha256": "4b1741708c39f992e50e235193814ce979198790c9bca5958f3ba2fb0e5df1ed",
+    "load_workers": 0
+  }
+]

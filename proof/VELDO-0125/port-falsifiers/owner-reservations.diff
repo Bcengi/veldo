@@ -1,0 +1,9 @@
+--- control_store.py
++++ control_store.py
+@@ -687,5 +687,5 @@
+             for selector, value, owner, commands, _module, _digest in owners:
+                 hit = value in kinds if selector == "kind" else eid.startswith(value)
+-                if hit and command["operation"] not in commands:
++                if hit and owner != 'reservations' and command["operation"] not in commands:
+                     raise StoreRefused("entity_owned", "%s may not write %s: %s %r belongs to %s, written only by %s"
+                                        % (command["operation"], eid, selector, value, owner, ", ".join(commands)))

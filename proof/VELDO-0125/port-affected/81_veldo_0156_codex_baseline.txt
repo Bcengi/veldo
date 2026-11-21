@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 81_veldo_0156_codex_baseline
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 48 passed, 0 failed in 3.35s

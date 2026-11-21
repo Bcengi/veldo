@@ -1,0 +1,10 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -336,6 +336,5 @@
+                     raise ValueError('absolute evidence path required')
+                 path = path.resolve(strict=True)
+-                if not any(path.is_relative_to(Path(root).resolve(strict=True))
+-                           for root in profile['protected']):
++                if False:
+                     raise ValueError('evidence must be protected')
+                 cache_key = (str(path), reference['digest'])

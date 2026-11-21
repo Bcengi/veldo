@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -372,5 +372,5 @@
+             if watch is not None:
+                 with contextlib.suppress(OSError):
+-                    self.os.wake(watch)
++                    pass
+ 
+     def poll(self):

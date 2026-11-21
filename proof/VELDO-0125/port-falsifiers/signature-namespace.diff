@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -30,5 +30,5 @@
+ OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release', 'worker_status', 'worker_retired')
+ RECORD = 'worker_observation'
+-COMMAND_NAMESPACE = 'veldo-worker-command'
++COMMAND_NAMESPACE = 'veldo-command'
+ 
+ 

@@ -1,0 +1,8 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -236,4 +236,5 @@
+ 
+ def acknowledge(config, dispatch, *, release=False):
++    return
+     with locked(config) as root:
+         path = locate(root, dispatch)

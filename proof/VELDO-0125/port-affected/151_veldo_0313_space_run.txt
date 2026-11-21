@@ -1,0 +1,8 @@
+command: python3 scripts/selftest.py --suite 151_veldo_0313_space_run
+exit_code: 1
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 1146002, 'started': 290160767, 'how': 'supervisor'}, {'pid': 1149427, 'started': 290163624, 'how': 'unread'}, {'pid': 1150184, 'started': 290164243, 'how': 'unread'}, {'pid': 1151492, 'started': 290165620, 'how': 'unre ^^^^^^^^^^^^^^^^^^^^^ | File "<checkout>/scripts/suites/151_veldo_0313_space_run.py", line 647, in follow | raise RuntimeError( | RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 1146002, 'started': 290160767, 'how': 'supervisor'}, {'pid': 1149427, 'started': 290163624, 'how': 'unread'}, {'pid': 1150184, 'sta
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [{"held": true, "released": true} None]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 4194304000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+selftest (PARTIAL, 1 of 242 suites): 59 passed, 4 failed in 176.07s

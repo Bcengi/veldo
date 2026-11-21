@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -125,5 +125,5 @@
+                 reason = 'ssh_exit:' + str(result.returncode)
+             except (OSError, subprocess.TimeoutExpired) as error:
+-                reason = type(error).__name__
++                continue
+             print(json.dumps(dict(operation='worker_release_wake', dispatch_id=dispatch,
+                 state='retry_pending', reason=reason)), file=sys.stderr, flush=True)

@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC1/remote-workspace
+passed 1 failed 0
+
+MUTANT exit=1
+AC1/remote-workspace: AssertionError: /tmp/v125-c9znlj8g/mac-view
+FAIL VELDO-0125 AC1/remote-workspace
+passed 0 failed 1

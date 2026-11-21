@@ -1,0 +1,9 @@
+--- control_launch.py
++++ control_launch.py
+@@ -2281,5 +2281,5 @@
+             return True
+         self.record = self.dispatches.record(self.dispatch_id)
+-        if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):
++        if False:
+             # The authority can finish while SSH keeps stdout open indefinitely.
+             self._end_receiver()

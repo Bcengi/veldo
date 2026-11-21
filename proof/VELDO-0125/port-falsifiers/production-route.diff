@@ -1,0 +1,9 @@
+--- control_launch.py
++++ control_launch.py
+@@ -1799,5 +1799,5 @@
+             }
+             if self.worker_profiles is not None or routing.requirements(contract):
+-                selected = routing.prepare(self.dispatches, contract, self.worker_profiles or [], now=now)
++                self.dispatches.prepare(contract, now=now); selected = dict(state='prepared', contract=contract)
+                 if selected['state'] == 'blocked':
+                     raise D.Refused(selected['reason'])

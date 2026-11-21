@@ -1,0 +1,10 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -67,6 +67,5 @@
+         conn.execute("CREATE INDEX IF NOT EXISTS worker_release_pending ON entities(id) "
+                      "WHERE kind='worker_observation' AND json_extract(data, '$.release_state')='pending'")
+-        for row in conn.execute("SELECT data FROM entities INDEXED BY worker_release_pending "
+-                "WHERE kind='worker_observation' AND json_extract(data, '$.release_state')='pending'"):
++        for row in conn.execute("SELECT data FROM entities WHERE kind='worker_observation'"):
+             data = json.loads(row[0])
+             self.notify_release(data['repository_uuid'], data)

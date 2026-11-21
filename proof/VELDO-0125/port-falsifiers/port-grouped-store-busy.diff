@@ -1,0 +1,9 @@
+--- control_store.py
++++ control_store.py
+@@ -597,5 +597,5 @@
+     if conn.in_transaction:
+         raise StoreRefused("incomplete_transaction", "nested authority transaction")
+-    _begin(conn, "this handle cannot write (%s): grouped authority commands")
++    conn.execute("BEGIN IMMEDIATE")
+     conn.atomic_commands = True
+     try:

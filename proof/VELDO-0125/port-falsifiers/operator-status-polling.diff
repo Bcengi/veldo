@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -245,5 +245,5 @@
+     # is final. Without it, leave the release pending rather than snapshot a live engine.
+     if not outcome.get('host_released'):
+-        raise OUT.WaitingForRelease('release_not_yet_authorized')
++        raise OSError('release_not_yet_authorized')
+     observation = dict(outcome['record'].get('observation') or {}, state='unknown')
+     if outcome['record']['state'] == 'exited':

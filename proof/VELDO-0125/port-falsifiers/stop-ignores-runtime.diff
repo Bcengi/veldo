@@ -1,0 +1,10 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -405,6 +405,5 @@
+                 # NOTE_EXIT blocks for the healthy run. Only deadline/stop stages
+                 # schedule a timeout; no recurring heartbeat or process scan.
+-                until = (min(self.due, self.deadline) if self.stage == 'cooperative'
+-                         else self.due if self.stage else self.deadline)
++                until = self.due if self.stage else self.deadline
+                 seconds = max(0, until - self.os.monotonic())
+                 if self.exit_seen:

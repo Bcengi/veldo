@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC1/worker-mutate-only
+passed 1 failed 0
+
+MUTANT exit=1
+AC1/worker-mutate-only: AssertionError: {'ok': True, 'reason': 'upsert_entity', 'receipt': {'committed': True, 'command_id': 'forbidden/mutate', 'seq': 16, 'record_digest': 'sha256:d032b48dd4725581059aaeef3423c0572dbe3b96e77363389546232f37d728d6', 'after_versions': {'unowned': 1}, 'effects': [], 'reservations': [], 'result_digest': 'sha256:b14e16afa9b96e29958e67cba457e8e23a3bfbf5543b073599b39c3d620d8264', 'replayed': False}}
+FAIL VELDO-0125 AC1/worker-mutate-only
+passed 0 failed 1

@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -381,5 +381,5 @@
+         others = [pid for pid in members if pid != self.process['pid']]
+         engine_done = self.exit_seen or (self.directory / 'engine-exit.json').exists()
+-        if self.exit_seen and not members:
++        if self.exit_seen:
+             if now >= self.deadline and self.cause is None:
+                 self.cause = 'runtime_cap'

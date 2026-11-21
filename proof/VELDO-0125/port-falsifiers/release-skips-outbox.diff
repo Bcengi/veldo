@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -289,5 +289,5 @@
+     # Flush retained measurement before any release confirmation, including an
+     # operator wake after a crash. A transport wake never authorizes execution.
+-    if evidence.exists():
++    if evidence.exists() and request.get('action') != 'release':
+         retained = json.loads(evidence.read_text())
+         if retained['binding']['contract_digest'] != request.get('contract_digest'):

@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -89,5 +89,5 @@
+                        dispatch_id=dispatch, contract_digest=binding['contract_digest'])
+         with self.release_lock:
+-            if dispatch in self.release_sent:
++            if False:
+                 return
+             if dispatch in self.release_confirmed:

@@ -1,0 +1,8 @@
+--- project_runner_macos_os.py
++++ project_runner_macos_os.py
+@@ -191,5 +191,4 @@
+         path = directory / (label + '.plist')
+         data = dict(Label=label, ProgramArguments=argv, RunAtLoad=True, KeepAlive=False,
+-                    LimitLoadToSessionType='Background',
+                     AbandonProcessGroup=False, ExitTimeOut=max(1, int(grace + 0.999)),
+                     WorkingDirectory=str(directory), EnvironmentVariables=ENV,

@@ -1,0 +1,9 @@
+--- control_service.py
++++ control_service.py
+@@ -4414,5 +4414,5 @@
+                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
+         # VELDO-0188 AC3: a closed project's line whose runs have all ended leaves the loop.
+-        stopped = [] if deadline_only else self.remove_closed()
++        stopped = self.remove_closed()
+         if stopped:
+             report.setdefault('lines', {'cause_pass': self.passes}).setdefault('stopped', []).extend(stopped)

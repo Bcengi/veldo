@@ -1,0 +1,9 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -83,5 +83,5 @@
+         packet = dict(command=command, signature=self.sign(json.dumps(command, sort_keys=True,
+                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
+-        request = remote_request(self.workspace, self.binding, packet, self.sign)
++        request = CC.build_request(self.workspace, self.binding, packet, self.sign)
+         if operation == 'worker_result' and self.outbox is not None:
+             durable_json(self.outbox, request)

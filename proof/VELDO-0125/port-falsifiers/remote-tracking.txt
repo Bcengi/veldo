@@ -1,0 +1,21 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/factory-remote-delivery
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/factory-remote-delivery: TimeoutError: remote_receiver_pending
+FAIL VELDO-0125 AC2/factory-remote-delivery
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "106_veldo_0125_routing.py", line 420, in factory_delivery
+  File "/tmp/v125-port-mutant-aur_szox/control_service.py", line 3716, in offer
+    self.runner.wait(launch, timeout=0)
+  File "/tmp/v125-port-mutant-aur_szox/control_launch.py", line 1939, in wait
+    raise timeout_error
+  File "/tmp/v125-port-mutant-aur_szox/control_launch.py", line 1909, in wait
+    record = launch.wait(timeout)
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-aur_szox/control_launch.py", line 2328, in wait
+    raise TimeoutError('remote_receiver_pending')
+TimeoutError: remote_receiver_pending

@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -360,5 +360,5 @@
+                 recorder_errors.append(error)
+             except Exception:
+-                pass  # receive durably records/parks this dispatch; drain its peers.
++                raise  # defect: one refusal aborts the remaining deliveries
+         if recorder_errors:
+             raise recorder_errors[0]

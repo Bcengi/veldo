@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -346,5 +346,5 @@
+                     document = json.loads(raw)
+                     if (document.get('schema') != 'veldo.macos_worker_evidence/v1'
+-                            or document.get('kind') != 'native'
++                            or False
+                             or any(document.get(field) != evidence[field]
+                                    for field in ('host', 'os_version', 'profile_digest'))):

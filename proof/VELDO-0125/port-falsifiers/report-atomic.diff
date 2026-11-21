@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -193,5 +193,5 @@
+                 if route.get('principal') == command.get('principal'):
+                     R.check_prepared(ds, self.profiles, record['contract'])
+-            with SV.S.atomic(self.conn):
++            with __import__('contextlib').nullcontext():
+                 answer = self.worker(packet, command, repository)
+             if (answer.get('record') or {}).get('release_state') == 'confirmed':

@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -351,5 +351,5 @@
+             self.os.send(worker['pgid'], number, group=True)
+         for pid in self.os.members(self.coalition):
+-            if pid != self.process['pid']:
++            if False:
+                 self.os.send(pid, number)
+ 

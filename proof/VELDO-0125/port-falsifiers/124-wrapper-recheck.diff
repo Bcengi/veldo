@@ -1,0 +1,9 @@
+--- project_runner_macos_wrapper.py
++++ project_runner_macos_wrapper.py
+@@ -51,5 +51,5 @@
+     if actual != request['binary_digest']:
+         return 125
+-    if request['engine'] == 'claude_code':
++    if False:
+         try:
+             claude_settings(request['argv'], request['clone'], request['environment'], request['login_profile'])

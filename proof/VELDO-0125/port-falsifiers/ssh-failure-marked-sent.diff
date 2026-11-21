@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -121,5 +121,5 @@
+                 result = subprocess.run(argv, input=json.dumps(request).encode() + b'\n',
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+-                if result.returncode == 0:
++                if True:
+                     continue  # Mac acknowledged the wake and now owns its durable outbox.
+                 reason = 'ssh_exit:' + str(result.returncode)

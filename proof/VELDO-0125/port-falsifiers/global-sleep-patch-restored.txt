@@ -1,0 +1,15 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/operator-wait-no-status-timer
+passed 1 failed 0
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "waiting", "reason": "release_not_yet_authorized"}
+
+MUTANT exit=1
+AC3/operator-wait-no-status-timer: AssertionError: worker clock patch leaked into subprocess waits
+FAIL VELDO-0125 AC3/operator-wait-no-status-timer
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "/tmp/v125-port-mutant-rybfwsvz/lifecycle_checks_r12.py", line 110, in waiting_no_status_timer
+    assert time.sleep is stdlib_sleep, 'worker clock patch leaked into subprocess waits'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: worker clock patch leaked into subprocess waits

@@ -1,0 +1,26 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/crash-before-evidence-usage
+passed 1 failed 0
+
+MUTANT exit=1
+AC3/crash-before-evidence-usage: TypeError: 'NoneType' object is not subscriptable
+FAIL VELDO-0125 AC3/crash-before-evidence-usage
+passed 0 failed 1
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "parked", "reason": "'NoneType' object is not subscriptable"}
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/event_checks_r12.py", line 155, in crashed_usage
+    worker.receive(config, wake)
+  File "/tmp/v125-port-mutant-hrr5d6yu/control_worker.py", line 192, in receive
+    result = receive_locked(config, request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-hrr5d6yu/control_worker.py", line 322, in receive_locked
+    return apply_release(client, host, dict(dispatch_id=request['dispatch_id'],
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-hrr5d6yu/control_worker.py", line 144, in apply_release
+    outcome = client.retired(binding)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<checkout>/proof/VELDO-0125/event_checks_r12.py", line 151, in confirm
+    assert f.service.get('dispatch/test')['usage']['tokens'] == 21, 'release preceded retained output flush'
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable

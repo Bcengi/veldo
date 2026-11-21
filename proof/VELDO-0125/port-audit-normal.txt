@@ -1,0 +1,47 @@
+Compact audit event records; repeated import and function-name inventories omitted.
+command: env -u PYTHONDONTWRITEBYTECODE python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy
+Environment: normal bytecode setting; ordinary Linux run, no artificial load.
+Raw output SHA256: 6206715935dd6f7caecaca127dd33f7ed7ddd22130a534b69a7360e231803d76
+{"ac5_green": true, "case": "cold writable cache", "complete": true, "phase": "baseline", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "warm cache", "complete": true, "phase": "baseline", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.utime", "complete": true, "phase": "injected", "pure": ["os.utime"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.utime", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.chflags synthetic (unavailable)", "complete": true, "phase": "injected", "pure": ["os.chflags"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.chflags synthetic (unavailable)", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.lchown", "complete": true, "phase": "injected", "pure": ["os.chown"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.lchown", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.setxattr", "complete": true, "phase": "injected", "pure": ["os.setxattr"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.setxattr", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.removexattr", "complete": true, "phase": "injected", "pure": ["os.removexattr"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.removexattr", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "shutil.make_archive", "complete": true, "phase": "injected", "pure": ["shutil.make_archive", "open archive-made.zip mode w+"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "shutil.make_archive", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "shutil.unpack_archive", "complete": true, "phase": "injected", "pure": ["shutil.unpack_archive", "os.mkdir", "open archive-output/member.txt mode w"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "shutil.unpack_archive", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "socket.__new__", "complete": true, "phase": "injected", "pure": ["socket.__new__"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "socket.__new__", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "socket.sendto", "complete": true, "phase": "injected", "pure": ["socket.__new__", "socket.sendto"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "socket.sendto", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "socket.sendmsg", "complete": true, "phase": "injected", "pure": ["socket.__new__", "socket.sendmsg"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "socket.sendmsg", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.replace", "complete": true, "phase": "injected", "pure": ["os.rename"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.replace", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.truncate", "complete": true, "phase": "injected", "pure": ["os.truncate"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.truncate", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "os.killpg", "complete": true, "phase": "injected", "pure": ["os.killpg"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "os.killpg", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "socket.sethostname", "complete": true, "phase": "injected", "pure": ["socket.sethostname"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "socket.sethostname", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "ctypes.dlopen", "complete": true, "phase": "injected", "pure": ["import ctypes", "import _ctypes", "import _ctypes", "ctypes.dlopen", "import ctypes._endian", "ctypes.dlopen", "ctypes.dlsym"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "ctypes.dlopen", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "ctypes.call_function", "complete": true, "phase": "injected", "pure": ["import ctypes", "import _ctypes", "import _ctypes", "ctypes.dlopen", "import ctypes._endian", "ctypes.dlopen", "ctypes.dlsym", "ctypes.call_function"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "ctypes.call_function", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "_ctypes raw address call", "complete": true, "phase": "injected", "pure": ["import _ctypes", "import _ctypes"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "_ctypes raw address call", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "ctypes.dlsym", "complete": true, "phase": "injected", "pure": ["import ctypes", "import _ctypes", "import _ctypes", "ctypes.dlopen", "import ctypes._endian", "ctypes.dlopen", "ctypes.dlsym"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "ctypes.dlsym", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "ctypes.dlsym/handle", "complete": true, "phase": "injected", "pure": ["import ctypes", "import _ctypes", "import _ctypes", "ctypes.dlopen", "import ctypes._endian", "ctypes.dlopen", "ctypes.dlsym/handle"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "ctypes.dlsym/handle", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": false, "case": "ctypes.cdata", "complete": true, "phase": "injected", "pure": ["import ctypes", "import _ctypes", "import _ctypes", "ctypes.dlopen", "import ctypes._endian", "ctypes.cdata"], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+{"ac5_green": true, "case": "ctypes.cdata", "complete": true, "phase": "restored", "pure": [], "repo_spawn": ["git log", "git show"], "repo_writes": [], "stderr": ""}
+selftest (PARTIAL, 1 of 242 suites): 109 passed, 0 failed in 575.32s

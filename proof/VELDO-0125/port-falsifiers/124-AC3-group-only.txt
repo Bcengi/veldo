@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC3/descendant
+passed 1 failed 0
+
+MUTANT exit=1
+  AC3/descendant: AssertionError: ({'state': 'unknown', 'process': {'boot_id': 'fixture-boot', 'host': 'fixture-mac', 'pid': 12400, 'platform': 'darwin', 'start': 'start'}, 'steps': [{'stage': 'terminate', 'monotonic': 0.0}, {'stage': 'kill', 'monotonic'
+FAIL VELDO-0124 AC3/descendant
+passed 0 failed 1

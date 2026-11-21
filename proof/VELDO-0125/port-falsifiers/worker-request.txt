@@ -1,0 +1,9 @@
+GREEN exit=0
+PASS VELDO-0125 AC1/worker-request-only
+passed 1 failed 0
+
+MUTANT exit=1
+AC1/worker-request-only: AssertionError: {'schema': 'veldo.control_response/v1', 'accepted': True, 'store_uuid': 'store', 'store_path': '/tmp/v125-k1ejnd9c/authority.sqlite3', 'watermark': 15, 'result': {'ok': True, 'reason': 'inspect', 'watermark': 15, 'journal_head': 'sha256:6f41f35d1619a19a82d78ae0519672bf0e1b24230acbfbe1f58c6e545df68e5e', 'entities': {}, 'service': 'fixture-0125', 'unit': 'fixture-0125.service', 'counts': {'accepted': 0, 'refused': 0, 'refusals': {}}, 'pending': {'claims': 0, 'effects_obligated': 0}, 'channel': {'available': False, 'configured': False, 'refusal': None}, 'api': {'available': False, 'configured': False, 'refusal': None, 'installation': {'folder': None, 'how': 'default', 'revision': None}}, 'loop': {'available': False, 'configured': False, 'refusal': None}, 'receivers': {'refusals': [], 'metrics': {'host_trust_required': 0}}, 'instance': {'pid': 1642350, 'process_start': 290340474, 'serving_since': 1795244574.8767734, 'instance_id': 'f00cd87483d1a3321f35ecebf43555d1'}, 'repositories': ['repo']}}
+FAIL VELDO-0125 AC1/worker-request-only
+passed 0 failed 1
+veldo installation: none found (looked at <operator-path>, the documented default under the configuration root)

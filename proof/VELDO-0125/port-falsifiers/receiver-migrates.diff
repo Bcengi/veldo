@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -268,5 +268,5 @@
+     SIG = organ('control_signer')
+     M = organ('project_runner_macos')
+-    host = M.Supervisor(config['profile'], config['qualification'], migrate=False)
++    host = M.Supervisor(config['profile'], config['qualification'])
+     key = str(Path(config['signing_key']).resolve())
+     if key not in {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}:

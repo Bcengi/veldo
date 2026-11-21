@@ -1,0 +1,14 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/stalled-wrapper-event-or-runtime-cap
+passed 1 failed 0
+
+MUTANT exit=1
+AC3/stalled-wrapper-event-or-runtime-cap: AssertionError: 
+FAIL VELDO-0125 AC3/stalled-wrapper-event-or-runtime-cap
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/round12_checks.py", line 146, in event_liveness
+    assert .299 <= run.steps[0]['monotonic'] <= .301
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,9 @@
+--- control_launch.py
++++ control_launch.py
+@@ -1523,5 +1523,5 @@
+         remote = route and route.get('host') != self.local_host
+         never_accepted = record.get('state') == 'refused' and not record.get('receiver')
+-        if remote and not never_accepted:
++        if False:
+             slot = self.reservations.worker(dispatch_id)
+             if slot and slot['retired']:

@@ -1,0 +1,8 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -302,4 +302,5 @@
+             slot = read(path)
+             if slot is None:
++                raise P.Refused('missing_evidence:slot')
+                 # A release may beat bootstrap. Retain a tombstone so the late
+                 # start cannot allocate a new slot for this released dispatch.

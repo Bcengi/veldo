@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 03_plugin_extension_loading_runner
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 2 of 242 suites): 898 passed, 0 failed in 25.14s

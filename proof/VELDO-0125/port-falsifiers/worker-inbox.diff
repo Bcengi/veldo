@@ -1,0 +1,9 @@
+--- control_assignment.py
++++ control_assignment.py
+@@ -397,5 +397,5 @@
+         state = self.membership.authority_state(self.store, self.conn)
+         member = self.AC.membership_entry(state['membership'], principal)
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:
+             raise Refused('not_authorized', 'worker receiver operation only')
+         now = self.clock()

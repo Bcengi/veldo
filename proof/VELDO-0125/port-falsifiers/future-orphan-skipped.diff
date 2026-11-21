@@ -1,0 +1,9 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -195,4 +195,6 @@
+             try:
+                 # Operational failures must retain a readable orphan for the next recovery.
++                if entry['due'] > time.time():
++                    continue
+                 request = entry['request']
+                 lock_key = hashlib.sha256(json.dumps(request['dispatch_id']).encode()).hexdigest()

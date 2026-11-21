@@ -1,0 +1,16 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/recorder-failure-stops-drain
+passed 1 failed 0
+
+MUTANT exit=1
+AC3/recorder-failure-stops-drain: AssertionError: recorder failure did not stop drain
+FAIL VELDO-0125 AC3/recorder-failure-stops-drain
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/crash_event_checks_r12.py", line 330, in <lambda>
+    'AC3/recorder-failure-stops-drain': lambda base: recorder_failure(base, False),
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<checkout>/proof/VELDO-0125/crash_event_checks_r12.py", line 187, in recorder_failure
+    raise AssertionError('recorder failure did not stop drain')
+AssertionError: recorder failure did not stop drain
