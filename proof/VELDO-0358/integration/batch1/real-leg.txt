@@ -1,0 +1,100 @@
+start 2026-11-21T07:37:11Z load 11.63 10.51 8.85
+suites with no baseline entry in their own file: 57 of 240
+record run 01_warp_0101_reviewer_notes: status 2 ['selftest (PARTIAL, 1 of 239 suites): 638 passed, 0 failed in 14.88s']
+record run 03_plugin_extension_loading_runner: status 2 ['selftest (PARTIAL, 2 of 239 suites): 900 passed, 0 failed in 27.83s']
+record run 05_tracker_routing_resolver_veldo: status 2 ['selftest (PARTIAL, 1 of 239 suites): 278 passed, 0 failed in 0.37s']
+record run 06_capabilities_manifest_honesty_veldo: status 1 []
+record run 07_warp_1103_completion_mandatory: status 1 []
+record run 08_restoration_spec_generation_veldo: status 1 []
+record run 10_warp_0613_anti_vacuity: status 1 []
+record run 11_inbound_command_receipt_reconcile: status 1 []
+record run 15_warp_1402_estimate_record: status 2 ['selftest (PARTIAL, 1 of 239 suites): 85 passed, 0 failed in 0.14s']
+record run 15_warp_1404_historical_analogy: status 2 ['selftest (PARTIAL, 1 of 239 suites): 110 passed, 0 failed in 67.83s']
+record run 15_warp_1405_reconciliation: status 2 ['selftest (PARTIAL, 1 of 239 suites): 87 passed, 0 failed in 2.28s']
+record run 15_warp_1406_normalization: status 2 ['selftest (PARTIAL, 1 of 239 suites): 72 passed, 0 failed in 1.78s']
+record run 15_warp_1407_judgment_load: status 2 ['selftest (PARTIAL, 1 of 239 suites): 111 passed, 0 failed in 1.40s']
+record run 15_warp_1408_budget_rollup: status 2 ['selftest (PARTIAL, 1 of 239 suites): 72 passed, 0 failed in 0.59s']
+record run 15_warp_1409_cost_to_change_per_area: status 2 ['selftest (PARTIAL, 1 of 239 suites): 82 passed, 0 failed in 2.21s']
+record run 16_warp_1403_sizing_pass: status 1 []
+record run 17_veldo_0001_falsification_declared: status 2 ['selftest (PARTIAL, 1 of 239 suites): 87 passed, 0 failed in 0.22s']
+record run 18_veldo_0011_release_contract: status 2 ['selftest (PARTIAL, 1 of 239 suites): 108 passed, 0 failed in 0.57s']
+record run 18_veldo_0012_behaviour_floor_contract: status 2 ['selftest (PARTIAL, 1 of 239 suites): 115 passed, 0 failed in 9.59s']
+record run 20_veldo_0003_task_source: status 2 ['selftest (PARTIAL, 1 of 239 suites): 70 passed, 0 failed in 0.16s']
+record run 21_veldo_0004_promise_corpus: status 2 ['selftest (PARTIAL, 1 of 239 suites): 86 passed, 0 failed in 9.97s']
+record run 22_veldo_0005_declared_vs_shipped: status 2 ['selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 3.98s']
+record run 25_veldo_0008_version: status 2 ['selftest (PARTIAL, 1 of 239 suites): 62 passed, 0 failed in 1.09s']
+record run 29_veldo_0016_policy_boundaries: status 2 ['selftest (PARTIAL, 1 of 239 suites): 326 passed, 0 failed in 5.68s']
+record run 30_veldo_0017_entity_lifecycle: status 2 ['selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 0.21s']
+record run 31_veldo_0018_release_floor: status 2 ['selftest (PARTIAL, 1 of 239 suites): 50 passed, 0 failed in 0.21s']
+record run 32_veldo_0019_combined_graph: status 2 ['selftest (PARTIAL, 1 of 239 suites): 52 passed, 0 failed in 0.04s']
+record run 33_veldo_0020_authority: status 2 ['selftest (PARTIAL, 1 of 239 suites): 52 passed, 0 failed in 0.05s']
+record run 34_veldo_0022_admission: status 2 ['selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 0.05s']
+record run 35_veldo_0021_completion: status 2 ['selftest (PARTIAL, 1 of 239 suites): 53 passed, 0 failed in 0.02s']
+record run 44_veldo_0105_startline: status 1 ['selftest (PARTIAL, 1 of 239 suites): 34 passed, 1 failed in 0.47s']
+record run 45_veldo_0106_policyread: status 2 ['selftest (PARTIAL, 1 of 239 suites): 36 passed, 0 failed in 0.75s']
+record run 46_veldo_0029_enrollment: status 2 ['selftest (PARTIAL, 1 of 239 suites): 34 passed, 0 failed in 0.15s']
+record run 50_git_environment: status 2 ['selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 3.41s']
+record run 51_parser_boundary: status 1 []
+record run 52_writer_boundary: status 1 []
+record run 61_scope_covers: status 2 ['selftest (PARTIAL, 1 of 239 suites): 29 passed, 0 failed in 0.01s']
+record run 68_veldo_0137_policy_revision: status 2 ['selftest (PARTIAL, 1 of 239 suites): 29 passed, 0 failed in 0.26s']
+record run 82_veldo_0172_live_formats: status 2 ['selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 1.85s']
+record run 86_veldo_0186_setup_assets: status 2 ['selftest (PARTIAL, 1 of 239 suites): 38 passed, 0 failed in 21.15s']
+record run 88_veldo_0127_feature_defaults: status 2 ['selftest (PARTIAL, 1 of 239 suites): 52 passed, 0 failed in 12.21s']
+record run 89_veldo_0127_feature_listing: status 2 ['selftest (PARTIAL, 1 of 239 suites): 38 passed, 0 failed in 6.60s']
+record run 90_veldo_0127_feature_profile: status 2 ['selftest (PARTIAL, 1 of 239 suites): 29 passed, 0 failed in 17.66s']
+record run 104_veldo_0164_scoped_reads: status 2 ['selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 2.59s']
+record run 108_veldo_0153_executor_profile: status 2 ['selftest (PARTIAL, 1 of 239 suites): 33 passed, 0 failed in 0.09s']
+record run 113_veldo_0080_defects: status 2 ['selftest (PARTIAL, 1 of 239 suites): 30 passed, 0 failed in 10.08s']
+record run 113_veldo_0115_authority_store: status 2 ['selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 5.93s']
+record run 113_veldo_0121_relay_exchange: status 2 ['selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 36.50s']
+record run 125_veldo_0230_engine_census: status 1 ['selftest (PARTIAL, 1 of 239 suites): 30 passed, 5 failed in 0.45s']
+record run 130_veldo_0296_space_section: status 2 ['selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 0.05s']
+record run 131_veldo_0338_project_space_file: status 2 ['selftest (PARTIAL, 1 of 239 suites): 41 passed, 0 failed in 0.03s']
+record run 132_veldo_0297_space_ledger: status 2 ['selftest (PARTIAL, 1 of 239 suites): 58 passed, 0 failed in 3.02s']
+record run 135_veldo_0298_space_kinds: status 2 ['selftest (PARTIAL, 1 of 239 suites): 169 passed, 0 failed in 0.03s']
+record run 155_veldo_0304_space_boundary: status 2 ['selftest (PARTIAL, 1 of 239 suites): 78 passed, 0 failed in 6.93s']
+record run 157_veldo_0358_suite_runtime: status 2 ['selftest (PARTIAL, 1 of 239 suites): 34 passed, 0 failed in 7.08s']
+record run 158_veldo_0358_census: status 2 ['selftest (PARTIAL, 1 of 239 suites): 32 passed, 0 failed in 8.11s']
+record run 160_veldo_0358_load_leg: status 2 ['selftest (PARTIAL, 1 of 239 suites): 32 passed, 0 failed in 156.07s']
+not in the leg: 01_warp_0101_reviewer_notes: baseline entry in proof/VELDO-0127/live.py
+not in the leg: 03_plugin_extension_loading_runner: baseline entry in scripts/agent_sandbox.py
+not in the leg: 06_capabilities_manifest_honesty_veldo: no opened-files record
+not in the leg: 07_warp_1103_completion_mandatory: no opened-files record
+not in the leg: 08_restoration_spec_generation_veldo: no opened-files record
+not in the leg: 10_warp_0613_anti_vacuity: no opened-files record
+not in the leg: 113_veldo_0080_defects: baseline entry in proof/VELDO-0080/fixture.py
+not in the leg: 113_veldo_0115_authority_store: baseline entry in scripts/fixtures/authority_store.py
+not in the leg: 113_veldo_0121_relay_exchange: baseline entry in scripts/fixtures/relay_exchange.py
+not in the leg: 11_inbound_command_receipt_reconcile: no opened-files record
+not in the leg: 155_veldo_0304_space_boundary: baseline entry in scripts/agent_sandbox.py
+not in the leg: 157_veldo_0358_suite_runtime: baseline entry in scripts/selftest.py
+not in the leg: 158_veldo_0358_census: baseline entry in scripts/gate_host.py
+not in the leg: 15_warp_1402_estimate_record: baseline entry in scripts/agent_sandbox.py
+not in the leg: 15_warp_1406_normalization: baseline entry in scripts/check_first_use.py
+not in the leg: 15_warp_1409_cost_to_change_per_area: baseline entry in scripts/agent_sandbox.py
+not in the leg: 160_veldo_0358_load_leg: baseline entry in scripts/agent_sandbox.py
+not in the leg: 16_warp_1403_sizing_pass: no opened-files record
+not in the leg: 18_veldo_0012_behaviour_floor_contract: baseline entry in scripts/agent_sandbox.py
+not in the leg: 20_veldo_0003_task_source: baseline entry in scripts/check_first_use.py
+not in the leg: 21_veldo_0004_promise_corpus: baseline entry in proof/VELDO-0016/drive.py
+not in the leg: 22_veldo_0005_declared_vs_shipped: baseline entry in proof/VELDO-0016/drive.py
+not in the leg: 29_veldo_0016_policy_boundaries: baseline entry in scripts/agent_sandbox.py
+not in the leg: 50_git_environment: baseline entry in scripts/agent_sandbox.py
+not in the leg: 51_parser_boundary: no opened-files record
+not in the leg: 52_writer_boundary: no opened-files record
+not in the leg: 82_veldo_0172_live_formats: baseline entry in proof/VELDO-0172/compare_formats.py
+not in the leg: 86_veldo_0186_setup_assets: baseline entry in proof/VELDO-0172/compare_formats.py
+not in the leg: 88_veldo_0127_feature_defaults: baseline entry in proof/VELDO-0127/factory.py
+not in the leg: 89_veldo_0127_feature_listing: baseline entry in proof/VELDO-0127/factory.py
+not in the leg: 90_veldo_0127_feature_profile: baseline entry in proof/VELDO-0127/factory.py
+Traceback (most recent call last):
+  File "~/projects/veldo-worktrees/veldo-0358/proof/VELDO-0358/brief-d/real_leg.py.txt", line 47, in <module>
+    code = legs.run_load_proof(root, scratch / 'leg-record.json', opened=record, baseline=baseline,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/projects/veldo-worktrees/veldo-0358/scripts/gate_legs.py", line 716, in run_load_proof
+    declaration = load(path) if Path(path).exists() else None
+                  ^^^^
+UnboundLocalError: cannot access local variable 'load' where it is not associated with a value
+wall seconds of the record runs and the leg together: 269
+end 2026-11-21T07:41:40Z load 10.60 9.77 8.86

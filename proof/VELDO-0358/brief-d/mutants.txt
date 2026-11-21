@@ -1,0 +1,72 @@
+start 2026-11-21T08:19:34Z load 16.25 11.10 8.84
+== unmutated: 31 rows, failed rows []
+
+== load358-no-spinners (gate_load.py, row load/level-by-construction)
+--- scripts/gate_load.py
++++ mutant
+@@ -230,4 +230,4 @@
+     def _spin():
+-        while True:  # the load: always runnable, never blocks
+-            pass
++        while True:  # defect: the spinners are started, stay alive and make no load
++            signal.pause()
+ 
+target row load/level-by-construction: [False] -> REJECTED
+other failed rows: ['VELDO-0358 leg/proves-and-blocks']
+  VELDO-0358 load/level-by-construction: the canary in the fixture leg is not red: status 0, ['canary: green']
+  VELDO-0358 leg/proves-and-blocks: the canary without its entry is not red in the leg; the red row is not named; the gate is not red: status 0; the mutation stage was started after a red leg; the gate does not say the mutation stage was not started; the stamp is not red; the stamp's load record does not name the red suite: {'canary': 'green', 'changed': ['fx_changed'], 'error': None, 'load': {'applied': True, 'cpus': 8, 'memory': {'applied': 'none: no delegated scope', 'high': None}, 'probe': {'ran_ns': 1000596523, 'slowdown': 1.012, 'waited_ns': 11870759}, 'spinner_cpu_seconds': 0.0, 'spinners': 24, 'spinners_alive': 24, 'writer_bytes': 536870912, 'writers': 2, 'writers_alive': 2}, 'proven': 4, 'red': [], 'repetitions': 20, 'runs': 23, 'slots': 8, 'state': 'ran', 'suite_seconds': {'fx_canary': 0.22, 'fx_changed': 0.02, 'fx_clean': 0.01, 'fx_support': 0.01}, 'suites_run': 4, 'verdict': 'pass', 'waiting': 0, 'wall_seconds': 2}; the canary under the leg's load is recorded as green; gate output: == integration |    integration: pass | == security |    security: pass | == generated |    generated: pass | == docs |    docs: pass | == packaging |    packaging: pass | == personal_setup |    personal_setup: pass | == wallclock |    wallclock: pass | == extra |    extra: pass | == load-proof |    load-proof: 4 of 5 suites are proven (no baseline entry in the suite or in a file it opens); 4 run |    load-proof: fx_changed is changed (scripts/suites/fx_changed.py): 20 runs |    load-proof: the canary under this load: gre
+
+== load358-affinity-dropped (gate_load.py, row load/level-by-construction)
+--- scripts/gate_load.py
++++ mutant
+@@ -410,3 +410,3 @@
+         (Path(spec['cgroup']) / 'cgroup.procs').write_text(str(os.getpid()))
+-    os.sched_setaffinity(0, spec['cpus'])  # the same CPUs the spinners are on
++    pass  # defect: the leg's suites are not bound to the spinners' CPUs
+     os.execvp(argv[0], argv)
+target row load/level-by-construction: [False] -> REJECTED
+other failed rows: ['VELDO-0358 leg/proves-and-blocks']
+  VELDO-0358 load/level-by-construction: the canary in the fixture leg is not red: status 0, ['canary: green']
+  VELDO-0358 leg/proves-and-blocks: the canary without its entry is not red in the leg; the red row is not named; the gate is not red: status 0; the mutation stage was started after a red leg; the gate does not say the mutation stage was not started; the stamp is not red; the stamp's load record does not name the red suite: {'canary': 'green', 'changed': ['fx_changed'], 'error': None, 'load': {'applied': True, 'cpus': 8, 'memory': {'applied': 'none: no delegated scope', 'high': None}, 'probe': {'unfinished': 'the leg ended before one CPU-second of probe work'}, 'spinner_cpu_seconds': 4.9, 'spinners': 24, 'spinners_alive': 24, 'writer_bytes': 589299712, 'writers': 2, 'writers_alive': 2}, 'proven': 4, 'red': [], 'repetitions': 20, 'runs': 23, 'slots': 8, 'state': 'ran', 'suite_seconds': {'fx_canary': 0.21, 'fx_changed': 0.04, 'fx_clean': 0.01, 'fx_support': 0.01}, 'suites_run': 4, 'verdict': 'pass', 'waiting': 0, 'wall_seconds': 1}; the canary under the leg's load is recorded as green; gate output: == integration |    integration: pass | == security |    security: pass | == generated |    generated: pass | == docs |    docs: pass | == packaging |    packaging: pass | == personal_setup |    personal_setup: pass | == wallclock |    wallclock: pass | == extra |    extra: pass | == load-proof |    load-proof: 4 of 5 suites are proven (no baseline entry in the suite or in a file it opens); 4 run |    load-proof: fx_changed is changed (scripts/suites/fx_changed.py): 20 runs |    load-proof: the canary under this load: 
+
+== load358-red-is-rerun (gate_legs.py, row leg/proves-and-blocks)
+--- scripts/gate_legs.py
++++ mutant
+@@ -787,3 +787,5 @@
+                     try:
+-                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)  # one run is the verdict
++                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)
++                        if outcome['verdict'] != 'pass':  # defect: a red suite is run again, the second result reported
++                            outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)
+                     except (OSError, ValueError) as error:  # a suite that could not be started is red, by name
+target row leg/proves-and-blocks: [False] -> REJECTED
+other failed rows: []
+  VELDO-0358 leg/proves-and-blocks: the canary without its entry ran 2 times, not once; gate output: == integration |    integration: pass | == security |    security: pass | == generated |    generated: pass | == docs |    docs: pass | == packaging |    packaging: pass | == personal_setup |    personal_setup: pass | == wallclock |    wallclock: pass | == extra |    extra: pass | == load-proof |    load-proof: 4 of 5 suites are proven (no baseline entry in the suite or in a file it opens); 4 run |    load-proof: fx_changed is changed (scripts/suites/fx_changed.py): 20 runs |    load-proof: the canary under this load: red (a test synchronized by a sleep is red here; data, no verdict) |    load-proof: fx_canary: FAIL |       SELFTEST FAIL: fx/canary-marker-after-its-sleep |    load-proof: fx_clean: pass, 1 run, 0.1s loaded |    load-proof: fx_changed: pass, 20 runs, 0.1s loaded |    load-proof: fx_support: pass, 1 run, 0.0s loaded |    load-proof: load: 8 CPUs [12, 13, 14, 15, 16, 17, 18, 19], 3 spinners per CPU: 24 of 24 alive to the end, CPU consumed 14.3s (least 0.488s) |    load-proof: load: 2 writers: 2 alive to the end, bytes written [1073741824, 1131413504] |    load-proof: load: memory {"applied": "none: no delegated scope", "high": null}; probe {"unfinished": "the leg ended before one CPU-second of probe work"} (data, no verdict) |    load-proof: RED (red_rows) |    load-proof: FAIL | == mutation: NOT STARTED (the load-proof leg is red) | == secret scan (built-in) |    secret scan: pass | == veldo contra
+
+== load358-red-not-blocking (verify.sh, row leg/proves-and-blocks)
+--- scripts/verify.sh
++++ mutant
+@@ -107,3 +107,3 @@
+   else
+-    echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1
++    echo "   load-proof: FAIL"; FAIL=1  # defect: the gate goes on to the mutation stage
+   fi
+target row leg/proves-and-blocks: [False] -> REJECTED
+other failed rows: []
+  VELDO-0358 leg/proves-and-blocks: the mutation stage was started after a red leg; the gate does not say the mutation stage was not started; gate output:    integration: pass | == security |    security: pass | == generated |    generated: pass | == docs |    docs: pass | == packaging |    packaging: pass | == personal_setup |    personal_setup: pass | == wallclock |    wallclock: pass | == extra |    extra: pass | == load-proof |    load-proof: 4 of 5 suites are proven (no baseline entry in the suite or in a file it opens); 4 run |    load-proof: fx_changed is changed (scripts/suites/fx_changed.py): 20 runs |    load-proof: the canary under this load: red (a test synchronized by a sleep is red here; data, no verdict) |    load-proof: fx_canary: FAIL |       SELFTEST FAIL: fx/canary-marker-after-its-sleep |    load-proof: fx_clean: pass, 1 run, 0.0s loaded |    load-proof: fx_changed: pass, 20 runs, 0.1s loaded |    load-proof: fx_support: pass, 1 run, 0.0s loaded |    load-proof: load: 8 CPUs [12, 13, 14, 15, 16, 17, 18, 19], 3 spinners per CPU: 24 of 24 alive to the end, CPU consumed 11.5s (least 0.404s) |    load-proof: load: 2 writers: 2 alive to the end, bytes written [805306368, 807403520] |    load-proof: load: memory {"applied": "none: no delegated scope", "high": null}; probe {"unfinished": "the leg ended before one CPU-second of probe work"} (data, no verdict) |    load-proof: RED (red_rows) |    load-proof: FAIL | == mutation |    mutation: pass | == secret scan (built-in) |    secret scan: pass | =
+
+== load358-graph-red-not-blocking (gate_schedule.py, row leg/graph-blocks)
+--- scripts/gate_schedule.py
++++ mutant
+@@ -485,3 +485,3 @@
+             return 'not_run', 'a stage before the load-proof leg is red: ' + ', '.join(red)
+-    if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):
++    if False:  # defect: a node after a red load-proof leg is started
+         return 'not_started', 'the load-proof leg is red'
+target row leg/graph-blocks: [False] -> REJECTED
+other failed rows: []
+  VELDO-0358 leg/graph-blocks: a red leg under the scheduler: stages {'lint': 'pass', 'load': 'FAIL', 'mutation': 'pass'}; a red leg under the scheduler: the mutation stage started; the held mutation node does not say why
+
+RESULT: all 5 mutants rejected, unmutated green
+exit status 0
+end 2026-11-21T08:31:43Z load 13.83 14.23 12.18

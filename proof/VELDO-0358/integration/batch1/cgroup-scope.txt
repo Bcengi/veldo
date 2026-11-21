@@ -1,0 +1,12 @@
+start 2026-11-21T07:37:04Z load 11.83 10.51 8.84
+scope controllers for children: cpu memory pids
+load: start {"cgroup": "/sys/fs/cgroup/user.slice/user-UID.slice/user@UID.service/app.slice/run-u2458963.scope/load-2062569", "cpus": [18, 19], "memory": {"applied": "60 percent of the previous peak", "high": 67108864}, "probe": 2062600, "slots": 2, "spinners": [2062590, 2062592, 2062595, 2062596, 2062597, 2062598], "writers": [2062599]}
+suite cgroup: load-2062569
+suite touched 72 MiB under memory.high 64 MiB
+load: record {"applied": true, "cpus": [18, 19], "error": null, "memory": {"applied": "60 percent of the previous peak", "high": 67108864, "high_events": 186, "peak": 67371008}, "probe": {"ran_ns": 1000755886, "slowdown": 6.537, "waited_ns": 5540983522}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 2, "spinners": [{"alive": true, "cpu": 18, "cpu_seconds": 1.035, "pid": 2062590}, {"alive": true, "cpu": 18, "cpu_seconds": 1.036, "pid": 2062592}, {"alive": true, "cpu": 18, "cpu_seconds": 1.035, "pid": 2062595}, {"alive": true, "cpu": 19, "cpu_seconds": 1.69, "pid": 2062596}, {"alive": true, "cpu": 19, "cpu_seconds": 1.689, "pid": 2062597}, {"alive": true, "cpu": 19, "cpu_seconds": 1.69, "pid": 2062598}], "spinners_per_cpu": 3, "writers": [{"alive": true, "bytes": 9235857408, "cpu_seconds": 2.578, "files": 34, "pid": 2062599}]}
+load: 2 CPUs [18, 19], 3 spinners per CPU: 6 of 6 alive to the end, CPU consumed 8.2s (least 1.035s)
+load: 1 writers: 1 alive to the end, bytes written [9235857408]
+load: memory {"applied": "60 percent of the previous peak", "high": 67108864, "high_events": 186, "peak": 67371008}; probe {"ran_ns": 1000755886, "slowdown": 6.537, "waited_ns": 5540983522} (data, no verdict)
+exit status 0
+cgroups left in the scope: 0
+end 2026-11-21T07:37:11Z load 11.63 10.51 8.85
