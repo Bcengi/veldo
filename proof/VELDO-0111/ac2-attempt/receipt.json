@@ -1,12 +1,15 @@
 {
+  "base": "7f1ea5e0",
   "status": "INCOMPLETE",
-  "blocked_obligation": "socket_destruction",
+  "next_obligation": "protocol_inventory_bounds",
   "scope": "VELDO-0111 only; regressions are not AC2 qualification",
-  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
-  "suite_digest": "2538aefc1043737059a8513ef5db6deb2310e321a21a57435ad77efd640ecd62",
-  "recheck_digest": "cab5c5d8d787bfbe0219f6fee4beb5766160d45e1c6fdb658362f6eeddc4e3ea",
-  "witness_digest": "3300bdcfd03653b37e71138e8c7239f36c721d5a5187296caa04742fd7bc8fe3",
-  "spec_digest": "16530fa6bc0206f7f80f294fe3446cd6fb38c65a1267b28d085513d78245b85b",
+  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+  "suite_digest": "b17f9faf4fb0cff41454c7295c8596c3f1d28f324adbe441aad26f2f6cd4a072",
+  "recheck_digest": "2b68616675e09be5f9967b9e8d42ddc55f300c3a5c67a371abb4a159f0594344",
+  "witness_digest": "8a81c2156e5d878722c401f0b463b08465da8ea841625a6e886a6505b9c79933",
+  "shared_witness_digest": "68948ecedc7bd3c3f0ec5d620258852ec2e4c84bf43415abb694db7da9ef8a83",
+  "memory_aba_digest": "e6c30046c0bb9a6e4c2075944e8f66c0545c9986cb0322c1f906b41903cfe536",
+  "spec_digest": "8df8ec438086c033a0e9fb8475ed7c557a95d36be01ab16caac5ee299e12456c",
   "unconfined_declaration_digest": "4fb4d48ce0c9c412c54a13de45c3aae25971d604322b44085f010f47c5253afb",
   "control_policy": "Full-suite mutants share fresh baseline and final-control runs; focused mutants have individual focused controls.",
   "cases": [
@@ -55,6 +58,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -67,8 +86,1576 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
+    },
+    {
+      "label": "escaped-reference-owned-green",
+      "phase": "green",
+      "mutant": null,
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": true,
+      "needs_ptrace": true,
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "families": [
+        {
+          "family": 1,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222947392]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955967038853439,
+            "queued_live_ns": 2955967038904433,
+            "holder_live_ns": 2955967038962806,
+            "external_release_ack_ns": 2955967038964948,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222941737]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955972394885339,
+            "queued_live_ns": 2955972395025238,
+            "holder_live_ns": 2955972395091837,
+            "external_release_ack_ns": 2955972395096471,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222955928]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955977665951821,
+            "queued_live_ns": 2955977666092306,
+            "holder_live_ns": 2955977666160445,
+            "external_release_ack_ns": 2955977666165269,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222931773]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955983271260461,
+            "queued_live_ns": 2955983271312801,
+            "holder_live_ns": 2955983271352644,
+            "external_release_ack_ns": 2955983271357782,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-owned-ignore-scm-rights",
+      "phase": "red",
+      "mutant": "ignore-scm-rights",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222964728]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955988861254534,
+            "queued_live_ns": 2955988861288083,
+            "holder_live_ns": 2955988861331089,
+            "external_release_ack_ns": 2955988861332733,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4222978980]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955994436955117,
+            "queued_live_ns": 2955994437109484,
+            "holder_live_ns": 2955994437176518,
+            "external_release_ack_ns": 2955994437181027,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223018601]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2955999821707548,
+            "queued_live_ns": 2955999821848059,
+            "holder_live_ns": 2955999821916655,
+            "external_release_ack_ns": 2955999821920957,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223035952]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956005295681200,
+            "queued_live_ns": 2956005295732033,
+            "holder_live_ns": 2956005295769494,
+            "external_release_ack_ns": 2956005295773338,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-owned-ignore-scm-rights-and-release",
+      "phase": "red",
+      "mutant": "ignore-scm-rights-and-release",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956010606734371,
+            "queued_live_ns": 2956010606781827,
+            "holder_live_ns": 2956010606839680,
+            "external_release_ack_ns": 2956010606841870,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956015871870262,
+            "queued_live_ns": 2956015872019481,
+            "holder_live_ns": 2956015872085280,
+            "external_release_ack_ns": 2956015872090139,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956021397910849,
+            "queued_live_ns": 2956021398068596,
+            "holder_live_ns": 2956021398133893,
+            "external_release_ack_ns": 2956021398138388,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956026773379076,
+            "queued_live_ns": 2956026773428599,
+            "holder_live_ns": 2956026773466719,
+            "external_release_ack_ns": 2956026773471472,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-sendmmsg-green",
+      "phase": "green",
+      "mutant": null,
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": true,
+      "needs_ptrace": true,
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "families": [
+        {
+          "family": 1,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223123903]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956032035576939,
+            "queued_live_ns": 2956032035624645,
+            "holder_live_ns": 2956032035679384,
+            "external_release_ack_ns": 2956032035681611,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223124384]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956037647393292,
+            "queued_live_ns": 2956037647510549,
+            "holder_live_ns": 2956037647565089,
+            "external_release_ack_ns": 2956037647568404,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223138487]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956042811937845,
+            "queued_live_ns": 2956042812106126,
+            "holder_live_ns": 2956042812179063,
+            "external_release_ack_ns": 2956042812184276,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223147534]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956048115184289,
+            "queued_live_ns": 2956048115223941,
+            "holder_live_ns": 2956048115256434,
+            "external_release_ack_ns": 2956048115259966,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-sendmmsg-ignore-scm-rights",
+      "phase": "red",
+      "mutant": "ignore-scm-rights",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223165848]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956053745605904,
+            "queued_live_ns": 2956053745643848,
+            "holder_live_ns": 2956053745690827,
+            "external_release_ack_ns": 2956053745692510,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223170533]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956059200235297,
+            "queued_live_ns": 2956059200345924,
+            "holder_live_ns": 2956059200397293,
+            "external_release_ack_ns": 2956059200400986,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223159080]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956064935851593,
+            "queued_live_ns": 2956064935974040,
+            "holder_live_ns": 2956064936041924,
+            "external_release_ack_ns": 2956064936046301,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223192160]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956070473638974,
+            "queued_live_ns": 2956070473698643,
+            "holder_live_ns": 2956070473748315,
+            "external_release_ack_ns": 2956070473753870,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-sendmmsg-ignore-scm-rights-and-release",
+      "phase": "red",
+      "mutant": "ignore-scm-rights-and-release",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956076346075163,
+            "queued_live_ns": 2956076346125444,
+            "holder_live_ns": 2956076346180774,
+            "external_release_ack_ns": 2956076346183280,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956082346570212,
+            "queued_live_ns": 2956082346761668,
+            "holder_live_ns": 2956082346834034,
+            "external_release_ack_ns": 2956082346839285,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956088104910541,
+            "queued_live_ns": 2956088105060151,
+            "holder_live_ns": 2956088105130532,
+            "external_release_ack_ns": 2956088105135413,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "COMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956096181843784,
+            "queued_live_ns": 2956096181923215,
+            "holder_live_ns": 2956096181978950,
+            "external_release_ack_ns": 2956096181985743,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-imported-green",
+      "phase": "green",
+      "mutant": null,
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": true,
+      "needs_ptrace": true,
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "families": [
+        {
+          "family": 1,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 9 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223345904]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956104662102585,
+            "queued_live_ns": 2956104662207889,
+            "holder_live_ns": 2956104662284609,
+            "external_release_ack_ns": 2956104662287281,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 9 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223383302]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956118000547747,
+            "queued_live_ns": 2956118000770066,
+            "holder_live_ns": 2956118000859379,
+            "external_release_ack_ns": 2956118000865002,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 9 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223406045]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956129936195161,
+            "queued_live_ns": 2956129936401365,
+            "holder_live_ns": 2956129936480925,
+            "external_release_ack_ns": 2956129936486595,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": true,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": true,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "SCM_RIGHTS send 9 has no exclusively measured receiver",
+              "category": "lifecycle_violation",
+              "state": "collecting"
+            },
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223441623]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956138145312383,
+            "queued_live_ns": 2956138145378508,
+            "holder_live_ns": 2956138145418995,
+            "external_release_ack_ns": 2956138145424173,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-imported-ignore-scm-rights",
+      "phase": "red",
+      "mutant": "ignore-scm-rights",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223470981]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956144026403620,
+            "queued_live_ns": 2956144026456682,
+            "holder_live_ns": 2956144026511110,
+            "external_release_ack_ns": 2956144026513641,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223485615]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956149914638243,
+            "queued_live_ns": 2956149914824116,
+            "holder_live_ns": 2956149914901347,
+            "external_release_ack_ns": 2956149914906304,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223503031]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956155896738684,
+            "queued_live_ns": 2956155896908101,
+            "holder_live_ns": 2956155896978105,
+            "external_release_ack_ns": 2956155896983100,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": true,
+          "escape_failures": [
+            {
+              "capability": "escaped_reference",
+              "reason": "socket:[4223543480]:1 file is still referenced after descendant drain",
+              "category": "lifecycle_violation",
+              "state": "drained"
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956161797533335,
+            "queued_live_ns": 2956161797599871,
+            "holder_live_ns": 2956161797641308,
+            "external_release_ack_ns": 2956161797646821,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "escaped-reference-imported-ignore-scm-rights-and-release",
+      "phase": "red",
+      "mutant": "ignore-scm-rights-and-release",
+      "completed": true,
+      "row": "census/escaped-reference",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956167604070323,
+            "queued_live_ns": 2956167604126667,
+            "holder_live_ns": 2956167604182542,
+            "external_release_ack_ns": 2956167604184865,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956173351340296,
+            "queued_live_ns": 2956173351526672,
+            "holder_live_ns": 2956173351598984,
+            "external_release_ack_ns": 2956173351604049,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956179268062578,
+            "queued_live_ns": 2956179268235760,
+            "holder_live_ns": 2956179268320087,
+            "external_release_ack_ns": 2956179268324535,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "capture_status": "INCOMPLETE",
+          "send_attributed": false,
+          "referenced_after_drain": false,
+          "escape_failures": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2956185146057407,
+            "queued_live_ns": 2956185146147221,
+            "holder_live_ns": 2956185146194956,
+            "external_release_ack_ns": 2956185146200283,
+            "exact_destruction_observed": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "control-aba-green",
+      "phase": "green",
+      "mutant": null,
+      "completed": true,
+      "row": "census/escape-detected-despite-control-aba",
+      "passed": true,
+      "needs_ptrace": true,
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "instrumented_digest": "d20a931e7eea04b675296131b7cd38150eda7496e2f618ea4a7fff9d27ce40a2",
+      "actual_fd_received_after_drain": true,
+      "identical_entry_exit_samples": true,
+      "send_decoder_attributed": false,
+      "escaped_reference_detected": true,
+      "capture_status": "INCOMPLETE"
+    },
+    {
+      "label": "control-aba-ignore-release",
+      "phase": "red",
+      "mutant": "ignore-release",
+      "completed": true,
+      "row": "census/escape-detected-despite-control-aba",
+      "passed": false,
+      "needs_ptrace": true,
+      "implementation_digest": "f6125f7cbdc2d976f707cf1fad2703e980def5d032279b583f91ea711d4d8e26",
+      "instrumented_digest": "39691a2fc6d3b226e1c726eb908301546c0190dd6384e8b4d05fb99c381828d6",
+      "actual_fd_received_after_drain": true,
+      "identical_entry_exit_samples": true,
+      "send_decoder_attributed": false,
+      "escaped_reference_detected": false,
+      "capture_status": "COMPLETE"
+    },
+    {
+      "label": "memory-aba-green",
+      "mutant": null,
+      "completed": true,
+      "row": "census/memory-aba-uses-kernel-state",
+      "passed": true,
+      "cases": {
+        "bind": true,
+        "socketpair": true,
+        "recvmsg": true
+      },
+      "needs_ptrace": true,
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "instrumented_digest": "8144c6e2ae827dcdfd31e66ea300ef83dbb5a9c62a6e16cc7e9a29b8403a837d"
+    },
+    {
+      "label": "memory-aba-trust-bind-sample",
+      "mutant": "trust-bind-sample",
+      "completed": true,
+      "row": "census/memory-aba-uses-kernel-state",
+      "passed": false,
+      "cases": {
+        "bind": false,
+        "socketpair": true,
+        "recvmsg": true
+      },
+      "needs_ptrace": true,
+      "implementation_digest": "e518fd5da50a5611f141d21646a24f978e4a998cf86176bbeb9d429eefa78cda",
+      "instrumented_digest": "0b2df36c9adf3eac65b8892099e7fd0e87e888301ef1f5b09ac529199a0ef43f"
+    },
+    {
+      "label": "memory-aba-socketpair-from-memory",
+      "mutant": "socketpair-from-memory",
+      "completed": true,
+      "row": "census/memory-aba-uses-kernel-state",
+      "passed": false,
+      "cases": {
+        "bind": true,
+        "socketpair": false,
+        "recvmsg": true
+      },
+      "needs_ptrace": true,
+      "implementation_digest": "8bed00696df2077367ff96bd405bd79940b6a7a78d328b0a84d92476951f8bf8",
+      "instrumented_digest": "3940b734ae997a86284ef40f8acfa33bf208022166923b21e8bd49f0eae33d82"
+    },
+    {
+      "label": "memory-aba-trust-received-control",
+      "mutant": "trust-received-control",
+      "completed": true,
+      "row": "census/memory-aba-uses-kernel-state",
+      "passed": false,
+      "cases": {
+        "bind": true,
+        "socketpair": true,
+        "recvmsg": false
+      },
+      "needs_ptrace": true,
+      "implementation_digest": "03d2521c9bd7d7199d60862a9dba3e9088d33b9adfd916855fa73d37bc0a211c",
+      "instrumented_digest": "b676f3f27f97d198a59b769fe2ecd55774d2bf0738af3ebd0ecdcd42ce005784"
+    },
+    {
+      "label": "ignore-scm-rights-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          false
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-release-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          false
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "f6125f7cbdc2d976f707cf1fad2703e980def5d032279b583f91ea711d4d8e26",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "skip-release-watch-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          false
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          false
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "f24f39ace94bd4b4bd85606a740e559860346597b9c01fa4a59c81126e0a979c",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-sharers-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          false
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "e2c425d736190f6bfa0cd73892665c129cb247aaecdb612c59ea085e3c0fe991",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-seccomp-listener-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          false
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "c9132ec67933c81ec378ee962fd30a102b27b4045d6574fa568928daf24e37d9",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "drop-netlink-implicit-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          false
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "c97d93a76e16578d2737deadbe0aa7ef703bd9f0cf0910ee0d5c955b110334ca",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
     },
     {
       "label": "AC1-red",
@@ -115,6 +1702,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -127,7 +1730,7 @@
           true
         ]
       ],
-      "implementation_digest": "df18bde5b61daea68fb6bda0385e1db698464c606ea82ee639a114c4d703d538",
+      "implementation_digest": "8dd99e69dbfefa6c690bcbfb12e05f6ef9c7953850f6311c072c41dacba52e44",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -179,6 +1782,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -191,7 +1810,7 @@
           true
         ]
       ],
-      "implementation_digest": "6222673ddc53a92c80bcdde53f795fd968f8a90edc491e13a448c69b9d46a1c8",
+      "implementation_digest": "337e10e0b17aa17b6618375bf5dcb16ab64bf6fa3f4e48ffbe865c148decc8d0",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -243,6 +1862,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -255,7 +1890,7 @@
           true
         ]
       ],
-      "implementation_digest": "16430bcae5b9b9a6a70c371f18062e9ad11ff8ee7c36a0802433f7a3003d6433",
+      "implementation_digest": "e06ca339119768ad663675797c86a72eb2a1b23d681907ef960553c8fbd526b3",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -307,6 +1942,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -319,7 +1970,7 @@
           true
         ]
       ],
-      "implementation_digest": "c9ee3012ebfb87c59586383765da41e97af08976b924f76b08da1a1267bf488f",
+      "implementation_digest": "6750d4e7942ee8ff0e3602744064d3aff034425ec98d4f86ec0410b4554a0ad0",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -335,7 +1986,7 @@
           false
         ]
       ],
-      "implementation_digest": "097386cf2b696204a4a5cf76e8216f727b05e59c89d3d1669e093fd6b72fc78b",
+      "implementation_digest": "4d13a0447d7233a938dd5b2f44748c7741bb509ef0d3894f44aa571003e6dbab",
       "needs_ptrace": true
     },
     {
@@ -347,7 +1998,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
     },
     {
@@ -359,7 +2010,7 @@
           false
         ]
       ],
-      "implementation_digest": "75410dfd268b97c3da930e5dbf801128d54101c12531912d226bcf69a051c0fc",
+      "implementation_digest": "48dbbe40e22e75e81dc165cee3ec5de5e4c17f1f5609b87d0fc65be7ca3f1fa5",
       "needs_ptrace": true
     },
     {
@@ -371,7 +2022,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
     },
     {
@@ -383,7 +2034,7 @@
           false
         ]
       ],
-      "implementation_digest": "ff6d73b09bdf62d53962512fc8dfe776af0b5f3704ee530262e5d6582c865b3a",
+      "implementation_digest": "6d0564778d85bd516c2b903eca3a0c4d7e48092685d1c25368daea0c27e0f0e9",
       "needs_ptrace": true
     },
     {
@@ -395,7 +2046,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
     },
     {
@@ -407,7 +2058,7 @@
           false
         ]
       ],
-      "implementation_digest": "9e3ddc1bd02d68d5815ebb968658e9b231cae2fa4ed271ef49fb454dc8d7aecc",
+      "implementation_digest": "390b1c30f350564ebd041cd3e1df0dc85431edc16257e5b83429f56f78671060",
       "needs_ptrace": true
     },
     {
@@ -419,7 +2070,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
     },
     {
@@ -431,7 +2082,7 @@
           false
         ]
       ],
-      "implementation_digest": "e95af49a83c7708761dabe1e33dad302e5791af3d4f774a91d1bb2567f07adc0",
+      "implementation_digest": "a595fcb26e544454f64aaee945d26944edad5dea648da919c627d9ed5e58bc87",
       "needs_ptrace": false
     },
     {
@@ -443,7 +2094,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": false
     },
     {
@@ -491,6 +2142,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -503,7 +2170,7 @@
           true
         ]
       ],
-      "implementation_digest": "fb96c1cb201e1b0947f240e0b802c17e414d513b5c79ac07be86f091030ff260",
+      "implementation_digest": "54b01ac47d23319fafdfd6cb14fd6c3902252020898250ee31e5fbbf686e9f63",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -555,6 +2222,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -567,7 +2250,7 @@
           true
         ]
       ],
-      "implementation_digest": "d2472456a11b5376b39bc076d34a0d7a8acfa68fe4d55a5cd1c02e6185296d69",
+      "implementation_digest": "fbe50b63fa0698149b52f68e2f483c82f703c284ac9bc128d69699ba5d77de38",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -619,6 +2302,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -631,7 +2330,7 @@
           true
         ]
       ],
-      "implementation_digest": "324703c3c7a66894b3c7b77a9e41cc93ed866b30b45bf09368889992f5fada36",
+      "implementation_digest": "ecdadbd6c4361013b38e4ea5f142f210c3fb80830ca1100ca9d855f8102eb464",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -683,6 +2382,22 @@
           false
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -695,7 +2410,7 @@
           true
         ]
       ],
-      "implementation_digest": "8ac247f3744681cf66c619ac71b1add386be6bbc8071d08bdfe53b489b9a135a",
+      "implementation_digest": "367e24d0d6ecc95fa3b92d869134963ea426a5af9a1354c6daeee05157c68641",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -747,6 +2462,22 @@
           true
         ],
         [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
           "census/family-qualification-boundary",
           true
         ],
@@ -759,7 +2490,7 @@
           true
         ]
       ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
       "needs_ptrace": true
     },
     {
@@ -769,13 +2500,11 @@
       "passed": false,
       "actual": [
         "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
+        "protocol_inventory_bounds"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "43c199ceeed0f5436d3eabb87b98b03fa71a70d74f38f955ac24ca18eae42fcc"
+      "implementation_digest": "a2d67829f77149229ac2d49e00266d8f9b16404875252673b30098d6d9316960"
     },
     {
       "label": "io_uring_socket_effects-green",
@@ -785,13 +2514,11 @@
       "actual": [
         "io_uring_socket_effects",
         "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
+        "protocol_inventory_bounds"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
     },
     {
       "label": "operation_configuration-red",
@@ -800,13 +2527,11 @@
       "passed": false,
       "actual": [
         "io_uring_socket_effects",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
+        "protocol_inventory_bounds"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "2f932eeda1ab419cd4dc530addf667bcb2c7f88e6f5a636eb272b1b179592fdd"
+      "implementation_digest": "37de5daff0f504dd5c21eb3b70a58dcd69640e13e6d8544f34c9c71e2d148565"
     },
     {
       "label": "operation_configuration-green",
@@ -816,13 +2541,11 @@
       "actual": [
         "io_uring_socket_effects",
         "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
+        "protocol_inventory_bounds"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
     },
     {
       "label": "protocol_inventory_bounds-red",
@@ -831,13 +2554,11 @@
       "passed": false,
       "actual": [
         "io_uring_socket_effects",
-        "operation_configuration",
-        "shared_socket_memory",
-        "socket_destruction"
+        "operation_configuration"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "6d49af0b8f05db18dd56bb9ced9fc5c7c3e7093de77971f73187e0e535063997"
+      "implementation_digest": "20a0ff01a1daf093ddd0ba350d99e20a99898a429b55964865fd7f5ca05a36eb"
     },
     {
       "label": "protocol_inventory_bounds-green",
@@ -847,259 +2568,11 @@
       "actual": [
         "io_uring_socket_effects",
         "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
+        "protocol_inventory_bounds"
       ],
       "needs_ptrace": false,
       "uses_live_baseline": true,
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
-    },
-    {
-      "label": "shared_socket_memory-red",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": false,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds",
-        "socket_destruction"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "9f8758837ca7b97af3c1b11c5d5c72a4d508f27e4d5cb1433a5f5efde9df9343"
-    },
-    {
-      "label": "shared_socket_memory-green",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": true,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
-    },
-    {
-      "label": "socket_destruction-red",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": false,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "4564b17cfd9f390b6d69caa7494728f1ee38901c7490d961462ffd3ab39dfdb9"
-    },
-    {
-      "label": "external-reference-red",
-      "completed": true,
-      "row": "census/external-reference-needs-destruction-observer",
-      "passed": false,
-      "needs_ptrace": true,
-      "families": [
-        {
-          "family": 1,
-          "passed": false,
-          "destruction_reasons": [],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926538407952337,
-            "queued_live_ns": 2926538407985432,
-            "holder_live_ns": 2926538408040547,
-            "external_release_ack_ns": 2926538408042414,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 2,
-          "passed": false,
-          "destruction_reasons": [],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926543930270925,
-            "queued_live_ns": 2926543930402563,
-            "holder_live_ns": 2926543930475067,
-            "external_release_ack_ns": 2926543930479611,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 10,
-          "passed": false,
-          "destruction_reasons": [],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926549410718969,
-            "queued_live_ns": 2926549410863730,
-            "holder_live_ns": 2926549410930649,
-            "external_release_ack_ns": 2926549410935281,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 16,
-          "passed": false,
-          "destruction_reasons": [],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926554817154238,
-            "queued_live_ns": 2926554817204655,
-            "holder_live_ns": 2926554817248383,
-            "external_release_ack_ns": 2926554817255082,
-            "exact_destruction_observed": false
-          }
-        }
-      ],
-      "implementation_digest": "4564b17cfd9f390b6d69caa7494728f1ee38901c7490d961462ffd3ab39dfdb9"
-    },
-    {
-      "label": "socket_destruction-green",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": true,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds",
-        "shared_socket_memory",
-        "socket_destruction"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
-    },
-    {
-      "label": "external-reference-green",
-      "completed": true,
-      "row": "census/external-reference-needs-destruction-observer",
-      "passed": true,
-      "needs_ptrace": true,
-      "families": [
-        {
-          "family": 1,
-          "passed": true,
-          "destruction_reasons": [
-            {
-              "capability": "socket_destruction",
-              "reason": "terminal drain bounds socket destruction but does not timestamp it",
-              "evidence": {
-                "identities": [
-                  "socket:[4150455437]:1",
-                  "socket:[4150455438]:2"
-                ]
-              }
-            }
-          ],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926560258287542,
-            "queued_live_ns": 2926560258325014,
-            "holder_live_ns": 2926560258377960,
-            "external_release_ack_ns": 2926560258379635,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 2,
-          "passed": true,
-          "destruction_reasons": [
-            {
-              "capability": "socket_destruction",
-              "reason": "terminal drain bounds socket destruction but does not timestamp it",
-              "evidence": {
-                "identities": [
-                  "socket:[4150457683]:1",
-                  "socket:[4150457684]:2"
-                ]
-              }
-            }
-          ],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926565612779683,
-            "queued_live_ns": 2926565612885265,
-            "holder_live_ns": 2926565612941551,
-            "external_release_ack_ns": 2926565612945191,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 10,
-          "passed": true,
-          "destruction_reasons": [
-            {
-              "capability": "socket_destruction",
-              "reason": "terminal drain bounds socket destruction but does not timestamp it",
-              "evidence": {
-                "identities": [
-                  "socket:[4150461431]:1",
-                  "socket:[4150476834]:2"
-                ]
-              }
-            }
-          ],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926571001290325,
-            "queued_live_ns": 2926571001404480,
-            "holder_live_ns": 2926571001459801,
-            "external_release_ack_ns": 2926571001463547,
-            "exact_destruction_observed": false
-          }
-        },
-        {
-          "family": 16,
-          "passed": true,
-          "destruction_reasons": [
-            {
-              "capability": "socket_destruction",
-              "reason": "terminal drain bounds socket destruction but does not timestamp it",
-              "evidence": {
-                "identities": [
-                  "socket:[4150451181]:1",
-                  "socket:[4150451182]:2"
-                ]
-              }
-            }
-          ],
-          "witness": {
-            "receiver_outside_scope": true,
-            "queued_socket_live_after_drain": true,
-            "held_socket_live_after_drain": true,
-            "census_returned_ns": 2926576448491750,
-            "queued_live_ns": 2926576448537008,
-            "holder_live_ns": 2926576448579021,
-            "external_release_ack_ns": 2926576448585454,
-            "exact_destruction_observed": false
-          }
-        }
-      ],
-      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
     }
   ],
   "observer_environment": {
@@ -1132,9 +2605,7 @@
     "gaps": [
       "io_uring_socket_effects",
       "operation_configuration",
-      "protocol_inventory_bounds",
-      "shared_socket_memory",
-      "socket_destruction"
+      "protocol_inventory_bounds"
     ],
     "reasons": [
       {
@@ -1191,7 +2662,7 @@
             "enter_result": 1,
             "errno": 0,
             "completion_result": 6,
-            "inode": "socket:[4147726372]"
+            "inode": "socket:[4222575458]"
           },
           "probe_errno": 0,
           "supported_opcodes": [
@@ -1260,192 +2731,6 @@
             62,
             63,
             64
-          ]
-        }
-      },
-      {
-        "capability": "socket_destruction",
-        "reason": "terminal drain bounds socket destruction but does not timestamp it",
-        "evidence": {
-          "identities": [
-            "socket:[4147717810]:1",
-            "socket:[4147717811]:2",
-            "socket:[4147713873]:3",
-            "socket:[4147723577]:4",
-            "socket:[4147724439]:5",
-            "socket:[4147724441]:6",
-            "socket:[4147725449]:7",
-            "socket:[4147708809]:8",
-            "socket:[4147726542]:9",
-            "socket:[4147722816]:10",
-            "socket:[4147729434]:11",
-            "socket:[4147721876]:12",
-            "socket:[4147727203]:13",
-            "socket:[4147740709]:14",
-            "socket:[4147734211]:15",
-            "socket:[4147744988]:16",
-            "socket:[4147744989]:17",
-            "socket:[4147744990]:18",
-            "socket:[4147744991]:19",
-            "socket:[4147744992]:20",
-            "socket:[4147744993]:21",
-            "socket:[4147745009]:22",
-            "socket:[4147743458]:23",
-            "socket:[4147747204]:24",
-            "socket:[4147750063]:25",
-            "socket:[4147749043]:26",
-            "socket:[4147747419]:27",
-            "socket:[4147745693]:28",
-            "socket:[4147747563]:29",
-            "socket:[4147756559]:30",
-            "socket:[4147754791]:31",
-            "socket:[4147765978]:32",
-            "socket:[4147764977]:33",
-            "socket:[4147769571]:34",
-            "socket:[4147766666]:35",
-            "socket:[4147771452]:36",
-            "socket:[4147769585]:37",
-            "socket:[4147767621]:38",
-            "socket:[4147766051]:39",
-            "socket:[4147766056]:40",
-            "socket:[4147764988]:41",
-            "socket:[4147766059]:42",
-            "socket:[4147770518]:43",
-            "socket:[4147766066]:44",
-            "socket:[4147766067]:45",
-            "socket:[4147770545]:46",
-            "socket:[4147769599]:47",
-            "socket:[4147765005]:48",
-            "socket:[4147765007]:49",
-            "socket:[4147770563]:50",
-            "socket:[4147771489]:51",
-            "socket:[4147766089]:52",
-            "socket:[4147770594]:53",
-            "socket:[4147768661]:54",
-            "socket:[4147768665]:55",
-            "socket:[4147769642]:56",
-            "socket:[4147766111]:57",
-            "socket:[4147768686]:58",
-            "socket:[4147770638]:59",
-            "socket:[4147773443]:60",
-            "socket:[4147768827]:61",
-            "socket:[4147765126]:62",
-            "socket:[4147741122]:63",
-            "socket:[4147771570]:64",
-            "socket:[4147771571]:65",
-            "socket:[4147766855]:66",
-            "socket:[4147766858]:67",
-            "socket:[4147768874]:68",
-            "socket:[4147766861]:69",
-            "socket:[4147773501]:70",
-            "socket:[4147768878]:71",
-            "socket:[4147767769]:72",
-            "socket:[4147766897]:73",
-            "socket:[4147766898]:74",
-            "socket:[4147766901]:75",
-            "socket:[4147766945]:76",
-            "socket:[4147770865]:77",
-            "socket:[4147770868]:78",
-            "socket:[4147770869]:79",
-            "socket:[4147770872]:80",
-            "socket:[4147770875]:81",
-            "socket:[4147770891]:82",
-            "socket:[4147766983]:83",
-            "socket:[4147766992]:84",
-            "socket:[4147767010]:85"
-          ]
-        }
-      },
-      {
-        "capability": "shared_socket_memory",
-        "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
-        "evidence": {
-          "identities": [
-            "socket:[4147717810]:1",
-            "socket:[4147717811]:2",
-            "socket:[4147713873]:3",
-            "socket:[4147723577]:4",
-            "socket:[4147724439]:5",
-            "socket:[4147724441]:6",
-            "socket:[4147725449]:7",
-            "socket:[4147708809]:8",
-            "socket:[4147726542]:9",
-            "socket:[4147722816]:10",
-            "socket:[4147729434]:11",
-            "socket:[4147721876]:12",
-            "socket:[4147727203]:13",
-            "socket:[4147740709]:14",
-            "socket:[4147734211]:15",
-            "socket:[4147744988]:16",
-            "socket:[4147744989]:17",
-            "socket:[4147744990]:18",
-            "socket:[4147744991]:19",
-            "socket:[4147744992]:20",
-            "socket:[4147744993]:21",
-            "socket:[4147745009]:22",
-            "socket:[4147743458]:23",
-            "socket:[4147747204]:24",
-            "socket:[4147750063]:25",
-            "socket:[4147749043]:26",
-            "socket:[4147747419]:27",
-            "socket:[4147745693]:28",
-            "socket:[4147747563]:29",
-            "socket:[4147756559]:30",
-            "socket:[4147754791]:31",
-            "socket:[4147765978]:32",
-            "socket:[4147764977]:33",
-            "socket:[4147769571]:34",
-            "socket:[4147766666]:35",
-            "socket:[4147771452]:36",
-            "socket:[4147769585]:37",
-            "socket:[4147767621]:38",
-            "socket:[4147766051]:39",
-            "socket:[4147766056]:40",
-            "socket:[4147764988]:41",
-            "socket:[4147766059]:42",
-            "socket:[4147770518]:43",
-            "socket:[4147766066]:44",
-            "socket:[4147766067]:45",
-            "socket:[4147770545]:46",
-            "socket:[4147769599]:47",
-            "socket:[4147765005]:48",
-            "socket:[4147765007]:49",
-            "socket:[4147770563]:50",
-            "socket:[4147771489]:51",
-            "socket:[4147766089]:52",
-            "socket:[4147770594]:53",
-            "socket:[4147768661]:54",
-            "socket:[4147768665]:55",
-            "socket:[4147769642]:56",
-            "socket:[4147766111]:57",
-            "socket:[4147768686]:58",
-            "socket:[4147770638]:59",
-            "socket:[4147773443]:60",
-            "socket:[4147768827]:61",
-            "socket:[4147765126]:62",
-            "socket:[4147741122]:63",
-            "socket:[4147771570]:64",
-            "socket:[4147771571]:65",
-            "socket:[4147766855]:66",
-            "socket:[4147766858]:67",
-            "socket:[4147768874]:68",
-            "socket:[4147766861]:69",
-            "socket:[4147773501]:70",
-            "socket:[4147768878]:71",
-            "socket:[4147767769]:72",
-            "socket:[4147766897]:73",
-            "socket:[4147766898]:74",
-            "socket:[4147766901]:75",
-            "socket:[4147766945]:76",
-            "socket:[4147770865]:77",
-            "socket:[4147770868]:78",
-            "socket:[4147770869]:79",
-            "socket:[4147770872]:80",
-            "socket:[4147770875]:81",
-            "socket:[4147770891]:82",
-            "socket:[4147766983]:83",
-            "socket:[4147766992]:84",
-            "socket:[4147767010]:85"
           ]
         }
       }
@@ -2285,8 +3570,18 @@
       16
     ],
     "evidence": "socket-destruction.txt",
-    "digest": "b40aa645c0a80c0a69e18e7547025926012284b774e09e77fa7b1c1a3219f861"
+    "digest": "54b85cf2b221229d1f2016f887f2fd268e93e8d7e70183a72cdc4f2e08350d8e"
   },
-  "reason_replay_input_digest": "847ab6a5ea838629c9736e8d6bd5c257142575752aa2c7d13d3a71f93c18d500",
+  "shared_memory_witness": {
+    "evidence": "shared-memory.txt",
+    "digest": "d2c2ce10bc9ef871735aa1ef5fe2fdd04f3dc8ba90ab02ce209c2788d4b11a59",
+    "row": "census/escape-detected-despite-control-aba"
+  },
+  "memory_aba_witness": {
+    "evidence": "memory-aba.txt",
+    "digest": "a153b2931df31662bf15e449099986f6f372d08b1acd12ea4488915f4f30869e",
+    "row": "census/memory-aba-uses-kernel-state"
+  },
+  "reason_replay_input_digest": "16f30d41261217bf921a3caba391fad6cb29005f217506957be3c6eb8ba9e7db",
   "recheck_completed": true
 }

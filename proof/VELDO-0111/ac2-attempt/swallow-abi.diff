@@ -1,11 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -440,7 +440,7 @@
-         raw = buf.raw
-         op, arch = raw[0], struct.unpack_from("<I", raw, 4)[0]
-         if self.request.get("fault") == "abi":
+@@ -676 +676 @@
 -            arch = 0
 +            arch = struct.unpack_from("<I", raw, 4)[0]
-         elif self.request.get("fault") == "corrupt":
-             op = 255
-         if size < 24 or arch not in (0xc000003e, 0x40000003):

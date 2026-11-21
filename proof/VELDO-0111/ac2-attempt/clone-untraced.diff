@@ -1,11 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -482,7 +482,7 @@
-             flags = args[0] if nr == 56 else 0
-             if nr == 435 and args[1] >= 8:
-                 flags = int.from_bytes(self.memory(pid, args[0], 8), "little")
+@@ -721 +721 @@
 -            if flags & 0x800000:
 +            if False: # swallow escape attempt
-                 raise ObservationFailure("trace_inheritance", "CLONE_UNTRACED would escape measured scope",
-                                          "lifecycle_violation")
-         elif op == 2:

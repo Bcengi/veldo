@@ -1,0 +1,185 @@
+{
+  "row": "census/escape-detected-despite-control-aba",
+  "passed": true,
+  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+  "instrumented_digest": "d20a931e7eea04b675296131b7cd38150eda7496e2f618ea4a7fff9d27ce40a2",
+  "scheduling_only_instrumentation": true,
+  "external_writer_is_ancestor": true,
+  "unmodified_credentials_control": {
+    "root_status": 0,
+    "capture_status": "COMPLETE",
+    "no_received_rights": true
+  },
+  "actual_fd_received_after_drain": true,
+  "send_decoder_attributed": false,
+  "escaped_reference_detected": true,
+  "identical_entry_exit_samples": true,
+  "samples": [
+    {
+      "sequence": 7,
+      "time_ns": 2956196409487872,
+      "kind": "witness_sample",
+      "phase": "entry",
+      "sample": "1c00000000000000010000000200000084732b00e8030000e803000000000000",
+      "entry_descriptors": [
+        []
+      ]
+    },
+    {
+      "sequence": 8,
+      "time_ns": 2956196410087911,
+      "kind": "witness_sample",
+      "phase": "exit",
+      "sample": "1c00000000000000010000000200000084732b00e8030000e803000000000000",
+      "entry_descriptors": [
+        []
+      ]
+    }
+  ],
+  "mutations": [
+    {
+      "phase": "entry",
+      "bytes_written": 16,
+      "kind": 1
+    },
+    {
+      "phase": "exit",
+      "bytes_written": 16,
+      "kind": 2
+    }
+  ],
+  "acknowledgement": {
+    "inode": "socket:[4223683703]",
+    "address": [
+      "127.0.0.1",
+      33219
+    ]
+  },
+  "receipt": {
+    "status": "INCOMPLETE",
+    "capture_status": "INCOMPLETE",
+    "state": "drained",
+    "barriers": [
+      {
+        "name": "armed_before_exec",
+        "time_ns": 2956195583374994,
+        "sequence": 1
+      },
+      {
+        "name": "call_returned",
+        "time_ns": 2956196423716429,
+        "sequence": 12
+      },
+      {
+        "name": "descendants_drained",
+        "time_ns": 2956196423718296,
+        "sequence": 12
+      }
+    ],
+    "processes": [
+      {
+        "identity": "2847620:1",
+        "pid": 2847620,
+        "current_tid": 2847620,
+        "parent": null,
+        "root": true,
+        "operation": "root",
+        "terminal": 12,
+        "birth": 1,
+        "execs": [
+          2
+        ],
+        "comm": "python3"
+      }
+    ],
+    "failures": [
+      {
+        "capability": "escaped_reference",
+        "reason": "socket:[4223683703]:1 file is still referenced after descendant drain",
+        "category": "lifecycle_violation",
+        "state": "drained"
+      },
+      {
+        "capability": "protocol_inventory_bounds",
+        "reason": "bounded protocol discovery does not fully qualify the four required families",
+        "category": "observation_incomplete",
+        "state": "drained"
+      },
+      {
+        "capability": "operation_configuration",
+        "reason": "available socket needs a qualified address or operation configuration",
+        "category": "observation_incomplete",
+        "state": "drained"
+      },
+      {
+        "capability": "io_uring_socket_effects",
+        "reason": "shared ring completions are not correlated to traced socket identities",
+        "category": "observation_incomplete",
+        "state": "drained"
+      }
+    ],
+    "consumer_rows": {
+      "VELDO-0113": [
+        {
+          "name": "unavailable/no-client-starts-the-authority",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-client-hosts-a-listener",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-auto-start-needs-census",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ],
+      "VELDO-0114": [
+        {
+          "name": "relay/one-endpoint-one-judgement",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/no-listener-during-call",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/no-second-process",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/listener-proof-needs-census",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ],
+      "VELDO-0122": [
+        {
+          "name": "filesystem/transient-and-escaped-writes-are-seen",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-transient-write",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-out-of-directory-write",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-write-needs-complete-observation",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ]
+    }
+  }
+}

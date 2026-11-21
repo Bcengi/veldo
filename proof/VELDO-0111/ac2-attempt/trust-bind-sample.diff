@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -812 +812 @@
+-                if obj['kernel_sockaddr_hex'] is not None and not sampled_matches(
++                if False and not sampled_matches(

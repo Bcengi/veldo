@@ -1,137 +1,144 @@
-# AC2 qualification attempt, 2026-11-21
+# AC2 continuation, 2026-11-21
 
-Base: `805c30828a9ac92722580224c51fc5a48a856483`, branch
-`veldo-0111-complete`. This attempt stops on `socket_destruction`, as requested
-when a retained obligation cannot be met. It does not qualify AC2 or remove any
-retained obligation. The receipt remains **INCOMPLETE**.
+Base: `7f1ea5e0`, branch `veldo-0111-complete`. The lead's 2026-11-21 decision
+is recorded in the specification History. The owner's 2026-10-28 amendment is
+kept and not weakened. **AC2 remains INCOMPLETE.**
 
 ## Results
 
-Both the standalone witness and the recheck completed with exit 0 through the
-owner's external `host_heavy.sh`. The recheck's initial and final controls each
-passed all 13 suite rows. All 18 distinct mutations were detected: four
-acceptance mutations, five round-3 mutations, three swallowed faults,
-CLONE_UNTRACED, and five current named qualification gaps. There are 19 completed
-red drives because socket-destruction suppression is checked both by evidence
-replay and by the live all-family external-reference witness. Focused controls
-and reason-replay controls are green. These are regression results, not full
-AC2 acceptance.
+One recheck through the owner's external `host_heavy.sh` completed with exit 0
+(`recheck.txt`, `validation.txt`). Baseline and final control: 17/17 rows. All
+whole-suite mutants, witness mutants and named-gap replays were detected; all
+controls were green. The host's remaining named gaps are
+`protocol_inventory_bounds`, `operation_configuration` and
+`io_uring_socket_effects`; `socket_destruction` and `shared_socket_memory` no
+longer appear as host gaps. Compat message/syscall obligations also remain.
+These are regression and falsifier results, not full AC2 acceptance.
 
-`receipt.json` retains eight fault receipts, each with all eleven exact named
-consumer stand-downs. `socket-destruction.txt` records all four live family
-counterexamples. The top-level `qualification.json` now points to this attempt
-and its receipt digest instead of the historical protocol-zero discovery.
-`validation.txt` records the final proof-integrity and personal-setup checks.
-The staged whitespace check rejected space-only context lines in `AC2.diff`
-and `silence-family.diff`. Those two retained patches were rendered with zero
-context after the run; both resulting mutant digests were checked against the
-live-run receipt. The mutations are unchanged. A fresh recheck emits the original
-contextual diffs, so retain this formatting step when staging its output.
+Closed here: escaped references (lead decision), destruction at drain,
+shared socket memory, and netlink implicit addresses. Next open obligation:
+`protocol_inventory_bounds` - IPPROTO_SMC (256) is available on this host
+outside the scanned range; see OPEN.md.
 
-## Counterexample and observation boundary
+## Two independent escape detectors
 
-`socket_destruction.py` creates a Unix datagram receiver outside the measured
-scope before arming. For each of Unix, IPv4, IPv6 and netlink, a traced root
-creates a service socket, binds it (and listens where applicable), queues its
-descriptor to that receiver with SCM_RIGHTS, closes its descriptors and exits.
-The receiver does nothing until `census()` returns with all descendants drained.
+**SCM_RIGHTS send decoder (attribution).** The collector decodes outgoing
+native `sendmsg` and `sendmmsg` controls before testing whether it knows the
+transport. A successful SCM_RIGHTS transfer without a proven contained peer
+emits `escaped_reference` (`lifecycle_violation`, reason
+`SCM_RIGHTS send <sequence> has no exclusively measured receiver`), leaves
+capture INCOMPLETE, and stands down all eleven named consumer rows. This
+includes a transport received from outside the measured scope. A failed send
+is not reported as an escape. Only an unexported, scope-created socketpair has
+a proven peer; every other transport is treated conservatively as outside.
 
-After that return, the harness connects and sends to the listener, or unicasts
-to the netlink receive binding, while its only reference is still queued. It
-then receives the descriptor, checks its inode and address, accepts/receives the
-payload through it, and closes it. The trace records the service and local
-close, but its `closed={barrier: descendants_drained, exact: false}` cannot be
-an upper bound on lifetime: the socket is demonstrably alive after that barrier.
-The qualifier's existing explanation that terminal drain bounds destruction is
-therefore also refuted. No implementation change conceals this result.
+**File-release observer (destruction at drain).** At each socket's creation
+stop the collector duplicates the descriptor with `pidfd_getfd`, registers the
+open file in a collector-owned epoll set, and closes the duplicate before the
+tracee resumes. An epoll item holds no file reference; the kernel removes it in
+`__fput` when the last reference is released. After the `descendants_drained`
+barrier the collector reads its epoll set from `/proc/self/fdinfo`:
 
-Every ordering comes from socket operations, terminal waits and census return.
-The monotonic timestamps document those events; no elapsed duration decides a
-pass. Socket timeouts are 120-second hang detectors. The harness's release
-acknowledgement is not claimed as an exact kernel destruction timestamp.
+* item gone: the final reference was released at or before drain; the socket
+  record gets `closed = {barrier: descendants_drained, released: true,
+  observer: epoll_file_release}`;
+* item present: a reference survives outside the drained scope, whatever path
+  carried it there; `escaped_reference` (`<identity> file is still referenced
+  after descendant drain`), `closed: null`, capture INCOMPLETE;
+* never registered (observer unavailable or failed): no destruction claim;
+  the named `socket_destruction` gap remains for that socket.
 
-This is a mechanism limitation, not merely an omitted close decoder:
+The blanket host-level `socket_destruction` gap is therefore replaced by an
+observation: it is named only for a socket whose release was not observed.
+"Released" means the socket file's last reference went away (`sock_close`).
+It does not claim protocol-level teardown of orphaned TCP connections, which
+have no socket file and no listening state.
 
-* [SCM_RIGHTS](https://www.man7.org/linux/man-pages/man7/unix.7.html) transfers a
-  reference to an open file description. The last traced descriptor can close
-  while a queue or unrelated process retains that reference.
-* [ptrace](https://man7.org/linux/man-pages/man2/ptrace.2.html) observes attached
-  tasks. The external holder is neither a traced descendant nor automatically
-  attached by descriptor transfer. Its eventual close has no syscall stop in
-  this collector, and it may retain the reference beyond any finite drain.
-* [sock_diag's published destruction groups](https://github.com/torvalds/linux/blob/master/include/uapi/linux/sock_diag.h)
-  cover IPv4/IPv6 TCP/UDP, not every Unix/netlink socket. The receipt records the
-  locally installed UAPI group names and the actual subscription result.
-  A diagnostic dump or disappearance from `/proc` is a snapshot, not the required
-  final-reference destruction event.
+## Kernel state instead of tracee memory (shared_socket_memory)
 
-The receipt also records effective/permitted capabilities and host BPF/perf
-restrictions: both capability masks are zero, `unprivileged_bpf_disabled=2`,
-`perf_event_paranoid=4`, and seccomp mode is zero. Subscription to all four
-published sock_diag destruction groups succeeds; those groups still do not
-cover Unix or netlink. Ptrace itself works in these direct runs. The lifetime
-blocker is therefore separate from the mutation driver's confinement issue.
-No privilege changes, host monitoring daemon, or tracing of
-unrelated holders was attempted. Completing this retained obligation requires a
-qualified source of final-reference events across the four families and holders
-outside the descendant scope. The selected child-ptrace mechanism plus permitted
-snapshot enrichment does not provide it. Waiting longer, labelling drain as
-destruction, excluding external references, or retaining an observer-owned
-duplicate would not satisfy the existing obligation.
+* bind: the kernel's address (getsockname on a pidfd_getfd duplicate) must be
+  one the sampled sockaddr requested; otherwise `shared_socket_memory`.
+* socketpair and received descriptors (recvmsg/recvmmsg): taken from the diff
+  of the kernel descriptor table between entry and exit stops; a socketpair
+  array that disagrees fails; a received out-of-scope socket fails as
+  `descriptor_transfer`; a received io_uring instance fails as `io_uring`.
+* a socket syscall while another live measured task shares the descriptor
+  table or address space (kcmp) fails closed, as does creating a seccomp
+  user-notification listener (it can install descriptors from outside).
+* send controls: escapes are caught by the release observer even when the
+  control memory is rewritten.
+* netlink implicit binding: the kernel sockaddr gives the autobound port id.
 
-## Reproduction and receipt
+## Falsifiers
 
-Run from the worktree, using the owner's external `host_heavy.sh` as the command
-wrapper (the wrapper's personal installation path is deliberately not stored):
+`socket_destruction.py` keeps the original Unix, IPv4, IPv6 and netlink live
+counterexamples: each queues its service descriptor to a receiver outside the
+scope, closes, exits and drains; the external receiver then exercises, receives
+and releases the still-live socket. Modes `owned` (scope-created transport),
+`sendmmsg`, and `imported` (transport received from outside) run all four
+families. The row `census/escaped-reference` requires the send-attributed
+failure; the release observer's detection is recorded beside it.
+
+| Drive | Expected |
+| --- | --- |
+| original, 3 modes x 4 families | row green; both detectors fire |
+| `ignore-scm-rights` (send decoder off) | row red; release observer still fails every capture |
+| `ignore-scm-rights-and-release` (both off) | row red; owned/sendmmsg captures turn COMPLETE (the lead's "turns them green") |
+| `control-aba` original | `census/escape-detected-despite-control-aba` green |
+| `control-aba` with `ignore-release` | row red; capture turns COMPLETE |
+| whole suite, `ignore-scm-rights` | `census/escaped-reference` red |
+| whole suite, `ignore-release` | `census/destruction-at-drain` red |
+| whole suite, `skip-release-watch` | `census/destruction-at-drain` red |
+| `memory-aba` original | `census/memory-aba-uses-kernel-state` green in bind, socketpair, recvmsg |
+| `trust-bind-sample`, `socketpair-from-memory`, `trust-received-control` | each loses exactly its scenario |
+| whole suite, `ignore-sharers`, `ignore-seccomp-listener` | `census/shared-descriptor-table-fails-closed` red |
+| whole suite, `drop-netlink-implicit` | `census/netlink-implicit-binding` red |
+
+`shared_memory.py` is the control-memory ABA witness. An unmeasured ancestor
+uses real `process_vm_writev` calls, scheduled by acknowledgements from an
+instrumented copy of the collector, to replace valid credentials with three
+SCM_RIGHTS copies of a listener after the entry sample and restore them before
+the exit sample. The send decoder sees credentials both times (asserted), the
+kernel really transfers the listener (the external receiver gets it after drain
+and checks inode, address and listening state), and the release observer must
+still name the escape. A benign unmodified run with the same control is
+COMPLETE with no received rights.
+
+The new suite row `census/destruction-at-drain` creates and closes a listener
+or binding in each of the four families (each must be observed released) and
+lets an outside ancestor take a listener with `pidfd_getfd` - no SCM_RIGHTS, no
+send event. That listener must be the only `escaped_reference`.
+
+`memory_aba.py` uses the same scheduling-only instrumentation and real
+`process_vm_writev` to make tracee memory lie in three places: the bind
+sockaddr (127.0.0.1 at both stops, kernel bound 127.0.0.2), the socketpair
+result array (rewritten to an older genuine pair), and a received SCM_RIGHTS
+control (erased after the kernel filled it). Each drive first asserts the lie
+really happened, so a non-event is an invalid drive, not a pass.
+
+## Reproduction and proof integrity
+
+Run from the worktree with the owner's external `host_heavy.sh` command wrapper;
+its personal installation path is deliberately absent from committed files:
 
 ```
 host_heavy.sh python3 -B proof/VELDO-0111/ac2-attempt/recheck.py
+python3 -B proof/VELDO-0111/ac2-attempt/validate.py
 ```
 
-`recheck.py` uses the existing suite and original mutation definitions. It
-retains actual applied diffs, named boolean outcomes, source digests, the eight
-fault receipts with all eleven named consumer rows, and the compact live
-counterexample. A missing row, failed baseline, exception or timeout invalidates
-the drive. Mutants live only in temporary files; the worktree collector is never
-replaced. `receipt.json` is the structured proof; runtime logs are `.txt`.
-Full-suite mutants share a fresh full-suite baseline and final control; each
-still runs the entire suite against its mutated collector. Focused round-3
-mutants have their own focused controls. This avoids repeating identical
-unchanged-source full-suite controls between scratch-only mutations.
+Ordering comes from socket acknowledgements, syscall stops and terminal waits.
+Timeouts are hang detectors, never pass conditions based on elapsed time.
+Mutants live in temporary files; the worktree collector is never replaced.
+A missing row, exception, timeout or failed baseline invalidates a drive.
+The recheck retains zero-context applied diffs, source digests, exact named
+outcomes, eight fault receipts and all eleven consumer stand-down rows. The
+existing acceptance, round-3, swallowed-fault, CLONE_UNTRACED and fresh
+named-qualification-gap falsifiers remain. `recheck.txt` is the run log;
+`validation.txt` records the validator. This is ticket-local evidence, not a
+broad repository gate or full AC2 qualification.
 
-The replay includes the four acceptance falsifiers, five round-3 falsifiers,
-three swallowed-fault falsifiers, the CLONE_UNTRACED falsifier and each named gap
-present in the fresh host inventory. Named-gap replays use that live evidence,
-instead of the old round-2 reason driver's hard-coded obsolete gap set.
-The socket-destruction suppression additionally runs the external-reference
-witness live in all four families: removing its reason must turn
-`census/external-reference-needs-destruction-observer` false despite the sockets
-still being observed alive. That row proves honest incompleteness, not successful
-destruction observation.
-
-## Ptrace and mutation-driver execution
-
-Protected path, inspected and unchanged: `scripts/gate_unconfined.json`.
-Its current declaration does **not** include `113_veldo_0111_census`. The
-declaration digest is recorded in `receipt.json`.
-
-| Falsifiers | Ptrace requirement |
-| --- | --- |
-| AC1, AC2, AC3, AC4 | Yes: each drives the full live suite. |
-| phantom-unix, drop-autobind, other-family-service, silence-family | Yes: each includes a live census. |
-| swallow-corrupt, swallow-abi, swallow-loss, clone-untraced | Yes: each drives the full live suite. |
-| external-reference socket-destruction suppression | Yes: live queued/external references in all four families. |
-| uncovered-state | No in the focused AST-only drive; yes if a driver runs the whole suite. |
-| Named qualification-gap evidence replays | No for replay itself; the fresh evidence producer requires ptrace. |
-
-The authority mutation driver must run ptrace-dependent cases with their baseline
-and controls in its unconfined leg, selected from the authority's protected
-declaration. It runs whole suites, so a row-only declaration cannot route a
-whole-suite case. With the current declaration, those suite-113 cases remain
-confined and a ptrace-denied baseline is `invalid_baseline`, not a killed
-mutation. This attempt uses the requested direct host-wrapper drives; it does
-not claim an authority mutation-driver pass or edit the declaration. No candidate
-environment variable is a substitute for the authority declaration.
-
-The specification amendment, consumer tickets and production collector remain
-unchanged. No broad repository gate or independent review is claimed.
+`scripts/gate_unconfined.json` remains unchanged and still omits suite
+`113_veldo_0111_census`. Ptrace-dependent cases require the authority driver's
+unconfined leg; a denied baseline is invalid, never a killed mutant. The direct
+host-wrapper runs do not claim an authority mutation-driver result. Consumer
+tickets remain unchanged.

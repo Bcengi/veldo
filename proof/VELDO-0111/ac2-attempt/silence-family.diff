@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -377 +377 @@
+@@ -430 +430 @@
 -            failure(self.r, 'family_not_qualified', obj['not_qualified']['reason'])
 +            pass  # swallowed family boundary

@@ -112,3 +112,23 @@ row emits STANDS DOWN with census_incomplete for every incomplete receipt."
 All other acceptance text is unchanged. No incomplete receipt satisfies
 qualification. Loss-free capture, matching failures, drain, fault generation
 and the complete-empty-trace falsifier remain required.
+
+## History
+
+### Lead decision, 2026-11-21: references escaping the measured scope
+
+The owner's 2026-10-28 amendment is kept and not weakened. The live four-family
+SCM_RIGHTS counterexample establishes that descendant drain cannot prove
+destruction of a socket whose descriptor is queued to an outside receiver.
+The lifetime obligation is restated without weakening it: capture must detect
+any descriptor passed out of the measured scope by SCM_RIGHTS to a process
+that is not a measured descendant, including through a socket the scope did
+not create, and fail with named `escaped_reference`, category
+`lifecycle_violation`, and an INCOMPLETE receipt. Destruction at drain remains
+required for every socket without such an outside reference. This is not
+permission to omit escaped sockets or claim their destruction.
+
+Each of the four live family counterexamples must produce `escaped_reference`.
+A mutant ignoring SCM_RIGHTS must incorrectly pass those captures, and the
+named escape row must detect that falsifier. Protocol, configuration, async,
+race, implicit-address and ABI obligations within the four families remain.
