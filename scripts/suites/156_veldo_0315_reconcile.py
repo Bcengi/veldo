@@ -291,9 +291,15 @@ def _v315_suite():
             f.put('landing:one', 'landing', {'project': 'orchard', 'workspace': str(candidate), 'lane': 'land-1'})
             f.put('batch:wrong', 'batch', {'project': 'orchard', 'observation_dir': str(mistaken)})
             result = f.run(True)
+            # VELDO-0347: an adopted batch clone ends at run finished (table 2's agent_repository_clone),
+            # so the discarded batch's clone is removed by its past event, through the keep step.
+            ever = {item['locator'].get('path'): item for item in f.L.items().values()}
             check(row, 'batch and candidate are private repositories with forms: ' + repr(result['findings']), result['ok'] and
-                  f.at(batch)[1].get('form') == 'batch_clone' and f.at(candidate)[1].get('form') == 'candidate_workspace')
-            check(row, 'ended batch keeps its unique commit', batch.exists() and git(batch, 'rev-parse', 'HEAD') == tip)
+                  (ever.get(str(batch)) or {}).get('form') == 'batch_clone'
+                  and f.at(candidate)[1].get('form') == 'candidate_workspace')
+            kept = git(f.repo, 'for-each-ref', '--contains', tip, 'refs/veldo/kept/') if not batch.exists() else ''
+            check(row, 'ended batch keeps its unique commit: in the clone, or on a kept ref of the main repository',
+                  (batch.exists() and git(batch, 'rev-parse', 'HEAD') == tip) or bool(kept))
             check(row, 'repository is never scratch or build output', f.at(mistaken)[1].get('owner') is None
                   and (mistaken / 'only-commit').exists())
 

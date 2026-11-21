@@ -1296,13 +1296,14 @@ def _r_remove_held(ctx, identity, record, answer):
             for relative in files:
                 descriptor = _open_inside(folder, relative)
                 try:
-                    before = os.fstat(descriptor)
                     data = _read_all(descriptor)
                     after = os.fstat(descriptor)
                     digest = hashlib.sha256(data).hexdigest()
                     blob = _blob(data, algorithm) if algorithm else None
                     copy = _held_copy(ctx, digest, blob, committed)
-                    if copy is None or (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+                    # Read once more through the same descriptor: a file written while it was read is
+                    # not the content the copy was checked for (no clock is read, design 4.1).
+                    if copy is None or after.st_size != len(data) or os.pread(descriptor, len(data) + 1, 0) != data:
                         kept.append(relative)
                         continue
                     holder = _open_inside(folder, relative, directory=True) if '/' in relative else os.dup(folder)

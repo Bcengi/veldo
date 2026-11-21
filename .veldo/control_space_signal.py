@@ -727,7 +727,12 @@ def inside(ledger, probe, identity, record, run=None):
         elif own:
             found['path:' + path] = 'unrecorded'
     if record.get('kind') in HOLDS_REPOSITORIES + HOLDS_UNLESS_CLEAN and path:
-        beneath = probe.nested(path, recorded)
+        if record.get('kind') in HOLDS_UNLESS_CLEAN:
+            # A folder this user owns that refuses only for its permission bits is the folder
+            # remover's to open and look into before it deletes anything (the probe's nested).
+            beneath = probe.nested(path, recorded, openable=True)
+        else:
+            beneath = probe.nested(path, recorded)
         if not beneath['read']:
             found['path:' + path] = 'unread'
         for where in beneath['repositories']:
