@@ -120,9 +120,35 @@ def stand_in(capture, python, state='ready'):
     return StandIn(capture, python, state)
 
 
+_HELD = []  # every port free_port() gave out, still bound (VELDO-0358, C11)
+
+
 def free_port():
-    """A loopback port nothing listens on now, for one suite run's API."""
-    import socket
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
-        probe.bind(('127.0.0.1', 0))
-        return probe.getsockname()[1]
+    """A loopback port for one suite run's API, held until this process ends (VELDO-0358, C11: the port
+    holder of support/ports.py). It used to be read and released at once (bind to 0, read, close), which
+    left it free for the whole start of the server, and on a loaded host another bind to port 0 took it.
+    The reservation stays bound, not listening, with SO_REUSEADDR, so the kernel hands the port to no
+    other bind to 0 and the server's own bind to it succeeds. release_ports() gives them back."""
+    hold = _ports().reserve()
+    _HELD.append(hold)
+    return hold.port
+
+
+def release_ports():
+    """Give back every port free_port() holds: for a caller whose servers are all up or all gone."""
+    while _HELD:
+        _HELD.pop().release()
+
+
+def _ports():
+    """support/ports.py, the instance the suites' namespace already loaded when there is one."""
+    import importlib.util
+    import sys
+    if 'ports' in sys.modules:
+        return sys.modules['ports']
+    path = Path(__file__).resolve().parent / 'ports.py'
+    spec = importlib.util.spec_from_file_location('ports', str(path))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['ports'] = module
+    spec.loader.exec_module(module)
+    return module
