@@ -237,6 +237,9 @@ def consume(ledger, identity, given=None, landing=None):
         given.setdefault('kinds', KINDS)
         given.setdefault('remover', REMOVE)
         given.setdefault('keep', KEEP.keeper(ledger, event=emitter))
+        if landing is not None:
+            # The evidence remover reads the declared trunk from the land entry (VELDO-0347 AC4).
+            given.setdefault('landing', landing)
         answer = SIGNAL.signal(ledger, event,
             {'items': [{'item': name, 'version': versions[name]} for name in names]},
             emitter=emitter, command_id=command_id, **given)

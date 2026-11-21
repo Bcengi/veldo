@@ -1621,7 +1621,8 @@ def clean_clone(path, run=None):
       - no entry of its HEAD log or of a branch's log names a commit those refs do not reach (a reset
         leaves such a commit named by a log alone);
       - for every remote whose address is a path on this host, each commit its remote-tracking refs
-        name is in that repository now: a remote-tracking ref says what the remote had at the last
+        name is in that repository now and reached by one of its refs (an object no ref reaches goes
+        at its next gc): a remote-tracking ref says what the remote had at the last
         fetch, and any process of the owner's can write one, so the ref alone is not taken. A
         remote-tracking ref of a name no remote of the repository has is not taken either;
       - no git repository is beneath it.
@@ -1710,6 +1711,13 @@ def clean_clone(path, run=None):
                 code, said = _git(run, where, 'cat-file', '-e', commit + '^{commit}')
                 if code != 0:
                     return no('the local remote %s does not hold %s' % (name, commit))
+                # Present is not enough: an object no ref of the remote reaches (its branch deleted or
+                # forced away) goes at the remote's next gc. It must be reachable from one of them.
+                code, said = _git(run, where, 'rev-list', '--max-count=1', commit, '--not', '--all')
+                if code != 0:
+                    return no('what the local remote %s reaches cannot be read' % name, read=False)
+                if said.strip():
+                    return no('no ref of the local remote %s reaches %s' % (name, commit))
     beneath = nested(path)
     if not beneath['read']:
         return no(beneath['said'], read=False)

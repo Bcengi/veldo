@@ -170,7 +170,8 @@ uncommitted files with it. So does a registered worktree on disk that no live it
 repository git cannot list. It also looks on disk beneath a worktree and beneath an agent repository
 for git repositories nobody recorded (the probe's nested): one in a folder git ignores is no case of
 unique work, git's non-forced worktree remove takes it, and its commits exist nowhere else. Each holds
-the item, and so does a folder that could not be listed. Since VELDO-0347 (design 0.1) the look starts
+the item, and so does a folder that could not be listed (but for one exception: a confined run's own
+scratch, SANDBOX_SCRATCH_PREFIX). Since VELDO-0347 (design 0.1) the look starts
 at the item's own folder: an item whose kind is neither worktree nor agent repository and whose folder
 is itself a repository holds itself, under path:<its path>. And beneath a scratch or a build output
 item a repository holds it too, unless the probe reads it as a clean clone at that moment. `inside` is also the look the kind registry's
@@ -219,7 +220,7 @@ CARRY_OUT_REFUSED = 'space_carry_out_refused'
 
 def signal(ledger, event, subject, carry_out=None, principal=None, command_id=None, probe=None, kinds=None,
            remover=None, emitter=None, free=None, keep=None, owner_live=None, landed=(), queued=None, run=None,
-           proc=None, borrow_root=None, held=None):
+           proc=None, borrow_root=None, held=None, landing=None):
     """Mark every item the event ends as due, carry out those that may be carried out, and write each
     outcome, all before returning.
 
@@ -230,6 +231,8 @@ def signal(ledger, event, subject, carry_out=None, principal=None, command_id=No
     step; `owner_live`, `landed`, `run`, `proc` and `borrow_root` are the rules'; `queued` is the kind
     registry's. `held(sha256)` is the evidence remover's reader of the store (VELDO-0347 AC4): True
     only when the store holds a blob with that digest; given to the remover only when given here.
+    `landing` is the work configuration's land entry, from which the evidence remover reads the
+    declared trunk (control_space_spool.Local); given to the remover only when given here.
     `carry_out` is refused: a call that gives it writes nothing (above).
 
     Returns the ledger's answer with carried (the items carried out), left (the items left due),
@@ -264,7 +267,7 @@ def signal(ledger, event, subject, carry_out=None, principal=None, command_id=No
         if identities:
             outcomes.extend(_carry(ledger, probe, kinds, remover, ending, identities, emitter=emitter,
                 free=free, keep=keep, owner_live=owner_live, landed=landed, queued=queued, run=run,
-                proc=proc, seq=result.get('seq'), borrow_root=borrow_root, held=held))
+                proc=proc, seq=result.get('seq'), borrow_root=borrow_root, held=held, landing=landing))
     counts = {'removed': 0, 'gone': 0, 'kept': 0, 'removing': 0, 'left': len(left), 'deferred': {}}
     for entry in outcomes:
         if entry['outcome'] == 'deferred':
@@ -305,7 +308,7 @@ def _carrier(probe, seq):
 
 
 def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=None, keep=None, owner_live=None,
-           landed=(), queued=None, run=None, proc=None, borrow_root=None, seq=None, held=None):
+           landed=(), queued=None, run=None, proc=None, borrow_root=None, seq=None, held=None, landing=None):
     """Carry out the due items `carried`, in the kind registry's order, and write the outcome of each.
     Returns one entry per item, whatever raised on the way."""
     # A reconciliation view selects items; safety still sees every project and child.
@@ -314,7 +317,8 @@ def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=Non
         return inside(ledger, probe, identity, record, run)
 
     given = {'emitter': emitter, 'free': free, 'keep': keep, 'owner_live': owner_live, 'landed': landed,
-             'run': run, 'proc': proc, 'borrow_root': borrow_root, 'carrier': _carrier(probe, seq), 'held': held}
+             'run': run, 'proc': proc, 'borrow_root': borrow_root, 'carrier': _carrier(probe, seq), 'held': held,
+             'landing': landing}
     try:
         entries = {entry['item']: entry
                    for entry in kinds.due(event, list(ledger.items().items()), queued=queued, look=look)}
@@ -413,8 +417,9 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                              owner_live=given['owner_live'], run=given['run'], proc=given['proc'],
                              borrow_root=given['borrow_root'])
             review['review_check'] = review_check
-        if given.get('held') is not None:
-            review['held'] = given['held']
+        for key in ('held', 'landing'):
+            if given.get(key) is not None:
+                review[key] = given[key]
         seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
                                       keep=given['keep'], run=given['run'], proc=given['proc'], **review)
         return seen['said']
@@ -492,6 +497,17 @@ OWN_REPOSITORY_KINDS = ('worktree', 'agent_repository')
 # snapshot and is not deferred for what is in its work tree (VELDO-0347 AC3).
 CLONE_FORMS = ('worker_clone', 'batch_clone', 'candidate_workspace')
 SNAPSHOT_FORMS = ('worker_clone',)
+# The kind registry's tables that have no row for a clone's form (control_space_kinds: table 1). An item
+# keeps the table it was declared under: an agent repository declared under one of them is judged as
+# that table says, its branches against the shared repository, whatever its form (review F2).
+TABLES_WITHOUT_CLONE_ROW = ('1',)
+# A confined run's own scratch (agent_sandbox.py, SCRATCH_PREFIX and run_scratch): a scratch item with a
+# parent item whose folder's name begins with this. The confined process may shut folders in it; a
+# folder this user owns that refuses to be listed only for its permission bits does not hold that one
+# item at rule 6, because the folder remover opens it up and its walk stops on any repository that is
+# not a clean clone before the first delete. Every other folder that cannot be listed holds the item
+# (VELDO-0347 AC2; the one exception, recorded in the spec's History).
+SANDBOX_SCRATCH_PREFIX = 'veldo-agent-'
 NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
@@ -639,6 +655,20 @@ def _project_declares(ledger, record, key):
     return []
 
 
+def _clone_row(record):
+    """Whether the item was declared under a table that has a row for a clone's form."""
+    ends_on = record.get('ends_on')
+    version = ends_on.get('version') if isinstance(ends_on, dict) else None
+    return isinstance(version, str) and version not in TABLES_WITHOUT_CLONE_ROW
+
+
+def _sandbox_scratch(record):
+    """Whether the item is a confined run's own scratch (SANDBOX_SCRATCH_PREFIX)."""
+    path = (record.get('locator') or {}).get('path')
+    return (record.get('kind') == 'scratch' and bool(record.get('parent')) and isinstance(path, str)
+            and path.rstrip('/').rsplit('/', 1)[-1].startswith(SANDBOX_SCRATCH_PREFIX))
+
+
 def _rule_unique_work(ledger, probe, identity, record, given):
     kind = record['kind']
     if kind not in ('worktree', 'agent_repository'):
@@ -648,7 +678,7 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     # probe's reading of ignored paths (VELDO-0347); named only when there is something to say.
     declared = {key: value for key, value in (('patterns', tuple(_project_declares(ledger, record, 'build_output'))),
                                               ('adopted', bool(record.get('adopted')))) if value}
-    if kind == 'agent_repository' and record.get('form') in CLONE_FORMS:
+    if kind == 'agent_repository' and record.get('form') in CLONE_FORMS and _clone_row(record):
         # A private repository of one run (VELDO-0347 AC3): every commit it has goes to kept refs at the
         # keep step, so its branches are not held against the shared repository. What is in its work
         # tree is unique work, as in a worktree, unless the keep step saves it: a worker clone's run
@@ -727,9 +757,9 @@ def inside(ledger, probe, identity, record, run=None):
         elif own:
             found['path:' + path] = 'unrecorded'
     if record.get('kind') in HOLDS_REPOSITORIES + HOLDS_UNLESS_CLEAN and path:
-        if record.get('kind') in HOLDS_UNLESS_CLEAN:
-            # A folder this user owns that refuses only for its permission bits is the folder
-            # remover's to open and look into before it deletes anything (the probe's nested).
+        if _sandbox_scratch(record):
+            # The one exception (SANDBOX_SCRATCH_PREFIX): a folder this user owns that the confined run
+            # shut is the folder remover's to open and look into before it deletes anything.
             beneath = probe.nested(path, recorded, openable=True)
         else:
             beneath = probe.nested(path, recorded)
