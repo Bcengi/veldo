@@ -3,7 +3,7 @@ remote_run[pc2 cd6736879f1c 21:57:21]: bundle 8.0K (11 base commit(s) on the nod
 remote_run[pc2 cd6736879f1c 21:57:22]: run rr20261121215720-9390 started on dmitry-pc2 (Add reproducible real-worker audit cost measurement with scratch admis); node log <home>/remote-run/runs/rr20261121215720-9390/log
 [remote_run pc2 21:57:22] run rr20261121215720-9390 selected node pc2 (Linux-x86_64)
 [remote_run pc2 21:57:24] setup 2s; cd6736879f1ca48b6dee1725a47d0ef0729f528d in <home>/remote-run/runs/rr20261121215720-9390/work; python 3.12.13, node 22.22.0
-[remote_run pc2 21:57:24] command: /usr/bin/python3 -B scripts/selftest.py --suite 98_veldo_0204_mutation_receipts --suite 112_veldo_0215_case_deadlines --suite 157_veldo_0217_declarations --suite 158_veldo_0224_stale_declarations 
+[remote_run pc2 21:57:24] command: /usr/bin/python3 -B scripts/selftest.py --suite 98_veldo_0204_mutation_receipts --suite 112_veldo_0215_case_deadlines --suite 157_veldo_0217_declarations --suite 158_veldo_0224_stale_declarations
 ==============================================================================
 PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
 ==============================================================================
