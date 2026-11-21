@@ -1,8 +1,8 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0224",
-  "commit": "24ef7002a32b7f8748c43a62389b73022ab363d0",
-  "producer": "Codex implementation agent; not an independent reviewer",
+  "commit": "a57eda2a",
+  "producer": "Round 0: Codex implementation agent. Fix round 1: Claude fix agent. Neither is an independent reviewer.",
   "criteria": [
     {
       "id": "AC1",
@@ -11,12 +11,17 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0224/suite224.txt",
-          "detail": "Selected diagnostic only: runs-fresh covers helper imports in all three modes, deleted declared file, broken closure, cleanup, valid fresh verdicts and a failing fresh baseline. Not a canonical unit gate verdict."
+          "detail": "Selected diagnostic only: runs-fresh covers helper imports in all three modes, deleted declared file, broken closure, cleanup, valid fresh verdicts and a failing fresh baseline. Not a canonical unit gate verdict. Fix round 1: store-unavailable-runs-fresh (stale cases rerun fresh and valid when the store has no signing authority) and stale-sibling-not-launched."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0224/mutations224.json",
           "detail": "stale224-snapshot-verdict-kept: green baseline/no-op controls; runs-fresh false because the undeclared helper's snapshot worker exit is retained. Real coordinator and child execution with fixture-supplied syscall trace."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0224/mutations224.json",
+          "detail": "stale224-store-unavailable-fails: green controls; store-unavailable-runs-fresh false with the stage failed on \"authority stale store unavailable\"."
         }
       ]
     },
@@ -27,12 +32,17 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0224/suite224.txt",
-          "detail": "Selected diagnostic only: never-published checks earlier authenticated records, zero stale reuse/publications, cleared stale keys, unchanged old records and a clean warm-hit control. Not a canonical unit gate verdict."
+          "detail": "Selected diagnostic only: never-published checks earlier authenticated records, zero stale reuse/publications, cleared stale keys, unchanged old records and a clean warm-hit control. Not a canonical unit gate verdict. Fix round 1: prior-mark-denies-reuse (warm hit control, audit mark, then a fresh unpublished run with zero reuse) and unreadable-marks-deny-reuse."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0224/mutations224.json",
           "detail": "stale224-published: green baseline/no-op controls; never-published false with concrete stale case identities published under retained stale keys."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0224/mutations224.json",
+          "detail": "stale224-prior-mark-ignored: green controls; prior-mark-denies-reuse false with the marked clean case reused. stale224-unreadable-marks-reused: unreadable-marks-deny-reuse false with the warm hit reused."
         }
       ]
     },
@@ -57,12 +67,12 @@
     {
       "name": "unit",
       "status": "not_run",
-      "detail": "Canonical gate intentionally left to the lead. Requested selected diagnostics: suite224.txt has 32 passed, zero failed; affected-suites.txt has 462 passed, zero failed across nine suites. Both commands intentionally exit 2 for partial selection; neither establishes landing readiness."
+      "detail": "Canonical gate intentionally left to the lead. Selected diagnostics: suite224.txt 36 passed (10 ticket rows); affected-suites.txt 150 passed on pc2; sandbox-suites.txt 337 passed through host_heavy; zero failures. Partial selections exit 2 and establish no landing readiness."
     },
     {
       "name": "mutation-regression",
       "status": "passed",
-      "detail": "mutations224.json: 3/3 executed fresh and rejected. mutations217.json: 12/12 executed fresh and rejected. No invalid results or surviving workers."
+      "detail": "mutations224.json: 6/6 executed fresh and rejected. mutations217.json: 12/12 executed fresh and rejected. No invalid results or surviving workers."
     },
     {
       "name": "lint",

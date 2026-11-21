@@ -13,33 +13,33 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  <scratch>/tmpy3stbobm: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  <scratch>/tmpy3stbobm/nocrit.md: no acceptance criteria
-  <scratch>/tmpy3stbobm/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  <scratch>/tmpy3stbobm/status.md: bad status: donezo
-  <scratch>/tmpy3stbobm/proof.json: proof criterion AC9 not in the specification (invented)
-  <scratch>/tmpy3stbobm/proof2.json: spec criterion AC1 missing from proof
-  <scratch>/tmpy3stbobm/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  <scratch>/tmpy3stbobm/proof4.json: criterion AC1 passed without evidence
-  <scratch>/tmpy3stbobm/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  <scratch>/tmpy3stbobm/verdict.json: bad verdict: looks_fine
-  <scratch>/tmpwzue8m4k/cycle.md: dependency cycle through WARP-9101
-  <scratch>/tmpwzue8m4k/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  <scratch>/tmpwzue8m4k/oref.md: feature F1: unknown outcome ref O7
-  <scratch>/tmpwzue8m4k/fref.md: work W1: unknown feature ref F9
-  <scratch>/tmpwzue8m4k/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  <scratch>/tmpwzue8m4k/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  <scratch>/tmpwzue8m4k/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  <scratch>/tmpwzue8m4k/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  <scratch>/tmpwzue8m4k/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  <scratch>/tmpwzue8m4k/dupspec.md: duplicate spec ids across work items
-  <scratch>/tmpwzue8m4k/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  <scratch>/tmpwzue8m4k/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  <scratch>/tmp58ixiju3: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  <scratch>/tmp58ixiju3/nocrit.md: no acceptance criteria
+  <scratch>/tmp58ixiju3/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  <scratch>/tmp58ixiju3/status.md: bad status: donezo
+  <scratch>/tmp58ixiju3/proof.json: proof criterion AC9 not in the specification (invented)
+  <scratch>/tmp58ixiju3/proof2.json: spec criterion AC1 missing from proof
+  <scratch>/tmp58ixiju3/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  <scratch>/tmp58ixiju3/proof4.json: criterion AC1 passed without evidence
+  <scratch>/tmp58ixiju3/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <scratch>/tmp58ixiju3/verdict.json: bad verdict: looks_fine
+  <scratch>/tmpsmmpdovb/cycle.md: dependency cycle through WARP-9101
+  <scratch>/tmpsmmpdovb/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  <scratch>/tmpsmmpdovb/oref.md: feature F1: unknown outcome ref O7
+  <scratch>/tmpsmmpdovb/fref.md: work W1: unknown feature ref F9
+  <scratch>/tmpsmmpdovb/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  <scratch>/tmpsmmpdovb/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  <scratch>/tmpsmmpdovb/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  <scratch>/tmpsmmpdovb/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  <scratch>/tmpsmmpdovb/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  <scratch>/tmpsmmpdovb/dupspec.md: duplicate spec ids across work items
+  <scratch>/tmpsmmpdovb/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  <scratch>/tmpsmmpdovb/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
   SELFTEST SKIP: VELDO-0210 workers/* rows of a running worker tree: the installed namespace helper cannot make the tree's namespace on this host (/usr/local/lib/veldo/veldo-userns: No such file or directory)
-   unit: removed 1 leg-time file from <scratch>/v215-alm0bemi/prune (authority checkout gone)
+   unit: removed 1 leg-time file from <scratch>/v215-ma_edht1/prune (authority checkout gone)
 ledger grant run-0 resource=cpu,memory,manager,host_lock,ports cpu=1 memory=1.07374e+09 manager=0
 ledger grant run-1 resource=cpu,memory,manager,host_lock,ports cpu=2 memory=2.14748e+09 manager=0
 ledger release run-1 resource=cpu,memory,manager,host_lock,ports cpu=1 memory=1.07374e+09 manager=0
@@ -55,10 +55,10 @@ ledger release run-4 resource=cpu,memory,manager,host_lock,ports cpu=0 memory=0 
   98_veldo_0204_mutation_receipts                 45 passed    1.94s
   104_veldo_0210_mutation_workers                  2 passed    0.16s
   112_veldo_0215_case_deadlines                   17 passed    0.28s
-  115_veldo_0219_measured_admission               31 passed   11.19s
-  157_veldo_0217_declarations                     19 passed    2.20s
-  158_veldo_0224_stale_declarations               10 passed    5.72s
-selftest (PARTIAL, 6 of 238 suites): 150 passed, 0 failed in 21.50s
+  115_veldo_0219_measured_admission               31 passed   11.60s
+  157_veldo_0217_declarations                     19 passed    2.25s
+  158_veldo_0224_stale_declarations               10 passed    5.85s
+selftest (PARTIAL, 6 of 238 suites): 150 passed, 0 failed in 22.08s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
 
 Exit: 2
