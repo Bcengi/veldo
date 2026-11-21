@@ -1,1 +1,1 @@
-mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=21 elapsed=37.231s
+mutations: passed registered=18 executed=18 reused=0 rejected=18 workers=24 elapsed=47.181s

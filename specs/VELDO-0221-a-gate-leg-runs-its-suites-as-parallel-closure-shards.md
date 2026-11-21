@@ -104,13 +104,23 @@ acceptance_criteria:
       /run/user/<uid>, /dev/shm, the top of the system temporary directory, and the owner's
       ~/.cache/veldo and ~/.local/state/veldo), and requires
       every unit started during the leg to carry some shard's prefix and nothing to be left behind.
-      Any breach is isolation_breach, RED, naming the suite. Set: a confined shard whose Landlock
-      layer is skipped, an unconfined shard that leaves a file in /dev/shm, and one that starts a unit
-      without its prefix. Completeness: row suite-shards/isolation-checked drives the three in an
-      ordinary landing gate, not a force-fresh one.
+      Any breach is isolation_breach, RED, naming the suite. At the top of the system temporary
+      directory alone (lead decision 2026-11-21, see History), a new entry fails a shard only when
+      it is attributable to that shard, by its instance name, its private roots or its process
+      tree; an entry that is attributable to none is recorded in the leg's result and shown on its
+      output, and does not fail the leg. Set: a confined shard whose Landlock
+      layer is skipped, an unconfined shard that leaves a file in /dev/shm, one that starts a unit
+      without its prefix, three that each leave an entry at the top of the temporary directory
+      (one by each tie), and an entry there that nothing ties to a shard. Completeness: row
+      suite-shards/isolation-checked drives the first three in an ordinary landing gate, not a
+      force-fresh one; rows suite-shards/own-temporary-entry-fails-its-shard and
+      suite-shards/unattributed-temporary-entry-is-recorded-not-charged drive the rest.
     falsified_by: >
       Run the unconfined after-check only in force-fresh gates. Registered mutant
-      shards221-check-force-fresh-only must fail suite-shards/isolation-checked.
+      shards221-check-force-fresh-only must fail suite-shards/isolation-checked. Only record a
+      shard's own entry at the top of the temporary directory: registered mutant
+      shards221-own-temporary-entry-allowed must fail
+      suite-shards/own-temporary-entry-fails-its-shard.
   - id: AC4
     text: >
       Claim: shards claim their measured CPU and anonymous memory from the gate-wide ledger; a leg's
@@ -122,7 +132,8 @@ acceptance_criteria:
       see History): each leg is run as shards and then as the ordered single-namespace run, back to
       back in one job on one host at one commit, and is judged on the ratio of the two wall times,
       sharded over ordered, never on either time alone. The ratio is at most one third for a confined
-      leg and at most one half for an unconfined leg, which are the bounds this criterion first
+      leg and at most one half for an unconfined leg (the lead's thresholds, decided 2026-11-21
+      under Telegram 42829), which are the bounds this criterion first
       stated in seconds (600 against 1,913 and 420 against 892) as ratios. Set: a fixture leg with
       two exclusive and three shared manager suites; a fixture gate of the real scheduler with a
       mutation floor of 11 of 20 cores and a leg node whose earlier claim was its whole cgroup's;
@@ -216,7 +227,8 @@ proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
 - Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED), and
   alone: no other shard runs beside it.
 - AC3's unit check judges only this instance's units, by the leg's prefix or by reference to a
-  shard's roots; a file nothing can be tied to fails the leg's isolation check by name.
+  shard's roots; a file nothing can be tied to fails the leg's isolation check by name, except at
+  the top of the system temporary directory, where it is recorded and shown (History, fix round 2).
 - The build added five paths to this footprint, its last five entries. Two because a gate check
   requires each edit: scripts/check_space_boundary.py (two table entries for the dispatcher's
   temporary directory) and proof/WARP-0716/crossing-state.md (regenerated for the dispatcher's
@@ -243,3 +255,24 @@ proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
   name recorded. It is never silently allowed.
 - Suite 15_warp_1404_historical_analogy is split so no one shard dominates a leg, its rows unchanged.
 - The footprint gains scripts/gate_schedule.py, its engine copy and the split suite's files.
+
+2026-11-21, fix round 2, lead decisions after fix round 1's evidence:
+
+- The rule for the top of the system temporary directory, revised on a new fact. On a shared host
+  other sessions leave files in /tmp: in three whole unconfined legs every shard was green and the
+  leg was red each time for another session's file. A new top-level /tmp entry now fails a shard
+  only when it is attributable to that shard, by its instance prefix, its private roots or its
+  process tree. An entry that is attributable to none is recorded in the leg's evidence and shown
+  in its output, and does not fail the leg. Shards keep temporary directories of their own, so a
+  leak by a shard stays attributable. This replaces the fix round 1 rule above ("one that cannot
+  fails the leg's isolation check"). Every other shared place keeps that rule.
+- AC4's thresholds are the lead's decision under the owner's rule that no verdict may depend on
+  machine speed (Telegram 42829): the ratio of the sharded wall time to the ordered wall time, same
+  run, same host, is at most 1/3 for the confined leg and at most 1/2 for the unconfined leg. The
+  paired run of fix round 1 measured 0.15 and 0.45, which meet them.
+- The 7 rows of suite 102_veldo_0210_agent_profile_runtime that fail only in the ordered confined
+  leg are inherited: an order dependence that is also seen at the base commit and is recorded in
+  VELDO-0358's notes. They are recorded in the proof and do not block this specification.
+- For the owner at landing: the six suites of run_scope.UNNAMED, suite 151 running alone without a
+  Landlock layer of its own, and the two further space-boundary entries. They are listed in
+  proof/VELDO-0221/README.md under "For the owner at landing".
