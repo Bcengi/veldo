@@ -75,18 +75,9 @@ it is fixing:
      Every failing row of every run is printed by name, so a pre-existing set that the `unit` slot
      does NOT show (a failure only the nested copy has) is on the page rather than a bare count.
 
-THE BUDGET OF ONE NESTED RUN IS MEASURED, NOT FIXED (VELDO-0214). A fixed 1800s could not hold
-the confined leg: it ended "did not finish inside 1800s" on two gate runs while the suite was
-healthy. The budget per nested run is min(max(1800, 2.0 x the unit stage's measured seconds for
-the same leg), 21600): never under the old fixed 1800s, and never over 6 hours, because a value that
-removed the bound would let a hung nested run hold the gate open for good. The cap is printed
-when it applies, and a measurement whose budget is not a finite number of seconds is ignored by
-name. Only the authority's scripts/gate_legs.py measures that, and hands it in
-VELDO_GATE_UNIT_SECONDS bound to the leg and the declaration digest it runs this leg under: this
-gate run's unit leg when it ran fresh, else the last fresh measurement it recorded. A value that is
-not bound to the leg this run is in, or appears outside a gate leg, is ignored by name. With no
-measurement at all (this check run by hand) the budget is 1800s and the check says so. The budget
-and where its number came from are printed before any run, and a run that exceeds it names it.
+A NESTED RUN IS BOUNDED BY PROGRESS (VELDO-0358). Each output line re-arms the
+process hang bound. The unit-leg measurement remains useful data for the runner;
+it is never a deadline here, and no ceiling bounds the whole nested run.
 
 FAILING LOUD IS NOT OPTIONAL. Every way this check can fail to answer exits NONZERO with the reason
 named: no interpreter, a missing writer or dispatcher, a copy that did not complete, a writer that
@@ -107,7 +98,6 @@ sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIP
 
 import importlib.util  # noqa: E402 - only after the script directory is gone
 import json  # noqa: E402
-import math  # noqa: E402
 import shutil  # noqa: E402
 import stat  # noqa: E402
 import subprocess  # noqa: E402
@@ -132,11 +122,10 @@ EVENT_LOG = Path(".veldo") / "events.jsonl"
 SPEND_FIELDS = ("tokens", "cost_usd", "human_minutes")
 SUMMARY_PREFIX = "selftest:"
 FAIL_MARK = "SELFTEST FAIL:"
-RUN_TIMEOUT_S = 1800  # the floor of the measured budget, and the whole budget with no measurement
-BUDGET_FACTOR = 2.0
-BUDGET_CEILING_S = 21600  # 6 hours: no measurement may remove the bound on a nested run
+PROCESS_HANG_SECONDS = 3600
+WAIT_HANG_SECONDS = 600
 UNIT_SECONDS = "VELDO_GATE_UNIT_SECONDS"
-WRITE_TIMEOUT_S = 120
+WRITE_TIMEOUT_S = WAIT_HANG_SECONDS
 TMP_PREFIX = "veldo-first-use-"
 
 # THE MUTATION TABLE: the sanctioned first uses of a layer whose corpus is empty today. One entry
@@ -312,44 +301,17 @@ def _child_env():
     return env
 
 
-def run_budget(environ):
-    """(seconds per nested run, where that number came from). See the docstring."""
-    floor = "the fixed floor of %ds" % RUN_TIMEOUT_S
-    raw = environ.get(UNIT_SECONDS)
-    leg, digest = environ.get("VELDO_GATE_LEG"), environ.get("VELDO_GATE_DECLARATION")
-    if raw is None:
-        return RUN_TIMEOUT_S, ("%s: no unit-leg measurement was handed to this run (run by hand, or "
-                               "the authority has recorded none for this leg)" % floor)
-    if leg not in ("confined", "unconfined") or not digest:
-        return RUN_TIMEOUT_S, ("%s: %s is set outside a gate leg, and only the authority's "
-                               "gate_legs.py sets it for a leg, so it is ignored" % (floor, UNIT_SECONDS))
-    try:
-        handed = json.loads(raw)
-        seconds = float(handed["seconds"])
-        bound = handed["leg"] == leg and handed["declaration"] == digest
-        fresh, at = str(handed["fresh"]), str(handed["at"])
-    except (ValueError, TypeError, KeyError):
-        return RUN_TIMEOUT_S, "%s: %s is not the authority's form, so it is ignored" % (floor, UNIT_SECONDS)
-    if not bound:
-        return RUN_TIMEOUT_S, ("%s: %s names another leg or declaration than this %s leg's, so it "
-                               "is ignored" % (floor, UNIT_SECONDS, leg))
-    if not 0 < seconds < float("inf"):
-        return RUN_TIMEOUT_S, "%s: %s carries no usable seconds, so it is ignored" % (floor, UNIT_SECONDS)
-    derived = BUDGET_FACTOR * seconds
-    if not math.isfinite(derived):
-        return RUN_TIMEOUT_S, ("%s: %s carries %gs, and %.1f x that is not a finite number of "
-                               "seconds, so it is ignored" % (floor, UNIT_SECONDS, seconds, BUDGET_FACTOR))
-    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)
-    source = ("min(max(%d, %.1f x %.1fs), %d): the unit stage's %s leg as the authority's gate_legs.py "
-              "measured it in %s (%s)" % (RUN_TIMEOUT_S, BUDGET_FACTOR, seconds, BUDGET_CEILING_S, leg,
-                                          fresh, at))
-    if derived > BUDGET_CEILING_S:
-        source += ("; CAPPED at the ceiling of %ds (6 hours), where %.1f x the measurement is %.0fs"
-                   % (BUDGET_CEILING_S, BUDGET_FACTOR, derived))
-    return budget, source
+def heavy_run(*args, **kwargs):
+    # Load only the authority sibling, after removing scripts from sys.path.
+    path = Path(__file__).resolve().with_name('mutation_observer.py')
+    spec = importlib.util.spec_from_file_location('first_use_observer', path)
+    observer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(observer)
+    return observer.run_heavy(*args, on_line=lambda line: print(
+        '   nested progress: ' + line.decode(errors='replace'), flush=True), **kwargs)
 
 
-def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
+def _run_suite(tree, label):
     """(passed, failed, [failure names]) from one full nested run, or CannotAnswer.
 
     THE FAILURE NAMES AND THE FAILURE COUNT COME FROM DIFFERENT LINES OF THE SAME OUTPUT, so they
@@ -358,14 +320,21 @@ def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
     those cases this check does not know what it measured and says so."""
     t0 = time.monotonic()
     try:
-        proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
-                              capture_output=True, text=True, env=_child_env(),
-                              timeout=budget, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))
-    except subprocess.TimeoutExpired:
-        raise CannotAnswer("the %s run did not finish inside its budget of %.0fs" % (label, budget))
+        launcher = ("import importlib.util,sys; p=sys.argv[1]; "
+                    "s=importlib.util.spec_from_file_location('nested_observer',p); "
+                    "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+                    "m.run_python(sys.argv[2])")
+        proc = heavy_run([sys.executable, "-I", "-X", "faulthandler", "-u", "-c", launcher,
+                          str(Path(__file__).resolve().with_name('mutation_observer.py')),
+                          "scripts/selftest.py"], cwd=str(tree),
+                         env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))
+    except TimeoutError as error:
+        raise CannotAnswer("the %s run hung without progress: %s" % (label, error)) from error
     except OSError as e:
         raise CannotAnswer("could not run the %s suite: %s" % (label, e))
     out = proc.stdout + proc.stderr
+    if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out:
+        raise CannotAnswer("the %s run has hung or unreached rows: %s" % (label, out[-2000:]))
     names = [ln.split(FAIL_MARK, 1)[1].strip() for ln in out.splitlines() if FAIL_MARK in ln]
     summary = [ln for ln in out.splitlines() if ln.startswith(SUMMARY_PREFIX) and "passed," in ln]
     if len(summary) != 1:
@@ -471,8 +440,8 @@ def main(argv):
         return 2
 
     print("== first use: no suite may require this repository's current emptiness", flush=True)
-    budget, source = run_budget(os.environ)
-    print("   budget per nested run: %.0fs, %s" % (budget, source), flush=True)
+    print("   nested run: hang bound %ds since its last output line; no total bound" %
+          PROCESS_HANG_SECONDS, flush=True)
     t0 = time.monotonic()
     tmproot = None
     verdict_red = []
@@ -492,7 +461,7 @@ def main(argv):
             print("   family %s: %s" % (mut["family"], mut["why"]), flush=True)
             tree = _copy(pristine, tmproot / ("mutated-" + mut["family"]), "mutated")
             _apply(tree, mut)
-            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], budget)
+            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])
             if not failed:
                 print("   %s: PASS. The suite is green with the layer in use." % mut["family"],
                       flush=True)
@@ -500,7 +469,7 @@ def main(argv):
             if baseline is None:
                 print("   %d failure(s): running the untouched tree to separate a regression from "
                       "a failure that was already there" % failed, flush=True)
-                baseline = _run_suite(pristine, "baseline", budget)[2]
+                baseline = _run_suite(pristine, "baseline")[2]
             regressions = [n for n in names if n not in baseline]
             preexisting = len(names) - len(regressions)
             if preexisting:

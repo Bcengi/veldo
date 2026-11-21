@@ -227,16 +227,10 @@ def _v205_reuse():
         record = dict(killed(cases[0]), input_digest=current.base_digest)
         current.publish(cases[0], record, gate.validate_result)
         def expired(*args):
-            raise gate.Refused('mutation_budget_exceeded', 'controlled deadline')
-        deadlines = []
-        for operation in (lambda: current.lookup(cases[0], expired),
-                          lambda: current.publish(cases[0], record, expired)):
-            try:
-                operation()
-            except gate.Refused as error:
-                deadlines.append(error.code)
-        expect('VELDO-0205 reuse/deadline-stays-red: cache fallback cannot swallow the stage alarm',
-               deadlines == ['mutation_budget_exceeded'] * 2)
+            raise gate.Refused('hung_not_killed', 'controlled inactivity')
+        refused = [current.lookup(cases[0], expired), current.publish(cases[0], record, expired)]
+        expect('VELDO-0205 reuse/deadline-stays-red: hung cached evidence grants no reuse or publication',
+               refused == [None, False] and current.reasons[cases[0]['identity']] == 'invalid_record')
 
         # Two gates with the same inputs both miss and both publish. Their failure text differs
         # (temporary paths); the stored bytes do not, and an earlier valid record always wins.

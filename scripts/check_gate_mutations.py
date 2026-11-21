@@ -28,15 +28,16 @@ ROOT = Path(__file__).resolve().parent.parent
 DRIVERS = ('check_teeth_mutations.py', 'check_review_mutations.py')
 SCHEMA = 'veldo.mutation-result/v1'
 FIXTURE_VERSION = 1
-# The combined cap scales with the registered inventory: each case costs roughly 0.8 s on the
-# qualification host (116 cases measured at 91.8 s on 2026-09-23), so a fixed cap would turn red for
-# growth alone. BUDGET is the floor; budget_for() is the cap actually enforced.
+# Legacy measurement API names are retained for callers. These values estimate
+# admission cost only; no worker or stage is held to the resulting numbers.
 BUDGET = 120
 PER_CASE_SECONDS = 2.0        # measured at REFERENCE_WORKERS workers
 REFERENCE_WORKERS = 8
-WORKER_BUDGET = 120          # floor for an unmeasured case; also bounds setup commands
+WORKER_BUDGET = 120          # admission estimate only; never a deadline
 WORKER_CEILING = 1800
 WORKER_MULTIPLIER = 3.0
+WAIT_HANG_SECONDS = 600
+PROCESS_HANG_SECONDS = 3600
 CASE_TIMES = Path.home() / '.cache' / 'veldo' / 'mutation-case-seconds'
 
 def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
@@ -90,11 +91,11 @@ OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.js
 
 
 def budget_for(count, workers=REFERENCE_WORKERS, phases=(), resources=None, floor=None):
-    """Bound sequential scheduling phases, including resource admission barriers.
+    """Estimate sequential scheduling phases, including resource admission barriers.
 
     Full workers charge W/m; full resources charge slot-time/capacity. A blocked
     multi-slot request can also wait for earlier users to drain, at most their
-    largest deadline. The last active jobs need one final tail. See VELDO-0215.
+    largest estimate. The last active jobs contribute one final tail.
     """
     phases = [list(jobs) for jobs in phases]
     if floor is not None:
@@ -173,7 +174,7 @@ def case_samples(key, times, now):
 
 
 def case_deadline(key, times=CASE_TIMES):
-    """A missing, expired or malformed sample is the floor, never an unbounded wait."""
+    """Historical API: return an admission estimate, never a worker deadline."""
     seconds = max((seconds for _, seconds in case_samples(key, times, time.time())), default=0)
     if not seconds:
         return WORKER_BUDGET
@@ -188,10 +189,10 @@ def scaled_deadline(seconds):
 
 
 def case_deadlines(keys, times=CASE_TIMES):
-    """Each case's worker deadline from its recorded samples, or None for a case with no live
-    sample. An unmeasured case's baseline in this stage is its measurement, not a judged run
-    (VELDO-0285): it is bounded only against a hang, and its noop and mutant are then held to
-    scaled_deadline of that baseline's time in the same stage."""
+    """Historical API: admission estimates, or None until this stage measures a baseline.
+
+    Neither these values nor the same-stage refresh can end or reject a worker.
+    """
     now = time.time()
     return {identity: case_deadline(key, times) if case_samples(key, times, now) else None
             for identity, key in keys.items()}
@@ -491,7 +492,7 @@ def inventory(root, expected_common):
     # nested and is handed the tree's marker (VELDO-0210 AC6).
     result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
         str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
-        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env,
+        capture_output=True, text=True, timeout=WAIT_HANG_SECONDS, env=env,
         pass_fds=load(ROOT / 'scripts/agent_sandbox.py').launcher_fds())
     if result.returncode:
         raise Refused('candidate_execution_denied', result.stderr[-2000:])
@@ -511,18 +512,18 @@ def command(args, env, with_stderr=False):
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             env=env, start_new_session=True)
     try:
-        out, err = proc.communicate(timeout=WORKER_BUDGET)
+        out, err = proc.communicate(timeout=WAIT_HANG_SECONDS)
         if proc.returncode:
             raise subprocess.CalledProcessError(proc.returncode, args, out, err)
         return (out, err) if with_stderr else out
     except subprocess.TimeoutExpired as error:
-        raise Refused('mutation_budget_exceeded', 'setup subprocess') from error
+        raise Refused('hung', 'setup subprocess made no progress') from error
     finally:
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        proc.wait(timeout=5)
+        proc.wait()
 
 
 # Git's shared environment boundary runs inside our owned group. The outer process
@@ -600,39 +601,77 @@ def file_identity(files):
 def observations(value):
     rows = value['observations']
     if not rows or any(not isinstance(r, list) or len(r) != 2 or
-                       not isinstance(r[0], str) or type(r[1]) is not bool for r in rows):
+                       not isinstance(r[0], str) or (type(r[1]) is not bool and r[1] not in ('hung', 'not_run')) for r in rows):
         raise ValueError('invalid observations')
     if value['count'] != len(rows) or value['row_names'] != [n for n, _ in rows]:
         raise ValueError('inconsistent row inventory')
-    if value['failed_rows'] != [n for n, ok in rows if not ok]:
+    if value['failed_rows'] != [n for n, ok in rows if ok is False]:
         raise ValueError('inconsistent false rows')
     return rows
 
 
-def validate_result(record, case):
+def baselined(case, observation, baseline=None):
+    """An absent first census is unknown, never proof of a converted suite."""
+    if baseline is None:
+        path = ROOT / 'scripts/suites/wallclock_baseline.json'
+        if not path.exists():
+            return True
+        baseline = json.loads(path.read_text())
+    entries = baseline['entries'] if isinstance(baseline, dict) else baseline
+    if not isinstance(entries, list) or any(not isinstance(e, dict) or
+            not isinstance(e.get('file'), str) or type(e.get('count')) is not int
+            or e['count'] <= 0 for e in entries):
+        raise ValueError('invalid wallclock baseline')
+    paths = {'scripts/suites/' + case['suite'], *observation.get('opened_files', [])}
+    return any(entry['file'] in paths and entry['count'] > 0 for entry in entries)
+
+
+def validate_result(record, case, *, baseline=None):
     try:
         if (record['schema'] != SCHEMA or record['case'] != case
                 or record['fixture_version'] != FIXTURE_VERSION):
             raise ValueError('identity mismatch')
         honest, noop, broken = (observations(record[k]) for k in ('baseline', 'noop', 'mutant'))
-        if not all(ok for _, ok in honest) or noop != honest:
+        if (not all(ok is True for _, ok in honest) or noop != honest
+                or any(record[k].get('watchdog_fired') or record[k].get('hung_rows')
+                       or record[k].get('not_run_rows') for k in ('baseline', 'noop'))):
             failures = {mode: {'failed_rows': record[mode].get('failed_rows', []),
-                               'failed_details': record[mode].get('failed_details', [])}
+                               'failed_details': record[mode].get('failed_details', []),
+                               'hung_rows': record[mode].get('hung_rows', [])}
                         for mode in ('baseline', 'noop')}
-            raise Refused('invalid_baseline', case['identity'] + ': completed controls: '
+            raise Refused('control_failed', case['identity'] + ': completed controls: '
                           + json.dumps(failures, sort_keys=True))
+        mutant = record['mutant']
+        stalled = {n.split()[-1] for n in mutant.get('hung_rows', []) + mutant.get('not_run_rows', [])}
+        stalled.update(n.split()[-1] for n, state in broken if state in ('hung', 'not_run'))
+        if mutant.get('watchdog_fired') or stalled.intersection(case['rows']):
+            raise Refused('hung_not_killed', case['identity'] + ': target hung or not run')
         if not (collections.Counter(n for n, _ in honest) <=
                 collections.Counter(n for n, _ in broken)):
             raise Refused('missing_target', case['identity'] + ': baseline rows removed')
+        killed = []
         for label in case['rows']:
             before = [ok for name, ok in honest if name.split()[-1] == label]
-            after = [ok for name, ok in broken if name.split()[-1] == label]
+            after = [(name, ok) for name, ok in broken if name.split()[-1] == label]
             if before != [True] or len(after) != 1:
                 raise Refused('missing_target', label)
-            if after != [False]:
-                raise Refused('mutation_survived', label)
+            name, state = after[0]
+            if state is False:
+                kind = mutant.get('failure_kinds', {}).get(name, 'assertion')
+                if kind not in ('assertion', 'terminal'):
+                    raise ValueError('invalid failure evidence')
+                killed.append(dict(row=name, kill_by=kind))
+        if not killed:
+            raise Refused('mutation_survived', case['identity'])
         if record['replacement_count'] != 1 or record['old_digest'] == record['new_digest']:
             raise ValueError('invalid mutation diff')
+        opened = sorted({path for mode in ('baseline', 'noop', 'mutant')
+                         for path in record[mode].get('opened_files', [])})
+        if baselined(case, dict(mutant, opened_files=opened), baseline):
+            killed = [dict(row=item['row'], kill_by='unproven') for item in killed]
+        record['kills'] = killed
+        record['kill_by'] = ('unproven' if any(k['kill_by'] == 'unproven' for k in killed)
+                             else killed[0]['kill_by'])
         return record
     except (KeyError, TypeError, ValueError) as error:
         raise Refused('driver_error', str(error)) from error
@@ -764,11 +803,18 @@ def resource_capacities(arguments):
 
 
 class Workers:
-    def __init__(self, deadline, resources=None, parallel=None, admission=None):
+    def __init__(self, deadline=None, resources=None, parallel=None, admission=None,
+                 *, hang_seconds=PROCESS_HANG_SECONDS, clock=None):
         self.resources = resources
         self.admission = admission
         self.meters = {}
-        self.deadline = deadline
+        self.deadline = None  # compatibility: no stage deadline
+        self.hang_seconds = hang_seconds
+        self.clock = clock or time.monotonic
+        self.supplied_clock = clock is not None
+        self.progress = {}
+        self.positions = {}
+        self.events = None
         self.parallel = (worker_count() if admission else min(16, PARALLEL)) if parallel is None else max(1, parallel)
         self.active = {}
         self.owned_snapshots = {}
@@ -793,27 +839,51 @@ class Workers:
         return self.boundary.launcher_fds()
 
     def check(self):
-        if time.monotonic() >= self.deadline:
-            raise Refused('mutation_budget_exceeded', 'combined deadline')
+        # Admission estimates cannot expire a stage.
+        pass
+
+    def watch_worker(self, name):
+        if self.events is None:
+            self.events = load(ROOT / 'scripts/mutation_observer.py').Events()
+        proc, out, err, started = self.active[name]
+        lifecycle = getattr(self.meters.get(name), 'lifecycle', None)
+        self.events.add(name, proc, (out, err), (lifecycle.fileno(),) if lifecycle is not None else ())
+
+    def read_progress(self, name):
+        _, out, err, _ = self.active[name]
+        for stream in (out, err):
+            key = (name, stream.fileno())
+            offset = self.positions.get(key, 0)
+            data = os.pread(stream.fileno(), os.fstat(stream.fileno()).st_size - offset, offset)
+            self.positions[key] = offset + len(data)
+            if b'\n' in data:
+                self.progress[name] = (self.clock(), data.rsplit(b'\n', 2)[-2].decode(errors='replace')[-400:])
 
     def check_worker(self, name, started):
-        if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):
-            raise Refused('mutation_budget_exceeded', name + ': worker deadline (%gs)' % self.budgets.get(name, WORKER_BUDGET))
+        last, event = self.progress.get(name, (started, 'worker started'))
+        if self.clock() - last >= self.hang_seconds:
+            mode = self.jobs.get(name, {}).get('mode')
+            code = 'control_failed' if mode in ('baseline', 'noop') else 'hung_not_killed'
+            raise Refused(code, name + ': hung since ' + event)
+
+    def wait_for_progress(self):
+        if self.active:
+            remaining = min(max(0, self.hang_seconds - (self.clock() -
+                self.progress.get(n, (started, 'started'))[0]))
+                for n, (_, _, _, started) in self.active.items())
+            self.events.wait(max(WAIT_HANG_SECONDS, remaining)
+                             if self.supplied_clock and remaining else remaining)
+        elif self.admission:
+            raise Refused('admission_stalled', 'no active worker can release the requested resources')
 
     def retarget(self, name, seconds):
-        """A deadline known only once this stage measured the baseline it derives from
-        (VELDO-0285): a pending worker launches under it, a running one is held to it, and one
-        that already finished is judged by it."""
+        """Refresh an admission estimate, including completed work, without rejudging it."""
         self.jobs[name]['budget_seconds'] = seconds
         if name in self.budgets:
             self.budgets[name] = seconds
         for outcome in self.outcomes:
             if outcome['name'] == name:
-                outcome['budget_seconds'] = seconds
-                if 'error' not in outcome and outcome['elapsed'] >= seconds:
-                    outcome.update(error='mutation_budget_exceeded',
-                                   detail=name + ': worker deadline (%gs)' % seconds)
-                    raise Refused('mutation_budget_exceeded', outcome['detail'])
+                outcome['estimate_seconds'] = seconds
 
     def release_snapshot(self, name):
         path = self.owned_snapshots.pop(name, None)
@@ -828,11 +898,22 @@ class Workers:
                 measurement = self.meters[name].sample(self.homes[name], self.ledgers[name])
             except Exception as meter_error:
                 error = Refused('worker_measurement_error', name + ': ' + str(meter_error))
+        if error is not None and getattr(error, 'code', '') in ('hung_not_killed', 'control_failed'):
+            # Python's fatal-signal handler writes every thread before it exits.
+            try:
+                os.killpg(proc.pid, signal.SIGABRT)
+            except ProcessLookupError:
+                pass
+            proc.wait()
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        proc.wait(timeout=5)
+        proc.wait()
+        meter_path = getattr(self.meters.get(name), 'path', None)
+        if meter_path is not None:
+            (meter_path / 'cgroup.kill').write_text('1')
+            load(ROOT / 'scripts/mutation_observer.py').wait_empty(meter_path)
         out.seek(0)
         err.seek(0)
         stdout, stderr = out.read(), err.read()
@@ -842,7 +923,8 @@ class Workers:
         job = self.jobs[name]
         home = self.homes[name]
         record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
-                      leg=self.legs.get(name, 'confined'), budget_seconds=self.budgets[name],
+                      leg=self.legs.get(name, 'confined'), estimate_seconds=self.budgets[name],
+                      hang_seconds=self.hang_seconds,
                       elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
@@ -888,7 +970,11 @@ class Workers:
             record['non_file_inputs'] = sorted(non_file)
         if error is None and stale is None:
             if proc.returncode:
-                error = Refused('worker_launch_error' if b'worker_launch_error:' in stderr else 'driver_error',
+                hung = b'SELFTEST HUNG' in stdout or b'SELFTEST HUNG' in stderr or b'Timeout (' in stderr
+                code = ('worker_launch_error' if b'worker_launch_error:' in stderr else
+                        'control_failed' if job['mode'] in ('baseline', 'noop') else
+                        'hung_not_killed' if hung else 'driver_error')
+                error = Refused(code,
                                 name + ': worker exit ' + str(proc.returncode))
             else:
                 try:
@@ -901,6 +987,10 @@ class Workers:
             record.update(error=getattr(error, 'code', 'driver_error'), detail=getattr(error, 'detail', str(error)),
                           stdout_tail=stdout.decode(errors='replace')[-2000:],
                           stderr_tail=stderr.decode(errors='replace')[-2000:])
+        if error is not None and (getattr(error, 'code', '') == 'hung_not_killed'
+                                  or b'Timeout (' in stderr or b'Fatal Python error' in stderr
+                                  or b'SELFTEST HUNG' in stdout):
+            record['stack_dump'] = stderr.decode(errors='replace')
         try:
             ownership = load(ROOT / 'scripts/mutation_ownership.py')
             # A metered worker's own directories outside its home are reaped by the rule its meter
@@ -923,6 +1013,10 @@ class Workers:
         self.outcomes.append(record)
         self.driver_spans[job['case']['driver']][1] = time.monotonic()
         del self.active[name]
+        if self.events is not None:
+            self.events.remove(name)
+        self.progress.pop(name, None)
+        self.positions = {key: value for key, value in self.positions.items() if key[0] != name}
         self.release_snapshot(name)
         if record.get('error') != 'worker_cleanup_error':
             self.resources.release(name)
@@ -957,7 +1051,7 @@ class Workers:
             self.resources = SuiteResources.from_root(root)
         jobs = {name: dict(job) for name, job in jobs.items()}
         self.jobs.update(jobs)
-        pending = list(jobs.items())
+        pending = sorted(jobs.items(), key=lambda item: -item[1].get('budget_seconds', 0))
         # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
             self.resources.demand(job)
@@ -1029,7 +1123,7 @@ class Workers:
                         # an optional oracle (PyYAML for 0119) stands down and its row passes a
                         # mutant. A declared case runs only its keyed runtime set, so it adds -S.
                         argv = [sys.executable, '-I', *(('-S',) if 'snapshot_root' in job else ()), '-B',
-                                '-X', 'pycache_prefix=' + str(home / 'bytecode'),
+                                '-X', 'faulthandler', '-u', '-X', 'pycache_prefix=' + str(home / 'bytecode'),
                                 str(ROOT / 'scripts/reuse_worker.py'),
                                 'worker' if leg == 'confined' else 'unconfined',
                                 str(worker_root), str(ledger), str(jobpath)]
@@ -1073,7 +1167,9 @@ class Workers:
                             os.close(ledger)
                         if meter_fd is not None:
                             os.close(meter_fd)
-                    self.active[name] = (proc, out, err, time.monotonic())
+                    self.active[name] = (proc, out, err, self.clock())
+                    self.progress[name] = (self.clock(), 'worker started')
+                    self.watch_worker(name)
                     self.invocations += 1
                     self.peak = max(self.peak, len(self.active))
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
@@ -1081,6 +1177,7 @@ class Workers:
                     if name in self.meters:
                         self.meters[name].sample(self.homes[name], self.ledgers[name])
                         self.peak_memory = max(self.peak_memory, sum(m.peak for m in self.meters.values()))
+                    self.read_progress(name)
                     if proc.poll() is None:
                         try:
                             self.check_worker(name, started)
@@ -1091,12 +1188,15 @@ class Workers:
                     if on_result is not None:
                         on_result(name, results[name])
                 if self.active or pending:
-                    time.sleep(0.02)
+                    self.wait_for_progress()
             self.check()
             return results
         finally:
             try:
                 self.cleanup(on_result)
+                if self.events is not None:
+                    self.events.close()
+                    self.events = None
             finally:
                 # The stage leaves this run only when done or aborting, so no ledger grant outlives
                 # it: a failed mkdir or job materialization, a cancelled worker and one whose cleanup
@@ -1180,8 +1280,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
     the authority CLI sets measure=True; library/fixture drives do not write owner timings."""
     started = time.monotonic()
-    deadline = started + BUDGET
-    workers = Workers(deadline, parallel=parallel, admission=admission)
+    workers = Workers(None, parallel=parallel, admission=admission)
     workers.leg = leg
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0, 'reused': 0,
@@ -1191,14 +1290,6 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
                             worker_seconds=0.0, suites={})
-    previous = signal.getsignal(signal.SIGALRM)
-
-    def timeout(signum, frame):
-        raise Refused('mutation_budget_exceeded', 'combined deadline')
-
-    signal.signal(signal.SIGALRM, timeout)
-    # Enumeration itself runs under the floor; the full cap is armed once the count is known.
-    signal.setitimer(signal.ITIMER_REAL, BUDGET)
     try:
         if admit:
             admission = workers.admission = Admission.authority()
@@ -1213,9 +1304,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['scope'] = 'selected' if findings or names or drivers else 'full'
         receipt['registered'] = len(cases)
         budget = budget_for(len(full_inventory), workers.parallel)
-        receipt['budget_seconds'] = budget
-        workers.deadline = started + budget
-        signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
+        receipt['estimate_seconds'] = budget
         for driver in DRIVERS:
             own = [c for c in cases if c['driver'] == driver]
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
@@ -1225,10 +1314,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         deadlines = case_deadlines(time_keys)
         unmeasured = {identity for identity, seconds in deadlines.items() if seconds is None}
         # Updated in place once this stage measures an unmeasured case's baseline.
-        receipt['case_deadlines'] = deadlines
+        receipt['case_estimates'] = deadlines
         receipt['unmeasured_cases'] = sorted(unmeasured)
-        # Plan an unmeasured case at the ceiling: its baseline is bounded only against a hang, and
-        # its noop and mutant can be held to no more than that (VELDO-0285).
+        # An unmeasured case starts with the conservative legacy admission estimate.
+        # Its baseline subsequently refreshes that estimate; it never sets a deadline.
         planned = {identity: WORKER_CEILING if seconds is None else seconds
                    for identity, seconds in deadlines.items()}
         claims = None
@@ -1344,12 +1433,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             budget = budget_for(len(full_inventory), workers.parallel,
                                 [controls.values(), mutant_jobs.values()], workers.resources,
                                 floor=admission.floor if admission else None)
-            receipt['budget_seconds'] = budget
+            receipt['estimate_seconds'] = budget
             if admission:
                 receipt['guaranteed_workers'] = guaranteed_workers(
                     [*controls.values(), *mutant_jobs.values()], admission.floor, workers.parallel)
-            workers.deadline = started + budget
-            signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
             if log_dir is not None:
                 log_dir = Path(log_dir).resolve()
                 log_dir.mkdir(parents=True, exist_ok=False)
@@ -1359,9 +1446,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 members[group_for(case)].append(case)
 
             def measured_baseline(name, completed):
-                # An unmeasured case's noop and mutant take their deadline from its baseline as
-                # measured in this stage; a measured member keeps its recorded deadline, and the
-                # shared noop serves the larger of them (VELDO-0285).
+                # Refresh the admission estimate from this stage's baseline. A shared
+                # control represents its largest member; completed work is never rejudged.
                 group, _, mode = name.rpartition(':')
                 own = [c for c in members[group] if c['identity'] in unmeasured]
                 if mode != 'baseline' or not own or completed.get('declaration_stale'):
@@ -1378,14 +1464,11 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             for identity in rerun:
                 mutant_jobs.pop(identity, None)
             if unmeasured.intersection(c['identity'] for c in fresh):
-                # The mutants' deadlines are measured now: the rest of the stage is bounded by
-                # them, never by more than the plan made at the ceiling.
+                # Refresh the remaining-work estimate, for reporting only.
                 budget = min(budget, time.monotonic() - started + budget_for(
                     len(full_inventory), workers.parallel, [mutant_jobs.values()], workers.resources,
                     floor=admission.floor if admission else None))
-                receipt['budget_seconds'] = budget
-                workers.deadline = started + budget
-                signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
+                receipt['estimate_seconds'] = budget
             by_identity = {c['identity']: c for c in fresh}
 
             def collect(identity, completed):
@@ -1457,9 +1540,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 budget = max(budget, time.monotonic() - started + budget_for(
                     len(again), workers.parallel, [rerun_controls.values(), rerun_mutants.values()],
                     workers.resources, floor=admission.floor if admission else None))
-                receipt['budget_seconds'] = budget
-                workers.deadline = started + budget
-                signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
+                receipt['estimate_seconds'] = budget
                 control_results.update(workers.run(rerun_controls, directory, frozen))
                 workers.run(rerun_mutants, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
@@ -1495,16 +1576,11 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
         receipt['error'] = getattr(error, 'code',
-                                   'mutation_budget_exceeded' if isinstance(error, subprocess.TimeoutExpired)
+                                   'hung' if isinstance(error, subprocess.TimeoutExpired)
                                    else 'driver_error')
         receipt['detail'] = str(error)
     finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        try:
-            workers.cleanup()
-        finally:
-            # Restore the caller's handler even when cleanup itself fails.
-            signal.signal(signal.SIGALRM, previous)
+        workers.cleanup()
         receipt['declaration_stale'] = list(getattr(reuse, 'stale', {}).values())
         receipt['stale_count'] = len(receipt['declaration_stale'])
         receipt['gate_run'] = getattr(reuse, 'gate_run', None)
@@ -1550,7 +1626,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 'source': 'reused' if hit else ('fresh' if attempted else 'pending'),
                 'reason': reuse.reasons[identity] if reuse else 'setup_failed',
                 'validated': identity in completed,
-                **(dict(audited=True, reuse_key=audit_keys[identity]) if identity in audits else {})})
+                **(dict(audited=True, reuse_key=audit_keys[identity]) if identity in audits else {}),
+                **({k: results[identity][k] for k in ('kill_by', 'kills')} if identity in completed else {})})
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]

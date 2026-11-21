@@ -106,14 +106,15 @@ def _v204_gate_resources():
                     self.returncode = -9
                 return self.returncode
         def timeout(*args):
-            raise gate.Refused('mutation_budget_exceeded', 'controlled deadline')
+            raise gate.Refused('hung_not_killed', 'controlled deadline')
         error, result = None, {}
         with tempfile.TemporaryDirectory(prefix='v204-admission-') as temporary:
             with contextlib.ExitStack() as stack:
                 stack.enter_context(patch.object(gate, 'PARALLEL', 16))
                 stack.enter_context(patch.object(gate.subprocess, 'Popen', Child))
                 stack.enter_context(patch.object(gate.os, 'killpg', lambda *args: None))
-                stack.enter_context(patch.object(gate.time, 'sleep', lambda *args: None))
+                stack.enter_context(patch.object(gate.Workers, 'watch_worker', lambda *a: None))
+                stack.enter_context(patch.object(gate.Workers, 'wait_for_progress', lambda *a: None))
                 if failure == 'deadline':
                     stack.enter_context(patch.object(workers, 'check_worker', timeout))
                 try:

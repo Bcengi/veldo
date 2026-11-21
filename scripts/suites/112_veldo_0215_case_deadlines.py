@@ -41,7 +41,7 @@ def _v215_case_deadlines():
             'scripts/mutation_ownership.py')}
 
         def row(name, condition):
-            expect('VELDO-0215 case-deadlines/' + name, condition)
+            expect(('VELDO-0358 ' + name if '/' in name else 'VELDO-0215 case-deadlines/' + name), condition)
 
         key = gate.case_time_key(case, files, None)
         store = scratch / 'times'
@@ -169,10 +169,14 @@ def _v215_case_deadlines():
                     obs = dict(count=1, observations=[['TEST target', ok]], row_names=['TEST target'],
                                failed_rows=[] if ok else ['TEST target'],
                                failed_details=[] if ok else [['TEST target', 'inner operation expired']])
+                    self.output = kwargs['stderr']
                     kwargs['stdout'].write(json.dumps(dict(observation=obs, replacement_count=1,
                         old_digest='a', new_digest='b' if mode == 'mutant' else 'a')).encode())
                 def poll(self):
                     clock[0] += 30
+                    if fault != 'hang-' + self.job['mode']:
+                        self.output.write(b'SELFTEST PROGRESS fixture\n')
+                        self.output.flush()
                     if fault != 'hang-' + self.job['mode'] and clock[0] - self.born >= duration:
                         self.returncode = 0
                     return self.returncode
@@ -201,7 +205,8 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.subprocess, 'Popen', Child))
                 stack.enter_context(patch.object(gate.os, 'killpg', lambda pid, sig: kills.append(pid)))
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
-                stack.enter_context(patch.object(gate.time, 'sleep', lambda _: None))
+                stack.enter_context(patch.object(gate.Workers, 'watch_worker', lambda *a: None))
+                stack.enter_context(patch.object(gate.Workers, 'wait_for_progress', lambda *a: None))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
                 if drawn is not None:
                     # The audit draw's outcome is fixed here, never the coordinator's handling of it.
@@ -213,7 +218,7 @@ def _v215_case_deadlines():
 
         with patch.object(gate, 'inventory', side_effect=subprocess.TimeoutExpired('inventory', 120)):
             expired = gate.run_stage(scratch, scratch / '.git')
-        row('setup-timeout', expired.get('error') == 'mutation_budget_exceeded')
+        row('setup-timeout', expired.get('error') == 'hung')
 
         obs = lambda ok: dict(count=1, observations=[['TEST target', ok]], row_names=['TEST target'],
                               failed_rows=[] if ok else ['TEST target'])
@@ -222,23 +227,17 @@ def _v215_case_deadlines():
                             replacement_count=1, old_digest='a', new_digest='b')
         passed, children, kills, cleaned, times, alarms = exercise()
         row('measured-worker', passed['status'] == 'passed' and len(children) == 3
-            and all(o['budget_seconds'] == 240 for o in passed['worker_outcomes'])
-            and passed['budget_seconds'] >= 840
-            and any(a[1] >= 840 for a in alarms))
+            and all(o['estimate_seconds'] == 240 and o['hang_seconds'] == gate.PROCESS_HANG_SECONDS
+                    for o in passed['worker_outcomes']) and not alarms)
         row('slow-pass', passed['status'] == 'passed' and passed['executed'] == 1
-            and all(120 < o['elapsed'] < 240 for o in passed['worker_outcomes']))
+            and all(o['elapsed'] == 150 for o in passed['worker_outcomes']))
         hang_results = [exercise(fault='hang-' + mode) for mode in ('baseline', 'noop', 'mutant')]
-        row('hang-timeout', all(r['error'] == 'mutation_budget_exceeded'
-            and any(o.get('error') == 'mutation_budget_exceeded' and 240 <= o['elapsed'] <= 270
-                    for o in r['worker_outcomes'])
-            and len(ch) == count and len(k) == len(cl) == count
-            and r['surviving_workers'] == 0 and not list(t.glob('*.json'))
-            for count, (r, ch, k, cl, t, _) in enumerate(hang_results, 1)))
+        row('hang-timeout', all(r['error'] == ('hung_not_killed' if mode == 'mutant' else 'control_failed')
+            and any('hung since' in o.get('detail', '') for o in r['worker_outcomes'])
+            and len(ch) == len(cl) and r['surviving_workers'] == 0 and not list(t.glob('*.json'))
+            for mode, (r, ch, k, cl, t, _) in zip(('baseline', 'noop', 'mutant'), hang_results)))
 
-        # VELDO-0285: a case with no live sample. Its baseline measures (bounded only by the
-        # ceiling against a hang); its noop and mutant are held to 3 x that baseline's time.
         def outcome(receipt, mode):
-            # A mode that never launched (its stage stopped first) is an empty outcome, a red row.
             return next((o for o in receipt['worker_outcomes'] if o['mode'] == mode), {'elapsed': 0})
         slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
         base = outcome(slow, 'baseline')
@@ -246,38 +245,39 @@ def _v215_case_deadlines():
         slow_file = slow_times / (key + '.json')
         slow_record = json.loads(slow_file.read_text()) if slow_file.exists() else {}
         row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow.get('unmeasured_cases') == [case['identity']]
-            and base.get('budget_seconds') == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
-            and derived == 450 and slow.get('case_deadlines') == {case['identity']: derived}
-            and outcome(slow, 'noop').get('budget_seconds') == outcome(slow, 'mutant').get('budget_seconds') == derived
-            and slow_record.get('seconds') == 150
-            # The plan bounds the whole stage at the ceiling; once measured, the rest is bounded
-            # by the derived deadlines, never above the plan.
-            and max(a[1] for a in slow_alarms) >= gate.BUDGET + 3 * gate.WORKER_CEILING
-            and slow['elapsed'] <= slow.get('budget_seconds') < max(a[1] for a in slow_alarms))
-        late = [exercise(measured=False, fault='hang-mutant'),
-                exercise(measured=False, fault='hang-noop', parallel=2)]
+            and base['estimate_seconds'] == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
+            and derived == 450 and slow.get('case_estimates') == {case['identity']: derived}
+            and outcome(slow, 'noop').get('estimate_seconds') == outcome(slow, 'mutant').get('estimate_seconds') == derived
+            and slow_record.get('seconds') == 150 and not slow_alarms)
         settled = gate.Workers(0)
         settled.jobs['g:noop'] = {'budget_seconds': gate.WORKER_CEILING}
-        settled.outcomes.append(dict(name='g:noop', elapsed=500.0, budget_seconds=gate.WORKER_CEILING))
-        try:
-            settled.retarget('g:noop', 450)
-            judged = None
-        except gate.Refused as exc:
-            judged = exc.code
-        row('unmeasured-mutant-deadline', all(
-            r.get('error') == 'mutation_budget_exceeded' and r['surviving_workers'] == 0
-            and outcome(r, mode).get('error') == 'mutation_budget_exceeded'
-            and outcome(r, mode).get('budget_seconds') == 450 and 450 <= outcome(r, mode)['elapsed'] <= 480
-            and not list(t.glob('*.json'))
-            for mode, (r, _, _, _, t, _) in zip(('mutant', 'noop'), late))
-            and judged == 'mutation_budget_exceeded' and settled.outcomes[0].get('budget_seconds') == 450)
+        settled.outcomes.append(dict(name='g:noop', elapsed=500.0, estimate_seconds=gate.WORKER_CEILING))
+        settled.retarget('g:noop', 450)
+        row('unmeasured-mutant-deadline', settled.outcomes[0]['estimate_seconds'] == 450
+            and 'error' not in settled.outcomes[0])
         hung, hung_children, hung_kills, _, hung_times, _ = exercise(measured=False, fault='hang-baseline')
-        row('unmeasured-hang', hung.get('error') == 'mutation_budget_exceeded' and len(hung_children) == 1
-            and outcome(hung, 'baseline').get('error') == 'mutation_budget_exceeded'
-            and gate.WORKER_CEILING <= outcome(hung, 'baseline')['elapsed'] <= gate.WORKER_CEILING + 30
+        row('unmeasured-hang', hung.get('error') == 'control_failed' and len(hung_children) == 1
+            and outcome(hung, 'baseline').get('error') == 'control_failed'
+            and outcome(hung, 'baseline')['elapsed'] >= gate.PROCESS_HANG_SECONDS
             and hung_kills and hung['surviving_workers'] == 0 and not list(hung_times.glob('*.json')))
+        long_stage = exercise(duration=7500)[0]
+        measured_clock = [0]
+        measured = gate.Workers(clock=lambda: measured_clock[0])
+        measured.jobs['slow'] = {'mode': 'mutant'}
+        measured.budgets['slow'] = 2
+        measured_clock[0] = 30
+        measured.progress['slow'] = (30, 'row completed')
+        try:
+            measured.check_worker('slow', 0)
+            slow_ok = True
+        except gate.Refused:
+            slow_ok = False
+        row('verdict/slow-is-not-red', slow_ok and long_stage['status'] == 'passed'
+            and long_stage['elapsed'] > 21600 and long_stage['rejected'] == 1
+            and 'mutation_budget_exceeded' not in json.dumps(long_stage))
+
         bad, _, _, _, bad_times, _ = exercise(fault='false-baseline')
-        row('baseline-details', bad['error'] == 'invalid_baseline'
+        row('baseline-details', bad['error'] == 'control_failed'
             and 'inner operation expired' in bad['detail'] and 'TEST target' in bad['detail'])
         raced = exercise(fault='race')
         reused = exercise(reuse_hit=True)
@@ -341,29 +341,125 @@ def _v215_case_deadlines():
                     and (prune / name).stat().st_mtime_ns == modified
                     for name, (content, modified) in retained.items()))
 
-        # Real OS child, actual process-group kill and reap; no fake clock on this row.
+        # Real OS child and process-group kill/reap; only elapsed time is supplied.
         # Replace only the launch command; production Workers.run/finish/check_worker execute.
         home = scratch / 'real'
         home.mkdir()
         real_popen, real_load = subprocess.Popen, gate.load
         pool = gate.SuiteResources({'suites': [{'file': 'sample.py'}], 'resource_capacities': {}})
-        workers = gate.Workers(time.monotonic() + 20, pool, parallel=1)
+        hang_clock = [0]
+        workers = gate.Workers(resources=pool, parallel=1, hang_seconds=3, clock=lambda: hang_clock[0])
+        read_progress = workers.read_progress
+        def advance_after_ready(name):
+            read_progress(name)
+            if workers.progress[name][1] == 'blocking read':
+                hang_clock[0] += 3
         def launch(argv, **kwargs):
-            return real_popen([sys.executable, '-c', 'import time; time.sleep(60)'], **kwargs)
+            return real_popen([sys.executable, '-X', 'faulthandler', '-c',
+                'import os; r,w=os.pipe(); print("blocking read",flush=True); os.read(r,1)'], **kwargs)
         def loader(p):
             if Path(p).name == 'mutation_ownership.py':
                 return types.SimpleNamespace(cleanup=lambda *a: {})
             return real_load(p)
         error = None
         with patch.object(gate.subprocess, 'Popen', launch), patch.object(gate, 'load', loader), \
-                patch.object(gate.Workers, 'launcher_fds', lambda self: ()):
+                patch.object(gate.Workers, 'launcher_fds', lambda self: ()), \
+                patch.object(workers, 'read_progress', advance_after_ready):
             try:
                 workers.run({'hang': dict(case=case, mode='baseline', budget_seconds=.2)}, home, ROOT)
             except gate.Refused as exc:
                 error = exc.code
-        row('real-hang-reaped', error == 'mutation_budget_exceeded' and workers.invocations == 1
-            and not workers.active and workers.outcomes[0]['returncode'] == -9
-            and workers.outcomes[0]['budget_seconds'] == .2)
+        row('real-hang-reaped', error == 'control_failed' and workers.invocations == 1
+            and not workers.active and workers.outcomes[0]['returncode'] == -6
+            and workers.outcomes[0]['hang_seconds'] == 3
+            and 'Current thread' in workers.outcomes[0].get('stderr_tail', ''))
+
+        observer = gate.load(ROOT / "scripts" / "mutation_observer.py")
+        clock = [0]
+        progress = observer.Progress(3, lambda: clock[0])
+        kept = []
+        for second in range(1, 11):
+            clock[0] = second
+            kept.append(not progress.expired())
+            progress.touch('line %d' % second)
+        clock[0] += 3
+        ack_r, ack_w = os.pipe()
+        heavy_clock, heavy_lines = [0], []
+        def line_seen(line):
+            heavy_lines.append(line)
+            heavy_clock[0] += 1
+            os.write(ack_w, b'R')
+        try:
+            heavy = observer.run_heavy([sys.executable, '-u', '-c',
+                'import os,sys; fd=int(sys.argv[1]); '
+                '[(print(i,flush=True),os.read(fd,1)) for i in range(10)]', str(ack_r)],
+                cwd=scratch, env=os.environ, pass_fds=(ack_r,), seconds=3,
+                clock=lambda: heavy_clock[0], on_line=line_seen)
+        except TimeoutError:
+            heavy = types.SimpleNamespace(returncode=1)
+        finally:
+            os.close(ack_r)
+            os.close(ack_w)
+        row('watchdog/progress-not-total', all(kept) and progress.expired()
+            and heavy.returncode == 0 and heavy_lines == [str(i).encode() for i in range(10)]
+            and heavy_clock[0] == 10
+            and long_stage['status'] == 'passed' and long_stage['elapsed'] > 21600
+            and error == 'control_failed' and 'Current thread' in workers.outcomes[0].get('stderr_tail', ''))
+
+        outcomes = []
+        for kind in ('assertion', 'terminal', 'hung', 'not_run', 'control', 'unproven'):
+            record = json.loads(json.dumps(valid_record))
+            if kind in ('hung', 'not_run'):
+                record['mutant']['observations'][0][1] = kind
+                record['mutant']['failed_rows'] = []
+            if kind == 'terminal':
+                record['mutant']['failure_kinds'] = {'TEST target': 'terminal'}
+            if kind == 'control':
+                record['baseline']['observations'][0][1] = 'hung'
+            record['mutant']['opened_files'] = ['proof/fixture.py']
+            baseline_path = scratch / ('baseline-' + kind + '.json')
+            baseline_path.write_text(json.dumps({'entries':
+                [{'file': 'proof/fixture.py', 'rule': 'R1', 'text': 'legacy_pause()',
+                  'function': 'fixture', 'count': 1, 'class': 'S1'}] if kind == 'unproven' else []}))
+            try:
+                answer = gate.validate_result(record, case, baseline=json.loads(baseline_path.read_text()))
+                outcomes.append(('rejected', answer['kill_by'], answer['kills'][0]['row']))
+            except gate.Refused as error:
+                outcomes.append(error.code)
+        row('verdict/kill-by-evidence', outcomes == [
+            ('rejected', 'assertion', 'TEST target'), ('rejected', 'terminal', 'TEST target'),
+            'hung_not_killed', 'hung_not_killed', 'control_failed',
+            ('rejected', 'unproven', 'TEST target')])
+
+        host = gate.load(ROOT / "scripts" / "gate_host.py")
+        lock = scratch / 'host.lock'
+        lock.touch()
+        stat = lock.stat()
+        identity = '%02x:%02x:%d' % (os.major(stat.st_dev), os.minor(stat.st_dev), stat.st_ino)
+        procroot = scratch / 'proc'
+        fdinfo = procroot / '42/fdinfo'
+        fdinfo.mkdir(parents=True)
+        entry = '1: FLOCK ADVISORY WRITE 42 %s 0 EOF' % identity
+        (fdinfo / '3').write_text('lock: ' + entry + '\n')
+        (fdinfo / '4').write_text('lock: ' + entry + '\n')
+        holders = []
+        for table in (entry + '\n' + entry + '\n', ''):
+            (procroot / 'locks').write_text(table)
+            holders.append(host.holders(lock, procroot))
+        row('host/holders-from-descriptor', holders == [[42], [42]])
+
+        timers = gate.load(ROOT / "engine/.veldo" / "timers.py")
+        empty = timers.report() == []
+        timers.register('worker', 2, 'fixture_worker', 'deadline')
+        timers.register('stop', 5, 'fixture_stop', 'contract')
+        timers.set_profile('stop')
+        timers.register('late', 7, 'fixture_late', 'deadline')
+        effective = {r['name']: r['value'] for r in timers.report()}
+        timers.set_profile()
+        all_hang = all(r['value'] == 600 for r in timers.report())
+        timers.reset_profile()
+        row('timers/table-profile', empty and effective == {'worker': 600, 'stop': 5, 'late': 600}
+            and all_hang and {r['name']: r['value'] for r in timers.report()} == {'worker': 2, 'stop': 5, 'late': 7})
 
 
 _v215_case_deadlines()
