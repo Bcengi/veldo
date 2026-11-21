@@ -612,7 +612,8 @@ def _veldo_0221():
                 '    with open(os.environ["V221_UNITS"], "a") as handle:\n        handle.write(unit + "\\n")\n')
         bodies = {
             "01_clean": 'expect("clean", True)\n',
-            "02_leaves_shm": 'Path(os.environ["V221_SHM"], "left-behind").write_text("x")\nexpect("left a file", True)\n',
+            "02_leaves_shm": ('Path(os.environ["V221_SHM"], "left-behind").write_text("made by %s" % os.environ["HOME"])\n'
+                              'expect("left a file", True)\n'),
             # An engine-shaped unit with no prefix, whose command stands in this shard's home: started,
             # read by the dispatcher, stopped again. It is gone at the leg's end and still a breach.
             "03_starts_unit": mine + (
@@ -754,6 +755,14 @@ def _veldo_0221():
         result, lines = shards(tmp_tree, "unconfined", list(tmp_bodies), listed=",".join(tmp_bodies), places=tmp_place,
                                clock=orphaning_clock, extra={"V221_TMP": str(temporary_top)})
         leg_words = [w for _c, w in result["charged"].get(RS.LEG_OWNER, [])]
+        # One shard alone in the leg when the entry appears is still not charged with it: who ran
+        # when it appeared is not attribution (another session's file once named the wrong suite).
+        (temporary_top / "orphan-entry").unlink()
+        (temporary_top / "refers").unlink()
+        readings[0] = 0
+        lone, _ = shards(tmp_tree, "unconfined", ["01_a"], listed="01_a", places=tmp_place, clock=orphaning_clock,
+                         extra={"V221_TMP": str(temporary_top)})
+        lone_words = [w for _c, w in lone["charged"].get(RS.LEG_OWNER, [])]
         expect("VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg: %r %r" % (result["charged"], lines[-6:]),
                len(leg_words) == 1 and "orphan-entry" in leg_words[0] and "could be tied to no shard" in leg_words[0]
                and "01_a, 02_b, 03_refers" in leg_words[0]
@@ -762,7 +771,9 @@ def _veldo_0221():
                and [line for line in lines if RS.FAIL_MARK in line]
                == ["  %s suite-shard 03_refers isolation_breach" % RS.FAIL_MARK,
                    "  %s suite-shard-leg unconfined isolation_breach" % RS.FAIL_MARK]
-               and not [line for line in lines if "not charged" in line and "orphan-entry" in line])
+               and not [line for line in lines if "not charged" in line and "orphan-entry" in line]
+               and codes(lone, "01_a") == [] and len(lone_words) == 1 and "orphan-entry" in lone_words[0]
+               and lone_words[0].endswith("first appeared: 01_a") and (lone["passed"], lone["failed"]) == (1, 1))
 
         # An item is charged to the shard it can be tied to, and what cannot be the leg's is not.
         jobs = [{"name": "01_first", "index": 0}, {"name": "02_second", "index": 1}]
