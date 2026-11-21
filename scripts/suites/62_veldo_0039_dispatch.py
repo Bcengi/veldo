@@ -1059,6 +1059,58 @@ sys.exit(child.wait())
                       'cause %r; wait %s; requested %r, bystander %r, still %r, holder %r'
                       % (cause, waited or 'held', asked_by, by_bystander, still, by_holder))
 
+            # VELDO-0358: the order a busy machine showed in dispatch/owner-stop, made by the row. The runner asks the
+            # receiver, which ends the worker and records the end; the runner's result reads the record's version
+            # before that end and commits after it. The result is still the ask that was made, recorded by this
+            # sweep: never refused as stale and left for a later sweep to record as not asked.
+            with region('dispatch/owner-stop-ends-first'):
+                ue = admitted('VELDO-9342')
+                ending = runner.submit(ue, 'build', **job(release='never-9342', deadline=STOP_ROW_DEADLINE))
+                eid = ending.dispatch_id
+                marker_for(eid)
+                requested_end = attempt(lambda: dispatches.request_stop(eid, dispatches.version(eid), 'owner-person',
+                                                                        now=now(), request='stop-ends-first'))
+                original_result, interleaved = dispatches.stop_result, {}
+
+                def result_after_end(dispatch_id, asked, *, now):
+                    if dispatch_id != eid or interleaved:
+                        return original_result(dispatch_id, asked, now=now)
+                    read = dispatches.version(eid)  # the version the result reads, before the end
+
+                    def gone():
+                        state = rec(eid).get('state')
+                        return state not in D.STOPPABLE, {'state': state}
+                    interleaved['end'] = WAITS.wait(
+                        'the receiver of %s to record the end it was asked for' % eid, gone,
+                        lambda: (ending.child.poll() is not None and rec(eid).get('state') in D.STOPPABLE,
+                                 {'receiver_exit': ending.child.poll()}),
+                        [WAITS.Store(db), WAITS.Pidfd(ending.child)]).outcome
+                    interleaved['moved'] = (read, dispatches.version(eid))
+                    dispatches.version = lambda _dispatch_id: read  # the read made before the end, now stale
+                    try:
+                        return original_result(dispatch_id, asked, now=now)
+                    finally:
+                        del dispatches.version
+                dispatches.stop_result = result_after_end
+                try:
+                    swept_end = runner.honor_stops()
+                finally:
+                    del dispatches.stop_result
+                waited_end = settle_stopped(ending)
+                ended_first = rec(eid)
+                cause_end = stop_cause(ending, ended_first)
+                observed['owner_stop_ends_first'] = {'requested': requested_end[0], 'swept': swept_end,
+                                                     'interleaved': interleaved, 'cause': cause_end,
+                                                     'stop_request': ended_first.get('stop_request'),
+                                                     'pending': dispatches.stop_requests(), 'waited': waited_end}
+                check('dispatch/owner-stop-ends-first',
+                      requested_end[0] == 'ok' and interleaved.get('end') == 'done'
+                      and interleaved['moved'][1] > interleaved['moved'][0]
+                      and swept_end == [(eid, True)] and waited_end is None and stopped_by_request(cause_end)
+                      and ((ended_first.get('stop_request') or {}).get('result') or {}).get('by') == 'runner'
+                      and dispatches.stop_requests() == [],
+                      'observed %r' % (observed['owner_stop_ends_first'],))
+
             # Authority: only an active service member of this repository writes a record
             with region('dispatch/service-principals-only'):
                 outsiders = {}
