@@ -1,0 +1,4 @@
+Command: bash scripts/check_lint.sh
+lint: pass (1248 python, 40 shell, 2.72s)
+
+Exit: 0

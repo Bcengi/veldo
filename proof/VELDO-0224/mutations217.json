@@ -1,0 +1,316 @@
+{
+  "status": "passed",
+  "error": null,
+  "detail": null,
+  "registered": 12,
+  "executed": 12,
+  "reused": 0,
+  "rejected": 12,
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:declarations217-support-dropped",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-one-trace-enough",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-proof-skipped",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-helper-not-keyed",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-bus-allowed",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-worker-trace-ignored",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-accept-incomplete",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-foreign-accept-allowed",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-absent-unkeyed",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-incomplete-fails-stage",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-receipt-unchecked",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:declarations217-reviews-unprotected",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "invalid_results": [],
+  "stale_count": 0,
+  "surviving_workers": 0,
+  "results": [
+    {
+      "name": "declarations217-support-dropped",
+      "rows": [
+        "declarations/stale-found"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/stale-found"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/stale-found",
+          "[] {'check_teeth_mutations.py:effects-worker-scope': (['input_changed:scripts/suites/s0_fixture.py'], []), 'check_teeth_mutations.py:message-speaker-is-edge': (['input_changed:scripts/suites/s1_fixture.py'], []), 'check_teeth_mutations.py:account-codex-old-tables': (['input_changed:scripts/suites/s2_fixture.py'], []), 'check_teeth_mutations.py:limit-unreported': (['input_changed:scripts/suites/s3_fixture.py'], []), 'check_teeth_mutations.py:codex-baseline-user-config-loaded': (['input_changed:scripts/suites/s4_fixture.py'], []), 'check_teeth_mutations.py:worker129-build-unwired': (['input_changed:scripts/suites/s5_fixture.py'], []), 'check_teeth_mutations.py:receiver148-placement-wait-unbounded': (['input_changed:scripts/suites/s6_fixture.py'], [])}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-accept-incomplete",
+      "rows": [
+        "declarations/accept-pending"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/accept-pending"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/accept-pending",
+          "{'waiting': 'IncompleteTrace: incomplete file-read trace', 'pending-connect': 'IncompleteTrace: incomplete file-read trace', 'foreign-accept': ['unbound_loopback'], 'pending-file': 'IncompleteTrace: incomplete file-read trace'}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-foreign-accept-allowed",
+      "rows": [
+        "declarations/accept-pending"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/accept-pending"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/accept-pending",
+          "{'waiting': [], 'pending-connect': ['network_peer'], 'foreign-accept': [], 'pending-file': 'IncompleteTrace: incomplete file-read trace'}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-one-trace-enough",
+      "rows": [
+        "declarations/review-conditions"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-conditions"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/review-conditions",
+          "{'baselines-differ': 'miss'} keyed=['baselines-differ', 'passes']"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-bus-allowed",
+      "rows": [
+        "declarations/non-file-refused"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/non-file-refused"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/non-file-refused",
+          "{'remote': ['network_peer'], 'bus': [], 'runtime-socket': ['host_socket'], 'host-loopback': ['unbound_loopback'], 'loopback-only': []} {'remote': 'network_peer', 'bus': 'miss', 'runtime-socket': 'host_socket', 'host-loopback': 'unbound_loopback', 'loopback-only': 'miss'} passed"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-reviews-unprotected",
+      "rows": [
+        "declarations/review-records-protected"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-records-protected"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/review-records-protected",
+          "[]"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-helper-not-keyed",
+      "rows": [
+        "declarations/key-covers-inputs"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/key-covers-inputs"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/key-covers-inputs",
+          "{'helper': []}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-worker-trace-ignored",
+      "rows": [
+        "declarations/worker-trace-refused"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/worker-trace-refused"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/worker-trace-refused",
+          "{'peer-mutant': 'miss', 'absent-undeclared': 'undeclared_absent_socket', 'absent-declared': 'miss', 'clean': 'miss'} {'peer-mutant': True, 'absent-undeclared': False, 'absent-declared': True, 'clean': True} passed"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-incomplete-fails-stage",
+      "rows": [
+        "declarations/incomplete-trace-demoted"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/incomplete-trace-demoted"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/incomplete-trace-demoted",
+          "{'incomplete': 'miss', 'clean-beside': 'miss'} {'incomplete': False, 'clean-beside': False} failed incomplete file-read trace"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-proof-skipped",
+      "rows": [
+        "declarations/review-conditions"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-conditions"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/review-conditions",
+          "{'sensitivity-unproved': 'miss'} keyed=['passes', 'sensitivity-unproved']"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-absent-unkeyed",
+      "rows": [
+        "declarations/undeclared-absent-socket"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/undeclared-absent-socket"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/undeclared-absent-socket",
+          "{'peer-mutant': 'network_peer', 'absent-undeclared': 'miss', 'absent-declared': 'miss', 'clean': 'miss'} {'peer-mutant': False, 'absent-undeclared': True, 'absent-declared': True, 'clean': True} passed"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-receipt-unchecked",
+      "rows": [
+        "declarations/gate-observation-current"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/gate-observation-current"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/gate-observation-current",
+          "{'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)} {'current': None, 'earlier': None, 'failed': None, 'none': None}"
+        ]
+      ]
+    }
+  ]
+}

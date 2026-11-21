@@ -1,0 +1,6 @@
+Command: python3 scripts/check_personal_setup.py --base 7460e9a9
+veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+
+Exit: 0

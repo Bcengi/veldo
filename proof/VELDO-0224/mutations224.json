@@ -1,0 +1,111 @@
+{
+  "status": "passed",
+  "error": null,
+  "detail": null,
+  "registered": 3,
+  "executed": 3,
+  "reused": 0,
+  "rejected": 3,
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:stale224-snapshot-verdict-kept",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-published",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-writes-candidate",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ],
+  "invalid_results": [],
+  "stale_count": 0,
+  "surviving_workers": 0,
+  "results": [
+    {
+      "name": "stale224-snapshot-verdict-kept",
+      "rows": [
+        "stale-declarations/runs-fresh"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/runs-fresh",
+        "VELDO-0224 stale-declarations/never-published",
+        "VELDO-0224 stale-declarations/authority-store"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/runs-fresh",
+          "[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]"
+        ],
+        [
+          "VELDO-0224 stale-declarations/never-published",
+          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'reused': 0, 'clean_hit': False, 'published': [], 'stale_keys': {'check_teeth_mutations.py:import-baseline': None, 'check_teeth_mutations.py:import-noop': 'c6f63f29742881c04a84979b4c8d166e28a728b4bf48dd7773ef154cf6696005', 'check_teeth_mutations.py:import-mutant': '587d99ab98e12e36976325e3d784d7176b979093799a5968336e6e10dabd6af2', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/authority-store",
+          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'candidate_unchanged': True, 'stored': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline']}"
+        ]
+      ]
+    },
+    {
+      "name": "stale224-published",
+      "rows": [
+        "stale-declarations/never-published"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/never-published"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/never-published",
+          "{'states': '[(\\'passed\\', None, 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'passed\\', None, 5)]', 'reused': 0, 'clean_hit': True, 'published': ['check_teeth_mutations.py:import-noop', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:clean'], 'stale_keys': {'check_teeth_mutations.py:import-baseline': 'f06a6cbb4b06c0901a80095534d7ac2b8b2c9e20015a2b14633de81898c17069', 'check_teeth_mutations.py:import-noop': 'c6f63f29742881c04a84979b4c8d166e28a728b4bf48dd7773ef154cf6696005', 'check_teeth_mutations.py:import-mutant': '587d99ab98e12e36976325e3d784d7176b979093799a5968336e6e10dabd6af2', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+        ]
+      ]
+    },
+    {
+      "name": "stale224-writes-candidate",
+      "rows": [
+        "stale-declarations/authority-store"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/runs-fresh",
+        "VELDO-0224 stale-declarations/never-published",
+        "VELDO-0224 stale-declarations/authority-store"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/runs-fresh",
+          "[('failed', 'driver_error: inputs changed during stage', 5), ('failed', 'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}', 5), ('failed', 'driver_error: inputs changed during stage', 5)]"
+        ],
+        [
+          "VELDO-0224 stale-declarations/never-published",
+          "{'states': '[(\\'failed\\', \\'driver_error: inputs changed during stage\\', 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'failed\\', \\'driver_error: inputs changed during stage\\', 5)]', 'reused': 0, 'clean_hit': False, 'published': [], 'stale_keys': {'check_teeth_mutations.py:import-baseline': None, 'check_teeth_mutations.py:import-noop': None, 'check_teeth_mutations.py:import-mutant': None, 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/authority-store",
+          "{'states': '[(\\'failed\\', \\'driver_error: inputs changed during stage\\', 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'failed\\', \\'driver_error: inputs changed during stage\\', 5)]', 'candidate_unchanged': False, 'stored': ['check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:closure', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-noop'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:import-noop']}"
+        ]
+      ]
+    }
+  ]
+}
