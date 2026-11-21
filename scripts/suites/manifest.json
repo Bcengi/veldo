@@ -2429,6 +2429,15 @@
     "159_veldo_0218_reuse_audit"
    ],
    "requires_note": "Independent fixture imports; shared preamble supplies ROOT and expect."
+  },
+  {
+   "name": "157_veldo_0221_suite_shards",
+   "file": "157_veldo_0221_suite_shards.py",
+   "requires": [
+    "157_veldo_0221_suite_shards"
+   ],
+   "regions": "VELDO-0221 AC1 to AC4: a gate leg runs its suites as isolated parallel closure shards. Coverage of both legs of this manifest with every body replaced by one row, a failing suite, a shard that dies without a verdict, a target that asserts nothing, a missing prerequisite the ordered run hid and a suite with no closure; private roots, the result pipe, the stacked Landlock layer and the engine's instance names; the isolation check in a gate that is not force-fresh; manifest resource admission and the claims on the gate ledger; what the leg runner hands a leg.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture trees holding copies of scripts/selftest.py and scripts/run_scope.py, driven through the dispatcher and through run_scope.run_shards with a fixture's own shared places, unit list and ledger; no sleep and no short deadline decides a row."
   }
  ],
  "resource_capacities": {
