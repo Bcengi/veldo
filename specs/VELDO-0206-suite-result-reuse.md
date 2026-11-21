@@ -21,6 +21,9 @@ footprint:
   - "specs/VELDO-0206-suite-result-reuse.md"
   - "specs/index.md"
   - "proof/VELDO-0206/*"
+  - "scripts/check_teeth_mutations.py"
+  - "engine/scripts/verify.sh"
+  - "engine/scripts/gate_reuse.py"
 behavior_bearing: true
 observability:
   logs: Emit suite identity, exact closure key and fresh or reused source for every suite result.
@@ -70,3 +73,5 @@ private store follows VELDO-0205's threat boundary. Unknown closures always exec
 scripts/verify.sh requires high-risk review and exact commit/proof-bound owner approval under
 .veldo/policy.yaml before landing. The design approval is not that final approval. Canonical release
 and landing gates retain VELDO_GATE_FORCE_FRESH=1.
+
+2026-11-11: footprint amended by the lead: scripts/check_teeth_mutations.py for the teeth registration the ACs require, and the engine copies of touched scripts the template sync check requires (the builder stopped on it).
