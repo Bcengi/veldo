@@ -41,6 +41,11 @@ stamp and the gate event: it is visible on every run, never silent.
       Exit 0 when the list declares this stage with exactly this command, 1 when it does not, 2
       when the list is invalid. verify.sh asks before the stage runs, so it knows a leg is expected
       whatever candidate code later does to the record.
+  gate_legs.py --load-proof --root <candidate> --record <file> [--opened <record>]
+      The load-proof leg (VELDO-0358, AC13; the section THE LOAD-PROOF LEG below): every suite of the
+      proven set in its own process under the load of scripts/gate_load.py. Exit 1 on any failed or
+      hung row and on load_not_applied. --load-stamp <file> [--wall <seconds>] prints the stamp's
+      "load" value from the leg's record.
   gate_legs.py --stamp <file> [--expect <stage,stage>]
       The stamp's "unconfined" value: the declaration's digest and the entries each stage ran
       unconfined. With --expect, a record that is missing, empty, unreadable or does not hold
@@ -88,9 +93,12 @@ import json
 import os
 from pathlib import Path
 import re
+import select
+import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 HERE = Path(__file__).resolve().parent
@@ -462,6 +470,405 @@ def stamp(record, expected=None):
     return {'declaration': digests.pop(), 'legs': legs}
 
 
+# ---- THE LOAD-PROOF LEG (VELDO-0358, AC13) ----------------------------------------------------
+#
+# After the unit and integration stages and before the mutation stage, the gate runs every suite of
+# the PROVEN SET once, each in its own process through the dispatcher's own selector, eight at a
+# time, under the load of scripts/gate_load.py, and every CHANGED suite of that set repeatedly. Any
+# failed or hung row is the gate's red and the mutation stage is not started. Nothing is run again
+# because it failed, nothing is voided, and no reading of the host's speed is a verdict.
+#
+# THE PROVEN SET IS COMPUTED, never listed: a suite with no entry in the authority's wall-clock
+# baseline (scripts/suites/wallclock_baseline.json, a protected file) for its own file or for any
+# file of its opened-files record. The selector runs a suite with its measured prerequisite
+# closure in one process, so a proven suite runs here when its whole closure is proven; until then
+# it is named as waiting, and a suite that has not been converted cannot make this leg red.
+#
+# A SUITE IS CHANGED when its own file differs between the candidate and the authority, or a
+# changed file is in the opened-files record of at most three suites (a fixture of its own). A
+# changed file more suites open adds no repetition: the whole proven set already runs once. In a
+# checkout that is its own authority nothing differs, as for the census.
+#
+# THE REPETITION COUNT is twenty, lowered to fit thirty minutes of loaded time at the leg's slots,
+# from each suite's loaded time in the previous leg's record, never below five. The allowance
+# decides how many runs are made and never a verdict; nothing here bounds how long the leg takes.
+# A suite process is ended only after the process hang bound with no line on its output.
+LOAD_SLOTS = 8
+LOAD_REPETITIONS, LOAD_REPETITIONS_FLOOR = 20, 5
+LOAD_ALLOWANCE_SECONDS = 1800
+LOAD_OWN_FIXTURE_SUITES = 3
+LOAD_BASELINE = 'scripts/suites/wallclock_baseline.json'
+LOAD_OPENED = '.veldo/opened_files.json'
+LOAD_SCHEMA = 'veldo.load-proof/v1'
+SUITE_COMMAND = 'python3 scripts/selftest.py --suite %s'
+RED_LINES = ('SELFTEST FAIL', 'SELFTEST HUNG', 'SELFTEST NOT RUN')
+PARTIAL_LINE = re.compile(r'^selftest \(PARTIAL, \d+ of \d+ suites\): (\d+) passed, (\d+) failed in ([0-9.]+)s$')
+PARTIAL_PASSED_EXIT = 2  # scripts/run_scope.py: a selector's run that failed no row
+
+
+def load_generator():
+    spec = importlib.util.spec_from_file_location('veldo_gate_load', HERE / 'gate_load.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _same(left, right):
+    try:
+        return left.stat().st_size == right.stat().st_size and left.read_bytes() == right.read_bytes()
+    except OSError:
+        return False
+
+
+def load_inputs(root, baseline, opened):
+    """(baselined files, opened-files record, suites in manifest order, closures) or Invalid."""
+    try:
+        document = json.loads(Path(baseline).read_text())
+        files = {os.path.normpath(entry['file']) for entry in document['entries'] if entry.get('count', 1)}
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise Invalid('unreadable wall-clock baseline %s: %s' % (baseline, error))
+    try:
+        record = json.loads(Path(opened).read_text())
+        if not isinstance(record, dict) or not all(
+                isinstance(k, str) and isinstance(v, list) and all(isinstance(p, str) for p in v)
+                for k, v in record.items()):
+            raise ValueError('not suite name to a list of paths')
+        record = {name: sorted({os.path.normpath(p) for p in paths}) for name, paths in record.items()}
+        manifest = json.loads((Path(root) / 'scripts/suites/manifest.json').read_text())
+        # The shared namespace is every suite's preamble and no suite the selector can name.
+        suites = [(s['name'], 'scripts/suites/' + s['file']) for s in manifest['suites']
+                  if s['file'] != manifest.get('shared')]
+        closures = json.loads((Path(root) / 'scripts/suites/requires.json').read_text())['requires']
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise Invalid('unreadable load-proof input: %s' % error)
+    for name, _ in suites:
+        if not SUITE.match(name):
+            raise Invalid('suite name %r is not a single safe name' % (name,))
+    return files, record, suites, closures
+
+
+def proven_set(baselined, record, suites, closures):
+    """{suite: None when it runs in the leg, else why it does not}, in manifest order."""
+    own = {}
+    for name, file in suites:
+        if name not in record:
+            own[name] = 'no opened-files record'
+            continue
+        held = sorted(f for f in {file, *record[name]} if f in baselined)
+        own[name] = 'baseline entry in %s' % held[0] if held else None
+    result = {}
+    for name, _ in suites:
+        waiting = [other for other in closures.get(name) or [name] if own.get(other, 'not in the manifest')]
+        result[name] = own[name] or ('proven, waiting for its prerequisite %s' % waiting[0] if waiting else None)
+    return result
+
+
+def changed_suites(root, authority, record, suites):
+    """{suite: the changed file that makes it a changed suite}; nothing in its own authority."""
+    root, authority = Path(root), Path(authority)
+    if root.resolve() == authority.resolve():
+        return {}
+    files = dict(suites)
+    users = {}
+    for name, paths in record.items():
+        for path in paths:
+            users.setdefault(path, set()).add(name)
+    changed = {}
+    for name, file in suites:
+        if not _same(root / file, authority / file):
+            changed[name] = file
+    for path, names in sorted(users.items()):
+        if len(names) <= LOAD_OWN_FIXTURE_SUITES and path not in files.values() \
+                and not _same(root / path, authority / path):
+            for name in names:
+                changed.setdefault(name, path)
+    return {name: why for name, why in changed.items() if name in files}
+
+
+def repetitions(seconds, slots):
+    """How often each changed suite runs: twenty, lowered until the runs fit the allowance at the
+    leg's slots (the longest run first, each on the slot that is free first), never below five.
+    `seconds` is each changed suite's loaded time in the previous leg's record; a suite with none
+    counts as nothing, since there is nothing to lower it by."""
+    for count in range(LOAD_REPETITIONS, LOAD_REPETITIONS_FLOOR, -1):
+        free = [0.0] * slots
+        for run in sorted((s or 0.0 for s in seconds for _ in range(count)), reverse=True):
+            free[free.index(min(free))] += run
+        if max(free) <= LOAD_ALLOWANCE_SECONDS:
+            return count
+    return LOAD_REPETITIONS_FLOOR
+
+
+def _load_file(times, slots):
+    key = hashlib.sha256(('load-proof\n%s\n%d' % (HERE.parent, slots)).encode()).hexdigest()[:32]
+    return Path(times) / (key + '.json')
+
+
+def read_load(times, slots):
+    """The previous leg's record for this authority and these slots: {set, peak, suites} or {}."""
+    try:
+        item = json.loads(_load_file(times, slots).read_text())
+        if item.get('authority') != str(HERE.parent) or not isinstance(item.get('suites'), dict):
+            return {}
+        return item
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def record_load(times, slots, digest, peak, seconds):
+    """Keep what the next leg needs: this set's memory peak and each suite's loaded time."""
+    try:
+        Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+        previous = read_load(times, slots)
+        suites = dict(previous.get('suites') or {})
+        suites.update(seconds)
+        item = dict(authority=str(HERE.parent), kind='load-proof', slots=slots, suites=suites,
+                    set=digest if peak else previous.get('set'), peak=peak or previous.get('peak'))
+        target = _load_file(times, slots)
+        fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(target.parent))
+        with os.fdopen(fd, 'w') as handle:
+            json.dump(item, handle, sort_keys=True)
+        os.replace(pending, target)
+    except OSError as error:
+        print('   load-proof: this leg\'s times were not recorded in %s (%s)' % (times, error), flush=True)
+
+
+def judge(lines, code, hung):
+    """(verdict, the red lines, the suite process's own loaded seconds) of one suite process. A
+    process is green only on its own evidence: the selector's passing exit, its summary line with
+    rows passed and none failed, and no failed, hung or not-run row line."""
+    red = [line.strip() for line in lines if line.strip().startswith(RED_LINES)]
+    summary = None
+    for line in lines:
+        summary = PARTIAL_LINE.match(line.strip()) or summary
+    seconds = float(summary.group(3)) if summary else None
+    if hung:
+        return 'hung', red + ['no line on its output for the process hang bound'], seconds
+    if summary is None:
+        return 'FAIL', red + ['no summary line: the suite process ended with status %s' % code], seconds
+    if red or int(summary.group(2)) or not int(summary.group(1)) or code != PARTIAL_PASSED_EXIT:
+        return 'FAIL', red or ['%s passed, %s failed, exit status %s'
+                               % (summary.group(1), summary.group(2), code)], seconds
+    return 'pass', [], seconds
+
+
+def suite_run(generator, hang, root, name, leg, env, fds=()):
+    """One suite in its own process, inside the load, through the confinement its leg has. It is
+    ended only when its output has been silent for the process hang bound (`hang` holds the two
+    hang bounds of the design's section 6, as scripts/gate_load.py names them)."""
+    command = SUITE_COMMAND % name
+    if leg == 'unconfined':
+        argv = ['bash', '-c', command]
+        env = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
+    else:
+        argv = [sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root', str(root), '--',
+                'bash', '-c', command]
+    process = subprocess.Popen(generator.wrap(argv), cwd=str(root), env=env, stdin=subprocess.DEVNULL,
+                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True,
+                               pass_fds=fds)
+    # The heavy child being awaited. Its progress is its output: the bound runs from its last line,
+    # never from its start, so a suite that is slow under the load is never ended for it.
+    child = dict(what='suite run: scripts/selftest.py --suite ' + name, output=process.stdout.fileno())
+    text, hung = b'', False
+    while True:
+        if not select.select([child['output']], [], [], hang.PROCESS_HANG_SECONDS)[0]:
+            hung = True
+            print('   load-proof: %s: no line for %ds; ending it' % (child['what'], hang.PROCESS_HANG_SECONDS), flush=True)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            break
+        data = os.read(child['output'], 65536)
+        if not data:
+            break
+        text += data
+    process.stdout.close()
+    code = process.wait()
+    lines = text.decode(errors='replace').splitlines()
+    verdict, red, seconds = judge(lines, code, hung)
+    return dict(suite=name, leg=leg, verdict=verdict, red=red, seconds=seconds, tail=lines[-30:])
+
+
+def run_load_proof(root, record, opened=None, baseline=None, path=DECLARATION, times=LEG_TIMES,
+                   slots=LOAD_SLOTS):
+    """The leg. 0 when nothing in it is red (or nothing is proven yet), 1 otherwise."""
+    root, authority = Path(root).resolve(), HERE.parent
+    baseline = Path(baseline) if baseline else authority / LOAD_BASELINE
+    opened = Path(opened) if opened else authority / LOAD_OPENED
+    out = dict(schema=LOAD_SCHEMA, state='ran', verdict='pass', error=None, slots=slots)
+
+    def finish(code):
+        Path(record).write_text(json.dumps(out, sort_keys=True) + '\n')
+        return code
+
+    def nothing(state, why):
+        print('   load-proof: %s; no suite is proven yet and nothing ran' % why, flush=True)
+        out.update(state=state)
+        return finish(0)
+
+    if not baseline.exists():
+        return nothing('no_baseline', 'the authority has no wall-clock baseline (%s)' % LOAD_BASELINE)
+    if not opened.exists():
+        return nothing('no_record', 'there is no opened-files record (%s)' % opened.name)
+    try:
+        baselined, opened_files, suites, closures = load_inputs(root, baseline, opened)
+        declaration = load(path) if Path(path).exists() else None
+    except Invalid as error:
+        print('   load-proof: %s; the leg is RED' % error, flush=True)
+        out.update(verdict='FAIL', error='invalid_input')
+        return finish(1)
+    state = proven_set(baselined, opened_files, suites, closures)
+    runs_in = [name for name, _ in suites if state[name] is None]
+    waiting = [name for name, _ in suites if state[name] and state[name].startswith('proven, waiting')]
+    changed = {n: why for n, why in changed_suites(root, authority, opened_files, suites).items() if n in runs_in}
+    out.update(proven=len(runs_in) + len(waiting), waiting=len(waiting), suites_run=len(runs_in))
+    print('   load-proof: %d of %d suites are proven (no baseline entry in the suite or in a file it opens)'
+          '%s; %d run' % (len(runs_in) + len(waiting), len(suites),
+                          ', %d of them waiting for a prerequisite suite' % len(waiting) if waiting else '',
+                          len(runs_in)), flush=True)
+    if not runs_in:
+        out.update(state='empty')
+        return finish(0)
+    load = load_generator()
+    previous = read_load(times, slots)
+    count = repetitions([(previous.get('suites') or {}).get(name) for name in changed], slots) if changed else 1
+    for name in sorted(changed):
+        print('   load-proof: %s is changed (%s): %d runs' % (name, changed[name], count), flush=True)
+    listed = {e['suite']: e.get('rows') for e in declaration[0]['suites']} if declaration else {}
+    tasks = []
+    for name in runs_in:
+        legs = [None] if not declaration else ['unconfined'] if name in listed and listed[name] is None \
+            else ['confined', 'unconfined'] if name in listed else ['confined']
+        tasks += [(name, leg) for leg in legs for _ in range(count if name in changed else 1)]
+    digest = hashlib.sha256('\n'.join(runs_in).encode()).hexdigest()
+    high = int(previous['peak'] * load.MEMORY_HIGH_PERCENT / 100) \
+        if previous.get('set') == digest and isinstance(previous.get('peak'), int) else None
+    write_dirs, beside = [tempfile.gettempdir()], None
+    try:
+        # A directory on the checkout's file system and outside the checkout: nothing a writer does
+        # can show in the candidate's tree.
+        beside = tempfile.mkdtemp(prefix='.veldo-load-', dir=str(root.parent))
+        write_dirs.append(beside)
+    except OSError as error:
+        print('   load-proof: no writer on the checkout\'s file system (%s)' % error, flush=True)
+    scope = os.environ.get('VELDO_GATE_SCOPE') or None
+    results, lock, red_suites = [], threading.Lock(), set()
+    # The marker a nested launcher is handed, as for the functional legs; an authority with no
+    # launcher of its own (a fixture's) hands nothing.
+    fds = _launcher_fds() if (HERE / 'agent_sandbox.py').is_file() else ()
+    try:
+        try:
+            generator = load.Generator(slots, write_dirs, scope=scope, memory_high=high)
+        except load.Refused as error:
+            print('   load-proof: no cgroup for the leg (%s): no memory level' % error, flush=True)
+            generator = load.Generator(slots, write_dirs)
+        with generator:
+            canary = subprocess.run(generator.wrap([sys.executable, '-I', '-S', str(HERE / 'gate_load.py'),
+                                                    '--canary']), stdin=subprocess.DEVNULL,
+                                    stdout=subprocess.DEVNULL).returncode
+            out['canary'] = {0: 'green', 1: 'red'}.get(canary, 'error %s' % canary)
+            print('   load-proof: the canary under this load: %s (a test synchronized by a sleep is red here; '
+                  'data, no verdict)' % out['canary'], flush=True)
+
+            def worker():
+                while True:
+                    with lock:
+                        if not tasks:
+                            return
+                        name, leg = tasks.pop(0)
+                        if name in red_suites:
+                            continue  # a red suite's remaining repetitions add nothing to its verdict
+                    env = _env(leg, entries(declaration[0]), declaration[1]) if leg else _env()
+                    try:
+                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)  # one run is the verdict
+                    except (OSError, ValueError) as error:  # a suite that could not be started is red, by name
+                        outcome = dict(suite=name, leg=leg, verdict='FAIL', seconds=None, tail=[],
+                                       red=['the suite process could not be started: %s' % error])
+                    with lock:
+                        results.append(outcome)
+                        if outcome['verdict'] != 'pass':
+                            red_suites.add(name)
+
+            threads = [threading.Thread(target=worker) for _ in range(slots)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+        out['load'] = generator.record
+    finally:
+        if beside:
+            try:
+                os.rmdir(beside)
+            except OSError:
+                pass
+    per_suite, seconds = {}, {}
+    for outcome in results:
+        item = per_suite.setdefault(outcome['suite'], dict(runs=0, verdict='pass', seconds=None))
+        item['runs'] += 1
+        if outcome['seconds'] is not None:
+            item['seconds'] = max(item['seconds'] or 0.0, outcome['seconds'])
+        if outcome['verdict'] != 'pass':
+            item['verdict'] = outcome['verdict']
+            print('   load-proof: %s: %s%s' % (outcome['suite'], 'HUNG' if outcome['verdict'] == 'hung' else 'FAIL',
+                                               ' (%s leg)' % outcome['leg'] if outcome['leg'] else ''), flush=True)
+            for line in outcome['red'] or outcome['tail']:
+                print('      ' + line, flush=True)
+    for name in runs_in:
+        item = per_suite.get(name)
+        if item and item['verdict'] == 'pass':
+            print('   load-proof: %s: pass, %d run%s%s' % (
+                name, item['runs'], '' if item['runs'] == 1 else 's',
+                ', %.1fs loaded' % item['seconds'] if item['seconds'] is not None else ''), flush=True)
+            if item['seconds'] is not None:
+                seconds[name] = item['seconds']
+    for line in load.summary(out['load']):
+        print('   load-proof: ' + line, flush=True)
+    red = sorted(name for name, item in per_suite.items() if item['verdict'] != 'pass')
+    out.update(suites=per_suite, red=red, repetitions=count if changed else None, changed=sorted(changed))
+    if red or len(per_suite) != len(runs_in):
+        out.update(verdict='FAIL', error='red_rows')
+    if not out['load']['applied']:
+        out.update(verdict='FAIL', error=load.NOT_APPLIED)
+    if Path(times) != LEG_TIMES or baseline == authority / LOAD_BASELINE:
+        peak = out['load']['memory'].get('peak') if out['verdict'] == 'pass' else None
+        record_load(times, slots, digest, peak, seconds)
+    print('   load-proof: %s' % ('pass' if out['verdict'] == 'pass' else 'RED (%s)' % out['error']), flush=True)
+    return finish(0 if out['verdict'] == 'pass' else 1)
+
+
+def load_stamp(record, wall=None):
+    """The stamp's "load" value: the load record of this gate's leg, in counts. A record this
+    cannot read is an error, never absent: the leg was expected."""
+    try:
+        document = json.loads(Path(record).read_text())
+        if document.get('schema') != LOAD_SCHEMA:
+            raise ValueError('not a load-proof record')
+        value = {key: document[key] for key in ('state', 'verdict', 'error', 'slots', 'proven', 'waiting',
+                                                'suites_run', 'canary', 'red', 'changed', 'repetitions')
+                 if key in document}
+        if 'suites' in document:
+            value['runs'] = sum(item['runs'] for item in document['suites'].values())
+            value['suite_seconds'] = {name: item['seconds'] for name, item in sorted(document['suites'].items())}
+        if 'load' in document:
+            load_record = document['load']
+            value['load'] = {
+                'applied': load_record['applied'], 'cpus': len(load_record['cpus']),
+                'spinners': len(load_record['spinners']),
+                'spinners_alive': sum(1 for s in load_record['spinners'] if s['alive']),
+                'spinner_cpu_seconds': round(sum(s['cpu_seconds'] for s in load_record['spinners']), 1),
+                'writers': len(load_record['writers']),
+                'writers_alive': sum(1 for w in load_record['writers'] if w['alive']),
+                'writer_bytes': sum(w['bytes'] for w in load_record['writers']),
+                'memory': {k: v for k, v in load_record['memory'].items() if k != 'unreadable'},
+                'probe': load_record['probe']}
+        if wall is not None:
+            value['wall_seconds'] = wall
+        return value
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        raise Invalid('unreadable load-proof record: %s' % error)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--root')
@@ -472,6 +879,10 @@ def main(argv=None):
     parser.add_argument('--stamp')
     parser.add_argument('--expect')
     parser.add_argument('--declared', action='store_true')
+    parser.add_argument('--load-proof', action='store_true')
+    parser.add_argument('--opened')
+    parser.add_argument('--load-stamp')
+    parser.add_argument('--wall', type=int)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
     if args.stamp is not None:
@@ -483,6 +894,18 @@ def main(argv=None):
             print('gate legs: %s; the gate is RED' % error, file=sys.stderr)
             return 1
         return 0
+    if args.load_stamp is not None:
+        try:
+            print(json.dumps(load_stamp(args.load_stamp, args.wall), sort_keys=True, separators=(',', ':')))
+        except Invalid as error:
+            print('null')
+            print('gate legs: %s; the gate is RED' % error, file=sys.stderr)
+            return 1
+        return 0
+    if args.load_proof:
+        if not (args.root and args.record):
+            parser.error('--load-proof needs --root and --record')
+        return run_load_proof(args.root, args.record, opened=args.opened)
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     if args.declared:
         if not args.stage or len(command) != 1:
