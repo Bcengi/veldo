@@ -5,6 +5,7 @@ Each slot joins a wrapper acknowledgement to the census birth and causal parent;
 no executable name, address, or successful refusal exempts a birth or service.
 """
 import ast
+from concurrent.futures import ThreadPoolExecutor
 import errno
 import hashlib
 import hmac
@@ -194,9 +195,9 @@ def envelope(case, workspace):
 
 
 GIT_WRAPPER = '''#!{python}
-import json, os, sys
+import json, os, sys, time
 with open({ack!r}, 'a') as sink:
-    sink.write(json.dumps(dict(pid=os.getpid(), parent=os.getppid(), argv=sys.argv[1:])) + '\\n')
+    sink.write(json.dumps(dict(pid=os.getpid(), parent=os.getppid(), argv=sys.argv[1:], time_ns=time.monotonic_ns())) + '\\n')
 os.execve({git!r}, [{git!r}, *sys.argv[1:]], os.environ)
 '''
 
@@ -246,13 +247,16 @@ def observed_effects(receipt, plan, acknowledgements):
     roots = [p for p in processes if p['root']]
     allowed, bindings, errors = set(), [], []
     if len(roots) != 1:
-        return dict(forbidden_births=processes, services=[], bindings=[], errors=['root_missing'])
+        return dict(forbidden_births=[], services=[], bindings=[], errors=['root_missing'])
     root = roots[0]
     allowed.add(root['identity'])
     bindings.append(dict(slot=plan[0], birth=root['identity'], parent=None))
     children = [p for p in processes if not p['root']]
+    times = {e['sequence']: e['time_ns'] for e in receipt.get('events', [])}
     for slot, ack in zip(plan[1:], acknowledgements):
-        matches = [p for p in children if p['pid'] == ack['pid'] and p['parent'] == root['identity']]
+        matches = [p for p in children if p['pid'] == ack['pid'] and p['parent'] == root['identity']
+                   and times.get(p['birth'], float('inf')) <= ack['time_ns']
+                   <= times.get(p['terminal'], -1)]
         if (len(matches) != 1 or ack['parent'] != root['pid'] or ack['argv'] != slot['argv']
                 or matches[0]['identity'] in allowed):
             errors.append('launch_identity_mismatch:' + slot['identity'])
@@ -275,6 +279,8 @@ def evaluate(census, receipt, plan, acknowledgements, outcome):
         rows[ROWS[0]].update(status='FAIL', reason='forbidden_autostart')
     if effects['services']:
         rows[ROWS[1]].update(status='FAIL', reason='forbidden_autostart')
+    if outcome.get('invoked') and not outcome.get('refused'):
+        rows[ROWS[0]].update(status='FAIL', reason='client_did_not_refuse')
     if isinstance(receipt, dict) and receipt.get('capture_status') == 'COMPLETE' and (
             'root_missing' not in effects['errors'] and (effects['errors'] or not outcome.get('refused'))):
         rows[ROWS[0]].update(status='FAIL', reason='invalid_refusal_or_envelope')
@@ -370,7 +376,8 @@ def measure(root, census, case, config, scratch, state, fault=None):
     input_identity = dict(case=identity, inventory_digest=case.registration_digest,
                           implementation_digest=case.implementation_digest, fixture_version=VERSION,
                           consumer_implementation_digest=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                          envelope_digest=digest(plan), input_digest=digest(given))
+                          envelope_digest=digest(plan), input_digest=digest(given),
+                          launch_wrapper_digest=hashlib.sha256(wrapper.read_bytes()).hexdigest())
     observation = census.census([sys.executable, '-B', str(Path(__file__).resolve()),
                                 'invoke', str(root), str(request_path)],
                                identity=input_identity, cwd=root, deadline=HANG, fault=fault)
@@ -413,6 +420,9 @@ def protocol_controls(census):
         rows = evaluate(census, value, plan, [], outcome)['rows']
         controls['invalid_receipt_' + str(i)] = (len(rows) == 3 and all(
             r['status'] == 'STANDS DOWN' and r['reason'] == 'census_incomplete' for r in rows.values()))
+    refusal = evaluate(census, dict(complete, status='INCOMPLETE', capture_status='INCOMPLETE'),
+                       plan, [], dict(invoked=True, refused=False))
+    controls['known_non_refusal_is_false'] = refusal['rows'][ROWS[0]]['status'] == 'FAIL'
     for field in ('failures', 'qualification'):
         value = copy.deepcopy(complete)
         value[field] = ([dict(reason='lost')] if field == 'failures' else
@@ -443,22 +453,32 @@ def qualify(root, faults=('facilities', 'finalize')):
                 assert probe.connect_ex(str(address)) == (errno.ENOENT if state == 'absent' else errno.ECONNREFUSED)
             finally:
                 probe.close()
-            for case in inventory:
+            def assess(case):
                 identity = case.identity + '/' + state
                 if case.transport == 'in_process':
-                    cases.append(dict(identity=identity, state=state, disposition='authority_component',
-                                      inventory_digest=case.registration_digest,
-                                      implementation_digest=case.implementation_digest,
-                                      construction_status=construction['status']))
-                else:
-                    result = measure(root, census, case, config, scratch, state)
-                    result['endpoint'] = endpoint
+                    return dict(identity=identity, state=state, disposition='authority_component',
+                                inventory_digest=case.registration_digest,
+                                implementation_digest=case.implementation_digest,
+                                construction_status=construction['status']), []
+                # Each observation has private arguments, wrapper and acknowledgements.
+                # The endpoint and enrolled repository are read-only during this state.
+                private = scratch / digest(identity)[:16]
+                private.mkdir()
+                result = measure(root, census, case, config, private, state)
+                result['endpoint'] = endpoint
+                failures = []
+                for fault in faults:
+                    fault_result = measure(root, census, case, config, private, state, fault)
+                    fault_result['fault'] = fault
+                    failures.append(fault_result)
+                return result, failures
+            # Threads coordinate independent observer subprocesses outside all measured
+            # scopes. map waits for completion; elapsed time never decides success.
+            with ThreadPoolExecutor(max_workers=4) as workers:
+                for result, failures in workers.map(assess, inventory):
                     cases.append(result)
-                    for fault in faults:
-                        fault_result = measure(root, census, case, config, scratch, state, fault)
-                        fault_result['fault'] = fault
-                        fault_cases.append(fault_result)
-                completed.append(identity)
+                    fault_cases.extend(failures)
+                    completed.append(result['identity'])
         exact = expected == sorted(completed) and len(set(completed)) == len(completed)
         # Also use the dependency's independent exact-inventory validator per state.
         receipts = [fixture.receipt(runtime, inventory,
