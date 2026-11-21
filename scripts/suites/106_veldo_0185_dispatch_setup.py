@@ -33,6 +33,7 @@ def _v185_suite():
     import subprocess
     import sys
     import contextlib
+    import datetime
     import io
     import tarfile
     import time
@@ -55,8 +56,13 @@ def _v185_suite():
             'reservation/state-root', 'fresh/registered', 'login/named', 'login/receiver-refuses', 'every-account',
             'rerun/changes-nothing', 'rerun/over-earlier-host', 'install/asset', 'format/fake-lines',
             # The Codex review of e016df9b (R1 to R4), and the Codex roles' model.
-            'login/retry-excludes', 'login/recheck', 'rerun/missing-state-root', 'team/workers', 'team/newest-model')
+            'login/retry-excludes', 'login/recheck', 'rerun/missing-state-root', 'team/workers', 'team/newest-model',
+            'timers/profile-applied')
     rows = {name: [] for name in ROWS}
+
+    # VELDO-0358: the wall time this suite hands the product as data is the support module's stamp.
+    def now():
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
     # The engine before this change: the whole .veldo of main at 294e1933 (VELDO-0139, 0171, 0186, 0189, 0203, 0204).
     BEFORE = '294e1933'
 
@@ -284,7 +290,7 @@ else:
                         report=report, store=root / 'authority' / 'control.sqlite3', install=args[3])
 
         def rows_of(store, sql, *params):
-            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
+            conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=WAITS.WAIT_HANG_SECONDS)
             try:
                 return conn.execute(sql, params).fetchall()
             finally:
@@ -521,7 +527,7 @@ else:
                 conn = sqlite3.connect(':memory:')
                 conn.execute('CREATE TABLE entities (id TEXT PRIMARY KEY, kind TEXT, data TEXT)')
                 for name, utilization, profile in accounts:
-                    windows = ({'five_hour': dict(status='allowed', utilization=utilization, reset_at=time.time() + 86400)}
+                    windows = ({'five_hour': dict(status='allowed', utilization=utilization, reset_at=now() + 86400)}
                                if utilization is not None else {})
                     conn.execute('INSERT INTO entities VALUES (?, ?, ?)', (CSm.L.ACC.entity_id(name), CSm.L.ACC.KIND, json.dumps(
                         dict(id=name, provider='claude_code', status='active', concurrency=1,
@@ -559,12 +565,12 @@ else:
             for request in ({'engine': 'claude_code', 'host': hostname},
                             {'engine': 'claude_code', 'host': hostname, 'exclude': ['v185-out']}):
                 for n in range(3):
-                    choice = POOL.choose(conn, ledger, request, time.time(), lambda account: None)
+                    choice = POOL.choose(conn, ledger, request, now(), lambda account: None)
                     chosen.append(choice['account'])
                     ledger['v185-%d' % len(chosen)] = dict(type='worker', context={'account': choice['account']},
                                                            retired=True, reserved_seq=100 + len(chosen))
             excluded = POOL.choose(conn, {}, {'engine': 'claude_code', 'host': hostname, 'exclude': ['v185-out']},
-                                   time.time(), lambda account: None)
+                                   now(), lambda account: None)
             check('login/retry-excludes', 'the pool never chooses the login-refused account while the healthy one can '
                   'take the work, though its utilization is lower, excluded or not [%s; passed %s]'
                   % (chosen, excluded.get('trace', {}).get('passed')),
@@ -589,7 +595,7 @@ else:
             line.limited(record, again)
             check('login/recheck', 'logged in again, the same account is offered the unit again with nothing excluded '
                   '[%s; %s]' % (offers, again), len(offers) == 1 and not offers[0].get('exclude') and not again['refused'])
-            picked = POOL.choose(conn, {}, {'engine': 'claude_code', 'host': hostname}, time.time(), lambda account: None)
+            picked = POOL.choose(conn, {}, {'engine': 'claude_code', 'host': hostname}, now(), lambda account: None)
             check('login/recheck', 'the pool chooses it, the one account left, despite its earlier refusal [%s]'
                   % picked.get('account'), picked.get('account') == 'v185-only')
             conn.close()
@@ -606,7 +612,7 @@ else:
                                                     sign=sign)
                     try:
                         reservations.reserve_pooled('v185-probe-' + principal, 'v185-probe-' + principal,
-                                                    {'engine': engine, 'host': hostname}, 'factory', 'v185-u1', now=time.time())
+                                                    {'engine': engine, 'host': hostname}, 'factory', 'v185-u1', now=now())
                         refusal = None
                     except Exception as error:  # noqa: BLE001 - the reservation service's refusal is the row's data
                         refusal = getattr(error, 'code', type(error).__name__)
@@ -714,6 +720,16 @@ else:
         IN = load('v185_journey_ingress', h['mods'] / 'control_channel_ingress.py')
         principal, sign = IN.journal_signer({'principal': 'authority', 'key': str(root / 'keys' / 'journal')})
         names = ['v185-u%d' % n for n in range(1, 4)]
+        # VELDO-0358 AC15: the timers profile. Every entry of the table is at the wait hang bound in this process and
+        # in each receiver the service starts (its configuration names the profile, which it hands its wrapper); the
+        # receiver configurations setup wrote are given back as they were once the journey has been judged.
+        L.TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+        receiver_configs = {}
+        for path in json.loads((Path(main['report']['home']) / 'config' / 'service.json').read_text())[
+                'receiver']['configs'].values():
+            receiver_configs[path] = Path(path).read_text()
+            Path(path).write_text(json.dumps(dict(json.loads(receiver_configs[path]), timers_profile={
+                'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})))
         writer = S.open_store(str(store))
         writer.command_registry['claim_operation'] = {'transaction_transition': CLM.transition,
                                                       'writes': ('entities', 'journal', 'commands', 'nonces')}
@@ -816,10 +832,12 @@ else:
                           if slot.get('type') == 'worker' and (slot.get('context') or {}).get('domain') == domain
                           and not slot.get('retired'))
 
-        deadline, found, refused_ids, reruns, quiet, slots = time.monotonic() + 90, [], [], [], None, []
-        while time.monotonic() < deadline:
-            # Asked before the store is read, so the records judged are never older than a quiet reading.
-            was, quiet = quiet, idle()
+        # VELDO-0358: the wait wakes only on the store and the service's observations file, and has no bound of its
+        # own but the wait hang bound. Done: the evidence the rows assert. Impossible: the service's own word that
+        # nothing more will come, two inspect answers in a row showing the loop idle at the same pass.
+        seen = {'found': [], 'refused_ids': [], 'reruns': [], 'slots': []}
+
+        def journey_done():
             found = dispatches()
             refused_ids, reruns = retries(found)
             out = [r for r in found if r['dispatch_id'] in refused_ids]
@@ -831,13 +849,39 @@ else:
                                for o in reruns))
             # Read after the records, so slots found returned belong to runs at least as late as those judged.
             slots = held()
-            if finished(found) and refused_ids and (violated or retried) and not slots:
-                break
-            if quiet is not None and quiet == was:
-                print('VELDO-0185 journey: the loop is idle after pass %d with the journey unfinished; '
-                      'not waiting out the bound' % quiet)
-                break
-            time.sleep(1)
+            seen.update(found=found, refused_ids=refused_ids, reruns=reruns, slots=slots)
+            return (bool(finished(found) and refused_ids and (violated or retried) and not slots),
+                    {'dispatches': len(found), 'refused': refused_ids, 'slots_held': slots})
+
+        def nothing_more():
+            first, second = idle(), idle()
+            return first is not None and first == second, {'idle_passes': [first, second]}
+        observations = home / 'state' / 'observations.jsonl'
+        journey = WAITS.wait('the dispatch journey', journey_done, nothing_more,
+                             [WAITS.Store(store), WAITS.PathAppears(observations, modify=True)])
+        if journey.impossible:
+            journey_done()  # the records as they are now are the ones judged
+            print('VELDO-0185 journey: the loop is idle with the journey unfinished; not waiting: %s' % journey.report())
+        found, refused_ids, reruns, slots = seen['found'], seen['refused_ids'], seen['reruns'], seen['slots']
+        # The profile where it was used: in this process, and in the start record of every exited run's wrapper (the
+        # first line of its execution record).
+        hang = WAITS.WAIT_HANG_SECONDS
+        started = []
+        any_receiver = json.loads(next(iter(receiver_configs.values())))
+        for record in found:
+            if record['state'] == 'exited':
+                with contextlib.suppress(Exception):
+                    first = L.ER.read(L.ER.directory(any_receiver), record['dispatch_id'], 0, 1)['lines'][0]
+                    text = next(v for v in (first if isinstance(first, list) else first.values())
+                                if isinstance(v, str) and 'veldo.launch_identity/v1' in v)
+                    started.append(json.loads(text).get('timers'))
+        unset = sorted({r['name'] for report in [L.TIMERS.report()] + started for r in report or [] if r['value'] != hang})
+        check('timers/profile-applied', 'every timer at the wait hang bound here and in each exited run\'s wrapper '
+              '[%d wrappers, timer_unset %s]' % (len(started), unset),
+              started and all(started) and not unset and len(started) == len([r for r in found if r['state'] == 'exited']))
+        for path, text in receiver_configs.items():
+            Path(path).write_text(text)
+        L.TIMERS.reset_profile()
         if slots:
             print('VELDO-0185 journey: the wait ended with worker slots still held: %s' % slots)
         by_account = {}
