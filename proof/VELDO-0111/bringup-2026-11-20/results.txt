@@ -1,0 +1,11 @@
+VELDO-0111 on the line, ported at 88eb37a9 (python3 scripts/selftest.py --suite 113_veldo_0111_census; exit 2 is a passed partial run):
+  113_veldo_0111_census                           13 passed  144.90s
+selftest (PARTIAL, 1 of 237 suites): 39 passed, 0 failed in 144.90s
+
+Two falsifiers run singly on scratch copies of the fixture (sample-falsifiers.json):
+  round1/AC4 (COMPLETE with an empty trace after collector death): census/incomplete-is-not-empty false, no other row false; original: 13 of 13 rows true.
+  round3/uncovered-state: census/fault-state-coverage false; original: true.
+
+Not run: the full drives (proof/VELDO-0111/drive.py, four falsifiers with green controls, and round3/falsifiers.py, five).
+They are loaded runs and did not get the host lock in this session. results.json, round3/acceptance.json and the
+round 2 and round 3 records are the source branch's and carry its source digests.

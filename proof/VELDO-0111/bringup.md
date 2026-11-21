@@ -81,4 +81,18 @@ later review. The bring-over changes none of that.
 
 ## Results on the new base
 
-See the "Reruns" section below once the heavy batch has run through the host lock.
+Ported at 88eb37a9. bringup-2026-11-20/results.txt:
+
+- Suite 113_veldo_0111_census alone: 13 rows passed, twice (before and after the deadline change).
+- Two falsifiers run singly on scratch copies, each red on its named row and green on the original:
+  round 1 AC4 (a COMPLETE receipt with an empty trace after collector death) and round 3
+  uncovered-state (bringup-2026-11-20/sample-falsifiers.json). AC4 is the row whose expiry probe
+  the load-rule change touched.
+- Not run: the full falsifier drives, `python3 -B proof/VELDO-0111/drive.py` (four, with green
+  controls) and `proof/VELDO-0111/round3/falsifiers.py` (five). They are loaded runs and did not
+  get the host lock in this session (queued twice for two hours each behind a gate and other
+  holders). They are still owed through the lock. Both write `.json.gz` receipts beside themselves;
+  those are not to be committed.
+
+`results.json`, `round3/acceptance.json` and the round records are the source branch's and carry
+its source digests; the fixture and the suite differ from them by the load-rule change above.
