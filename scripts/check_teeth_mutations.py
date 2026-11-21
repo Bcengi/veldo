@@ -16857,7 +16857,7 @@ def cases():
              "            import time  # defect: the ten second bound of marker_for, restored as a bounded poll\n"
              "            end = time.monotonic() + 10\n"
              "            while not mine() and not ended()[0] and time.monotonic() < end:\n"
-             "                time.sleep(0.02)\n",
+             "                pass\n",
              ['wave1/no-sites'], 'scripts/suites')
     # AC10: restore the 0.75 second real-clock assertion in suite 63.
     wave358e('wave358-latency-asserted', '62_veldo_0039_dispatch.py', '63_veldo_0040_containment.py',
