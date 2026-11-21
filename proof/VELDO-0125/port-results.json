@@ -30,5 +30,13 @@
   "baseline151": "pending",
   "changed_mutation_checks": "pending",
   "native_rerun": false,
-  "independent_review": false
+  "independent_review": false,
+  "quiet": {
+    "ref": "proof/VELDO-0125/port-quiet/results.json",
+    "passed": 405,
+    "failed": 0,
+    "suites": 4,
+    "load_workers": 0,
+    "host_reserved_idle": false
+  }
 }

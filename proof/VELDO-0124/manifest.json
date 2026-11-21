@@ -106,7 +106,7 @@
     {
       "name": "unit",
       "status": "pending",
-      "detail": "Historical scoped results remain archived. Current port: 150/152 affected suites pass after two closed-inventory corrections; loaded ticket suites and suite-151 baseline comparison remain queued. See port-results.json under VELDO-0125.",
+      "detail": "Current quiet owning suites pass: 103 has 56 assertions and 104 has 33, zero failures, partial exit 2. Historical results remain archived. Loaded verification and baseline comparison remain queued; see VELDO-0125 port-results.json.",
       "evidence": [
         "proof/VELDO-0124/round3-2026-10-29/suite-103.log",
         "proof/VELDO-0124/round3-2026-10-29/suite-104.log"

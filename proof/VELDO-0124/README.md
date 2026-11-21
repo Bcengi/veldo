@@ -1,8 +1,11 @@
 # VELDO-0124 build and pending qualification
 
-Round 2 update, 2026-10-28: evidence reference validation is fixed and the real
+Current event-design port: [2026-11-21 record](PORT-2026-11-21.md). The native
+observations below remain historical; they do not qualify the new v2 profile.
+
+Historical round 2 update, 2026-10-28: evidence reference validation is fixed and the real
 Codex signal ignoring child row passed. Complete qualification remains blocked
-on Claude login. See [the current round](round2-2026-10-28/README.md),
+on Claude login. See [the round 2 record](round2-2026-10-28/README.md),
 [owner actions and remaining blockers](OPEN.md), and [the manifest](manifest.json).
 Earlier observations below retain their original scope and dates.
 
