@@ -16842,6 +16842,35 @@ def cases():
              "                crashed = show(unit)\n",
              ['wave1/no-sites'], 'scripts/suites')
     # ==== end of VELDO-0358 brief F ====
+    # ==== VELDO-0358 BRIEF E: launch and containment path (AC10, AC15 for suites 62, 63, 78, 106) ====
+    # Each case is a criterion's falsifier, word for word from the specification. The census row wave1/no-sites is in
+    # suites 62 and 63; each reads the four suites through literal anchors, so a mutant of one suite's file runs in the
+    # other suite.
+    def wave358e(name, suite, module, old, new, rows, directory):
+        add(358, name, suite, module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC10: restore the ten second bound of marker_for in suite 62.
+    wave358e('wave358-bound-restored', '63_veldo_0040_containment.py', '62_veldo_0039_dispatch.py',
+             "            WAITS.wait('the marker of the worker of dispatch %s' % dispatch_id, mine, ended,\n"
+             "                       [WAITS.PathAppears(markers / '.any-marker'), WAITS.Store(db)])\n",
+             "            import time  # defect: the ten second bound of marker_for, restored as a bounded poll\n"
+             "            end = time.monotonic() + 10\n"
+             "            while not mine() and not ended()[0] and time.monotonic() < end:\n"
+             "                time.sleep(0.02)\n",
+             ['wave1/no-sites'], 'scripts/suites')
+    # AC10: restore the 0.75 second real-clock assertion in suite 63.
+    wave358e('wave358-latency-asserted', '62_veldo_0039_dispatch.py', '63_veldo_0040_containment.py',
+             "                      and exit_at is not None and recorded_at is not None and recorded_at >= exit_at,\n",
+             "                      and exit_at is not None and recorded_at is not None\n"
+             "                      and 0 <= recorded_at - exit_at < 0.75,  # defect: the real-clock latency bound\n",
+             ['wave1/no-sites'], 'scripts/suites')
+    # AC15: the launch reads RECEIVER_EXIT_SECONDS as the literal 2 instead of from the table.
+    wave358e('timers358-literal-kept', '62_veldo_0039_dispatch.py', 'control_launch.py',
+             "            self.receiver_exit = _await_exit(self.child, timeout=timer('RECEIVER_EXIT_SECONDS'))\n",
+             "            self.receiver_exit = _await_exit(self.child, timeout=2)  # defect: the literal, not the table\n",
+             ['timers/profile-applied', 'wave1/no-sites'], '.veldo')
+    # ==== end of VELDO-0358 brief E ====
 
     return result
 
