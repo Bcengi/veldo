@@ -89,6 +89,8 @@ state stays fixed until all cases finish.
 
 All new synchronization uses pipes, waits or terminal process observations. New
 deadlines are 1200-second hang detectors; the consumer enlarges the dependency's
-Git subprocess timeout without changing its argv, result or refusal. No new
+Git subprocess timeout without changing its argv, result or refusal, including
+fixture setup. The relay main adapter has no timeout argument, so its forward
+call's default is enlarged to the same hang bound in the measured process. No new
 sleep-based assertion is used. Loaded checks run through the external host-heavy
 wrapper. No canonical gate, independent review or owner approval is claimed.
