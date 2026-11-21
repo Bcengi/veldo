@@ -237,6 +237,40 @@ SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
     print(SCOPE.banner(), flush=True)
 
+# SUITE RESULT REUSE (VELDO-0206). The gate's authority may hand this dispatcher a plan: the suites
+# for which it holds an authenticated passing record under exactly their present inputs. This
+# dispatcher opens no store and computes no key. It leaves out what the plan names, and only in a
+# full run of the manifest, in manifest order, at the plan's own root and outside the unconfined
+# leg; and it still executes a named suite that a fresh suite's prerequisite closure needs, because
+# the suites share one namespace. With a plan it says, on its own lines, what it ran and what it
+# left out, so the authority can account for every suite. Without one it runs as it always has.
+REUSE, REUSED = None, []
+try:
+    REUSE = RS.reuse_plan(os.environ)
+except RS.ReuseRefused as e:
+    print("selftest reuse: %s; every suite runs fresh" % e, flush=True)
+if REUSE:
+    _reusable, _why = RS.reuse_honored(REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER)
+    if _why:
+        print("selftest reuse: %s; every suite runs fresh" % _why, flush=True)
+    if _reusable:
+        try:
+            _closures = RS.load_requires()
+        except (OSError, ValueError, KeyError):
+            _closures = {}
+        REUSED = RS.reuse_execution([s["name"] for s in RUN], _closures, _reusable)[1]
+
+
+def _account(kind, **payload):
+    """One whole line in one write, so no other process's output can land inside it."""
+    if REUSE:
+        sys.stdout.flush()
+        os.write(sys.stdout.fileno(), RS.reuse_line(
+            REUSE["nonce"], kind, leg=LEG, scope="partial" if SCOPE.partial else "full", **payload).encode())
+
+
+_account("begin", suites=len(RUN))
+
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
 # THE ONE SCOPE FOR THIS RUN, handed to the module that owns the counters and the summary
@@ -248,15 +282,22 @@ T0 = time.monotonic()
 PER_SUITE = []
 _LEG_FLOOR = shared.PASS + shared.FAIL
 for _s in RUN:
+    if _s["name"] in REUSED:
+        # Not executed: the authority holds this suite's passing record under its present inputs.
+        # Its rows are NOT added to this run's count; the line says what was left out.
+        _account("result", suite=_s["name"], source="reused", passed=REUSE["reuse"][_s["name"]], failed=0)
+        continue
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
     shared.__dict__["__suite_file__"] = str(_p)
-    _before, _t = shared.PASS, time.monotonic()
+    _before, _failed, _t = shared.PASS, shared.FAIL, time.monotonic()
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
+    _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
+             failed=shared.FAIL - _failed)
 
-if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR:
+if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR and not REUSED:
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
           "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, len(RUN)))
     sys.exit(2)
@@ -268,5 +309,14 @@ if SCOPE.partial:
         print("  %-44s %5d passed  %6.2fs" % (_name, _passed, _el))
     print(SCOPE.partial_line(shared.PASS, shared.FAIL, time.monotonic() - T0))
     print(SCOPE.footer())
+    _account("end", exit=SCOPE.exit_code(shared.FAIL), passed=shared.PASS, failed=shared.FAIL)
     sys.exit(SCOPE.exit_code(shared.FAIL))
-sys.exit(shared.report())
+if REUSED:
+    # A reused suite is never described as run: the aggregate line below counts only the rows this
+    # run asserted, and a fresh failure is red whatever was left out.
+    print("selftest reuse: %d of %d suites left out on authenticated passing records (%d rows not "
+          "run again); %d ran fresh" % (len(REUSED), len(RUN), sum(REUSE["reuse"][n] for n in REUSED),
+                                        len(RUN) - len(REUSED)), flush=True)
+_CODE = shared.report()
+_account("end", exit=_CODE, passed=shared.PASS, failed=shared.FAIL)
+sys.exit(_CODE)

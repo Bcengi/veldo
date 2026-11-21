@@ -368,6 +368,102 @@ def leg_runs(suite, rows=None, environ=None):
     return listed[suite] is None or listed[suite] == rows
 
 
+# SUITE RESULT REUSE (VELDO-0206). The qualifications below are the ONLY thing that makes a suite
+# reusable, and this file is protected, so adding one is an owner-approved change. The authority's
+# scripts/gate_reuse.py reads this literal with ast and never imports this module. Each entry is
+#   "<suite name>": {
+#     "closure_digest": the digest gate_reuse.suite_code_digest gives the code that was reviewed:
+#                       the shared preamble and every suite file of the prerequisite closure;
+#     "inputs":         every repository file or tree the suite reads, relative to the root;
+#     "runtime_paths":  absolute trees covering the interpreter, its library, git and the shell;
+#     "environment":    every environment variable it reads beyond gate_reuse.SUITE_ENVIRONMENT;
+#     "non_file_inputs": "none", the reviewed statement that clocks, randomness, services and
+#                       other hosts' state cannot change a row;
+#     "rationale":      why that statement holds for this suite.
+#   }
+# A suite is reusable only when it AND every member of its prerequisite closure are qualified, none
+# of them runs in the unconfined leg, and the pinned digest still matches. NO PRODUCTION SUITE IS
+# QUALIFIED: the suites share one mutable namespace and most reach host services, and nothing here
+# pretends otherwise. Every suite runs fresh until a reviewed entry says why it need not.
+SUITE_REUSE = {"schema": "veldo.suite-closures/v1", "suites": {}}
+
+# What the authority hands a gate's dispatcher: the suites it may leave out, bound to one root and
+# one run. The dispatcher never opens the store and never computes a key; it leaves out exactly
+# what the plan authenticates and says what it did, line by line, for the authority to settle.
+REUSE_VARIABLE = "VELDO_SUITE_REUSE"
+REUSE_PLAN = "veldo.suite-plan/v1"
+REUSE_LINE = "selftest-suite-reuse"
+
+
+class ReuseRefused(Exception):
+    """A VELDO_SUITE_REUSE value that is not the complete, well-formed plan the authority writes."""
+
+
+def reuse_plan(environ):
+    """The plan in the environment, or None. The variable is REMOVED, so no process a suite starts
+    inherits it: a plan is for the one dispatcher the gate started."""
+    raw = environ.pop(REUSE_VARIABLE, None)
+    if raw is None:
+        return None
+    try:
+        plan = json.loads(raw)
+        if (not isinstance(plan, dict) or set(plan) != {"schema", "nonce", "root", "reuse"}
+                or plan["schema"] != REUSE_PLAN or not re.match(r"^[0-9a-f]{32}$", plan["nonce"])
+                or not isinstance(plan["root"], str) or not isinstance(plan["reuse"], dict)
+                or not all(isinstance(k, str) and type(v) is int and v >= 1
+                           for k, v in plan["reuse"].items())):
+            raise ValueError("malformed")
+    except (ValueError, TypeError, KeyError):
+        raise ReuseRefused("%s is not a suite plan of this dispatcher" % REUSE_VARIABLE)
+    return plan
+
+
+def reuse_honored(plan, root, selector, suite_order, leg, listed, order):
+    """(names this run may leave out, why none when a plan names some and none may be).
+
+    A plan is honored only by the full manifest in manifest order, at the root it was computed
+    for, outside the unconfined leg. A selector, a reordered run, another root (the integration
+    stage's copy, an unconfined leg's snapshot, a fixture) or a plan naming a suite this manifest
+    or this leg does not own leaves out nothing: everything runs fresh."""
+    names = set(plan["reuse"])
+    if not names:
+        return set(), None
+    if selector is not None:
+        return set(), "a selector run is never reused"
+    if suite_order:
+        return set(), "a reordered run is never reused"
+    if leg == "unconfined":
+        return set(), "the unconfined leg is never reused"
+    if plan["root"] != str(Path(root).resolve()):
+        return set(), "the plan is for another root"
+    if not names <= set(order) or names & set(listed):
+        return set(), "the plan names a suite this run does not own"
+    return names, None
+
+
+def reuse_execution(running, requires, reusable):
+    """(names to execute, names left out), both in run order.
+
+    The suites share one namespace, so a suite that runs needs every member of its prerequisite
+    closure to have run before it. Every suite without an authenticated record runs, and so does
+    the whole closure of each of them, a reusable prerequisite included: that one is then FRESH,
+    and its rows count. A suite with no closure on record is unknown, and then nothing is left
+    out at all."""
+    fresh = [n for n in running if n not in reusable]
+    needed = set(fresh)
+    for name in fresh:
+        closure = requires.get(name)
+        if not isinstance(closure, list) or name not in closure:
+            return list(running), []
+        needed |= set(closure)
+    return [n for n in running if n in needed], [n for n in running if n not in needed]
+
+
+def reuse_line(nonce, kind, **payload):
+    """One line of the dispatcher's account of a planned run, for the authority to read back."""
+    return "%s %s %s %s\n" % (REUSE_LINE, nonce, kind, json.dumps(payload, sort_keys=True))
+
+
 class RunScope:
     """The one authority on what a single run of the unit suite may claim.
 
