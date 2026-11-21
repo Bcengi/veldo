@@ -165,8 +165,14 @@ The two runs this section ends on:
 | Brief C's full mutation stage on the merged branch, attempt 3, at 9f9dd8b1, ten workers | full-stage-9f9dd8b1.txt (every case with its kill_by, every invalid result) | status failed. 3639 registered, 3424 executed, 3398 rejected, no surviving worker, 21775 s (data). Of the 26 invalid results: load358-no-spinners SURVIVED (below); 15 control_failed: 12 cases of suite 83 (0154), whose baseline and no-op went red under the stage's load in owner-stop-asked-on-wake and owner-no-stops (time.time deadline polling the census still lists; green alone, untouched by this branch; brief C's own full stage at 30d6fa2a rejected them), and 3 of suite 114 (shell-catalog, fixed in 6414e4c5); 2 worker_cleanup_error: dispatch261-stop-leaves-record-running (suite 62's mutant run hung and left /dev/shm/v39-* outside its worker's ledger), which stopped the stage, and space328-unread-image-names-pass (a folder not empty at cleanup); 8 worker_cancelled when the stage stopped |
 | load358-no-spinners survived | brief D's falsifier of load/level-by-construction | A blocked spinner still shows its start-up CPU, so "every spinner consumed CPU" held; the row caught the mutant only through the canary, that is, only on a quiet host. The row now also requires the spinners together to consume at least the leg's own fifteen CPU-seconds beside them (three spinners to one leg per CPU share fairly, so this holds however busy the host is) (f136fd03); suite 160 alone green (285 s) |
 
-Still running when this was written, at f136fd03, each a selected-case stage of the same driver through the
-host-heavy wrapper on five CPUs: A, the fourteen cases of suites 160 and 114 (the ten load358 and
-opened358 cases of 160, the spinner case among them, and 114's four whose controls were red); B, the
-twenty-one inherited cases the stage could not finish (suite 83's, dispatch261, space328 and end350). They are
-apart so that a red control of an inherited suite cannot void A.
+Then, at f136fd03, two selected-case stages of the same driver through the host-heavy wrapper on five CPUs,
+apart so that a red control of an inherited suite could not void the first:
+
+| Stage | Where | Result |
+| - | - | - |
+| A: every case of suites 160 and 114 (five load358, five opened358, four concurrent216) | selected-stage-160-114-f136fd03.txt | passed: 14 registered, 14 executed, 14 rejected, controls clean. load358-no-spinners is now rejected; so is every falsifier of the lead decision (opened358-forged-claim-kept, -candidate-record-read, -unit-not-taken, -tree-drops-ledger, -load-reads-unpublished; the two of suite 157, -dispatcher-claims-nothing and -ledger-reaches-children, were rejected in the full stage) |
+| B: the 21 inherited cases the full stage could not finish | selected-stage-inherited-f136fd03.txt | failed: 9 rejected (eight space328, end350); suite 83's 11 cases again control_failed (its baseline and no-op red from loop/runner-in-service on, under load; green alone; not changed by this branch); dispatch261-stop-leaves-record-running again worker_cleanup_error (suite 62's mutant run leaves /dev/shm/v39-* outside its worker's ledger) |
+
+So on the merged branch every case was rejected except those of suite 83 and dispatch261, which are not
+judged: suite 83's controls are red under the stage's load and suite 62's mutant run fails the ownership
+cleanup. Neither suite is touched by wave 0; both are listed here for the briefs that convert them.

@@ -1,0 +1,29 @@
+VELDO-0358 integration: every case of suites 160 and 114 as one selected-case stage (the survivor load358-no-spinners,
+the opened358 falsifiers of the lead decision, and 114's cases whose controls were red in the full stage)
+Tested HEAD: f136fd03. check_gate_mutations.py --case <each>, VELDO_GATE_FORCE_FRESH=1, host-heavy wrapper, five CPUs.
+queued 2026-11-21T20:38:05Z head f136fd03 cases 14
+end 2026-11-21T21:28:15Z
+Receipt SHA256: 707be695279c95de7f8029d40181c428e0c599bf33cee1b9ba6a310ee033ed5b, bytes: 222674
+status: passed
+scope: selected
+error: None
+registered: 14
+executed: 14
+rejected: 14
+surviving_workers: 0
+elapsed: 2755.0942666400224
+
+rejected	check_teeth_mutations.py:concurrent216-count-not-sum	unproven	VELDO-0216 concurrent-stages/ledger-sums
+rejected	check_teeth_mutations.py:concurrent216-lost-leg-record	unproven	VELDO-0216 concurrent-stages/same-verdicts
+rejected	check_teeth_mutations.py:concurrent216-missing-stage-runs-nothing	unproven	VELDO-0216 concurrent-stages/graph-complete
+rejected	check_teeth_mutations.py:concurrent216-serialize-nodes	unproven	VELDO-0216 concurrent-stages/critical-path-fixture
+rejected	check_teeth_mutations.py:load358-affinity-dropped	unproven	VELDO-0358 load/level-by-construction
+rejected	check_teeth_mutations.py:load358-graph-red-not-blocking	unproven	VELDO-0358 leg/graph-blocks
+rejected	check_teeth_mutations.py:load358-no-spinners	unproven	VELDO-0358 load/level-by-construction
+rejected	check_teeth_mutations.py:load358-red-is-rerun	unproven	VELDO-0358 leg/proves-and-blocks
+rejected	check_teeth_mutations.py:load358-red-not-blocking	unproven	VELDO-0358 leg/proves-and-blocks
+rejected	check_teeth_mutations.py:opened358-candidate-record-read	unproven	VELDO-0358 leg/record-taken-by-the-authority
+rejected	check_teeth_mutations.py:opened358-forged-claim-kept	unproven	VELDO-0358 leg/record-taken-by-the-authority
+rejected	check_teeth_mutations.py:opened358-load-reads-unpublished	unproven	VELDO-0358 leg/record-taken-by-the-authority
+rejected	check_teeth_mutations.py:opened358-tree-drops-ledger	unproven	VELDO-0358 leg/record-taken-by-the-authority
+rejected	check_teeth_mutations.py:opened358-unit-not-taken	unproven	VELDO-0358 leg/record-taken-by-the-authority
