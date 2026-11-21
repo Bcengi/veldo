@@ -1244,6 +1244,16 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     python = python or sys.executable
     passes = launcher_fds(root)
     scratch = leg_scratch(environ, root) if leg == "confined" else None
+    # WHICH SHARDS GET THEIR INSTANCE NAME. Every shard of a confined leg. In an unconfined leg, only
+    # a suite whose manifest entry declares `"instance": true`, and no suite of this repository
+    # declares it yet: measured on 2026-11-21 against the real user manager, suites 66, 85 and 117
+    # fail with an instance configured in their shard (their own fixtures hand their subprocesses a
+    # configuration root of their own, so the installer and the tool it starts disagree on the
+    # unit's name, and 66 pins the installation's exact file set). The suites are outside
+    # VELDO-0221, so until they carry the name through their fixtures the unconfined leg's units
+    # keep today's names, apart on the one manager as they are in the mutation stage: by each
+    # installation's own service id and by the manifest's manager declarations.
+    named = {s["name"] for s in fragments(manifest) if s.get("instance") is True}
     own = set()  # what this dispatcher itself made outside its own directory
     # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this
     # gate was asked to be force-fresh.
@@ -1281,7 +1291,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             if path != short:
                 path.mkdir(mode=0o700)
         linked = link_manager(roots["XDG_RUNTIME_DIR"], "/run/user/%d" % os.getuid())
-        write_instance(roots["XDG_CONFIG_HOME"], job["name"])
+        if leg == "confined" or job["name"] in named:
+            write_instance(roots["XDG_CONFIG_HOME"], job["name"])
         env = shard_environment(environ, roots, linked, base)
         report_r, report_w = os.pipe()
         output_r, output_w = os.pipe()
