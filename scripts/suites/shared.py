@@ -88,6 +88,10 @@ def _support(name):
     if name in sys.modules:
         return sys.modules[name]
     path = Path(__file__).resolve().parent / "support" / (name + ".py")
+    if not path.is_file():
+        # A copy of this file laid in a fixture tree with no support module beside it (suites that test
+        # the dispatcher do that): no runtime there, and a wait in such a fixture is refused by name.
+        return None
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
@@ -113,7 +117,14 @@ def expect(name, condition):
     else:
         FAIL += 1
         print(f"  SELFTEST FAIL: {name}")
-    WAITS.row_event(name)
+    if WAITS is not None:
+        WAITS.row_event(name)
+
+
+def _waits():
+    if WAITS is None:
+        raise RuntimeError("no wait primitive beside this copy of shared.py (support/waits.py)")
+    return WAITS
 
 
 def wait_for(condition, bound, what, sources=None, terminal=None):
@@ -126,7 +137,7 @@ def wait_for(condition, bound, what, sources=None, terminal=None):
     bounded by the wait hang bound alone, and past it the row is hung and the suite's process ends: an
     expired wait is never read as false. A caller that names no source yet is read again on an interval
     (waits.LegacyInterval) until its wave converts it."""
-    return WAITS.wait_for(condition, bound, what, sources=sources, terminal=terminal, _depth=3)
+    return _waits().wait_for(condition, bound, what, sources=sources, terminal=terminal, _depth=3)
 
 
 _FAST_TEMP = []
@@ -162,7 +173,7 @@ class ForkFlag:
         wait is the wait primitive's, on the pipe becoming readable."""
         if timeout == 0:
             return self.is_set()
-        return WAITS.wait("a ForkFlag to be set", self.is_set, sources=[WAITS.Readable(self._r, drain=False)],
+        return _waits().wait("a ForkFlag to be set", self.is_set, sources=[WAITS.Readable(self._r, drain=False)],
                           _depth=2).done
 
     def is_set(self):
@@ -220,7 +231,7 @@ class ForkBarrier:
 
         def aborted():
             return b'!' in arrived, b''.join(arrived)
-        source = WAITS.Readable(reader, drain=False, persistent=True)
+        source = _waits().Readable(reader, drain=False, persistent=True)
         result = WAITS.wait("every party of a ForkBarrier", everyone, aborted, [source], _depth=2)
         if not result.done:
             raise threading.BrokenBarrierError

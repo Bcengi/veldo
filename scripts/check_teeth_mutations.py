@@ -16533,10 +16533,9 @@ def cases():
     # Each mutant is the specification's falsifier for its criterion; the suite is the brief's own.
     runtime358 = '157_veldo_0358_suite_runtime.py'
 
-    def wait358(name, module, old, new, rows, **extra):
+    def wait358(name, module, old, new, rows):
         add(358, name, runtime358, module, old, new, rows)
         result[-1]['dir'] = 'scripts/suites/support'
-        result[-1].update(extra)
 
     wait358('wait358-expiry-reads-false', 'waits.py',
             "                hung(row if row is not None else next_row(caller, name), name, where,\n",
@@ -16550,7 +16549,8 @@ def cases():
     wait358('wait358-holder-outlives-test', 'holders.py',
             "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read], **popen)",
             "self.proc = subprocess.Popen(base + [str(read)], pass_fds=[read, self._write], **popen)  # defect",
-            ['holders/ends-with-its-test'], companions=['waits.py'])
+            ['holders/ends-with-its-test'])
+    result[-1]['companions'] = ['waits.py']
     wait358('wait358-threads-not-counted', 'waits.py',
             "        if t.ident not in before['threads'] and t is not own and t.is_alive():\n",
             "        if False:  # defect: threads are not read\n",
