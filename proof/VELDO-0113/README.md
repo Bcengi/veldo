@@ -70,3 +70,11 @@ declared red/green falsifiers, teeth registrations and mutation-gate findings
 remain unimplemented. No gate was run. No independent review or approval is claimed.
 Selected dependency selftests are supplemental diagnostics only; their dispatcher
 deliberately exits 2 for a partial run and prohibits treating it as gate evidence.
+
+All three selected runs completed with zero failures: VELDO-0109 reported 5 suite
+assertions, VELDO-0112 reported 3, and VELDO-0111 reported 13 (their shared checks
+bring the respective diagnostic totals to 31, 29 and 39). Lint passed over 1328
+Python and 44 shell files. The personal-setup checker swept every ticket proof
+file and the changed specification and reported zero findings. Its sweep API was
+used to avoid the ancestry subcommand prohibited for this task. The installation
+diagnostic's home prefix is normalized to `<user-home>` in the retained text.
