@@ -804,6 +804,9 @@ def _v313_space_run_suite():
             class HeldByOthers(Exception):
                 pass
 
+            class HeldByTheFixture(Exception):
+                pass
+
             def others():
                 held = CLI._space_judged(wiring, given).get('holders') or []
                 return [one for one in held if one.get('how') == 'unread'
@@ -821,6 +824,11 @@ def _v313_space_run_suite():
                 foreign = others()
                 if foreign:
                     raise HeldByOthers(foreign)
+                if unread_is_foreign and any(one.get('how') != 'supervisor' for one in
+                                             CLI._space_judged(wiring, given).get('holders') or ()):
+                    # settled() follows an end only while processes outside the fixture hold it; what holds
+                    # it now is the fixture's own, which only the row itself ends later. Nothing more to follow.
+                    raise HeldByTheFixture()
                 if then is not None and not called:
                     called.append(sleeps)
                     then()
@@ -829,6 +837,8 @@ def _v313_space_run_suite():
             try:
                 with watched(asleep):
                     return CLI._space_ended(wiring, given)
+            except HeldByTheFixture:
+                return CLI._space_finish(wiring, given)
             except HeldByOthers as held:
                 raise RuntimeError(
                     'the run\'s end is asleep on processes that are no part of the fixture and hold the run: %s. On a host '
