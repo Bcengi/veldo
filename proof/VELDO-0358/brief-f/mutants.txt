@@ -17,3 +17,10 @@ after the suite selected its profile holds at the hang bound, so the defect was 
 arm the timer's own production value; rejected in run 2 on VELDO-0047 timers/profile-applied by assertion.
 kill_by unproven on suite 71's cases: suite 71 opens scripts/suites/support/v73_authority.py, which keeps
 baseline entries (lead item 3).
+
+== run 3, at fc1c924e (after _timer: two anchors restated), all five cases, start 2026-11-21T21:28:20Z: status passed, registered 5, executed 5, rejected 5, error None
+{"identity": "check_teeth_mutations.py:timers358-profile-skips-client", "validated": true, "kill_by": "assertion", "kills": [{"kill_by": "assertion", "row": "VELDO-0047 timers/profile-applied"}]}
+{"identity": "check_teeth_mutations.py:timers358-service-profile-ignored", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 timers/profile-applied"}]}
+{"identity": "check_teeth_mutations.py:timers358-reply-literal", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 wave1/no-sites"}]}
+{"identity": "check_teeth_mutations.py:wave358-budget-restored", "validated": true, "kill_by": "assertion", "kills": [{"kill_by": "assertion", "row": "VELDO-0047 wave1/no-sites"}]}
+{"identity": "check_teeth_mutations.py:wave358-window-restored", "validated": true, "kill_by": "unproven", "kills": [{"kill_by": "unproven", "row": "VELDO-0138 wave1/no-sites"}]}
