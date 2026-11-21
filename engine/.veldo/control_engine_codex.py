@@ -155,6 +155,27 @@ import subprocess
 import time
 import tempfile
 import zoneinfo
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site."""
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+
+# VELDO-0358 AC15: one read of the binary's bundled catalog or feature list (the timers table's).
+CATALOG_SECONDS = TIMERS.register('control_engine_codex.CATALOG_SECONDS', 30, 'control_engine_codex', 'deadline')
 
 PROVIDER = 'codex'
 CREDENTIALS = frozenset((
@@ -550,7 +571,8 @@ def bundled_catalog(executable):
             done = subprocess.run([str(executable), 'debug', 'models', '-' * 2 + 'bundled'],
                 cwd=root, env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
                               'TMPDIR': temp, 'LANG': 'C.UTF-8'},
-                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=TIMERS.effective('control_engine_codex.CATALOG_SECONDS'),
+                check=True)
             catalog = json.loads(done.stdout)
             if not isinstance(catalog.get('models'), list) or not catalog['models']:
                 raise ValueError('missing models')
@@ -569,7 +591,8 @@ def feature_listing(executable):
             done = subprocess.run([str(executable), 'features', 'list'], cwd=root,
                 env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'CODEX_HOME': str(profile),
                      'TMPDIR': temp, 'LANG': 'C.UTF-8'},
-                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=True)
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=TIMERS.effective('control_engine_codex.CATALOG_SECONDS'),
+                check=True)
             return done.stdout
         except (OSError, subprocess.SubprocessError):
             raise Refused('missing_evidence:codex_feature_listing') from None
@@ -709,7 +732,8 @@ LOGIN_STATUS = (('Logged in using ChatGPT', 'chatgpt'), ('Logged in using an API
                 ('Logged in using Amazon Bedrock API key', 'bedrock_api_key'),
                 ('Logged in using Amazon Bedrock AWS access keys', 'bedrock_aws_keys'),
                 ('Logged in using workload identity', 'workload_identity'), ('Not logged in', 'not_logged_in'))
-LOGIN_SECONDS = 30
+# VELDO-0358 AC15: giving-up deadlines of the timers table, read from it where each is armed.
+LOGIN_SECONDS = TIMERS.register('control_engine_codex.LOGIN_SECONDS', 30, 'control_engine_codex', 'deadline')
 
 
 def _toml(value):
@@ -936,7 +960,7 @@ def login_problem(bound, environment, cwd=None):
     command = [bound['path'], 'login', 'status', '-c',
                'cli_auth_credentials_store=' + _toml(BASELINE['configuration']['cli_auth_credentials_store'])]
     try:
-        done = subprocess.run(command, capture_output=True, text=True, timeout=LOGIN_SECONDS, env=dict(environment),
+        done = subprocess.run(command, capture_output=True, text=True, timeout=TIMERS.effective('control_engine_codex.LOGIN_SECONDS'), env=dict(environment),
                               stdin=subprocess.DEVNULL, errors='replace', cwd=cwd)
     except (OSError, subprocess.SubprocessError):
         return 'paid_api:codex_login:unreadable'
