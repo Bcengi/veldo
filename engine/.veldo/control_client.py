@@ -106,10 +106,10 @@ def socket_path_for(binding):
 # prefix still carries it.
 def instance_name():
     """The configured instance name, or the empty string when none is configured."""
-    path = _RegistryPath(__file__).with_name("control_containment.py")
-    if not path.is_file():
+    if not _RegistryPath(__file__).with_name("control_containment.py").is_file():
         return ""
-    spec = _registry_import.spec_from_file_location("veldo_client_containment", path)
+    spec = _registry_import.spec_from_file_location(
+        "veldo_client_containment", _RegistryPath(__file__).with_name("control_containment.py"))
     module = _registry_import.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.instance_name()

@@ -42,12 +42,14 @@ def _veldo_0221():
         '    else:\n        FAIL += 1\n        print("  SELFTEST FAIL: %s" % name)\n'
         'def report():\n    print(SCOPE.aggregate_line(PASS, FAIL)); return SCOPE.exit_code(FAIL)\n')
 
-    def tree(top, bodies, requires=None, resources=None, capacities=None, closures=True):
+    def tree(top, bodies, requires=None, resources=None, capacities=None, closures=True, launcher=True):
         """A fixture candidate: the shipped dispatcher and shard machinery over fixture suites."""
         top = Path(top)
         (top / "scripts/suites").mkdir(parents=True)
         shutil.copyfile(ROOT / "scripts" / "selftest.py", top / "scripts/selftest.py")
         shutil.copyfile(ROOT / "scripts" / "run_scope.py", top / "scripts/run_scope.py")
+        if launcher:
+            shutil.copyfile(ROOT / "scripts" / "agent_sandbox.py", top / "scripts/agent_sandbox.py")
         (top / "scripts/suites/shared.py").write_text(fixture_shared)
         for name, body in bodies.items():
             (top / "scripts/suites" / (name + ".py")).write_text(body)
@@ -96,6 +98,7 @@ def _veldo_0221():
         (stubs / "scripts/suites").mkdir(parents=True)
         shutil.copyfile(ROOT / "scripts" / "selftest.py", stubs / "scripts/selftest.py")
         shutil.copyfile(ROOT / "scripts" / "run_scope.py", stubs / "scripts/run_scope.py")
+        shutil.copyfile(ROOT / "scripts" / "agent_sandbox.py", stubs / "scripts/agent_sandbox.py")
         (stubs / "scripts/suites/shared.py").write_text(fixture_shared)
         for suite in RS.fragments(manifest):
             (stubs / "scripts/suites" / suite["file"]).write_text('expect("stub ran", True)\n')
@@ -197,12 +200,21 @@ def _veldo_0221():
                               capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL)
         tableless = tree(top / "tableless", {"01_a": 'expect("a", True)\n'}, closures=False)
         ordered_leg = through_dispatcher(tableless, leg_env("confined", "none_listed"))
+        launcherless = tree(top / "launcherless", {"01_a": 'expect("a", True)\n'}, launcher=False)
+        unlaunched = through_dispatcher(launcherless, leg_env("confined", "none_listed"))
+        outside = through_dispatcher(launcherless, leg_env("unconfined", "01_a"))
         expect("VELDO-0221 suite-shards/ordered-run-kept-outside-a-leg: " + ordered_leg.stdout[-300:],
                bare.returncode == 0 and "selftest shard" not in bare.stdout
                and bare.stdout.splitlines()[-1] == "selftest: 2 passed, 0 failed"
                and ordered_leg.returncode == 0 and "no closure table" in ordered_leg.stdout
                and "selftest shard" not in ordered_leg.stdout
-               and ordered_leg.stdout.splitlines()[-1] == "selftest: 1 passed, 0 failed")
+               and ordered_leg.stdout.splitlines()[-1] == "selftest: 1 passed, 0 failed"
+               # No launcher to take a Landlock layer from: the confined leg stays ordered, and the
+               # unconfined leg, which stacks none, still runs as shards.
+               and unlaunched.returncode == 0 and "no launcher" in unlaunched.stdout
+               and "selftest shard" not in unlaunched.stdout
+               and unlaunched.stdout.splitlines()[-1] == "selftest: 1 passed, 0 failed"
+               and "selftest shard" in outside.stdout)
         # A shard past its deadline is a failure of its suite. The suite never ends, so the verdict
         # does not depend on how fast this machine is.
         hung = tree(top / "hung", {"01_hangs": 'import time\nexpect("started", True)\nwhile True:\n    time.sleep(3600)\n'})
@@ -363,7 +375,7 @@ def _veldo_0221():
         # stacks it. Every shard of the leg is a breach, in an ordinary gate.
         skipped = tree(top / "skipped", {"01_a": 'expect("a", True)\n', "02_b": 'expect("b", True)\n'})
         source = (skipped / "scripts/selftest.py").read_text()
-        confine = ('    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0])\n'
+        confine = ('    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0], RS.shard_launcher(HERE.parent))\n'
                    '    SHARD.send(event="layer", in_force=_in_force, refused=_refused, detail=_detail)\n')
         (skipped / "scripts/selftest.py").write_text(source.replace(confine, "    pass\n"))
         ran = through_dispatcher(skipped, leg_env("confined", "none_listed"))
