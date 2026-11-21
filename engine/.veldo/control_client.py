@@ -96,56 +96,23 @@ def socket_path_for(binding):
 # Starting the authority is an operations action, and a client that starts one on first use turns a
 # stopped authority into two.
 
-# ---------------------------------------------------------------------------------------------
-# The instance name (VELDO-0221)
-# ---------------------------------------------------------------------------------------------
-#
-# Every unit, slice and service this engine creates on the one systemd user manager is named with
-# the installation's instance name, read from the installation's configuration. NO PRODUCTION
-# INSTALLATION CONFIGURES ONE, and with none every name is exactly what it was before this existed.
-# It exists so that two installations made at once on one manager by two parallel shards of a gate
-# leg (scripts/run_scope.py) can never share a name: each shard's fixtures set it to the shard's
-# name. The name EXTENDS the engine's own fixed prefix (veldo-authority-<instance>-<service id>),
-# so whatever is cut from a unit name after the fixed prefix still carries it.
-#
-# WHERE IT IS READ, in order, and why two places. An installed engine reads `config/instance.json`
-# beside its `bin`, which install() writes from the installer's own configuration: the service
-# runs under the user manager's environment, which names no shard, and must still compute the
-# names it was installed under. An engine that is not installed (the installer, a CLI, a suite's
-# copy) reads `veldo/instance.json` in the user's configuration directory (XDG_CONFIG_HOME, else
-# ~/.config). A file that is not veldo.instance/v1 is not this engine's and is not read; one that
-# is, with a name the manager could misread, is refused rather than half used.
-INSTANCE_SCHEMA = "veldo.instance/v1"
-INSTANCE_FILE = "instance.json"
-
-
-def instance_name(environment=None, module=None):
+# The instance name (VELDO-0221). Every unit, slice and scope this engine creates on the one systemd
+# user manager is named with the installation's instance name, which NO PRODUCTION INSTALLATION
+# CONFIGURES: with none, every name is exactly what it was before this existed. The rule for where
+# the name is read lives once, in control_containment.instance_name, and this module only asks it:
+# THIS MODULE STILL READS NO ENVIRONMENT VARIABLE (VELDO-0107), and a copy of it that stands without
+# the containment module has no instance. The name EXTENDS the fixed prefix
+# (veldo-authority-<instance>-<service id>), so whatever is cut from a unit's name after the fixed
+# prefix still carries it.
+def instance_name():
     """The configured instance name, or the empty string when none is configured."""
-    import json as _json
-    import os as _os
-    import re as _re
-    environment = _os.environ if environment is None else environment
-    here = _os.path.dirname(_os.path.abspath(module or __file__))
-    candidates = [_os.path.join(_os.path.dirname(here), "config", INSTANCE_FILE)]
-    base = environment.get("XDG_CONFIG_HOME") or ""
-    if not _os.path.isabs(base):
-        home = environment.get("HOME") or ""
-        base = _os.path.join(home, ".config") if _os.path.isabs(home) else ""
-    if base:
-        candidates.append(_os.path.join(base, "veldo", INSTANCE_FILE))
-    for path in candidates:
-        try:
-            with open(path, encoding="utf-8") as handle:
-                document = _json.load(handle)
-        except (OSError, ValueError):
-            continue
-        if not isinstance(document, dict) or document.get("schema") != INSTANCE_SCHEMA:
-            continue
-        name = document.get("prefix")
-        if not isinstance(name, str) or not _re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z_]{0,63}", name):
-            raise ValueError("invalid instance name in %s" % path)
-        return name
-    return ""
+    path = _RegistryPath(__file__).with_name("control_containment.py")
+    if not path.is_file():
+        return ""
+    spec = _registry_import.spec_from_file_location("veldo_client_containment", path)
+    module = _registry_import.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.instance_name()
 
 
 def instance_part(name=None):

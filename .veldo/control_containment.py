@@ -73,8 +73,7 @@ QUALIFICATION = 'veldo.worker_qualification/v1'
 LINUX = 'linux-systemd'
 CGROUP = Path('/sys/fs/cgroup')
 # ---------------------------------------------------------------------------------------------
-# The instance name (VELDO-0221): the same rule as control_client.instance_name, kept here too
-# because this module is copied and run alone
+# The instance name (VELDO-0221)
 # ---------------------------------------------------------------------------------------------
 #
 # Every unit, slice and service this engine creates on the one systemd user manager is named with
