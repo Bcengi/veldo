@@ -27,6 +27,14 @@ first turn on an engine that holds no session starts from `render`: the earlier 
 records keep them, the newest whole turns that fit the engine's qualified input bound, after one line naming how
 many were left out.
 
+VELDO-0175: a completed turn keeps its reply on its record (`reply`): its engine's final result text, read from the
+redacted execution record its exit committed (`final_reply`).  Every message the factory sends in a conversation (a
+reply part, a status line, a command's answer) is recorded by `record_conversation_message` with its bot, chat and
+message id, bound to the conversation and turn (`conversation-message:<bot>:<chat>:<message>`), so a Telegram reply to
+any of them continues the conversation (control_intake); a reply part or status line is also listed on its turn
+(`sent`), and a line answering one of the owner's messages is kept under that message
+(`conversation-answer:<bot>:<chat>:<message>`), so a redelivered message is never answered twice.
+
 Conversation worker reservations use the shared subscription-account records and
 the same account-pool selection order.  Their context names the conversation as the
 unit and deliberately carries no project or repository.  They are visible to the
@@ -88,7 +96,13 @@ FLAG_WINDOW = 60
 FLAG_LIMIT = 20
 RATE_LIMITED = 'rate_limited:run_flag'
 UNDELIVERED = 'undelivered:no_conversation'
-OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE)
+# VELDO-0175: every message the factory sent in a conversation, and the line that answered one of the owner's.
+SENT = 'record_conversation_message'
+SENT_KIND = 'conversation_message'
+ANSWER_KIND = 'conversation_answer'
+SENT_SCHEMA = 'veldo.conversation_message/v1'
+SENT_KINDS = ('reply', 'status', 'answer', 'refusal')
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
 WORKSPACE = 'workspace'
@@ -128,6 +142,16 @@ def turn_id(identity, sequence):
     return 'conversation-turn:%s:%d' % (identity, sequence)
 
 
+def sent_id(bot, chat, message):
+    """VELDO-0175 AC1: the record of one message the factory sent in a conversation."""
+    return 'conversation-message:%s:%s:%s' % (bot, chat, message)
+
+
+def answer_id(bot, chat, message):
+    """VELDO-0175: the record of the one line that answered the owner's message `message`."""
+    return 'conversation-answer:%s:%s:%s' % (bot, chat, message)
+
+
 def flag_summary_id(dispatch_id):
     return 'run-flags:' + str(dispatch_id)
 
@@ -140,6 +164,15 @@ def workspace_of(record):
     """VELDO-0177 AC1: a conversation's own workspace, `workspace` under its directory; None without a directory."""
     directory = (record or {}).get('directory')
     return os.path.join(directory, WORKSPACE) if _text(directory) and os.path.isabs(directory) else None
+
+
+def make_workspace(record):
+    """VELDO-0177 AC1: the conversation's directory and its workspace, made 0700 once its open command committed."""
+    workspace = workspace_of(record)
+    for path in (record['directory'], workspace):
+        os.makedirs(path, mode=0o700, exist_ok=True)
+        os.chmod(path, 0o700)
+    return workspace
 
 
 def clone_path(record, project, number):
@@ -159,6 +192,11 @@ def project_source(conn, domain, project):
     if not path or not os.path.isdir(path):
         raise Refused('missing_evidence:project_repository', str(project))
     return repository, path
+
+
+def conversation_directory(state_root, identity):
+    """A conversation's directory under the factory state root, named by its identity's digest."""
+    return os.path.join(os.path.abspath(str(state_root)), 'conversations', hashlib.sha256(identity.encode()).hexdigest())
 
 
 def lead_conversation(conn, conversation=None, project=None):
@@ -289,11 +327,57 @@ def attach_authority(conn, member, record, project):
     return target
 
 
+def _int(value):
+    return type(value) is int
+
+
+def _sent(conn, params, before, now):
+    """record_conversation_message (VELDO-0175): one message the factory sent, as the platform confirmed it: a reply
+    part or status line of a turn, the answer to one of the owner's commands, or a refusal line. Every one but a
+    refusal is bound to its conversation and turn for a reply to continue it; a reply part or status line is listed on
+    its turn; a line answering one of his messages is kept under that message. Written by the journal signer."""
+    kind, identity, sequence = params.get('kind'), params.get('conversation'), params.get('sequence')
+    bot, chat, message = params.get('bot_id'), params.get('chat_id'), params.get('message_id')
+    if (kind not in SENT_KINDS or not all(_int(v) for v in (bot, chat, message, params.get('date')))
+            or (params.get('answers') is not None and not _int(params['answers']))
+            or (params.get('reply_to') is not None and not _int(params['reply_to']))):
+        raise Refused('invalid_input:conversation_message')
+    record = {'schema': SENT_SCHEMA, 'kind': kind, 'conversation': identity, 'sequence': sequence,
+              'part': params.get('part'), 'parts': params.get('parts'), 'ref': params.get('ref'), 'bot_id': bot,
+              'chat_id': chat, 'message_id': message, 'date': params['date'], 'reply_to': params.get('reply_to'),
+              'answers': params.get('answers'), 'at': now}
+    changes = {}
+    if kind != 'refusal':
+        if not _text(identity) or not before.get(conversation_id(identity)):
+            raise Refused('invalid_input:conversation:unknown')
+        mid = sent_id(bot, chat, message)
+        if before.get(mid) or _row(conn, mid):
+            raise Refused('stale_subject:conversation_message')
+        changes[mid] = {'kind': SENT_KIND, 'data': record}
+    if kind in ('reply', 'status'):
+        tid = turn_id(identity, sequence) if _int(sequence) else None
+        current = before.get(tid) if tid else None
+        if not current or current.get('kind') != TURN_KIND:
+            raise Refused('invalid_input:conversation_turn:unknown')
+        turn = copy.deepcopy(current['data'])
+        turn.setdefault('sent', []).append({k: record[k] for k in ('kind', 'ref', 'part', 'parts', 'chat_id',
+                                                                   'message_id', 'date')})
+        changes[tid] = {'kind': TURN_KIND, 'data': turn}
+    if record['answers'] is not None:
+        aid = answer_id(bot, chat, record['answers'])
+        if before.get(aid) or _row(conn, aid):
+            raise Refused('stale_subject:conversation_answer')
+        changes[aid] = {'kind': ANSWER_KIND, 'data': record}
+    return changes
+
+
 def transition(conn, params, before):
     operation, now = params.get('operation'), time.time()
     identity, principal = params.get('conversation'), params.get('principal')
     if operation == FLAG:
         return _flag(conn, params, before, now)
+    if operation == SENT:
+        return _sent(conn, params, before, now)
     if operation not in OPERATIONS or not _text(identity):
         raise Refused('invalid_input:conversation')
     cid = conversation_id(identity)
@@ -449,6 +533,13 @@ def transition(conn, params, before):
     if not _text(outcome):
         raise Refused('invalid_input:conversation_outcome')
     turn.update(state='ended', outcome=outcome, ended_at=now)
+    # VELDO-0175 AC3: the turn's reply, its engine's final result text, kept on the record as the engine wrote it.
+    if 'reply' in params:
+        reply = params['reply']
+        if reply is not None and not isinstance(reply, str):
+            raise Refused('invalid_input:conversation_reply')
+        turn['reply'] = reply
+        turn['reply_digest'] = None if reply is None else 'sha256:' + hashlib.sha256(reply.encode()).hexdigest()
     _bind_session(turn, session, started)
     return {tid: {'kind': TURN_KIND, 'data': turn}}
 
@@ -557,16 +648,16 @@ class Conversations:
                           watermark=receipt['seq'], **detail))
         return record, receipt
 
+    def directory(self, identity):
+        """Where a conversation opened by this service keeps its directory."""
+        return conversation_directory(self.state_root, identity)
+
     def open(self, identity, *, owner, role=DEFAULT_ROLE, intake_digest, command_id=None, now=None):
-        safe = hashlib.sha256(identity.encode()).hexdigest()
-        directory = os.path.join(self.state_root, 'conversations', safe)
+        directory = self.directory(identity)
         record, _receipt = self._run(OPEN, identity, {'role': role, 'intake_digest': intake_digest,
             'directory': directory, 'command_id': command_id}, principal=owner, now=now)
         # VELDO-0177 AC1: the conversation's own workspace under its directory, the engine's working directory.
-        workspace = workspace_of(record)
-        for path in (record['directory'], workspace):
-            os.makedirs(path, mode=0o700, exist_ok=True)
-            os.chmod(path, 0o700)
+        workspace = make_workspace(record)
         self.observe({'schema': SCHEMA, 'operation': 'conversation_workspace', 'conversation': identity,
                       'workspace': workspace, 'outcome': 'made'})
         return record
@@ -651,9 +742,14 @@ class Conversations:
                   'role_revision': role_revision, 'account': account, 'receiver': receiver}, now=now)
         return _turn(self.conn, identity, sequence)['data']
 
-    def ended(self, identity, sequence, dispatch_id, outcome, *, session=None, start=None, now=None):
+    def ended(self, identity, sequence, dispatch_id, outcome, *, session=None, start=None, reply=False, now=None):
+        """End a turn. VELDO-0175 AC3: a completed turn keeps its engine's final result text as its reply, read from
+        the execution record its exit committed (or `reply` when the caller read it); any other end keeps none."""
         fields = {'sequence': sequence, 'dispatch_id': dispatch_id, 'outcome': outcome}
         fields.update({k: v for k, v in (('session', session), ('start', start)) if v is not None})
+        if reply is False:
+            reply = self.reply_of(identity, sequence, dispatch_id) if outcome == 'completed' else None
+        fields['reply'] = reply
         self._run(END, identity, fields, now=now)
         self._session_event(identity, sequence, dispatch_id, session, start)
         return _turn(self.conn, identity, sequence)['data']
@@ -666,6 +762,32 @@ class Conversations:
         self._run(DEFER, identity, fields, now=now)
         self._session_event(identity, sequence, dispatch_id, session, start)
         return _turn(self.conn, identity, sequence)['data']
+
+    def reply_of(self, identity, sequence, dispatch_id):
+        """VELDO-0175 AC3: the final result text of the dispatch's run, read from its redacted execution record as its
+        exit committed it, through the receiver configuration the turn was dispatched to; None when there is none."""
+        turn = _turn(self.conn, identity, sequence)
+        dispatch = _row(self.conn, 'dispatch:' + str(dispatch_id))
+        committed = ((dispatch or {}).get('data') or {}).get('execution_record')
+        receiver = ((turn or {}).get('data') or {}).get('receiver')
+        if committed is None or not _text(receiver):
+            return None
+        ER = _organ('control_execution_record')
+        lines, after = [], 0
+        try:
+            records = ER.directory(json.loads(Path(receiver).read_text()))
+            while True:
+                page = ER.read(records, dispatch_id, after, 4096, committed=committed)
+                lines += page['lines']
+                after += len(page['lines'])
+                if not page['lines'] or after >= page['total']:
+                    break
+        except Exception as error:  # noqa: BLE001 - an unreadable record keeps no reply, by name
+            self.observe({'schema': SCHEMA, 'operation': 'turn_reply', 'conversation': identity, 'sequence': sequence,
+                          'dispatch_id': dispatch_id, 'outcome': 'refused',
+                          'refusal': getattr(error, 'code', type(error).__name__)})
+            return None
+        return final_reply(lines)
 
     def _session_event(self, identity, sequence, dispatch_id, session, start):
         """VELDO-0176 observability: the capture a turn's dispatch produced, as bound to its record (ids and digest,
@@ -954,6 +1076,30 @@ def turn_from_record(lines):
         if call['id'] in results:
             call['result'] = results[call['id']]
     return {'message': message, 'calls': calls, 'reply': replies[-1] if replies else None}
+
+
+def final_reply(lines):
+    """VELDO-0175 AC3: a run's final result text from its execution record (VELDO-0060 and VELDO-0061 terminal
+    records): Claude Code's successful `result` event, else Codex's last completed agent message before its turn
+    completed; None when the run wrote neither."""
+    result, message = None, None
+    for line in lines:
+        if line.get('stream') != 'engine':
+            continue
+        try:
+            event = json.loads(line.get('payload') or 'null')
+        except ValueError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        if event.get('type') == 'result' and not event.get('is_error') and isinstance(event.get('result'), str):
+            result = event['result']
+        elif event.get('type') == 'item.completed' and isinstance(event.get('item'), dict):
+            item = event['item']
+            if item.get('type') == 'agent_message' and isinstance(item.get('text'), str):
+                message = item['text']
+    reply = result if result is not None else message
+    return reply if _text(reply) else None
 
 
 def _turn_text(sequence, turn):

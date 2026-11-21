@@ -1,0 +1,5 @@
+--- a/.veldo/control_clone.py
++++ b/.veldo/control_clone.py
+@@ -828 +828 @@
+-             '%s:%s' % (commit, held), code='stale_input:commit_unavailable')
++             '%s:refs/heads/%s' % (commit, branch), code='stale_input:commit_unavailable')  # defect: into it

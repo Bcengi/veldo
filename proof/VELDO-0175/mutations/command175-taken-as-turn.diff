@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake_conversation.py
++++ b/.veldo/control_intake_conversation.py
+@@ -138 +138 @@
+-        if command['source_kind'] != 'telegram_message':
++        if True:  # defect: every reply to a conversation message is its next turn
