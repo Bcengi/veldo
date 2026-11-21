@@ -791,9 +791,24 @@ sys.exit(child.wait())
                       'closed %r; early %r' % (observed['closed_output'], observed['closed_output_normal']))
                 # Through the wrapper (a remote engine), stopping the local transport at the deadline does not
                 # show the far engine ended: the outcome is unknown and the unit stays held.
+                # VELDO-0358: its deadline is an hour away and is reached on the receiver's supplied clock once the
+                # far engine runs (its marker), as in the closed-output row above; a receiver that stops nothing for
+                # it answers the check that nothing was due.
                 ur = admitted('VELDO-9322')
-                remote = runner.submit(ur, 'build', **job(release='never-9322', adapter='wrapped-engine', deadline=2))
-                runner.wait(remote)
+                remote = runner.submit(ur, 'build', **job(release='never-9322', adapter='wrapped-engine'))
+                marker_for(remote.dispatch_id)
+                remote.child.stdin.write((json.dumps({'advance': remote.contract['deadline'] - now() + 1,
+                                                      'check': 'remote-past-deadline'}) + '\n').encode())
+                remote.child.stdin.flush()
+                remote_judged = WAITS.wait(
+                    'the deadline stop of %s on the supplied clock' % remote.dispatch_id,
+                    lambda: rec(remote.dispatch_id).get('state') not in D.STOPPABLE,
+                    lambda: any(m.get('due') is None for m in answered(remote, 'remote-past-deadline')),
+                    [WAITS.Store(db), WAITS.Pidfd(remote.child), LaunchPipe(remote)])
+                if remote_judged.done:
+                    runner.wait(remote)
+                else:
+                    runner.wait(remote, timeout=0)  # nothing will stop it: recorded as found now
                 rr = rec(remote.dispatch_id)
                 again = attempt(lambda: runner.submit(ur, 'build', **job(adapter='wrapped-engine')))
                 observed['remote_stop'] = {'result': remote.result, 'state': rr.get('state'), 'reason': rr.get('reason'),
