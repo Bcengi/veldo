@@ -16563,32 +16563,31 @@ def cases():
              "            if any(member in listed for member in closure):\n",
              "            if False:  # defect: a suite of the unconfined leg is given a key\n",
              ['closure', 'closure/unconfined-leg-suite-and-dependent-are-unknown'])
-    reuse206('suite206-dispatcher-skips-prerequisite', 'run_scope.py',
-             "        needed |= set(closure)\n",
-             "        needed |= {name}  # defect: a fresh suite's reusable prerequisite is left out\n",
+    reuse206('suite206-dispatcher-skips-prerequisite', 'selftest.py',
+             '    RUN = [s for s in RUN if s["name"] in _closure]  # the whole prerequisite closure runs here\n',
+             '    RUN = [s for s in RUN if s["name"] == CHILD]  # defect: an isolated suite runs without its prerequisites\n',
              ['closure', 'closure/fresh-dependent-executes-its-reusable-prerequisite'])
     # AC2, declared: a partial run is accepted as a full passing suite.
     reuse206('suite206-partial-run-published', 'gate_reuse.py',
-             "            complete = (len(seen) == 1 and leg['end'] is not None\n"
-             "                        and leg['begin'].get('scope') == 'full')\n",
-             "            complete = (len(seen) == 1 and leg['end'] is not None)  # defect: a selector run counts\n",
+             "                        and leg['begin'].get('scope') == 'full'\n",
+             "                        # defect: a run that says it was a selector run counts\n",
              ['pass-only', 'pass-only/selector-run-is-not-stored'])
     reuse206('suite206-partial-record-accepted', 'gate_reuse.py',
-             "            or result['scope'] != 'full' or result['complete'] is not True\n",
+             "            or result['scope'] != 'isolated' or result['complete'] is not True\n",
              "",
              ['pass-only', 'pass-only/signed-record-of-anything-but-a-full-passing-run-runs-fresh'])
     reuse206('suite206-unfinished-run-published', 'gate_reuse.py',
-             "            complete = (len(seen) == 1 and leg['end'] is not None\n",
-             "            complete = (len(seen) == 1  # defect: a run that was ended early counts\n",
+             "            complete = (planned_so and ended and whole and bool(own) and leg['end'] is not None\n",
+             "            complete = (planned_so and ended and whole and bool(own)  # defect: a run ended early counts\n",
              ['pass-only', 'pass-only/timed-out-run-is-not-stored'])
     reuse206('suite206-failed-run-published', 'gate_reuse.py',
-             "                  and item['failed'] == 0 and item['passed'] >= 1):\n",
-             "                  and item['passed'] >= 1):  # defect: a suite with failed rows is stored as passed\n",
+             "                  and rows_failed == 0 and own[0]['passed'] >= 1):\n",
+             "                  and own[0]['passed'] >= 1):  # defect: a suite with failed rows is stored as passed\n",
              ['pass-only', 'pass-only/failed-run-is-not-stored'])
     reuse206('suite206-selector-run-reused', 'run_scope.py',
-             '    if selector is not None:\n        return set(), "a selector run is never reused"\n',
+             '    if selector is not None:\n        return set(), set(), "a selector run is never reused"\n',
              '    if False:  # defect: a selector run leaves out what the plan names\n'
-             '        return set(), "a selector run is never reused"\n',
+             '        return set(), set(), "a selector run is never reused"\n',
              ['pass-only', 'pass-only/cached-selector-run-cannot-verify'])
     reuse206('suite206-other-root-plan-honored', 'run_scope.py',
              '    if plan["root"] != str(Path(root).resolve()):\n',
@@ -16608,11 +16607,11 @@ def cases():
              "               'executed': len(results),  # defect: reused suites are counted as run\n",
              ['receipts', 'receipts/cold-warm-and-mixed-counts-are-exact'])
     reuse206('suite206-force-fresh-ignored', 'gate_reuse.py',
-             "    if forced:\n        return names, entries\n",
-             "    if False:  # defect: the force-fresh control is ignored\n        return names, entries\n",
+             "    if not forced and any(entry['key'] for entry in entries.values()):\n",
+             "    if any(entry['key'] for entry in entries.values()):  # defect: the force-fresh control is ignored\n",
              ['receipts', 'receipts/force-fresh-reads-and-writes-no-record'])
     reuse206('suite206-unauthenticated-reuse-accepted', 'gate_reuse.py',
-             "            if (len(seen) != 1 or forced or entry['reason'] != 'hit'\n"
+             "            if (len(seen) != 1 or runs or forced or entry['reason'] != 'hit'\n"
              "                    or item['passed'] != entry['record']['passed'] or item['failed'] != 0):\n",
              "            if False:  # defect: a reused result the plan did not authenticate is accepted\n",
              ['receipts', 'receipts/every-suite-is-accounted-for-or-the-settlement-is-red'])
@@ -16635,6 +16634,57 @@ def cases():
              '  if [ -n "$_veldo_suite_fields" ]; then REUSE_JSON="$_veldo_suite_fields"; fi\n',
              '  : # defect: the stamp claims no suite was reused\n',
              ['receipts', 'receipts/gate-plans-settles-and-stamps-the-suite-stage'])
+    # The review of a27ec1c4 (review-veldo-0206, fix round 1). Each is the defect its finding names.
+    # Finding 1: a qualified suite runs in the shared namespace after the suites before it, so its
+    # result depends on state its key does not hold; the review's counterexample is the row.
+    reuse206('suite206-qualified-suite-runs-in-shared-namespace', 'run_scope.py',
+             "    return ([n for n in running if n not in isolated],\n"
+             "            [n for n in running if n in isolated and n not in reusable],\n",
+             "    return ([n for n in running if n not in reusable],  # defect: no suite gets a process of its own\n"
+             "            [],\n",
+             ['closure', 'closure/state-left-by-an-earlier-suite-cannot-hide-a-failure'])
+    reuse206('suite206-shared-observation-not-flagged', 'gate_reuse.py',
+             "                    problems.append('%s is qualified to run isolated and ran in the shared namespace' % name)\n",
+             "                    pass  # defect: a qualified suite observed in the shared namespace is accepted\n",
+             ['pass-only', 'pass-only/plan-is-honored-only-by-the-run-it-was-made-for'])
+    reuse206('suite206-prerequisite-of-shared-suite-isolated', 'gate_reuse.py',
+             "                if entries[member]['key'] is not None:  # needed in the shared namespace: not isolated\n",
+             "                if False:  # defect: a suite the shared namespace needs is taken out of it\n",
+             ['closure', 'closure/prerequisite-of-a-shared-suite-is-not-isolated'])
+    # Finding 2: the qualifications are read from the candidate, so candidate code qualifies itself.
+    reuse206('suite206-candidate-qualifies-itself', 'gate_reuse.py',
+             "        registry = suite_registry(authority)  # the authority's, never the candidate's\n",
+             "        registry = suite_registry(root)  # defect: the candidate's own qualifications are believed\n",
+             ['closure', 'closure/candidate-cannot-qualify-itself'])
+    # Finding 3: the plan reaches every stage, and any dispatcher that finds it honors it.
+    reuse206('suite206-plan-exported-to-every-stage', 'verify.sh',
+             '  if [ -n "${VELDO_SUITE_PLAN:-}" ]; then VELDO_SUITE_REUSE="$VELDO_SUITE_PLAN" "$@"; else "$@"; fi\n',
+             '  export VELDO_SUITE_REUSE="$VELDO_SUITE_PLAN"; "$@"  # defect: the plan stays in every later stage\n',
+             ['receipts', 'receipts/gate-hands-the-plan-to-the-unit-stage-only'])
+    reuse206('suite206-plan-honored-on-any-output', 'run_scope.py',
+             '    if output is None or output not in plan["output"]:\n',
+             '    if False:  # defect: a dispatcher another stage starts honors the plan\n',
+             ['pass-only', 'pass-only/plan-reaches-only-the-unit-stage'])
+    # Finding 4: the settlement does not check that a fresh suite's prerequisites ran where it ran.
+    reuse206('suite206-isolated-closure-not-settled', 'gate_reuse.py',
+             "            whole = (closures[name] is not None and [item['suite'] for item in run['results']] == closures[name]\n",
+             "            whole = (closures[name] is not None  # defect: any account counts as the whole closure\n",
+             ['receipts', 'receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored'])
+    reuse206('suite206-shared-prerequisite-not-settled', 'gate_reuse.py',
+             "                if member != name and elsewhere and not here:\n",
+             "                if False:  # defect: a fresh suite beside a left-out prerequisite is accepted\n",
+             ['receipts', 'receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored'])
+    # Finding 5: the exact keys are only in the gate's output, not in its stamp and event.
+    reuse206('suite206-stamp-drops-suite-keys', 'gate_reuse.py',
+             "                                   for result in results if result['key'] is not None}}\n",
+             "                                   for result in results if False}}  # defect: no key reaches the stamp\n",
+             ['receipts', 'receipts/gate-stamp-and-event-carry-exact-keys-and-counts',
+              'receipts/stamp-carries-the-reused-count-and-landing-refuses-it'])
+    # The review's note on an untested branch: no plan, and the gate still settles green.
+    reuse206('suite206-unplanned-gate-not-settled', 'verify.sh',
+             '  [ -n "${VELDO_SUITE_STATE:-}" ] || return 0\n',
+             '  [ -n "${VELDO_SUITE_STATE:-}" ] && [ -n "${VELDO_SUITE_PLAN:-}" ] || return 0  # defect: no plan, nothing settled\n',
+             ['receipts', 'receipts/gate-is-red-when-no-plan-could-be-made'])
 
     return result
 

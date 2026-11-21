@@ -53,16 +53,26 @@ veldo_stage() {
 
 # SUITE RESULT REUSE (VELDO-0206). When the unit stage is this repository's suite dispatcher, the
 # authority's scripts/gate_reuse.py plans before the stage and settles after it; the dispatcher is
-# candidate code inside the confinement and never opens the store. The plan gives every manifest
-# suite its exact closure key, or the named reason it has none, and hands the dispatcher, in
-# VELDO_SUITE_REUSE, only the suites that hold an authenticated passing record under that key. The
-# settlement reads the dispatcher's own account back from the stage's output, requires a result for
-# every manifest suite, computes every key again, publishes a fresh passing result, and writes the
-# receipt the stamp's reused.unit is taken from. A fresh failure is RED whatever was reused, and so
-# is a reused result the plan did not authenticate. VELDO_GATE_FORCE_FRESH=1 reads and writes no
-# record, and a landing verifier refuses a stamp that reused any suite, so landing and release
-# gates stay force fresh. With no qualified suite every suite runs fresh and the receipt says so.
+# candidate code inside the confinement and never opens the store. The plan gives every suite the
+# AUTHORITY's own scripts/run_scope.py qualifies its exact closure key, or the named reason it has
+# none, and hands the unit stage's dispatcher, in VELDO_SUITE_REUSE, the suites it runs each in a
+# process of its own and, of those, the ones that hold an authenticated passing record under that
+# key. The settlement reads the dispatcher's own account back from the stage's output, requires a
+# result for every manifest suite, computes every key again, publishes a passing isolated result,
+# and writes the receipt the stamp's reused.unit and suites fields are taken from. A fresh failure
+# is RED whatever was reused, and so is a reused result the plan did not authenticate.
+# VELDO_GATE_FORCE_FRESH=1 reads and writes no record, and a landing verifier refuses a stamp that
+# reused any suite, so landing and release gates stay force fresh. With no qualified suite every
+# suite runs fresh in the shared namespace and the receipt says so.
+# THE PLAN IS THE UNIT STAGE'S ALONE. It is never exported: veldo_planned sets the variable for the
+# one command that runs the unit stage (the serial stage, or the scheduler whose unit nodes run it),
+# and the plan names the unit stage's own output files, made by the plan step, so a dispatcher
+# another stage or node starts honors nothing even when the variable reaches it.
 # These steps do nothing until the plan step has made its state folder.
+VELDO_SUITE_PLAN=""
+veldo_planned() {
+  if [ -n "${VELDO_SUITE_PLAN:-}" ]; then VELDO_SUITE_REUSE="$VELDO_SUITE_PLAN" "$@"; else "$@"; fi
+}
 veldo_suites() {
   [ -n "${VELDO_SUITE_STATE:-}" ] || return 0
   python3 -I -S "$VELDO_AUTHORITY/scripts/gate_reuse.py" "suite-$1" --root "$(pwd -P)" \
@@ -72,7 +82,7 @@ veldo_suites() {
 # printed when the stage ends, never through a pipe: the gate waits for the stage and for nothing
 # a suite left running with the output open. VELDO_UNIT_STATUS is the stage's own verdict.
 veldo_unit_stage() {
-  if veldo_stage "$1" "$2" > "$VELDO_SUITE_STATE/unit.log" 2>&1; then VELDO_UNIT_STATUS=pass
+  if veldo_planned veldo_stage "$1" "$2" > "$VELDO_SUITE_STATE/unit.log" 2>&1; then VELDO_UNIT_STATUS=pass
   else VELDO_UNIT_STATUS=FAIL; fi
   cat "$VELDO_SUITE_STATE/unit.log"
   [ "$VELDO_UNIT_STATUS" = pass ]
@@ -307,22 +317,6 @@ ORDER="format lint types unit integration contract journeys ui_states accessibil
 token_lint visual_baselines build dependency_audit licenses security migration \
 generated docs performance coverage packaging personal_setup deploy_dry_run extra mutation"
 
-# VELDO-0206: plan the suite stage. A caller's plan never reaches the dispatcher: only this step
-# sets the variable, for the root it planned. A plan that cannot be made leaves the stage fresh and
-# the settlement, which then finds no plan, RED.
-unset VELDO_SUITE_REUSE
-if [ "${CHECK_unit:-}" = "required:python3 scripts/selftest.py" ] && [ -f scripts/suites/manifest.json ] \
-   && [ -f scripts/run_scope.py ] && [ -f "$VELDO_AUTHORITY/scripts/gate_reuse.py" ]; then
-  VELDO_SUITE_STATE=$(mktemp -d)
-  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SUITE_STATE"; veldo_space_exit' EXIT
-  if VELDO_SUITE_REUSE=$(veldo_suites plan --force-fresh "${VELDO_GATE_FORCE_FRESH:-0}"); then
-    export VELDO_SUITE_REUSE
-  else
-    unset VELDO_SUITE_REUSE
-    echo "suite reuse: no plan could be made; every suite runs fresh and the gate is RED"
-  fi
-fi
-
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
 # VELDO-0216: the authority graph replaces only required catalog execution.
@@ -330,7 +324,25 @@ TODAY=$(date -u +%Y-%m-%d)
 VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
-  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE" ${VELDO_SUITE_STATE:+"$VELDO_SUITE_STATE"}; veldo_space_exit' EXIT
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
+fi
+# VELDO-0206: plan the suite stage, once the folder the unit stage writes its output to exists (the
+# scheduler's under the graph, the plan's own otherwise): the plan step makes the output files and
+# binds the plan to them. A caller's plan never reaches a dispatcher: the variable is dropped here
+# and only veldo_planned sets it. A plan that cannot be made leaves the stage fresh and the
+# settlement, which then finds no plan, RED.
+unset VELDO_SUITE_REUSE
+if [ "${CHECK_unit:-}" = "required:python3 scripts/selftest.py" ] && [ -f scripts/suites/manifest.json ] \
+   && [ -f scripts/run_scope.py ] && [ -f "$VELDO_AUTHORITY/scripts/gate_reuse.py" ]; then
+  VELDO_SUITE_STATE=$(mktemp -d)
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf ${VELDO_SCHEDULE:+"$VELDO_SCHEDULE"} "$VELDO_SUITE_STATE"; veldo_space_exit' EXIT
+  if ! VELDO_SUITE_PLAN=$(veldo_suites plan --force-fresh "${VELDO_GATE_FORCE_FRESH:-0}" \
+       --logs "${VELDO_SCHEDULE:-$VELDO_SUITE_STATE}"); then
+    VELDO_SUITE_PLAN=""
+    echo "suite reuse: no plan could be made; every suite runs fresh and the gate is RED"
+  fi
+fi
+if [ -n "$VELDO_SCHEDULE" ]; then
   _veldo_stages=()
   for _veldo_name in $ORDER; do
     _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"
@@ -342,7 +354,7 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
     _veldo_stages+=(--stage "$_veldo_name" "$_veldo_cmd")
     veldo_expect_leg "$_veldo_name" "$_veldo_cmd"
   done
-  if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
+  if ! veldo_planned python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
       --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
       --output "$VELDO_OUT/gate-schedule.json" "${_veldo_stages[@]}"; then FAIL=1; fi
   if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
@@ -508,8 +520,9 @@ REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOU
     REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
   fi
 }
-# VELDO-0206: the unit stage's reused count, from the suite receipt. A receipt that cannot carry it
-# is RED and the fields claim no suite reuse.
+# VELDO-0206: the unit stage's account, from the suite receipt, into the fields the stamp and the gate
+# event both carry: reused.unit, and suites with the exact counts and every qualified suite's exact
+# key beside its source. A receipt that cannot carry them is RED and the fields claim no suite reuse.
 if [ -n "${VELDO_SUITE_STATE:-}" ]; then
   _veldo_suite_fields=$(printf '%s' "$REUSE_JSON" | veldo_suites stamp --force-fresh "${VELDO_GATE_FORCE_FRESH:-0}") \
     || { FAIL=1; STATUS=red; EVENT=gate.failed; }

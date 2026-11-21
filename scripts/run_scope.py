@@ -60,6 +60,7 @@ which is what proof/WARP-0717/inner-loop-measurement.json does per fragment.
   python3 scripts/run_scope.py --emit-requires    regenerate scripts/suites/requires.json
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -369,8 +370,10 @@ def leg_runs(suite, rows=None, environ=None):
 
 
 # SUITE RESULT REUSE (VELDO-0206). The qualifications below are the ONLY thing that makes a suite
-# reusable, and this file is protected, so adding one is an owner-approved change. The authority's
-# scripts/gate_reuse.py reads this literal with ast and never imports this module. Each entry is
+# reusable, and this file is protected, so adding one is an owner-approved change. The gate's
+# AUTHORITY reads this literal from ITS OWN copy of this file (scripts/gate_reuse.py, with ast,
+# never importing this module); the copy in the tree being verified is never asked, so a
+# candidate cannot qualify its own suites: an entry counts once it has landed. Each entry is
 #   "<suite name>": {
 #     "closure_digest": the digest gate_reuse.suite_code_digest gives the code that was reviewed:
 #                       the shared preamble and every suite file of the prerequisite closure;
@@ -379,20 +382,29 @@ def leg_runs(suite, rows=None, environ=None):
 #     "environment":    every environment variable it reads beyond gate_reuse.SUITE_ENVIRONMENT;
 #     "non_file_inputs": "none", the reviewed statement that clocks, randomness, services and
 #                       other hosts' state cannot change a row;
-#     "rationale":      why that statement holds for this suite.
+#     "side_effects":   "none", the reviewed statement that the suite leaves nothing outside its
+#                       own process that another suite reads;
+#     "rationale":      why those statements hold for this suite.
 #   }
-# A suite is reusable only when it AND every member of its prerequisite closure are qualified, none
-# of them runs in the unconfined leg, and the pinned digest still matches. NO PRODUCTION SUITE IS
-# QUALIFIED: the suites share one mutable namespace and most reach host services, and nothing here
-# pretends otherwise. Every suite runs fresh until a reviewed entry says why it need not.
-SUITE_REUSE = {"schema": "veldo.suite-closures/v1", "suites": {}}
+# A QUALIFIED SUITE RUNS ISOLATED, IN EVERY GATE: in a process of its own, started before any suite
+# has run in the dispatcher, holding the shared preamble and its prerequisite closure and nothing
+# else. That is what makes its result a function of its key: the state the other suites leave in
+# the shared namespace, the process, the working directory and the environment never reaches it.
+# It is isolated (and has a key) only when it AND every member of its prerequisite closure are
+# qualified, none of them runs in the unconfined leg, the pinned digest still matches, and no
+# unqualified suite needs it in the shared namespace. NO PRODUCTION SUITE IS QUALIFIED: nothing
+# here pretends a suite is independent. Every suite runs in the shared namespace until a reviewed
+# entry says why it need not.
+SUITE_REUSE = {"schema": "veldo.suite-closures/v2", "suites": {}}
 
-# What the authority hands a gate's dispatcher: the suites it may leave out, bound to one root and
-# one run. The dispatcher never opens the store and never computes a key; it leaves out exactly
-# what the plan authenticates and says what it did, line by line, for the authority to settle.
+# What the authority hands the unit stage's dispatcher: the suites it runs isolated and, of those,
+# the ones it may leave out, bound to one root, one run and the unit stage's own output. The
+# dispatcher never opens the store and never computes a key; it does exactly what the plan says
+# and says what it did, line by line, for the authority to settle.
 REUSE_VARIABLE = "VELDO_SUITE_REUSE"
-REUSE_PLAN = "veldo.suite-plan/v1"
+REUSE_PLAN = "veldo.suite-plan/v2"
 REUSE_LINE = "selftest-suite-reuse"
+REUSE_FIELDS = {"schema", "nonce", "root", "output", "isolate", "reuse", "child", "report"}
 
 
 class ReuseRefused(Exception):
@@ -407,56 +419,86 @@ def reuse_plan(environ):
         return None
     try:
         plan = json.loads(raw)
-        if (not isinstance(plan, dict) or set(plan) != {"schema", "nonce", "root", "reuse"}
+        if (not isinstance(plan, dict) or set(plan) != REUSE_FIELDS
                 or plan["schema"] != REUSE_PLAN or not re.match(r"^[0-9a-f]{32}$", plan["nonce"])
                 or not isinstance(plan["root"], str) or not isinstance(plan["reuse"], dict)
                 or not all(isinstance(k, str) and type(v) is int and v >= 1
-                           for k, v in plan["reuse"].items())):
+                           for k, v in plan["reuse"].items())
+                or not isinstance(plan["isolate"], list)
+                or not all(isinstance(k, str) for k in plan["isolate"])
+                or len(set(plan["isolate"])) != len(plan["isolate"])
+                or not set(plan["reuse"]) <= set(plan["isolate"])
+                or not isinstance(plan["output"], list)
+                or not all(isinstance(i, list) and len(i) == 2 and all(type(n) is int for n in i)
+                           for i in plan["output"])
+                or not (plan["child"] is None or isinstance(plan["child"], str))
+                or not (plan["report"] is None or isinstance(plan["report"], str))
+                or (plan["child"] is None) != (plan["report"] is None)
+                or (plan["child"] is not None and (plan["isolate"] or plan["reuse"]))):
             raise ValueError("malformed")
     except (ValueError, TypeError, KeyError):
         raise ReuseRefused("%s is not a suite plan of this dispatcher" % REUSE_VARIABLE)
     return plan
 
 
-def reuse_honored(plan, root, selector, suite_order, leg, listed, order):
-    """(names this run may leave out, why none when a plan names some and none may be).
+def output_identity(stream):
+    """[device, inode] of the file a stream writes to, as the plan names the unit stage's output."""
+    try:
+        info = os.fstat(stream.fileno())
+    except (OSError, ValueError, AttributeError):
+        return None
+    return [info.st_dev, info.st_ino]
 
-    A plan is honored only by the full manifest in manifest order, at the root it was computed
-    for, outside the unconfined leg. A selector, a reordered run, another root (the integration
-    stage's copy, an unconfined leg's snapshot, a fixture) or a plan naming a suite this manifest
-    or this leg does not own leaves out nothing: everything runs fresh."""
-    names = set(plan["reuse"])
+
+def reuse_honored(plan, root, selector, suite_order, leg, listed, order, output):
+    """(names this run isolates, names of those it may leave out, why none when the plan names some).
+
+    A plan is honored only by the unit stage's own dispatcher: the full manifest in manifest order,
+    at the root it was computed for, outside the unconfined leg, writing to one of the output files
+    the authority made for the unit stage. A selector, a reordered run, another root (the
+    integration stage's copy, an unconfined leg's snapshot, a fixture), another stage's process or
+    a plan naming a suite this manifest or this leg does not own isolates and leaves out nothing:
+    everything runs fresh in the shared namespace, and the settlement says so."""
+    names = set(plan["isolate"])
     if not names:
-        return set(), None
+        return set(), set(), None
     if selector is not None:
-        return set(), "a selector run is never reused"
+        return set(), set(), "a selector run is never reused"
     if suite_order:
-        return set(), "a reordered run is never reused"
+        return set(), set(), "a reordered run is never reused"
     if leg == "unconfined":
-        return set(), "the unconfined leg is never reused"
+        return set(), set(), "the unconfined leg is never reused"
     if plan["root"] != str(Path(root).resolve()):
-        return set(), "the plan is for another root"
+        return set(), set(), "the plan is for another root"
+    if output is None or output not in plan["output"]:
+        return set(), set(), "the plan is for the unit stage, and this process does not write its output"
     if not names <= set(order) or names & set(listed):
-        return set(), "the plan names a suite this run does not own"
-    return names, None
+        return set(), set(), "the plan names a suite this run does not own"
+    return names, set(plan["reuse"]), None
 
 
-def reuse_execution(running, requires, reusable):
-    """(names to execute, names left out), both in run order.
+def reuse_execution(running, requires, isolated, reusable):
+    """(names run in the shared namespace, names run isolated, names left out), each in run order.
 
-    The suites share one namespace, so a suite that runs needs every member of its prerequisite
-    closure to have run before it. Every suite without an authenticated record runs, and so does
-    the whole closure of each of them, a reusable prerequisite included: that one is then FRESH,
-    and its rows count. A suite with no closure on record is unknown, and then nothing is left
-    out at all."""
-    fresh = [n for n in running if n not in reusable]
-    needed = set(fresh)
-    for name in fresh:
+    An isolated suite runs in a process of its own with its whole prerequisite closure, or is left
+    out on its record; either way it is not in the shared namespace. So no suite of the shared
+    namespace may need one: when one does, or a closure is not on record, this is not a plan the
+    authority makes, and then nothing is isolated or left out at all."""
+    for name in running:
         closure = requires.get(name)
-        if not isinstance(closure, list) or name not in closure:
-            return list(running), []
-        needed |= set(closure)
-    return [n for n in running if n in needed], [n for n in running if n not in needed]
+        if (not isinstance(closure, list) or name not in closure
+                or (name not in isolated and set(closure) & set(isolated))):
+            return list(running), [], []
+    return ([n for n in running if n not in isolated],
+            [n for n in running if n in isolated and n not in reusable],
+            [n for n in running if n in isolated and n in reusable])
+
+
+def reuse_child(plan, name, report):
+    """The value the dispatcher hands the process it starts for one isolated suite."""
+    return json.dumps({"schema": REUSE_PLAN, "nonce": plan["nonce"], "root": plan["root"], "output": [],
+                       "isolate": [], "reuse": {}, "child": name, "report": report},
+                      sort_keys=True, separators=(",", ":"))
 
 
 def reuse_line(nonce, kind, **payload):
