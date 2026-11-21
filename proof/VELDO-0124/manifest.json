@@ -251,6 +251,11 @@
         "check": "python3 scripts/check_space_boundary.py; python3 scripts/selftest.py --suite 155_veldo_0304_space_boundary",
         "status": "passed",
         "detail": "Space boundary: pass, and suite 155 51 rows passed, after one reviewed entry was added for project_runner_macos.py Run.release (see needs_review)"
+      },
+      {
+        "check": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
+        "status": "passed",
+        "detail": "26 rows passed after the Mac runner's four self.os.send call sites (OS signals to a run's processes) were declared in the suite's send inventory; without them inventory/sends-and-assets was red"
       }
     ],
     "not_rerun": "Native macOS rows and real engine qualification: they need the Mac and a Claude login, as OPEN.md says. Criteria statuses are unchanged (pending).",
