@@ -22,7 +22,6 @@ def _v168_suite():
     import tempfile
     import threading
     import time
-    from types import SimpleNamespace
     import unicodedata
     from unittest.mock import patch
 
@@ -327,7 +326,8 @@ def _v168_suite():
             for now in (1791000000.75, 4102444800.75):
                 st = {'tick': 0, 'lock': threading.Lock()}
                 fixture_bot = {'next': 0, 'messages': {}}
-                with patch.object(H, 'time', SimpleNamespace(time=lambda: now)):
+                # VELDO-0358: the fixture reads the wall time through its one reader (_wall, from the support Stamp).
+                with patch.object(H, '_wall', lambda: now):
                     first = H._message(st, fixture_bot, {}, {'id': 1}, 'first')
                     second = H._message(st, fixture_bot, {}, {'id': 1}, 'second')
                 clock_ok.append(type(first['date']) is int and now < first['date'] < second['date'] < now + 3)
