@@ -157,6 +157,9 @@ def load(path=DECLARATION):
     return document, 'sha256:' + hashlib.sha256(raw).hexdigest()
 
 
+read_declaration = load  # VELDO-0358: the name run_load_proof reads it by
+
+
 def entries(document):
     """The leg's entries in the form the candidate's dispatcher reads: name or name:rows."""
     return [e['suite'] + (':' + e['rows'] if 'rows' in e else '') for e in document['suites']]
@@ -713,7 +716,8 @@ def run_load_proof(root, record, opened=None, baseline=None, path=DECLARATION, t
         return nothing('no_record', 'there is no opened-files record (%s)' % opened.name)
     try:
         baselined, opened_files, suites, closures = load_inputs(root, baseline, opened)
-        declaration = load(path) if Path(path).exists() else None
+        # By its other name: below, `load` is this leg's generator module, so `load` here is that local.
+        declaration = read_declaration(path) if Path(path).exists() else None
     except Invalid as error:
         print('   load-proof: %s; the leg is RED' % error, flush=True)
         out.update(verdict='FAIL', error='invalid_input')
