@@ -1,7 +1,8 @@
 # VELDO-0217 proof
 
-Implementation commit 94fd75e6; fix round 1 (review FIX, F1-F6) commit a75a0516. Every loaded run
-below was made on a scratch clone of a75a0516, through the host's heavy-run wrapper. The canonical gate has not run yet; the lead queues it.
+Implementation commit 94fd75e6; fix round 1 (review FIX, F1-F6) commit a75a0516; fix round 2
+(fix-check FIX, F4 half fixed) commit a7d82428. Fix round 1's loaded runs were made on a scratch clone
+of a75a0516 through the host's heavy-run wrapper; fix round 2's are listed in its section. The canonical gate has not run yet; the lead queues it.
 
 ## Acceptance criteria and their rows
 
@@ -12,10 +13,10 @@ below was made on a scratch clone of a75a0516, through the host's heavy-run wrap
 | AC3 | declarations/key-covers-inputs (13 edit classes, each missing exactly its declaring cases; an undeclared file and an unloaded helper miss none) | declarations217-helper-not-keyed fails key-covers-inputs |
 | AC4 | declarations/worker-trace-refused, undeclared-absent-socket, incomplete-trace-demoted (the coordinator's own Workers.finish on planted publishing traces), accept-pending; declarations/accept-pending-real (0207 strace leg); declarations/non-file-refused (five fixture classes through the classifier, then through the coordinator's run_stage, where four show only in the mutant trace (the bus also in the baseline) and nothing is published but the loopback-only case), absent-socket-keyed, outside-process; declarations/non-file-real-traces (0207 strace leg, real strace) | declarations217-bus-allowed fails non-file-refused; see fix round 1 |
 
-red-green.json is the confined drive `check_gate_mutations.py --finding 217`: passed, 12 registered,
-12 executed, 12 rejected, each mutant failing exactly its target row while its baseline and no-op
+red-green.json is the confined drive `check_gate_mutations.py --finding 217` at a7d82428: passed, 14
+registered, 14 executed, 14 rejected, each mutant failing exactly its target row while its baseline and no-op
 pass. red-green-driver-unconfined.txt is the same check through the driver's own materialize and
-worker, outside confinement.
+worker, outside confinement, at a75a0516 (12 falsifiers).
 
 local-tests.txt: the 0217 suite and every suite whose code this change touches or that pins the
 proposer (0204, 0205, 0207, 0208, 0210, 0215, 0216, 0219, 0259, 0304), rerun at a75a0516. All are
@@ -31,6 +32,28 @@ green (157: 19 rows; 0207: 92 rows with accept-pending-real).
 | F4 (L) review records unprotected | policy protected path `proof/VELDO-0217/reviews/*` (floor high) in .veldo/policy.yaml, the declarations file's own pattern | review-records-protected | declarations217-reviews-unprotected |
 | F5 (L) "last" gate observation | the proposer takes observations only from a passed receipt whose input_digest is the gate's input digest of the tree it traces, and records the receipt binding and its inputs; case_reuse names observation_not_current otherwise | gate-observation-current | declarations217-receipt-unchecked |
 | F6 (L) incomplete trace failed the stage | IncompleteTrace keeps the case from publishing (incomplete_trace); the stage passes; other trace errors still fail it | incomplete-trace-demoted | declarations217-incomplete-fails-stage |
+
+## Fix round 2: F4 completed
+
+case_reuse.review_matches read the record at whatever path the declaration named, so the policy
+pattern protecting proof/VELDO-0217/reviews/* could be bypassed by a record added later elsewhere.
+Both guards now hold: the record path must start with proof/VELDO-0217/reviews/, and a reviewed
+declaration binds the sha256 of the record's exact bytes (review_sha256), set by the owner in the
+protected change that sets reviewed true. The digest is the stronger design, because it fixes what was
+approved at approval time regardless of the record's location, later edits or the policy pattern, and
+no declaration can be approved before its record exists; the prefix stays as defense in depth.
+review_sha256 is approval, not an input, so the declaration digest and the case key leave it out.
+
+| Row (157) | Falsifier (finding 217) |
+|----|----|
+| review-record-bound: a matching record at notes/anywhere.json, and a declaration whose bound digest is not its record's; both review_mismatch, neither keyed | declarations217-review-anywhere (prefix check dropped), declarations217-review-unbound (digest check dropped) |
+
+Runs at a7d82428: the confined drive above (scratch clone, host heavy-run wrapper; the compute node's
+Python has no os.pidfd_open, so the agent sandbox cannot start there); suite 157 on the compute node
+(20 rows green); suite 100 green through the host wrapper (92 rows), while on the compute node its 29
+real-sandbox rows fail identically at a7d82428 and at the parent 7460e9a9, for the same missing
+os.pidfd_open (local-tests.txt). The other suites of fix round 1 build no review_sha256, so their case
+keys and review checks are unchanged.
 
 ## Real-registry runs (outside any gate)
 

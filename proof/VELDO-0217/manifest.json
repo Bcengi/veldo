@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0217",
-  "commit": "a75a05163765950264585fb90261c44c4a9603a6",
+  "commit": "a7d82428470d753856ae89ca12abb49ab4eb85a5",
   "producer": "Claude implementation agent; not an independent reviewer",
   "criteria": [
     {
@@ -16,7 +16,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
+          "detail": "confined drive of finding 217 at a7d82428 (14 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -27,12 +27,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0217/local-tests.txt",
-          "detail": "rows review-conditions, reviewed-flag-protected; fix round 1: gate-observation-current, review-records-protected; partial runs, diagnostic until the canonical gate"
+          "detail": "rows review-conditions, reviewed-flag-protected; fix round 1: gate-observation-current, review-records-protected; fix round 2: review-record-bound; partial runs, diagnostic until the canonical gate"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
+          "detail": "confined drive of finding 217 at a7d82428 (14 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -48,7 +48,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
+          "detail": "confined drive of finding 217 at a7d82428 (14 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -64,7 +64,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
+          "detail": "confined drive of finding 217 at a7d82428 (14 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     }

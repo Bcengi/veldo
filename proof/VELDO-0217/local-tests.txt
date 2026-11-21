@@ -21,3 +21,12 @@ selftest (PARTIAL, 1 of 237 suites): 45 passed, 0 failed in 1.36s
 selftest (PARTIAL, 1 of 237 suites): 71 passed, 0 failed in 0.55s
   99_veldo_0205_reuse                             29 passed    2.12s
 selftest (PARTIAL, 1 of 237 suites): 55 passed, 0 failed in 2.12s
+
+Fix round 2, commit a7d82428
+Compute node pc2 (remote_run.sh --share):
+  157_veldo_0217_declarations                     20 passed    3.69s
+selftest (PARTIAL, 1 of 237 suites): 46 passed, 0 failed in 3.69s
+  100_veldo_0207_case_reuse on pc2: 29 failed, all real-sandbox rows (case worker error: mutation_budget_exceeded), the same 29 rows as at the parent 7460e9a9 on pc2; pc2's Python has no os.pidfd_open, so the agent sandbox cannot start there.
+Scratch clone of a7d82428, through host_heavy.sh:
+  100_veldo_0207_case_reuse                       92 passed    9.92s
+selftest (PARTIAL, 1 of 237 suites): 118 passed, 0 failed in 9.92s
