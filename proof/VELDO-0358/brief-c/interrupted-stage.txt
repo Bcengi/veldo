@@ -1,0 +1,6 @@
+Full mutation stage attempt 1, tested HEAD cd5d22fd.
+Ran through the external host-heavy wrapper with VELDO_GATE_FORCE_FRESH=1.
+Intentionally interrupted with SIGINT after finding a scheduling race in the blocked-child readiness fixture. Exit 130.
+At cleanup, diagnostic outputs contained 600 baseline, 600 no-op and 347 mutant JSON records. All control records had zero failed rows.
+These counts are diagnostic outputs, not completed-stage verdicts. There is no final receipt or full-stage claim for this attempt.
+The readiness marker now comes from descriptor conversion inside os.read; its call frame is already active when the supplied clock advances.
