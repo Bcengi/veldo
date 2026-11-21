@@ -47,7 +47,12 @@ if 'expect' in globals():
         else:
             expect('VELDO-0113 protocol ' + _v113_name + ': ' + _v113_json.dumps(_v113_detail),
                    _v113_row['status'] != 'FAIL')
-    expect('VELDO-0113 protocol unavailable/each-external-client-reaches-refusal',
+    _v113_missing = [dict(identity=c['identity'], outcome=c['outcome'],
+                         observation_failures=c['receipt']['failures'])
+                     for c in _v113_result['cases'] if 'receipt' in c
+                     and not (c['outcome'].get('invoked') and c['outcome'].get('refused'))]
+    expect('VELDO-0113 protocol unavailable/each-external-client-reaches-refusal: '
+           + _v113_json.dumps(_v113_missing, sort_keys=True),
            all(c['outcome'].get('invoked') and c['outcome'].get('refused')
                for c in _v113_result['cases'] if 'receipt' in c))
     expect('VELDO-0113 protocol unavailable/registry-state-product-is-exact',
