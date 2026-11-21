@@ -26,6 +26,7 @@ footprint:
   - scripts/suites/99_veldo_0205_reuse.py
   - scripts/suites/100_veldo_0207_case_reuse.py
   - scripts/suites/101_veldo_0208_landing_reuse.py
+  - scripts/suites/112_veldo_0215_case_deadlines.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0218-a-sample-of-reused-mutation-results-is-rerun-fresh.md

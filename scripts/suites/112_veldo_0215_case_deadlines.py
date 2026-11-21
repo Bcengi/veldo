@@ -148,7 +148,7 @@ def _v215_case_deadlines():
                 def __init__(self, *args, **kwargs):
                     self.keys = {case['identity']: None}
                     self.reasons = {case['identity']: 'fixture'}
-                    self.hits = set([case['identity']]) if reuse_hit else set()
+                    self.hits = {case['identity']: valid_record} if reuse_hit else {}
                     self.forced, self.store, self.base_digest = False, None, 'fixture'
                 def lookup(self, item, validate):
                     return valid_record if reuse_hit else None
@@ -283,8 +283,9 @@ def _v215_case_deadlines():
             wrote = gate.record_case_times(scratch / 'candidate', {key: 80}, owner, authority=True)
         row('authority-recording', record.get('seconds') == 150 and refused is False and wrote is True
             and not list(bad_times.glob('*.json')) and not list(raced[4].glob('*.json'))
-            and reused[0]['status'] == 'passed' and reused[0]['reused'] == 1
-            and not list(reused[4].glob('*.json')) and not list(library[4].glob('*.json')))
+            and reused[0]['status'] == 'passed' and reused[0]['reused'] == 0
+            and reused[0]['executed'] == reused[0]['audit']['audited'] == 1
+            and json.loads((reused[4] / (key + '.json')).read_text())['seconds'] == 150 and not list(library[4].glob('*.json')))
 
         # An installed authority verifies another root. Only its CLI opts into recording;
         # neither a caller environment variable nor --root grants a fixture library call this.
