@@ -504,14 +504,42 @@ def _v347_space_work_suite():
         shut.mkdir()
         (shut / 'inside.txt').write_text('cannot be listed\n')
         os.chmod(str(shut), 0)
+        class OtherAccount:
+            # The probe's own view of the process: another account, so the folder is not this one's to
+            # open. Only the probe's reference to os is replaced; nothing else in the process sees it.
+            def __getattr__(self, name):
+                return getattr(os, name)
+
+            @staticmethod
+            def getuid():
+                return os.getuid() + 1
+
+        P.os = OtherAccount()
         try:
+            seen = P.nested(str(where), openable=True)
             done = send('run_finished', {'run': 'run-9478c'})
         finally:
+            P.os = os
             os.chmod(str(shut), 0o700)
-        check(ROW, 'a folder beneath the item that cannot be listed holds it [%s %s]' % (named(done, item), held_paths(item)),
-              named(done, item) == ('deferred', 'in_use', 'children')
+        check(ROW, 'a folder beneath the item that cannot be listed holds it [%s %s %s]'
+              % (named(done, item), held_paths(item), seen),
+              seen['read'] is False and named(done, item) == ('deferred', 'in_use', 'children')
               and held_paths(item) == [('path:' + str(where), 'unread')]
               and text_of(shut / 'inside.txt') == 'cannot be listed\n')
+        item, where = scratch('shut-clone', run_owner('run-9478d'))
+        inner = clone_into(where / 'shut' / 'clone')
+        hidden = commit(inner, 'hidden.txt', 'unpushed, in a folder the owner shut\n', 'unpushed')
+        os.chmod(str(where / 'shut'), 0)
+        try:
+            seen = P.nested(str(where), openable=True)
+            done = send('run_finished', {'run': 'run-9478d'})
+        finally:
+            os.chmod(str(where / 'shut'), 0o700)
+        check(ROW, 'a folder this user owns but shut is opened by the folder remover, whose walk stops on the '
+              'clone in it before anything is deleted [%s %s]' % (named(done, item), found_of(item).get('said')),
+              seen['read'] is True and seen['shut'] == [str(where / 'shut')]
+              and named(done, item) == ('deferred', 'remove_refused', 'tool')
+              and holds(inner, hidden) and (where / 'leftover.bin').is_file())
 
         ROW = 'ac2/clean-clone-reading'
         fresh = clone_into(temp / 'readings' / 'fresh')

@@ -1535,13 +1535,20 @@ def worktrees(path, run=None):
                           if os.path.realpath(where) != own]}
 
 
-def nested(path, skip=()):
+def nested(path, skip=(), openable=False):
     """The git repositories on disk beneath `path`, other than `path` itself: {read, said,
-    repositories: [their folders]}. A folder is one when it holds a .git entry or is itself a git
-    folder (NESTED REPOSITORIES). Nothing is looked for inside one that was found, inside the path's
-    own .git folder or inside a folder of `skip`; no link is followed. read is False, with the first
-    folder that could not be listed, when the walk could not finish."""
-    top, found, said = str(path), [], None
+    repositories: [their folders]}, and shut: [folders] when `openable` is given. A folder is one when it holds a .git entry or is
+    itself a git folder (NESTED REPOSITORIES). Nothing is looked for inside one that was found, inside
+    the path's own .git folder or inside a folder of `skip`; no link is followed. read is False, with
+    the first folder that could not be listed, when the walk could not finish.
+
+    `openable` is given for a folder the folder remover deletes (VELDO-0347): a folder beneath the
+    top that refuses to be listed only for its permission bits, that is no link and that this process's
+    uid owns is named in shut and does not make read False. The remover opens such a folder up before its
+    own walk, and that walk stops on any repository that is not a clean clone (control_space_remove),
+    so what is inside is looked at before anything is deleted. Any other folder that cannot be listed
+    makes read False."""
+    top, found, said, shut = str(path), [], None, []
     waiting = [top]
     while waiting:
         folder = waiting.pop()
@@ -1551,6 +1558,14 @@ def nested(path, skip=()):
             inner = [entry.path for entry in entries
                      if entry.is_dir(follow_symlinks=False) and not (folder == top and entry.name == '.git')]
         except OSError as error:
+            if openable and folder != top and isinstance(error, PermissionError):
+                try:
+                    owned = os.lstat(folder)
+                except OSError:
+                    owned = None
+                if owned is not None and stat.S_ISDIR(owned.st_mode) and owned.st_uid == os.getuid():
+                    shut.append(folder)
+                    continue
             said = said or 'the folder %s cannot be listed: %s' % (folder, _said(error))
             continue
         names = set(entry.name for entry in entries)
@@ -1558,7 +1573,10 @@ def nested(path, skip=()):
             found.append(folder)
             continue
         waiting.extend(where for where in reversed(inner) if where not in skip)
-    return {'read': said is None, 'said': said, 'repositories': found}
+    answer = {'read': said is None, 'said': said, 'repositories': found}
+    if openable:
+        answer['shut'] = shut
+    return answer
 
 
 def own_repository(path):

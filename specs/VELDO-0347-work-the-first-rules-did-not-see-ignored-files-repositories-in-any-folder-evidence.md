@@ -39,6 +39,7 @@ footprint:
   - "scripts/suites/138_veldo_0300_space_remove.py"
   - "scripts/suites/139_veldo_0301_space_signal.py"
   - "scripts/suites/140_veldo_0345_space_keep.py"
+  - "scripts/suites/156_veldo_0315_reconcile.py"
   - "scripts/suites/*_veldo_0347_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -157,7 +158,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
-- 2026-11-21: built. No acceptance criterion changed. The footprint gains six paths, each named here.
+- 2026-11-21: built. No acceptance criterion changed. The footprint gains seven paths, each named here.
   The keep step (control_space_keep.py) is where a worker clone's snapshot is taken (one condition,
   beside review scratch's). The service's wiring of the Ledger (control_space_reconcile.py) now passes
   the table's per-form ends_on, without which a clone would never end at run finished in production.
@@ -168,7 +169,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   file or folder to prove the removers and the keep step behind rules 1 to 6 now judge with a probe
   that reads the work tree as before this ticket (named before_0347 in each suite), and the 0299
   row "a file git ignores is not unique work" now plants an ignored folder the committed ignore file
-  covers. "The store" of AC4 is read through a reader the caller gives (`held`), because no blob
+  covers. Beneath scratch and build output, a folder this user owns that refuses to be listed only for
+  its permission bits (a sandbox leaves such folders, VELDO-0324) does not hold the item at rule 6: the
+  folder remover opens it before its walk, and the walk stops on any repository that is not a clean
+  clone before anything is deleted; a folder that cannot be listed otherwise holds it. The VELDO-0315
+  row on an adopted batch clone now finds its commit on a kept ref of the main repository once the
+  clone ends at run finished, and that suite joins the footprint. "The store" of AC4 is read through a reader the caller gives (`held`), because no blob
   store is built yet; without one only a commit counts as a copy.
 
 - 2026-11-15: lead decision, the repository form field and its validation are delivered by VELDO-0302.
