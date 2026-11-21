@@ -102,5 +102,13 @@ all five succeed.
 
 ## The confirming run at the final commit
 
-Queued through the wrapper at commit 15068058 (the unconfined leg as shards once more, to show an
-unattributed file charged to the leg and to no suite). Its result is added here when it ends.
+`run-fix1-confirm-unconfined.txt`: the unconfined leg as shards once more, through the wrapper, at the
+final code commit 15068058, with the host's load average about 19. Every shard green again: 50
+shards, 1,107 passed, 0 suite rows failed, shards ended at 303.2 s. The leg ended red again, for
+one file another session left at the top of /tmp (`v111_t5.py`), after the full 300 second wait
+(603.5 s in all). It is charged to the leg and to no suite, with the twelve suites that ran when
+it appeared named beside it. Thirteen other new entries, in /tmp, /dev/shm and the runtime
+directory, were told apart and only noted, and 106 units of other sessions were named and not
+judged. So in three whole runs of this leg on this host the shards were green three times (after
+the fixes) and the isolation check was red each time it ran to its end, each time for another
+session's file in /tmp.
