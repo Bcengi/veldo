@@ -12,8 +12,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import threading
-import time
 from types import SimpleNamespace
 
 
@@ -22,6 +22,24 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _waits():
+    """The wait primitive (VELDO-0358): the instance the suite process holds as `waits`, else the one beside
+    this file (the live qualification runner loads this module outside a suite)."""
+    if 'waits' not in sys.modules:
+        spec = importlib.util.spec_from_file_location('waits', str(Path(__file__).resolve().parent / 'waits.py'))
+        module = importlib.util.module_from_spec(spec)
+        sys.modules['waits'] = module
+        spec.loader.exec_module(module)
+    return sys.modules['waits']
+
+
+def _wall():
+    """The wall time as data, for a record that carries one (a message date, an expiry an authority judges):
+    read from the support Stamp, so no clock is read here (VELDO-0358)."""
+    import datetime
+    return datetime.datetime.fromisoformat(_waits().stamp().iso().replace('Z', '+00:00')).timestamp()
 
 
 def _private(path, text):
@@ -40,7 +58,7 @@ def _message(st, bot, sender, chat, text, reply_to=None):
         st['tick'] += 1
         # Enrollment uses the run's clock. A calendar constant eventually makes fresh messages
         # predate membership; the positive tick also avoids rounding before a fractional enrollment.
-        message = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(time.time()) + st['tick'],
+        message = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(_wall()) + st['tick'],
                    'text': text}
         if reply_to is not None:
             held = bot['messages'][(chat['id'], reply_to)]
@@ -132,6 +150,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
     S, CM, AC = claims.S, claims.CM, claims.AC
     K = load('v73_keys', organs / 'control_keys.py')
     E = load('v73_enrollment', organs / 'control_channel_enrollment.py')
+    WAITS = _waits()  # VELDO-0358: a child is given the wait hang bound and nothing shorter
     keys, protected, edge_dir, host = base / 'keys', base / 'protected', base / 'edge', base / 'host'
     for directory in (keys, protected, edge_dir, host):
         directory.mkdir(mode=0o700)
@@ -141,12 +160,12 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
     public = {}
     for who, path in keyfile.items():
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v73-' + who, '-f', str(path)],
-                       check=True, capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
     def sign_as(who, message, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=message,
-                              capture_output=True, check=True, timeout=10).stdout.decode()
+                              capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout.decode()
 
     serial = [0]
 
@@ -165,7 +184,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
     K.attach(S)
     repository = base / 'repository'
     repository.mkdir()
-    subprocess.run(['git', 'init', '-q', str(repository)], check=True, capture_output=True, timeout=30)
+    subprocess.run(['git', 'init', '-q', str(repository)], check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS)
     projection = repository / '.veldo' / 'keys' / 'allowed_signers'
     signer_config = base / 'authority' / 'signer.json'
     signer_config.write_text(json.dumps({'store': str(db), 'repository': str(repository), 'allowed_signers': str(projection),
@@ -177,7 +196,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
     def envelope(command, principal):
         now = state()
         return dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=principal,
-                    request_revision=1, nonce='nonce-' + command['command_id'], expires_at=time.time() + 600,
+                    request_revision=1, nonce='nonce-' + command['command_id'], expires_at=_wall() + 600,
                     membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                     command_digest=AC.canonical_command_digest(command))
 
@@ -187,7 +206,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
         env = envelope(command, principal)
         signature = sign_as(principal, AC.canonical_envelope_bytes(env))
         cosigned = sign_as(enrollee, AC.canonical_envelope_bytes(dict(env, principal=params['principal']))) if enrollee else None
-        result = CM.admit(S, conn, env, command, signature, ids, time.time(), enrollee_signature=cosigned,
+        result = CM.admit(S, conn, env, command, signature, ids, _wall(), enrollee_signature=cosigned,
                           journal_signer=('authority', journal_sign))
         K.publish(S, conn, projection)
         return result
@@ -234,7 +253,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
                                             'assertion_kinds': ['decision_answer', 'review_disposition'],
                                             'authority_scope': [scope], 'request_version': request_version,
                                             'presentation_version': presentation_version,
-                                            'expires_at': time.time() + 1800, 'edge_key_id': 'edge-telegram'})
+                                            'expires_at': _wall() + 1800, 'edge_key_id': 'edge-telegram'})
     delegate()
 
     # The host configuration the activated ingress is constructed from (control_channel_ingress.open_ingress).
@@ -265,7 +284,7 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
         values = {'channel': 'telegram_chat', 'action': action, 'owner': 'owner', 'origin': origin,
                   'edge_key_id': 'edge-telegram'}
         if action == 'qualify':
-            values['expires_at'] = time.time() + 900
+            values['expires_at'] = _wall() + 900
         values.update(params)
         command = {'command_id': next_id('activation'), 'operation': 'channel_activation_authorize',
                    'target': 'channel:telegram_chat', 'parameters': values, 'artifact_digests': [], 'expected_versions': {}}

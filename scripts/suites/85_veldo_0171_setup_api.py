@@ -45,7 +45,6 @@ def _v171_suite():
     import subprocess
     import sys
     import tempfile
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -65,15 +64,7 @@ def _v171_suite():
     # The setup module as VELDO-0139 (with VELDO-0140's delegation) shipped it, before this change.
     BEFORE = '7fefdb9a'
 
-    # Attribute elapsed work between observations to the row that consumes it.
-    timing_path = os.environ.get('VELDO_ROW_TIMINGS')
-    timings = {name: 0.0 for name in ROWS}
-    last_check = [time.monotonic()]
-
     def check(row, label, condition):
-        now = time.monotonic()
-        timings[row] += now - last_check[0]
-        last_check[0] = now
         rows[row].append((label, bool(condition)))
 
     class section:
@@ -97,7 +88,6 @@ def _v171_suite():
         spec.loader.exec_module(module)
         return module
 
-    started = time.monotonic()
     profiler = None
     if os.environ.get('VELDO_SUITE_PROFILE'):
         import cProfile
@@ -119,6 +109,13 @@ def _v171_suite():
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
+    # VELDO-0358: this suite blocks only through the wait primitive, the process's one instance; a child or a
+    # connection is given its hang bound and nothing shorter. Wall time is data, read from its Stamp.
+    WAITS = runtime._waits()
+
+    def wall():
+        import datetime
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
     cache = Path(tempfile.mkdtemp(prefix='d171-', dir=fast))
     close_runtime = runtime.install(base, cache)
     mods = base / 'src' / '.veldo'
@@ -326,30 +323,26 @@ def _v171_suite():
             if proc is not None and proc.poll() is None:
                 proc.send_signal(signal.SIGTERM)
                 runtime.wake_authority(shlex.split(self._field(unit, 'ExecStart')[0])[-1])
-                try:
-                    proc.wait(15)
-                except subprocess.TimeoutExpired:
-                    proc.kill()
-                    proc.wait(5)
+                runtime.wait(proc)  # its exit on SIGTERM, on its pidfd; a unit that ignores it is a hung row
 
         def close(self):
             for proc in self.procs.values():
                 if proc.poll() is None:
                     proc.kill()
-                    proc.wait(5)
+                    runtime.wait(proc)
 
     def keygen(path, comment):
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', comment, '-f', str(path)], check=True,
-                       capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         return ' '.join(Path(str(path) + '.pub').read_text().split()[:2])
 
     def derived(path):
         return ' '.join(subprocess.run(['ssh-keygen', '-y', '-f', str(path)], capture_output=True, text=True,
-                                       timeout=10, stdin=subprocess.DEVNULL).stdout.split()[:2])
+                                       timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL).stdout.split()[:2])
 
     def sign_with(path, message, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(path), '-n', namespace], input=message,
-                              capture_output=True, check=True, timeout=10).stdout.decode()
+                              capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout.decode()
 
     def private(path, text, mode=0o600):
         fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
@@ -503,9 +496,9 @@ def _v171_suite():
         def __init__(self, name):
             self.key = person / (name + '.pem')
             subprocess.run(['openssl', 'genpkey', '-algorithm', 'EC', '-pkeyopt', 'ec_paramgen_curve:P-256', '-out',
-                            str(self.key)], check=True, capture_output=True, timeout=10)
+                            str(self.key)], check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS)
             self.der = subprocess.run(['openssl', 'pkey', '-in', str(self.key), '-pubout', '-outform', 'DER'], check=True,
-                                      capture_output=True, timeout=10).stdout
+                                      capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout
             self.credential_id = b64(os.urandom(32))
             self.user_handle = None
 
@@ -514,7 +507,7 @@ def _v171_suite():
 
         def sign(self, message):
             return subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(self.key)], input=message, check=True,
-                                  capture_output=True, timeout=10).stdout
+                                  capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout
 
         def create(self, challenge, origin):
             client = json.dumps({'type': 'webauthn.create', 'challenge': challenge, 'origin': origin,
@@ -543,7 +536,7 @@ def _v171_suite():
         if cookie:
             headers['Cookie'] = '__Host-veldo-session=' + cookie
         try:
-            conn = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            conn = http.client.HTTPConnection('127.0.0.1', port, timeout=WAITS.WAIT_HANG_SECONDS)
             conn.request(method, path, body=json.dumps(body).encode() if body is not None else None, headers=headers)
             answer = conn.getresponse()
             raw = answer.read()
@@ -611,7 +604,7 @@ def _v171_suite():
         verify = trust.verifier(owner, workspace)
         try:
             return CC.send(workspace, packet, CEN, verify, lambda data: sign_with(key, data, namespace),
-                           trust.host_identity, timeout=30)
+                           trust.host_identity, timeout=WAITS.WAIT_HANG_SECONDS)
         except CC.RoutingRefused as exc:
             return {'accepted': False, 'reason': 'routing:' + exc.reason}
 
@@ -639,7 +632,7 @@ def _v171_suite():
             env = dict(os.environ, XDG_CONFIG_HOME=str(base / 'cli-xdg'), XDG_DATA_HOME=str(base / 'cli-data'))
             done = subprocess.run([sys.executable, '-B', str(ROOT / 'bin' / 'veldo'), 'factory', 'passkey', '--state-root',
                                    str(base / 'nowhere'), '--owner', owner, '--owner-key', str(owner_key)],
-                                  capture_output=True, text=True, timeout=60, env=env, stdin=subprocess.DEVNULL)
+                                  capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS, env=env, stdin=subprocess.DEVNULL)
             shown = json.loads(done.stdout.strip().splitlines()[-1]) if done.stdout.strip() else {}
             check(IA, 'bin/veldo factory passkey reaches the passkey command, which refuses a state root setup did not '
                   'lay down by name [%s %s]' % (done.returncode, shown.get('reason')),
@@ -704,7 +697,7 @@ def _v171_suite():
                   and all(v in (None, '<string>') for _k, v in leaves(captured.get('prefs'))))
             check(CA, 'the captured serve help keeps only the --bg flag', captured.get('serve-help') == '--bg\n')
             # The stand-in prints exactly the ready state's outputs.
-            printed = {tuple(c): subprocess.run([ts.path] + c, capture_output=True, text=True, timeout=30) for c in READS}
+            printed = {tuple(c): subprocess.run([ts.path] + c, capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS) for c in READS}
             outputs = states.get('ready', {}).get('outputs', {})
             check(CA, 'the stand-in prints the ready state\'s outputs exactly for each read-only command',
                   json.loads(printed[('status', '--json')].stdout) == outputs.get('status')
@@ -804,7 +797,7 @@ def _v171_suite():
                   % [c for c in log_a if c != SERVE and c not in [list(r) for r in READS]],
                   all(c == SERVE or c in [list(r) for r in READS] for c in log_a))
             status = json.loads(subprocess.run([ts.path, 'serve', 'status', '--json'], capture_output=True, text=True,
-                                               timeout=30).stdout)
+                                               timeout=WAITS.WAIT_HANG_SECONDS).stdout)
             check(TB, 'the Serve status read back names the tailnet name\'s HTTPS and the loopback port',
                   status == {'TCP': {'443': {'HTTPS': True}}, 'Web': {NAME + ':443': {'Handlers': {'/': {'Proxy': TARGET}}}}})
             check(TB, 'setup reports the Serve step done, with the tailnet name and port it used [%s]' % report.get('api'),
@@ -997,7 +990,7 @@ def _v171_suite():
                             b'GET /api/v1/auth/session extra HTTP/1.1\r\nHost: ' + NAME.encode() + b'\r\n\r\n'):
                 data = b''
                 try:
-                    with socket.create_connection(('127.0.0.1', port), timeout=10) as sock:
+                    with socket.create_connection(('127.0.0.1', port), timeout=WAITS.WAIT_HANG_SECONDS) as sock:
                         sock.sendall(request)
                         sock.shutdown(socket.SHUT_WR)
                         while True:
@@ -1116,7 +1109,7 @@ def _v171_suite():
                            'parameters': {'channel': 'telegram_chat', 'edge_key_id': E.edge_key_id('telegram_chat')},
                            'artifact_digests': [], 'expected_versions': {}}
                 env = dict(ids_a, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=owner,
-                           request_revision=1, nonce='nonce-v171-retire', expires_at=time.time() + 600,
+                           request_revision=1, nonce='nonce-v171-retire', expires_at=wall() + 600,
                            membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                            command_digest=AC.canonical_command_digest(command))
                 retired = writer.admit(env, command, sign_with(owner_key, AC.canonical_envelope_bytes(env)))
@@ -1351,8 +1344,6 @@ def _v171_suite():
     if profiler is not None:
         profiler.disable()
         profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
-    if timing_path:
-        Path(timing_path).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started), indent=2) + '\n')
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
@@ -1363,7 +1354,6 @@ def _v171_suite():
             if not observed:
                 print('  VELDO-0171 %s detail: no check ran' % name)
         expect('VELDO-0171 ' + name, ok)
-    print('VELDO-0171 suite seconds: %.3f' % (time.monotonic() - started))
 
 
 _v171_suite()
