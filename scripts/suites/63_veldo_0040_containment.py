@@ -15,6 +15,7 @@ burns CPU, writes a file, handles a stop, and writes what it saw; it qualifies n
 
 def _v40_suite():
     import contextlib
+    import datetime
     import importlib.util
     import io
     import json
@@ -57,7 +58,8 @@ def _v40_suite():
     tools['XDG_RUNTIME_DIR'] = tools.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
 
     def systemctl(*args):
-        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=20,
+        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True,
+                              timeout=WAITS.WAIT_HANG_SECONDS,
                               env=tools, stdin=subprocess.DEVNULL)
 
     def show(unit, *names):
@@ -76,6 +78,18 @@ def _v40_suite():
         L = load('v40_launch', mods / 'control_launch.py')
         C = load('v40_containment', mods / 'control_containment.py')
         D = L.D
+        # VELDO-0358 AC15: the timers profile. The fake manager rows below run the receiver's reap and the group's
+        # conclusion on a supplied clock (no real time passes in them), and what they test is the production values of
+        # the containment's and the heartbeat's settling timers on it, so they run with the table's own values; from
+        # the live part on, every entry of the table is at the wait hang bound, here and in each receiver and wrapper
+        # (their configuration names the profile).
+        TIMERS = L.TIMERS
+        TIMERS.reset_profile()
+        TIMERS_PROFILE = {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS}
+
+        def now():
+            """The wall time now, as data (a record's time, a deadline the product judges): the support stamp's."""
+            return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
         EL = load('v40_eligibility', mods / 'control_eligibility.py')
         RES = load('v40_reservations', mods / 'control_reservations.py')
         SIG = load('v40_signer', mods / 'control_signer.py')
@@ -85,7 +99,8 @@ def _v40_suite():
         private = base / 'private'
         private.mkdir(mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                       stdin=subprocess.DEVNULL)
 
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
@@ -123,7 +138,7 @@ def _v40_suite():
                                         authorize=authority, signer='runner', sign=sign)
         for scope, subject in (('account', ACCOUNT), ('project', 'p1')):
             reservations.configure('policy/' + subject, scope, subject,
-                                   dict(capacity=100, invocations=100, wall_seconds=10 ** 6), now=time.time())
+                                   dict(capacity=100, invocations=100, wall_seconds=10 ** 6), now=now())
 
         def admitted(unit):
             """A real admitted unit, claimed through VELDO-0031's own transition."""
@@ -133,7 +148,7 @@ def _v40_suite():
             put('backlog:' + unit, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
             put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest='sha256:scope-' + unit))
             reservations.configure('policy/' + unit, 'unit', unit, dict(capacity=5, invocations=50, wall_seconds=10 ** 5),
-                                   now=time.time())
+                                   now=now())
             cid = CLM.claim_id(REPOSITORY, unit)
             serial[0] += 1
             S.execute(writer, dict(command_id='claim-%d' % serial[0], principal=HOLDER, operation='claim_operation',
@@ -158,7 +173,7 @@ def _v40_suite():
         # the processes themselves.
         markers = base / 'markers'
         markers.mkdir()
-        common = '''import json, os, resource, signal, sys, time
+        common = '''import ctypes, json, os, resource, select, signal, sys, time
 from pathlib import Path
 def facts(role):
     status = dict(l.split(':\\t', 1) for l in Path('/proc/self/status').read_text().splitlines() if ':\\t' in l)
@@ -177,12 +192,19 @@ def mark(markers, tag, name, data):
 def log(markers, tag, name, what, clock=time.time):
     with open(Path(markers) / ('%s.%s.%s' % (tag, name, what)), 'a') as handle:
         handle.write('%r\\n' % clock())
-def beat(markers, tag, name, seconds):
-    end = time.time() + seconds
-    while time.time() < end:
-        log(markers, tag, name, 'beat')
-        log(markers, tag, name, 'beat_monotonic', time.monotonic)
-        time.sleep(0.1)
+def held():
+    # Alive until a signal ends it (its stop, its group's kill, its release by SIGUSR1): no clock, no bound.
+    while True:
+        signal.pause()
+def released(path):
+    # Block until path exists, woken only by inotify on its directory (create, moved to, close write).
+    libc = ctypes.CDLL(None, use_errno=True)
+    fd = libc.inotify_init1(os.O_CLOEXEC)
+    libc.inotify_add_watch(fd, os.path.dirname(path).encode(), 0x100 | 0x80 | 0x8)
+    while not Path(path).exists():
+        select.select([fd], [], [])
+        os.read(fd, 65536)
+    os.close(fd)
 '''
         child = base / 'child40.py'
         child.write_text(common + '''markers, tag, name, kind, hold = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], float(sys.argv[5])
@@ -212,8 +234,7 @@ if kind == 'alloc':
     for i in range(0, len(block), 4096):
         block[i] = 1
     mark(markers, tag, name + '.allocated', {'bytes': len(block)})
-    time.sleep(5)
-    sys.exit(0)
+    held()
 if kind == 'burn':
     mark(markers, tag, name, facts(name))
     end = time.time() + hold
@@ -222,7 +243,8 @@ if kind == 'burn':
     mark(markers, tag, name + '.burned', {'cpu': time.process_time()})
     sys.exit(0)
 mark(markers, tag, name, facts(name))
-beat(markers, tag, name, hold)
+if hold:
+    held()  # until its group's stop or kill; a descendant of hold 0 ends at once
 ''')
         engine = base / 'engine40.py'
         engine.write_text(common + '''import subprocess
@@ -273,12 +295,10 @@ if payload.get('burn'):
 if payload.get('say'):
     sys.stdout.write(payload['say'])
     sys.stdout.flush()
-if payload.get('beat'):
-    beat(markers, tag, 'worker', payload['hold'])
-else:
-    end = time.time() + payload.get('hold', 0)
-    while time.time() < end and not (payload.get('release') and Path(payload['release']).exists()):
-        time.sleep(0.02)
+if payload.get('release'):
+    released(payload['release'])  # until the test releases it, or its stop ends it
+elif payload.get('beat'):
+    held()  # until its stop or its cap ends it
 for proc in children:
     if payload.get('wait_children'):
         proc.wait()
@@ -308,7 +328,7 @@ sys.exit(payload.get('code', 0))
             receiver_host_trust.chmod(0o600)
             body = {'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
                     'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
-                    'adapters': adapters}
+                    'adapters': adapters, 'timers_profile': TIMERS_PROFILE}
             if prof is not None:
                 body['profile'] = prof
             body.update(extra)
@@ -321,10 +341,13 @@ sys.exit(payload.get('code', 0))
         # The idle receiver's profile: MAIN with a heartbeat that is not due again in the worker's life (its
         # 60 s deadline). The wrapper's heartbeat is a notification the receiver wakes for by right, and at
         # the shipped ten seconds one landed inside every watched window that load had stretched.
-        config('idle', profile(heartbeat_seconds=120, heartbeat_window_seconds=240))
+        config('idle', profile(heartbeat_seconds=3600, heartbeat_window_seconds=7200))
         config('memory', profile(memory_bytes=64 << 20))
         config('cpu', profile(cpu_percent=30))
-        config('runtime', profile(runtime_seconds=1.2, kill_grace_seconds=0.5))
+        # VELDO-0358: the cap fires for real in its one row (timer_fires), long enough that the capped worker and
+        # its descendant have started before it on any machine; the row asserts the cause and a lower bound only.
+        RUNTIME_CAP = 20
+        config('runtime', profile(runtime_seconds=RUNTIME_CAP, kill_grace_seconds=0.5))
         config('concurrency', profile(slice=slices[1], lock=str(base / 'b.lock'), concurrency=2))
         gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(base))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
@@ -334,7 +357,7 @@ sys.exit(payload.get('code', 0))
         def runner(name):
             if name not in runners:
                 def receive(contract, path=configs[name]):
-                    launch = L.invoke(path, contract, dispatches, accept_seconds=20)
+                    launch = L.invoke(path, contract, dispatches)
                     launches.append(launch)
                     return launch
                 runners[name] = L.Runner(gate, reservations, dispatches, receive, account=ACCOUNT)
@@ -342,13 +365,13 @@ sys.exit(payload.get('code', 0))
 
         releases = []
 
-        def job(deadline=60, **payload):
+        def job(deadline=3600, **payload):
             if payload.get('release'):
                 payload['release'] = str(base / ('release-' + payload['release']))
                 releases.append(Path(payload['release']))
             return dict(holder=HOLDER, source=str(src), revision='HEAD', payload=payload, adapter='engine',
                         configuration={'tools': ['Read', 'Bash'], 'model': 'configured-model'},
-                        deadline=time.time() + deadline)
+                        deadline=now() + deadline)
 
         def release(launch):
             path = Path((rec(launch.dispatch_id).get('contract') or {}).get('input', {}).get('payload', {}).get('release', ''))
@@ -361,14 +384,23 @@ sys.exit(payload.get('code', 0))
         def tag(launch):
             return launch.dispatch_id.rsplit('/', 1)[-1]
 
-        def marker(launch, name, timeout=10.0):
+        def present(launch, name):
+            """A marker as it is now, with no wait: read after the launch's terminal record (pattern W), when nothing
+            of its worker is left to write one."""
             path = markers / ('%s.%s' % (tag(launch), name))
-            if getattr(launch, 'result', None) != 'accepted':
-                timeout = 0.05  # nothing of a launch that was not accepted is waited for
-            end = time.time() + timeout
-            while not path.exists() and time.time() < end:
-                time.sleep(0.02)
             return json.loads(path.read_text()) if path.exists() else {}
+
+        def marker(launch, name):
+            """A marker a worker of an accepted launch writes, waited for on the markers directory and the store
+            (VELDO-0358): done when it exists, impossible once the dispatch's record has left prepared, accepted and
+            running (the group is then empty and nothing of the worker is left to write it). Nothing of a launch that
+            was not accepted is waited for."""
+            path = markers / ('%s.%s' % (tag(launch), name))
+            if getattr(launch, 'result', None) == 'accepted':
+                WAITS.wait('marker %s of %s' % (name, launch.dispatch_id), path.exists,
+                           lambda: rec(launch.dispatch_id).get('state') not in D.STOPPABLE and not path.exists(),
+                           [WAITS.PathAppears(path), WAITS.Store(db)])
+            return present(launch, name)
 
         def times(launch, name, what):
             path = markers / ('%s.%s.%s' % (tag(launch), name, what))
@@ -908,11 +940,13 @@ sys.exit(payload.get('code', 0))
                 for row in unreadable))
 
         started, made = {}, []
+        # From here every timer of the table is at the wait hang bound (the fake manager rows are done).
+        TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
         try:
             # Started first, checked later: the runtime cap and the idle receiver run beside the rest. A
             # raise here leaves `started` short, which reds the rows that read it.
             with contextlib.suppress(Exception):
-                started['runtime'] = (time.time(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
+                started['runtime'] = (now(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
                 # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
                 # worker that ended by itself inside the watched window would wake its receiver by right. So
@@ -925,7 +959,7 @@ sys.exit(payload.get('code', 0))
                 kinds = [['child', 'child', 20], ['session', 'session', 20], ['daemon', 'daemon', 20],
                          ['pgroup', 'pgroup', 20]]
                 one = runner('main').submit(u1, 'build', **job(descendants=kinds, hold=30, release='u1'))
-                two = runner('main').submit(u2, 'build', **job(descendants=[['child', 'child', 0.2]], hold=0.5,
+                two = runner('main').submit(u2, 'build', **job(descendants=[['child', 'child', 0]],
                                                               wait_children=True))
                 seen = {name: marker(one, name) for name in ['worker'] + [k[0] for k in kinds]}
                 other = marker(two, 'worker')
@@ -992,7 +1026,10 @@ sys.exit(payload.get('code', 0))
             with region('containment/unqualified-profile-refused', 'containment/required-settings-refused'):
                 idle = started.get('idle')
                 idle_facts = marker(idle, 'worker') if idle else {}
-                counted = [(time.time(), wakes_of(idle.child.pid), time.monotonic())] if idle else []
+                # Pattern W (VELDO-0358): the idle receiver's wakes are counted between two events this row causes,
+                # before its first refused launch and after its last, with every periodic timer of its profile far
+                # out (its heartbeat is not due again in the window, its deadline an hour away); no span of time.
+                counted = [wakes_of(idle.child.pid)] if idle else []
                 u3 = admitted('VELDO-9403')
                 cases = {
                     'absent': (None, 'invalid_input:profile:absent'),
@@ -1013,13 +1050,11 @@ sys.exit(payload.get('code', 0))
                         refusals[name] = {'expected': expected, 'refusal': 'runner:' + error.code}
                         continue
                     refusals[name] = {'expected': expected, 'refusal': rec(launch.dispatch_id).get('refusal'),
-                                      'states': states(launch), 'worker': bool(marker(launch, 'worker', timeout=0.05)),
+                                      'states': states(launch), 'worker': bool(present(launch, 'worker')),
                                       'unit': show(C.unit_name(launch.dispatch_id), 'LoadState').get('LoadState'),
                                       'retired': slot(launch).get('retired')}
                 if idle:
-                    # The idle receiver is watched for at least 1.5 s, longer than any periodic wake of 1 s.
-                    time.sleep(max(0.0, counted[0][0] + 1.5 - time.time()))
-                    counted.append((time.time(), wakes_of(idle.child.pid), time.monotonic()))
+                    counted.append(wakes_of(idle.child.pid))
                 observed['unqualified'] = refusals
                 check('containment/unqualified-profile-refused',
                       all(r['refusal'] == r['expected'] and r.get('states') == ['prepared', 'refused'] and not r.get('worker')
@@ -1052,37 +1087,40 @@ sys.exit(payload.get('code', 0))
             # AC3: the receiver sleeps until an OS notification; an exit is seen when it happens
             with region('containment/exit-notified'):
                 idle = started['idle']
+                # The release is the next event: no wake of the receiver between the window's end and it either.
+                before_release = wakes_of(idle.child.pid)
                 release(idle)
                 ended = runner('idle').wait(idle) or {}
                 exit_at = marker(idle, 'exit').get('at')
                 recorded_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'exited'), None)
-                window = counted[-1][0] - counted[0][0] if len(counted) == 2 else 0
-                wakes = (counted[-1][1] - counted[0][1] if len(counted) == 2 and None not in (counted[0][1], counted[-1][1])
-                         else None)
-                # The heartbeats the receiver itself recorded taking inside the watched window: each is an OS
-                # notification on its channel, and it wakes for one by right. The row requires there were none,
-                # so its zero wakes are measured over a window in which nothing was sent to the receiver.
-                beats = ((getattr(idle, 'supervision', None) or {}).get('heartbeat') or {})
-                in_window = ([round(b['taken'] - counted[0][2], 2) for b in beats.get('recent', [])
-                              if counted[0][2] <= b['taken'] <= counted[-1][2]] if len(counted) == 2 else None)
-                observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
-                                             'heartbeats_in_window': in_window,
+                wakes = (counted[-1] - counted[0] if len(counted) == 2 and None not in counted else None)
+                supervision = getattr(idle, 'supervision', None) or {}
+                beats = supervision.get('heartbeat') or {}
+                # VELDO-0358: the exit is asserted by its cause and order, never by its speed: the receiver recorded it
+                # from the worker's pidfd (its supervision's adapter exit, cause exit), after the worker's own exit,
+                # with zero wakes before it (no poll interval). The latency is written as data (the paired
+                # performance stage judges latency, design section 8).
+                observed['exit_notified'] = {'receiver_wakes_in_window': wakes, 'wakes_until_release': (
+                                                 before_release - counted[-1] if len(counted) == 2 and None not in (
+                                                     before_release, counted[-1]) else None),
                                              'heartbeat_seconds': beats.get('interval_seconds'),
+                                             'adapter_exit_monotonic': supervision.get('adapter_exit_monotonic'),
+                                             'cause': supervision.get('cause'),
                                              'exit_at': exit_at, 'recorded_at': recorded_at,
-                                             'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
-                                             'idle_worker_alive_in_window': bool(idle_facts),
-                                             'exited_after_window': bool(exit_at and len(counted) == 2
-                                                                         and exit_at > counted[-1][0])}
+                                             'latency_data': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
+                                             'idle_worker_alive_in_window': bool(idle_facts)}
                 check('containment/exit-notified',
-                      ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
-                      and observed['exit_notified']['exited_after_window'] and in_window == []
-                      and exit_at is not None and recorded_at is not None
-                      and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
+                      ended.get('state') == 'exited' and bool(idle_facts) and wakes == 0
+                      and observed['exit_notified']['wakes_until_release'] == 0
+                      and supervision.get('adapter_exit_monotonic') is not None
+                      and exit_at is not None and recorded_at is not None and recorded_at >= exit_at,
+                      observed['exit_notified'])
 
             # AC2: every declared cap installed before the worker runs, and holding against real descendants
             with region('containment/caps-installed'):
                 u4, u5, u6 = admitted('VELDO-9404'), admitted('VELDO-9405'), admitted('VELDO-9406')
-                memory = runner('memory').submit(u5, 'build', **job(descendants=[['alloc', 'alloc', 160]], hold=3))
+                memory = runner('memory').submit(u5, 'build', **job(descendants=[['alloc', 'alloc', 160]],
+                                                                           wait_children=True))
                 burning = runner('cpu').submit(u6, 'build', **job(descendants=[['burn', 'burn', 1.0]], burn=1.0))
                 held = runner('main').submit(u4, 'build', **job(descendants=[['child', 'child', 20]], hold=30,
                                                                release='u4', write_bytes=(8 << 20) + 65536))
@@ -1129,7 +1167,7 @@ sys.exit(payload.get('code', 0))
                 live = {
                     'memory_bytes': ended_memory.get('state') == 'exited'
                                     and (getattr(memory, 'supervision', None) or {}).get('cause') == 'memory_cap'
-                                    and bool(marker(memory, 'alloc')) and not marker(memory, 'alloc.allocated', timeout=0.05)
+                                    and bool(marker(memory, 'alloc')) and not present(memory, 'alloc.allocated')
                                     and not living(marker(memory, 'alloc')),
                     'cpu_percent': ended_cpu.get('state') == 'exited' and bool(cpu)
                                    and cpu.get('usage_usec', 10 ** 9) <= (0.30 + 0.1) * cpu.get('wall', 0) * 10 ** 6
@@ -1137,7 +1175,7 @@ sys.exit(payload.get('code', 0))
                     'concurrency': ca.result == 'accepted' and cb.result == 'accepted' and cc.result == 'refused'
                                    and rec(cc.dispatch_id).get('refusal') == 'unavailable_service:concurrency'
                                    and states(cc) == ['prepared', 'accepted', 'refused']
-                                   and not marker(cc, 'worker', timeout=0.05) and cd.result == 'accepted'
+                                   and not present(cc, 'worker') and cd.result == 'accepted'
                                    and len(live_groups or []) == 2,
                     'file_bytes': facts.get('write') == 'refused:27' and facts.get('written') == 8 << 20,
                 }
@@ -1162,7 +1200,6 @@ sys.exit(payload.get('code', 0))
                 began, capped = started['runtime']
                 ended = runner('runtime').wait(capped) or {}
                 stubborn = marker(capped, 'stubborn')
-                beats = times(capped, 'stubborn', 'beat_monotonic')
                 supervision = getattr(capped, 'supervision', None) or {}
                 stamps = supervision.get('scope_timestamps') or {}
                 active = (supervision.get('scope_start') or {}).get('ActiveEnterTimestampMonotonic', 0) / 10 ** 6
@@ -1170,7 +1207,6 @@ sys.exit(payload.get('code', 0))
                 inactive = supervision.get('empty_monotonic') or 0
                 # RuntimeMaxSec starts at scope activation, before the receiver records running.
                 # The origin is saved at attach; receiver stop and empty observations survive unit collection.
-                wall_beats = times(capped, 'stubborn', 'beat')
                 running_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'running'), None)
                 terms = times(capped, 'stubborn', 'term')
                 term_monotonic = times(capped, 'stubborn', 'term_monotonic')
@@ -1180,7 +1216,6 @@ sys.exit(payload.get('code', 0))
                 except (OSError, subprocess.SubprocessError) as error:
                     unit_after, unit_error = None, repr(error)
                 stubborn_living = living(stubborn)
-                gap = beats[-1] - active if beats and active else None
                 checks = {
                     'state_exited': ended.get('state') == 'exited',
                     'deadline_stop': (ended.get('termination') or {}).get('deadline_stop') is True,
@@ -1188,27 +1223,21 @@ sys.exit(payload.get('code', 0))
                     'result_timeout': supervision.get('result') == 'timeout',
                     'stubborn_present': bool(stubborn),
                     'stubborn_not_living': not stubborn_living,
-                    'beats_present': bool(beats),
                     'timestamps_ordered': 0 < active <= stopping <= inactive,
-                    'first_beat_after_active': bool(beats) and active <= beats[0],
-                    'last_beat_before_inactive': bool(beats) and beats[-1] <= inactive,
-                    'runtime_bound': gap is not None and gap <= 1.2 + 0.5 + 1.0,
-                    # Stop itself must begin at the cap, with at most 0.5s of
-                    # scheduler delay. The existing beat bound includes kill grace
-                    # and by itself can hide an entire second of late enforcement.
-                    'cap_stop_bound': bool(term_monotonic) and active <= term_monotonic[0] <= active + 1.2 + 0.5,
+                    # VELDO-0358: the cap's cause and order, and a lower bound only: the descendant was stopped inside
+                    # the scope's life, and not before the cap (a busy machine only makes that truer).
+                    'term_inside_scope': bool(term_monotonic) and active <= term_monotonic[0] <= inactive,
+                    'cap_not_before': bool(term_monotonic) and term_monotonic[0] >= active + RUNTIME_CAP,
                     'term_present': len(terms) >= 1,
                     'supervision_empty': supervision.get('empty') is True,
                     'unit_not_found': unit_after == 'not-found',
                 }
                 observed['runtime_cap'] = {
                     'state': ended.get('state'), 'termination': ended.get('termination'),
-                    'supervision': supervision, 'beats_monotonic': beats, 'beats': wall_beats,
+                    'supervision': supervision,
                     'active': active, 'stopping': stopping, 'inactive': inactive,
                     'running_at': running_at, 'began': began,
-                    'last_beat_after_active': gap,
-                    'last_beat_after_running': wall_beats[-1] - running_at if wall_beats and running_at else None,
-                    'bound': 1.2 + 0.5 + 1.0, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
+                    'cap': RUNTIME_CAP, 'stubborn': stubborn, 'stubborn_living': stubborn_living,
                     'terms': terms, 'term_count': len(terms), 'unit_after': unit_after, 'unit_error': unit_error,
                     'term_monotonic': term_monotonic,
                     'checks': checks, 'false_conjuncts': [name for name, ok in checks.items() if not ok],
@@ -1218,23 +1247,23 @@ sys.exit(payload.get('code', 0))
             # AC3: a cooperative stop, and the escalation past a signal-ignoring descendant
             with region('containment/cooperative-stop', 'containment/stop-escalation'):
                 u7, u8 = admitted('VELDO-9410'), admitted('VELDO-9411')
-                polite = runner('main').submit(u7, 'build', **job(descendants=[['owned', 'child', 20]], hold=30,
-                                                                  on_term='flush', deadline=4))
+                polite = runner('main').submit(u7, 'build', **job(descendants=[['owned', 'child', 20]], release='polite',
+                                                                  on_term='flush'))
                 owned = marker(polite, 'owned')
-                asked_at = time.time()
+                asked_at = now()
                 asked = getattr(polite, 'stop', lambda: False)()
                 ended = runner('main').wait(polite) or {}
                 supervision = getattr(polite, 'supervision', None) or {}
                 slot_polite = slot(polite)
                 observed['cooperative'] = {'asked': asked, 'state': ended.get('state'), 'termination': ended.get('termination'),
-                                           'supervision': supervision, 'flushed': marker(polite, 'flushed', timeout=0.05),
+                                           'supervision': supervision, 'flushed': present(polite, 'flushed'),
                                            'owned_usr1': times(polite, 'owned', 'usr1'), 'owned_term': times(polite, 'owned', 'term'),
                                            'retirement': slot_polite.get('retirement')}
                 check('containment/cooperative-stop',
                       asked is True and ended.get('state') == 'exited'
                       and (ended.get('termination') or {}).get('returncode') == 0
                       and (ended.get('termination') or {}).get('deadline_stop') is False
-                      and bool(marker(polite, 'flushed', timeout=0.05)) and times(polite, 'worker', 'term')
+                      and bool(present(polite, 'flushed')) and times(polite, 'worker', 'term')
                       and times(polite, 'worker', 'term')[0] >= asked_at
                       and times(polite, 'owned', 'usr1') and not times(polite, 'owned', 'term') and not living(owned)
                       and supervision.get('cause') == 'requested'
@@ -1244,28 +1273,27 @@ sys.exit(payload.get('code', 0))
                       and (slot_polite.get('retirement') or {}).get('cleaned') is True)
 
                 stubborn = runner('main').submit(u8, 'build', **job(descendants=[['stubborn', 'stubborn', 20]], hold=20,
-                                                                    beat=True, on_term='ignore', deadline=8))
+                                                                    beat=True, on_term='ignore'))
                 worker = marker(stubborn, 'worker')
                 hidden = marker(stubborn, 'stubborn')
                 running = rec(stubborn.dispatch_id)
                 group = getattr(stubborn, 'group', None) or {}
-                asked_at = time.time()
+                asked_at = now()
                 asked = getattr(stubborn, 'stop', lambda: False)()
                 ended = runner('main').wait(stubborn) or {}
                 supervision = getattr(stubborn, 'supervision', None) or {}
                 slot_stubborn = slot(stubborn)
                 worker_terms, hidden_terms = times(stubborn, 'worker', 'term'), times(stubborn, 'stubborn', 'term')
-                worker_beats, hidden_beats = times(stubborn, 'worker', 'beat'), times(stubborn, 'stubborn', 'beat')
+                hidden_terms_monotonic = times(stubborn, 'stubborn', 'term_monotonic')
                 observed['escalation'] = {
                     'asked': asked, 'state': ended.get('state'), 'reason': ended.get('reason'),
                     'termination': ended.get('termination'), 'supervision': supervision,
                     'worker_terms': [round(t - asked_at, 2) for t in worker_terms],
                     'descendant_terms': [round(t - asked_at, 2) for t in hidden_terms],
-                    'worker_last_beat': round(worker_beats[-1] - asked_at, 2) if worker_beats else None,
-                    'descendant_last_beat': round(hidden_beats[-1] - asked_at, 2) if hidden_beats else None,
                     'descendant_alive_after': living(hidden), 'group_after': read(group_path(group.get('cgroup')) / 'cgroup.events'),
                     'retirement': slot_stubborn.get('retirement')}
                 steps = {s['step']: s['at'] for s in supervision.get('steps', [])}
+                step_monotonic = {s['step']: s.get('monotonic') for s in supervision.get('steps', [])}
                 check('containment/stop-escalation',
                       asked is True and ended.get('state') == 'exited' and bool(worker) and bool(hidden)
                       and ended.get('process') == running.get('process')
@@ -1275,8 +1303,10 @@ sys.exit(payload.get('code', 0))
                       and (ended.get('termination') or {}).get('deadline_stop') is False
                       and len(worker_terms) >= 2 and len(hidden_terms) >= 1
                       and worker_terms[0] >= asked_at and hidden_terms[0] - worker_terms[0] >= 0.6 - 0.1
-                      and bool(hidden_beats) and hidden_beats[-1] - hidden_terms[0] >= 0.6 - 0.25
-                      and hidden_beats[-1] - asked_at <= 0.6 + 0.6 + 1.5
+                      # VELDO-0358: the order of term, hidden term and kill from the record, no upper bound: the
+                      # kill came after the hidden descendant's own term, which came after the worker's.
+                      and bool(hidden_terms_monotonic) and step_monotonic.get('kill') is not None
+                      and step_monotonic['kill'] >= hidden_terms_monotonic[0]
                       and not living(hidden) and not living(worker) and emptied(group.get('cgroup'))
                       and list(steps) == ['cooperative', 'terminate', 'kill'] and supervision.get('empty') is True
                       and supervision.get('cause') == 'requested'
@@ -1292,15 +1322,16 @@ sys.exit(payload.get('code', 0))
                 prepared = runner('main').prepare(u9, 'build', **job())
                 unit = C.unit_name(prepared['dispatch_id'])
                 made.append(unit)
-                holder = subprocess.Popen(['systemd-run', '--user', '--scope', '--quiet', '--unit=' + unit,
-                                           '--slice=' + slices[0], '--', 'sleep', '30'], env=tools,
-                                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                          stderr=subprocess.DEVNULL, start_new_session=True)
-                end = time.time() + 10
-                while cgroup_of(holder.pid) is None or not cgroup_of(holder.pid).endswith(unit):
-                    if time.time() > end:
-                        break
-                    time.sleep(0.02)
+                # VELDO-0358: the group's process is a latch holder (C3) inside the scope, which says it is there by
+                # one line on its output once systemd-run has moved it and become it; the test releases it, or its
+                # group's kill ends it.
+                holder = HOLDERS.Holder([
+                    'systemd-run', '--user', '--scope', '--quiet', '--unit=' + unit, '--slice=' + slices[0], '--',
+                    sys.executable, '-c', "import os, sys\nos.write(1, b'in\\n')\n" + HOLDERS.HOLDER_SOURCE],
+                    env=tools, stdout=subprocess.PIPE, start_new_session=True)
+                said = WAITS.Readable(holder.proc.stdout)
+                WAITS.wait('the holder of %s in its scope' % unit, lambda: b'in' in said.data,
+                           lambda: holder.proc.poll() is not None, [said, WAITS.Pidfd(holder.proc)])
                 held_group = {'unit': unit, 'slice': slices[0], 'cgroup': cgroup_of(holder.pid)}
                 probe = types.SimpleNamespace(group=held_group, stop_requested=False, supervision=None)
                 pending = getattr(runner('main'), 'launches', {})
@@ -1310,10 +1341,14 @@ sys.exit(payload.get('code', 0))
                 still = entity(RES.entity('worker', [DOMAIN, prepared['dispatch_id']]))['data']
                 with contextlib.suppress(OSError):
                     (group_path(held_group['cgroup']) / 'cgroup.kill').write_text('1')
-                holder.wait(timeout=10)
-                end = time.time() + 10
-                while group_path(held_group['cgroup']).exists() and time.time() < end:
-                    time.sleep(0.02)
+                holder.release()
+                holder.ended('the holder of %s to end' % unit)
+                holder.proc.stdout.close()
+                with contextlib.suppress(FileNotFoundError):  # already removed: nothing to wait for
+                    # Its cgroup.events wakes when the group empties (or is removed).
+                    WAITS.wait('the group of %s to be empty' % unit,
+                               lambda: WAITS.cgroup_populated(group_path(held_group['cgroup'])) is not True,
+                               sources=[WAITS.CgroupEmpty(group_path(held_group['cgroup']))])
                 runner('main').launches[prepared['dispatch_id']] = probe
                 retired = runner('main')._retire(prepared['dispatch_id'], 'cancelled', 'probe')
                 after = entity(RES.entity('worker', [DOMAIN, prepared['dispatch_id']]))['data']
@@ -1326,6 +1361,23 @@ sys.exit(payload.get('code', 0))
                       and retired is True and after.get('retired') is True
                       and (after.get('retirement') or {}).get('cleaned') is True
                       and ((after.get('retirement') or {}).get('group') or {}).get('observed') in ('absent', 'unpopulated'))
+
+            # VELDO-0358 AC15: every timer of the table at the wait hang bound where it was used in the live part: in
+            # this process, and in a receiver's and its wrapper's start records (the running message).
+            with region('timers/profile-applied'):
+                hang = WAITS.WAIT_HANG_SECONDS
+                running = next((m for m in stubborn.messages if isinstance(m, dict) and m.get('event') == 'running'), {})
+                reports = {'in_process': TIMERS.report(), 'receiver': (running.get('timers') or {}).get('receiver'),
+                           'wrapper': (running.get('timers') or {}).get('wrapper')}
+                unset = {where: sorted(r['name'] for r in report or [] if r['value'] != hang)
+                         for where, report in reports.items()}
+                names = {where: {r['name'] for r in report or []} for where, report in reports.items()}
+                needed = {'control_containment.SETTLE_SECONDS', 'control_containment.TOOL_SECONDS',
+                          'control_heartbeat.SETTLE_SECONDS', 'control_heartbeat.SETUP_SECONDS',
+                          'control_launch.ACCEPT_SECONDS', 'control_launch.RECEIVER_EXIT_SECONDS'}
+                observed['timers'] = {'timer_unset': unset, 'absent': {w: sorted(needed - n) for w, n in names.items()}}
+                check('timers/profile-applied', all(not v for v in unset.values())
+                      and all(needed <= n for n in names.values()), observed['timers'])
 
             with region('containment/observations', 'containment/installed-assets'):
                 seen_codes = [str(r['refusal']) for r in observed.get('unqualified', {}).values()]
@@ -1358,7 +1410,7 @@ sys.exit(payload.get('code', 0))
                 with contextlib.suppress(Exception):
                     if launch.child.poll() is None:
                         launch.child.kill()
-                    launch.child.wait(timeout=10)
+                    launch.child.wait()  # killed above, or already ended
                     launch.child.stdout.close()
                     launch.child.stdin.close()
             for name in slices:
@@ -1388,6 +1440,4 @@ sys.exit(payload.get('code', 0))
         globals()['_V40_OBSERVED'] = observed
 
 
-_v40_started = __import__('time').monotonic()
 _v40_suite()
-_V40_SECONDS = __import__('time').monotonic() - _v40_started

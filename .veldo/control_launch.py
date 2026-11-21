@@ -3820,14 +3820,10 @@ class Receiver:
                 asked = asked or (isinstance(message, dict) and bool(message.get('stop')))
                 if isinstance(message, dict) and os.environ.get('VELDO_CONTROL_TEST_HARNESS') == '1':
                     if type(message.get('advance')) in (int, float) and math.isfinite(message['advance']):
-                        self.clock_offset += message['advance']
+                        self.clock_offset = getattr(self, 'clock_offset', 0.0) + message['advance']
                     if isinstance(message.get('check'), str):
-                        self.checks.append(message['check'])
+                        self.checks = getattr(self, 'checks', []) + [message['check']]
         return asked
-
-    def _wall(self):
-        """The wall clock the contract deadline is judged on: the real one, moved only by a supplied advance."""
-        return time.time() + self.clock_offset
 
     def _reap(self, worker, contract, carry=b'', process=None, contract_digest=None):
         """Feed the worker its packet, hash what it prints, and reap it and its group by the contract
@@ -3980,7 +3976,7 @@ class Receiver:
                     empty = False
                     break
                 live = cause is None and code is None
-                waits = [contract['deadline'] - self._wall()] if live else []
+                waits = [contract['deadline'] - _wall(self)] if live else []
                 if live and runtime_deadline != math.inf:
                     waits.append(runtime_deadline - time.monotonic())
                 if live and getattr(login, 'init_deadline', None) is not None and not login.released:
@@ -4040,7 +4036,7 @@ class Receiver:
                     if metering is not None:
                         metering.login_stop = metering.login_stop or QUESTION_STOP
                     begin('configuration_stop')
-                if cause is None and code is None and self._wall() >= contract['deadline']:
+                if cause is None and code is None and _wall(self) >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
                     # No heartbeat for the window with the worker still running: its liveness is
@@ -4054,7 +4050,7 @@ class Receiver:
                         settle = None
                         stop.adapter_exited(now)
                     stop.advance(now)
-                while self.checks:  # VELDO-0358 C4: answered once the timers above have been evaluated
+                while getattr(self, 'checks', None):  # VELDO-0358 C4: answered once the timers have been evaluated
                     self.emit({'event': 'checked', 'check': self.checks.pop(0), 'due': cause})
         finally:
             # A prompt still held is never written: the engine's input closes with nothing more on it.
@@ -4592,6 +4588,12 @@ END_UNRECORDED_REASON = 'outcome_unknown:end_unrecorded'
 # What Launch.start records for a receiver that exited END_UNRECORDED before its dispatch's record reached
 # running: launch evidence missing as for every receiver that ended there, and why.
 EVIDENCE_UNRECORDED_REASON = 'launch_evidence_missing:end_unrecorded'
+
+
+def _wall(receiver):
+    """The wall clock a receiver judges the contract deadline on: the real one, moved only by a supplied advance
+    (VELDO-0358 C4, under the test harness)."""
+    return time.time() + getattr(receiver, 'clock_offset', 0.0)
 
 
 def _await_exit(child, timeout):
