@@ -1,0 +1,3 @@
+VELDO-0183 on the line: its suites, each alone (python3 scripts/selftest.py with the suite option; exit 2 is a passed partial run), at the ticket's own commit of the port.
+exit 2 130_veldo_0183_memory_servers
+  130_veldo_0183_memory_servers                   17 passed   30.48s
