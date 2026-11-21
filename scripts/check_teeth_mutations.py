@@ -2970,9 +2970,11 @@ def cases():
     # Since VELDO-0041 the loop's wait is the least of its timers (the deadline on the wall clock, the
     # stop, the missed-heartbeat deadline and the settling on the monotonic one) and a stop begins with
     # its cause alone, so the late deadline and the stop at close are made there.
+    # VELDO-0358: the row judges the deadline on the receiver's supplied clock and asks whether a stop is due, so
+    # the late deadline is made where the deadline is judged (a later wake alone would be seen at the check).
     dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
-             "                waits = [contract['deadline'] - time.time()] if live else []\n",
-             "                waits = [contract['deadline'] + 30 - time.time()] if live else []\n",
+             "                if cause is None and code is None and self._wall() >= contract['deadline']:\n",
+             "                if cause is None and code is None and self._wall() >= contract['deadline'] + 30:\n",
              'deadline-after-closed-output')
     dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py', closed,
              closed + "                            begin('deadline')  # defect: stopped when it closes\n",
@@ -13157,19 +13159,15 @@ def cases():
     add(261, 'dispatch261-stop-message-ignored', '62_veldo_0039_dispatch.py', 'control_launch.py',
         "                asked = asked or (isinstance(message, dict) and bool(message.get('stop')))\n",
         "                asked = asked  # defect: the receiver ignores a stop message\n", stops261)
+    # VELDO-0358 restated: the receiver that slept forever on a stop could only be waited out (a hang is never a
+    # kill). The defect is kept as stated, a stop that leaves the record running, by a receiver that ends on it
+    # without recording the end: the row's wait ends impossible (the receiver has ended, the record still open).
     add(261, 'dispatch261-stop-leaves-record-running', '62_veldo_0039_dispatch.py', 'control_launch.py',
         "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
         "                        begin('requested')\n",
         "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
-        "                        time.sleep(10 ** 6)  # defect: a stop leaves the receiver alive and the record running\n",
-        stops261,
-        # The product's bound is shortened on this mutant copy only, so it runs out well inside the worker budget:
-        # the receiver announces its contract deadline as its end, and the module the suite loads allows 2 s to
-        # accept (the launch's own acceptance keeps its 30 s, bound into invoke and read by the receiver process).
-        also=[("        ends_by = contract['deadline'] + (sum(self._graces()) + C.settle() if group else 0)\n",
-               "        ends_by = contract['deadline']  # the mutant's shortened end obligation\n"),
-              ("if __name__ == '__main__':\n    main()\n",
-               "if __name__ == '__main__':\n    main()\nelse:\n    ACCEPT_SECONDS = 2  # the mutant's shortened allowance\n")])
+        "                        os._exit(0)  # defect: a stop ends the receiver and leaves the record running\n",
+        stops261)
     # wait_for's report and its hang (VELDO-0358 AC1 restated this pair; wait261-expiry-returns-none anchored
     # shared.py's timed-out branch, which AC1 removed, and is retired for these two). The report now comes
     # only from the impossible outcome; a wait that never ends is hung, never false.
