@@ -1,0 +1,10 @@
+  SELFTEST FAIL: docs check, non-ASCII in the first of many files: red, and the file is named
+  SELFTEST FAIL: docs check, non-ASCII in the last of many files: red, and the file is named
+  SELFTEST FAIL: docs check, a dash in the first of many files: red, and the file is named
+  SELFTEST FAIL: docs check: a file declared with its reason is not a finding, and a .gz is not a text file
+  SELFTEST FAIL: docs check: a declared file is still held to the dash rule
+  SELFTEST FAIL: docs check: a declared file that is clean now is a stale entry, red
+  SELFTEST FAIL: docs check: a declaration without a reason is red
+  SELFTEST FAIL: docs check: declaring one file does not excuse another
+  01_warp_0101_reviewer_notes                    614 passed   15.45s
+selftest (PARTIAL, 1 of 240 suites): 640 passed, 8 failed in 15.45s

@@ -573,6 +573,66 @@ with tempfile.TemporaryDirectory() as d:
                        capture_output=True, text=True)
     expect("docs check passes clean file", r.returncode == 0)
 
+# --- docs check over more files than one grep call holds: the verdict used to be xargs' exit
+# status, which is 123 as soon as one of its grep calls finds nothing, so a finding in one batch
+# passed whenever another batch was clean. The fixture is a repository of its own with the script
+# copied in (the script works on the repository it stands in), 2600 clean files and one bad one.
+import shutil as _docs_shutil
+
+
+def _docs_fixture(d, bad_name, bad_text, allowed=None, extra=None):
+    repo = Path(d)
+    (repo / "scripts").mkdir(parents=True)
+    _docs_shutil.copy(ROOT / "scripts" / "check_docs.sh", repo / "scripts" / "check_docs.sh")
+    (repo / "t").mkdir()
+    for i in range(2600):
+        (repo / "t" / ("clean-file-with-a-long-name-so-the-list-outgrows-one-call-%04d.txt" % i)).write_text("plain\n")
+    (repo / bad_name).parent.mkdir(parents=True, exist_ok=True)
+    (repo / bad_name).write_bytes(bad_text)
+    for name, data in (extra or {}).items():
+        (repo / name).write_bytes(data)
+    if allowed is not None:
+        (repo / ".veldo").mkdir()
+        (repo / ".veldo" / "docs_nonascii_allowed.txt").write_text(allowed)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_") and k != "DOCS_CHECK_PATHS"}
+    for cmd in (["git", "init", "-q"], ["git", "add", "-A"]):
+        subprocess.run(cmd, cwd=repo, env=env, check=True, capture_output=True)
+    listed = subprocess.run(["git", "ls-files"], cwd=repo, env=env, capture_output=True, text=True).stdout
+    r = subprocess.run(["bash", "scripts/check_docs.sh"], cwd=repo, env=env, capture_output=True, text=True)
+    return r, len(listed)
+
+for _label, _name, _text, _fail in (
+        ("non-ASCII in the first of many files", "a/first.md", "caf\u00e9\n".encode(), "non-ASCII characters in files above"),
+        ("non-ASCII in the last of many files", "z/last.md", "caf\u00e9\n".encode(), "non-ASCII characters in files above"),
+        ("a dash in the first of many files", "a/first.md", "an em\u2014dash\n".encode(), "em/en dash found in files above")):
+    with tempfile.TemporaryDirectory() as d:
+        r, size = _docs_fixture(d, _name, _text)
+        expect("docs check, %s: the list is longer than one grep call holds (xargs' 128 KiB)" % _label, size > 131072)
+        expect("docs check, %s: red, and the file is named" % _label,
+               r.returncode == 1 and _name in r.stdout.splitlines() and _fail in r.stdout)
+with tempfile.TemporaryDirectory() as d:
+    r, _ = _docs_fixture(d, "a/kept.log", "1 \u203a 2\n".encode(), allowed="# why\na/kept.log raw tool output\n",
+                         extra={"t/blob.gz": b"\x1f\x8b\xff\xe2\x80\x94\xc3\xa9"})
+    expect("docs check: a file declared with its reason is not a finding, and a .gz is not a text file",
+           r.returncode == 0 and "1 file(s) declared" in r.stdout and "kept.log\n" not in r.stdout)
+with tempfile.TemporaryDirectory() as d:
+    r, _ = _docs_fixture(d, "a/kept.log", "1 \u203a and an em\u2014dash\n".encode(), allowed="a/kept.log raw tool output\n")
+    expect("docs check: a declared file is still held to the dash rule",
+           r.returncode == 1 and "em/en dash found" in r.stdout and "non-ASCII characters in files above" not in r.stdout)
+with tempfile.TemporaryDirectory() as d:
+    r, _ = _docs_fixture(d, "a/kept.log", b"clean now\n", allowed="a/kept.log raw tool output\n")
+    expect("docs check: a declared file that is clean now is a stale entry, red",
+           r.returncode == 1 and "remove the entry" in r.stdout)
+with tempfile.TemporaryDirectory() as d:
+    r, _ = _docs_fixture(d, "a/kept.log", "1 \u203a 2\n".encode(), allowed="a/kept.log\n")
+    expect("docs check: a declaration without a reason is red",
+           r.returncode == 1 and "without a reason" in r.stdout)
+with tempfile.TemporaryDirectory() as d:
+    r, _ = _docs_fixture(d, "a/other.log", "1 \u203a 2\n".encode(), allowed="a/kept.log raw tool output\n",
+                         extra={"a/kept.log": "1 \u203a 2\n".encode()})
+    expect("docs check: declaring one file does not excuse another",
+           r.returncode == 1 and "a/other.log" in r.stdout.splitlines() and "a/kept.log" not in r.stdout.splitlines())
+
 # --- HTTP/API runner (WARP-0301, B1 of PLAN-0003): control logic tested with
 # an in-process stdlib server and driven over its own fixtures (no external
 # dependency), plus the pure assertion logic exercised for every expect kind

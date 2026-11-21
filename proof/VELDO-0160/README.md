@@ -218,7 +218,7 @@ subscriptions.
 
 `proof/VELDO-0062/extract_formats.py` now also reads, from the same binaries' bytes and without running
 either: Claude Code's usage-limit message (the template "You've hit your ${limit}${suffix}", the
-" · resets " piece, the table of limit names by window, the en-US time formats with the
+piece that is a space, a U+00B7 middle dot and " resets ", the table of limit names by window, the en-US time formats with the
 resolved zone in parentheses, and the 429 text that is not the account's limit), and Codex exec's
 `mcp_tool_call` item (its type name, the field names server, arguments and result, and the status
 values in the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer that the
