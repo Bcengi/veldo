@@ -1,0 +1,51 @@
+Fix round 2: each suite run alone, `python3 scripts/selftest.py --suite <name>`, one after another inside the
+builders' host_heavy wrapper (outside the repository), 2026-11-21, on the working tree of this round before its commits
+(the first batch) and after the first four commits (the second batch). Exit 2 is the dispatcher's partial-run status;
+the verdict is the failure count. Load is /proc/loadavg at each run's end.
+
+First batch:
+  127_veldo_0231_run_flags rc=2 43 passed, 0 failed in 23.31s; load 54.29 70.41 62.43
+  133_veldo_0178_conversation_api rc=2 42 passed, 0 failed in 1.68s; load 51.62 69.59 62.21
+  131_veldo_0175_conversation_replies rc=1 41 passed, 1 failed in 3.98s; load 49.09 68.76 61.98
+  126_veldo_0230_qualify_reproduces rc=1 29 passed, 1 failed in 123.72s; load 25.13 53.05 57.04
+  125_veldo_0230_engine_census rc=2 34 passed, 0 failed in 11.25s; load 24.00 51.43 56.45
+  79_veldo_0061_codex_adapter rc=2 47 passed, 0 failed in 17.75s; load 23.78 50.04 55.91
+  86_veldo_0127_agent_configuration rc=1 52 passed, 2 failed in 70.54s; load 21.66 43.91 53.35
+  87_veldo_0127_codex_delivery rc=2 220 passed, 0 failed in 145.21s; load 22.89 35.89 48.97
+  88_veldo_0127_feature_defaults rc=2 51 passed, 0 failed in 34.15s; load 22.65 34.39 47.98
+  128_veldo_0177_conversation_workspace rc=2 42 passed, 0 failed in 3.27s; load 22.60 34.18 47.84
+  130_veldo_0176_conversation_history rc=2 43 passed, 0 failed in 12.52s; load 22.20 33.72 47.54
+  131_veldo_0184_file_memory rc=2 42 passed, 0 failed in 124.61s; load 19.66 28.90 44.03
+  136_veldo_0180_conversation_projects rc=2 48 passed, 0 failed in 3.45s; load 19.84 28.79 43.91
+  137_veldo_0181_conversation_decisions rc=2 45 passed, 0 failed in 5.81s; load 19.86 28.64 43.79
+  138_veldo_0187_claude_mem_feed rc=2 44 passed, 0 failed in 5.34s; load 19.87 28.50 43.66
+  132_veldo_0175_conversation_routes rc=2 47 passed, 0 failed in 24.40s; load 19.62 27.75 43.01
+  66_veldo_0042_clones rc=2 46 passed, 0 failed in 1.89s; load 19.81 27.65 42.89
+  153_veldo_0302_space_creators rc=2 68 passed, 0 failed in 4.83s; load 19.90 27.54 42.78
+  142_veldo_0303_space_paths rc=2 64 passed, 0 failed in 17.25s; load 19.99 27.19 42.42
+  155_veldo_0304_space_boundary rc=2 77 passed, 0 failed in 7.53s; load 20.07 26.97 42.18
+  129_veldo_0239_batch_landing rc=2 49 passed, 0 failed in 24.98s; load 26.01 27.77 42.04
+  101_veldo_0208_landing_reuse rc=2 216 passed, 0 failed in 404.23s; load 21.08 24.51 35.86
+  129_veldo_0177_assistant_setup rc=2 32 passed, 0 failed in 4.42s; load 21.08 24.51 35.86
+  130_veldo_0183_memory_servers rc=2 45 passed, 0 failed in 29.03s; load 20.14 23.96 35.32
+
+The three reds of the first batch:
+  131_0175: the new F10 check read batch_outcome, a field the channel pass's answer does not carry ('batch', None);
+    it now requires outcome 'batch' for project factory and no proposal (only the batch starter answers 'batch').
+  126_0230: the four proof/VELDO-0127/resources-*.json fixtures the qualify command writes carry the digest of
+    control_engine_codex.py, which F6 changes; codex-qualification.json itself was reproduced byte for byte by the
+    real binary (its answer came in its next request). The fixtures are rewritten by the qualify command (second batch).
+  86_0127: only live/claude and live/codex, the known stale live captures (F4, the lead's).
+
+Second batch (after 425443f0; the qualify command first rewrote the four resource fixtures, each differing from the
+checkout only in the control_engine_codex.py digest line, then 3f37088d committed them with F6):
+  126_veldo_0230_qualify_reproduces rc=2 30 passed, 0 failed in 169.65s; load 72.99 74.87 70.51
+  86_veldo_0127_agent_configuration rc=1 52 passed, 2 failed in 107.93s; load 74.30 74.72 70.94  (live/claude, live/codex: F4)
+  131_veldo_0175_conversation_replies rc=1 41 passed, 1 failed in 4.01s; load 72.67 74.77 70.50
+    (the check still read `project`, which the channel pass's answer does not carry either; it now reads the outcome only)
+After that change:
+  131_veldo_0175_conversation_replies rc=2 42 passed, 0 failed in 4.32s; load 45.43 42.32 36.22
+F10 falsifier in place (scratch copy, the service intake's batch starter removed in both control_service.py copies):
+  131_veldo_0175_conversation_replies 41 passed, 1 failed in 4.38s
+    VELDO-0175 detail: AC1/service-feed the owner's /batch from Telegram, taken by the service's own intake, goes to
+    the batch starter and writes no proposal [['inbox']]
