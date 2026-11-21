@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0207, VELDO-0208, VELDO-0219]
 placement: [enforcement]
-protected_paths: ["scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py"]
+protected_paths: ["scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", ".veldo/policy.yaml"]
 footprint:
   - scripts/propose_case_inputs.py
   - scripts/mutation_case_inputs.json
@@ -28,6 +28,7 @@ footprint:
   - scripts/suites/*_veldo_0217_*.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
+  - .veldo/policy.yaml
   - specs/VELDO-0217-every-confined-case-has-a-reviewed-input-declaration.md
   - specs/index.md
   - proof/VELDO-0217/*
@@ -198,4 +199,28 @@ authority.
   answered or refused.
 - The proposer's earlier single-case form, trace_case(gate, case), is kept: VELDO-0208's confined
   proposal row and the space-boundary census name it.
-
+- Fix round 1 (review FIX, three medium and three low), one row and one registered falsifier each:
+  - F1: row declarations/worker-trace-refused drives the coordinator's own Workers.finish on planted
+    publishing traces (only the launch is replaced); falsifier declarations217-worker-trace-ignored.
+  - F2: adding %network made a thread left waiting in accept or recv at exit an "incomplete file-read
+    trace". An ended thread's pending network call (accept, accept4, recv*, connect, send*) reads no
+    file, so the trace stays whole; the call is still judged as a non-file input: a pending connect or
+    send is an attempt, and an accept on a socket the traced tree never listened on is classed like a
+    connection to that address. Restoring the base behavior for this one shape is a fix of this
+    change's regression, not a new tracer rule. Rows declarations/accept-pending and
+    accept-pending-real (0207 strace leg); falsifiers declarations217-accept-incomplete and
+    declarations217-foreign-accept-allowed.
+  - F3: a publishing run's probe of an absent Unix socket the key does not record as absent (the
+    toolchain's absent list) withholds publication, reason undeclared_absent_socket. Row
+    declarations/undeclared-absent-socket; falsifier declarations217-absent-unkeyed.
+  - F4: the review records are protected by .veldo/policy.yaml (proof/VELDO-0217/reviews/*, floor
+    high), the same pattern as the declarations file. Row declarations/review-records-protected;
+    falsifier declarations217-reviews-unprotected.
+  - F5: "the last fresh gate observation" is mechanical: the proposer takes observations only from a
+    passed receipt whose input_digest equals the gate's input digest of the tree it traces (its files
+    and head), and records that receipt (input digest, status, file digest) and its own inputs beside
+    the observation; case_reuse names observation_not_current otherwise. Row
+    declarations/gate-observation-current; falsifier declarations217-receipt-unchecked.
+  - F6: an incomplete trace (IncompleteTrace) of a traced gate run keeps its case from publishing,
+    reason incomplete_trace, and the stage goes on; other trace errors still fail the stage. Row
+    declarations/incomplete-trace-demoted; falsifier declarations217-incomplete-fails-stage.

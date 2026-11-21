@@ -351,7 +351,7 @@ class Pool:
         return results
 
 
-def proposal(root, identity, runs, captured, gate_observation=None):
+def proposal(root, identity, runs, captured, gate_observation=None, gate_receipt=None, inputs=None):
     """The declaration a set of traced runs proposes, with the digest of every file they read."""
     files = sorted(set().union(*(c['files'] for c in captured)))
     proposed = {
@@ -368,7 +368,10 @@ def proposal(root, identity, runs, captured, gate_observation=None):
                                       if (Path(root) / name).is_file()},
                      'runs': [{k: r.get(k) for k in ('mode', 'exit', 'reads', 'trace', 'observation', 'non_file')}
                               for r in runs],
-                     'gate_observation': gate_observation}}
+                     'gate_observation': gate_observation,
+                     # The receipt the observation came from, and the inputs this proposal traced:
+                     # case_reuse takes the observation as the last fresh one only when they agree.
+                     'gate_receipt': gate_receipt, 'inputs': inputs}}
     return proposed
 
 
@@ -410,22 +413,32 @@ def complete(report_identities, confined):
     return sorted(expected - reported), sorted(reported - expected)
 
 
-def gate_observations(receipt):
-    """{identity: baseline observation digest} from a gate's mutation receipt (its fresh results)."""
+def gate_observations(receipt, inputs):
+    """({identity: baseline observation digest}, receipt binding) from a gate's mutation receipt (its
+    fresh results). The last fresh gate observation of what a proposal traced is a passed receipt over
+    exactly the proposal's inputs (`inputs`: the gate's input digest of this tree, its files and head);
+    a receipt of any other state, earlier or later, is refused: ({}, None)."""
+    raw = Path(receipt).read_bytes()
+    document = json.loads(raw)
+    binding = {'input_digest': document.get('input_digest'), 'status': document.get('status'),
+               'digest': hashlib.sha256(raw).hexdigest()}
+    if binding['status'] != 'passed' or binding['input_digest'] != inputs:
+        return {}, None
     found = {}
-    for result in json.loads(Path(receipt).read_text()).get('results', []):
+    for result in document.get('results', []):
         if result.get('source') == 'fresh' and isinstance(result.get('baseline'), dict):
             found[result['case']['identity']] = observation_digest(result['baseline'])
-    return found
+    return found, binding
 
 
-def propose(gate, case, pool, gate_observation=None, keep=None):
+def propose(gate, case, pool, gate_observation=None, keep=None, gate_receipt=None, inputs=None):
     jobs = [(case['identity'] + '#' + str(index) + ':' + mode, {'case': case, 'mode': mode,
              'claim': pool.claims[case['identity']]}) for index, mode in enumerate(RUNS)]
     results = pool.map(jobs, lambda job: trace_case(gate, job['case'], job['mode'], keep))
     ordered = [results[name] for name, _job in jobs]
     runs, captured = [r for r, _c, _o in ordered], [c for _r, c, _o in ordered]
-    return proposal(ROOT, case['identity'], runs, captured, gate_observation), runs, captured
+    return proposal(ROOT, case['identity'], runs, captured, gate_observation,
+                    gate_receipt if gate_observation else None, inputs), runs, captured
 
 
 def home_as_tilde(text):
@@ -488,9 +501,13 @@ def main():
         names = [n for n in registry if n not in document['cases'] or staleness.get(n)]
     else:
         names = list(registry)
-    observed = gate_observations(args.gate_receipt) if args.gate_receipt else {}
     pool = Pool(gate, args.jobs)
     files = gate.read_inputs(ROOT, gate.common_directory(ROOT))
+    inputs = gate.digest({'files': gate.file_identity(files),
+                          'head': gate.git(ROOT, gate.common_directory(ROOT), 'rev-parse', 'HEAD')})
+    observed, receipt_binding = gate_observations(args.gate_receipt, inputs) if args.gate_receipt else ({}, None)
+    if args.gate_receipt and receipt_binding is None:
+        print('gate receipt refused: not a passed receipt over this tree; no gate observation recorded', flush=True)
     store = gate.CaseClaims()
     pool.claims = {n: store.claim(registry[n], gate.case_time_key(registry[n], files, leg)) for n in names}
     report = {'schema': REPORT_SCHEMA, 'commit': gate.git(ROOT, gate.common_directory(ROOT), 'rev-parse', 'HEAD'),
@@ -501,7 +518,8 @@ def main():
 
     def one(name):
         case = registry[name]
-        declared, runs, captured = propose(gate, case, pool, observed.get(name), args.keep_traces)
+        declared, runs, captured = propose(gate, case, pool, observed.get(name), args.keep_traces,
+                                           receipt_binding, inputs)
         runtime = set().union(*(c['runtime'] for c in captured))
         absent_runtime = set().union(*(c['runtime_absent'] for c in captured))
         before = previous.get(name)

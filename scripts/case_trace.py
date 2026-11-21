@@ -16,7 +16,18 @@ FD_READS = {'fstat', 'fstatfs', 'getdents', 'getdents64', 'fchdir'}
 ENDED = re.compile(r'^\d+ \+\+\+ (?:exited with -?\d+|killed by SIG[A-Z0-9]+(?: \(core dumped\))?) \+\+\+$')
 STATUS = re.compile(r'^\d+ \+\+\+ .* \+\+\+$')
 ENDING_CALLS = {'exit', 'exit_group', '???'}
+# A network call an ended thread was still waiting in (a server thread in accept, a reader in recv)
+# reads no file: the file-read evidence is whole. It is yielded with result '?', so the non-file
+# classifier still judges it: a pending connect or send is an attempt, a pending accept on a socket
+# the traced tree did not listen on is an input (VELDO-0217 F2).
+NETWORK_WAITS = {'accept', 'accept4', 'recvfrom', 'recvmsg', 'recvmmsg',
+                 'connect', 'sendto', 'sendmsg', 'sendmmsg'}
 PENDING_CALL = re.compile(r'^\d+ ([a-zA-Z0-9_]+|\?\?\?)\(')
+
+
+class IncompleteTrace(ValueError):
+    """A traced thread ended inside a call that may have read a file: lost evidence. The gate keeps
+    such a run's case from publishing rather than failing its stage (VELDO-0217 F6)."""
 
 
 def command(trace, argv):
@@ -33,13 +44,23 @@ def syscall_lines(trace):
         pid = line.split(None, 1)[0]
         if ENDED.match(line):
             # A thread torn down by its group's exit never resumes its last call. Accept that
-            # call only when it is an exit; any other call of an ended thread is lost evidence.
+            # call only when it is an exit or a network wait; any other call of an ended thread is
+            # lost evidence.
             call = pending.pop(pid, None)
             name = PENDING_CALL.match(call) if call is not None else None
+            if call is not None and name is not None and name[1] in NETWORK_WAITS:
+                yield call.rstrip().rstrip(',') + ') = ? <thread ended>'
+                continue
             if call is not None and (name is None or name[1] not in ENDING_CALLS):
-                raise ValueError('incomplete file-read trace')
+                raise IncompleteTrace('incomplete file-read trace')
             continue
         if STATUS.match(line):
+            continue
+        if ' resumed>' in line and '<unfinished ...>' in line:
+            # strace's teardown of a pending call ("<... accept4 resumed> <unfinished ...>) = ?"):
+            # the call never completed; its thread's end judges the call it started.
+            if pid not in pending:
+                raise ValueError('unmatched resumed syscall')
             continue
         if '<unfinished ...>' in line:
             pending[pid] = line.replace('<unfinished ...>', '')
@@ -50,7 +71,7 @@ def syscall_lines(trace):
             line = pending.pop(pid) + line.split(' resumed>', 1)[1]
         yield line
     if pending:
-        raise ValueError('incomplete file-read trace')
+        raise IncompleteTrace('incomplete file-read trace')
 
 
 def accesses(trace, *, cwd=None, after_confinement=False):
@@ -214,6 +235,10 @@ UNIX = re.compile(r'sun_path=(@?)("(?:[^"\\]|\\.)*")')
 LOCAL_INET = re.compile(r'<(?:TCP|UDP|UDPLITE|SCTP)(?:v6)?:\[(\[[^\]]*\]|[0-9.]+):(\d+)(?:->|\])')
 LOCAL_UNIX = re.compile(r'<UNIX(?:-[A-Z]+)?:\[\d+,(@?)("(?:[^"\\]|\\.)*")\]')
 WILDCARD = {'0.0.0.0', '::'}
+# The socket a call's first argument names, as -yy prints it: 3<TCP:[127.0.0.1:4000]> gives
+# TCP:[127.0.0.1:4000]; a listening socket keeps the same text in every later accept on it.
+SOCKET = re.compile(r'^\s*\d+<((?:TCP|UDP|UDPLITE|SCTP|UNIX)[^<>]*)>')
+ACCEPTS = {'accept', 'accept4'}
 
 
 def _loopback(address):
@@ -256,6 +281,7 @@ def _network(trace, private, after_confinement):
     """(classes {class: [evidence]}, absent socket paths) of one trace; see non_file_inputs."""
     private = [Path(p).resolve() for p in private]
     bound_inet, bound_unix, attempts, found, absent = set(), set(), [], {}, set()
+    listening, accepted = set(), []
     descriptors = {}
     confined = not after_confinement
     for line in syscall_lines(trace):
@@ -286,6 +312,16 @@ def _network(trace, private, after_confinement):
                 bound_inet.add(endpoint[1])
             elif endpoint and endpoint[0] == 'AF_UNIX' and endpoint[1]:
                 bound_unix.add(endpoint[1])
+        if call == 'listen' and not result.startswith('-1 '):
+            socket = SOCKET.match(arguments)
+            if socket:
+                listening.add(socket[1])
+        if call in ACCEPTS:
+            # Waiting for, or taking, a connection on a socket: the case's own only when the traced
+            # tree listened on it. A socket handed in from outside is a door another process opened.
+            socket = SOCKET.match(arguments)
+            accepted.append((socket[1] if socket else None, line))
+            continue
         if call in SENDS:
             endpoint = _endpoint(arguments)
             if endpoint is not None and endpoint[0] == 'AF_UNIX' and endpoint[1] and endpoint[1][0] == '/':
@@ -305,6 +341,15 @@ def _network(trace, private, after_confinement):
             quoted = QUOTED.search(arguments)
             if quoted and Path(ast.literal_eval(quoted[0])).name in LAUNCHERS:
                 found.setdefault('outside_process', []).append(line[:300])
+    for socket, line in accepted:
+        if socket in listening:
+            continue
+        if socket is None or not socket.startswith('UNIX'):
+            local = LOCAL_INET.search('<' + socket + '>') if socket else None
+            kind = 'unbound_loopback' if local and _loopback(local[1].strip('[]')) else 'network_peer'
+        else:
+            kind = 'host_socket'
+        found.setdefault(kind, []).append(line[:300])
     for (family, address), line in attempts:
         if family in ('AF_INET', 'AF_INET6'):
             if address is None:

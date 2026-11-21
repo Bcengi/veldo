@@ -21,6 +21,7 @@ def _v217_declarations():
     import sys
     import tempfile
     import threading
+    import time
     import types
     from unittest.mock import patch
 
@@ -41,10 +42,12 @@ def _v217_declarations():
     propose_source = ROOT / "scripts" / "propose_case_inputs.py"
     reuse_source = ROOT / "scripts" / "case_reuse.py"
     trace_source = ROOT / "scripts" / "case_trace.py"
+    gate_source = ROOT / "scripts" / "check_gate_mutations.py"
+    policy_source = ROOT / ".veldo" / "policy.yaml"
     P = as_module(propose_source, 'propose_case_inputs')
     C = as_module(reuse_source, 'case_reuse')
     T = as_module(trace_source, 'case_trace')
-    gate = load('check_gate_mutations')
+    gate = as_module(gate_source, 'check_gate_mutations')
     I, R = C.I, C.R
 
     def row(name, condition):
@@ -63,7 +66,8 @@ def _v217_declarations():
             entry.setdefault('proposal', {'runs': [
                 {'mode': mode, 'exit': 0, 'reads': 'same-reads', 'trace': 'trace-%d' % index,
                  'observation': 'seen', 'non_file': []} for index, mode in enumerate(C.TRACED_RUNS)],
-                'gate_observation': 'seen'})
+                'gate_observation': 'seen', 'inputs': 'traced-inputs',
+                'gate_receipt': {'status': 'passed', 'input_digest': 'traced-inputs', 'digest': 'r' * 64}})
             entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
             if names is None or name in names:
                 record['cases'][name] = {'declaration': C.declaration_digest(entry),
@@ -450,6 +454,179 @@ def _v217_declarations():
             launcher.write_text('100 execve("/usr/bin/systemd-run", ["systemd-run", "--user", "true"], 0x0 /* 3 vars */) = 0\n'
                                 '100 +++ exited with 0 +++\n')
             row('outside-process', sorted(T.non_file_inputs(launcher)) == ['outside_process'])
+
+        # Review F2: a thread an ended process left waiting in accept, on a socket the traced tree
+        # listened on, lost no file evidence and reached nobody: no class, and the trace is whole. A
+        # pending connect still counts as an attempt, an accept on a socket the tree never listened on
+        # is an input, and an ended thread inside a file call is still lost evidence.
+        if leg_runs():
+            boundary = '100 landlock_restrict_self(5, 0) = 0\n'
+            waiting = (boundary +
+                       '100 bind(3<TCP:[3001]>, {sa_family=AF_INET, sin_port=htons(0), sin_addr=inet_addr("127.0.0.1")}, 16) = 0\n'
+                       '100 listen(3<TCP:[127.0.0.1:42001]>, 128) = 0\n'
+                       '100 bind(4<UNIX-STREAM:[3002]>, {sa_family=AF_UNIX, sun_path=@"v217-accept"}, 14) = 0\n'
+                       '100 listen(4<UNIX-STREAM:[3002,@"v217-accept"]>, 128) = 0\n'
+                       '101 accept4(3<TCP:[127.0.0.1:42001]>,  <unfinished ...>\n'
+                       '102 accept4(4<UNIX-STREAM:[3002,@"v217-accept"]>,  <unfinished ...>\n'
+                       '100 exit_group(0) = ?\n'
+                       '101 <... accept4 resumed> <unfinished ...>) = ?\n'
+                       '102 <... accept4 resumed> <unfinished ...>) = ?\n'
+                       '101 +++ exited with 0 +++\n102 +++ exited with 0 +++\n100 +++ exited with 0 +++\n')
+            others = {
+                'pending-connect': boundary + '101 connect(4<TCP:[3003]>, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("192.0.2.10")}, 16 <unfinished ...>\n'
+                                   '100 exit_group(0) = ?\n101 +++ exited with 0 +++\n100 +++ exited with 0 +++\n',
+                'foreign-accept': boundary + '100 accept4(5<TCP:[127.0.0.1:6000]>, {sa_family=AF_INET, sin_port=htons(50000), sin_addr=inet_addr("127.0.0.1")}, [16], SOCK_CLOEXEC) = 6<TCP:[127.0.0.1:6000->127.0.0.1:50000]>\n'
+                                  '100 +++ exited with 0 +++\n',
+            }
+            pending_file = (boundary + '101 openat(AT_FDCWD, "/etc/hosts", O_RDONLY|O_CLOEXEC <unfinished ...>\n'
+                            '100 exit_group(0) = ?\n101 +++ exited with 0 +++\n100 +++ exited with 0 +++\n')
+            outcome = {}
+            for name, text in {'waiting': waiting, **others, 'pending-file': pending_file}.items():
+                path = traces / ('accept-' + name)
+                path.write_text(text)
+                try:
+                    list(T.accesses(path, after_confinement=True))
+                    outcome[name] = sorted(T.non_file_inputs(path, (top / 'private',), after_confinement=True))
+                except ValueError as error:
+                    outcome[name] = type(error).__name__ + ': ' + str(error)
+            row('accept-pending: %r' % outcome,
+                outcome == {'waiting': [], 'pending-connect': ['network_peer'], 'foreign-accept': ['unbound_loopback'],
+                            'pending-file': 'IncompleteTrace: incomplete file-read trace'})
+
+        # Review F1, F3 and F6: the coordinator's own Workers.finish judges each publishing run's
+        # planted trace (no stand-in computes the classes): a network peer shown only in the mutant trace, an
+        # absent socket the key does not record, one it does, and a clean case; then, in a stage of its
+        # own, an incomplete trace beside a clean case. Each process is a real one that already ended.
+        if leg_runs():
+            boundary = '100 landlock_restrict_self(5, 0) = 0\n'
+            ending = '100 +++ exited with 0 +++\n'
+            planted = {
+                'peer-mutant': '100 connect(4<TCP:[4001]>, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("192.0.2.10")}, 16) = -1 EINPROGRESS (Operation now in progress)\n',
+                'absent-undeclared': '100 connect(4<UNIX-STREAM:[4002]>, {sa_family=AF_UNIX, sun_path="/run/v217-not-declared.sock"}, 30) = -1 ENOENT (No such file or directory)\n',
+                'absent-declared': '100 connect(4<UNIX-STREAM:[4003]>, {sa_family=AF_UNIX, sun_path="/run/v217-declared-absent.sock"}, 33) = -1 ENOENT (No such file or directory)\n',
+                'clean': '',
+                'incomplete': '101 openat(AT_FDCWD, "/etc/hosts", O_RDONLY|O_CLOEXEC <unfinished ...>\n100 exit_group(0) = ?\n101 +++ killed by SIGKILL +++\n',
+                'clean-beside': '',
+            }
+
+            def observation(ok):
+                return {'count': 1, 'observations': [['fixture target', ok]], 'row_names': ['fixture target'],
+                        'failed_rows': [] if ok else ['fixture target']}
+
+            class TracedWorkers(gate.Workers):
+                """The real Workers, its finish included; only the launch is replaced by a process
+                that already ended, its stdout and the trace a traced worker would have left."""
+                def run(self, jobs, directory, frozen, on_result=None):
+                    jobs = {name: dict(job) for name, job in jobs.items()}
+                    self.jobs.update(jobs)
+                    results = {}
+                    for name, job in jobs.items():
+                        self.budgets[name] = job.get('budget_seconds', gate.WORKER_BUDGET)
+                        home = directory / str(self.invocations)
+                        home.mkdir()
+                        self.homes[name] = home
+                        if job.get('declared_case'):
+                            self.owned_snapshots[name] = directory / 'cases' / str(self.invocations)
+                            job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
+                        shown = planted[job['case']['name']] if job['mode'] == 'mutant' else ''
+                        (directory / ('trace-' + home.name)).write_text(boundary + shown + ending)
+                        out, err = (open(directory / (home.name + '-' + f), 'w+b') for f in ('stdout', 'stderr'))
+                        out.write(json.dumps({'observation': observation(job['mode'] != 'mutant'), 'replacement_count': 1,
+                                              'old_digest': 'old', 'new_digest': 'new'}).encode())
+                        self.resources.acquire(name, job)
+                        self.ledgers[name] = directory / ('ownership-' + home.name + '.jsonl')
+                        process = subprocess.Popen(['/bin/true'], start_new_session=True)
+                        process.wait(timeout=300)
+                        self.active[name] = (process, out, err, time.monotonic())
+                        self.invocations += 1
+                        self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
+                        results[name] = self.finish(name)
+                        if on_result is not None:
+                            on_result(name, results[name])
+                    return results
+            real_load, real_session = gate.load, C.Session
+
+            def loader(path):
+                return {'case_trace.py': T, 'case_reuse.py': C}.get(Path(path).name) or real_load(path)
+
+            def traced_stage(label, names):
+                root = top / label; root.mkdir()
+                cache = top / (label + '-cache')
+                cases = [fixture_case(n, 'test.py') for n in names]
+                files = machinery()
+                files['.veldo/subject.py'] = (0o644, b'value = 1\n')
+                files['scripts/suites/test.py'] = (0o644, b'expect("fixture target", True)\n')
+                document = {'schema': 'veldo.case-inputs/v1',
+                            'toolchains': {gate.DRIVERS[0]: {'paths': ['/usr'], 'reviewed': True,
+                                                             'absent': ['/run/v217-declared-absent.sock']}},
+                            'cases': {c['identity']: declared() for c in cases}}
+                qualify(document, files)
+                with patch.object(gate, 'inventory', return_value=cases), \
+                     patch.object(gate, 'read_inputs', return_value=files), \
+                     patch.object(gate, 'git', return_value='head'), \
+                     patch.object(gate, 'snapshot'), patch.object(gate, 'inputs_unchanged', return_value=True), \
+                     patch.object(gate, 'Workers', TracedWorkers), patch.object(gate, 'load', side_effect=loader), \
+                     patch.object(gate, 'record_case_times'), \
+                     patch.object(gate.SuiteResources, 'from_root',
+                                  return_value=gate.SuiteResources({'suites': [{'file': 'test.py'}]})), \
+                     patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: {'paths': paths}), \
+                     patch.object(C, 'sensitivity_proved', return_value=True), \
+                     patch.object(C, 'Session', side_effect=lambda *a, **k: real_session(*a, **k, cache_directory=cache)):
+                    receipt = gate.run_stage(root, root / '.git')
+                reasons = {r['identity'].split(':', 1)[1]: r['reason'] for r in receipt.get('case_receipts', [])}
+                keyed = {r['identity'].split(':', 1)[1]: r['key'] for r in receipt.get('case_receipts', [])}
+                published = {p.stem for p in cache.glob('*.json')} if cache.exists() else set()
+                return receipt, reasons, {n: bool(keyed.get(n)) and keyed[n] in published for n in names}
+            receipt, reasons, published = traced_stage('traced-stage', ['peer-mutant', 'absent-undeclared',
+                                                                        'absent-declared', 'clean'])
+            seen = '%r %r %s %s' % (reasons, published, receipt.get('status'), receipt.get('detail', ''))
+            passed = receipt.get('status') == 'passed' and published.get('clean') is True
+            row('worker-trace-refused: ' + seen,
+                passed and reasons.get('peer-mutant') == 'network_peer' and published.get('peer-mutant') is False)
+            row('undeclared-absent-socket: ' + seen,
+                passed and reasons.get('absent-undeclared') == 'undeclared_absent_socket'
+                and published.get('absent-undeclared') is False
+                and reasons.get('absent-declared') == 'miss' and published.get('absent-declared') is True)
+            receipt, reasons, published = traced_stage('incomplete-stage', ['incomplete', 'clean-beside'])
+            row('incomplete-trace-demoted: %r %r %s %s' % (reasons, published, receipt.get('status'), receipt.get('detail', '')),
+                receipt.get('status') == 'passed' and reasons == {'incomplete': 'incomplete_trace', 'clean-beside': 'miss'}
+                and published == {'incomplete': False, 'clean-beside': True})
+
+        # Review F5: the gate observation a proposal records is the last fresh one of the state it
+        # traced: the proposer takes it only from a passed receipt over exactly its own inputs, and
+        # case_reuse refuses a declaration whose receipt is of another state, failed, or missing.
+        if leg_runs():
+            receipts = top / 'receipts'; receipts.mkdir()
+            fresh = {'source': 'fresh', 'case': {'identity': 'd:case'}, 'baseline': {'count': 1}}
+            for name, status, inputs in (('current', 'passed', 'inputs-now'), ('earlier', 'passed', 'inputs-before'),
+                                         ('failed', 'failed', 'inputs-now')):
+                (receipts / name).write_text(json.dumps({'status': status, 'input_digest': inputs, 'results': [fresh]}))
+            taken = {name: P.gate_observations(receipts / name, 'inputs-now') for name in ('current', 'earlier', 'failed')}
+            proposer = {name: (sorted(found), (binding or {}).get('input_digest')) for name, (found, binding) in taken.items()}
+            document = {'schema': 'veldo.case-inputs/v1', 'toolchains': {},
+                        'cases': {'d:' + n: declared() for n in ('current', 'earlier', 'failed', 'none')}}
+            files = {}
+            qualify(document, files)
+            for name, receipt in (('earlier', {'status': 'passed', 'input_digest': 'inputs-before'}),
+                                  ('failed', {'status': 'failed', 'input_digest': 'traced-inputs'}), ('none', None)):
+                document['cases']['d:' + name]['proposal']['gate_receipt'] = receipt
+            qualify(document, files)
+            judged = {n: C.failed_condition(files, 'd:' + n, document['cases']['d:' + n])
+                      for n in ('current', 'earlier', 'failed', 'none')}
+            row('gate-observation-current: %r %r' % (proposer, judged),
+                proposer == {'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)}
+                and judged == {'current': None, 'earlier': 'observation_not_current',
+                               'failed': 'observation_not_current', 'none': 'observation_not_current'})
+
+        # Review F4: the review records a reviewed declaration names are a protected path, as the
+        # declarations are: writing one needs the owner's commit-bound approval (.veldo/policy.yaml).
+        if leg_runs():
+            import fnmatch
+            import re
+            patterns = re.findall(r'\{path: "([^"]+)", *floor: high\}', policy_source.read_text())
+            record = 'proof/VELDO-0217/reviews/batch-1.json'
+            covered = [p for p in patterns if fnmatch.fnmatch(record, p) or fnmatch.fnmatch(record, p.rstrip('*') + '*')]
+            row('review-records-protected: %r' % covered, covered == ['proof/VELDO-0217/reviews/*'])
 
 
 _v217_declarations()

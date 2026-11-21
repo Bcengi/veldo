@@ -842,11 +842,11 @@ class Workers:
         if measurement is not None:
             record['measurement'] = measurement
         result = None
-        non_file = {}
+        non_file, withheld = {}, set()
         if error is None and 'snapshot_root' in job:
             # Trace is outside the worker's writable home. Check before trusting output.
+            tracer = load(ROOT / 'scripts/case_trace.py')
             try:
-                tracer = load(ROOT / 'scripts/case_trace.py')
                 trace = home.parent / ('trace-' + home.name)
                 tracer.check(
                     trace, job['snapshot_root'], job['declared_files'],
@@ -854,7 +854,21 @@ class Workers:
                     directories=job.get('declared_directories', []),
                     runtime_absent=job.get('runtime_absent', []), after_confinement=True)
                 # VELDO-0217 AC4: a non-file input this run shows keeps its case from publishing.
-                non_file = tracer.non_file_inputs(trace, (home, job['snapshot_root']), after_confinement=True)
+                private = (home, job['snapshot_root'])
+                non_file = tracer.non_file_inputs(trace, private, after_confinement=True)
+                # An absent socket is an input too: a probe of one the key does not record as absent
+                # would go unnoticed if that socket appeared later, so the case publishes nothing.
+                undeclared = sorted(set(tracer.absent_sockets(trace, private, after_confinement=True))
+                                    - set(job.get('runtime_absent', [])))
+                if undeclared:
+                    withheld.add('undeclared_absent_socket')
+                    record['undeclared_absent_sockets'] = undeclared
+            except tracer.IncompleteTrace as incomplete:
+                # A thread ended inside a call (a case that SIGKILLs its own child): the confined
+                # run's result stands as a fresh result, but its inputs are not proven, so it is
+                # never published; the stage goes on (VELDO-0217 F6).
+                withheld.add('incomplete_trace')
+                record['trace_incomplete'] = str(incomplete)
             except ValueError as trace_error:
                 error = trace_error
         if non_file:
@@ -903,7 +917,7 @@ class Workers:
                 self.admission.release(name)
         if error is not None:
             raise error
-        return {'result': result, 'elapsed': elapsed, 'non_file': sorted(non_file)}
+        return {'result': result, 'elapsed': elapsed, 'non_file': sorted(non_file), 'withheld': sorted(withheld)}
 
     def cleanup(self, on_result=None):
         # Reap and account for every sibling, even after the first failure.
@@ -1325,9 +1339,11 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                                            detail=str(error)))
                     return
                 # VELDO-0217 AC4: the baseline, no-op and mutant traces of a run that would publish
-                # are checked again; a non-file input in any of them keeps the case fresh, unpublished.
-                shown = sorted(set(completed.get('non_file', ())).union(*(
-                    control_results[group + ':' + mode].get('non_file', ()) for mode in ('baseline', 'noop'))))
+                # are checked again; a non-file input in any of them keeps the case fresh, unpublished,
+                # and so do an undeclared absent socket and an incomplete trace.
+                runs = [completed, *(control_results[group + ':' + mode] for mode in ('baseline', 'noop'))]
+                shown = sorted(set().union(*(run.get('non_file', ()) for run in runs)))
+                shown += sorted(set().union(*(run.get('withheld', ()) for run in runs)))
                 if shown and hasattr(reuse, 'withhold'):
                     reuse.withhold(case, shown[0])
                 results[identity] = record

@@ -78,6 +78,12 @@ def failed_condition(files, name, declaration):
         gate = declaration['proposal'].get('gate_observation')
         if not gate or any(run['observation'] != gate for run in baselines):
             return 'observation_differs'
+        # The last fresh gate observation of this state: from a passed receipt over exactly the
+        # inputs the proposal traced (VELDO-0217 F5); any other receipt's observation is not current.
+        receipt = declaration['proposal'].get('gate_receipt') or {}
+        if (receipt.get('status') != 'passed' or not receipt.get('input_digest')
+                or receipt['input_digest'] != declaration['proposal'].get('inputs')):
+            return 'observation_not_current'
     except (KeyError, TypeError):
         return 'trace_failed'
     if not isinstance(declaration.get('rationale'), str) or not declaration['rationale'].strip():
