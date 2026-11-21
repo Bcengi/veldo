@@ -114,7 +114,7 @@ and returns all three required consumer names as STANDS DOWN with
 Its open qualification obligations are documented in `proof/VELDO-0111/OPEN.md`;
 they cannot be reported as green by this consumer. At that point, implementation and the three
 declared falsifier registrations remained outstanding. The implementation and
-four falsifier registrations now exist; current verification limits are recorded
+five falsifier registrations now exist; current verification limits are recorded
 in the History and ticket proof.
 
 ## History
