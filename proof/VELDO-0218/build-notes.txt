@@ -1,0 +1,67 @@
+VELDO-0218 build notes
+
+Scope and reading
+Read CLAUDE.md, VELDO.md, engine/AGENTS.md, policy, the complete ready spec and wave-2 queue before edits.
+Affected authority paths read: check_gate_mutations.py (original lines 605 validate_result,
+1159 run_stage, 1243 lookup, 1336 collect, 1450 counters, 1507 CLI); mutation_reuse.py
+(89 stale writer, 161 lookup, 187 publish); gate_reuse.py (58 Store, 124 get, 132 put);
+reuse_stamp.py (16 reducer); reuse_evidence.py (137 landing). Engine copies were byte-compared.
+Callers: case_reuse.py (94 Session, 195 mark_stale, 225 lookup); check_teeth_mutations.py
+(registry, materialize, worker, coordinator wrapper); control_verification.py:447;
+veldo-guard.sh:76; verify.sh:441 (read only); run_scope.py:411. Read existing reuse,
+landing and stale-declaration fixtures and suite registration contracts.
+
+Implementation
+The authority finishes lookup before seeding the sampler from 32 fresh OS bytes. Every
+suite/admission stratum gets its rounded-up percentage, then random remaining cases fill
+the minimum-eight floor. Extra strata can increase the sample. The authenticated result
+metadata reuse_admission=VELDO-0222 selects ten percent; no unconfined admission is added.
+Selected hits leave the reuse set and receive their own baseline/no-op/mutant jobs. Receipt
+results count them once as fresh and preserve audited=true and the original key. Counts of
+hits, retained reuse, audits, matches and mismatches are distinguished. Detection probabilities
+use the minimum inclusion fraction across strata, a conservative bound without replacement.
+
+Comparison retains the complete baseline and no-op arrays, named mutant target rows,
+replacement count and old/new digests. Other mutant-row differences are diagnostics.
+A mismatch poisons the key against concurrent publication, deletes the authenticated record
+and uses VELDO-0224's authority stale-mark API. It never writes candidate declarations.
+An invalid fresh result retains its own validation error. Audited records carry both stored
+and fresh digests, the fresh observations and field-level differences. Reducer and landing
+both verify completeness and authenticated bindings; stripped entries are rejected even if
+the altered landing envelope was signed by the fixture authority.
+
+Evidence boundaries
+The new suite controls Git, qualification and workers; store files, authentication, sampling,
+coordinator collection, revocation, stale marks, reducer and landing are real. The field tests
+include invalid fresh controls/target multiplicity/replacement count, which retain their own
+validation error, plus valid changed baseline arrays/digests producing reuse_audit_mismatch.
+The fixed 1.25-second fixture outcomes test accounting, not performance. The separate measurement
+harness runs real confined workers with fixture admission, an external scratch store and real
+cold/warm coordinator drives. This is a measured fixture workload, not a fleet-wide cost estimate.
+No new test synchronizes by sleeping or a short deadline. Partial suite exit 2 is diagnostic
+success, not a full unit gate verdict. The lead owns the canonical gate; it was not run here.
+Independent review and owner approval remain separate acts.
+
+Validation attempts
+The first remote attempt caught two syntax mistakes; both were fixed before the passing suite.
+An older negative-control fixture needed all its audit-revoked keys reset between scenarios.
+Pc2's runner Python lacks os.pidfd_open. Its system Python supports that API but the node lacks
+the installed Veldo namespace helper. Kernel-dependent validation therefore moved to this host
+through the required external host_heavy wrapper; platform failures are not mutation detections.
+The Mac was used only for the controlled audit suite and static checks, which need no Linux kernel
+feature. No host or remote configuration was changed. Logs have home-directory paths redacted;
+the resulting files are diagnostic evidence, not signed production landing envelopes.
+A repeated mutation drive detected that the measurement harness was added during its input
+snapshot: all three targets were rejected, but the stage correctly returned inputs-changed RED.
+The subsequent cold/warm measurement ran the registered cases twice on a stable tree and passed.
+A pre-audit deadline fixture expected zero fresh timings on a hit; it now models a real dict of
+hits and checks that an audited hit records its fresh timing. The landing fixture's new audit
+records now omit the legacy top-level elapsed field, matching the coordinator's actual records.
+
+Measured cost (real confined workers, scratch qualification; no speed threshold)
+Cold: 3 executed, 0 reused, 0 audited; 7 workers; 55.192 s wall; 184.144 worker-seconds.
+Warm: 3 executed, 0 retained as reused, 3 audited and matched, 0 mismatches; 9 workers;
+54.995 s wall; 235.622 audit worker-seconds. Every warm hit is audited under the min(reused, 8)
+floor. Own controls account for the warm run's nine jobs. This small sample does not establish
+an average cost for the whole mutation inventory or a 2,500-case landing. Those larger cost
+figures in the spec remain estimates; the measurement here is repeatable with measure_audit.py.
