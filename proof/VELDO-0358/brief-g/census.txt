@@ -1,0 +1,14 @@
+# census over the tree (python3 scripts/check_wallclock.py) at 5479ec5d
+wallclock: sites: 2895 (R1 258, R2 1386, R3 1206, R4 45); by class: A 45, D1 1085, D2 88, P 213, S1 36, S2 85, S3 9, ST 128, T 1206; excepted by the authority: 36
+wallclock: baseline: 2733 entry(ies), 2859 site(s) in 424 file(s); by rule: R1 223, R2 1386, R3 1206, R4 44
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+
+# brief G's files: sites (python3 scripts/check_wallclock.py --sites, filtered)
+none
+
+# python3 scripts/check_personal_setup.py
+personal setup: 1 finding(s) home_path=1
+
+# engine canon copies
+mutation_ownership.py: equal
+bin/veldo: equal

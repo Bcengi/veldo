@@ -1,0 +1,61 @@
+# FIRST ATTEMPT on superseded code: brief G at 63bbbc1b, before the ENODEV fix of 5479ec5d. Run 44 is the red that found it.
+start load 42.58 50.57 50.30
+load: start {"cgroup": null, "cpus": [18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 3739812, "slots": 2, "spinners": [3739805, 3739806, 3739807, 3739808, 3739809, 3739810], "writers": [3739811]}
+run 1 exit 2:  66_veldo_0042_clones 26 passed 10.96s
+run 2 exit 2:  66_veldo_0042_clones 26 passed 11.16s
+run 3 exit 2:  66_veldo_0042_clones 26 passed 10.71s
+run 4 exit 2:  66_veldo_0042_clones 26 passed 10.81s
+run 5 exit 2:  66_veldo_0042_clones 26 passed 10.61s
+run 6 exit 2:  66_veldo_0042_clones 26 passed 10.59s
+run 7 exit 2:  66_veldo_0042_clones 26 passed 10.68s
+run 8 exit 2:  66_veldo_0042_clones 26 passed 10.77s
+run 9 exit 2:  66_veldo_0042_clones 26 passed 10.82s
+run 10 exit 2:  66_veldo_0042_clones 26 passed 11.05s
+run 11 exit 2:  66_veldo_0042_clones 26 passed 10.56s
+run 12 exit 2:  66_veldo_0042_clones 26 passed 10.88s
+run 13 exit 2:  66_veldo_0042_clones 26 passed 10.76s
+run 14 exit 2:  66_veldo_0042_clones 26 passed 10.86s
+run 15 exit 2:  66_veldo_0042_clones 26 passed 10.75s
+run 16 exit 2:  66_veldo_0042_clones 26 passed 11.02s
+run 17 exit 2:  66_veldo_0042_clones 26 passed 10.97s
+run 18 exit 2:  66_veldo_0042_clones 26 passed 10.89s
+run 19 exit 2:  66_veldo_0042_clones 26 passed 10.74s
+run 20 exit 2:  66_veldo_0042_clones 26 passed 11.36s
+run 21 exit 2:  66_veldo_0042_clones 26 passed 11.08s
+run 22 exit 2:  66_veldo_0042_clones 26 passed 10.76s
+run 23 exit 2:  66_veldo_0042_clones 26 passed 11.28s
+run 24 exit 2:  66_veldo_0042_clones 26 passed 11.24s
+run 25 exit 2:  66_veldo_0042_clones 26 passed 11.51s
+run 26 exit 2:  66_veldo_0042_clones 26 passed 11.67s
+run 27 exit 2:  66_veldo_0042_clones 26 passed 10.53s
+run 28 exit 2:  66_veldo_0042_clones 26 passed 11.19s
+run 29 exit 2:  66_veldo_0042_clones 26 passed 11.71s
+run 30 exit 2:  66_veldo_0042_clones 26 passed 11.47s
+run 31 exit 2:  66_veldo_0042_clones 26 passed 10.73s
+run 32 exit 2:  66_veldo_0042_clones 26 passed 10.59s
+run 33 exit 2:  66_veldo_0042_clones 26 passed 10.61s
+run 34 exit 2:  66_veldo_0042_clones 26 passed 10.82s
+run 35 exit 2:  66_veldo_0042_clones 26 passed 10.80s
+run 36 exit 2:  66_veldo_0042_clones 26 passed 10.36s
+run 37 exit 2:  66_veldo_0042_clones 26 passed 10.83s
+run 38 exit 2:  66_veldo_0042_clones 26 passed 10.71s
+run 39 exit 2:  66_veldo_0042_clones 26 passed 10.92s
+run 40 exit 2:  66_veldo_0042_clones 26 passed 10.48s
+run 41 exit 2:  66_veldo_0042_clones 26 passed 10.76s
+run 42 exit 2:  66_veldo_0042_clones 26 passed 10.65s
+run 43 exit 2:  66_veldo_0042_clones 26 passed 10.73s
+run 44 exit 1:  66_veldo_0042_clones 24 passed 9.10s
+  SELFTEST FAIL: VELDO-0042 clone/retire-waits-for-group
+  SELFTEST FAIL: VELDO-0042 ran/clone/retire-waits-for-group
+run 45 exit 2:  66_veldo_0042_clones 26 passed 11.17s
+run 46 exit 2:  66_veldo_0042_clones 26 passed 10.71s
+run 47 exit 2:  66_veldo_0042_clones 26 passed 10.81s
+run 48 exit 2:  66_veldo_0042_clones 26 passed 11.03s
+run 49 exit 2:  66_veldo_0042_clones 26 passed 10.98s
+run 50 exit 2:  66_veldo_0042_clones 26 passed 10.41s
+load: record {"applied": true, "cpus": [18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000405817, "slowdown": 7.899, "waited_ns": 6902285495}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 2, "spinners": [{"alive": true, "cpu": 18, "cpu_seconds": 82.548, "pid": 3739805}, {"alive": true, "cpu": 18, "cpu_seconds": 82.549, "pid": 3739806}, {"alive": true, "cpu": 18, "cpu_seconds": 82.551, "pid": 3739807}, {"alive": true, "cpu": 19, "cpu_seconds": 81.795, "pid": 3739808}, {"alive": true, "cpu": 19, "cpu_seconds": 81.795, "pid": 3739809}, {"alive": true, "cpu": 19, "cpu_seconds": 81.797, "pid": 3739810}], "spinners_per_cpu": 3, "writers": [{"alive": true, "bytes": 209916526592, "cpu_seconds": 52.425, "files": 781, "pid": 3739811}]}
+load: 2 CPUs [18, 19], 3 spinners per CPU: 6 of 6 alive to the end, CPU consumed 493.0s (least 81.795s)
+load: 1 writers: 1 alive to the end, bytes written [209916526592]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000405817, "slowdown": 7.899, "waited_ns": 6902285495} (data, no verdict)
+generator exit status 0
+end load 45.04 45.76 47.83
