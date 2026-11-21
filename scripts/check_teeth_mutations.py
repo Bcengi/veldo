@@ -11798,6 +11798,21 @@ def cases():
         ['admission/ledger-link-swapped-mid-resolve'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0218: entropy, verdict comparison and landing audit completeness.
+    suite218 = '159_veldo_0218_reuse_audit.py'
+    add(218, 'audit218-predictable-sample', suite218, 'mutation_reuse.py',
+        "    rng = random.Random(int.from_bytes(os.urandom(32), 'big'))\n",
+        "    rng = random.Random(R.digest(records))\n", ['reuse-audit/unpredictable'])
+    result[-1]['dir'] = 'scripts'
+    add(218, 'audit218-status-only', suite218, 'reuse_evidence.py',
+        "    before, after = fields(stored), fields(fresh)\n",
+        "    before, after = {}, {}  # both results have the same stored status\n", ['reuse-audit/compare'])
+    add(218, 'audit218-audit-optional', suite218, 'reuse_evidence.py',
+        "    population, entries = audit['population'], audit['entries']\n",
+        "    population, entries = audit['population'], audit['entries']\n"
+        "    if not entries:\n        return {p['identity']: p for p in population}, {}\n",
+        ['reuse-audit/receipts'])
+
     # VELDO-0224: stale declarations lose their snapshot verdict and all reuse authority.
     suite224 = '158_veldo_0224_stale_declarations.py'
     add(224, 'stale224-snapshot-verdict-kept', suite224, 'check_gate_mutations.py',

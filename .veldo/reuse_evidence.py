@@ -6,6 +6,7 @@ configuration from an implementing agent's candidate before reviewing it.
 import hashlib
 import hmac
 import json
+import math
 import os
 import pwd
 from pathlib import Path
@@ -134,6 +135,70 @@ def record(directory, key, secret):
     return payload['result']
 
 
+def audit_rate(record):
+    return 10 if record.get('reuse_admission') == 'VELDO-0222' else 5
+
+
+def audit_differences(stored, fresh, case):
+    """Compare exactly the verdict-bearing observations; retain other mutant differences."""
+    def fields(record):
+        return dict(baseline=record['baseline']['observations'], noop=record['noop']['observations'],
+                    mutant_targets=[row for row in record['mutant']['observations']
+                                    if row[0].split()[-1] in case['rows']],
+                    **{k: record[k] for k in ('replacement_count', 'old_digest', 'new_digest')})
+    before, after = fields(stored), fields(fresh)
+    differences = {k: dict(reused=before[k], fresh=after[k], verdict=True)
+                   for k in before if before[k] != after[k]}
+    other = lambda r: [row for row in r['mutant']['observations'] if row[0].split()[-1] not in case['rows']]
+    if other(stored) != other(fresh):
+        differences['mutant_other'] = dict(reused=other(stored), fresh=other(fresh), verdict=False)
+    return differences
+
+
+def check_audit(audit, reused, force=False):
+    """Shared reducer/landing completeness check. Authentication binds the draw to the gate."""
+    population, entries = audit['population'], audit['entries']
+    members = {p['identity']: p for p in population}
+    chosen = {e['identity']: e for e in entries}
+    if (len(members) != len(population) or len(chosen) != len(entries)
+            or not set(chosen) <= set(members) or len(population) != reused + len(entries)
+            or (force and population) or len(entries) < min(len(population), 8)):
+        raise ValueError('incomplete reuse audit')
+    groups = {}
+    for identity, member in members.items():
+        if member['rate'] not in (5, 10):
+            raise ValueError('invalid reuse audit rate')
+        group = groups.setdefault((member['suite'], member['rate']), [0, 0])
+        group[0] += 1
+        group[1] += identity in chosen
+    if any(n < math.ceil(total * rate / 100) for (_, rate), (total, n) in groups.items()):
+        raise ValueError('incomplete reuse audit suite spread')
+    if (audit['audited'] != len(entries) or audit['matched'] != len(entries) or audit['mismatched'] != 0):
+        raise ValueError('inconsistent reuse audit counts')
+    for identity, entry in chosen.items():
+        member = members[identity]
+        fresh = entry['fresh_record']
+        if (entry['key'] != member['key'] or fresh['case']['identity'] != identity
+                or fresh['case']['suite'] != member['suite'] or entry['matched'] is not True
+                or any(d['verdict'] for d in entry['differences'].values())
+                or entry['fresh_digest'] != digest(fresh)):
+            raise ValueError('invalid reuse audit entry')
+    return members, chosen
+
+
+def authenticate_audit(audit, reused, force, directory, secret):
+    members, chosen = check_audit(audit, reused, force)
+    for identity, entry in chosen.items():
+        stored = record(directory, entry['key'], secret)
+        fresh = entry['fresh_record']
+        if (stored['case'] != fresh['case'] or stored['input_digest'] != entry['key']
+                or digest(stored) != entry['result_digest']
+                or audit_rate(stored) != members[identity]['rate']
+                or audit_differences(stored, fresh, fresh['case']) != entry['differences']):
+            raise ValueError('reuse audit observation binding differs')
+    return members, chosen
+
+
 def landing_problem(document):
     """Every stamp declares freshness; positive reuse requires signed case references.
 
@@ -146,7 +211,7 @@ def landing_problem(document):
         if (type(force) is not bool or not isinstance(counts, dict) or not counts
                 or any(type(n) is not int or n < 0 for n in counts.values())):
             raise ValueError('invalid reuse counts')
-        if not any(counts.values()):
+        if not any(counts.values()) and 'reuse_evidence' not in document:
             return None
         if force or set(counts) != {'unit', 'mutation'} or counts['unit']:
             raise ValueError('unsupported reuse stage or forced reuse')
@@ -154,20 +219,23 @@ def landing_problem(document):
         directory = Path(config['store'])
         secret = probe(directory)
         payload = authenticated(document['reuse_evidence'], secret)
-        if (set(payload) != {'schema', 'provenance', 'authority', 'commit', 'force_fresh', 'reused', 'records'}
+        if (set(payload) != {'schema', 'provenance', 'authority', 'commit', 'force_fresh', 'reused', 'records', 'audit'}
                 or payload['schema'] != 'veldo.landing-reuse/v1'
                 or payload['provenance'] != PROVENANCE
                 or payload['authority'] != authority_identity()
                 or payload['commit'] != document['commit'] or payload['force_fresh'] is not force
                 or payload['reused'] != counts or len(payload['records']) != counts['mutation']):
             raise ValueError('landing reuse binding differs')
+        members, chosen = authenticate_audit(payload['audit'], counts['mutation'], force, directory, secret)
         seen = set()
         for item in payload['records']:
             key = item['key']
             result = record(directory, key, secret)
             identity = result['case']['identity']
             if (key in seen or result['input_digest'] != key or digest(result) != item['result_digest']
-                    or item['identity'] != identity or identity in seen):
+                    or item['identity'] != identity or identity in seen or identity in chosen
+                    or members.get(identity) != dict(identity=identity, key=key, suite=result['case']['suite'],
+                                                     rate=audit_rate(result))):
                 raise ValueError('declared case key or result differs')
             seen.update((key, identity))
         return None

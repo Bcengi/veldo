@@ -12,8 +12,7 @@ import difflib
 import hashlib
 import importlib.util
 import json
-import math
-import os
+import mathimport os
 from pathlib import Path
 import shutil
 import signal
@@ -441,6 +440,9 @@ def load(path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+AUDIT = load(ROOT / 'scripts/mutation_reuse.py')
 
 
 def inventory_local(root):
@@ -1171,6 +1173,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
     cases, reuse = [], None
+    audits, audit_keys = {}, {}
+    audit_module = AUDIT
+    receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
+                            worker_seconds=0.0, suites={})
     previous = signal.getsignal(signal.SIGALRM)
 
     def timeout(signum, frame):
@@ -1246,7 +1252,29 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 fresh.append(case)
             else:
                 results[case['identity']] = record
-                receipt['results'].append(reuse.evidence(case, record, True))
+        # All lookups finish before the authority draws fresh entropy.
+        selected = audit_module.audit_sample(results)
+        audit = receipt['audit']
+        audit['population'] = [dict(identity=identity, key=reuse.keys[identity],
+                                    suite=record['case']['suite'], rate=audit_module.R.E.audit_rate(record))
+                               for identity, record in results.items()]
+        for case in cases:
+            identity = case['identity']
+            if identity in selected:
+                audits[identity] = results.pop(identity)
+                audit_keys[identity] = reuse.keys[identity]
+                reuse.hits.pop(identity, None)
+                fresh.append(case)
+            elif identity in results:
+                receipt['results'].append(reuse.evidence(case, results[identity], True))
+        for member in audit['population']:
+            suite = audit['suites'].setdefault(member['suite'], dict(reused=0, audited=0))
+            suite['reused'] += 1
+            suite['audited'] += member['identity'] in selected
+        for suite in audit['suites'].values():
+            fraction = suite['audited'] / suite['reused']
+            suite['sample_fraction'] = fraction
+            suite['detection_probability'] = {str(k): 1 - (1 - fraction) ** k for k in (1, 20, 60)}
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
             frozen = directory / 'input'
@@ -1279,6 +1307,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
             def group_for(case):
                 return case['identity'] if (prepared_cases.get(case['identity'])
+                                            or case['identity'] in audits
                                             or case['identity'] in getattr(reuse, 'stale', {})) else control_group(case)
             controls = control_jobs(fresh, group_for, prepared_cases, planned, claims)
             mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
@@ -1351,7 +1380,26 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               'baseline': control_results[group + ':baseline']['result']['observation'],
                               'noop': control_results[group + ':noop']['result']['observation'],
                               'mutant': prepared['observation']}
-                    validate_result(record, case)
+                    if identity in audits:
+                        differences = audit_module.R.E.audit_differences(audits[identity], record, case)
+                        mismatch = any(d['verdict'] for d in differences.values())
+                        entry = dict(identity=identity, key=audit_keys[identity],
+                                     result_digest=audit_module.R.E.digest(audits[identity]),
+                                     fresh_record=record, fresh_digest=audit_module.R.E.digest(record),
+                                     differences=differences, matched=not mismatch)
+                        receipt['audit']['entries'].append(entry)
+                        print('   reuse audit: %s %s fields=%s' %
+                              (identity, 'reuse_audit_mismatch' if mismatch else 'matched',
+                               ','.join(differences) or 'none'), flush=True)
+                        if mismatch:
+                            reuse.store.invalidate(audit_keys[identity])
+                            reuse.mark_stale(case, 'reuse_audit_mismatch: ' + ','.join(differences))
+                        # An invalid fresh run retains its own failure classification.
+                        validate_result(record, case)
+                        if mismatch:
+                            raise Refused('reuse_audit_mismatch', identity + ': ' + ','.join(differences))
+                    else:
+                        validate_result(record, case)
                 except (Refused, KeyError, TypeError) as error:
                     receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
                                                            detail=str(error)))
@@ -1366,7 +1414,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                     reuse.withhold(case, shown[0])
                 results[identity] = record
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
-                                               elapsed=completed['elapsed']))
+                                               elapsed=completed['elapsed'],
+                                               **(dict(audited=True, reuse_key=audit_keys[identity])
+                                                  if identity in audits else {})))
 
             workers.run(mutant_jobs, directory, frozen, on_result=collect)
             if rerun:
@@ -1434,6 +1484,13 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['gate_run'] = getattr(reuse, 'gate_run', None)
         receipt['authority_stale_count'] = (len(reuse_module.M.stale_entries(reuse.store.directory))
             if hasattr(reuse, 'stale') and reuse.store and reuse.store.secret is not None else 0)
+        audit = receipt['audit']
+        audit['audited'] = len(audit['entries'])
+        audit['matched'] = sum(e['matched'] for e in audit['entries'])
+        audit['mismatched'] = audit['audited'] - audit['matched']
+        audit_names = {name for identity in audits for name in
+                       (identity, identity + ':baseline', identity + ':noop')}
+        audit['worker_seconds'] = sum(o['elapsed'] for o in workers.outcomes if o['name'] in audit_names)
         receipt['worker_outcomes'] = workers.outcomes
         failed_workers = [o for o in workers.outcomes if 'error' in o]
         receipt['invalid_results'].extend(failed_workers)
@@ -1461,7 +1518,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 'identity': identity, 'key': reuse.keys[identity] if reuse else None,
                 'source': 'reused' if hit else ('fresh' if attempted else 'pending'),
                 'reason': reuse.reasons[identity] if reuse else 'setup_failed',
-                'validated': identity in completed})
+                'validated': identity in completed,
+                **(dict(audited=True, reuse_key=audit_keys[identity]) if identity in audits else {})})
         for driver, summary in receipt['drivers'].items():
             span = workers.driver_spans.get(driver, (0, 0))
             summary['wall_seconds'] = span[1] - span[0]

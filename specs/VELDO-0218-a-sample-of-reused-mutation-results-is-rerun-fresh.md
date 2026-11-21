@@ -23,6 +23,9 @@ footprint:
   - engine/.veldo/reuse_evidence.py
   - scripts/check_teeth_mutations.py
   - scripts/suites/*_veldo_0218_*.py
+  - scripts/suites/99_veldo_0205_reuse.py
+  - scripts/suites/100_veldo_0207_case_reuse.py
+  - scripts/suites/101_veldo_0208_landing_reuse.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0218-a-sample-of-reused-mutation-results-is-rerun-fresh.md

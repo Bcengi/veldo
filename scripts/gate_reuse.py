@@ -129,6 +129,14 @@ class Store:
         except (OSError, ValueError, TypeError, KeyError):
             return None
 
+    def invalidate(self, key):
+        """A mismatch revokes the key before deleting the record, including concurrent writers."""
+        if self.secret is None or E.probe(self.directory) != self.secret:
+            raise ValueError('authority reuse store unavailable')
+        path = self._path(key)
+        path.with_suffix('.json.conflict').touch(mode=0o600)
+        path.unlink(missing_ok=True)
+
     def put(self, key, result, accept=None):
         """Publish `result` once. An existing authenticated record that `accept` (the stage's own
         result validation) admits is kept; any other differing record, or any differing record

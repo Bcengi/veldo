@@ -2194,6 +2194,15 @@
    ],
    "regions": "VELDO-0224 AC1-AC3: stale declared cases rerun fresh, never publish, and mark only the authority store.",
    "requires_note": "Only ROOT, leg_runs and expect; fixture children, real coordinator/session/finish with controlled launch and inventory. No tracer or host manager."
+  },
+  {
+   "name": "159_veldo_0218_reuse_audit",
+   "file": "159_veldo_0218_reuse_audit.py",
+   "regions": "none - added after the WARP-0712 cut",
+   "requires": [
+    "159_veldo_0218_reuse_audit"
+   ],
+   "requires_note": "Independent fixture imports; shared preamble supplies ROOT and expect."
   }
  ],
  "resource_capacities": {
