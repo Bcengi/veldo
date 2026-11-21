@@ -487,8 +487,11 @@ QUESTION_TOOL = 'request_user_input'
 MARKED_LINE = 'marked_line'
 UNPROBED = {'means': MARKED_LINE, 'forms': {}, 'question': None,
             'reason': 'not probed: the qualify command records the forms from the binary\'s loopback run'}
-# The longest the binary may take to answer a synchronous question for the asynchronous grant to hold.
-IMMEDIATE_SECONDS = 5
+# When a synchronous question counts as answered at once: the binary's own answer is the call's output in its very
+# next request to the model, with no input from Veldo (an event of the probe, never a number of seconds, so the
+# verdict does not depend on the machine's speed: owner's rule, Telegram 42829). A binary that waits for an answer
+# sends no such request; the probe's hang bound ends it.
+IMMEDIATE = 'next_request'
 
 
 def marked_lines(text):
