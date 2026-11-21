@@ -539,6 +539,17 @@ else:
         check('AC1/service-feed', 'a message acquired before a restart is taken once by the restarted service '
               '[%s]' % caught.get('taken'), [t.get('outcome') for t in caught.get('taken') or []] == ['reading']
               and (caught.get('taken') or [{}])[0].get('conversation') == 'channel')
+        # VELDO-0239 on this intake (review F10): the owner's `/batch factory`, acquired by the running service's
+        # channel pass, goes to the batch starter the service builds its own intake with, never to ordinary intake.
+        def proposals():
+            return authority.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='intake_proposal'").fetchone()[0]
+        proposals_before = proposals()
+        H.deliver(api, 'bot175', owner, '/batch factory')
+        batched = running().channel_pass().get('taken') or []
+        check('AC1/service-feed', 'the owner\'s /batch from Telegram, taken by the service\'s own intake, goes to the '
+              'batch starter and writes no proposal [%s]' % [(t.get('outcome'), t.get('project')) for t in batched],
+              [t.get('outcome') for t in batched] == ['batch'] and batched[0].get('project') == 'factory'
+              and proposals() == proposals_before)
 
         # Observability: how each message was decided and each part sent, with ids, never text.
         events = intake.observations
