@@ -2973,8 +2973,8 @@ def cases():
     # VELDO-0358: the row judges the deadline on the receiver's supplied clock and asks whether a stop is due, so
     # the late deadline is made where the deadline is judged (a later wake alone would be seen at the check).
     dispatch('dispatch-closed-output-late-deadline', 'control_launch.py',
-             "                if cause is None and code is None and self._wall() >= contract['deadline']:\n",
-             "                if cause is None and code is None and self._wall() >= contract['deadline'] + 30:\n",
+             "                if cause is None and code is None and _wall(self) >= contract['deadline']:\n",
+             "                if cause is None and code is None and _wall(self) >= contract['deadline'] + 30:\n",
              'deadline-after-closed-output')
     dispatch('dispatch-closed-output-killed-at-close', 'control_launch.py', closed,
              closed + "                            begin('deadline')  # defect: stopped when it closes\n",
