@@ -1,0 +1,34 @@
+"""Brief H: read a mutation stage receipt (one line per case: verdict, kill_by, rows), or with --diffs print each
+named case's applied mutation as a diff of its subject (proof that the mutant landed)."""
+import difflib
+import importlib.util
+import json
+import sys
+import tempfile
+from pathlib import Path
+
+if sys.argv[1] == '--diffs':
+    root = Path(sys.argv[2])
+    spec = importlib.util.spec_from_file_location('teeth', root / 'scripts' / 'check_teeth_mutations.py')
+    teeth = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(teeth)
+    for case in teeth.cases():
+        if case['name'] not in sys.argv[3:]:
+            continue
+        with tempfile.TemporaryDirectory(prefix='v358h-diff-') as directory:
+            info = teeth.materialize(case, 'mutant', directory)
+            before = Path(info['source']).read_text().splitlines()
+            after = Path(info['mutant']).read_text().splitlines()
+            print('== %s (%s/%s; target rows %s)' % (case['name'], case.get('dir'), case['module'], case['rows']))
+            print('\n'.join(difflib.unified_diff(before, after, 'subject', 'mutant', n=0, lineterm='')))
+    sys.exit(0)
+receipt = json.loads(Path(sys.argv[1]).read_text())
+print('stage: status %s, registered %s, executed %s, rejected %s%s' % (
+    receipt.get('status'), receipt.get('registered'), receipt.get('executed'), receipt.get('rejected'),
+    ', error %s' % receipt.get('error') if receipt.get('error') else ''))
+for one in receipt.get('results') or []:
+    print('%s: rejected; kill_by %s; kills %s; %s; %.0f s' % (
+        one['case']['name'], one.get('kill_by'), json.dumps(one.get('kills'))[:300], one.get('source'),
+        one.get('elapsed') or 0))
+for one in receipt.get('invalid_results') or []:
+    print('%s: NOT REJECTED: %s' % ((one.get('case') or {}).get('name'), str(one.get('detail'))[:900]))
