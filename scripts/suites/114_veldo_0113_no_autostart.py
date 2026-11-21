@@ -16,6 +16,7 @@ def _v113_run(root):
     fixture_directory = ROOT / "scripts" / "fixtures"
     client = ROOT / ".veldo" / "control_client.py"
     claim = ROOT / ".veldo" / "claim.py"
+    cli = ROOT / "bin" / "veldo"
     with _v113_tempfile.TemporaryDirectory(prefix='v113-source-') as temporary:
         candidate = _v113_Path(temporary)
         helper_spec = _v113_import.spec_from_file_location('no_autostart_copy', fixture_directory / 'no_autostart.py')
@@ -24,6 +25,7 @@ def _v113_run(root):
         helper.copy_production(root, candidate)
         _v113_shutil.copy2(client, candidate / '.veldo/control_client.py')
         _v113_shutil.copy2(claim, candidate / '.veldo/claim.py')
+        _v113_shutil.copy2(cli, candidate / 'bin/veldo')
         _v113_shutil.copytree(fixture_directory, candidate / 'scripts/fixtures',
                               ignore=_v113_shutil.ignore_patterns('__pycache__'))
         path = candidate / 'scripts/fixtures/no_autostart.py'

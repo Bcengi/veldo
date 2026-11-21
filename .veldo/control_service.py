@@ -2083,6 +2083,8 @@ class Service:
                 result = self.commit_ownership()
             elif SA.AS.is_call(packet):
                 result = self.api_call(packet)
+            elif command.get('operation') == 'work':
+                result = self.work_command(packet, repository)
             elif command.get('operation') == 'reconcile_space':
                 result = self.space_reconcile_command(packet, repository)
             elif command.get('operation') == 'save_memory_store':
@@ -2137,6 +2139,39 @@ class Service:
         self._count(observation)
         self.space_pass()
         return result
+
+    def work_command(self, packet, repository):
+        """An authenticated, repository-scoped wake of the already running factory loop.
+
+        No caller supplies executable configuration or a store connection. Replays
+        only repeat a wake: the existing claim and dispatch machinery arbitrates work.
+        """
+        command = packet['command']
+        expected = {'domain_uuid': self.domain, 'store_uuid': self.store, 'repository_uuid': repository}
+        if any(command.get(key) != value for key, value in expected.items()):
+            raise Refused('invalid_input:coordinates')
+        principal = command.get('principal')
+        state, now = CM.authority_state(S, self.conn), time.time()
+        member = AC.membership_entry(state['membership'], principal)
+        key = AC.active_key(state['keyring'], principal, now) if AC.active_member(member, now)[0] else None
+        if (key is None or not CM.scope_covers(member.get('scope'), repository)
+                or member.get('principal_type') != 'person' or 'project_owner' not in member.get('roles', ())
+                or not AC.ssh_keygen_verify(S.canonical_bytes(command), packet.get('signature') or '',
+                    AC.allowed_signers_line(principal, key['public_key']), principal)[0]):
+            raise Refused('unauthorized:work')
+        parameters = command.get('parameters')
+        if (not isinstance(parameters, dict) or set(parameters) != {'account'}
+                or parameters['account'] is not None and not isinstance(parameters['account'], str)):
+            raise Refused('invalid_input:parameters')
+        line = self.loop.lines.get(repository) if self.loop is not None else None
+        if line is None or getattr(line, 'closing', False):
+            raise Refused('unavailable_service:work')
+        account = parameters['account']
+        if account is not None and account != line.roles['builder']['account']:
+            raise Refused('unsupported_configuration:work_account')
+        self.loop.wake('work', {'repository': repository, 'principal': principal,
+                                'command_id': command.get('command_id')})
+        return {'ok': True, 'state': 'queued', 'repository_uuid': repository}
 
     def owner_revision(self, packet, observation=None):
         """The owner's SSH-signed saves use the API authority's existing writers and lock."""

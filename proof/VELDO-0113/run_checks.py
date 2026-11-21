@@ -123,7 +123,7 @@ def run(name, case=None, mode='baseline'):
         shutil.copytree(ROOT / 'scripts/fixtures', root / 'scripts/fixtures',
                         ignore=shutil.ignore_patterns('__pycache__'))
         if case:
-            relative = Path('scripts/fixtures' if case.get('fixture') else '.veldo') / case['module']
+            relative = Path('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) / case['module']
             target = root / relative
             before = target.read_text()
             assert before.count(case['old']) == 1

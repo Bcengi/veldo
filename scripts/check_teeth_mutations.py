@@ -17972,6 +17972,13 @@ def cases():
             case['companions'] = sorted(set(case.get('companions', ())) | {
                 'installation.py', 'git_process.py', 'yamlish.py'})
 
+    add(113, 'autostart113-cli-direct-construction', suite113, 'veldo',
+        '    if dispatcher is None:\n',
+        '    if dispatcher is None:\n'
+        '        dispatcher = _dispatch().Dispatcher(repo_root=repo_root, eligibility=eligibility, calls=calls)\n',
+        ['unavailable/in-process-construction-boundary'])
+    result[-1]['dir'] = 'bin'
+
     return result
 
 
