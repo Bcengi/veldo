@@ -49,6 +49,7 @@ if 'expect' in globals():
            _v113_result['expected'] == sorted(_v113_result['completed'])
            and len(_v113_result['completed']) == len(set(_v113_result['completed'])))
     expect('VELDO-0113 protocol unavailable/faults-preserve-all-three-rows', _v113_result['faults_ok'])
+    expect('VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised', _v113_result['faults_driven'])
 elif __name__ == '__main__':
     ROOT = _v113_Path(__file__).resolve().parents[2]
     print(_v113_json.dumps(_v113_run(ROOT)))

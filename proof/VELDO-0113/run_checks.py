@@ -120,6 +120,7 @@ def run(name, case=None, mode='baseline'):
         summary = retain(name, result)
         assert result['expected'] == sorted(result['completed'])
         assert len(result['expected']) == len(set(result['completed']))
+        assert result['faults_driven'], 'observer fault matrix was not exercised'
         if mode == 'mutant':
             for row in case['rows']:
                 assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
