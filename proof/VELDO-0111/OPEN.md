@@ -1,9 +1,34 @@
-# VELDO-0111 open evidence after round 3
+# VELDO-0111 open AC2 qualification
 
 REMAINING: full AC2 qualification within Unix, IPv4, IPv6 and netlink.
 The owner approved the two acceptance amendments in Telegram 37442, answering
 Telegram 37440 item 1. They are applied under "Amendment, 2026-10-28" in the
 specification. Neither approval waives the obligations inside those families.
+
+## Qualification attempt, 2026-11-21
+
+STOPPED on `socket_destruction`; receipt remains **INCOMPLETE**. The live
+counterexample in [ac2-attempt](ac2-attempt/README.md) proves, separately for
+Unix, IPv4, IPv6 and netlink, that a socket transferred with SCM_RIGHTS remains
+usable both in an external receive queue and in the external holder after the
+root exits and all traced descendants drain. Thus the collector's current
+`closed` barrier is not even an upper bound on destruction. The observed local
+close and descendant terminal waits cannot supply the required final-reference
+destruction timestamp.
+
+This is the stopping condition requested for an obligation that cannot be met
+by the selected mechanism: child ptrace does not observe unrelated holders'
+release events, and snapshot enrichment cannot provide the missing event.
+The installed sock_diag destruction groups do not cover Unix and netlink.
+The attempt records host capabilities, the live witness, named falsifier
+outcomes and fault receipts; it does not waive lifetime coverage or relabel
+the remaining implementation gaps as owner decisions.
+
+The protected execution declaration `scripts/gate_unconfined.json` is unchanged.
+It currently omits suite `113_veldo_0111_census`; ptrace-dependent mutation cases
+need the authority's unconfined leg, otherwise their baseline is invalid.
+The proof lists the exact cases and distinguishes direct host-wrapper evidence
+from an authority mutation-driver result. Consumer tickets are unchanged.
 
 ## Closed by the amendment and implementation
 
@@ -54,4 +79,5 @@ AC2 can be marked complete. The existing ptrace event stream alone does not
 supply asynchronous completions or final socket-reference destruction events.
 
 Round 3 regressions, falsifiers, receipts and digests are in
-[round3](round3/README.md). Earlier round records are historical.
+[round3](round3/README.md). The current attempt's compact receipt and logs are in
+[ac2-attempt](ac2-attempt/README.md). Earlier round records are historical.

@@ -1,394 +1,332 @@
 {
   "status": "INCOMPLETE",
-  "source_digest": "59e3eba3f53a0606a4cfa3ecb82601b99c486bfe790c3231213f4e95944990bc",
-  "suite_digest": "c82c93eb450fc5de73601bcbea66607ea9bbd696e4ed264c2f3a4311862e8e14",
+  "capture_status": "INCOMPLETE",
   "host": {
     "kernel": "7.0.0-38-generic",
     "machine": "x86_64",
     "python": "3.12.3",
     "system": "Linux"
   },
-  "probed_combinations": 322,
-  "available_combinations": [
-    {
-      "kind": "combination",
-      "family": 1,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 1,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 1,
-      "type": 3,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 1,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 2,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 2,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 2,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 5,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 3,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 4,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 6,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 8,
-      "type": 10,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 10,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 10,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 10,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 16,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 16,
-      "type": 3,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 3,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 4,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 6,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 20,
-      "type": 10,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 3,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 4,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 6,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 24,
-      "type": 10,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 31,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 31,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 31,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 38,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 39,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 40,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 40,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 40,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 41,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 41,
-      "type": 5,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 42,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 43,
-      "type": 1,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    },
-    {
-      "kind": "combination",
-      "family": 45,
-      "type": 2,
-      "protocol": 0,
-      "available": true,
-      "errno": 0
-    }
-  ],
-  "unsupported_errors": {
-    "97": 154,
-    "94": 53,
-    "93": 16,
-    "1": 46,
-    "22": 2,
-    "91": 6
-  },
-  "io_uring_setup": {
-    "kind": "io_uring_setup",
-    "available": true,
-    "errno": 0
-  },
   "gaps": [
-    "exhaustive_family_protocol_operations",
-    "socket_address_and_shared_descriptor_races",
-    "compat_socketcall",
-    "asynchronous_socket_operations"
+    "io_uring_socket_effects",
+    "operation_configuration",
+    "protocol_inventory_bounds",
+    "shared_socket_memory",
+    "socket_destruction"
+  ],
+  "reasons": [
+    {
+      "capability": "protocol_inventory_bounds",
+      "reason": "bounded protocol discovery does not fully qualify the four required families",
+      "evidence": {
+        "qualification_families": [
+          1,
+          2,
+          10,
+          16
+        ],
+        "protocol_scope": {
+          "inet": [
+            0,
+            255,
+            262
+          ],
+          "netlink": [
+            0,
+            31
+          ],
+          "other": [
+            0
+          ]
+        }
+      }
+    },
+    {
+      "capability": "operation_configuration",
+      "reason": "available socket needs a qualified address or operation configuration",
+      "evidence": {
+        "family": 10,
+        "type": 2,
+        "protocol": 115,
+        "operations": [
+          {
+            "operation": "bind",
+            "result": -1,
+            "errno": 22
+          }
+        ],
+        "gap": "operation_configuration"
+      }
+    },
+    {
+      "capability": "io_uring_socket_effects",
+      "reason": "shared ring completions are not correlated to traced socket identities",
+      "evidence": {
+        "available": true,
+        "errno": 0,
+        "socket_effect": {
+          "attempted": true,
+          "enter_result": 1,
+          "errno": 0,
+          "completion_result": 6,
+          "inode": "socket:[4147726372]"
+        },
+        "probe_errno": 0,
+        "supported_opcodes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64
+        ]
+      }
+    },
+    {
+      "capability": "socket_destruction",
+      "reason": "terminal drain bounds socket destruction but does not timestamp it",
+      "evidence": {
+        "identities": [
+          "socket:[4147717810]:1",
+          "socket:[4147717811]:2",
+          "socket:[4147713873]:3",
+          "socket:[4147723577]:4",
+          "socket:[4147724439]:5",
+          "socket:[4147724441]:6",
+          "socket:[4147725449]:7",
+          "socket:[4147708809]:8",
+          "socket:[4147726542]:9",
+          "socket:[4147722816]:10",
+          "socket:[4147729434]:11",
+          "socket:[4147721876]:12",
+          "socket:[4147727203]:13",
+          "socket:[4147740709]:14",
+          "socket:[4147734211]:15",
+          "socket:[4147744988]:16",
+          "socket:[4147744989]:17",
+          "socket:[4147744990]:18",
+          "socket:[4147744991]:19",
+          "socket:[4147744992]:20",
+          "socket:[4147744993]:21",
+          "socket:[4147745009]:22",
+          "socket:[4147743458]:23",
+          "socket:[4147747204]:24",
+          "socket:[4147750063]:25",
+          "socket:[4147749043]:26",
+          "socket:[4147747419]:27",
+          "socket:[4147745693]:28",
+          "socket:[4147747563]:29",
+          "socket:[4147756559]:30",
+          "socket:[4147754791]:31",
+          "socket:[4147765978]:32",
+          "socket:[4147764977]:33",
+          "socket:[4147769571]:34",
+          "socket:[4147766666]:35",
+          "socket:[4147771452]:36",
+          "socket:[4147769585]:37",
+          "socket:[4147767621]:38",
+          "socket:[4147766051]:39",
+          "socket:[4147766056]:40",
+          "socket:[4147764988]:41",
+          "socket:[4147766059]:42",
+          "socket:[4147770518]:43",
+          "socket:[4147766066]:44",
+          "socket:[4147766067]:45",
+          "socket:[4147770545]:46",
+          "socket:[4147769599]:47",
+          "socket:[4147765005]:48",
+          "socket:[4147765007]:49",
+          "socket:[4147770563]:50",
+          "socket:[4147771489]:51",
+          "socket:[4147766089]:52",
+          "socket:[4147770594]:53",
+          "socket:[4147768661]:54",
+          "socket:[4147768665]:55",
+          "socket:[4147769642]:56",
+          "socket:[4147766111]:57",
+          "socket:[4147768686]:58",
+          "socket:[4147770638]:59",
+          "socket:[4147773443]:60",
+          "socket:[4147768827]:61",
+          "socket:[4147765126]:62",
+          "socket:[4147741122]:63",
+          "socket:[4147771570]:64",
+          "socket:[4147771571]:65",
+          "socket:[4147766855]:66",
+          "socket:[4147766858]:67",
+          "socket:[4147768874]:68",
+          "socket:[4147766861]:69",
+          "socket:[4147773501]:70",
+          "socket:[4147768878]:71",
+          "socket:[4147767769]:72",
+          "socket:[4147766897]:73",
+          "socket:[4147766898]:74",
+          "socket:[4147766901]:75",
+          "socket:[4147766945]:76",
+          "socket:[4147770865]:77",
+          "socket:[4147770868]:78",
+          "socket:[4147770869]:79",
+          "socket:[4147770872]:80",
+          "socket:[4147770875]:81",
+          "socket:[4147770891]:82",
+          "socket:[4147766983]:83",
+          "socket:[4147766992]:84",
+          "socket:[4147767010]:85"
+        ]
+      }
+    },
+    {
+      "capability": "shared_socket_memory",
+      "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+      "evidence": {
+        "identities": [
+          "socket:[4147717810]:1",
+          "socket:[4147717811]:2",
+          "socket:[4147713873]:3",
+          "socket:[4147723577]:4",
+          "socket:[4147724439]:5",
+          "socket:[4147724441]:6",
+          "socket:[4147725449]:7",
+          "socket:[4147708809]:8",
+          "socket:[4147726542]:9",
+          "socket:[4147722816]:10",
+          "socket:[4147729434]:11",
+          "socket:[4147721876]:12",
+          "socket:[4147727203]:13",
+          "socket:[4147740709]:14",
+          "socket:[4147734211]:15",
+          "socket:[4147744988]:16",
+          "socket:[4147744989]:17",
+          "socket:[4147744990]:18",
+          "socket:[4147744991]:19",
+          "socket:[4147744992]:20",
+          "socket:[4147744993]:21",
+          "socket:[4147745009]:22",
+          "socket:[4147743458]:23",
+          "socket:[4147747204]:24",
+          "socket:[4147750063]:25",
+          "socket:[4147749043]:26",
+          "socket:[4147747419]:27",
+          "socket:[4147745693]:28",
+          "socket:[4147747563]:29",
+          "socket:[4147756559]:30",
+          "socket:[4147754791]:31",
+          "socket:[4147765978]:32",
+          "socket:[4147764977]:33",
+          "socket:[4147769571]:34",
+          "socket:[4147766666]:35",
+          "socket:[4147771452]:36",
+          "socket:[4147769585]:37",
+          "socket:[4147767621]:38",
+          "socket:[4147766051]:39",
+          "socket:[4147766056]:40",
+          "socket:[4147764988]:41",
+          "socket:[4147766059]:42",
+          "socket:[4147770518]:43",
+          "socket:[4147766066]:44",
+          "socket:[4147766067]:45",
+          "socket:[4147770545]:46",
+          "socket:[4147769599]:47",
+          "socket:[4147765005]:48",
+          "socket:[4147765007]:49",
+          "socket:[4147770563]:50",
+          "socket:[4147771489]:51",
+          "socket:[4147766089]:52",
+          "socket:[4147770594]:53",
+          "socket:[4147768661]:54",
+          "socket:[4147768665]:55",
+          "socket:[4147769642]:56",
+          "socket:[4147766111]:57",
+          "socket:[4147768686]:58",
+          "socket:[4147770638]:59",
+          "socket:[4147773443]:60",
+          "socket:[4147768827]:61",
+          "socket:[4147765126]:62",
+          "socket:[4147741122]:63",
+          "socket:[4147771570]:64",
+          "socket:[4147771571]:65",
+          "socket:[4147766855]:66",
+          "socket:[4147766858]:67",
+          "socket:[4147768874]:68",
+          "socket:[4147766861]:69",
+          "socket:[4147773501]:70",
+          "socket:[4147768878]:71",
+          "socket:[4147767769]:72",
+          "socket:[4147766897]:73",
+          "socket:[4147766898]:74",
+          "socket:[4147766901]:75",
+          "socket:[4147766945]:76",
+          "socket:[4147770865]:77",
+          "socket:[4147770868]:78",
+          "socket:[4147770869]:79",
+          "socket:[4147770872]:80",
+          "socket:[4147770875]:81",
+          "socket:[4147770891]:82",
+          "socket:[4147766983]:83",
+          "socket:[4147766992]:84",
+          "socket:[4147767010]:85"
+        ]
+      }
+    }
   ],
   "consumer_rows": {
     "VELDO-0113": [
@@ -453,5 +391,14 @@
       }
     ]
   },
-  "scope": "Protocol-zero discovery and acknowledged ticket probes only; no exhaustive qualification"
+  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+  "suite_digest": "2538aefc1043737059a8513ef5db6deb2310e321a21a57435ad77efd640ecd62",
+  "spec_digest": "16530fa6bc0206f7f80f294fe3446cd6fb38c65a1267b28d085513d78245b85b",
+  "acceptance": {
+    "AC2": false
+  },
+  "blocked_obligation": "socket_destruction",
+  "current_receipt": "ac2-attempt/receipt.json",
+  "receipt_digest": "d90e867bfb432545c6f622e8dce64a5717abc42b0b61d1ac3f5ecee14da01edd",
+  "scope": "Live regression and counterexample evidence; full AC2 qualification remains INCOMPLETE"
 }

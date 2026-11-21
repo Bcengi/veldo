@@ -1,0 +1,2292 @@
+{
+  "status": "INCOMPLETE",
+  "blocked_obligation": "socket_destruction",
+  "scope": "VELDO-0111 only; regressions are not AC2 qualification",
+  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+  "suite_digest": "2538aefc1043737059a8513ef5db6deb2310e321a21a57435ad77efd640ecd62",
+  "recheck_digest": "cab5c5d8d787bfbe0219f6fee4beb5766160d45e1c6fdb658362f6eeddc4e3ea",
+  "witness_digest": "3300bdcfd03653b37e71138e8c7239f36c721d5a5187296caa04742fd7bc8fe3",
+  "spec_digest": "16530fa6bc0206f7f80f294fe3446cd6fb38c65a1267b28d085513d78245b85b",
+  "unconfined_declaration_digest": "4fb4d48ce0c9c412c54a13de45c3aae25971d604322b44085f010f47c5253afb",
+  "control_policy": "Full-suite mutants share fresh baseline and final-control runs; focused mutants have individual focused controls.",
+  "cases": [
+    {
+      "label": "baseline",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "AC1-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          false
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          false
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "df18bde5b61daea68fb6bda0385e1db698464c606ea82ee639a114c4d703d538",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "AC2-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          false
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          false
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          false
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "6222673ddc53a92c80bcdde53f795fd968f8a90edc491e13a448c69b9d46a1c8",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "AC3-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          false
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          false
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "16430bcae5b9b9a6a70c371f18062e9ad11ff8ee7c36a0802433f7a3003d6433",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "AC4-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "c9ee3012ebfb87c59586383765da41e97af08976b924f76b08da1a1267bf488f",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "phantom-unix-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          false
+        ]
+      ],
+      "implementation_digest": "097386cf2b696204a4a5cf76e8216f727b05e59c89d3d1669e093fd6b72fc78b",
+      "needs_ptrace": true
+    },
+    {
+      "label": "phantom-unix-green",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "drop-autobind-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          false
+        ]
+      ],
+      "implementation_digest": "75410dfd268b97c3da930e5dbf801128d54101c12531912d226bcf69a051c0fc",
+      "needs_ptrace": true
+    },
+    {
+      "label": "drop-autobind-green",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "other-family-service-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          false
+        ]
+      ],
+      "implementation_digest": "ff6d73b09bdf62d53962512fc8dfe776af0b5f3704ee530262e5d6582c865b3a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "other-family-service-green",
+      "completed": true,
+      "rows": [
+        [
+          "census/unix-binding-is-real",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "silence-family-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/family-qualification-boundary",
+          false
+        ]
+      ],
+      "implementation_digest": "9e3ddc1bd02d68d5815ebb968658e9b231cae2fa4ed271ef49fb454dc8d7aecc",
+      "needs_ptrace": true
+    },
+    {
+      "label": "silence-family-green",
+      "completed": true,
+      "rows": [
+        [
+          "census/family-qualification-boundary",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "uncovered-state-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/fault-state-coverage",
+          false
+        ]
+      ],
+      "implementation_digest": "e95af49a83c7708761dabe1e33dad302e5791af3d4f774a91d1bb2567f07adc0",
+      "needs_ptrace": false
+    },
+    {
+      "label": "uncovered-state-green",
+      "completed": true,
+      "rows": [
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": false
+    },
+    {
+      "label": "swallow-corrupt-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "fb96c1cb201e1b0947f240e0b802c17e414d513b5c79ac07be86f091030ff260",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "swallow-abi-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "d2472456a11b5376b39bc076d34a0d7a8acfa68fe4d55a5cd1c02e6185296d69",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "swallow-loss-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "324703c3c7a66894b3c7b77a9e41cc93ed866b30b45bf09368889992f5fada36",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "clone-untraced-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          false
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "8ac247f3744681cf66c619ac71b1add386be6bbc8071d08bdfe53b489b9a135a",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "final-control",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+      "needs_ptrace": true
+    },
+    {
+      "label": "io_uring_socket_effects-red",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": false,
+      "actual": [
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "43c199ceeed0f5436d3eabb87b98b03fa71a70d74f38f955ac24ca18eae42fcc"
+    },
+    {
+      "label": "io_uring_socket_effects-green",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": true,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    },
+    {
+      "label": "operation_configuration-red",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": false,
+      "actual": [
+        "io_uring_socket_effects",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "2f932eeda1ab419cd4dc530addf667bcb2c7f88e6f5a636eb272b1b179592fdd"
+    },
+    {
+      "label": "operation_configuration-green",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": true,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    },
+    {
+      "label": "protocol_inventory_bounds-red",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": false,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "6d49af0b8f05db18dd56bb9ced9fc5c7c3e7093de77971f73187e0e535063997"
+    },
+    {
+      "label": "protocol_inventory_bounds-green",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": true,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    },
+    {
+      "label": "shared_socket_memory-red",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": false,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "9f8758837ca7b97af3c1b11c5d5c72a4d508f27e4d5cb1433a5f5efde9df9343"
+    },
+    {
+      "label": "shared_socket_memory-green",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": true,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    },
+    {
+      "label": "socket_destruction-red",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": false,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "4564b17cfd9f390b6d69caa7494728f1ee38901c7490d961462ffd3ab39dfdb9"
+    },
+    {
+      "label": "external-reference-red",
+      "completed": true,
+      "row": "census/external-reference-needs-destruction-observer",
+      "passed": false,
+      "needs_ptrace": true,
+      "families": [
+        {
+          "family": 1,
+          "passed": false,
+          "destruction_reasons": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926538407952337,
+            "queued_live_ns": 2926538407985432,
+            "holder_live_ns": 2926538408040547,
+            "external_release_ack_ns": 2926538408042414,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": false,
+          "destruction_reasons": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926543930270925,
+            "queued_live_ns": 2926543930402563,
+            "holder_live_ns": 2926543930475067,
+            "external_release_ack_ns": 2926543930479611,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": false,
+          "destruction_reasons": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926549410718969,
+            "queued_live_ns": 2926549410863730,
+            "holder_live_ns": 2926549410930649,
+            "external_release_ack_ns": 2926549410935281,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": false,
+          "destruction_reasons": [],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926554817154238,
+            "queued_live_ns": 2926554817204655,
+            "holder_live_ns": 2926554817248383,
+            "external_release_ack_ns": 2926554817255082,
+            "exact_destruction_observed": false
+          }
+        }
+      ],
+      "implementation_digest": "4564b17cfd9f390b6d69caa7494728f1ee38901c7490d961462ffd3ab39dfdb9"
+    },
+    {
+      "label": "socket_destruction-green",
+      "completed": true,
+      "row": "census/named-qualification-reasons",
+      "passed": true,
+      "actual": [
+        "io_uring_socket_effects",
+        "operation_configuration",
+        "protocol_inventory_bounds",
+        "shared_socket_memory",
+        "socket_destruction"
+      ],
+      "needs_ptrace": false,
+      "uses_live_baseline": true,
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    },
+    {
+      "label": "external-reference-green",
+      "completed": true,
+      "row": "census/external-reference-needs-destruction-observer",
+      "passed": true,
+      "needs_ptrace": true,
+      "families": [
+        {
+          "family": 1,
+          "passed": true,
+          "destruction_reasons": [
+            {
+              "capability": "socket_destruction",
+              "reason": "terminal drain bounds socket destruction but does not timestamp it",
+              "evidence": {
+                "identities": [
+                  "socket:[4150455437]:1",
+                  "socket:[4150455438]:2"
+                ]
+              }
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926560258287542,
+            "queued_live_ns": 2926560258325014,
+            "holder_live_ns": 2926560258377960,
+            "external_release_ack_ns": 2926560258379635,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 2,
+          "passed": true,
+          "destruction_reasons": [
+            {
+              "capability": "socket_destruction",
+              "reason": "terminal drain bounds socket destruction but does not timestamp it",
+              "evidence": {
+                "identities": [
+                  "socket:[4150457683]:1",
+                  "socket:[4150457684]:2"
+                ]
+              }
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926565612779683,
+            "queued_live_ns": 2926565612885265,
+            "holder_live_ns": 2926565612941551,
+            "external_release_ack_ns": 2926565612945191,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 10,
+          "passed": true,
+          "destruction_reasons": [
+            {
+              "capability": "socket_destruction",
+              "reason": "terminal drain bounds socket destruction but does not timestamp it",
+              "evidence": {
+                "identities": [
+                  "socket:[4150461431]:1",
+                  "socket:[4150476834]:2"
+                ]
+              }
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926571001290325,
+            "queued_live_ns": 2926571001404480,
+            "holder_live_ns": 2926571001459801,
+            "external_release_ack_ns": 2926571001463547,
+            "exact_destruction_observed": false
+          }
+        },
+        {
+          "family": 16,
+          "passed": true,
+          "destruction_reasons": [
+            {
+              "capability": "socket_destruction",
+              "reason": "terminal drain bounds socket destruction but does not timestamp it",
+              "evidence": {
+                "identities": [
+                  "socket:[4150451181]:1",
+                  "socket:[4150451182]:2"
+                ]
+              }
+            }
+          ],
+          "witness": {
+            "receiver_outside_scope": true,
+            "queued_socket_live_after_drain": true,
+            "held_socket_live_after_drain": true,
+            "census_returned_ns": 2926576448491750,
+            "queued_live_ns": 2926576448537008,
+            "holder_live_ns": 2926576448579021,
+            "external_release_ack_ns": 2926576448585454,
+            "exact_destruction_observed": false
+          }
+        }
+      ],
+      "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+    }
+  ],
+  "observer_environment": {
+    "process_status": [
+      "CapPrm:\t0000000000000000",
+      "CapEff:\t0000000000000000",
+      "Seccomp:\t0"
+    ],
+    "unprivileged_bpf_disabled": "2",
+    "perf_event_paranoid": "4",
+    "installed_sock_diag_destroy_groups": [
+      "SKNLGRP_INET_TCP_DESTROY",
+      "SKNLGRP_INET_UDP_DESTROY",
+      "SKNLGRP_INET6_TCP_DESTROY",
+      "SKNLGRP_INET6_UDP_DESTROY"
+    ],
+    "sock_diag_subscription": {
+      "result": 0
+    }
+  },
+  "qualification": {
+    "status": "INCOMPLETE",
+    "capture_status": "INCOMPLETE",
+    "host": {
+      "kernel": "7.0.0-38-generic",
+      "machine": "x86_64",
+      "python": "3.12.3",
+      "system": "Linux"
+    },
+    "gaps": [
+      "io_uring_socket_effects",
+      "operation_configuration",
+      "protocol_inventory_bounds",
+      "shared_socket_memory",
+      "socket_destruction"
+    ],
+    "reasons": [
+      {
+        "capability": "protocol_inventory_bounds",
+        "reason": "bounded protocol discovery does not fully qualify the four required families",
+        "evidence": {
+          "qualification_families": [
+            1,
+            2,
+            10,
+            16
+          ],
+          "protocol_scope": {
+            "inet": [
+              0,
+              255,
+              262
+            ],
+            "netlink": [
+              0,
+              31
+            ],
+            "other": [
+              0
+            ]
+          }
+        }
+      },
+      {
+        "capability": "operation_configuration",
+        "reason": "available socket needs a qualified address or operation configuration",
+        "evidence": {
+          "family": 10,
+          "type": 2,
+          "protocol": 115,
+          "operations": [
+            {
+              "operation": "bind",
+              "result": -1,
+              "errno": 22
+            }
+          ],
+          "gap": "operation_configuration"
+        }
+      },
+      {
+        "capability": "io_uring_socket_effects",
+        "reason": "shared ring completions are not correlated to traced socket identities",
+        "evidence": {
+          "available": true,
+          "errno": 0,
+          "socket_effect": {
+            "attempted": true,
+            "enter_result": 1,
+            "errno": 0,
+            "completion_result": 6,
+            "inode": "socket:[4147726372]"
+          },
+          "probe_errno": 0,
+          "supported_opcodes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64
+          ]
+        }
+      },
+      {
+        "capability": "socket_destruction",
+        "reason": "terminal drain bounds socket destruction but does not timestamp it",
+        "evidence": {
+          "identities": [
+            "socket:[4147717810]:1",
+            "socket:[4147717811]:2",
+            "socket:[4147713873]:3",
+            "socket:[4147723577]:4",
+            "socket:[4147724439]:5",
+            "socket:[4147724441]:6",
+            "socket:[4147725449]:7",
+            "socket:[4147708809]:8",
+            "socket:[4147726542]:9",
+            "socket:[4147722816]:10",
+            "socket:[4147729434]:11",
+            "socket:[4147721876]:12",
+            "socket:[4147727203]:13",
+            "socket:[4147740709]:14",
+            "socket:[4147734211]:15",
+            "socket:[4147744988]:16",
+            "socket:[4147744989]:17",
+            "socket:[4147744990]:18",
+            "socket:[4147744991]:19",
+            "socket:[4147744992]:20",
+            "socket:[4147744993]:21",
+            "socket:[4147745009]:22",
+            "socket:[4147743458]:23",
+            "socket:[4147747204]:24",
+            "socket:[4147750063]:25",
+            "socket:[4147749043]:26",
+            "socket:[4147747419]:27",
+            "socket:[4147745693]:28",
+            "socket:[4147747563]:29",
+            "socket:[4147756559]:30",
+            "socket:[4147754791]:31",
+            "socket:[4147765978]:32",
+            "socket:[4147764977]:33",
+            "socket:[4147769571]:34",
+            "socket:[4147766666]:35",
+            "socket:[4147771452]:36",
+            "socket:[4147769585]:37",
+            "socket:[4147767621]:38",
+            "socket:[4147766051]:39",
+            "socket:[4147766056]:40",
+            "socket:[4147764988]:41",
+            "socket:[4147766059]:42",
+            "socket:[4147770518]:43",
+            "socket:[4147766066]:44",
+            "socket:[4147766067]:45",
+            "socket:[4147770545]:46",
+            "socket:[4147769599]:47",
+            "socket:[4147765005]:48",
+            "socket:[4147765007]:49",
+            "socket:[4147770563]:50",
+            "socket:[4147771489]:51",
+            "socket:[4147766089]:52",
+            "socket:[4147770594]:53",
+            "socket:[4147768661]:54",
+            "socket:[4147768665]:55",
+            "socket:[4147769642]:56",
+            "socket:[4147766111]:57",
+            "socket:[4147768686]:58",
+            "socket:[4147770638]:59",
+            "socket:[4147773443]:60",
+            "socket:[4147768827]:61",
+            "socket:[4147765126]:62",
+            "socket:[4147741122]:63",
+            "socket:[4147771570]:64",
+            "socket:[4147771571]:65",
+            "socket:[4147766855]:66",
+            "socket:[4147766858]:67",
+            "socket:[4147768874]:68",
+            "socket:[4147766861]:69",
+            "socket:[4147773501]:70",
+            "socket:[4147768878]:71",
+            "socket:[4147767769]:72",
+            "socket:[4147766897]:73",
+            "socket:[4147766898]:74",
+            "socket:[4147766901]:75",
+            "socket:[4147766945]:76",
+            "socket:[4147770865]:77",
+            "socket:[4147770868]:78",
+            "socket:[4147770869]:79",
+            "socket:[4147770872]:80",
+            "socket:[4147770875]:81",
+            "socket:[4147770891]:82",
+            "socket:[4147766983]:83",
+            "socket:[4147766992]:84",
+            "socket:[4147767010]:85"
+          ]
+        }
+      },
+      {
+        "capability": "shared_socket_memory",
+        "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
+        "evidence": {
+          "identities": [
+            "socket:[4147717810]:1",
+            "socket:[4147717811]:2",
+            "socket:[4147713873]:3",
+            "socket:[4147723577]:4",
+            "socket:[4147724439]:5",
+            "socket:[4147724441]:6",
+            "socket:[4147725449]:7",
+            "socket:[4147708809]:8",
+            "socket:[4147726542]:9",
+            "socket:[4147722816]:10",
+            "socket:[4147729434]:11",
+            "socket:[4147721876]:12",
+            "socket:[4147727203]:13",
+            "socket:[4147740709]:14",
+            "socket:[4147734211]:15",
+            "socket:[4147744988]:16",
+            "socket:[4147744989]:17",
+            "socket:[4147744990]:18",
+            "socket:[4147744991]:19",
+            "socket:[4147744992]:20",
+            "socket:[4147744993]:21",
+            "socket:[4147745009]:22",
+            "socket:[4147743458]:23",
+            "socket:[4147747204]:24",
+            "socket:[4147750063]:25",
+            "socket:[4147749043]:26",
+            "socket:[4147747419]:27",
+            "socket:[4147745693]:28",
+            "socket:[4147747563]:29",
+            "socket:[4147756559]:30",
+            "socket:[4147754791]:31",
+            "socket:[4147765978]:32",
+            "socket:[4147764977]:33",
+            "socket:[4147769571]:34",
+            "socket:[4147766666]:35",
+            "socket:[4147771452]:36",
+            "socket:[4147769585]:37",
+            "socket:[4147767621]:38",
+            "socket:[4147766051]:39",
+            "socket:[4147766056]:40",
+            "socket:[4147764988]:41",
+            "socket:[4147766059]:42",
+            "socket:[4147770518]:43",
+            "socket:[4147766066]:44",
+            "socket:[4147766067]:45",
+            "socket:[4147770545]:46",
+            "socket:[4147769599]:47",
+            "socket:[4147765005]:48",
+            "socket:[4147765007]:49",
+            "socket:[4147770563]:50",
+            "socket:[4147771489]:51",
+            "socket:[4147766089]:52",
+            "socket:[4147770594]:53",
+            "socket:[4147768661]:54",
+            "socket:[4147768665]:55",
+            "socket:[4147769642]:56",
+            "socket:[4147766111]:57",
+            "socket:[4147768686]:58",
+            "socket:[4147770638]:59",
+            "socket:[4147773443]:60",
+            "socket:[4147768827]:61",
+            "socket:[4147765126]:62",
+            "socket:[4147741122]:63",
+            "socket:[4147771570]:64",
+            "socket:[4147771571]:65",
+            "socket:[4147766855]:66",
+            "socket:[4147766858]:67",
+            "socket:[4147768874]:68",
+            "socket:[4147766861]:69",
+            "socket:[4147773501]:70",
+            "socket:[4147768878]:71",
+            "socket:[4147767769]:72",
+            "socket:[4147766897]:73",
+            "socket:[4147766898]:74",
+            "socket:[4147766901]:75",
+            "socket:[4147766945]:76",
+            "socket:[4147770865]:77",
+            "socket:[4147770868]:78",
+            "socket:[4147770869]:79",
+            "socket:[4147770872]:80",
+            "socket:[4147770875]:81",
+            "socket:[4147770891]:82",
+            "socket:[4147766983]:83",
+            "socket:[4147766992]:84",
+            "socket:[4147767010]:85"
+          ]
+        }
+      }
+    ],
+    "consumer_rows": {
+      "VELDO-0113": [
+        {
+          "name": "unavailable/no-client-starts-the-authority",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-client-hosts-a-listener",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-auto-start-needs-census",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ],
+      "VELDO-0114": [
+        {
+          "name": "relay/one-endpoint-one-judgement",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/no-listener-during-call",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/no-second-process",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "relay/listener-proof-needs-census",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ],
+      "VELDO-0122": [
+        {
+          "name": "filesystem/transient-and-escaped-writes-are-seen",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-transient-write",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-out-of-directory-write",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        },
+        {
+          "name": "unavailable/no-write-needs-complete-observation",
+          "status": "STANDS DOWN",
+          "reason": "census_incomplete"
+        }
+      ]
+    }
+  },
+  "fault_receipts": {
+    "fault_facilities": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "preflight",
+      "failures": [
+        {
+          "capability": "linux_ptrace",
+          "reason": "required Linux native x86_64 facilities unavailable",
+          "category": "observer_unavailable",
+          "state": "preflight"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "preflight"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "preflight"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "preflight"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_denied": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "arming",
+      "failures": [
+        {
+          "capability": "PTRACE_TRACEME",
+          "reason": "root did not reach pre-exec stop",
+          "category": "observer_unavailable",
+          "state": "arming"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "arming"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "arming"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "arming"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_abi": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "collecting",
+      "failures": [
+        {
+          "capability": "syscall_abi",
+          "reason": "arch=0 size=80",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_corrupt": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "collecting",
+      "failures": [
+        {
+          "capability": "collection",
+          "reason": "unexpected syscall stop 255",
+          "category": "event_loss",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        }
+      ],
+      "lost_events": 1,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_loss": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "collecting",
+      "failures": [
+        {
+          "capability": "event_stream",
+          "reason": "missing acknowledged birth event",
+          "category": "event_loss",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        }
+      ],
+      "lost_events": 1,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_collector_death": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "collecting",
+      "failures": [
+        {
+          "capability": "collector_death",
+          "reason": "collector terminal status 9",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_drain": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "draining",
+      "failures": [
+        {
+          "capability": "collection",
+          "reason": "injected drain deadline expiry",
+          "category": "observation_incomplete",
+          "state": "draining"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "draining"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "draining"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "draining"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    },
+    "fault_finalize": {
+      "status": "INCOMPLETE",
+      "capture_status": "INCOMPLETE",
+      "state": "drained",
+      "failures": [
+        {
+          "capability": "receipt_finalization",
+          "reason": "injected receipt finalization failure",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "drained"
+        }
+      ],
+      "lost_events": 0,
+      "consumer_rows": {
+        "VELDO-0113": [
+          {
+            "name": "unavailable/no-client-starts-the-authority",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-client-hosts-a-listener",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-auto-start-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0114": [
+          {
+            "name": "relay/one-endpoint-one-judgement",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-listener-during-call",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/no-second-process",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "relay/listener-proof-needs-census",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ],
+        "VELDO-0122": [
+          {
+            "name": "filesystem/transient-and-escaped-writes-are-seen",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-transient-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-out-of-directory-write",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          },
+          {
+            "name": "unavailable/no-write-needs-complete-observation",
+            "status": "STANDS DOWN",
+            "reason": "census_incomplete"
+          }
+        ]
+      }
+    }
+  },
+  "socket_destruction_witness": {
+    "passed": true,
+    "families": [
+      1,
+      2,
+      10,
+      16
+    ],
+    "evidence": "socket-destruction.txt",
+    "digest": "b40aa645c0a80c0a69e18e7547025926012284b774e09e77fa7b1c1a3219f861"
+  },
+  "reason_replay_input_digest": "847ab6a5ea838629c9736e8d6bd5c257142575752aa2c7d13d3a71f93c18d500",
+  "recheck_completed": true
+}

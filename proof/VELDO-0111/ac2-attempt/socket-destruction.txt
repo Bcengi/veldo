@@ -7,14 +7,14 @@
       "passed": true,
       "acknowledgement": {
         "family": 1,
-        "address": "\u0000v111-held-748606",
-        "inode": "socket:[4146205257]",
+        "address": "\u0000v111-held-1322918",
+        "inode": "socket:[4147924179]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/1",
-        "input_digest": "e55539a417a0b5ac04c56e674979b391b96bb543338646bf81f1fe94b08f6be0",
+        "input_digest": "d16734044e38c33fd9e856ca1ae23fddd5f1cafcef5e8dd1f785dba86fe85e15",
         "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
@@ -29,25 +29,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2924274538575943,
+            "time_ns": 2925070473896201,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2924275309203939,
+            "time_ns": 2925071026815314,
             "sequence": 10
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2924275309205420,
+            "time_ns": 2925071026817439,
             "sequence": 10
           }
         ],
         "processes": [
           {
-            "identity": "748606:1",
-            "pid": 748606,
-            "current_tid": 748606,
+            "identity": "1322918:1",
+            "pid": 1322918,
+            "current_tid": 1322918,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -157,12 +157,12 @@
         }
       },
       "socket": {
-        "identity": "socket:[4146205257]:1",
-        "inode": "socket:[4146205257]",
+        "identity": "socket:[4147924179]:1",
+        "inode": "socket:[4147924179]",
         "family": 1,
         "type": 1,
         "protocol": 0,
-        "address": "010000763131312d68656c642d373438363036",
+        "address": "010000763131312d68656c642d31333232393138",
         "created": 3,
         "closed": {
           "barrier": "descendants_drained",
@@ -177,32 +177,32 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2924275290786031,
+          "time_ns": 2925071001919965,
           "kind": "bind",
-          "task": "748606:1",
-          "socket": "socket:[4146205257]:1",
+          "task": "1322918:1",
+          "socket": "socket:[4147924179]:1",
           "family": 1,
-          "address": "010000763131312d68656c642d373438363036"
+          "address": "010000763131312d68656c642d31333232393138"
         },
         {
           "sequence": 5,
-          "time_ns": 2924275291943228,
+          "time_ns": 2925071003028625,
           "kind": "service",
-          "task": "748606:1",
-          "socket": "socket:[4146205257]:1",
+          "task": "1322918:1",
+          "socket": "socket:[4147924179]:1",
           "family": 1,
           "type": 1,
           "operation": "listen",
-          "address": "010000763131312d68656c642d373438363036",
+          "address": "010000763131312d68656c642d31333232393138",
           "abi": "x86_64"
         },
         {
           "sequence": 8,
-          "time_ns": 2924275301835346,
+          "time_ns": 2925071019355550,
           "kind": "close",
-          "task": "748606:1",
-          "inode": "socket:[4146205257]",
-          "socket": "socket:[4146205257]:1",
+          "task": "1322918:1",
+          "inode": "socket:[4147924179]",
+          "socket": "socket:[4147924179]:1",
           "fd": 3
         }
       ],
@@ -212,8 +212,8 @@
           "reason": "terminal drain bounds socket destruction but does not timestamp it",
           "evidence": {
             "identities": [
-              "socket:[4146205257]:1",
-              "socket:[4146205258]:2"
+              "socket:[4147924179]:1",
+              "socket:[4147927254]:2"
             ]
           }
         }
@@ -222,10 +222,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2924275328175739,
-        "queued_live_ns": 2924275328231653,
-        "holder_live_ns": 2924275328320088,
-        "external_release_ack_ns": 2924275328323084,
+        "census_returned_ns": 2925071048589049,
+        "queued_live_ns": 2925071048633842,
+        "holder_live_ns": 2925071048704721,
+        "external_release_ack_ns": 2925071048706775,
         "exact_destruction_observed": false
       }
     },
@@ -236,15 +236,15 @@
         "family": 2,
         "address": [
           "127.0.0.1",
-          38217
+          47045
         ],
-        "inode": "socket:[4146218129]",
+        "inode": "socket:[4147932140]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/2",
-        "input_digest": "16c5a6184b0f16a79f3711730d3a031b974d494f31ca2bbef7af5b577de96fe2",
+        "input_digest": "51f182d02ddcdd5821fe055ea14af4fbc449739190042ed5e4906551d7d603db",
         "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
@@ -259,25 +259,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2924280029628935,
+            "time_ns": 2925076103107032,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2924280801676790,
+            "time_ns": 2925076787842454,
             "sequence": 10
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2924280801678855,
+            "time_ns": 2925076787844540,
             "sequence": 10
           }
         ],
         "processes": [
           {
-            "identity": "755411:1",
-            "pid": 755411,
-            "current_tid": 755411,
+            "identity": "1331061:1",
+            "pid": 1331061,
+            "current_tid": 1331061,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -387,8 +387,8 @@
         }
       },
       "socket": {
-        "identity": "socket:[4146218129]:1",
-        "inode": "socket:[4146218129]",
+        "identity": "socket:[4147932140]:1",
+        "inode": "socket:[4147932140]",
         "family": 2,
         "type": 1,
         "protocol": 0,
@@ -407,36 +407,36 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2924280782226256,
+          "time_ns": 2925076770607364,
           "kind": "bind",
-          "task": "755411:1",
-          "socket": "socket:[4146218129]:1",
+          "task": "1331061:1",
+          "socket": "socket:[4147932140]:1",
           "family": 2,
           "address": "020000007f0000010000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2924280784506292,
+          "time_ns": 2925076772040475,
           "kind": "service",
-          "task": "755411:1",
-          "socket": "socket:[4146218129]:1",
+          "task": "1331061:1",
+          "socket": "socket:[4147932140]:1",
           "family": 2,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "127.0.0.1",
-            "port": 38217,
+            "port": 47045,
             "sockaddr_hex": "020000007f0000010000000000000000"
           },
           "abi": "x86_64"
         },
         {
           "sequence": 8,
-          "time_ns": 2924280794353198,
+          "time_ns": 2925076780773236,
           "kind": "close",
-          "task": "755411:1",
-          "inode": "socket:[4146218129]",
-          "socket": "socket:[4146218129]:1",
+          "task": "1331061:1",
+          "inode": "socket:[4147932140]",
+          "socket": "socket:[4147932140]:1",
           "fd": 3
         }
       ],
@@ -446,8 +446,8 @@
           "reason": "terminal drain bounds socket destruction but does not timestamp it",
           "evidence": {
             "identities": [
-              "socket:[4146218129]:1",
-              "socket:[4146218131]:2"
+              "socket:[4147932140]:1",
+              "socket:[4147930981]:2"
             ]
           }
         }
@@ -456,10 +456,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2924280818907094,
-        "queued_live_ns": 2924280819044463,
-        "holder_live_ns": 2924280819124212,
-        "external_release_ack_ns": 2924280819128153,
+        "census_returned_ns": 2925076801735042,
+        "queued_live_ns": 2925076801907932,
+        "holder_live_ns": 2925076801979556,
+        "external_release_ack_ns": 2925076801983980,
         "exact_destruction_observed": false
       }
     },
@@ -470,17 +470,17 @@
         "family": 10,
         "address": [
           "::1",
-          57639,
+          50847,
           0,
           0
         ],
-        "inode": "socket:[4146230567]",
+        "inode": "socket:[4147952776]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/10",
-        "input_digest": "e0daba664ad9ef43f200194b5699e696d7881e31ef5ae88a0e7b725feac877bd",
+        "input_digest": "9dd61b68ebecd7ade00af7d260c1af5ee159e86509021425775a6e55efa02627",
         "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
@@ -495,25 +495,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2924285510942801,
+            "time_ns": 2925081862946829,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2924286296626575,
+            "time_ns": 2925082496998135,
             "sequence": 10
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2924286296628719,
+            "time_ns": 2925082497002541,
             "sequence": 10
           }
         ],
         "processes": [
           {
-            "identity": "762529:1",
-            "pid": 762529,
-            "current_tid": 762529,
+            "identity": "1339787:1",
+            "pid": 1339787,
+            "current_tid": 1339787,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -623,8 +623,8 @@
         }
       },
       "socket": {
-        "identity": "socket:[4146230567]:1",
-        "inode": "socket:[4146230567]",
+        "identity": "socket:[4147952776]:1",
+        "inode": "socket:[4147952776]",
         "family": 10,
         "type": 1,
         "protocol": 0,
@@ -643,36 +643,36 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2924286275258350,
+          "time_ns": 2925082483325943,
           "kind": "bind",
-          "task": "762529:1",
-          "socket": "socket:[4146230567]:1",
+          "task": "1339787:1",
+          "socket": "socket:[4147952776]:1",
           "family": 10,
           "address": "0a000000000000000000000000000000000000000000000100000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2924286277881201,
+          "time_ns": 2925082484968168,
           "kind": "service",
-          "task": "762529:1",
-          "socket": "socket:[4146230567]:1",
+          "task": "1339787:1",
+          "socket": "socket:[4147952776]:1",
           "family": 10,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "::1",
-            "port": 57639,
+            "port": 50847,
             "sockaddr_hex": "0a000000000000000000000000000000000000000000000100000000"
           },
           "abi": "x86_64"
         },
         {
           "sequence": 8,
-          "time_ns": 2924286288352880,
+          "time_ns": 2925082490255302,
           "kind": "close",
-          "task": "762529:1",
-          "inode": "socket:[4146230567]",
-          "socket": "socket:[4146230567]:1",
+          "task": "1339787:1",
+          "inode": "socket:[4147952776]",
+          "socket": "socket:[4147952776]:1",
           "fd": 3
         }
       ],
@@ -682,8 +682,8 @@
           "reason": "terminal drain bounds socket destruction but does not timestamp it",
           "evidence": {
             "identities": [
-              "socket:[4146230567]:1",
-              "socket:[4146230568]:2"
+              "socket:[4147952776]:1",
+              "socket:[4147953718]:2"
             ]
           }
         }
@@ -692,10 +692,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2924286312209091,
-        "queued_live_ns": 2924286312332161,
-        "holder_live_ns": 2924286312401341,
-        "external_release_ack_ns": 2924286312405478,
+        "census_returned_ns": 2925082508994728,
+        "queued_live_ns": 2925082509126173,
+        "holder_live_ns": 2925082509178869,
+        "external_release_ack_ns": 2925082509182382,
         "exact_destruction_observed": false
       }
     },
@@ -705,16 +705,16 @@
       "acknowledgement": {
         "family": 16,
         "address": [
-          769704,
+          1349122,
           0
         ],
-        "inode": "socket:[4146232970]",
+        "inode": "socket:[4147965288]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/16",
-        "input_digest": "11415615cf9489d69b896d43f30ef7a54eda7d657ea549a44aa37840c2820075",
+        "input_digest": "71073f00f9822e49f6862e62192c66653a68d72ef6999e481773b6c82fa615ab",
         "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
@@ -729,25 +729,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2924291004270335,
+            "time_ns": 2925087598929388,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2924291759118755,
+            "time_ns": 2925088206349935,
             "sequence": 10
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2924291759120437,
+            "time_ns": 2925088206351967,
             "sequence": 10
           }
         ],
         "processes": [
           {
-            "identity": "769704:1",
-            "pid": 769704,
-            "current_tid": 769704,
+            "identity": "1349122:1",
+            "pid": 1349122,
+            "current_tid": 1349122,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -857,12 +857,12 @@
         }
       },
       "socket": {
-        "identity": "socket:[4146232970]:1",
-        "inode": "socket:[4146232970]",
+        "identity": "socket:[4147965288]:1",
+        "inode": "socket:[4147965288]",
         "family": 16,
         "type": 3,
         "protocol": 2,
-        "address": "100021930000000000000000",
+        "address": "100086b90000000000000000",
         "created": 3,
         "closed": {
           "barrier": "descendants_drained",
@@ -877,32 +877,32 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2924291741929103,
+          "time_ns": 2925088181889488,
           "kind": "bind",
-          "task": "769704:1",
-          "socket": "socket:[4146232970]:1",
+          "task": "1349122:1",
+          "socket": "socket:[4147965288]:1",
           "family": 16,
-          "address": "100021930000000000000000"
+          "address": "100086b90000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2924291741943421,
+          "time_ns": 2925088181905434,
           "kind": "service",
-          "task": "769704:1",
-          "socket": "socket:[4146232970]:1",
+          "task": "1349122:1",
+          "socket": "socket:[4147965288]:1",
           "family": 16,
           "type": 3,
           "operation": "bind",
-          "address": "100021930000000000000000",
+          "address": "100086b90000000000000000",
           "abi": "x86_64"
         },
         {
           "sequence": 8,
-          "time_ns": 2924291751783531,
+          "time_ns": 2925088199161009,
           "kind": "close",
-          "task": "769704:1",
-          "inode": "socket:[4146232970]",
-          "socket": "socket:[4146232970]:1",
+          "task": "1349122:1",
+          "inode": "socket:[4147965288]",
+          "socket": "socket:[4147965288]:1",
           "fd": 3
         }
       ],
@@ -912,8 +912,8 @@
           "reason": "terminal drain bounds socket destruction but does not timestamp it",
           "evidence": {
             "identities": [
-              "socket:[4146232970]:1",
-              "socket:[4146234289]:2"
+              "socket:[4147965288]:1",
+              "socket:[4147962394]:2"
             ]
           }
         }
@@ -922,10 +922,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2924291773662221,
-        "queued_live_ns": 2924291773700153,
-        "holder_live_ns": 2924291773735823,
-        "external_release_ack_ns": 2924291773740521,
+        "census_returned_ns": 2925088219918456,
+        "queued_live_ns": 2925088219960471,
+        "holder_live_ns": 2925088220004091,
+        "external_release_ack_ns": 2925088220009817,
         "exact_destruction_observed": false
       }
     }

@@ -1,0 +1,14 @@
+External host_heavy.sh recheck: exit 0.
+Baseline and final control: 13/13 rows each.
+18 distinct mutations; 19 completed red drives; controls green.
+Eight fault receipts: all eleven exact named stand-downs each.
+Collector, suite, specification and protected unconfined declaration unchanged from 805c3082.
+Source, driver, witness, receipt and evidence digests match.
+Changes confined to proof/VELDO-0111/.
+git diff --check: passed.
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+Personal-setup check used the sweep API over all changed files; no ancestry query.
+Initial staged whitespace check found blank context in AC2.diff and silence-family.diff.
+Those patches were regenerated with zero context; both resulting mutant digests match the live-run receipts.
+Final staged whitespace check: passed. Final personal-setup sweep: 0 findings.
