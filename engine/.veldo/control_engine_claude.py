@@ -223,6 +223,24 @@ import struct
 import subprocess
 import time
 import zoneinfo
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site."""
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
 
 PROVIDER = 'claude_code'
 CREDENTIALS = frozenset((
@@ -1790,7 +1808,9 @@ def _profile_login(environment, cwd):
 
 
 # VELDO-0185 AC4: how long the account's own login status may take before it reads as unreadable.
-LOGIN_SECONDS = 30
+# VELDO-0358 AC15: giving-up deadlines of the timers table, read from it where each is armed.
+LOGIN_SECONDS = TIMERS.register('control_engine_claude.LOGIN_SECONDS', 30, 'control_engine_claude', 'deadline')
+INIT_SECONDS = TIMERS.register('control_engine_claude.INIT_SECONDS', 5, 'control_engine_claude', 'deadline')
 
 
 def account_login(bound, environment, cwd=None, record=None):
@@ -1809,7 +1829,7 @@ def account_login(bound, environment, cwd=None, record=None):
         return 'unqualified'
     try:
         done = subprocess.run([bound['path']] + [str(a) for a in status['argv']], capture_output=True, text=True,
-                              timeout=LOGIN_SECONDS, env=dict(environment), stdin=subprocess.DEVNULL,
+                              timeout=TIMERS.effective('control_engine_claude.LOGIN_SECONDS'), env=dict(environment), stdin=subprocess.DEVNULL,
                               errors='replace', cwd=cwd)
         report = json.loads(done.stdout)
     except (OSError, subprocess.SubprocessError, ValueError):
@@ -1925,7 +1945,7 @@ class Guard:
         if self.stop is None:
             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
             if self._probing():
-                self.init_deadline = time.monotonic() + 5
+                self.init_deadline = time.monotonic() + TIMERS.effective('control_engine_claude.INIT_SECONDS')
             # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
             # from the model); the init comparison leaves only those out of the slash commands it compares.
             commands = response.get('commands')

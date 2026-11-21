@@ -3362,7 +3362,7 @@ def cases():
                    "                                stop.adapter_exited(time.monotonic())\n"
                    "                            else:\n"
                    "                                # Only the wrapper's heartbeat is left, and it ends on the worker's exit.\n"
-                   "                                settle = time.monotonic() + HB.SETTLE_SECONDS\n", "")])
+                   "                                settle = time.monotonic() + HB.settle()\n", "")])
     contain('containment-retire-without-looking', 'control_containment.py',
             "    return {'terminated': process is None or not alive(process), 'cleaned': observed != 'populated',\n",
             "    return {'terminated': process is None or not alive(process), 'cleaned': True,  # defect\n",
@@ -9672,7 +9672,7 @@ def cases():
               'and math.isfinite(deadline) and deadline > 0:',
               'and deadline > 0:', ('receiver/pre-release-budget',))
     reland148('receiver148-report-wait-unbounded', 'control_launch.py',
-              '            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))\n',
+              '            acknowledged = poller.poll(int((HB.setup() + HB.settle() + 1) * 1000))\n',
               '            acknowledged = poller.poll()\n', ('receiver/report-timeout',))
     reland148('receiver148-late-wrapper-execs', 'control_launch.py',
               '        if time.monotonic() >= heartbeat_deadline:\n',
@@ -9682,7 +9682,7 @@ def cases():
               "                           b'': 'heartbeat_report_timeout'}.get(status, 'heartbeat_setup')\n",
               ('receiver/wrapper-exited',))
     reland148('receiver148-placement-wait-unbounded', 'control_heartbeat.py',
-              '            if not poller.poll(int(SETUP_SECONDS * 1000)):\n',
+              '            if not poller.poll(int(setup() * 1000)):\n',
               '            if not poller.poll():\n', ('receiver/placement-timeout',))
     reland148('receiver148-placement-report-ignored', 'control_launch.py',
               "            if status != b'1':\n", "            if False:\n",
@@ -9969,7 +9969,7 @@ def cases():
         "                and (input_failed.is_set() or not metering.terminal.prompt_written)):",
         "                and False):", ['review/probe-terminal'])
     add(127, 'role127-init-unbounded', suite127, 'control_engine_claude.py',
-        "                self.init_deadline = time.monotonic() + 5",
+        "                self.init_deadline = time.monotonic() + TIMERS.effective('control_engine_claude.INIT_SECONDS')",
         "                self.init_deadline = time.monotonic() + 90", ['review/init-bound'])
     add(127, 'role127-slash-collision-hidden', suite127, 'control_agent_config_handoff.py',
         "    return tuple(sorted(name for name, flags in entries.items() if all(flags)))",
@@ -13591,7 +13591,7 @@ def cases():
         # The product's bound is shortened on this mutant copy only, so it runs out well inside the worker budget:
         # the receiver announces its contract deadline as its end, and the module the suite loads allows 2 s to
         # accept (the launch's own acceptance keeps its 30 s, bound into invoke and read by the receiver process).
-        also=[("        ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)\n",
+        also=[("        ends_by = contract['deadline'] + (sum(self._graces()) + C.settle() if group else 0)\n",
                "        ends_by = contract['deadline']  # the mutant's shortened end obligation\n"),
               ("if __name__ == '__main__':\n    main()\n",
                "if __name__ == '__main__':\n    main()\nelse:\n    ACCEPT_SECONDS = 2  # the mutant's shortened allowance\n")])

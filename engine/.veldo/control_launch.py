@@ -226,6 +226,23 @@ import time
 import uuid
 
 
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site."""
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+
+
 def _organ(name):
     spec = importlib.util.spec_from_file_location('launch_' + name, Path(__file__).with_name(name + '.py'))
     module = importlib.util.module_from_spec(spec)
@@ -266,8 +283,40 @@ RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
 ARTIFACT_REPORT = ('path', 'digest', 'verdict', 'complete')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
-ACCEPT_SECONDS = 30
 WRAPPER_SCHEMA = 'veldo.launch_identity/v1'
+
+
+# THE TIMERS OF THE LAUNCH PATH (VELDO-0358 AC15). Every giving-up deadline of this module is an entry of the
+# timers table (timers.py), read from it where it is armed through timer(); a suite's profile sets every entry but
+# the one its row tests to the wait hang bound. The receiver takes the profile from its configuration
+# (`timers_profile`: {except, hang_seconds}) and hands it to the trusted wrapper, whose start record (the identity
+# line) reports the effective values, so a seam that ignores the profile is seen in the record.
+def _deadline(name, value):
+    return TIMERS.register('control_launch.' + name, value, 'control_launch', 'deadline')
+
+
+ACCEPT_SECONDS = _deadline('ACCEPT_SECONDS', 30)  # a worker that has not reported is refused
+RECEIVER_EXIT_SECONDS = _deadline('RECEIVER_EXIT_SECONDS', 2)  # a receiver whose output ended, to exit itself
+ORPHAN_SECONDS = _deadline('ORPHAN_SECONDS', 5.0)  # an orphaned worker's group, to be shown empty
+REQUEST_SECONDS = _deadline('REQUEST_SECONDS', 10)  # the runner's request, on the receiver's stdin
+CENSUS_SECONDS = _deadline('CENSUS_SECONDS', 600)  # one git read of the run-end census
+SOURCE_SECONDS = _deadline('SOURCE_SECONDS', 20)  # one git read resolving a contract's source
+IDENTITY_SECONDS = _deadline('IDENTITY_SECONDS', 5)  # one ps or sysctl read of a process identity (darwin)
+NAMESPACE_SECONDS = _deadline('NAMESPACE_SECONDS', 120)  # the confined runner's namespace self-test
+FEEDER_SETTLE_SECONDS = _deadline('FEEDER_SETTLE_SECONDS', 1)  # the prompt feeder, before its write is judged
+FEEDER_SECONDS = _deadline('FEEDER_SECONDS', 5)  # the prompt feeder thread, to end once the engine has
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now (the table's, under any profile)."""
+    return TIMERS.effective('control_launch.' + name)
+
+
+def apply_timers_profile(profile):
+    """Select the profile a receiver's configuration or a wrapper's argument names: every timer of the table but
+    `except` at `hang_seconds`. None selects nothing."""
+    if isinstance(profile, dict):
+        TIMERS.set_profile(profile.get('except'), hang_seconds=profile.get('hang_seconds', TIMERS.WAIT_HANG_SECONDS))
 
 
 def subscription_token(receiver, contract, adapter, environment):
@@ -512,7 +561,7 @@ def _confined_runner_problem(runner):
         return 'confined_runner_unavailable:helper_missing'
     try:
         tested = subprocess.run([sys.executable, '-I', '-S', program, 'namespace-selftest'], capture_output=True,
-                                timeout=120, stdin=subprocess.DEVNULL)
+                                timeout=timer('NAMESPACE_SECONDS'), stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError):
         tested = None
     if tested is None or tested.returncode != 0:
@@ -564,9 +613,9 @@ def process_identity(pid):
     if sys.platform == 'darwin':
         env = {'PATH': '/bin:/usr/bin:/usr/sbin:/sbin', 'LC_ALL': 'C'}
         start = subprocess.run(['ps', '-o', 'lstart=', '-p', str(pid)], capture_output=True, text=True,
-                               timeout=5, env=env).stdout.strip()
+                               timeout=timer('IDENTITY_SECONDS'), env=env).stdout.strip()
         boot = subprocess.run(['sysctl', '-n', 'kern.boottime'], capture_output=True, text=True,
-                              timeout=5, env=env).stdout.strip()
+                              timeout=timer('IDENTITY_SECONDS'), env=env).stdout.strip()
         if not start or not boot:
             raise ValueError('process identity unreadable')
         return {'platform': 'darwin', 'host': host, 'boot_id': boot, 'pid': pid, 'start': start}
@@ -914,7 +963,6 @@ def space_retry(space, dispatch_id, emitter, but=(), ended=False):
 # VELDO-0305: the run census and the run's space environment (design 6.3). Nothing here deletes
 # anything: the census declares, confirms and measures, and what it declares goes later by Signal's
 # removers, after the safety rules and the keep step.
-CENSUS_SECONDS = 600
 SPACE_WORKTREES = ('worktree', 'agent_repository')  # the kinds whose folder is a run's worktree
 SPACE_STATIONS = ('build', 'review', 'gate')  # the stations the ledger records a run with
 SPACE_TEMPORARY = 'TMPDIR'
@@ -941,7 +989,7 @@ def _census_git(where, *argv, feed=None, absent=False):
     _CensusStop when git cannot say; with `absent`, a quiet failure answers None."""
     _git_process = _organ('git_process')
     given = dict(env=dict(os.environ, LC_ALL='C'), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                 timeout=CENSUS_SECONDS)
+                 timeout=timer('CENSUS_SECONDS'))
     given.update({'stdin': subprocess.DEVNULL} if feed is None else {'input': feed})
     try:
         done = _git_process.run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false',
@@ -1484,9 +1532,9 @@ def resolve_source(repository_path, revision):
     """The commit and tree `revision` names in a real Git repository."""
     _git_process = _organ('git_process')
     commit = _git_process.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{commit}'],
-                              capture_output=True, text=True, timeout=20)
+                              capture_output=True, text=True, timeout=timer('SOURCE_SECONDS'))
     tree = _git_process.run(['git', '-C', str(repository_path), 'rev-parse', revision + '^{tree}'],
-                            capture_output=True, text=True, timeout=20)
+                            capture_output=True, text=True, timeout=timer('SOURCE_SECONDS'))
     if commit.returncode or tree.returncode:
         raise D.Refused('invalid_input:source', 'the source revision does not resolve')
     return {'commit': commit.stdout.strip(), 'tree': tree.stdout.strip()}
@@ -1991,16 +2039,13 @@ class Runner:
             if not entry['stopped']:
                 entry['stopped'] = True
                 _stop_orphan(entry['group'], entry['process'])
-            end = time.monotonic() + ORPHAN_SECONDS
-            seen = C.retirement(entry['group'], entry['process'])
-            while not (seen['terminated'] and seen['cleaned']) and time.monotonic() < end:
-                time.sleep(0.02)
-                seen = C.retirement(entry['group'], entry['process'])
+            seen, awaited = _await_gone(entry['group'], entry['process'], timer('ORPHAN_SECONDS'))
 
             def lifecycle(_dispatch, seen=seen, dispatch_id=dispatch_id):
                 state = (self.dispatches.record(dispatch_id) or {}).get('state')
                 return dict(seen, state=state, observer=RT.OBSERVER, basis='receiver_lost')
-            event = {'operation': 'release_account', 'dispatch_id': dispatch_id, 'request': 'release-account/' + dispatch_id}
+            event = {'operation': 'release_account', 'dispatch_id': dispatch_id, 'request': 'release-account/' + dispatch_id,
+                     'awaited': awaited}
             try:
                 self.reservations.release_account('release-account/' + dispatch_id, dispatch_id, lifecycle,
                                                   now=self.clock())
@@ -2016,8 +2061,48 @@ class Runner:
         return released
 
 
-# VELDO-0154: how long the runner waits for the kernel to show an orphaned worker gone after its stop.
-ORPHAN_SECONDS = 5.0
+def _await_gone(group, process, bound):
+    """VELDO-0154, VELDO-0358 AC15: wait for the kernel to show an orphaned worker gone after its stop, waking only
+    on its events: its group's cgroup.events (the group becoming empty) and its process's pidfd (its exit). At most
+    `bound` seconds (ORPHAN_SECONDS of the timers table). (the last retirement reading, what ended the wait): the
+    sources that woke it, 'none' when it was already gone, or 'bound' when the bound passed first."""
+    fds, woke = {}, []
+    if isinstance(group, dict) and group.get('cgroup'):
+        with contextlib.suppress(OSError):
+            fds[os.open(C.CGROUP / group['cgroup'].lstrip('/') / 'cgroup.events', os.O_RDONLY | os.O_CLOEXEC)] = \
+                'cgroup.events'
+    if isinstance(process, dict) and isinstance(process.get('pid'), int):
+        with contextlib.suppress(OSError):
+            fds[os.pidfd_open(process['pid'])] = 'pidfd'
+    poller = select.poll()
+    for fd, kind in fds.items():
+        if kind == 'cgroup.events':
+            os.read(fd, 4096)  # read once, so the next change is the one that wakes
+            poller.register(fd, select.POLLPRI | select.POLLERR)
+        else:
+            poller.register(fd, select.POLLIN)
+    end = time.monotonic() + bound
+    try:
+        while True:
+            seen = C.retirement(group, process)
+            if seen['terminated'] and seen['cleaned']:
+                return seen, woke or ['none']
+            remaining = end - time.monotonic()
+            if remaining <= 0 or not fds:
+                return seen, woke + ['bound']
+            for fd, _events in poller.poll(math.ceil(remaining * 1000)):
+                woke.append(fds[fd])
+                if fds[fd] == 'pidfd':  # an exit happens once
+                    poller.unregister(fd)
+                    continue
+                try:
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    os.read(fd, 4096)
+                except OSError:  # the group was removed: nothing more will come from it
+                    poller.unregister(fd)
+    finally:
+        for fd in fds:
+            os.close(fd)
 
 
 def stop_requester(runner):
@@ -2084,6 +2169,9 @@ class Launch:
         # VELDO-0154: the run's end seen on the launch pipe, and whether it was the pipe's end of file.
         self.ended = False
         self.lost = False
+        # VELDO-0358 AC15: how the wait for a receiver whose output had ended ended: {awaited: 'pidfd', bound,
+        # ended_by: 'exit' or 'bound'} (None while there was none).
+        self.receiver_exit = None
         # VELDO-0350: the receiver's exit status once it is reaped (None before, a negative number when a
         # signal ended it), whether a wait found its output at its end of file (as `lost` says for the pump),
         # and the file its standard error is written to, beside the run's execution record (None when none
@@ -2183,11 +2271,12 @@ class Launch:
         if self.child.poll() is None and (self.closed or self.lost):
             # VELDO-0350: its output reached its end of file, so it is ending by itself: its own exit status
             # is waited for, briefly, before the kill that would replace it.
-            with contextlib.suppress(subprocess.TimeoutExpired):
-                self.child.wait(timeout=RECEIVER_EXIT_SECONDS)
+            # VELDO-0358 AC15: on its pidfd (the kernel's notification of its exit), bounded by the table's
+            # RECEIVER_EXIT_SECONDS; it is killed only once that bound has passed.
+            self.receiver_exit = _await_exit(self.child, timeout=timer('RECEIVER_EXIT_SECONDS'))
         if self.child.poll() is None:
             self.child.kill()
-        self.child.wait(timeout=10)
+        self.child.wait()  # after SIGKILL its exit is certain: awaited with no bound of its own
         self.returncode = self.child.returncode
         with contextlib.suppress(OSError, ValueError):
             if self.child.stdin is not None:
@@ -2255,10 +2344,10 @@ class Launch:
         if not self.owned:
             return self.dispatches.record(self.dispatch_id)
         # By default the receiver has until the contract deadline, or the later end it announced for a
-        # contained worker's stop, and ACCEPT_SECONDS more.
+        # contained worker's stop, and ACCEPT_SECONDS (the timers table's) more.
         ends_by = max(self.contract['deadline'], self.ends_by or 0)
         deadline = time.monotonic() + (timeout if timeout is not None else
-                                       max(1.0, ends_by - time.time() + ACCEPT_SECONDS))
+                                       max(1.0, ends_by - time.time() + timer('ACCEPT_SECONDS')))
         # The record can reach exited before start settles. Its commit precedes the run-end scan,
         # space end and final pipe message: take those messages before stopping the receiver.
         if self.result == 'accepted' and (self.record or {}).get('state') in ('running', 'exited'):
@@ -2297,7 +2386,7 @@ def _receiver_errors(records, dispatch_id):
         return None, None
 
 
-def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):
+def invoke(config_path, contract, dispatches, *, accept_seconds=None, environment=None, clock=None):
     """Hand the prepared contract to the trusted receiver process named by the installed config."""
     errors, place = None, None
     try:
@@ -2328,7 +2417,7 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         child.stdin.flush()
     except OSError:
         pass
-    return launch.start(accept_seconds)
+    return launch.start(timer('ACCEPT_SECONDS') if accept_seconds is None else accept_seconds)
 
 
 # The receiver process.
@@ -2956,7 +3045,7 @@ class Receiver:
         watch = getattr(worker, 'heartbeat', None)
         # When this receiver will have recorded the end at the latest: a stop begun at the deadline, its
         # graces and the settling of the group.
-        ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)
+        ends_by = contract['deadline'] + (sum(self._graces()) + C.settle() if group else 0)
         beat = {'interval_seconds': watch.interval, 'window_seconds': watch.window} if watch else None
         graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
@@ -3561,7 +3650,10 @@ class Receiver:
         channel, beat = os.pipe()
         setup, ready = os.pipe()
         held = dict(group.held(), heartbeat_setup=ready)
-        wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(held),
+        # VELDO-0358 AC15: the wrapper runs under this receiver's timers profile, and reports its effective values.
+        profile = self.config.get('timers_profile')
+        timers = ['--timers', json.dumps(profile)] if isinstance(profile, dict) else []
+        wrapper = [sys.executable, '-B', RECEIVER, 'exec'] + timers + ['--contained', json.dumps(held),
                    '--heartbeat', str(beat), repr(float(interval))] + argv
         try:
             with group.admission():
@@ -3574,7 +3666,7 @@ class Receiver:
                     os.close(ready)
                 worker.group = group
                 try:
-                    reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
+                    reported, refusal, _ = self._reported(worker, {'deadline': time.time() + timer('ACCEPT_SECONDS')})
                     problems = [refusal] if refusal else group.attach(worker.pid)
                     if not problems and reported.get('pid') != worker.pid:
                         problems = ['spawn_failed:containment:identity']
@@ -3596,7 +3688,7 @@ class Receiver:
                 # Fix the placement deadline at the sender's release, after the
                 # receiver's separately bounded containment preparation. A wrapper
                 # descheduled after release cannot give itself a fresh budget.
-                release_deadline = time.monotonic() + HB.SETUP_SECONDS
+                release_deadline = time.monotonic() + HB.setup()
                 worker.stdin.write(('go %r\n' % release_deadline).encode())
                 worker.stdin.flush()
             except OSError:
@@ -3609,7 +3701,7 @@ class Receiver:
             # strictly later, even if the wrapper stalls after release.
             poller = select.poll()
             poller.register(setup, select.POLLIN)
-            acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
+            acknowledged = poller.poll(int((HB.setup() + HB.settle() + 1) * 1000))
             status = os.read(setup, 1) if acknowledged else b''
             if status != b'1':
                 reason = ({b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout',
@@ -3632,7 +3724,7 @@ class Receiver:
         became the engine, names the OS identity of the process the engine now is, or the named
         refusal of an engine that could not be run. Anything after that line is the worker's output
         (`carry`). A missing, late or malformed line is unreadable, never a guess."""
-        pending, end = b'', min(contract['deadline'], time.time() + ACCEPT_SECONDS)
+        pending, end = b'', min(contract['deadline'], time.time() + timer('ACCEPT_SECONDS'))
         while b'\n' not in pending:
             remaining = end - time.time()
             if remaining <= 0 or not select.select([worker.stdout], [], [], remaining)[0]:
@@ -3905,7 +3997,7 @@ class Receiver:
                                 stop.adapter_exited(time.monotonic())
                             else:
                                 # Only the wrapper's heartbeat is left, and it ends on the worker's exit.
-                                settle = time.monotonic() + HB.SETTLE_SECONDS
+                                settle = time.monotonic() + HB.settle()
                     elif group is not None and fd == group.events:
                         group.populated()
                     elif watch is not None and fd == watch.fd:
@@ -3964,7 +4056,7 @@ class Receiver:
                     self.space_output.feed('stderr', chunk)
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
-        feeder.join(timeout=1)
+        feeder.join(timeout=timer('FEEDER_SETTLE_SECONDS'))
         if (metering is not None and getattr(metering.terminal, 'require_prompt', False)
                 and (input_failed.is_set() or not metering.terminal.prompt_written)):
             metering.login_stop = metering.login_stop or 'configuration_stop:prompt_write_failed'
@@ -4041,7 +4133,7 @@ class Receiver:
         self._exit_group = group if kernel_exit else None
         if group is not None and empty and not kernel_exit:
             group.close()
-        feeder.join(timeout=5)
+        feeder.join(timeout=timer('FEEDER_SECONDS'))
         worker.stdout.close()
         if errors is not None:
             worker.stderr.close()
@@ -4373,6 +4465,10 @@ def wrap(argv):
     control_heartbeat.start) and closes the channel before the exec. An engine that cannot be found is
     refused by name before anything runs. It opens no store: the receiver records what it reports."""
     held, beat = None, None
+    if argv[:1] == ['--timers'] and len(argv) > 2:
+        # VELDO-0358 AC15: the receiver's timers profile, before any timer of this process is armed.
+        apply_timers_profile(json.loads(argv[1]))
+        argv = argv[2:]
     if argv[:1] == ['--contained'] and len(argv) > 2:
         held, argv = json.loads(argv[1]), argv[2:]
     if argv[:1] == ['--heartbeat'] and len(argv) > 3:
@@ -4387,8 +4483,10 @@ def wrap(argv):
         C.hold(held)
     # Legacy untimed releases and uncontained transports keep the pre-report
     # deadline. A contained receiver supplies its own absolute release deadline.
-    heartbeat_deadline = time.monotonic() + HB.SETUP_SECONDS if beat is not None else None
-    sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid())}) + '\n')
+    heartbeat_deadline = time.monotonic() + HB.setup() if beat is not None else None
+    # The start record: the identity, and the effective values of the timers table in this process (AC15).
+    sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'process': process_identity(os.getpid()),
+                                 'timers': TIMERS.report()}) + '\n')
     sys.stdout.flush()
     release = C.released(0) if held is not None else True
     if not release:
@@ -4470,7 +4568,23 @@ END_UNRECORDED_REASON = 'outcome_unknown:end_unrecorded'
 # What Launch.start records for a receiver that exited END_UNRECORDED before its dispatch's record reached
 # running: launch evidence missing as for every receiver that ended there, and why.
 EVIDENCE_UNRECORDED_REASON = 'launch_evidence_missing:end_unrecorded'
-RECEIVER_EXIT_SECONDS = 2  # how long a receiver whose output has ended is given to exit by itself
+
+
+def _await_exit(child, timeout):
+    """Wait for `child` to exit, on its pidfd, at most `timeout` seconds: {awaited, bound, ended_by}."""
+    ended_by = 'exit'
+    try:
+        fd = os.pidfd_open(child.pid)
+    except OSError:  # already reaped
+        return {'awaited': 'pidfd', 'bound': timeout, 'ended_by': ended_by}
+    try:
+        poller = select.poll()
+        poller.register(fd, select.POLLIN)
+        if not poller.poll(math.ceil(timeout * 1000)):
+            ended_by = 'bound'
+    finally:
+        os.close(fd)
+    return {'awaited': 'pidfd', 'bound': timeout, 'ended_by': ended_by}
 
 
 def end_recorded(receiver, request):
@@ -4496,7 +4610,8 @@ def main():
     receiver, request, status = None, None, 0
     try:
         config = json.loads(Path(sys.argv[1]).read_text())
-        request, pending = _request(0, 10)
+        apply_timers_profile(config.get('timers_profile'))  # VELDO-0358 AC15: before any timer is armed
+        request, pending = _request(0, timer('REQUEST_SECONDS'))
         receiver = Receiver(config, emit, control=(0, pending))
         receiver.configuration_path = str(Path(sys.argv[1]).resolve())
         receiver.launch(request['contract'])
