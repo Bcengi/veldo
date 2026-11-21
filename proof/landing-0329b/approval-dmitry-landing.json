@@ -1,0 +1,26 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-0329B",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "landing-0329b",
+    "commit": "f5055400eafe99409a5bf6ae6f324fe1d752d999",
+    "paths": [
+      ".veldo/policy.yaml",
+      "engine/scripts/agent_sandbox.py",
+      "engine/scripts/gate_legs.py",
+      "engine/scripts/gate_space.py",
+      "engine/scripts/verify.sh",
+      "scripts/agent_sandbox.py",
+      "scripts/gate_legs.py",
+      "scripts/gate_space.py",
+      "scripts/gate_unconfined.json",
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry approved landing of the space-0329b line (349 commits over main 918e7c0e) at f5055400 over Telegram on 2026-11-21: ask 42846 listed every protected path the line changes (the ten above, found with .veldo/policy_check.py protected_patterns against main...HEAD: the policy file, the gate scripts verify.sh, gate_legs.py and gate_space.py, the agent sandbox, each with its engine copy, and gate_unconfined.json). He answered 'Approved' in 42847. The canonical gate was GREEN at f5055400 (gate 13, 2026-11-21T00:56:02Z). WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-21T01:10:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-21T00:00:00Z"
+}
