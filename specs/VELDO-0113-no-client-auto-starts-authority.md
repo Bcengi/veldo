@@ -86,7 +86,7 @@ Use VELDO-0111's unprivileged Linux ptrace fixture and capability receipt. On a 
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
 
-## Implementation blocker observed 2026-11-21
+## Historical blocker observed 2026-11-21 (before the lead amendment)
 
 On bring-up commit `1df7ae358bae1cf44b4ab5e1571f0c6fd523aa37`, the unchanged
 VELDO-0112 inventory includes ten `in_process` cases. In particular,
@@ -108,8 +108,10 @@ Separately, the VELDO-0111 probe has COMPLETE capture but INCOMPLETE qualificati
 and returns all three required consumer names as STANDS DOWN with
 `census_incomplete`. The full receipt is retained under this ticket's proof.
 Its open qualification obligations are documented in `proof/VELDO-0111/OPEN.md`;
-they cannot be reported as green by this consumer. Implementation and the three
-declared falsifier registrations remain outstanding.
+they cannot be reported as green by this consumer. At that point, implementation and the three
+declared falsifier registrations remained outstanding. The implementation and
+four falsifier registrations now exist; current verification limits are recorded
+in the History and ticket proof.
 
 ## History
 
@@ -140,3 +142,13 @@ declared falsifier registrations remain outstanding.
   and does not test endpoint availability. The construction row fails for these
   sites under the lead decision above. See `proof/VELDO-0113/construction-census.txt`.
   Resolving this CLI boundary is pending lead direction; neither site is excluded.
+
+- 2026-11-21: Consumer implementation now assesses all 21 registry identities in
+  both endpoint states, with 22 external observations and 44 injected observation
+  faults. The dependency's qualification remains INCOMPLETE. All three named
+  rows therefore stand down even when a mutation's birth or service event is
+  captured; those events are diagnostics, not valid false-row drives. The first
+  evaluator incorrectly overrode stand-down for captured effects and was
+  corrected. Required AC1/AC2 red/green evidence remains unavailable until the
+  shared observer supplies complete qualification. No replacement observer or
+  qualification exemption is introduced here.
