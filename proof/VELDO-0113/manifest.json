@@ -1,0 +1,84 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0113",
+  "commit": "1df7ae358bae1cf44b4ab5e1571f0c6fd523aa37",
+  "producer": "Codex",
+  "produced_at": "2026-11-21T08:44:13.283901+00:00",
+  "status": "blocked",
+  "acceptance_complete": false,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "failed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0113/contract-gap.txt",
+          "detail": "Counterexample to the endpoint-refusal premise only: the unchanged registered in-process prepare adapter commits under both endpoint states. No process/listener absence claim."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "AC3",
+      "status": "not_run",
+      "evidence": []
+    }
+  ],
+  "checks": [
+    {
+      "name": "contract-gap-diagnostic",
+      "status": "passed",
+      "exit_code": 0,
+      "command": "python3 -B proof/VELDO-0113/reproduce_contract_gap.py",
+      "ref": "proof/VELDO-0113/contract-gap.txt",
+      "detail": "Zero means the counterexample reproduced, not acceptance. Run through the external host-heavy wrapper."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "exit_code": 0,
+      "command": "bash scripts/check_lint.sh",
+      "ref": "proof/VELDO-0113/lint.txt"
+    },
+    {
+      "name": "personal-setup",
+      "status": "passed",
+      "exit_code": 0,
+      "command": "scripts/check_personal_setup.py sweep API over the ticket proof files and changed specification",
+      "ref": "proof/VELDO-0113/personal-setup.txt",
+      "detail": "Zero findings. Sweep avoids ancestry discovery; diagnostic home prefix normalized in retained output."
+    }
+  ],
+  "supplemental_diagnostics": {
+    "selected_selftests": "Logs retained separately; partial runs are not unit evidence or acceptance proof.",
+    "census": "The no-op dependency probe is not the registry/state integration. Its receipt is INCOMPLETE; all three consumer names stand down.",
+    "normalization": "Any user home directory in diagnostic text is replaced by <user-home>."
+  },
+  "falsifiers": {
+    "registered": false,
+    "driven": false,
+    "reason": "Blocked at the contract mismatch; no red/green acceptance proof is claimed."
+  },
+  "full_gate_run": false,
+  "protected_paths_touched": [],
+  "rollback": "Revert this diagnostic bundle and the specification blocker note.",
+  "remaining": [
+    "Decide the authority-loss contract for the ten in_process registrations.",
+    "Implement every registry/state census case, launch envelope and consumer row.",
+    "Register and drive the three declared falsifiers with the teeth and mutation gate.",
+    "Retain incomplete census qualification as stand-down, never green."
+  ],
+  "artifact_sha256": {
+    "proof/VELDO-0113/README.md": "a0ff4f694d107428cdcff78a71e397e84337062b7b235ce715934791c0473562",
+    "proof/VELDO-0113/personal-setup.txt": "83334abb714773a2175055e28f368b02bc77c694d78264e7a59cc889a63fbbdd",
+    "proof/VELDO-0113/reproduce_contract_gap.py": "7096c5f557a0edfd9bd44c6058f431e35d775b17ce907ea10513b0a671be987b",
+    "proof/VELDO-0113/contract-gap.txt": "f1e3b437cddc56ce02cf9965cb0a8f4bcde12a1cebec70348ab0f09daf5ef022",
+    "proof/VELDO-0113/census-receipt.json.gz": "8da9fd8e0ccc573774b8dc4f9873691af921ccca054e8bfa781641f4a134b2c3",
+    "proof/VELDO-0113/lint.txt": "8c6104bd4882d4d8c623cb9fcdc92fc980bcb4cea3e14d812d2ce0a9d49e6e3e"
+  }
+}
