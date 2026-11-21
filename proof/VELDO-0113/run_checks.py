@@ -13,6 +13,8 @@ import json
 import lzma
 from pathlib import Path
 import shutil
+import subprocess
+import re
 import sys
 import tempfile
 
@@ -113,7 +115,8 @@ def compact_receipts():
             faults_driven=result['faults_driven'],
             rows={name: {k: v for k, v in row.items() if k != 'observation_receipts'}
                   for name, row in result['rows'].items()},
-            construction_sites=result['construction']['sites'],
+            construction_sites=[{key: site[key] for key in ('file', 'line', 'constructor')}
+                                for site in result['construction']['sites']],
             effects=dict(births=sum(len(c.get('effects', {}).get('forbidden_births', []))
                                    for c in result['cases']),
                          services=sum(len(c.get('effects', {}).get('services', []))
@@ -179,6 +182,23 @@ def check_result(result, case=None):
         assert result['faults_ok'] and all(result['protocol_controls'].values())
 
 
+def check_work_client():
+    """Run the added CLI suite inside this driver's externally admitted load scope."""
+    command = [sys.executable, '-B', 'scripts/selftest.py', '--suite', '115_veldo_0113_work_client']
+    completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=1200)
+    output = completed.stdout + completed.stderr
+    original_digest = hashlib.sha256(output.encode()).hexdigest()
+    # Retain a diagnostic projection, not a canonical unit-verification claim.
+    lines = [line for line in output.splitlines() if not line.startswith('  skipped ')]
+    retained = ('Selected selftest diagnostic; routine inventory omitted.\nOriginal output SHA-256: '
+                + original_digest + '\n' + '\n'.join(lines) + '\n')
+    retained = retained.replace(str(Path.home()), '<user-home>')
+    (DESTINATION / 'work-client-integration.txt').write_text(retained)
+    print('work-client selftest', completed.returncode, flush=True)
+    assert completed.returncode == 2 and re.search(
+        r'selftest \(PARTIAL, 1 of [0-9]+ suites\): [1-9][0-9]* passed, 0 failed', output), output[-2000:]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--case')
@@ -195,6 +215,7 @@ def main():
         result = read_receipts(DESTINATION / (args.reassess + '.json.gz'))
         check_result(result, case)
     elif args.control:
+        check_work_client()
         run(args.label or args.control)
     elif args.case:
         case = next(c for c in definitions if c['name'] == args.case)
