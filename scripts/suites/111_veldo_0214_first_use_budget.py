@@ -154,6 +154,27 @@ def _v214_suite():
                        and 'since its last output line; no total bound' in printed
                        and len(writes) == 2 and all(t == CF.WRITE_TIMEOUT_S for t in writes))
 
+            # A summary printed before shutdown cannot turn a watchdog exit into
+            # an ordinary pre-existing failure in the differential comparison.
+            original_heavy, original_fds = CF.heavy_run, CF.launcher_fds
+            hung_refused = []
+            try:
+                CF.launcher_fds = lambda: ()
+                for diagnostic in ('SELFTEST HUNG target', 'SELFTEST NOT RUN target',
+                                   'Timeout (1:00:00)!\nThread 0x1: blocking read'):
+                    CF.heavy_run = lambda *args, **kwargs: types.SimpleNamespace(
+                        returncode=1, stderr=diagnostic,
+                        stdout='SELFTEST FAIL: fixture row\nselftest: 3 passed, 1 failed\n')
+                    try:
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            CF._run_suite(fixture, 'fixture')
+                        hung_refused.append(False)
+                    except CF.CannotAnswer:
+                        hung_refused.append(True)
+            finally:
+                CF.heavy_run, CF.launcher_fds = original_heavy, original_fds
+            expect('VELDO-0358 first-use/watchdog-is-not-preexisting', all(hung_refused))
+
             # The leg-time store is pruned after each recording: a file whose authority checkout is
             # gone goes. VELDO-0333: an old file of a live checkout and an unfinished pending file
             # stay, as do the one just written and anything that is not the store's own.

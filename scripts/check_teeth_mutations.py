@@ -16538,6 +16538,10 @@ def cases():
         'not all(ok is True for _, ok in honest) or noop != honest',
         'not all(bool(ok) for _, ok in honest) or False', ['verdict/kill-by-evidence'])
     result[-1]['dir'] = 'scripts'
+    add(358, 'firstuse358-watchdog-hidden', '111_veldo_0214_first_use_budget.py', 'check_first_use.py',
+        ' or "Timeout (" in proc.stderr:',
+        ':', ['first-use/watchdog-is-not-preexisting'])
+    result[-1]['dir'] = 'scripts'
     # END VELDO-0358 BRIEF C
 
     return result
