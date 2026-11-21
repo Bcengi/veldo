@@ -104,3 +104,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   reserved wait; the hold is judged and its scope's answer written. F3: the space wake is raised only
   for a waiting hold that carries the mark, never for a released hold's older mark. Each has rows in
   suite 158 and a registered falsifier. Status remains ready pending the lead gate and a fresh review.
+
+- 2026-11-21 (fix round 1, residual recorded by the lead after the fix-check): a freeing write (release,
+  removed outcome, reconcile) re-reads the waiting holds and resends by compare-and-swap, at most 8 attempts,
+  with no clock. A writer that loses 8 races in a row leaves the hold admitted for good. The run-end event then
+  shows only "hold: admitted", with no reason. The bound is accepted against the spec; showing the reason
+  needs control_launch.py, outside this footprint, and is filed as its own ticket
+  (myday research/specs-pending/VELDO-hold-admitted-shows-its-reason.md).

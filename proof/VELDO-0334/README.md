@@ -105,3 +105,7 @@ falsifier was also driven once by hand on a second scratch clone, with the same 
 Still not run: the canonical gate (the lead's). No independent review of this round is claimed.
 The older paragraphs above describe the first round; where they give counts (13 suites, 21 and 26
 cases, 40 rows) the figures of this section are the current ones.
+
+## Residual (recorded 2026-11-21)
+
+After 8 lost compare-and-swap races a freeing write leaves the hold admitted for good; the run-end event shows only "hold: admitted". Accepted against the spec; making the reason visible is a separate ticket (control_launch.py is outside this footprint).
