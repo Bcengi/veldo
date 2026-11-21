@@ -952,6 +952,10 @@ sys.exit(payload.get('code', 0))
             with contextlib.suppress(Exception):
                 started['runtime'] = (now(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
+                # VELDO-0358: the cap the manager was given, read while the capped scope runs (a late cap is seen
+                # here, by its value, now that its firing is judged by a lower bound only).
+                started['runtime_installed'] = span(show(C.unit_name(started['runtime'][1].dispatch_id),
+                                                         'RuntimeMaxUSec').get('RuntimeMaxUSec'))
                 # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
                 # worker that ended by itself inside the watched window would wake its receiver by right. So
                 # would a heartbeat: its profile sends one at the start and none after.
@@ -1232,6 +1236,7 @@ sys.exit(payload.get('code', 0))
                     # the scope's life, and not before the cap (a busy machine only makes that truer).
                     'term_inside_scope': bool(term_monotonic) and active <= term_monotonic[0] <= inactive,
                     'cap_not_before': bool(term_monotonic) and term_monotonic[0] >= active + RUNTIME_CAP,
+                    'cap_installed': started.get('runtime_installed') == RUNTIME_CAP * 10 ** 6,
                     'term_present': len(terms) >= 1,
                     'supervision_empty': supervision.get('empty') is True,
                     'unit_not_found': unit_after == 'not-found',

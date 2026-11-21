@@ -3298,12 +3298,14 @@ def cases():
             "                elif cause is None and code is None and now >= runtime_deadline:\n",
             "                elif False:  # defect: rely only on the shared manager's timer\n",
             'receiver-runtime-cap')
+    # VELDO-0358: the late cap is made at the cap the row uses (20 s since its real firing is judged by a lower
+    # bound only); the row reads the value the manager was given.
     contain('containment-runtime-cap-one-second-late', 'control_containment.py',
             "('RuntimeMaxSec', _usec(s['runtime_seconds']))",
-            "('RuntimeMaxSec', _usec(s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)))",
+            "('RuntimeMaxSec', _usec(s['runtime_seconds'] + (1 if s['runtime_seconds'] == 20 else 0)))",
             'runtime-cap',
             also=[("round(s['runtime_seconds'] * 10 ** 6)",
-                   "round((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 1.2 else 0)) * 10 ** 6)")])
+                   "round((s['runtime_seconds'] + (1 if s['runtime_seconds'] == 20 else 0)) * 10 ** 6)")])
     contain('containment-memory-cap-ignored', 'control_containment.py',
             "        props = [('MemoryMax', str(s['memory_bytes'])), ('MemorySwapMax', '0'), ('CPUQuota', '%d%%' % s['cpu_percent']),\n",
             "        props = [('CPUQuota', '%d%%' % s['cpu_percent']),  # defect: the memory cap is ignored\n",
