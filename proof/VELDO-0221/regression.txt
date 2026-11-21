@@ -49,3 +49,13 @@ exit 0 :: bash scripts/check_template_sync.sh :: template sync: pass (325 pair(s
 exit 0 :: python3 scripts/check_space_boundary.py :: Space boundary: pass
 exit 0 :: bash scripts/check_docs.sh :: docs hygiene: pass
 exit 0 :: python3 .veldo/validate.py all :: 
+
+Fix round 2, at commit dacb4e00 (the revised rule for the top of the temporary directory). Suite 157: suite-green.txt (25 rows of its own).
+The falsifiers: mutations.txt, falsifiers.json (18 registered, 18 rejected). Light gate checks:
+exit 0 :: bash scripts/check_lint.sh :: lint: pass (1249 python, 40 shell, 3.11s)
+exit 0 :: bash scripts/check_generated.sh :: generated: pass
+exit 0 :: python3 scripts/check_personal_setup.py :: personal setup: 0 finding(s)
+exit 0 :: bash scripts/check_template_sync.sh :: template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
+exit 0 :: python3 scripts/check_space_boundary.py :: Space boundary: pass
+exit 0 :: bash scripts/check_docs.sh :: docs hygiene: pass
+exit 0 :: python3 .veldo/validate.py all ::

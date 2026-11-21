@@ -1,4 +1,4 @@
   selector    --suite 157_veldo_0221_suite_shards
   running     1 of 239 suites: 157_veldo_0221_suite_shards
-  157_veldo_0221_suite_shards                     23 passed    4.01s
-selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 4.01s
+  157_veldo_0221_suite_shards                     25 passed    4.16s
+selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 4.16s
