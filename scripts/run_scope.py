@@ -60,8 +60,15 @@ which is what proof/WARP-0717/inner-loop-measurement.json does per fragment.
   python3 scripts/run_scope.py --emit-requires    regenerate scripts/suites/requires.json
 """
 import json
+import os
 import re
+import selectors
+import shutil
+import signal
+import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -500,6 +507,918 @@ class RunScope:
             return ""
         return ("PARTIAL RUN: no proof manifest, no evidence claim and no landing decision "
                 "may cite this. Only a green `bash scripts/verify.sh` means done.")
+
+
+# =============================================================================================
+# VELDO-0221: A GATE LEG RUNS ITS SUITES AS ISOLATED PARALLEL CLOSURE SHARDS
+# =============================================================================================
+#
+# In a gate leg scripts/selftest.py no longer executes the leg's suites one after another in one
+# interpreter. It hands them to run_shards below: one SHARD per suite of the leg, a fresh
+# interpreter (`selftest.py --suite NAME --shard FD --shard-root DIR`) that executes the suite's
+# prerequisite closure from scripts/suites/requires.json in manifest order in one namespace and
+# then the suite. A bare run and a selector keep the ordered single-namespace run.
+#
+# ISOLATED BY CONSTRUCTION (owner decision D1), not inferred from a clean run:
+#   - separate interpreters share no Python state;
+#   - every shard has its own HOME, TMPDIR, XDG configuration, data, cache and state directories
+#     and its own runtime directory in place of /run/user/<uid>, which holds only links to the
+#     user manager's own sockets (its bus and systemd/private), so units still reach the one
+#     manager and nothing else of the real runtime directory is in the shard's reach by name;
+#   - a shard reports over a pipe it inherits, never through a shared file;
+#   - in a confined leg each shard stacks its own Landlock layer on the leg's domain
+#     (agent_sandbox.write_layer), which grants writes only beneath its own roots, and proves it
+#     by a write the dispatcher planted a target for and the kernel must refuse;
+#   - the engine names what it creates on the one user manager with the instance name the
+#     dispatcher writes into each shard's configuration directory (INSTANCE_FILE): the suite's.
+#
+# CHECKED IN EVERY GATE, force-fresh or not. A confined shard must report its layer in force
+# before its suite runs and must leave its probe unwritten. An unconfined leg, which cannot be
+# confined, is read before, at every shard's end and after, in the shared places a suite can
+# reach (unconfined_places and the user manager's units). What appeared and stayed is
+# isolation_breach, RED, naming the suite.
+#
+# WHAT THE CHECK CAN AND CANNOT ATTRIBUTE, measured on the qualification host on 2026-11-21 and
+# stated because a check that turned every gate red would be ignored. The host is shared: in 260
+# seconds other sessions made 20 entries at the top of /tmp, two units and one /dev/shm entry,
+# and this gate's own launchers and mutation workers make more. The kernel records no creator
+# for a file, so a NEW ITEM IS THE LEG'S when one of these holds: its name carries a suite's
+# instance name; it refers to a shard's roots (a link's target, a small file's text, a unit's
+# properties); or a live process that carries a shard's roots in its environment holds it. An
+# item a live process of another tree holds, or that another account owns, is foreign. For
+# what is left, each place has a rule: `strict` places are waited on until the item is gone
+# (SETTLE_S, a hang detector) and what stays is a breach charged to the suites that ran when it
+# first appeared; the top of the system temporary directory is `attributed`, because this gate
+# itself makes entries there throughout the leg, so an unattributed entry there is printed by
+# name and not charged.
+
+SHARD_DEADLINE_S = 1800.0   # one shard; a hang detector, never a pace
+SHARD_TICK_S = 2.0          # how often a waiting dispatcher samples memory and asks the ledger again
+SETTLE_S = 300.0            # how long a foreign-looking item in a strict place may take to go
+SHARD_UNMEASURED = {"cpu": 1.0, "memory": 1 << 30}
+LEDGER_CHANNEL = "VELDO_GATE_LEDGER_FD"
+SHARD_CLAIMS = "VELDO_GATE_SHARD_CLAIMS"
+SHARD_METRICS = "VELDO_GATE_SHARD_METRICS_FD"
+FORCE_FRESH = "VELDO_GATE_FORCE_FRESH"
+INSTANCE_FILE = ("veldo", "instance.json")
+INSTANCE_SCHEMA = "veldo.instance/v1"
+FAIL_MARK = "SELFTEST FAIL:"
+UNCOUNTED_MARK = "SELFTEST ROW-FAIL (not counted in this shard):"
+ISOLATION_BREACH = "isolation_breach"
+# Every way a shard fails its suite without a failed row of the suite's own. Each is one counted
+# failure with one FAIL line whose text is fixed, so two runs of one tree name it identically.
+SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "deadline_exceeded",
+                  "prerequisite_failed", "exit_status", ISOLATION_BREACH)
+SHARD_ROOTS = (("HOME", "h"), ("TMPDIR", "t"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
+               ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
+MANAGER_SOCKETS = ("bus", "systemd/private")
+# What a shard does not inherit: the dispatcher's own channels and inputs, a diagnostic order, and
+# the other spellings of the temporary directory, which would outrank the shard's own TMPDIR.
+SHARD_DROPPED = (LEDGER_CHANNEL, SHARD_CLAIMS, SHARD_METRICS, "VELDO_SUITE_ORDER", "TMP", "TEMP",
+                 "TEMPDIR")
+
+
+class ShardResources:
+    """The manifest's declared resources, admitted by the dispatcher: a positive count shares a
+    resource's slots and `exclusive` takes them all, so a suite that declares the systemd user
+    manager exclusive runs beside no other user of it. A waiting suite bars every later user of
+    the resources it waits for, so an exclusive one cannot starve."""
+
+    def __init__(self, manifest):
+        self.capacity = dict(manifest.get("resource_capacities") or {})
+        self.demands = {}
+        for suite in fragments(manifest):
+            demand = suite.get("resources") or {}
+            resolved = {}
+            for resource, slots in demand.items():
+                capacity = self.capacity.get(resource)
+                if slots == "exclusive":
+                    slots = capacity
+                if type(capacity) is not int or type(slots) is not int or not 0 < slots <= capacity:
+                    raise LegRefused("suite %s declares an impossible demand on %r"
+                                     % (suite["name"], resource))
+                resolved[resource] = slots
+            self.demands[suite["name"]] = resolved
+        self.used = dict.fromkeys(self.capacity, 0)
+        self.held = {}
+
+    def demand(self, name):
+        return self.demands.get(name, {})
+
+    def exclusive(self, name):
+        return sorted(r for r, n in self.demand(name).items() if n == self.capacity[r])
+
+    def fits(self, name):
+        return all(self.used[r] + n <= self.capacity[r] for r, n in self.demand(name).items())
+
+    def acquire(self, name):
+        self.held[name] = self.demand(name)
+        for resource, slots in self.held[name].items():
+            self.used[resource] += slots
+
+    def release(self, name):
+        for resource, slots in self.held.pop(name, {}).items():
+            self.used[resource] -= slots
+
+
+class ShardLedger:
+    """The gate-wide ledger (VELDO-0216) over the channel the authority's leg runner handed this
+    dispatcher: one request and one reply per line. A refusal means ask again later, never start."""
+
+    def __init__(self, descriptor):
+        import socket
+        self.socket = socket.socket(fileno=os.dup(int(descriptor)))
+        self.file = self.socket.makefile("rwb", buffering=0)
+        self.peak = 0
+
+    def request(self, operation, name, claim=None):
+        self.file.write((json.dumps({"operation": operation, "name": name, "claim": claim}) + "\n").encode())
+        raw = self.file.readline(65537)
+        if not raw or len(raw) > 65536:
+            raise LegRefused("the gate ledger closed its channel or sent an oversized reply")
+        answer = json.loads(raw)
+        if "error" in answer:
+            raise LegRefused("the gate ledger refused the %s of %s: %s" % (operation, name, answer["error"]))
+        return answer
+
+    def acquire(self, name, claim):
+        return bool(self.request("acquire", name, {"cpu": claim["cpu"], "memory": claim["memory"],
+                                                    "manager": "none", "ports": [],
+                                                    "host_lock": "none"})["granted"])
+
+    def release(self, name):
+        self.request("release", name)
+
+    def close(self):
+        self.file.close()
+        self.socket.close()
+
+
+def usable_cpus(cgroup_root="/sys/fs/cgroup", membership="/proc/self/cgroup"):
+    """The cores this process may use: its affinity, bounded by every cgroup quota above it."""
+    cpus = float(len(os.sched_getaffinity(0)))
+    try:
+        own = Path(membership).read_text().split("::", 1)[1].strip()
+        path = Path(cgroup_root) / own.lstrip("/")
+        for directory in [path, *path.parents]:
+            if directory != Path(cgroup_root) and Path(cgroup_root) not in directory.parents:
+                break
+            limit = directory / "cpu.max"
+            if limit.exists():
+                quota, period = limit.read_text().split()
+                if quota != "max":
+                    cpus = min(cpus, int(quota) / int(period))
+    except (OSError, ValueError, IndexError):
+        pass
+    return max(1, int(cpus))
+
+
+def handed_claims(environ):
+    """{suite: {cpu, memory, seconds}} the authority's leg runner measured in earlier gates and
+    handed this leg, or {}. An entry that is not finite positive numbers is dropped by name."""
+    try:
+        document = json.loads(environ.get(SHARD_CLAIMS) or "{}")
+    except ValueError:
+        return {}
+    claims = {}
+    for name, item in (document.items() if isinstance(document, dict) else ()):
+        try:
+            cpu, memory = float(item["cpu"]), float(item["memory"])
+            seconds = float(item.get("seconds", 0))
+        except (TypeError, KeyError, ValueError, AttributeError):
+            continue
+        if 0 < cpu < float("inf") and 0 < memory < float("inf") and 0 <= seconds < float("inf"):
+            claims[name] = {"cpu": cpu, "memory": memory, "seconds": seconds}
+    return claims
+
+
+def shard_roots(base, index):
+    """(a shard's directory, {environment variable: its private root beneath it}). The names are
+    short on purpose: a suite's local socket path holds under 108 bytes."""
+    root = Path(base) / ("%03d" % index)
+    return root, {variable: root / leaf for variable, leaf in SHARD_ROOTS}
+
+
+def link_manager(runtime, real):
+    """Make the shard's runtime directory hold links to the user manager's own sockets and nothing
+    else; the names it could link. A manager that is not there, or not in reach, links nothing."""
+    linked = []
+    for relative in MANAGER_SOCKETS:
+        source = Path(real) / relative
+        try:
+            if not source.is_socket():
+                continue
+            target = Path(runtime) / relative
+            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            os.symlink(source, target)
+            linked.append(relative)
+        except OSError:
+            continue
+    return linked
+
+
+def shard_environment(environ, roots, linked, base):
+    """What one shard runs with: the leg's environment (its leg variables included), its own roots
+    in place of the leg's, and none of the dispatcher's channels."""
+    env = {k: v for k, v in environ.items() if k not in SHARD_DROPPED}
+    env.update({variable: str(path) for variable, path in roots.items()})
+    # Each shard gets the leg's own TMPDIR, never another's.
+    env["TMPDIR"] = str(roots["TMPDIR"])
+    env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+    if "bus" in linked:
+        env["DBUS_SESSION_BUS_ADDRESS"] = "unix:path=%s/bus" % roots["XDG_RUNTIME_DIR"]
+    return env
+
+
+def write_instance(config, name):
+    """The installation's configuration of this shard: the engine reads its instance name here and
+    names every unit, slice, service and runtime directory it creates with it."""
+    path = Path(config).joinpath(*INSTANCE_FILE)
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    path.write_text(json.dumps({"schema": INSTANCE_SCHEMA, "prefix": name}) + "\n")
+    return path
+
+
+def launcher_fds(root):
+    """Inside a tree the agent launcher made, the tree's marker, which a suite's nested gate needs
+    (VELDO-0210 AC6); nothing elsewhere or in a tree with no launcher."""
+    path = Path(root) / "scripts" / "agent_sandbox.py"
+    if not path.is_file():
+        return ()
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("veldo_shard_launcher", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return tuple(module.launcher_fds())
+
+
+# ---- the shard's own side ----------------------------------------------------------------------
+
+class ShardReport:
+    """The shard's end of its result channel: one JSON record per line on the pipe it inherited."""
+
+    def __init__(self, descriptor):
+        self.descriptor = int(descriptor)
+        os.set_inheritable(self.descriptor, False)  # no process the suite starts can write a verdict
+
+    def send(self, **record):
+        data = (json.dumps(record) + "\n").encode()
+        while data:
+            data = data[os.write(self.descriptor, data):]
+
+
+def die_with_dispatcher():
+    """A shard never outlives its dispatcher: the kernel kills it when the dispatcher ends."""
+    import ctypes
+    ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL, 0, 0, 0)
+
+
+def shard_probe(root):
+    """The file the dispatcher expects a confined shard to be REFUSED: beside the shards' roots,
+    inside what the leg's own domain may write, outside what this shard's layer grants."""
+    root = Path(root)
+    return root.parent / "probe" / root.name
+
+
+def confine_shard(root, launcher):
+    """Stack this shard's Landlock layer and prove it: (in force, the probe write was refused,
+    what went wrong). Called before any suite code runs."""
+    import importlib.util
+    try:
+        spec = importlib.util.spec_from_file_location("veldo_shard_sandbox", launcher)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.write_layer([Path(root)])
+    except Exception as error:  # noqa: BLE001 - any failure is reported, and the dispatcher reddens
+        return False, False, "%s: %s" % (type(error).__name__, error)
+    try:
+        os.close(os.open(shard_probe(root), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
+    except PermissionError:
+        return True, True, ""
+    except OSError as error:
+        return True, False, "the probe write ended %s, not a refusal" % error
+    return True, False, "the probe write outside the shard's roots succeeded"
+
+
+# ---- the shared places an unconfined leg can reach ----------------------------------------------
+
+def manager_units():
+    """The user manager's loaded units and slices by name, or None when it does not answer."""
+    env = dict(os.environ, XDG_RUNTIME_DIR="/run/user/%d" % os.getuid())
+    env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+    try:
+        proc = subprocess.run(["systemctl", "--user", "list-units", "--all", "--no-legend", "--plain",
+                               "--full"], capture_output=True, text=True, timeout=120, env=env,
+                              stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode:
+        return None
+    return [line.split()[0] for line in proc.stdout.splitlines() if line.split()]
+
+
+def describe_unit(unit):
+    """What a unit runs and where, as the manager shows it: the text a shard's roots are sought in."""
+    env = dict(os.environ, XDG_RUNTIME_DIR="/run/user/%d" % os.getuid())
+    env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+    try:
+        return subprocess.run(["systemctl", "--user", "show", unit, "-p", "ExecStart", "-p", "Environment",
+                               "-p", "WorkingDirectory", "-p", "FragmentPath", "-p", "Description"],
+                              capture_output=True, text=True, timeout=120, env=env,
+                              stdin=subprocess.DEVNULL).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def unconfined_places(base):
+    """The shared locations of AC3, each with the depth it is read to and its rule (see the note at
+    the top of this section). They are the owner's own, never taken from the leg's environment."""
+    import pwd
+    uid = os.getuid()
+    home = Path(pwd.getpwuid(uid).pw_dir)
+    return [
+        {"name": "systemd configuration", "path": home / ".config/systemd/user", "depth": 2, "rule": "strict"},
+        {"name": "runtime directory", "path": Path("/run/user/%d" % uid), "depth": 1, "rule": "strict"},
+        {"name": "/dev/shm", "path": Path("/dev/shm"), "depth": 1, "rule": "strict"},
+        {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"},
+        {"name": "owner cache", "path": home / ".cache/veldo", "depth": 1, "rule": "strict"},
+        {"name": "owner state", "path": home / ".local/state/veldo", "depth": 1, "rule": "strict"},
+    ]
+
+
+def confined_places(base, environ):
+    """What a confined shard could reach outside its roots if its layer failed: the leg's own home
+    and the directory the shards' roots stand in. Attributed: outside the gate's launcher these are
+    the owner's home and /tmp, which other sessions write."""
+    places = [{"name": "leg temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"}]
+    if environ.get("HOME"):
+        places.append({"name": "leg home", "path": Path(environ["HOME"]), "depth": 1, "rule": "attributed"})
+    return places
+
+
+def _listing(path, depth):
+    names = set()
+    try:
+        entries = list(os.scandir(str(path)))
+    except OSError:
+        return names
+    for entry in entries:
+        names.add(entry.name)
+        if depth > 1:
+            try:
+                inner = entry.is_dir(follow_symlinks=False)
+            except OSError:
+                inner = False
+            if inner:
+                names.update(entry.name + "/" + n for n in _listing(entry.path, depth - 1))
+    return names
+
+
+class SharedPlaces:
+    """One reading of every shared place, and of the user manager's units when a lister is given."""
+
+    def __init__(self, places, units=None, describe=None):
+        self.places, self.units, self.describe = list(places), units, describe
+        self.answers = True  # False once the manager, having answered before, stopped answering
+
+    def read(self):
+        seen = set()
+        for place in self.places:
+            seen.update((place["name"], item) for item in _listing(place["path"], place["depth"]))
+        if self.units is not None:
+            listed = self.units()
+            if listed is None:
+                self.answers = False
+            else:
+                seen.update(("unit", name) for name in listed)
+        return seen
+
+    def place(self, name):
+        return next((p for p in self.places if p["name"] == name), None)
+
+
+def _holders(path):
+    """[(pid, environment text)] of live processes whose working directory or an open descriptor
+    lies at or beneath `path`. Another account's processes are unreadable and are not listed."""
+    target = str(path)
+    found = []
+    for name in os.listdir("/proc"):
+        if not name.isdigit() or int(name) == os.getpid():
+            continue
+        held = False
+        try:
+            links = [os.readlink("/proc/%s/cwd" % name)]
+            links += [os.readlink("/proc/%s/fd/%s" % (name, fd)) for fd in os.listdir("/proc/%s/fd" % name)]
+        except OSError:
+            links = []
+        for link in links:
+            if link == target or link.startswith(target + "/"):
+                held = True
+                break
+        if held:
+            try:
+                environment = Path("/proc/%s/environ" % name).read_bytes().decode("utf-8", "replace")
+            except OSError:
+                environment = ""
+            found.append((int(name), environment))
+    return found
+
+
+def _shard_named(text, base, jobs):
+    """The suite whose roots `text` mentions, or None."""
+    match = re.search(re.escape(str(base)) + r"/(\d{3})(?:/|$|\x00)", text)
+    if not match:
+        return None
+    return next((job["name"] for job in jobs if job["index"] == int(match.group(1))), None)
+
+
+def attribute(kind, item, path, base, jobs, describe=None):
+    """Whose a new item is: (suite or None, 'leg' | 'foreign' | 'unknown', how it was told).
+    See the note at the top of this section for what each answer rests on."""
+    # By name: the engine names what it creates with the suite's instance name.
+    for job in sorted(jobs, key=lambda j: -len(j["name"])):
+        if job["name"] in item:
+            return job["name"], "leg", "its name carries the suite's instance name"
+    if kind == "unit":
+        text = (describe or (lambda unit: ""))(item)
+        named = _shard_named(text, base, jobs)
+        if named or str(base) in text:
+            return named, "leg", "the unit refers to a shard's roots"
+        return None, "unknown", ""
+    try:
+        info = os.lstat(path)
+    except OSError:
+        return None, "unknown", ""
+    if info.st_uid != os.getuid():
+        return None, "foreign", "another account owns it"
+    reference = ""
+    try:
+        if os.path.islink(path):
+            reference = os.readlink(path)
+        elif os.path.isfile(path) and info.st_size <= (1 << 20):
+            reference = Path(path).read_bytes().decode("utf-8", "replace")
+    except OSError:
+        reference = ""
+    named = _shard_named(reference, base, jobs)
+    if named or str(base) in reference:
+        return named, "leg", "it refers to a shard's roots"
+    holders = _holders(path)
+    for _pid, environment in holders:
+        named = _shard_named(environment, base, jobs)
+        if named or str(base) in environment:
+            return named, "leg", "a process that carries a shard's roots holds it"
+    if holders:
+        return None, "foreign", "a live process of another tree holds it (pid %d)" % holders[0][0]
+    return None, "unknown", ""
+
+
+# ---- the dispatcher ----------------------------------------------------------------------------
+
+class _Stopped(Exception):
+    def __init__(self, number):
+        super().__init__("signal %d" % number)
+        self.number = number
+
+
+def _drain(descriptor):
+    """Everything a non-blocking descriptor holds now, and whether its writers are gone."""
+    data = b""
+    while True:
+        try:
+            chunk = os.read(descriptor, 65536)
+        except BlockingIOError:
+            return data, False
+        except OSError:
+            return data, True
+        if not chunk:
+            return data, True
+        data += chunk
+
+
+def _group_anonymous(groups):
+    """{process group: anonymous resident bytes of its members now}, read from /proc."""
+    totals = dict.fromkeys(groups, 0)
+    for name in os.listdir("/proc"):
+        if not name.isdigit():
+            continue
+        try:
+            stat = Path("/proc/%s/stat" % name).read_text()
+            group = int(stat.rsplit(")", 1)[1].split()[2])
+            if group not in totals:
+                continue
+            for line in Path("/proc/%s/status" % name).read_text().splitlines():
+                if line.startswith("RssAnon:"):
+                    totals[group] += int(line.split()[1]) * 1024
+                    break
+        except (OSError, ValueError, IndexError):
+            continue
+    return totals
+
+
+def _remove(path):
+    for directory, _dirs, _files in os.walk(str(path)):
+        try:
+            os.chmod(directory, 0o700)
+        except OSError:
+            pass
+    shutil.rmtree(str(path), ignore_errors=True)
+
+
+def shard_verdict(job, leg, status):
+    """Read one ended shard: its counts, and every way it failed its suite (codes of
+    SHARD_FAILURES, each with the words a reader needs). Nothing here trusts the exit status alone
+    or the report alone: they must agree."""
+    records = []
+    for line in job["report"].decode("utf-8", "replace").splitlines():
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(record, dict):
+            records.append(record)
+    events = [r.get("event") for r in records]
+    verdict = next((r for r in records if r.get("event") == "verdict" and r.get("suite") == job["name"]), None)
+    failures = []
+    passed = failed = 0
+    rows = []
+    if job.get("timed_out"):
+        failures.append(("deadline_exceeded", "it ran past its deadline of %.0fs and was ended" % job["deadline"]))
+        verdict = None
+    elif verdict is None:
+        code = os.waitstatus_to_exitcode(status) if status is not None else None
+        failures.append(("no_verdict", "its process ended (exit %s) without reporting a verdict" % code))
+    if verdict is not None:
+        try:
+            passed, failed = int(verdict["passed"]), int(verdict["failed"])
+            rows = list(verdict["rows"])
+            before = int(verdict["prerequisite_failed"])
+        except (KeyError, TypeError, ValueError):
+            failures.append(("no_verdict", "its verdict record is not the dispatcher's form"))
+            verdict, passed, failed, rows, before = None, 0, 0, [], 0
+    if verdict is not None:
+        if passed + failed == 0 or len(rows) != passed + failed:
+            failures.append(("asserted_nothing", "its target asserted %d row(s) and named %d"
+                             % (passed + failed, len(rows))))
+        if before:
+            failures.append(("prerequisite_failed", "%d row(s) of its closure or of the shared preamble "
+                             "failed before its target ran" % before))
+        expected = PARTIAL_FAILED_EXIT if failed or before else PARTIAL_PASSED_EXIT
+        code = os.waitstatus_to_exitcode(status)
+        if code != expected:
+            failures.append(("exit_status", "it exited %d where its verdict means %d" % (code, expected)))
+    layer = None
+    if leg == "confined":
+        layer = next((r for r in records if r.get("event") == "layer"), None)
+        target_at = events.index("target") if "target" in events else len(events)
+        problem = None
+        if layer is None or events.index("layer") > target_at:
+            problem = "it reported no Landlock layer before its suite ran"
+        elif not (layer.get("in_force") is True and layer.get("refused") is True):
+            problem = "its Landlock layer was not in force (%s)" % (layer.get("detail") or "no refusal")
+        elif os.path.lexists(str(shard_probe(job["root"]))):
+            problem = "its probe outside its roots was written"
+        if problem:
+            failures.append((ISOLATION_BREACH, problem))
+    mark = next((r.get("mark") for r in records if r.get("event") == "target"), None)
+    return {"passed": passed, "failed": failed, "rows": rows, "failures": failures, "mark": mark,
+            "verdict": verdict is not None, "layer": layer}
+
+
+def relay(job, result):
+    """A shard's own output as the leg prints it. A failed row is printed as the ordered run would
+    print it only where it is COUNTED: a row of the target, in a shard that reported a verdict. A
+    failed row of a prerequisite or of the shared preamble belongs to that suite's own shard, and
+    a shard with no verdict counts once, so their lines are kept and marked uncounted. The gate's
+    first-use check requires the printed failure names and the counted failures to be one set."""
+    text = job["output"].decode("utf-8", "replace")
+    lines = text.splitlines()
+    at = lines.index(result["mark"]) if result["mark"] in lines else None
+    printed = []
+    for number, line in enumerate(lines):
+        if at is not None and number == at:
+            continue
+        counted = result["verdict"] and at is not None and number > at
+        if FAIL_MARK in line and not counted:
+            line = line.replace(FAIL_MARK, UNCOUNTED_MARK)
+        printed.append(line)
+    return printed
+
+
+def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, manifest=None,
+               places=None, units=manager_units, describe=describe_unit, deadline=SHARD_DEADLINE_S,
+               settle=SETTLE_S, parallel=None, python=None, tick=SHARD_TICK_S):
+    """Run one gate leg as shards and return what it proved: {passed, failed, shards, breaches,
+    parallelism, events, wall_seconds}. `targets` are the leg's suites by name, each a target
+    exactly once. Green is failed == 0, which needs every shard to pass and the isolation check to
+    hold. The keyword arguments after `environ` exist for a fixture leg: the real gate passes none.
+    """
+    root = Path(root)
+    environ = dict(os.environ if environ is None else environ)
+    say = emit or (lambda line: print(line, flush=True))
+    manifest = manifest or load_manifest(root / "scripts" / "suites" / "manifest.json")
+    if requires is None:
+        requires = load_requires(root / "scripts" / "suites" / "requires.json")
+    order = [s["name"] for s in fragments(manifest)]
+    resources = ShardResources(manifest)
+    names = []
+    for name in targets:
+        if name not in names:
+            names.append(name)
+    claims = handed_claims(environ)
+    began = time.monotonic()
+    base = Path(tempfile.mkdtemp(prefix="vs-", dir=environ.get("TMPDIR") or None))
+    (base / "probe").mkdir(mode=0o700)
+    jobs = []
+    for index, name in enumerate(names):
+        closure = requires.get(name)
+        problem = None
+        if not closure or name not in closure or any(n not in order for n in closure):
+            problem = ("scripts/suites/requires.json carries no usable closure for it; regenerate with "
+                       "`python3 scripts/run_scope.py --emit-requires`")
+        jobs.append({"name": name, "index": index, "closure": [n for n in order if n in (closure or ())],
+                     "problem": problem, "claim": claims.get(name, SHARD_UNMEASURED),
+                     "root": shard_roots(base, index)[0], "output": b"", "report": b"", "peak": 0})
+    # The longest measured shard first: it is the floor of the leg's wall time. Unmeasured ones keep
+    # the manifest's order ahead of it, so a first run is the manifest's order.
+    pending = sorted((j for j in jobs if not j["problem"]),
+                     key=lambda j: -claims.get(j["name"], {"seconds": float("inf")})["seconds"])
+    ledger = ShardLedger(environ[LEDGER_CHANNEL]) if environ.get(LEDGER_CHANNEL) else None
+    parallelism = None if ledger else max(1, int(parallel or usable_cpus()))
+    metrics = int(environ[SHARD_METRICS]) if environ.get(SHARD_METRICS, "").isdigit() else None
+    python = python or sys.executable
+    passes = launcher_fds(root)
+    # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this
+    # gate was asked to be force-fresh.
+    if places is None:
+        places = confined_places(base, environ) if leg == "confined" else unconfined_places(base)
+    watch = SharedPlaces(places, units if leg != "confined" else None, describe)
+    before = watch.read()
+    watched_units = watch.answers and watch.units is not None
+    known, first_seen, window = set(before), {}, set()
+    running, done, events = {}, [], []
+    selector = selectors.DefaultSelector()
+    stopped = []
+
+    def stop(number, _frame):
+        raise _Stopped(number)
+    previous = {n: signal.signal(n, stop) for n in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
+
+    def observe():
+        nonlocal window
+        seen = watch.read()
+        suspects = sorted(window | set(running))
+        for item in seen - known:
+            first_seen[item] = suspects
+        known.update(seen)
+        window = set(running)
+        return seen
+
+    def launch(job):
+        directory, roots = shard_roots(base, job["index"])
+        directory.mkdir(mode=0o700)
+        for path in roots.values():
+            path.mkdir(mode=0o700)
+        linked = link_manager(roots["XDG_RUNTIME_DIR"], "/run/user/%d" % os.getuid())
+        write_instance(roots["XDG_CONFIG_HOME"], job["name"])
+        env = shard_environment(environ, roots, linked, base)
+        report_r, report_w = os.pipe()
+        output_r, output_w = os.pipe()
+        try:
+            process = subprocess.Popen(
+                [python, str(root / "scripts" / "selftest.py"), "--suite", job["name"],
+                 "--shard", str(report_w), "--shard-root", str(directory)],
+                env=env, stdin=subprocess.DEVNULL, stdout=output_w, stderr=output_w,
+                pass_fds=(report_w, *passes), process_group=0)
+        finally:
+            os.close(report_w)
+            os.close(output_w)
+        for descriptor in (report_r, output_r):
+            os.set_blocking(descriptor, False)
+        job.update(pid=process.pid, process=process, started=time.monotonic(), deadline=deadline,
+                   pidfd=os.pidfd_open(process.pid), report_fd=report_r, output_fd=output_r,
+                   roots={k: str(v) for k, v in roots.items()}, linked=linked)
+        selector.register(report_r, selectors.EVENT_READ, ("report", job))
+        selector.register(output_r, selectors.EVENT_READ, ("output", job))
+        selector.register(job["pidfd"], selectors.EVENT_READ, ("exit", job))
+        events.append({"event": "start", "suite": job["name"], "running": sorted(running),
+                       "exclusive": resources.exclusive(job["name"]),
+                       "resources": dict(resources.demand(job["name"]))})
+        running[job["name"]] = job
+        window.add(job["name"])
+
+    def admit():
+        barred = set()
+        for job in list(pending):
+            name = job["name"]
+            demand = set(resources.demand(name))
+            if barred & demand or not resources.fits(name):
+                barred |= demand
+                continue
+            if ledger is None:
+                if len(running) >= parallelism:
+                    return
+            elif not ledger.acquire(name, job["claim"]):
+                return
+            resources.acquire(name)
+            pending.remove(job)
+            try:
+                launch(job)
+            except BaseException:
+                resources.release(name)
+                if ledger is not None:
+                    ledger.release(name)
+                raise
+            if ledger is not None:
+                ledger.peak = max(ledger.peak, len(running))
+
+    def finish(job, status, usage):
+        for key in ("report_fd", "output_fd", "pidfd"):
+            try:
+                selector.unregister(job[key])
+            except (KeyError, ValueError):
+                pass
+        # What is left of its process group ends with it: nothing of a shard runs on into another's.
+        try:
+            os.killpg(job["pid"], signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+        job["report"] += _drain(job["report_fd"])[0]
+        job["output"] += _drain(job["output_fd"])[0]
+        for key in ("report_fd", "output_fd", "pidfd"):
+            os.close(job[key])
+        job["process"].returncode = os.waitstatus_to_exitcode(status)
+        wall = time.monotonic() - job["started"]
+        cpu = usage.ru_utime + usage.ru_stime
+        job.update(wall_seconds=wall, cpu_seconds=cpu,
+                   peak_anon_bytes=max(job["peak"], usage.ru_maxrss * 1024))
+        result = shard_verdict(job, leg, status)
+        del running[job["name"]]
+        resources.release(job["name"])
+        if ledger is not None:
+            ledger.release(job["name"])
+        events.append({"event": "end", "suite": job["name"], "running": sorted(running)})
+        observe()
+        job["result"] = result
+        done.append(job)
+        say("selftest shard %03d %s: closure %s; roots %s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
+            % (job["index"], job["name"], ", ".join(job["closure"]), job["root"], result["passed"],
+               result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
+               "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
+               and result["layer"].get("refused") is True else ""))
+        for line in relay(job, result):
+            say(line)
+        if metrics is not None and result["verdict"] and not result["failures"] and not result["failed"]:
+            try:
+                os.write(metrics, (json.dumps({"suite": job["name"], "wall_seconds": wall, "cpu_seconds": cpu,
+                                               "peak_anon_bytes": job["peak_anon_bytes"]}) + "\n").encode())
+            except OSError:
+                pass
+        _remove(job["root"])
+
+    try:
+        try:
+            last_sample = time.monotonic()
+            while pending or running:
+                admit()
+                if not running and pending and ledger is None:
+                    raise LegRefused("no pending shard fits the manifest's declared resources: %s"
+                                     % ", ".join(j["name"] for j in pending))
+                now = time.monotonic()
+                wait = min([tick] + [j["started"] + j["deadline"] - now for j in running.values()])
+                for key, _mask in selector.select(max(0.0, wait)):
+                    kind, job = key.data
+                    if kind == "exit":
+                        _pid, status, usage = os.wait4(job["pid"], 0)
+                        finish(job, status, usage)
+                        continue
+                    data, closed = _drain(key.fd)
+                    job[kind] += data
+                    if closed:
+                        selector.unregister(key.fd)
+                now = time.monotonic()
+                for job in list(running.values()):
+                    if now - job["started"] > job["deadline"] and not job.get("timed_out"):
+                        job["timed_out"] = True
+                        try:
+                            os.killpg(job["pid"], signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                if running and now - last_sample >= tick:
+                    last_sample = now
+                    for group, total in _group_anonymous({j["pid"] for j in running.values()}).items():
+                        for job in running.values():
+                            if job["pid"] == group:
+                                job["peak"] = max(job["peak"], total)
+        except _Stopped as error:
+            stopped.append(error.number)
+        finally:
+            for job in list(running.values()):
+                try:
+                    os.killpg(job["pid"], signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                try:
+                    os.wait4(job["pid"], 0)
+                except ChildProcessError:
+                    pass
+                if ledger is not None:
+                    try:
+                        ledger.release(job["name"])
+                    except (OSError, ValueError, LegRefused):
+                        pass
+        if stopped:
+            raise _Stopped(stopped[0])
+
+        # ---- what each shard proved --------------------------------------------------------------
+        passed = failed = 0
+        charged = {}  # suite -> [(code, words)]
+        for job in jobs:
+            if job["problem"]:
+                charged.setdefault(job["name"], []).append(("closure_unavailable", job["problem"]))
+                continue
+            result = job["result"]
+            passed += result["passed"]
+            failed += result["failed"]
+            for failure in result["failures"]:
+                charged.setdefault(job["name"], []).append(failure)
+
+        # ---- the isolation check, in every gate --------------------------------------------------
+        breaches, unattributed = [], []
+        after = observe()
+        if watched_units and not watch.answers:
+            breaches.append((None, "the user manager answered before the leg and not after it, so its "
+                                   "units could not be checked"))
+        candidates = {}
+        for kind, item in sorted(after - before):
+            place = watch.place(kind)
+            if place is not None and Path(place["path"]) / item == base:
+                continue
+            candidates[(kind, item)] = place
+        waiting = {}
+        for (kind, item), place in candidates.items():
+            path = (Path(place["path"]) / item) if place else None
+            suite, whose, how = attribute(kind, item, path, base, jobs, watch.describe)
+            where = "unit %s" % item if kind == "unit" else "%s: %s" % (kind, path)
+            suspects = first_seen.get((kind, item)) or []
+            if whose == "leg":
+                breaches.append((suite, "%s was left behind (%s)" % (where, how), suspects))
+            elif whose == "foreign":
+                unattributed.append("%s (%s)" % (where, how))
+            elif place is not None and place["rule"] == "attributed":
+                unattributed.append("%s (nothing ties it to a shard)" % where)
+            else:
+                waiting[(kind, item)] = (where, suspects)
+        limit = time.monotonic() + settle
+        while waiting and time.monotonic() < limit:
+            time.sleep(min(1.0, max(0.0, limit - time.monotonic())))
+            present = watch.read()
+            for key in [k for k in waiting if k not in present]:
+                unattributed.append("%s (gone again %.0fs after the leg)"
+                                    % (waiting.pop(key)[0], settle - (limit - time.monotonic())))
+        for (kind, item), (where, suspects) in sorted(waiting.items()):
+            breaches.append((None, "%s appeared during the leg and was left behind%s"
+                             % (where, "" if kind != "unit" else ", and carries no shard's prefix"),
+                             suspects))
+        for breach in breaches:
+            suite, words = breach[0], breach[1]
+            suspects = breach[2] if len(breach) > 2 else []
+            owners = [suite] if suite else (suspects or [j["name"] for j in jobs])
+            for owner in owners:
+                if not any(code == ISOLATION_BREACH and text == words for code, text in charged.get(owner, [])):
+                    charged.setdefault(owner, []).append((ISOLATION_BREACH, words))
+
+        # ---- one counted failure per shard-level failure, each with a fixed name ------------------
+        for job in jobs:
+            for code, words in charged.get(job["name"], []):
+                failed += 1
+                say("  %s suite-shard %s %s" % (FAIL_MARK, job["name"], code))
+                say("     %s: %s" % (code, words))
+        wall = time.monotonic() - began
+        critical = max((j for j in jobs if "wall_seconds" in j), key=lambda j: j["wall_seconds"], default=None)
+        isolation = [w for owner in charged.values() for code, w in owner if code == ISOLATION_BREACH]
+        say("selftest leg %s: %d shard(s), parallelism %s, peak %d running; isolation check %s; critical shard %s; wall %.1fs"
+            % (leg, len(jobs),
+               "as the gate ledger grants" if ledger else "%d (no gate ledger: this host's usable cores)" % parallelism,
+               max([len(e["running"]) + 1 for e in events if e["event"] == "start"] or [0]),
+               "held" if not isolation else "FAILED: %s" % ISOLATION_BREACH,
+               "%s %.1fs" % (critical["name"], critical["wall_seconds"]) if critical else "none", wall))
+        for line in unattributed:
+            say("   isolation note, not charged: %s" % line)
+        return {"passed": passed, "failed": failed, "targets": names, "charged": charged,
+                "breaches": isolation, "unattributed": unattributed, "events": events,
+                "parallelism": parallelism, "wall_seconds": wall,
+                "shards": [{k: j.get(k) for k in ("name", "index", "closure", "wall_seconds", "cpu_seconds",
+                                                    "peak_anon_bytes", "roots", "linked", "claim")}
+                           | {"passed": j["result"]["passed"] if "result" in j else 0,
+                              "failed": j["result"]["failed"] if "result" in j else 0}
+                           for j in jobs]}
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+        selector.close()
+        if ledger is not None:
+            ledger.close()
+        _remove(base)
 
 
 def full_scope(manifest=None):
