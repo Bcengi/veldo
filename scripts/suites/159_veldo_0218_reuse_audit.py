@@ -135,7 +135,7 @@ def _v218_audit():
                 good &= (receipt['status'] == 'passed' and len(ids) >= max(min(n, 8), (n + 19) // 20)
                          and len(ids) == len(set(ids)) and len(audit['population']) == n
                          and receipt['reused'] == n - len(ids)
-                         and all(s['audited'] >= (s['reused'] + 19) // 20 for s in audit['suites'].values())
+                         and all(s['audited'] >= (s['reused'] + 19) // 20 for s in audit['suites'].values()))
                 summaries.append((n, receipt['executed'], receipt['reused'], audit['audited'], audit['suites']))
             ten, _, _, _ = drive(100, admitted=True)
             good &= (ten['status'] == 'passed' and ten['audit']['audited'] >= 10
