@@ -554,9 +554,8 @@ class RunScope:
 # one /dev/shm entry), and the kernel records no creator for a file.
 #   FILES, in every place including the top of the system temporary directory. A new entry IS A
 #   SHARD'S when its name carries the shard's instance name, when it refers to a shard's roots (a
-#   link's target, a small file's text), when a live process that carries a shard's roots holds
-#   it, or when exactly one shard ran in the window in which it first appeared: it is charged to
-#   that suite. It is FOREIGN, and only noted, when another account owns it or a live process of
+#   link's target, a small file's text) or when a live process that carries a shard's roots holds
+#   it: it is charged to that suite. It is FOREIGN, and only noted, when another account owns it or a live process of
 #   another tree holds it. Anything else is waited on (SETTLE_S, a hang detector) and, if it
 #   stays, FAILS THE LEG'S ISOLATION CHECK with its name and the suites that ran when it
 #   appeared recorded. An unattributed entry is never silently allowed (lead decision
@@ -1768,8 +1767,10 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             elif whose == "foreign":
                 unattributed.append("%s (%s)" % (where, how))
             else:
-                waiting[(kind, item)] = (where, suspects[0] if len(suspects) == 1 else None, suspects,
-                                         "the one shard that ran when it appeared" if len(suspects) == 1 else "")
+                # Tied to nothing. WHO RAN WHEN IT APPEARED IS NOT ATTRIBUTION: measured on 2026-11-21 in
+                # the whole unconfined leg, two files another session made at the top of /tmp appeared
+                # while one shard was running, and charging that shard named the wrong suite.
+                waiting[(kind, item)] = (where, None, suspects, "")
         limit = time.monotonic() + settle
         while waiting and time.monotonic() < limit:
             time.sleep(min(1.0, max(0.0, limit - time.monotonic())))
