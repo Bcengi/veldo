@@ -6854,8 +6854,8 @@ def cases():
             "                usage, outcome = {}, 'not_executed'  # defect: a timeout releases the reservation\n",
             'settle/timeout-retained')
     account('account-cancel-releases', 'control_launch.py',
-            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
-            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n"
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):\n                outcome = 'cancelled'\n",
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):\n"
             "                usage, outcome = {}, 'not_executed'  # defect: a cancellation releases the reservation\n",
             'settle/cancel-retained')
     account('account-claude-missing-result-conclusive', 'control_engine_claude.py',
@@ -7906,8 +7906,8 @@ def cases():
            "        if remote and supervision['cause'] in ('usage_cap',):  # defect: a requested stop is recorded as ended\n",
            'stop/descendant-alive')
     claude('claude-stopped-invocation-released', 'control_launch.py',
-           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
-           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n"
+           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):\n                outcome = 'cancelled'\n",
+           "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):\n"
            "                usage, outcome = {}, 'not_executed'  # defect: a stopped invocation releases its reservation\n",
            'stop/requested')
     # AC4 (declared falsifier): the caps are checked after the launch instead of before.
@@ -8068,7 +8068,7 @@ def cases():
             "        return (2.5, 2.5)  # defect: the configured graces are not the ones the stop uses\n",
             'stop/forced')
     adapter('adapter-stop-outcome-lost', 'control_launch.py',
-            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):\n                outcome = 'cancelled'\n",
+            "            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):\n                outcome = 'cancelled'\n",
             "            elif False:  # defect: a stopped invocation's outcome is taken from its exit\n"
             "                outcome = 'cancelled'\n",
             'stop/cooperative')
@@ -15732,6 +15732,32 @@ def cases():
         "        if any(False and entry.get('owner_keep') and entry['locator'].get('path', '').startswith(root + '/')",
         ['safe/owner-keep'])
     result[-1]['dir'] = 'scripts'
+    # VELDO-0176: the factory keeps each conversation's engine session and history; each spec falsifier as one exact
+    # edit.
+    suite176 = '130_veldo_0176_conversation_history.py'
+    add(176, 'resume176-not-placed', suite176, 'control_launch.py',
+        "            self.placed = conversation.place(self.held_session, profile)\n",
+        "            self.placed = None  # defect: the held session is not placed in the chosen account's profile\n",
+        ['AC1/any-account'])
+    add(176, 'limit176-capture-discarded', suite176, 'control_service.py',
+        "        self.conversations.deferred(identity, sequence, record['dispatch_id'], CV.LIMITED, session=session,\n",
+        "        self.conversations.deferred(identity, sequence, record['dispatch_id'], CV.LIMITED, session=None,  # defect\n",
+        ['AC2/continues-after-a-limit'])
+    add(176, 'ask176-moved-unasked', suite176, 'control_service.py',
+        "        asked = next((q for q in (turn.get('questions') or []) if q.get('ref') == aid), None)\n",
+        "        asked = {'ref': aid, 'answer': 'move', 'about': MOVE_KIND}  # defect: moved with no question\n",
+        ['AC2/ask'])
+    add(176, 'render176-from-held-session', suite176, 'control_launch.py',
+        "            turns = conversation.history(reader, ER.directory(self.config), contract['unit'], sequence, ER.read)\n",
+        "            held = conversation.held_session(reader, contract['unit'], 'claude_code')  # defect: from the session\n"
+        "            turns = [(0, {'message': None, 'calls': [], 'reply': Path(held['capture']).read_text()})] if held else []\n",
+        ['AC3/redaction'])
+    add(176, 'render176-long-refused', suite176, 'control_launch.py',
+        "        self.rendering = conversation.render(turns, bound)\n",
+        "        self.rendering = conversation.render(turns, bound)\n"
+        "        if self.rendering['left_out']:\n"
+        "            return 'invalid_input:conversation_history'  # defect: a history beyond the bound is refused\n",
+        ['AC3/long-history'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

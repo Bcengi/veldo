@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1282,0 +1283,2 @@
++        if self.rendering['left_out']:
++            return 'invalid_input:conversation_history'  # defect: a history beyond the bound is refused

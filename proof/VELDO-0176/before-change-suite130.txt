@@ -1,0 +1,36 @@
+  VELDO-0176 AC1 accounts: account-claude_code-1 account-claude_code-2 sessions: session-46f41ce32e42 session-d7c47715aaed outcomes: completed completed
+  VELDO-0176 detail: AC1/any-account turn 2 resumed turn 1's session on B: the engine reported the same session id; the fake engine on B read the placed session: it remembers turn 1; the launch named the resume option with the held session id; journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC1/any-account
+  VELDO-0176 detail: AC1/capture-kept the capture is kept under the conversation's directory at mode 0600; its digest is bound to the turn record; journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC1/capture-kept
+  VELDO-0176 detail: AC1/resume-qualified journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC1/resume-qualified
+  VELDO-0176 detail: AC1/resume-mismatch journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC1/resume-mismatch
+  VELDO-0176 detail: AC1/observability journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC1/observability
+  VELDO-0176 detail: AC2/continues-after-a-limit journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/continues-after-a-limit
+  VELDO-0176 detail: AC2/ask journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/ask
+  VELDO-0176 detail: AC2/wait journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/wait
+  VELDO-0176 detail: AC2/move journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/move
+  VELDO-0176 detail: AC2/restart journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/restart
+  VELDO-0176 detail: AC2/running-at-restart journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC2/running-at-restart
+  VELDO-0176 detail: AC3/same-engine journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/same-engine
+  VELDO-0176 detail: AC3/redaction journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/redaction
+  VELDO-0176 detail: AC3/long-history journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/long-history
+  VELDO-0176 detail: AC3/change-back journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/change-back
+  VELDO-0176 detail: AC3/digest-refused journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/digest-refused
+  VELDO-0176 detail: AC3/observability journey completes: AttributeError: module 'v176_claude_engine' has no attribute 'project_directory_name'
+  SELFTEST FAIL: VELDO-0176 AC3/observability
+  130_veldo_0176_conversation_history              0 passed    1.30s
