@@ -77,6 +77,9 @@ def _v131_suite():
     # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
     ORGANS = {
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
+        # VELDO-0358 AC15: the timers table the organs arm their giving-up deadlines from (the canon's; the
+        # checkout's synced copy is the same file once it is laid down).
+        'timers.py': ROOT / "engine/.veldo" / "timers.py",
     }
     # The four ac1/screens rows (360, 390, 1280 and 1440 px) are suites 121 and 122; the fix-round rows
     # ac1/repositories, ac1/every-configuration, ac1/whole-catalog, ac1/usage-provider, ac1/worker-capability,
