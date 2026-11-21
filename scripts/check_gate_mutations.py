@@ -966,10 +966,11 @@ class Workers:
                     # A sibling of a case found stale is not launched: without its snapshot it
                     # would run untraced, and the stale case's own rerun replaces its result.
                     pending.remove((name, job))
-                    results[name] = {'result': None, 'elapsed': 0.0, 'declaration_stale':
-                                     'superseded: ' + stale[job['case']['identity']]['reason']}
+                    superseded = {'result': None, 'elapsed': 0.0, 'declaration_stale':
+                                  'superseded: ' + stale[job['case']['identity']]['reason']}
+                    results[name] = superseded
                     if on_result is not None:
-                        on_result(name, results[name])
+                        on_result(name, superseded)
                 while pending and len(self.active) < self.parallel:
                     index = self.resources.select(pending)
                     if index is None:
