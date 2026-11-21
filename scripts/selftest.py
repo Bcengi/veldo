@@ -25,6 +25,19 @@ different suites do not collide, plus the selectors below.
   python3 scripts/selftest.py --upto NAME     everything up to and including one suite
   python3 scripts/selftest.py --list          the manifest order, with each closure's size
 
+IN A GATE LEG THE SUITES RUN AS SHARDS (VELDO-0221). The one-namespace run above stays what a bare
+run and a selector do. A gate leg (the three leg variables the authority's gate_legs.py sets) runs
+one SHARD per suite of the leg instead: a fresh interpreter of this same dispatcher,
+`--suite NAME --shard FD --shard-root DIR`, which executes NAME's prerequisite closure from
+scripts/suites/requires.json in manifest order in one namespace and then NAME, exactly as the
+`--suite` selector always has, and reports NAME's own counts and row labels over the pipe FD. The
+leg's aggregate line is composed from the target suites' counts only, and green for a leg means
+every shard passed and the isolation check held. run_scope.run_shards holds the dispatcher, the
+roots each shard gets, the check that runs in every gate and what it can attribute. --shard is
+not a selector a person runs: outside a leg, or without exactly one --suite, it is refused. A tree
+with no closure table (scripts/suites/requires.json) cannot be cut into shards, and its leg runs
+the ordered run and says so.
+
 A FLAG TAKES ITS VALUE AS THE NEXT WORD, AND AN UNRECOGNISED FLAG IS A REFUSAL. `--suite=NAME`
 is not `--suite`, and until this was corrected it was recognised by nothing, so the equals form
 of either selector fell through to a FULL run at exit 0 with the aggregate line printed. Every
@@ -121,7 +134,7 @@ if ON_DISK != DECLARED:
 # direction, because a genuine full run happened and the line it printed was true, but
 # someone chasing a fast inner loop silently paid the entire suite and read a green line as
 # their subset's. So an argument beginning with `--` that is not in this table is a REFUSAL.
-FLAGS = {"--list": 0, "--suite": 1, "--upto": 1}
+FLAGS = {"--list": 0, "--suite": 1, "--upto": 1, "--shard": 1, "--shard-root": 1}
 UNRECOGNISED_FLAG = "UNRECOGNISED_FLAG"
 
 
@@ -190,6 +203,23 @@ if ENV_ORDER:
     byname = {s["name"]: s for s in FRAGMENTS}
     RUN = [byname[n] for n in named] + [s for s in FRAGMENTS if s["name"] not in named]
 
+# A SHARD OF A GATE LEG (VELDO-0221): started only by run_scope.run_shards, with the pipe it
+# reports on and the directory its private roots stand in. It is the --suite selector with exactly
+# one name, inside a leg; anything else is refused, never read as a selector or as a full run.
+SHARD_VALUES = VALUES["--shard"]
+SHARD_ROOT_VALUES = VALUES["--shard-root"]
+SHARD = None
+if SHARD_VALUES or SHARD_ROOT_VALUES:
+    if (len(SHARD_VALUES) != 1 or len(SHARD_ROOT_VALUES) != 1 or not SHARD_VALUES[0].isdigit()
+            or len(SUITE_VALUES) != 1 or SUITE_VALUES[0] not in ORDER
+            or os.environ.get(RS.GATE_LEG) not in RS.LEGS):
+        print("selftest: SHARD_REFUSED: --shard and --shard-root are the leg dispatcher's own, given "
+              "together with exactly one --suite inside a gate leg; refusing rather than running "
+              "something else")
+        sys.exit(2)
+    RS.die_with_dispatcher()
+    SHARD = RS.ShardReport(SHARD_VALUES[0])
+
 SELECTOR = None
 if UPTO_VALUES:
     UPTO = UPTO_VALUES[-1]
@@ -250,7 +280,7 @@ try:
 except RS.LegRefused as e:
     print("selftest: %s" % e)
     sys.exit(2)
-if LEG:
+if LEG and SHARD is None:
     _whole = [n for n, rows in LISTED.items() if rows is None]
     _rows = ["%s:%s" % (n, rows) for n, rows in LISTED.items() if rows is not None]
     _absent = sorted(n for n in LISTED if n not in ORDER)
@@ -270,25 +300,6 @@ if LEG:
               "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
         sys.exit(2)
 
-SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
-if CHILD is not None:
-    print("selftest isolated %s: a process of its own, running the %d suite(s) of its prerequisite "
-          "closure and nothing else" % (CHILD, len(RUN)), flush=True)
-elif SCOPE.partial:
-    print(SCOPE.banner(), flush=True)
-
-if REUSE and CHILD is None:
-    _isolated, _reusable, _why = RS.reuse_honored(REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER,
-                                                  RS.output_identity(sys.stdout))
-    if _why:
-        print("selftest reuse: %s; every suite runs fresh" % _why, flush=True)
-    if _isolated:
-        try:
-            _closures = RS.load_requires()
-        except (OSError, ValueError, KeyError):
-            _closures = {}
-        _, ISOLATED, REUSED = RS.reuse_execution([s["name"] for s in RUN], _closures, _isolated, _reusable)
-
 
 def _account(kind, **payload):
     """One whole line in one write, so no other process's output can land inside it."""
@@ -298,6 +309,80 @@ def _account(kind, **payload):
             REUSE["nonce"], kind, leg=LEG, isolated=CHILD,
             scope="isolated" if CHILD is not None else "partial" if SCOPE.partial else "full",
             **payload).encode())
+
+
+# THE LEG AS SHARDS (VELDO-0221). Only a whole leg is cut into shards: a selector inside a leg, and
+# a tree with no closure table, keep the ordered run. The aggregate line is composed here from the
+# target suites' counts through the one full scope, and the exit status is that scope's.
+# A suite reuse plan (VELDO-0206) needs the dispatcher's account of every suite it ran. A leg cut into
+# shards gives it: one fresh result per target, with that shard's own counts. A plan that this run
+# honors by isolating or leaving out suites keeps the ordered run, whose isolated processes are the
+# form the authority's settlement checks for them.
+_SHARDED = bool(LEG and SHARD is None and SELECTOR is None)
+_REUSE_SAID = False
+if _SHARDED and REUSE and CHILD is None:
+    _plan_isolated, _plan_reusable, _plan_why = RS.reuse_honored(
+        REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER, RS.output_identity(sys.stdout))
+    if _plan_why:
+        print("selftest reuse: %s; every suite runs fresh" % _plan_why, flush=True)
+        _REUSE_SAID = True
+    if _plan_isolated:
+        print("selftest leg %s: the suite reuse plan isolates %d suite(s) of this leg, so the leg keeps the "
+              "ordered run with their own processes instead of shards" % (LEG, len(_plan_isolated)), flush=True)
+        _SHARDED = False
+if _SHARDED:
+    try:
+        _closures = RS.load_requires(SUITES / "requires.json")
+    except (OSError, ValueError, KeyError):
+        _closures = None
+    if _closures is None:
+        print("selftest leg %s: this tree has no closure table (scripts/suites/requires.json), so its "
+              "suites cannot be cut into shards; running the ordered single-namespace run" % LEG,
+              flush=True)
+    else:
+        SCOPE = RS.RunScope(None, [s["name"] for s in RUN], ORDER)
+        _account("begin", suites=len(RUN))
+        try:
+            _leg = RS.run_shards(HERE.parent, LEG, [s["name"] for s in RUN], requires=_closures,
+                                 manifest=MANIFEST)
+        except RS.LegRefused as e:
+            print("selftest leg %s: %s" % (LEG, e))
+            _account("end", exit=2, passed=0, failed=0)
+            sys.exit(2)
+        _by_target = {j["name"]: j for j in _leg["shards"]}
+        for _s in RUN:
+            _j = _by_target.get(_s["name"])
+            if _j is not None:
+                _account("result", suite=_s["name"], source="fresh", passed=_j["passed"], failed=_j["failed"])
+        print(SCOPE.aggregate_line(_leg["passed"], _leg["failed"]), flush=True)
+        _account("end", exit=SCOPE.exit_code(_leg["failed"]), passed=_leg["passed"], failed=_leg["failed"])
+        sys.exit(SCOPE.exit_code(_leg["failed"]))
+
+
+SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
+if CHILD is not None:
+    print("selftest isolated %s: a process of its own, running the %d suite(s) of its prerequisite "
+          "closure and nothing else" % (CHILD, len(RUN)), flush=True)
+elif SCOPE.partial and SHARD is None:
+    print(SCOPE.banner(), flush=True)
+
+if SHARD is not None and LEG == "confined":
+    # In a confined leg the shard stacks its own Landlock layer on the leg's domain before any
+    # suite code runs, and reports whether it holds: the dispatcher reddens a shard that does not.
+    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0], HERE / "agent_sandbox.py")
+    SHARD.send(event="layer", in_force=_in_force, refused=_refused, detail=_detail)
+
+if REUSE and CHILD is None:
+    _isolated, _reusable, _why = RS.reuse_honored(REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER,
+                                                  RS.output_identity(sys.stdout))
+    if _why and not _REUSE_SAID:
+        print("selftest reuse: %s; every suite runs fresh" % _why, flush=True)
+    if _isolated:
+        try:
+            _closures = RS.load_requires()
+        except (OSError, ValueError, KeyError):
+            _closures = {}
+        _, ISOLATED, REUSED = RS.reuse_execution([s["name"] for s in RUN], _closures, _isolated, _reusable)
 
 
 def _private_places(scratch):
@@ -379,6 +464,18 @@ T0 = time.monotonic()
 PER_SUITE = []
 _LEG_FLOOR = shared.PASS + shared.FAIL
 _OWN = (0, 0)
+_TARGET = SUITE_VALUES[0] if SHARD is not None else None
+_ROWS = []
+if SHARD is not None:
+    _TARGET_FILE = str(SUITES / next(s["file"] for s in FRAGMENTS if s["name"] == _TARGET))
+
+    # The target's row labels go to the dispatcher with its counts. The suites call `expect` by
+    # name in this one namespace, so the recording wrapper is what they find.
+    def _recording(name, condition, _expect=shared.expect):
+        if shared.__dict__.get("__suite_file__") == _TARGET_FILE:
+            _ROWS.append(str(name).split(":", 1)[0])
+        _expect(name, condition)
+    shared.__dict__["expect"] = _recording
 for _s in RUN:
     if _s["name"] in REUSED or _s["name"] in ISOLATED:
         continue  # left out on its record, or already run in its own process
@@ -387,12 +484,30 @@ for _s in RUN:
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
     shared.__dict__["__suite_file__"] = str(_p)
     _before, _failed, _t = shared.PASS, shared.FAIL, time.monotonic()
+    if _s["name"] == _TARGET:
+        # Everything printed before this line belongs to the closure, everything after to the target.
+        _mark = "selftest shard target begins: %s %s" % (_TARGET, os.urandom(8).hex())
+        _floor = (shared.PASS, shared.FAIL)
+        sys.stdout.flush()
+        SHARD.send(event="target", mark=_mark)
+        print(_mark, flush=True)
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
     _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
              failed=shared.FAIL - _failed)
     if _s["name"] == CHILD:
         _OWN = (shared.PASS - _before, shared.FAIL - _failed)
+    if _s["name"] == _TARGET:
+        _counts = (shared.PASS - _floor[0], shared.FAIL - _floor[1])
+
+if SHARD is not None:
+    # The shard's verdict: the target's own counts and labels, and how many rows of its closure or
+    # of the shared preamble failed around it. The exit status says the same thing a second way.
+    sys.stdout.flush()
+    SHARD.send(event="verdict", suite=_TARGET, passed=_counts[0], failed=_counts[1], rows=_ROWS,
+               prerequisite_failed=shared.FAIL - _counts[1], leg=LEG,
+               closure=[s["name"] for s in RUN], seconds=time.monotonic() - T0)
+    sys.exit(SCOPE.exit_code(shared.FAIL))
 
 # The rows the isolated suites asserted in their own processes are this run's rows.
 shared.PASS, shared.FAIL = shared.PASS + _ISOLATED_ROWS[0], shared.FAIL + _ISOLATED_ROWS[1]
