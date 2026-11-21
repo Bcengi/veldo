@@ -1,0 +1,218 @@
+{
+  "row": "census/memory-aba-uses-kernel-state",
+  "passed": true,
+  "cases": [
+    {
+      "scenario": "bind",
+      "acknowledgement": {
+        "inode": "socket:[4223741224]",
+        "kernel": [
+          "127.0.0.2",
+          34281
+        ],
+        "memory": "127.0.0.1"
+      },
+      "writes": [
+        {
+          "phase": "entry",
+          "nr": 49,
+          "pid": 2874413,
+          "args": [
+            3,
+            134143560288752,
+            16,
+            0,
+            134143561393808,
+            140721044281632
+          ],
+          "writes": 4
+        },
+        {
+          "phase": "exit",
+          "nr": 49,
+          "pid": 2874413,
+          "args": [
+            3,
+            134143560288752,
+            16,
+            0,
+            134143561393808,
+            140721044281632
+          ],
+          "writes": 4
+        }
+      ],
+      "kernel_sockaddr_hex": "020085e97f0000020000000000000000",
+      "sampled_sockaddr_hex": "020000007f0000010000000000000000",
+      "passed": true,
+      "failures": [
+        {
+          "capability": "shared_socket_memory",
+          "reason": "kernel-bound address differs from the sampled sockaddr",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "drained"
+        }
+      ]
+    },
+    {
+      "scenario": "socketpair",
+      "acknowledgement": {
+        "memory": [
+          3,
+          4
+        ],
+        "older": [
+          3,
+          4
+        ],
+        "installed": [
+          5,
+          6
+        ],
+        "installed_inodes": [
+          "socket:[4223732286]",
+          "socket:[4223732287]"
+        ],
+        "older_inodes": [
+          "socket:[4223742415]",
+          "socket:[4223742416]"
+        ]
+      },
+      "writes": [
+        {
+          "phase": "exit",
+          "nr": 53,
+          "pid": 2881452,
+          "args": [
+            1,
+            524289,
+            0,
+            140727100571944,
+            0,
+            0
+          ],
+          "writes": 0
+        },
+        {
+          "phase": "exit",
+          "nr": 53,
+          "pid": 2881452,
+          "args": [
+            1,
+            1,
+            0,
+            124842606552480,
+            815322704,
+            124842614637920
+          ],
+          "writes": 8
+        }
+      ],
+      "passed": true,
+      "failures": [
+        {
+          "capability": "shared_socket_memory",
+          "reason": "socketpair result memory differs from installed descriptors",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "drained"
+        }
+      ]
+    },
+    {
+      "scenario": "recvmsg",
+      "acknowledgement": {
+        "data": "R",
+        "controls": 0,
+        "installed": [
+          4
+        ],
+        "inodes": [
+          "socket:[4223739276]"
+        ]
+      },
+      "writes": [
+        {
+          "phase": "exit",
+          "nr": 47,
+          "pid": 2887893,
+          "args": [
+            3,
+            140728614259080,
+            0,
+            138295839375680,
+            0,
+            0
+          ],
+          "writes": 32
+        }
+      ],
+      "passed": true,
+      "failures": [
+        {
+          "capability": "descriptor_transfer",
+          "reason": "received out-of-scope socket",
+          "category": "observation_incomplete",
+          "state": "collecting"
+        },
+        {
+          "capability": "protocol_inventory_bounds",
+          "reason": "bounded protocol discovery does not fully qualify the four required families",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "operation_configuration",
+          "reason": "available socket needs a qualified address or operation configuration",
+          "category": "observation_incomplete",
+          "state": "drained"
+        },
+        {
+          "capability": "io_uring_socket_effects",
+          "reason": "shared ring completions are not correlated to traced socket identities",
+          "category": "observation_incomplete",
+          "state": "drained"
+        }
+      ]
+    }
+  ],
+  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+  "instrumented_digest": "8144c6e2ae827dcdfd31e66ea300ef83dbb5a9c62a6e16cc7e9a29b8403a837d",
+  "scheduling_only_instrumentation": true,
+  "external_writer_is_ancestor": true
+}

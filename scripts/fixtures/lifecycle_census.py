@@ -18,6 +18,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import select
 import signal
 import socket
 import struct
@@ -44,6 +45,8 @@ CONSUMERS = {
         "unavailable/no-write-needs-complete-observation"),
 }
 QUALIFICATION_FAMILIES = {1: "Unix", 2: "IPv4", 10: "IPv6", 16: "netlink"}
+# Native socket syscalls (socketcall is normalized to these numbers).
+SOCKET_CALLS = frozenset((41, 42, 43, 44, 45, 46, 47, 49, 50, 53, 288, 299, 307))
 
 
 FAULTS = {
@@ -294,13 +297,13 @@ def qualify(r, inventory):
     if async_probe['available']:
         gap('io_uring_socket_effects', 'shared ring completions are not correlated to traced socket identities',
             async_probe)
-    # A descriptor close is not a kernel socket destruction notification. The
-    # reference may be queued in SCM_RIGHTS or shared with another task.
-    if r['sockets']:
-        gap('socket_destruction', 'terminal drain bounds socket destruction but does not timestamp it',
-            dict(identities=[o['identity'] for o in r['sockets'] if not (o.get('closed') or {}).get('exact')]))
-        gap('shared_socket_memory', 'entry/exit inode checks cannot exclude ABA or shared sockaddr mutation',
-            dict(identities=[o['identity'] for o in r['sockets']]))
+    # Escapes fail capture separately. A socket is destroyed at drain only when
+    # the release observer saw its last file reference go; anything else is a gap.
+    unreleased = [o['identity'] for o in r['sockets'] if not (o.get('closed') or {}).get('released')
+                  and not o.get('referenced_after_drain')]
+    if unreleased:
+        gap('socket_destruction', 'final file release was not observed at descendant drain',
+            dict(identities=unreleased))
     r['qualification'].update(inventory=inventory, reasons=reasons,
         gaps=sorted({item['capability'] for item in reasons}),
         status='INCOMPLETE' if reasons else 'COMPLETE')
@@ -308,6 +311,36 @@ def qualify(r, inventory):
         failure(r, item['capability'], item['reason'])
     r['status'] = ('COMPLETE' if r['capture_status'] == 'COMPLETE' and not r['failures']
                    and not reasons else 'INCOMPLETE')
+
+
+def sampled_matches(family, sample, kernel):
+    """Is the kernel's bound address one the sampled bind sockaddr requested?
+
+    Port 0 (inet) and nl_pid 0 (netlink) ask the kernel to choose.
+    """
+    if len(sample) < 2 or len(kernel) < 2 or struct.unpack_from('<H', sample)[0] != family \
+            or struct.unpack_from('<H', kernel)[0] != family:
+        return False
+    if family == socket.AF_UNIX:
+        requested, bound = sample[2:], kernel[2:]
+        if requested[:1] == b'\0':
+            return requested == bound
+        return requested.split(b'\0', 1)[0] == bound.split(b'\0', 1)[0]
+    if family == socket.AF_INET:
+        span = (4, 8)
+    elif family == socket.AF_INET6:
+        span = (8, 24)
+    elif family == socket.AF_NETLINK:
+        if len(sample) < 12 or len(kernel) < 12:
+            return False
+        port = sample[4:8]
+        return (port == bytes(4) or port == kernel[4:8]) and sample[8:12] == kernel[8:12]
+    else:
+        return False
+    if len(sample) < span[1] or len(kernel) < span[1]:
+        return False
+    port = sample[2:4]
+    return sample[span[0]:span[1]] == kernel[span[0]:span[1]] and port in (bytes(2), kernel[2:4])
 
 
 class Collector:
@@ -320,6 +353,7 @@ class Collector:
         self.root = None
         self.early_stops = {}
         self.newborn = set()
+        self.release = None
 
     def event(self, kind, **values):
         event = dict(sequence=len(self.r["events"]) + 1, time_ns=time.monotonic_ns(),
@@ -359,10 +393,28 @@ class Collector:
             return None
         return link
 
+    def fd_table(self, pid):
+        """The kernel's descriptor table for a stopped task (no sharers allowed)."""
+        table = {}
+        for name in os.listdir(f'/proc/{pid}/fd'):
+            try:
+                table[int(name)] = os.readlink(f'/proc/{pid}/fd/{name}')
+            except FileNotFoundError:
+                pass
+        return table
+
+    def installed(self, pid, entry):
+        """Descriptors the syscall installed, from the kernel table, not memory."""
+        before = entry['fds']
+        return {fd: link for fd, link in self.fd_table(pid).items() if before.get(fd) != link}
+
     def register_socket(self, pid, fd, family, kind, protocol):
         inode = self.socket_at(pid, fd)
         if inode is None:
             failure(self.r, "socket_identity", f"missing descriptor {pid}:{fd}")
+            return
+        if inode in self.sockets:
+            failure(self.r, 'shared_socket_memory', f'created socket {inode} was already known')
             return
         # Live inode identities are assigned a separate birth sequence, like tasks.
         obj = dict(identity=f"{inode}:{len(self.r['sockets']) + 1}", inode=inode,
@@ -372,10 +424,125 @@ class Collector:
                    closed=None, references=[])
         self.sockets[inode] = obj
         self.r["sockets"].append(obj)
+        self.watch(pid, fd, obj)
         if family not in QUALIFICATION_FAMILIES:
             obj['not_qualified'] = unqualified_family(family)
             failure(self.r, 'family_not_qualified', obj['not_qualified']['reason'])
         return obj
+
+    def watch(self, pid, fd, obj):
+        """Register the socket's open file with epoll without keeping a reference.
+
+        An epoll item holds no file reference; the kernel removes it when the
+        last reference is released (__fput -> eventpoll_release). The temporary
+        duplicate exists only while the tracee is stopped and is closed first.
+        A listed item after descendant drain is therefore a reference held
+        outside the measured scope, whatever path carried it there.
+        """
+        try:
+            if self.release is None:
+                raise OSError(errno.EBADF, 'release observer not armed')
+            dup = self.duplicate(pid, fd, obj['inode'])
+            try:
+                self.release.register(dup, 0)
+            finally:
+                os.close(dup)
+            obj['release_observer'] = 'epoll_file_release'
+        except OSError as exc:
+            failure(self.r, 'socket_destruction', f'release observer unavailable: {exc}',
+                    'observer_unavailable')
+
+    def duplicate(self, pid, fd, inode):
+        """A collector-owned duplicate of a stopped tracee's socket descriptor."""
+        pidfd = os.pidfd_open(pid, 0x80)  # PIDFD_THREAD: pid is a stopped TID.
+        try:
+            ctypes.set_errno(0)
+            dup = LIBC.syscall(438, pidfd, fd, 0)  # pidfd_getfd
+            if dup < 0:
+                raise OSError(ctypes.get_errno(), 'pidfd_getfd')
+        finally:
+            os.close(pidfd)
+        if os.readlink(f'/proc/self/fd/{dup}') != inode:
+            os.close(dup)
+            raise OSError(errno.ESTALE, 'duplicated a different file')
+        return dup
+
+    def kernel_name(self, pid, fd, inode):
+        """The kernel's own local address for the socket, not tracee memory."""
+        dup = self.duplicate(pid, fd, inode)
+        try:
+            buffer, size = ctypes.create_string_buffer(128), ctypes.c_uint(128)
+            ctypes.set_errno(0)
+            if LIBC.getsockname(dup, buffer, ctypes.byref(size)) != 0:
+                raise OSError(ctypes.get_errno(), 'getsockname')
+            return buffer.raw[:min(size.value, 128)]
+        finally:
+            os.close(dup)
+
+    def sharers(self, pid):
+        """Live measured tasks sharing pid's descriptor table or address space.
+
+        Only such a task (or a seccomp listener, refused separately) can swap a
+        descriptor between entry and exit stops; kcmp compares kernel objects.
+        """
+        shared = []
+        for other in self.live:
+            if other == pid:
+                continue
+            for kind in (2, 1):  # KCMP_FILES, KCMP_VM
+                ctypes.set_errno(0)
+                value = LIBC.syscall(312, pid, other, kind, 0, 0)
+                if value < 0:
+                    raise ObservationFailure('shared_socket_memory', f'kcmp unavailable: errno {ctypes.get_errno()}')
+                if value == 0:
+                    shared.append(self.live[other]['identity'])
+                    break
+        return shared
+
+    def unix_peer(self, inode):
+        """Peer inode of a Unix socket from NETLINK_SOCK_DIAG (UDIAG_SHOW_PEER)."""
+        number = int(inode[8:-1])
+        request = struct.pack('<IHHII', 40, 20, 1, 1, 0) + struct.pack(
+            '<BBHIIIII', socket.AF_UNIX, 0, 0, 0xffffffff, number, 4, 0xffffffff, 0xffffffff)
+        with socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, 4) as diag:
+            diag.sendto(request, (0, 0))
+            data = diag.recv(65536)
+        length, kind = struct.unpack_from('<IH', data)
+        if kind != 20 or length > len(data):
+            raise ObservationFailure('shared_socket_memory', 'unix_diag did not answer for a socketpair member')
+        offset = 16 + 16
+        while offset + 4 <= length:
+            size, attribute = struct.unpack_from('<HH', data, offset)
+            if size < 4:
+                break
+            if attribute == 2:  # UNIX_DIAG_PEER
+                return f'socket:[{struct.unpack_from("<I", data, offset + 4)[0]}]'
+            offset += (size + 3) & ~3
+        return None
+
+    def referenced(self):
+        """Socket inodes whose file is still open anywhere, read after drain."""
+        alive = set()
+        for line in Path(f'/proc/self/fdinfo/{self.release.fileno()}').read_text().splitlines():
+            if line.startswith('tfd:'):
+                inode = int(line.split('ino:')[1].split()[0], 16)
+                alive.add(f'socket:[{inode}]')
+        return alive
+
+    def drained_references(self):
+        alive = self.referenced()
+        for obj in self.r['sockets']:
+            if obj.get('release_observer') != 'epoll_file_release':
+                obj['closed'] = None
+            elif obj['inode'] in alive:
+                obj['closed'] = None
+                obj['referenced_after_drain'] = True
+                failure(self.r, 'escaped_reference',
+                        f'{obj["identity"]} file is still referenced after descendant drain',
+                        'lifecycle_violation')
+            else:
+                obj['closed'] = dict(barrier='descendants_drained', released=True,
+                                     observer='epoll_file_release', exact=False)
 
     def expose(self, pid, obj, operation, address):
         self.event("service", task=self.live[pid]["identity"], socket=obj["identity"],
@@ -434,6 +601,72 @@ class Collector:
         failure(self.r, 'socket_address', f'no enrichment for {obj["identity"]}')
         return obj['address']
 
+    def message_memory(self, pid, address, length):
+        """Reject known shared or file-backed control mappings before a send.
+
+        This is a qualification failure, not support for shared control buffers.
+        A second live task can also share the descriptor table or address space.
+        File-backed private mappings can change before their first COW fault.
+        Private anonymous memory still needs qualification against outside writers.
+        """
+        if self.sharers(pid):
+            raise ObservationFailure('shared_socket_memory', 'a live task shares the send descriptors or control memory')
+        if not length:
+            return b''
+        for line in Path(f'/proc/{pid}/maps').read_text().splitlines():
+            fields = line.split(None, 5)
+            low, high = (int(value, 16) for value in fields[0].split('-'))
+            if low <= address and address + length <= high:
+                if fields[1][3] != 'p' or fields[4] != '0':
+                    raise ObservationFailure('shared_socket_memory', 'send control uses shared or file-backed memory')
+                return self.memory(pid, address, length)
+        raise ObservationFailure('shared_socket_memory', 'send control mapping is not qualified')
+
+    def sent_controls(self, pid, pointer, count):
+        if count > 1024:
+            raise ObservationFailure('message_layout', 'sendmmsg vector exceeds qualified kernel bound')
+        messages = []
+        for index in range(count):
+            message = self.message_memory(pid, pointer + index * 64, 56)
+            control_pointer, length = struct.unpack_from('<QQ', message, 32)
+            control = self.message_memory(pid, control_pointer, length)
+            descriptors, offset = [], 0
+            while offset + 16 <= length:
+                size, level, kind = struct.unpack_from('<Qii', control, offset)
+                if size < 16 or offset + size > length:
+                    raise ObservationFailure('message_layout', 'invalid send ancillary length')
+                if (level, kind) == (socket.SOL_SOCKET, socket.SCM_RIGHTS):
+                    if (size - 16) % 4:
+                        raise ObservationFailure('message_layout', 'unaligned SCM_RIGHTS descriptors')
+                    for start in range(offset + 16, offset + size, 4):
+                        fd = struct.unpack_from('<i', control, start)[0]
+                        descriptors.append(dict(fd=fd, inode=self.socket_at(pid, fd)))
+                offset += (size + 7) & ~7
+            messages.append(descriptors)
+        return messages
+
+    def sent_rights(self, pid, entry, result):
+        count = 1 if entry['nr'] == 46 else result
+        for descriptors in entry.get('sent_controls', [])[:count]:
+            if not descriptors:
+                continue
+            transport = self.sockets.get(entry.get('inode'))
+            peer = self.sockets.get(transport.get('pair_peer')) if transport else None
+            # Only a private socketpair has a proven peer. A pathname, peer PID,
+            # or a transport's creation inside the scope does not prove ownership.
+            contained = bool(peer and not peer.get('exported') and not transport.get('exported'))
+            sequence = self.event('descriptor_send', task=self.live[pid]['identity'],
+                transport=entry.get('inode'), descriptors=descriptors, contained=contained)
+            if not contained:
+                failure(self.r, 'escaped_reference',
+                        f'SCM_RIGHTS send {sequence} has no exclusively measured receiver',
+                        'lifecycle_violation')
+                for descriptor in descriptors:
+                    obj = self.sockets.get(descriptor['inode'])
+                    if obj:
+                        obj['exported'] = True
+                        obj.setdefault('escaped_references', []).append(sequence)
+
     def syscall(self, pid):
         buf = ctypes.create_string_buffer(88)
         size = ptrace(0x420e, pid, 88, ctypes.byref(buf))
@@ -470,13 +703,16 @@ class Collector:
                 args += [0] * (6 - count)
                 abi = 'i386_socketcall'
             entry = dict(nr=nr, args=args, abi=abi)
+            if nr in SOCKET_CALLS:
+                entry['sharers'] = self.sharers(pid)
+            if nr in (47, 53, 299):
+                entry['fds'] = self.fd_table(pid)
             if nr in (49, 42):
                 entry["address"] = self.memory(pid, args[1], args[2]).hex() if args[1] else None
             if nr in (3, 32, 33, 42, 43, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
                 entry["inode"] = self.socket_at(pid, args[0])
-            if nr == 47:
-                entry["message"] = a_message = self.memory(pid, args[1], 56)
-                entry["control"] = struct.unpack_from("<Q", a_message, 32)[0]
+            if nr in (46, 307):
+                entry['sent_controls'] = self.sent_controls(pid, args[1], 1 if nr == 46 else args[2])
             self.pending[pid] = entry
             # A task can deliberately escape tracing with CLONE_UNTRACED.
             flags = args[0] if nr == 56 else 0
@@ -501,24 +737,25 @@ class Collector:
         nr, a = entry["nr"], entry["args"]
         if result < 0:
             return
-        if nr == 47 and entry.get("control"):
-            message = self.memory(pid, a[1], 56)
-            length = struct.unpack_from("<Q", message, 40)[0]
-            control = self.memory(pid, entry["control"], length)
-            offset = 0
-            while offset + 16 <= length:
-                size, level, kind = struct.unpack_from("<Qii", control, offset)
-                if size < 16 or offset + size > length:
-                    raise ValueError("corrupt ancillary descriptor message")
-                if (level, kind) == (socket.SOL_SOCKET, socket.SCM_RIGHTS):
-                    for start in range(offset + 16, offset + size, 4):
-                        fd = struct.unpack_from("<i", control, start)[0]
-                        inode = self.socket_at(pid, fd)
-                        self.event("descriptor_transfer", task=self.live[pid]["identity"],
-                                   fd=fd, inode=inode)
-                        if inode and inode not in self.sockets:
-                            failure(self.r, "descriptor_transfer", "received out-of-scope socket")
-                offset += (size + 7) & ~7
+        if nr in SOCKET_CALLS and (entry.get('sharers') or self.sharers(pid)):
+            failure(self.r, 'shared_socket_memory',
+                    f'syscall {nr} ran while another live task shared its descriptor table or memory')
+        if nr == 317 and a[0] == 1 and a[1] & 8:
+            failure(self.r, 'shared_socket_memory',
+                    'seccomp user notification can install descriptors from outside scope')
+        # Decode sends even when the transport was received from outside scope.
+        if nr in (46, 307):
+            self.sent_rights(pid, entry, result)
+        # Received descriptors come from the kernel table diff; tracee control
+        # memory can be rewritten after the kernel fills it.
+        if nr in (47, 299):
+            for fd, link in sorted(self.installed(pid, entry).items()):
+                inode = link if link.startswith('socket:[') else None
+                self.event("descriptor_transfer", task=self.live[pid]["identity"], fd=fd, inode=inode)
+                if inode and inode not in self.sockets:
+                    failure(self.r, "descriptor_transfer", "received out-of-scope socket")
+                if link == 'anon_inode:[io_uring]':
+                    failure(self.r, 'io_uring', 'received an io_uring instance from outside scope')
         if nr == 41:
             obj = self.register_socket(pid, result, *a[:3])
             if obj:
@@ -536,8 +773,21 @@ class Collector:
                 self.event('accept', task=self.live[pid]['identity'], socket=obj['identity'],
                            listener=parent['identity'], syscall=nr, address=self.address(pid, obj))
         elif nr == 53:
-            for fd in struct.unpack("<2i", self.memory(pid, a[3], 8)):
-                self.register_socket(pid, fd, *a[:3])
+            pair = []
+            created = sorted(fd for fd, link in self.installed(pid, entry).items() if link.startswith('socket:['))
+            if created != sorted(struct.unpack("<2i", self.memory(pid, a[3], 8))):
+                failure(self.r, 'shared_socket_memory', 'socketpair result memory differs from installed descriptors')
+            for fd in created:
+                pair.append(self.register_socket(pid, fd, *a[:3]))
+            if len(pair) != 2:
+                failure(self.r, 'socket_identity', 'socketpair did not install two sockets')
+                pair = [None]
+            if all(pair):
+                if (pair[0]['family'] != socket.AF_UNIX or self.unix_peer(pair[0]['inode']) != pair[1]['inode']
+                        or self.unix_peer(pair[1]['inode']) != pair[0]['inode']):
+                    failure(self.r, 'shared_socket_memory', 'socketpair result memory does not name kernel peers')
+                else:
+                    pair[0]['pair_peer'], pair[1]['pair_peer'] = pair[1]['inode'], pair[0]['inode']
         elif nr in (425, 426, 427):
             failure(self.r, "io_uring", "successful async interface is not decoded")
         elif nr in (49, 50, 42, 44, 45, 46, 47, 299, 307):
@@ -552,7 +802,17 @@ class Collector:
             if self.socket_at(pid, a[0]) != inode:
                 failure(self.r, "descriptor_race", "socket changed during operation")
                 return
+            if nr in (49, 50) or (obj['type'] in (2, 3, 10) and obj['address'] is None):
+                try:
+                    obj['kernel_sockaddr_hex'] = self.kernel_name(pid, a[0], inode).hex()
+                except OSError as exc:
+                    obj['kernel_sockaddr_hex'] = None
+                    failure(self.r, 'socket_address', f'kernel address unavailable: {exc}')
             if nr == 49:
+                if obj['kernel_sockaddr_hex'] is not None and not sampled_matches(
+                        obj['family'], bytes.fromhex(entry['address'] or ''),
+                        bytes.fromhex(obj['kernel_sockaddr_hex'])):
+                    failure(self.r, 'shared_socket_memory', 'kernel-bound address differs from the sampled sockaddr')
                 obj["address"] = entry["address"]
                 self.event("bind", task=self.live[pid]["identity"], socket=obj["identity"],
                            family=obj["family"], address=obj["address"])
@@ -564,6 +824,15 @@ class Collector:
                 if obj['family'] == socket.AF_UNIX:
                     address = self.unix_binding(pid, obj)
                     bound = address is not None
+                elif obj['family'] == socket.AF_NETLINK and obj.get('kernel_sockaddr_hex'):
+                    # A successful netlink send autobinds; the kernel's own
+                    # sockaddr names the assigned port id exactly.
+                    kernel = bytes.fromhex(obj['kernel_sockaddr_hex'])
+                    port, groups = struct.unpack_from('<II', kernel, 4)
+                    address = dict(nl_pid=port, nl_groups=groups, sockaddr_hex=kernel.hex())
+                    bound = port != 0
+                    if port == 0:
+                        failure(self.r, 'implicit_address', 'netlink operation left no kernel port id')
                 else:
                     address = self.address(pid, obj)
                     bound = isinstance(address, dict) and address.get('port', 0) > 0
@@ -616,6 +885,8 @@ class Collector:
                 os._exit(125)
         self.root = root
         r["state"] = "arming"
+        # Created after the root fork, close-on-exec: never inherited by the scope.
+        self.release = select.epoll()
         _, status = os.waitpid(root, WALL)
         if not os.WIFSTOPPED(status) or os.WSTOPSIG(status) != signal.SIGSTOP:
             failure(r, "PTRACE_TRACEME", "root did not reach pre-exec stop", "observer_unavailable")
@@ -707,8 +978,7 @@ class Collector:
             r["state"] = "drained"
             if req.get("fault") == "finalize":
                 raise ObservationFailure("receipt_finalization", "injected receipt finalization failure")
-            for obj in r["sockets"]:
-                obj["closed"] = dict(barrier="descendants_drained", exact=False)
+            self.drained_references()
             if not r["failures"]:
                 r["capture_status"] = "COMPLETE"
             r['status'] = 'COMPLETE' if r['capture_status'] == 'COMPLETE' else 'INCOMPLETE'

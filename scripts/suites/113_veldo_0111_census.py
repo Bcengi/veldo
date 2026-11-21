@@ -6,6 +6,7 @@ result remains INCOMPLETE when any reachable path is unqualified.
 Direct execution emits JSON; the standard suite dispatcher consumes ROOT/expect.
 """
 
+import array
 import importlib.util
 import inspect
 import json
@@ -14,6 +15,7 @@ from pathlib import Path
 import socket
 import sys
 import tempfile
+import threading
 
 
 PROCESS_PROBE = r'''
@@ -276,7 +278,8 @@ for family in range(46):
         fake['capture_status'] = 'COMPLETE'
         fake['sockets'] = [dict(identity='synthetic', closed=dict(exact=False))]
         census.qualify(fake, minimal)
-        preserved = {'socket_destruction', 'shared_socket_memory'} <= {
+        # A socket without an observed final release keeps its named gap.
+        preserved = {'socket_destruction'} <= {
             r['capability'] for r in fake['qualification']['reasons']}
         evidence['family_boundary'] = dict(probes=probes, inventory=inventory, live=live,
                                           retained_obligations=fake)
@@ -481,7 +484,11 @@ for name in (observer,'pgrep'):
          and inventory['status'] == 'INCOMPLETE'
          and all(row['status'] == 'STANDS DOWN' for rows in inventory['consumer_rows'].values() for row in rows))
     capabilities = inventory['qualification']['inventory']
-    wanted = {'protocol_inventory_bounds', 'socket_destruction', 'shared_socket_memory'}
+    wanted = {'protocol_inventory_bounds'}
+    # socket_destruction is named only for a socket whose final release was not
+    # observed; this capture must instead see every one of its sockets released.
+    released = bool(inventory['sockets']) and all(
+        (o.get('closed') or {}).get('released') is True for o in inventory['sockets'])
     wanted.update(p['gap'] for p in capabilities['operation_probes'] if p.get('gap'))
     if capabilities['io_uring']['available']:
         wanted.add('io_uring_socket_effects')
@@ -495,6 +502,7 @@ for name in (observer,'pgrep'):
          and all(f.get('evidence') and f['reason'] for f in reasons)
          and wanted <= {f['capability'] for f in inventory['failures']}
          and not any(f['capability'] == 'qualification' for f in inventory['failures'])
+         and released
          and qualified['status'] == 'COMPLETE' and qualified['qualification']['gaps'] == [])
 
     extended, acks = run('socket_extensions', EXTENDED_SOCKET_PROBE)
@@ -548,6 +556,193 @@ os.write(1,(json.dumps(dict(address=repr(sender.getsockname())))+'\n').encode())
             and any(f['capability'] == 'trace_inheritance' and f['category'] == 'lifecycle_violation'
                     and f['state'] == 'collecting' for f in escaped['failures']))
     emit('census/clone-untraced', all(escape_results))
+    # One completed send exports all four service families and an ordinary fd.
+    # A failed send must not be reported as an actual descriptor escape.
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as receiver:
+        name = 'v111-rights-suite-' + str(os.getpid())
+        receiver.bind('\0' + name)
+        receiver.settimeout(census.HANG_SECONDS)
+        escaped, acks = run('escaped_references', r'''
+import array, errno, json, os, socket, sys
+services=[]
+for family, address in ((1,'\0v111-rights-service-'+str(os.getpid())),
+                        (2,('127.0.0.1',0)),(10,('::1',0)),(16,(0,0))):
+    s=socket.socket(family,3 if family==16 else 1,2 if family==16 else 0)
+    s.bind(address)
+    if family!=16: s.listen(1)
+    services.append(s)
+    print(json.dumps(dict(family=family,inode=os.readlink('/proc/self/fd/'+str(s.fileno())))))
+with socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as transport:
+    transport.connect('\0'+sys.argv[1])
+    try:
+        transport.sendmsg([b'X'],[(socket.SOL_SOCKET,socket.SCM_RIGHTS,array.array('i',[-1]))])
+        raise AssertionError('invalid fd accepted')
+    except OSError as exc:
+        assert exc.errno==errno.EBADF
+    ordinary=os.open(os.devnull,os.O_RDONLY)
+    descriptors=[s.fileno() for s in services]+[ordinary]
+    assert transport.sendmsg([b'R'],[(socket.SOL_SOCKET,socket.SCM_RIGHTS,array.array('i',descriptors))])==1
+    os.close(ordinary)
+for s in services: s.close()
+''', name)
+        if escaped.get('root_status') == 0:
+            data, controls, flags, _ = receiver.recvmsg(1, socket.CMSG_SPACE(20))
+            held = array.array('i')
+            assert len(controls) == 1 and controls[0][:2] == (socket.SOL_SOCKET, socket.SCM_RIGHTS)
+            held.frombytes(controls[0][2])
+            try:
+                observed = [os.readlink('/proc/self/fd/' + str(fd)) for fd in held]
+            finally:
+                for fd in held:
+                    os.close(fd)
+            sends = [e for e in escaped['events'] if e['kind'] == 'descriptor_send']
+            passed = (data == b'R' and not flags & socket.MSG_CTRUNC and len(held) == 5
+                and len(acks) == 4 and {a['family'] for a in acks} == {1,2,10,16}
+                and observed[:4] == [a['inode'] for a in acks]
+                and len(sends) == 1 and len(sends[0]['descriptors']) == 5
+                and escaped['capture_status'] == 'INCOMPLETE'
+                and any(f['capability'] == 'escaped_reference' and f['category'] == 'lifecycle_violation'
+                        and f['reason'] == 'SCM_RIGHTS send %d has no exclusively measured receiver'
+                        % sends[0]['sequence'] for f in escaped['failures'])
+                and all(p['terminal'] for p in escaped['processes'])
+                and all(row['status'] == 'STANDS DOWN' and row['reason'] == 'census_incomplete'
+                        for rows in escaped['consumer_rows'].values() for row in rows))
+        else:
+            passed = False
+        emit('census/escaped-reference', passed)
+    # Destruction at drain: every socket without an outside reference must be
+    # seen released by the epoll observer. An outside ancestor that takes a
+    # reference with pidfd_getfd (no SCM_RIGHTS, no send) must still be caught.
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as rendezvous:
+        name = 'v111-grab-suite-' + str(os.getpid())
+        rendezvous.bind('\0' + name)
+        rendezvous.listen(1)
+        rendezvous.settimeout(census.HANG_SECONDS)  # Hang detector only.
+        grabbed, failures = [], []
+        def grab():
+            try:
+                connection, _ = rendezvous.accept()
+                with connection:
+                    connection.settimeout(census.HANG_SECONDS)
+                    data = b''
+                    while not data.endswith(b'\n'):
+                        chunk = connection.recv(4096)
+                        assert chunk
+                        data += chunk
+                    target = json.loads(data)
+                    pidfd = os.pidfd_open(target['pid'])
+                    try:
+                        grabbed.append(census.LIBC.syscall(438, pidfd, target['fd'], 0))
+                    finally:
+                        os.close(pidfd)
+                    assert grabbed[-1] >= 0
+                    connection.sendall(b'G')
+            except BaseException as exc:
+                failures.append(repr(exc))
+        worker = threading.Thread(target=grab)
+        worker.start()
+        lifetime, acks = run('destruction_at_drain', r'''
+import json, os, socket, sys
+released=[]
+for family, address in ((1,'\0v111-release-'+str(os.getpid())),(2,('127.0.0.1',0)),(10,('::1',0)),(16,(0,0))):
+    s=socket.socket(family,3 if family==16 else 1,2 if family==16 else 0)
+    s.bind(address)
+    if family!=16: s.listen(1)
+    released.append(os.readlink('/proc/self/fd/'+str(s.fileno())))
+    s.close()
+held=socket.socket(); held.bind(('127.0.0.1',0)); held.listen(1)
+with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as channel:
+    channel.connect('\0'+sys.argv[1])
+    channel.sendall((json.dumps(dict(pid=os.getpid(),fd=held.fileno()))+'\n').encode())
+    assert channel.recv(1)==b'G'
+print(json.dumps(dict(released=released,held=os.readlink('/proc/self/fd/'+str(held.fileno())),
+                      address=held.getsockname())))
+held.close()
+''', name)
+        worker.join(census.HANG_SECONDS)
+        ok = not worker.is_alive() and not failures and len(grabbed) == 1
+        try:
+            if ok and lifetime.get('root_status') == 0:
+                ack, = acks
+                with socket.socket(fileno=grabbed[0]) as outside:
+                    ok = (os.readlink('/proc/self/fd/' + str(outside.fileno())) == ack['held']
+                          and outside.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN) == 1
+                          and outside.getsockname() == tuple(ack['address']))
+                grabbed.clear()
+                by_inode = {o['inode']: o for o in lifetime['sockets']}
+                held_obj = by_inode.get(ack['held'])
+                ok = (ok and held_obj is not None and len(ack['released']) == 4
+                    and all((by_inode.get(i) or {}).get('closed', {}) and by_inode[i]['closed'].get('released') is True
+                            for i in ack['released'])
+                    and all(o['closed'] and o['closed']['released'] for o in lifetime['sockets']
+                            if o['inode'] != ack['held'])
+                    and held_obj['closed'] is None and held_obj.get('referenced_after_drain') is True
+                    and not any(e['kind'] == 'descriptor_send' for e in lifetime['events'])
+                    and [f for f in lifetime['failures'] if f['capability'] == 'escaped_reference'] == [dict(
+                        capability='escaped_reference', category='lifecycle_violation', state='drained',
+                        reason=held_obj['identity'] + ' file is still referenced after descendant drain')]
+                    and lifetime['capture_status'] == 'INCOMPLETE'
+                    and 'socket_destruction' not in lifetime['qualification']['gaps']
+                    and all(row['status'] == 'STANDS DOWN' and row['reason'] == 'census_incomplete'
+                            for rows in lifetime['consumer_rows'].values() for row in rows))
+            else:
+                ok = False
+        finally:
+            for fd in grabbed:
+                os.close(fd)
+        emit('census/destruction-at-drain', ok)
+    # A task sharing the descriptor table or memory could swap a descriptor or
+    # sockaddr between stops; so could a seccomp listener. Both fail closed.
+    shared_probe = r'''
+import ctypes, os, socket, struct, sys, threading
+libc = ctypes.CDLL(None, use_errno=True)
+mode = sys.argv[1]
+if mode == 'seccomp':
+    assert libc.prctl(38, 1, 0, 0, 0) == 0  # PR_SET_NO_NEW_PRIVS
+    allow = ctypes.create_string_buffer(struct.pack('<HBBI', 6, 0, 0, 0x7fff0000))
+    program = ctypes.create_string_buffer(struct.pack('<H6xQ', 1, ctypes.addressof(allow)))
+    listener = libc.syscall(317, 1, 8, ctypes.byref(program))  # NEW_LISTENER
+    assert listener >= 0, ctypes.get_errno()
+if mode == 'thread':
+    rd, wr = os.pipe()
+    t = threading.Thread(target=os.read, args=(rd, 1)); t.start()
+s = socket.socket(); s.bind(('127.0.0.1', 0)); s.listen(1); s.close()
+if mode == 'thread':
+    os.write(wr, b'x'); t.join()
+'''
+    # Netlink autobind on send is decoded from the kernel's sockaddr: exactly
+    # one implicit receive binding with the port id the tracee itself reports.
+    netlink, acks = run('netlink_implicit', r'''
+import json, os, socket, struct
+s = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, 0)
+before = s.getsockname()
+assert s.sendto(struct.pack('<IHHII', 16, 1, 0, 1, 0), (0, 0)) == 16  # NLMSG_NOOP to the kernel
+print(json.dumps(dict(before=list(before), after=list(s.getsockname()),
+                      inode=os.readlink('/proc/self/fd/' + str(s.fileno())))))
+s.close()
+''')
+    objects = [o for o in netlink['sockets'] if acks and o['inode'] == acks[0]['inode']]
+    services = [e for e in netlink['events'] if e['kind'] == 'service']
+    emit('census/netlink-implicit-binding', complete_capture(netlink) and len(acks) == 1
+         and acks[0]['before'][0] == 0 and acks[0]['after'][0] != 0 and len(objects) == 1
+         and len(services) == 1 and services[0]['socket'] == objects[0]['identity']
+         and services[0]['operation'] == 'implicit_receive_binding'
+         and services[0]['address']['nl_pid'] == acks[0]['after'][0]
+         and services[0]['address']['nl_groups'] == acks[0]['after'][1]
+         and not any(f['capability'] in ('implicit_address', 'socket_address') for f in netlink['failures']))
+    shared = {mode: run('shared_' + mode, shared_probe, mode)[0] for mode in ('alone', 'thread', 'seccomp')}
+    reasons = {mode: {f['reason'] for f in r['failures'] if f['capability'] == 'shared_socket_memory'}
+               for mode, r in shared.items()}
+    emit('census/shared-descriptor-table-fails-closed',
+         all(r.get('root_status') == 0 and r['lost_events'] == 0 for r in shared.values())
+         and complete_capture(shared['alone']) and not reasons['alone']
+         and {'syscall %d ran while another live task shared its descriptor table or memory' % nr
+              for nr in (41, 49, 50)} <= reasons['thread']
+         and reasons['seccomp'] == {'seccomp user notification can install descriptors from outside scope'}
+         and all(r['capture_status'] == 'INCOMPLETE' and all(
+             row['status'] == 'STANDS DOWN' and row['reason'] == 'census_incomplete'
+             for rows in r['consumer_rows'].values() for row in rows)
+             for r in (shared['thread'], shared['seccomp'])))
     evidence.update(run_round3_checks(census, emit))
     return evidence
 

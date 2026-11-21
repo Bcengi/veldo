@@ -1,5 +1,6 @@
 {
-  "row": "census/external-reference-needs-destruction-observer",
+  "row": "census/escaped-reference",
+  "mode": "owned",
   "passed": true,
   "cases": [
     {
@@ -7,15 +8,15 @@
       "passed": true,
       "acknowledgement": {
         "family": 1,
-        "address": "\u0000v111-held-1322918",
-        "inode": "socket:[4147924179]",
+        "address": "\u0000v111-held-2485453",
+        "inode": "socket:[4222897751]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/1",
-        "input_digest": "d16734044e38c33fd9e856ca1ae23fddd5f1cafcef5e8dd1f785dba86fe85e15",
-        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "input_digest": "8ae68b1dd90a5ddeeab5c668cb4c73c3f63291cdfa1f1f663b0eee23c00e8d89",
+        "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -24,34 +25,34 @@
           "system": "Linux"
         },
         "status": "INCOMPLETE",
-        "capture_status": "COMPLETE",
+        "capture_status": "INCOMPLETE",
         "state": "drained",
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2925070473896201,
+            "time_ns": 2955944139668630,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2925071026815314,
-            "sequence": 10
+            "time_ns": 2955944985025885,
+            "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2925071026817439,
-            "sequence": 10
+            "time_ns": 2955944985027549,
+            "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "1322918:1",
-            "pid": 1322918,
-            "current_tid": 1322918,
+            "identity": "2485453:1",
+            "pid": 2485453,
+            "current_tid": 2485453,
             "parent": null,
             "root": true,
             "operation": "root",
-            "terminal": 10,
+            "terminal": 11,
             "birth": 1,
             "execs": [
               2
@@ -60,6 +61,18 @@
           }
         ],
         "failures": [
+          {
+            "capability": "escaped_reference",
+            "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+            "category": "lifecycle_violation",
+            "state": "collecting"
+          },
+          {
+            "capability": "escaped_reference",
+            "reason": "socket:[4222897751]:1 file is still referenced after descendant drain",
+            "category": "lifecycle_violation",
+            "state": "drained"
+          },
           {
             "capability": "protocol_inventory_bounds",
             "reason": "bounded protocol discovery does not fully qualify the four required families",
@@ -75,18 +88,6 @@
           {
             "capability": "io_uring_socket_effects",
             "reason": "shared ring completions are not correlated to traced socket identities",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "socket_destruction",
-            "reason": "terminal drain bounds socket destruction but does not timestamp it",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "shared_socket_memory",
-            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
             "category": "observation_incomplete",
             "state": "drained"
           }
@@ -157,75 +158,83 @@
         }
       },
       "socket": {
-        "identity": "socket:[4147924179]:1",
-        "inode": "socket:[4147924179]",
+        "identity": "socket:[4222897751]:1",
+        "inode": "socket:[4222897751]",
         "family": 1,
         "type": 1,
         "protocol": 0,
-        "address": "010000763131312d68656c642d31333232393138",
+        "address": "010000763131312d68656c642d32343835343533",
         "created": 3,
-        "closed": {
-          "barrier": "descendants_drained",
-          "exact": false
-        },
+        "closed": null,
         "references": [],
+        "release_observer": "epoll_file_release",
         "abi": "x86_64",
+        "kernel_sockaddr_hex": "010000763131312d68656c642d32343835343533",
+        "exported": true,
+        "escaped_references": [
+          7
+        ],
         "descriptor_closes": [
-          8
-        ]
+          9
+        ],
+        "referenced_after_drain": true
       },
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2925071001919965,
+          "time_ns": 2955944966434035,
           "kind": "bind",
-          "task": "1322918:1",
-          "socket": "socket:[4147924179]:1",
+          "task": "2485453:1",
+          "socket": "socket:[4222897751]:1",
           "family": 1,
-          "address": "010000763131312d68656c642d31333232393138"
+          "address": "010000763131312d68656c642d32343835343533"
         },
         {
           "sequence": 5,
-          "time_ns": 2925071003028625,
+          "time_ns": 2955944967583502,
           "kind": "service",
-          "task": "1322918:1",
-          "socket": "socket:[4147924179]:1",
+          "task": "2485453:1",
+          "socket": "socket:[4222897751]:1",
           "family": 1,
           "type": 1,
           "operation": "listen",
-          "address": "010000763131312d68656c642d31333232393138",
+          "address": "010000763131312d68656c642d32343835343533",
           "abi": "x86_64"
         },
         {
-          "sequence": 8,
-          "time_ns": 2925071019355550,
+          "sequence": 9,
+          "time_ns": 2955944977709844,
           "kind": "close",
-          "task": "1322918:1",
-          "inode": "socket:[4147924179]",
-          "socket": "socket:[4147924179]:1",
+          "task": "2485453:1",
+          "inode": "socket:[4222897751]",
+          "socket": "socket:[4222897751]:1",
           "fd": 3
         }
       ],
-      "destruction_reasons": [
+      "escape_failures": [
         {
-          "capability": "socket_destruction",
-          "reason": "terminal drain bounds socket destruction but does not timestamp it",
-          "evidence": {
-            "identities": [
-              "socket:[4147924179]:1",
-              "socket:[4147927254]:2"
-            ]
-          }
+          "capability": "escaped_reference",
+          "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+          "category": "lifecycle_violation",
+          "state": "collecting"
+        },
+        {
+          "capability": "escaped_reference",
+          "reason": "socket:[4222897751]:1 file is still referenced after descendant drain",
+          "category": "lifecycle_violation",
+          "state": "drained"
         }
       ],
+      "send_attributed": true,
+      "referenced_after_drain": true,
       "witness": {
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2925071048589049,
-        "queued_live_ns": 2925071048633842,
-        "holder_live_ns": 2925071048704721,
-        "external_release_ack_ns": 2925071048706775,
+        "census_returned_ns": 2955944997833128,
+        "queued_live_ns": 2955944997877297,
+        "holder_live_ns": 2955944997928797,
+        "external_release_ack_ns": 2955944997930405,
         "exact_destruction_observed": false
       }
     },
@@ -236,16 +245,16 @@
         "family": 2,
         "address": [
           "127.0.0.1",
-          47045
+          42207
         ],
-        "inode": "socket:[4147932140]",
+        "inode": "socket:[4222911895]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/2",
-        "input_digest": "51f182d02ddcdd5821fe055ea14af4fbc449739190042ed5e4906551d7d603db",
-        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "input_digest": "80c9f6e7a1aa55337dc9e14aa79839641308d24c61b155ba936341b1eae44c97",
+        "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -254,34 +263,34 @@
           "system": "Linux"
         },
         "status": "INCOMPLETE",
-        "capture_status": "COMPLETE",
+        "capture_status": "INCOMPLETE",
         "state": "drained",
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2925076103107032,
+            "time_ns": 2955949766031804,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2925076787842454,
-            "sequence": 10
+            "time_ns": 2955950614887256,
+            "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2925076787844540,
-            "sequence": 10
+            "time_ns": 2955950614888629,
+            "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "1331061:1",
-            "pid": 1331061,
-            "current_tid": 1331061,
+            "identity": "2492629:1",
+            "pid": 2492629,
+            "current_tid": 2492629,
             "parent": null,
             "root": true,
             "operation": "root",
-            "terminal": 10,
+            "terminal": 11,
             "birth": 1,
             "execs": [
               2
@@ -290,6 +299,18 @@
           }
         ],
         "failures": [
+          {
+            "capability": "escaped_reference",
+            "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+            "category": "lifecycle_violation",
+            "state": "collecting"
+          },
+          {
+            "capability": "escaped_reference",
+            "reason": "socket:[4222911895]:1 file is still referenced after descendant drain",
+            "category": "lifecycle_violation",
+            "state": "drained"
+          },
           {
             "capability": "protocol_inventory_bounds",
             "reason": "bounded protocol discovery does not fully qualify the four required families",
@@ -305,18 +326,6 @@
           {
             "capability": "io_uring_socket_effects",
             "reason": "shared ring completions are not correlated to traced socket identities",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "socket_destruction",
-            "reason": "terminal drain bounds socket destruction but does not timestamp it",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "shared_socket_memory",
-            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
             "category": "observation_incomplete",
             "state": "drained"
           }
@@ -387,79 +396,87 @@
         }
       },
       "socket": {
-        "identity": "socket:[4147932140]:1",
-        "inode": "socket:[4147932140]",
+        "identity": "socket:[4222911895]:1",
+        "inode": "socket:[4222911895]",
         "family": 2,
         "type": 1,
         "protocol": 0,
         "address": "020000007f0000010000000000000000",
         "created": 3,
-        "closed": {
-          "barrier": "descendants_drained",
-          "exact": false
-        },
+        "closed": null,
         "references": [],
+        "release_observer": "epoll_file_release",
         "abi": "x86_64",
+        "kernel_sockaddr_hex": "0200a4df7f0000010000000000000000",
+        "exported": true,
+        "escaped_references": [
+          7
+        ],
         "descriptor_closes": [
-          8
-        ]
+          9
+        ],
+        "referenced_after_drain": true
       },
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2925076770607364,
+          "time_ns": 2955950594172390,
           "kind": "bind",
-          "task": "1331061:1",
-          "socket": "socket:[4147932140]:1",
+          "task": "2492629:1",
+          "socket": "socket:[4222911895]:1",
           "family": 2,
           "address": "020000007f0000010000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2925076772040475,
+          "time_ns": 2955950597215244,
           "kind": "service",
-          "task": "1331061:1",
-          "socket": "socket:[4147932140]:1",
+          "task": "2492629:1",
+          "socket": "socket:[4222911895]:1",
           "family": 2,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "127.0.0.1",
-            "port": 47045,
+            "port": 42207,
             "sockaddr_hex": "020000007f0000010000000000000000"
           },
           "abi": "x86_64"
         },
         {
-          "sequence": 8,
-          "time_ns": 2925076780773236,
+          "sequence": 9,
+          "time_ns": 2955950606873713,
           "kind": "close",
-          "task": "1331061:1",
-          "inode": "socket:[4147932140]",
-          "socket": "socket:[4147932140]:1",
+          "task": "2492629:1",
+          "inode": "socket:[4222911895]",
+          "socket": "socket:[4222911895]:1",
           "fd": 3
         }
       ],
-      "destruction_reasons": [
+      "escape_failures": [
         {
-          "capability": "socket_destruction",
-          "reason": "terminal drain bounds socket destruction but does not timestamp it",
-          "evidence": {
-            "identities": [
-              "socket:[4147932140]:1",
-              "socket:[4147930981]:2"
-            ]
-          }
+          "capability": "escaped_reference",
+          "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+          "category": "lifecycle_violation",
+          "state": "collecting"
+        },
+        {
+          "capability": "escaped_reference",
+          "reason": "socket:[4222911895]:1 file is still referenced after descendant drain",
+          "category": "lifecycle_violation",
+          "state": "drained"
         }
       ],
+      "send_attributed": true,
+      "referenced_after_drain": true,
       "witness": {
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2925076801735042,
-        "queued_live_ns": 2925076801907932,
-        "holder_live_ns": 2925076801979556,
-        "external_release_ack_ns": 2925076801983980,
+        "census_returned_ns": 2955950630448263,
+        "queued_live_ns": 2955950630572519,
+        "holder_live_ns": 2955950630630117,
+        "external_release_ack_ns": 2955950630633678,
         "exact_destruction_observed": false
       }
     },
@@ -470,18 +487,18 @@
         "family": 10,
         "address": [
           "::1",
-          50847,
+          39145,
           0,
           0
         ],
-        "inode": "socket:[4147952776]",
+        "inode": "socket:[4222927280]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/10",
-        "input_digest": "9dd61b68ebecd7ade00af7d260c1af5ee159e86509021425775a6e55efa02627",
-        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "input_digest": "35fa0699fcd831b49a21ecd3ea9194f4f177d34596dabf42a11cbf13a177a14e",
+        "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -490,34 +507,34 @@
           "system": "Linux"
         },
         "status": "INCOMPLETE",
-        "capture_status": "COMPLETE",
+        "capture_status": "INCOMPLETE",
         "state": "drained",
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2925081862946829,
+            "time_ns": 2955955346174335,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2925082496998135,
-            "sequence": 10
+            "time_ns": 2955956227890388,
+            "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2925082497002541,
-            "sequence": 10
+            "time_ns": 2955956227892285,
+            "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "1339787:1",
-            "pid": 1339787,
-            "current_tid": 1339787,
+            "identity": "2499831:1",
+            "pid": 2499831,
+            "current_tid": 2499831,
             "parent": null,
             "root": true,
             "operation": "root",
-            "terminal": 10,
+            "terminal": 11,
             "birth": 1,
             "execs": [
               2
@@ -526,6 +543,18 @@
           }
         ],
         "failures": [
+          {
+            "capability": "escaped_reference",
+            "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+            "category": "lifecycle_violation",
+            "state": "collecting"
+          },
+          {
+            "capability": "escaped_reference",
+            "reason": "socket:[4222927280]:1 file is still referenced after descendant drain",
+            "category": "lifecycle_violation",
+            "state": "drained"
+          },
           {
             "capability": "protocol_inventory_bounds",
             "reason": "bounded protocol discovery does not fully qualify the four required families",
@@ -541,18 +570,6 @@
           {
             "capability": "io_uring_socket_effects",
             "reason": "shared ring completions are not correlated to traced socket identities",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "socket_destruction",
-            "reason": "terminal drain bounds socket destruction but does not timestamp it",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "shared_socket_memory",
-            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
             "category": "observation_incomplete",
             "state": "drained"
           }
@@ -623,79 +640,87 @@
         }
       },
       "socket": {
-        "identity": "socket:[4147952776]:1",
-        "inode": "socket:[4147952776]",
+        "identity": "socket:[4222927280]:1",
+        "inode": "socket:[4222927280]",
         "family": 10,
         "type": 1,
         "protocol": 0,
         "address": "0a000000000000000000000000000000000000000000000100000000",
         "created": 3,
-        "closed": {
-          "barrier": "descendants_drained",
-          "exact": false
-        },
+        "closed": null,
         "references": [],
+        "release_observer": "epoll_file_release",
         "abi": "x86_64",
+        "kernel_sockaddr_hex": "0a0098e9000000000000000000000000000000000000000100000000",
+        "exported": true,
+        "escaped_references": [
+          7
+        ],
         "descriptor_closes": [
-          8
-        ]
+          9
+        ],
+        "referenced_after_drain": true
       },
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2925082483325943,
+          "time_ns": 2955956207346479,
           "kind": "bind",
-          "task": "1339787:1",
-          "socket": "socket:[4147952776]:1",
+          "task": "2499831:1",
+          "socket": "socket:[4222927280]:1",
           "family": 10,
           "address": "0a000000000000000000000000000000000000000000000100000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2925082484968168,
+          "time_ns": 2955956209972430,
           "kind": "service",
-          "task": "1339787:1",
-          "socket": "socket:[4147952776]:1",
+          "task": "2499831:1",
+          "socket": "socket:[4222927280]:1",
           "family": 10,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "::1",
-            "port": 50847,
+            "port": 39145,
             "sockaddr_hex": "0a000000000000000000000000000000000000000000000100000000"
           },
           "abi": "x86_64"
         },
         {
-          "sequence": 8,
-          "time_ns": 2925082490255302,
+          "sequence": 9,
+          "time_ns": 2955956220964527,
           "kind": "close",
-          "task": "1339787:1",
-          "inode": "socket:[4147952776]",
-          "socket": "socket:[4147952776]:1",
+          "task": "2499831:1",
+          "inode": "socket:[4222927280]",
+          "socket": "socket:[4222927280]:1",
           "fd": 3
         }
       ],
-      "destruction_reasons": [
+      "escape_failures": [
         {
-          "capability": "socket_destruction",
-          "reason": "terminal drain bounds socket destruction but does not timestamp it",
-          "evidence": {
-            "identities": [
-              "socket:[4147952776]:1",
-              "socket:[4147953718]:2"
-            ]
-          }
+          "capability": "escaped_reference",
+          "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+          "category": "lifecycle_violation",
+          "state": "collecting"
+        },
+        {
+          "capability": "escaped_reference",
+          "reason": "socket:[4222927280]:1 file is still referenced after descendant drain",
+          "category": "lifecycle_violation",
+          "state": "drained"
         }
       ],
+      "send_attributed": true,
+      "referenced_after_drain": true,
       "witness": {
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2925082508994728,
-        "queued_live_ns": 2925082509126173,
-        "holder_live_ns": 2925082509178869,
-        "external_release_ack_ns": 2925082509182382,
+        "census_returned_ns": 2955956241603324,
+        "queued_live_ns": 2955956241727024,
+        "holder_live_ns": 2955956241782903,
+        "external_release_ack_ns": 2955956241786594,
         "exact_destruction_observed": false
       }
     },
@@ -705,17 +730,17 @@
       "acknowledgement": {
         "family": 16,
         "address": [
-          1349122,
+          2507144,
           0
         ],
-        "inode": "socket:[4147965288]",
+        "inode": "socket:[4222933147]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/16",
-        "input_digest": "71073f00f9822e49f6862e62192c66653a68d72ef6999e481773b6c82fa615ab",
-        "implementation_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+        "input_digest": "af6b5c0e05ec4e76e8e520e618e6cd2219bc0b89c84ff83d91f79eacd8d3ee37",
+        "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -724,34 +749,34 @@
           "system": "Linux"
         },
         "status": "INCOMPLETE",
-        "capture_status": "COMPLETE",
+        "capture_status": "INCOMPLETE",
         "state": "drained",
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2925087598929388,
+            "time_ns": 2955960778790429,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2925088206349935,
-            "sequence": 10
+            "time_ns": 2955961620595783,
+            "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2925088206351967,
-            "sequence": 10
+            "time_ns": 2955961620599021,
+            "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "1349122:1",
-            "pid": 1349122,
-            "current_tid": 1349122,
+            "identity": "2507144:1",
+            "pid": 2507144,
+            "current_tid": 2507144,
             "parent": null,
             "root": true,
             "operation": "root",
-            "terminal": 10,
+            "terminal": 11,
             "birth": 1,
             "execs": [
               2
@@ -760,6 +785,18 @@
           }
         ],
         "failures": [
+          {
+            "capability": "escaped_reference",
+            "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+            "category": "lifecycle_violation",
+            "state": "collecting"
+          },
+          {
+            "capability": "escaped_reference",
+            "reason": "socket:[4222933147]:1 file is still referenced after descendant drain",
+            "category": "lifecycle_violation",
+            "state": "drained"
+          },
           {
             "capability": "protocol_inventory_bounds",
             "reason": "bounded protocol discovery does not fully qualify the four required families",
@@ -775,18 +812,6 @@
           {
             "capability": "io_uring_socket_effects",
             "reason": "shared ring completions are not correlated to traced socket identities",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "socket_destruction",
-            "reason": "terminal drain bounds socket destruction but does not timestamp it",
-            "category": "observation_incomplete",
-            "state": "drained"
-          },
-          {
-            "capability": "shared_socket_memory",
-            "reason": "entry/exit inode checks cannot exclude ABA or shared sockaddr mutation",
             "category": "observation_incomplete",
             "state": "drained"
           }
@@ -857,78 +882,86 @@
         }
       },
       "socket": {
-        "identity": "socket:[4147965288]:1",
-        "inode": "socket:[4147965288]",
+        "identity": "socket:[4222933147]:1",
+        "inode": "socket:[4222933147]",
         "family": 16,
         "type": 3,
         "protocol": 2,
-        "address": "100086b90000000000000000",
+        "address": "100000610000000000000000",
         "created": 3,
-        "closed": {
-          "barrier": "descendants_drained",
-          "exact": false
-        },
+        "closed": null,
         "references": [],
+        "release_observer": "epoll_file_release",
         "abi": "x86_64",
+        "kernel_sockaddr_hex": "100000008841260000000000",
+        "exported": true,
+        "escaped_references": [
+          7
+        ],
         "descriptor_closes": [
-          8
-        ]
+          9
+        ],
+        "referenced_after_drain": true
       },
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2925088181889488,
+          "time_ns": 2955961603697582,
           "kind": "bind",
-          "task": "1349122:1",
-          "socket": "socket:[4147965288]:1",
+          "task": "2507144:1",
+          "socket": "socket:[4222933147]:1",
           "family": 16,
-          "address": "100086b90000000000000000"
+          "address": "100000610000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2925088181905434,
+          "time_ns": 2955961603705167,
           "kind": "service",
-          "task": "1349122:1",
-          "socket": "socket:[4147965288]:1",
+          "task": "2507144:1",
+          "socket": "socket:[4222933147]:1",
           "family": 16,
           "type": 3,
           "operation": "bind",
-          "address": "100086b90000000000000000",
+          "address": "100000610000000000000000",
           "abi": "x86_64"
         },
         {
-          "sequence": 8,
-          "time_ns": 2925088199161009,
+          "sequence": 9,
+          "time_ns": 2955961613801025,
           "kind": "close",
-          "task": "1349122:1",
-          "inode": "socket:[4147965288]",
-          "socket": "socket:[4147965288]:1",
+          "task": "2507144:1",
+          "inode": "socket:[4222933147]",
+          "socket": "socket:[4222933147]:1",
           "fd": 3
         }
       ],
-      "destruction_reasons": [
+      "escape_failures": [
         {
-          "capability": "socket_destruction",
-          "reason": "terminal drain bounds socket destruction but does not timestamp it",
-          "evidence": {
-            "identities": [
-              "socket:[4147965288]:1",
-              "socket:[4147962394]:2"
-            ]
-          }
+          "capability": "escaped_reference",
+          "reason": "SCM_RIGHTS send 7 has no exclusively measured receiver",
+          "category": "lifecycle_violation",
+          "state": "collecting"
+        },
+        {
+          "capability": "escaped_reference",
+          "reason": "socket:[4222933147]:1 file is still referenced after descendant drain",
+          "category": "lifecycle_violation",
+          "state": "drained"
         }
       ],
+      "send_attributed": true,
+      "referenced_after_drain": true,
       "witness": {
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2925088219918456,
-        "queued_live_ns": 2925088219960471,
-        "holder_live_ns": 2925088220004091,
-        "external_release_ack_ns": 2925088220009817,
+        "census_returned_ns": 2955961634613357,
+        "queued_live_ns": 2955961634658188,
+        "holder_live_ns": 2955961634695024,
+        "external_release_ack_ns": 2955961634698901,
         "exact_destruction_observed": false
       }
     }
   ],
-  "source_digest": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a"
+  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
 }

@@ -1,0 +1,21 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -669,0 +670,12 @@
++    def witness_phase(self, pid, entry, phase):
++        message = self.memory(pid, entry['args'][1], 56)
++        pointer, length = struct.unpack_from('<QQ', message, 32)
++        before = self.memory(pid, pointer, length).hex()
++        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as channel:
++            channel.connect('\0' + os.environ['VELDO_0111_WITNESS_SOCKET'])
++            channel.sendall((json.dumps(dict(phase=phase, pid=pid, pointer=pointer, before=before)) + '\n').encode())
++            assert channel.recv(1) == b'A'
++        sample = before if phase == 'entry' else self.memory(pid, pointer, length).hex()
++        self.event('witness_sample', phase=phase, sample=sample,
++                   entry_descriptors=entry.get('sent_controls'))
++
+@@ -716,0 +729,2 @@
++            if nr == 46:
++                self.witness_phase(pid, entry, 'entry')
+@@ -737,0 +752,2 @@
++        if nr == 46 and result >= 0:
++            self.witness_phase(pid, entry, 'exit')
