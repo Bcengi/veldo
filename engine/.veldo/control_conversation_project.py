@@ -254,15 +254,14 @@ def snapshot(record):
                            text=True)
             entry['commits'] = int(count.stdout.strip() or 0) if count.returncode == 0 else 0
             if entry['commits']:
-                with tempfile.TemporaryDirectory() as scratch:
-                    target = os.path.join(scratch, 'clone.bundle')
-                    made = _git_process.run(['git', '-C', clone, 'bundle', 'create', target, '--all', '^' + commit],
-                                  capture_output=True)
-                    if made.returncode == 0:
-                        data = Path(target).read_bytes()
-                        name = 'bundles/%d-%s.bundle' % (number, attached.get('project'))
-                        entry['bundle'] = {'path': name, 'digest': _digest(data)}
-                        entries.append((name, data, 0o644))
+                # On the line the bundle is read from git's output: no temporary folder is made for it (VELDO-0304).
+                made = _git_process.run(['git', '-C', clone, 'bundle', 'create', '-', '--all', '^' + commit],
+                                        capture_output=True)
+                if made.returncode == 0:
+                    data = made.stdout
+                    name = 'bundles/%d-%s.bundle' % (number, attached.get('project'))
+                    entry['bundle'] = {'path': name, 'digest': _digest(data)}
+                    entries.append((name, data, 0o644))
         clones.append(entry)
     manifest = {'schema': 'veldo.conversation_snapshot/v1', 'conversation': record.get('id'), 'files': files,
                 'clones': clones}

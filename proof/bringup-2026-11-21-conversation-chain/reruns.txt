@@ -1,0 +1,17 @@
+Suites rerun alone after the follow-up fixes, at 696a60d2 of the port stack (the tree this commit makes):
+  123_veldo_0174_conversations                    38 passed   11.55s
+  131_veldo_0175_conversation_replies             16 passed    3.63s
+  132_veldo_0175_conversation_routes              21 passed   20.33s
+  83_veldo_0154_factory_loop                      14 passed   46.21s
+  155_veldo_0304_space_boundary                   51 passed    6.39s
+  136_veldo_0180_conversation_projects            22 passed    3.31s
+  128_veldo_0177_conversation_workspace           16 passed    3.21s
+  146_veldo_0308_run_finished                     38 passed (after the receiver defaults)
+  131_veldo_0184_file_memory                      16 passed (after the forms were read from the line's engines)
+  129_veldo_0239_batch_landing                    23 passed
+  129_veldo_0254_canary_launch                     7 passed
+  127_veldo_0254_secret_scan                      22 passed
+  79_veldo_0061_codex_adapter                     21 passed
+  105_veldo_0182_memory                          127 passed (second run; copy/chroma-busy-refused was false once in the sweep)
+  66_veldo_0042_clones                            20 passed
+clone175-into-initial-branch applied in place after the fetch change: AC4/attach-initial-branch red, module restored.

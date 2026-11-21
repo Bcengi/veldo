@@ -706,8 +706,10 @@ def _v239_suite():
                     given = {k.arg: ast.unparse(k.value) for k in node.keywords}
                     constructions.append((path.name, node.lineno, given.get('batches') or ''))
         wired_files = sorted({name for name, _line, value in constructions})
-        check(WC, 'the intake is built in the three production places [%s]' % wired_files,
-              wired_files == ['control_service_api.py', 'control_service_projects.py', 'control_workflow_cycle_pm.py'])
+        # Four since VELDO-0175: the service's own Telegram intake, which takes every acquired message.
+        check(WC, 'the intake is built in the four production places [%s]' % wired_files,
+              wired_files == ['control_service.py', 'control_service_api.py', 'control_service_projects.py',
+                              'control_workflow_cycle_pm.py'])
         check(WC, 'every one passes the batch starter [%s]' % constructions,
               constructions and all("('control_batch_service').starter(" in value for _n, _l, value in constructions))
         scaffold = load('v239_scaffold_installed', mods / 'init_scaffold.py')

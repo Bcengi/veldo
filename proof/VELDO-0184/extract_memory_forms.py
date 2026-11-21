@@ -17,18 +17,24 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 CLAUDE = [
-    # (what it shows, the literal, bytes before, bytes after)
+    # (what it shows, the name of the product's pattern that reads it, bytes before, bytes after). On the line the
+    # Claude Code forms are found by control_engine_claude.FILE_MEMORY_PATTERNS, the patterns qualify.py reads the
+    # form by (the 2.1.281 literals with the bundle's minified names left open), because the line's qualified
+    # binary is a later bundle whose minified names differ: a 2.1.281 literal is in no other bundle.
     ('the auto-memory directory source order: policySettings, flagSettings, trusted local and project, userSettings',
-     b'let s=ye(r)?.autoMemoryDirectory;if(s!=null)return{dir:s,source:r}', 120, 40),
-    ('the directory as reported: normalized with a trailing separator', b'let s=Ps(r).replace(/[/\\\\]+$/,"")', 0, 80),
+     'directory_source', 120, 40),
+    ('the directory as reported: normalized with a trailing separator', 'directory_reported', 0, 0),
     ('the environment switch: CLAUDE_CODE_DISABLE_AUTO_MEMORY turns auto memory off, unset leaves the setting',
-     b'let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return"off"', 30, 80),
+     'environment_switch', 30, 80),
+    ('autoMemoryEnabled from the merged settings, on when no source sets it', 'enabled_setting', 0, 0),
+    ('the init event memory paths: auto, and team when team memory is on', 'init_paths', 30, 20),
+    ('the init event field', 'init_field', 0, 0),
+    ('the settings schema entry', 'settings_schema', 0, 120),
+]
+# A 2.1.281 literal that no product pattern reads, kept as it was and reported, never required: in 2.1.281 it
+# showed autoMemoryEnabled read per settings source. A later bundle may not carry that function.
+CLAUDE_2_1_281_ONLY = [
     ('autoMemoryEnabled read from the merged settings, flagSettings among them', b'function Uy(){if(PT("autoMemoryEnabled")', 0, 160),
-    ('autoMemoryEnabled from the merged settings, on when no source sets it',
-     b'function pD(){let e=Ke();if(e.autoMemoryEnabled!==void 0)return e.autoMemoryEnabled;return!0}', 0, 0),
-    ('the init event memory paths: auto, and team when team memory is on', b'n={auto:Qs()},fR())n.team=PS()', 30, 20),
-    ('the init event field', b'if(e.memoryPaths)g.memory_paths={...e.memoryPaths}', 0, 0),
-    ('the settings schema entry', b'autoMemoryDirectory:o().optional().describe(', 0, 120),
 ]
 CODEX = [
     ('the memories table', b'MemoriesToml', 0, 60),
@@ -65,11 +71,18 @@ def main():
         if digest != engines[engine]['sha256']:
             sys.exit('extract: %s is not the qualified binary' % path)
         rows = []
+        patterns = dict(load(module).FILE_MEMORY_PATTERNS) if engine == 'claude_code' else {}
         for what, literal, before, after in table:
-            found = excerpt(data, literal, before, after)
+            if engine == 'claude_code':
+                match = patterns[literal].search(data)
+                found = excerpt(data, match.group(0), before, after) if match else None
+                shown = {'pattern': literal, 'literal': match.group(0).decode('ascii') if match else None}
+            else:
+                found = excerpt(data, literal, before, after)
+                shown = {'literal': literal.decode('ascii')}
             if found is None:
                 missing.append('%s: %r' % (engine, literal))
-            rows.append(dict(shows=what, literal=literal.decode('ascii'), **(found or {'offset': None})))
+            rows.append(dict(shows=what, **shown, **(found or {'offset': None})))
         form = load(module).FILE_MEMORY
         if engine == 'codex':
             carried = load(module).file_memory_carried(str(path))
@@ -79,6 +92,10 @@ def main():
             # The patterns qualify.py reads the form by (these literals with the minified names left open).
             missing += ['claude_code: FILE_MEMORY_PATTERNS ' + name for name in load(module).file_memory_missing(str(path))]
         out[engine] = {'version': engines[engine]['version'], 'sha256': digest, 'file_memory': form, 'found': rows}
+        if engine == 'claude_code':
+            out[engine]['literals_of_2_1_281_no_pattern_reads'] = [
+                dict(shows=what, literal=literal.decode('ascii'), **(excerpt(data, literal, before, after) or {'offset': None}))
+                for what, literal, before, after in CLAUDE_2_1_281_ONLY]
     (Path(__file__).with_name('engine-memory-forms.json')).write_text(json.dumps(out, indent=1, sort_keys=True) + '\n')
     if missing:
         sys.exit('extract: missing ' + ', '.join(missing))

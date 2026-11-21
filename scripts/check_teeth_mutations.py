@@ -15993,7 +15993,7 @@ def cases():
         "            pass  # defect: no production caller hands an acquired message to intake\n",
         ['AC1/service-feed'])
     add(175, 'clone175-into-initial-branch', routes175, 'control_clone.py',
-        "             '%s:%s' % (commit, held), code='stale_input:commit_unavailable')\n",
+        "             commit, code='stale_input:commit_unavailable')\n",
         "             '%s:refs/heads/%s' % (commit, branch), code='stale_input:commit_unavailable')  # defect: into it\n",
         ['AC4/attach-initial-branch'])
     # Fix round 2: a reading of a conversation closed (or gone) after the reply was held settles it READ.

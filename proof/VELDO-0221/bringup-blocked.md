@@ -10,3 +10,5 @@ or amend its specification.
 
 So there is nothing built to bring. The ticket has to be built on the line. Its specification on
 the line is `ready`. This file is the only change.
+
+Lead decision, 2026-11-21 (bring-up part 2): dropped from the bring-up. Nothing is built; the lead queues the build.

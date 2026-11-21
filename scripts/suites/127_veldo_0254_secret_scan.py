@@ -479,6 +479,11 @@ print(json.dumps(out))
         def bare_receiver(config_, binding, contract_, runner=None):
             receiver = object.__new__(L.Receiver)
             receiver.login, receiver.memory, receiver.binding = None, None, binding
+            # What Receiver.__init__ sets and _spawn reads since VELDO-0231, VELDO-0176, VELDO-0177 and VELDO-0184.
+            receiver.metering = receiver.flags = receiver.flag_means = None
+            receiver.conversation_record = receiver.held_session = receiver.placed = receiver.rendering = None
+            receiver.start = receiver.resume_refusal = receiver.file_memory = None
+            receiver.history_wanted, receiver.attached = False, []
             receiver.config, receiver.contract = config_, contract_
             if runner is not None:
                 receiver.runner = runner
