@@ -115,9 +115,12 @@ them.
    the caller's shard by ancestry and narrows the bind to that shard's roots (`open.md` item 6 says
    what this does not cover).
 
-## Two edits outside the declared footprint
+## Two paths the build added to the footprint
 
-Both were forced by a gate check, and both are named here so that nobody finds them in the diff:
+The specification's footprint did not name them. Each edit is forced by a gate check, the shape
+gate refuses a diff that touches an undeclared path, so the build declared both as the footprint's
+last two entries and says so in the specification's build notes. The owner approved the footprint
+without them:
 
 - `scripts/check_space_boundary.py`: two entries for `('scripts/run_scope.py', 'run_shards')`, in
   the existing class "Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that
