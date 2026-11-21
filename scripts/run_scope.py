@@ -552,14 +552,27 @@ class RunScope:
 # WHAT THE CHECK CAN AND CANNOT ATTRIBUTE. The host is shared (measured on the qualification host
 # on 2026-11-21: in 260 seconds other sessions made 20 entries at the top of /tmp, two units and
 # one /dev/shm entry), and the kernel records no creator for a file.
-#   FILES, in every place including the top of the system temporary directory. A new entry IS A
-#   SHARD'S when its name carries the shard's instance name, when it refers to a shard's roots (a
-#   link's target, a small file's text) or when a live process that carries a shard's roots holds
-#   it: it is charged to that suite. It is FOREIGN, and only noted, when another account owns it or a live process of
-#   another tree holds it. Anything else is waited on (SETTLE_S, a hang detector) and, if it
-#   stays, FAILS THE LEG'S ISOLATION CHECK with its name and the suites that ran when it
-#   appeared recorded. An unattributed entry is never silently allowed (lead decision
-#   2026-11-21).
+#   FILES. A new entry IS A SHARD'S when its name carries the shard's instance name, when it
+#   refers to a shard's roots (a link's target, a small file's text), when a live process that
+#   carries a shard's roots holds it, or when a process of the shard's own tree (its process
+#   group, read while the shard runs and once more before the group is ended) held it when it
+#   was first seen: it is charged to that suite. It is FOREIGN, and only noted, when another
+#   account owns it or a live process of another tree holds it. What is tied to nothing depends
+#   on the place's rule:
+#     "strict" (every place but one): it is waited on (SETTLE_S, a hang detector) and, if it
+#     stays, FAILS THE LEG'S ISOLATION CHECK with its name and the suites that ran when it
+#     appeared recorded.
+#     "attributed" (THE TOP OF THE SYSTEM TEMPORARY DIRECTORY, lead decision 2026-11-21, revised
+#     on a measured fact): on a shared host other sessions leave files there all the time, and
+#     in three whole unconfined legs every shard was green and the leg was red each time for
+#     another session's file. So a new entry there fails a shard ONLY WHEN IT IS ATTRIBUTABLE to
+#     that shard, by one of the four ties above. One that is tied to nothing is RECORDED (the
+#     leg's result, key "recorded") and SHOWN on the leg's output with the suites that ran when
+#     it appeared, and neither charged nor waited for. Every shard keeps a temporary directory
+#     of its own, so what a shard leaks through the usual interfaces lies in its roots, and a
+#     leak at the top carries its roots or its instance name wherever the engine made it. THE
+#     FLOOR: an entry a shard makes at the top under a fixed name, that names none of its
+#     roots, with no process of its tree holding it at a reading, is recorded and not charged.
 #   UNITS. Only this instance's units are judged (lead decision 2026-11-21): another session's
 #   or the desktop's units come and go throughout a leg and are none of its business. A unit is
 #   this leg's BY ITS PREFIX (the leg's token in an engine-shaped name) or BY REFERENCE (its
@@ -1107,9 +1120,10 @@ describe_unit.many = describe_units
 
 
 def unconfined_places(base):
-    """The shared locations of AC3, each with the depth it is read to. Every one is judged by the
-    one rule for files in the note at the top of this section, the top of the system temporary
-    directory included. They are the owner's own, never taken from the leg's environment."""
+    """The shared locations of AC3, each with the depth it is read to and its rule for an entry
+    nothing can be tied to (the note at the top of this section): "strict" fails the leg,
+    "attributed", the top of the system temporary directory alone, records it. They are the
+    owner's own, never taken from the leg's environment."""
     import pwd
     uid = os.getuid()
     home = Path(pwd.getpwuid(uid).pw_dir)
@@ -1119,7 +1133,7 @@ def unconfined_places(base):
         {"name": "runtime unit directory", "path": Path("/run/user/%d" % uid) / MANAGER_UNITS, "depth": 2,
          "rule": "strict"},
         {"name": "/dev/shm", "path": Path("/dev/shm"), "depth": 1, "rule": "strict"},
-        {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "strict"},
+        {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"},
         {"name": "owner cache", "path": home / ".cache/veldo", "depth": 1, "rule": "strict"},
         {"name": "owner state", "path": home / ".local/state/veldo", "depth": 1, "rule": "strict"},
     ]
@@ -1160,10 +1174,15 @@ class SharedPlaces:
         self.places, self.units, self.describe = list(places), units, describe
         self.answers = True  # False once the manager, having answered before, stopped answering
 
-    def read(self):
+    def files(self):
+        """The entries of every place now, without asking the manager."""
         seen = set()
         for place in self.places:
             seen.update((place["name"], item) for item in _listing(place["path"], place["depth"]))
+        return seen
+
+    def read(self):
+        seen = self.files()
         if self.units is not None:
             listed = self.units()
             if listed is None:
@@ -1216,6 +1235,39 @@ def _holders(path):
                 environment = ""
             found.append((int(name), environment))
     return found
+
+
+def _tree_holders(paths, groups):
+    """{path: process group} for each of `paths` that a live process of one of `groups` holds (its
+    working directory or an open descriptor at or beneath it). Only the members of those groups
+    are read, so the cost is the shards' own processes, whatever else the host runs."""
+    held = {}
+    paths = [str(path) for path in paths]
+    if not paths or not groups:
+        return held
+    for name in os.listdir("/proc"):
+        if not name.isdigit():
+            continue
+        try:
+            group = int(Path("/proc/%s/stat" % name).read_text().rsplit(")", 1)[1].split()[2])
+            if group not in groups:
+                continue
+            links = [os.readlink("/proc/%s/cwd" % name)]
+        except (OSError, ValueError, IndexError):
+            continue
+        try:
+            descriptors = os.listdir("/proc/%s/fd" % name)
+        except OSError:
+            descriptors = []
+        for descriptor in descriptors:
+            try:
+                links.append(os.readlink("/proc/%s/fd/%s" % (name, descriptor)))
+            except OSError:
+                continue
+        for path in paths:
+            if path not in held and any(link == path or link.startswith(path + "/") for link in links):
+                held[path] = group
+    return held
 
 
 def _shard_named(text, base, jobs):
@@ -1495,6 +1547,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
     watched_units = watch.answers and watch.units is not None
     known, first_seen, window = set(before), {}, set()
     unit_text = {}  # engine-shaped unit without this leg's token -> its description at first sight
+    tied = {}  # (place, entry) -> the suite whose process tree held it when it was first seen
     running, done, events = {}, [], []
     selector = selectors.DefaultSelector()
     stopped = []
@@ -1517,6 +1570,17 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         strangers = [name for kind, name in sorted(fresh) if kind == "unit" and unit_instance(name)[0]
                      and unit_instance(name)[1] not in by_instance]
         unit_text.update(watch.described(strangers))
+        # BY ITS PROCESS TREE: a new entry that a process of a running shard's group holds now is
+        # that shard's, whatever its name and its text say. Read at first sight, while the tree lives.
+        entries = {}
+        for kind, item in fresh:
+            place = watch.place(kind) if kind != "unit" else None
+            if place is not None:
+                entries[str(Path(place["path"]) / item)] = (kind, item)
+        groups = {job["pid"]: job["name"] for job in running.values() if "pid" in job}
+        for path, group in _tree_holders(entries, groups).items():
+            if path != str(base) and path not in own:
+                tied[entries[path]] = groups[group]
 
     def observe():
         seen = watch.read()
@@ -1605,6 +1669,9 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             except (KeyError, ValueError):
                 pass
         # What is left of its process group ends with it: nothing of a shard runs on into another's.
+        # The places are read once more first: an entry that a process the suite left running holds
+        # is tied to this shard by its tree, and after the kill nothing would say whose it was.
+        notice(known | watch.files())
         try:
             os.killpg(job["pid"], signal.SIGKILL)
         except (ProcessLookupError, PermissionError):
@@ -1721,7 +1788,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
 
         # ---- the isolation check, in every gate --------------------------------------------------
         # breaches: (suite or None, words, the suites that ran when the item first appeared).
-        breaches, unattributed, strangers = [], [], []
+        breaches, unattributed, strangers, recorded = [], [], [], []
         after = observe()
         if watched_units and not watch.answers:
             breaches.append((None, "the user manager answered before the leg and not after it, so its "
@@ -1761,11 +1828,18 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             if path == base or str(path) in own:
                 continue
             suite, whose, how = attribute(kind, item, path, base, jobs)
+            if not (whose == "leg" and suite) and (kind, item) in tied:
+                suite, whose, how = tied[(kind, item)], "leg", "a process of the shard's own tree held it when it appeared"
             where = "%s: %s" % (kind, path)
             if whose == "leg" and suite:
                 breaches.append((suite, "%s was left behind (%s)" % (where, how), suspects))
             elif whose == "foreign":
                 unattributed.append("%s (%s)" % (where, how))
+            elif place.get("rule") == "attributed" and (whose == "unknown" or suite):
+                # THE TOP OF THE SYSTEM TEMPORARY DIRECTORY: tied to no shard, so it fails none and
+                # is not waited for. It is recorded and shown, with the suites that ran when it
+                # appeared. (An entry that is a shard's never reaches this line: it was charged above.)
+                recorded.append({"place": kind, "path": str(path), "suspects": list(suspects)})
             else:
                 # Tied to nothing. WHO RAN WHEN IT APPEARED IS NOT ATTRIBUTION: measured on 2026-11-21 in
                 # the whole unconfined leg, two files another session made at the top of /tmp appeared
@@ -1820,6 +1894,10 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                shards_ended - began, wall - (shards_ended - began), token))
         for line in unattributed:
             say("   isolation note, not charged: %s" % line)
+        for entry in recorded:
+            say("   isolation record, tied to no shard and not charged: %s: %s appeared during the leg and was "
+                "left behind; the suites that ran when it first appeared: %s"
+                % (entry["place"], entry["path"], ", ".join(entry["suspects"]) or "none"))
         if strangers:
             say("   %d unit(s) appeared during the leg that nothing ties to this instance, not judged: %s%s"
                 % (len(strangers), ", ".join(sorted(strangers)[:12]), " ..." if len(strangers) > 12 else ""))
@@ -1829,7 +1907,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             if job["alone"]:
                 say("   shard %s ran without a Landlock layer of its own, alone: %s" % (job["name"], UNLAYERED[job["name"]]))
         return {"passed": passed, "failed": failed, "targets": names, "charged": charged,
-                "breaches": isolation, "unattributed": unattributed, "strangers": sorted(strangers),
+                "breaches": isolation, "unattributed": unattributed, "recorded": recorded,
+                "strangers": sorted(strangers),
                 "events": events, "token": token,
                 "parallelism": parallelism, "wall_seconds": wall,
                 "shards": [{k: j.get(k) for k in ("name", "index", "closure", "wall_seconds", "cpu_seconds",

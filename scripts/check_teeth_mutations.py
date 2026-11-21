@@ -16598,11 +16598,28 @@ def cases():
               '    return now - job["progress_at"] > job["deadline"]\n',
               '    return now - job["started"] > job["deadline"]  # defect: a slow suite is ended\n',
               ['suite-shards/deadline-runs-from-the-last-progress'])
-    # The /tmp rule: an entry nothing can be tied to is noted and not charged.
+    # A strict place: an entry nothing can be tied to is noted and not charged.
     shards221('shards221-orphan-entry-allowed',
               '                breaches.append((None, orphan, suspects))\n',
               '                unattributed.append(orphan)  # defect: noted, never charged\n',
               ['suite-shards/unattributed-entry-fails-the-leg'])
+    # Fix round 2, the revised /tmp rule (lead decision 2026-11-21). A shard's own entry at the top of
+    # the system temporary directory is recorded like anyone's, and no longer fails the shard.
+    shards221('shards221-own-temporary-entry-allowed',
+              '            if whose == "leg" and suite:\n',
+              '            if whose == "leg" and suite and place.get("rule") != "attributed":  # defect: its own is only recorded\n',
+              ['suite-shards/own-temporary-entry-fails-its-shard'])
+    # The tie by a shard's process tree is dropped: what its child holds under a plain name is nobody's.
+    shards221('shards221-tree-tie-dropped',
+              '                tied[entries[path]] = groups[group]\n',
+              '                pass  # defect: an entry a process of the shard\'s tree holds is tied to nothing\n',
+              ['suite-shards/own-temporary-entry-fails-its-shard'])
+    # The other way round: the top of the temporary directory is strict again, so another session's
+    # file fails the leg.
+    shards221('shards221-unattributed-temporary-entry-charged',
+              '            elif place.get("rule") == "attributed" and (whose == "unknown" or suite):\n',
+              '            elif False:  # defect: an entry tied to nothing at the top of the temporary directory fails the leg\n',
+              ['suite-shards/unattributed-temporary-entry-is-recorded-not-charged'])
     # Suite 151's exception: the shard with no layer of its own runs beside the others.
     shards221('shards221-unlayered-beside-others',
               '                     "alone": leg == "confined" and name in UNLAYERED,\n',

@@ -709,7 +709,7 @@ def _veldo_0221():
         if real != {"systemd configuration": (home + "/.config/systemd/user", "strict"),
                     "runtime directory": ("/run/user/%d" % os.getuid(), "strict"),
                     "runtime unit directory": ("/run/user/%d/systemd/user" % os.getuid(), "strict"),
-                    "/dev/shm": ("/dev/shm", "strict"), "temporary directory": (str(top), "strict"),
+                    "/dev/shm": ("/dev/shm", "strict"), "temporary directory": (str(top), "attributed"),
                     "owner cache": (home + "/.cache/veldo", "strict"),
                     "owner state": (home + "/.local/state/veldo", "strict")}:
             checked.append("the real shared places are %r" % real)
@@ -740,14 +740,16 @@ def _veldo_0221():
                and not result["breaches"] and any("isolation check held" in line for line in lines)
                and any("5 unit(s) appeared during the leg that nothing ties to this instance" in line for line in lines))
 
-        # THE RULE FOR A FILE NOBODY CAN BE TIED TO, at the top of the temporary directory as anywhere:
-        # it fails the leg's isolation check, by name, with the suites that ran when it appeared, and
-        # is never silently allowed. EVENT SYNCHRONIZED: the entry is made at the dispatcher's own
-        # second reading of its clock, which is after it started its first shards and before it read
-        # the place again. One the leg can tie to a shard is charged to that shard instead.
+        # THE RULE FOR A FILE NOBODY CAN BE TIED TO, IN A STRICT PLACE (every shared place but the top
+        # of the system temporary directory): it fails the leg's isolation check, by name, with the
+        # suites that ran when it appeared, and is never silently allowed. EVENT SYNCHRONIZED: the
+        # entry is made at the dispatcher's own second reading of its clock, which is after it started
+        # its first shards and before it read the place again. One the leg can tie to a shard is
+        # charged to that shard instead.
         temporary_top = top / "fixture-tmp"
         temporary_top.mkdir()
-        tmp_place = [{"name": "temporary directory", "path": temporary_top, "depth": 1, "rule": "strict"}]
+        strict_place = [{"name": "/dev/shm", "path": temporary_top, "depth": 1, "rule": "strict"}]
+        tmp_place = [{"name": "temporary directory", "path": temporary_top, "depth": 1, "rule": "attributed"}]
         readings = [0]
 
         def orphaning_clock():
@@ -755,19 +757,22 @@ def _veldo_0221():
             if readings[0] == 2:
                 (temporary_top / "orphan-entry").write_text("nothing ties this to a shard")
             return time.monotonic()
+
+        def emptied():
+            for entry in temporary_top.iterdir():
+                entry.unlink()
+            readings[0] = 0
         tmp_bodies = {"01_a": 'expect("a", True)\n', "02_b": 'expect("b", True)\n',
                       "03_refers": ('Path(os.environ["V221_TMP"], "refers").write_text("made in %s" % os.environ["HOME"])\n'
                                     'expect("left a file that names my home", True)\n')}
         tmp_tree = tree(top / "tmp-rule", tmp_bodies)
-        result, lines = shards(tmp_tree, "unconfined", list(tmp_bodies), listed=",".join(tmp_bodies), places=tmp_place,
+        result, lines = shards(tmp_tree, "unconfined", list(tmp_bodies), listed=",".join(tmp_bodies), places=strict_place,
                                clock=orphaning_clock, extra={"V221_TMP": str(temporary_top)})
         leg_words = [w for _c, w in result["charged"].get(RS.LEG_OWNER, [])]
         # One shard alone in the leg when the entry appears is still not charged with it: who ran
         # when it appeared is not attribution (another session's file once named the wrong suite).
-        (temporary_top / "orphan-entry").unlink()
-        (temporary_top / "refers").unlink()
-        readings[0] = 0
-        lone, _ = shards(tmp_tree, "unconfined", ["01_a"], listed="01_a", places=tmp_place, clock=orphaning_clock,
+        emptied()
+        lone, _ = shards(tmp_tree, "unconfined", ["01_a"], listed="01_a", places=strict_place, clock=orphaning_clock,
                          extra={"V221_TMP": str(temporary_top)})
         lone_words = [w for _c, w in lone["charged"].get(RS.LEG_OWNER, [])]
         expect("VELDO-0221 AC3 suite-shards/unattributed-entry-fails-the-leg: %r %r" % (result["charged"], lines[-6:]),
@@ -779,8 +784,70 @@ def _veldo_0221():
                == ["  %s suite-shard 03_refers isolation_breach" % RS.FAIL_MARK,
                    "  %s suite-shard-leg unconfined isolation_breach" % RS.FAIL_MARK]
                and not [line for line in lines if "not charged" in line and "orphan-entry" in line]
+               and not result["recorded"]
                and codes(lone, "01_a") == [] and len(lone_words) == 1 and "orphan-entry" in lone_words[0]
                and lone_words[0].endswith("first appeared: 01_a") and (lone["passed"], lone["failed"]) == (1, 1))
+
+        # THE TOP OF THE SYSTEM TEMPORARY DIRECTORY (lead decision 2026-11-21, revised: other sessions
+        # of a shared host leave files there all the time). The same entry, tied to nothing, in the
+        # place with the rule "attributed": it fails no shard and not the leg. It is recorded in the
+        # leg's result and shown on its output with the suites that ran when it appeared.
+        emptied()
+        result, lines = shards(tmp_tree, "unconfined", ["01_a", "02_b"], listed="01_a,02_b", places=tmp_place,
+                               clock=orphaning_clock, extra={"V221_TMP": str(temporary_top)})
+        shown = [line for line in lines if "orphan-entry" in line]
+        expect("VELDO-0221 AC3 suite-shards/unattributed-temporary-entry-is-recorded-not-charged: %r %r %r"
+               % (result["charged"], result["recorded"], lines[-5:]),
+               (result["passed"], result["failed"]) == (2, 0) and not result["charged"] and not result["breaches"]
+               and result["recorded"] == [{"place": "temporary directory", "path": str(temporary_top / "orphan-entry"),
+                                           "suspects": ["01_a", "02_b"]}]
+               and len(shown) == 1 and "isolation record, tied to no shard and not charged" in shown[0]
+               and shown[0].endswith("first appeared: 01_a, 02_b")
+               and any("isolation check held" in line for line in lines)
+               and not [line for line in lines if RS.FAIL_MARK in line])
+
+        # A SHARD'S OWN ENTRY THERE STILL FAILS IT, by each of the three ties: its text names the
+        # shard's private roots; its name carries the shard's instance name; a process of the shard's
+        # own tree holds it. The third shard's child is given an empty environment and a file whose
+        # name and text say nothing, so only the tree ties it; the suite ends only after the child
+        # wrote that it holds the file (event synchronized), and the dispatcher reads the place before
+        # it ends what the suite left running. The orphan beside them is recorded as before, and the
+        # two clean shards are charged nothing.
+        emptied()
+        leak_bodies = dict(tmp_bodies)
+        leak_bodies["04_named"] = (
+            'import json\n'
+            'mine = json.loads(Path(os.environ["XDG_RUNTIME_DIR"], "veldo-instance.json").read_text())["prefix"]\n'
+            'Path(os.environ["V221_TMP"], "left-" + mine).write_text("x")\n'
+            'expect("left a file that carries my instance name", True)\n')
+        leak_bodies["05_held"] = (
+            'import subprocess\n'
+            'holder = ("import sys, time\\nhandle = open(sys.argv[1], \'w\')\\nprint(\'held\', flush=True)\\n"\n'
+            '          "time.sleep(600)\\n")\n'
+            'child = subprocess.Popen([sys.executable, "-c", holder, os.path.join(os.environ["V221_TMP"], "held-entry")],\n'
+            '                         env={}, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,\n'
+            '                         text=True)\n'
+            'expect("my child holds a file at the top", child.stdout.readline().strip() == "held")\n')
+        leak_tree = tree(top / "tmp-leak", leak_bodies)
+        result, lines = shards(leak_tree, "unconfined", list(leak_bodies), listed=",".join(leak_bodies), places=tmp_place,
+                               clock=orphaning_clock, extra={"V221_TMP": str(temporary_top)}, parallel=5)
+        words = {name: [w for _c, w in result["charged"].get(name, [])] for name in leak_bodies}
+        left = sorted(entry.name for entry in temporary_top.iterdir())
+        expect("VELDO-0221 AC3 suite-shards/own-temporary-entry-fails-its-shard: %r %r %r"
+               % (result["charged"], result["recorded"], left),
+               (result["passed"], result["failed"]) == (5, 3) and RS.LEG_OWNER not in result["charged"]
+               and [codes(result, name) for name in sorted(leak_bodies)]
+               == [[], [], ["isolation_breach"], ["isolation_breach"], ["isolation_breach"]]
+               and len(words["03_refers"]) == 1 and "it refers to a shard's roots" in words["03_refers"][0]
+               and len(words["04_named"]) == 1 and "its name carries the shard's instance name" in words["04_named"][0]
+               and len(words["05_held"]) == 1 and "held-entry" in words["05_held"][0]
+               and "a process of the shard's own tree held it when it appeared" in words["05_held"][0]
+               and [entry["path"] for entry in result["recorded"]] == [str(temporary_top / "orphan-entry")]
+               and sorted(line for line in lines if RS.FAIL_MARK in line)
+               == ["  %s suite-shard %s isolation_breach" % (RS.FAIL_MARK, name)
+                   for name in ("03_refers", "04_named", "05_held")]
+               and any("isolation check FAILED" in line for line in lines)
+               and len(left) == 4 and "held-entry" in left and "orphan-entry" in left and "refers" in left)
 
         # An item is charged to the shard it can be tied to, and what cannot be the leg's is not.
         jobs = [{"name": "01_first", "index": 0}, {"name": "02_second", "index": 1}]
