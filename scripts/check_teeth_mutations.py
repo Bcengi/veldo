@@ -16558,6 +16558,57 @@ def cases():
               '            demand = {}  # defect: the manifest\'s declared resources are ignored\n',
               ['suite-shards/manager-exclusive'])
 
+    # VELDO-0221 fix round 1: one defect for each review finding that was fixed.
+    def shards221_in(name, file, old, new, rows):
+        add(221, name, suite221, file, old, new, rows)
+        result[-1]['dir'] = 'scripts'
+
+    # F1 (open item 5): the leg node keeps its whole-cgroup claim, so its shards are counted twice.
+    shards221_in('shards221-leg-claim-counts-shards', 'gate_schedule.py',
+                 "                                if not item['handed_off']:\n",
+                 "                                if False:  # defect: the leg node keeps its whole-cgroup claim\n",
+                 ['suite-shards/leg-node-claims-only-its-dispatcher'])
+    # F7: a shard's claim larger than the ledger could ever grant is forwarded as measured.
+    shards221_in('shards221-oversized-claim-forwarded', 'gate_schedule.py',
+                 '            fitted[r] = min(claim[r], room)\n',
+                 '            fitted[r] = claim[r]  # defect: an oversized claim is forwarded as measured\n',
+                 ['suite-shards/leg-node-claims-only-its-dispatcher'])
+    # F4: a unit another session started, which nothing ties to this instance, is judged.
+    shards221('shards221-foreign-units-judged',
+              '                if not (named or str(base) in text):\n',
+              '                if False:  # defect: a unit nothing ties to this instance is judged\n',
+              ['suite-shards/other-sessions-units-are-not-judged'])
+    # F3: a unit a shard started without its prefix is allowed once it is gone again.
+    shards221('shards221-unprefixed-unit-allowed',
+              '                elif engine and named not in UNNAMED:\n',
+              '                elif False:  # defect: an engine unit without its shard\'s prefix is not a breach\n',
+              ['suite-shards/isolation-checked'])
+    # Decision 9: an unconfined shard is given no instance name.
+    shards221('shards221-unconfined-shard-unnamed',
+              '        if job["name"] not in UNNAMED:\n',
+              '        if leg == "confined" and job["name"] not in UNNAMED:  # defect: no unconfined shard is named\n',
+              ['suite-shards/isolated-by-construction'])
+    # F6: the shard's Landlock layer scopes no signal, so one shard can kill a sibling.
+    shards221_in('shards221-signal-unscoped', 'agent_sandbox.py',
+                 '    rules = Ruleset(WRITE, 0, 3)\n',
+                 '    rules = Ruleset(WRITE, 0, 0)  # defect: the shard layer scopes no signal\n',
+                 ['suite-shards/no-signal-between-shards'])
+    # F2 and the load rule: the deadline runs from a shard's start, so a slow suite is ended.
+    shards221('shards221-deadline-from-start',
+              '    return now - job["progress_at"] > job["deadline"]\n',
+              '    return now - job["started"] > job["deadline"]  # defect: a slow suite is ended\n',
+              ['suite-shards/deadline-runs-from-the-last-progress'])
+    # The /tmp rule: an entry nothing can be tied to is noted and not charged.
+    shards221('shards221-orphan-entry-allowed',
+              '                breaches.append((None, orphan, suspects))\n',
+              '                unattributed.append(orphan)  # defect: noted, never charged\n',
+              ['suite-shards/unattributed-entry-fails-the-leg'])
+    # Suite 151's exception: the shard with no layer of its own runs beside the others.
+    shards221('shards221-unlayered-beside-others',
+              '                     "alone": leg == "confined" and name in UNLAYERED,\n',
+              '                     "alone": False,  # defect: the unlayered shard runs beside the others\n',
+              ['suite-shards/isolation-checked'])
+
     return result
 
 

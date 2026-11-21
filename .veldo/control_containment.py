@@ -77,50 +77,59 @@ CGROUP = Path('/sys/fs/cgroup')
 # ---------------------------------------------------------------------------------------------
 #
 # Every unit, slice and service this engine creates on the one systemd user manager is named with
-# the installation's instance name, read from the installation's configuration. NO PRODUCTION
+# the installation's instance name. NO PRODUCTION
 # INSTALLATION CONFIGURES ONE, and with none every name is exactly what it was before this existed.
 # It exists so that two installations made at once on one manager by two parallel shards of a gate
 # leg (scripts/run_scope.py) can never share a name: each shard's fixtures set it to the shard's
 # name. The name EXTENDS the engine's own fixed prefix (veldo-authority-<instance>-<service id>),
 # so whatever is cut from a unit name after the fixed prefix still carries it.
 #
-# WHERE IT IS READ, in order, and why two places. An installed engine reads `config/instance.json`
-# beside its `bin`, which install() writes from the installer's own configuration: the service
-# runs under the user manager's environment, which names no shard, and must still compute the
-# names it was installed under. An engine that is not installed (the installer, a CLI, a suite's
-# copy) reads `veldo/instance.json` in the user's configuration directory (XDG_CONFIG_HOME, else
-# ~/.config). A file that is not veldo.instance/v1 is not this engine's and is not read; one that
-# is, with a name the manager could misread, is refused rather than half used.
+# WHERE IT IS READ, in order, and why two places. First `veldo-instance.json` in the process's
+# runtime directory (XDG_RUNTIME_DIR), which a gate leg's dispatcher writes into each shard's private
+# one: a suite that needs the one user manager cannot replace that directory, so an installer and
+# every tool it starts read one name. Then, for a process that runs INSIDE one of this engine's own
+# units (the installed authority service, its API unit, a dispatch scope), the name in its own
+# unit's name, read from its control group (/proc/self/cgroup): the service runs under the user
+# manager's environment, whose runtime directory names no shard, and must still compute the names
+# it was installed under, and nothing extra is written into the installation for it. A file that is
+# not veldo.instance/v1 is not this engine's and is not read; one that is, with a name the manager
+# could misread, is refused rather than half used.
 INSTANCE_SCHEMA = 'veldo.instance/v1'
-INSTANCE_FILE = 'instance.json'
+INSTANCE_FILE = 'veldo-instance.json'
+INSTANCE_NAME = r'[0-9A-Za-z][0-9A-Za-z_]{0,63}'
+# The instance name never holds a dash, so it is cut from a unit's name without ambiguity.
+INSTANCE_UNIT = r'veldo-(?:authority|api|dispatch)-(?:(%s)-)?[0-9a-f]+\.(?:service|scope)' % INSTANCE_NAME
 
 
-def instance_name(environment=None, module=None):
+def instance_name(environment=None, membership='/proc/self/cgroup'):
     """The configured instance name, or the empty string when none is configured."""
     import json as _json
     import os as _os
     import re as _re
     environment = _os.environ if environment is None else environment
-    here = _os.path.dirname(_os.path.abspath(module or __file__))
-    candidates = [_os.path.join(_os.path.dirname(here), 'config', INSTANCE_FILE)]
-    base = environment.get('XDG_CONFIG_HOME') or ''
-    if not _os.path.isabs(base):
-        home = environment.get('HOME') or ''
-        base = _os.path.join(home, '.config') if _os.path.isabs(home) else ''
-    if base:
-        candidates.append(_os.path.join(base, 'veldo', INSTANCE_FILE))
-    for path in candidates:
+    base = environment.get('XDG_RUNTIME_DIR') or ''
+    if _os.path.isabs(base):
+        path = _os.path.join(base, INSTANCE_FILE)
         try:
             with open(path, encoding='utf-8') as handle:
                 document = _json.load(handle)
         except (OSError, ValueError):
-            continue
-        if not isinstance(document, dict) or document.get('schema') != INSTANCE_SCHEMA:
-            continue
-        name = document.get('prefix')
-        if not isinstance(name, str) or not _re.fullmatch(r'[0-9A-Za-z][0-9A-Za-z_]{0,63}', name):
-            raise ValueError('invalid instance name in %s' % path)
-        return name
+            document = None
+        if isinstance(document, dict) and document.get('schema') == INSTANCE_SCHEMA:
+            name = document.get('prefix')
+            if not isinstance(name, str) or not _re.fullmatch(INSTANCE_NAME, name):
+                raise ValueError('invalid instance name in %s' % path)
+            return name
+    try:
+        with open(membership, encoding='utf-8') as handle:
+            groups = handle.read().split()
+    except OSError:
+        groups = []
+    for group in groups:
+        for part in reversed(group.split('::', 1)[-1].split('/')):
+            unit = _re.fullmatch(INSTANCE_UNIT, part)
+            if unit:
+                return unit.group(1) or ''
     return ''
 
 
@@ -133,8 +142,11 @@ def instance_part(name=None):
 UNIT_PREFIX = 'veldo-dispatch-' + instance_part()
 # The manager's active states of a scope that still holds its processes (status).
 LIVE_STATES = ('active', 'activating', 'deactivating', 'reloading')
-# An instance's workers run in a slice of their own beneath the fixed one.
-DEFAULT_SLICE = 'veldo-workers%s.slice' % ('-' + instance_name() if instance_name() else '')
+# An instance's workers run in a slice of their own, BESIDE the fixed one and not beneath it: the
+# manager nests slices by the dashes in their names, so `veldo-workers-<instance>.slice` would be a
+# child of the production slice and be stopped or limited with it. `veldo-workers_<instance>.slice`
+# is its sibling. Both stand under `veldo.slice`, which this engine neither defines nor limits.
+DEFAULT_SLICE = 'veldo-workers%s.slice' % ('_' + instance_name() if instance_name() else '')
 SETTLE_SECONDS = 5.0
 TOOL_SECONDS = 20
 HELPER = 'systemd user manager (no OS privileges)'
