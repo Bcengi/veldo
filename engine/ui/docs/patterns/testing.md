@@ -64,6 +64,10 @@ ceremonies verified by OpenSSL. A second loopback port takes test controls (appr
 registration at the host, append record lines, end a run, answer from Telegram, revise a
 presentation, drop record connections). The browser never sees that port.
 
+A Python test that builds a `Factory` in its own process (suite 113 of VELDO-0145) calls its `close()` when
+done: it stops the fake Telegram bot server, joins its thread and closes its listener, and ends the
+authority thread, so the suite leaves nothing running (the suite runtime's residue check, VELDO-0358).
+
 ## Falsifiers
 
 Every acceptance criterion's check names a falsifier: a small change to production code that must

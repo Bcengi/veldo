@@ -109,6 +109,7 @@ def _v254_suite():
 
     temp = tempfile.mkdtemp(prefix='v254-', dir=fast_temp())
     servers = []
+    serving = []  # VELDO-0358 residue: the fixture servers' threads, joined at the end
     try:
         base = Path(temp)
         mods = base / 'installed' / '.veldo'
@@ -328,7 +329,8 @@ def _v254_suite():
                         return
                     with conn:
                         conn.sendall(b'PONG\n')
-            threading.Thread(target=serve, daemon=True).start()
+            serving.append(threading.Thread(target=serve, daemon=True))
+            serving[-1].start()
             servers.append(sock)
         tcp = socket.socket()
         tcp.bind(('127.0.0.1', 0))
@@ -357,7 +359,8 @@ def _v254_suite():
             def log_message(self, *args):
                 pass
         web = http.server.ThreadingHTTPServer((address, 0), Page)
-        threading.Thread(target=web.serve_forever, daemon=True).start()
+        serving.append(threading.Thread(target=web.serve_forever, daemon=True))
+        serving[-1].start()
         servers.append(web)
         runs = base / 'runs'
         runs.mkdir()
@@ -788,10 +791,18 @@ print(json.dumps({'run_end': len(ended['findings']), 'landing': len(landed['find
     finally:
         for server in servers:
             try:
-                (server.shutdown() if hasattr(server, 'shutdown') and not isinstance(server, socket.socket)
-                 else server.close())
+                if isinstance(server, socket.socket):
+                    # VELDO-0358 residue: shutting the listener down wakes its accept, so its thread ends.
+                    with contextlib.suppress(OSError):
+                        server.shutdown(socket.SHUT_RDWR)
+                    server.close()
+                else:
+                    server.shutdown()
+                    server.server_close()
             except OSError:
                 pass
+        for thread in serving:
+            thread.join()
         shutil.rmtree(temp, ignore_errors=True)
 
     for row, values in rows.items():

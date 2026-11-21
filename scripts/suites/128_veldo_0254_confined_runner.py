@@ -43,6 +43,7 @@ def _v254_confined_suite():
 
     temp = tempfile.mkdtemp(prefix='v254c-', dir=fast_temp())
     unix = None
+    serving = None  # VELDO-0358 residue: the fixture server's thread, joined at the end
     try:
         base = Path(temp)
         mods = base / 'installed' / '.veldo'
@@ -65,7 +66,8 @@ def _v254_confined_suite():
                     return
                 with conn:
                     conn.sendall(b'PONG\n')
-        threading.Thread(target=serve, daemon=True).start()
+        serving = threading.Thread(target=serve, daemon=True)
+        serving.start()
         runs = base / 'runs'
         runs.mkdir()
         probe = runs / 'probe.py'
@@ -113,7 +115,13 @@ print(json.dumps(out))
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:300], False)
     finally:
         if unix is not None:
+            try:
+                unix.shutdown(socket.SHUT_RDWR)  # wakes the accept, so its thread ends
+            except OSError:
+                pass
             unix.close()
+        if serving is not None:
+            serving.join()
         shutil.rmtree(temp, ignore_errors=True)
 
     for row, values in rows.items():

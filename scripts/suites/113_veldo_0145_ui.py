@@ -103,7 +103,8 @@ def _v145_suite():
         api = API.ControlApi(config, authority, lambda assertion: (None, None))
         # The pre-change API takes no UI directory (it is named in the configuration, which it ignores).
         server = API.listen(api, '127.0.0.1', 0)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
+        serving = threading.Thread(target=server.serve_forever, daemon=True)
+        serving.start()
         port = server.server_address[1]
 
         def get(path, method='GET', headers=None, body=None):
@@ -162,7 +163,8 @@ def _v145_suite():
         check('ui/page-served', 'no page request reached the authority', len(authority.calls) == before)
         bare = API.ControlApi(dict(config, ui=str(base / 'not-built')), authority, lambda a: (None, None))
         bare_server = API.listen(bare, '127.0.0.1', 0)
-        threading.Thread(target=bare_server.serve_forever, daemon=True).start()
+        bare_serving = threading.Thread(target=bare_server.serve_forever, daemon=True)
+        bare_serving.start()
         connection = http.client.HTTPConnection('127.0.0.1', bare_server.server_address[1], timeout=10)
         connection.request('GET', '/runs', headers={'Host': host})
         unbuilt = connection.getresponse()
@@ -170,7 +172,9 @@ def _v145_suite():
         connection.close()
         check('ui/page-served', 'a host with no built UI names that',
               unbuilt.status == 404 and json.loads(unbuilt_body).get('refusal') == 'missing_evidence:ui_not_built')
-        bare_server.shutdown()
+        bare_server.shutdown()  # VELDO-0358 residue: the thread joined and the listener closed
+        bare_serving.join()
+        bare_server.server_close()
 
         # AC1 ui/unauthenticated-access: every factory data route refuses a request with no passkey session.
         before = len(authority.calls)
@@ -197,7 +201,9 @@ def _v145_suite():
               all(r.session for r in API.ROUTES if r.family in ('reads', 'events', 'decisions', 'messages', 'configuration')))
         check('ui/unauthenticated-access', 'no unauthenticated request reached the authority [%s]' % authority.calls[before:],
               len(authority.calls) == before)
-        server.shutdown()
+        server.shutdown()  # VELDO-0358 residue: the thread joined and the listener closed
+        serving.join()
+        server.server_close()
 
         # AC1 ui/route-trace: every route the UI calls is a published API route, with its exact fields.
         def read_json(path, default):
@@ -245,7 +251,8 @@ def _v145_suite():
         installed = installed_api.ControlApi(dict(config, ui=None, state_dir=str(base / 'state-installed')), authority,
                                              lambda assertion: (None, None))
         listener = installed_api.listen(installed, '127.0.0.1', 0)
-        threading.Thread(target=listener.serve_forever, daemon=True).start()
+        listening = threading.Thread(target=listener.serve_forever, daemon=True)
+        listening.start()
 
         def fetch(path):
             conn = http.client.HTTPConnection('127.0.0.1', listener.server_address[1], timeout=10)
@@ -267,6 +274,7 @@ def _v145_suite():
                   lay is not None and lay(templates, root).get('reason') == 'current')
         finally:
             listener.shutdown()
+            listening.join()  # VELDO-0358 residue
             listener.server_close()
         bare = lay(base / 'no-templates', base / 'bare-root') if lay else {}
         check('ui/installed', 'with no build nothing is laid, and the report names it [%s]' % bare,
@@ -377,7 +385,7 @@ def _v145_suite():
                   '[observed %s %s]' % (foreign[0], foreign[2]),
                   foreign[0] >= 400 and foreign[2].get('refusal') and factory.on_thread(factory.settlements, 'scope-lost') == [])
         finally:
-            factory.pool.shutdown()
+            factory.close()  # VELDO-0358 residue: its bot server too, not only its pool
 
         # AC4 ui/dependency-policy: the lockfile and served packages against the owner's provenance rules.
         ui = ROOT / 'engine' / 'ui'
