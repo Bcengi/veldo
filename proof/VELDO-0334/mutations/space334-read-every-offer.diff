@@ -1,5 +1,5 @@
---- .veldo/control_space_admission.py
-+++ .veldo/control_space_admission.py
-@@ -90 +90 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -93 +93 @@
 -    if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:
 +    if False:  # defect: a timer reads free space again

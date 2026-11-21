@@ -12,40 +12,40 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-{"event": "account_added", "account": "acct-y1", "directory": "/dev/shm/v154-60dudk18/helper/accounts/profiles/acct-y1", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x1", "directory": "/dev/shm/v154-60dudk18/helper/accounts/profiles/acct-x1", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x2", "directory": "/dev/shm/v154-60dudk18/helper/accounts/profiles/acct-x2", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x3", "directory": "/dev/shm/v154-60dudk18/helper/accounts/profiles/acct-x3", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x4", "directory": "/dev/shm/v154-60dudk18/helper/accounts/profiles/acct-x4", "directory_state": "created", "metrics": {"accounts_added": 1}}
-  /tmp/tmpn0h987b_: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpn0h987b_/nocrit.md: no acceptance criteria
-  /tmp/tmpn0h987b_/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpn0h987b_/status.md: bad status: donezo
-  /tmp/tmpn0h987b_/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpn0h987b_/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpn0h987b_/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpn0h987b_/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpn0h987b_/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpn0h987b_/verdict.json: bad verdict: looks_fine
-  /tmp/tmp0hiq3we3/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmp0hiq3we3/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmp0hiq3we3/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmp0hiq3we3/fref.md: work W1: unknown feature ref F9
-  /tmp/tmp0hiq3we3/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmp0hiq3we3/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmp0hiq3we3/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmp0hiq3we3/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmp0hiq3we3/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmp0hiq3we3/dupspec.md: duplicate spec ids across work items
-  /tmp/tmp0hiq3we3/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmp0hiq3we3/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+{"event": "account_added", "account": "acct-y1", "directory": "/dev/shm/v154-rr0zzyo5/helper/accounts/profiles/acct-y1", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x1", "directory": "/dev/shm/v154-rr0zzyo5/helper/accounts/profiles/acct-x1", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x2", "directory": "/dev/shm/v154-rr0zzyo5/helper/accounts/profiles/acct-x2", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x3", "directory": "/dev/shm/v154-rr0zzyo5/helper/accounts/profiles/acct-x3", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x4", "directory": "/dev/shm/v154-rr0zzyo5/helper/accounts/profiles/acct-x4", "directory_state": "created", "metrics": {"accounts_added": 1}}
+  /tmp/tmpmj38yc12: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpmj38yc12/nocrit.md: no acceptance criteria
+  /tmp/tmpmj38yc12/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpmj38yc12/status.md: bad status: donezo
+  /tmp/tmpmj38yc12/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpmj38yc12/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpmj38yc12/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpmj38yc12/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpmj38yc12/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpmj38yc12/verdict.json: bad verdict: looks_fine
+  /tmp/tmpg_hcrzqk/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpg_hcrzqk/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpg_hcrzqk/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpg_hcrzqk/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpg_hcrzqk/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpg_hcrzqk/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpg_hcrzqk/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpg_hcrzqk/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpg_hcrzqk/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpg_hcrzqk/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpg_hcrzqk/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpg_hcrzqk/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  VELDO-0154 service b stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) |
-  VELDO-0154 service a stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) |
+  VELDO-0154 service b stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | 
+  VELDO-0154 service a stderr: veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | veldo installation: none found (looked at <home>/.config/veldo/installation, the documented default under the configuration root) | 
 VELDO-0172 fake/capture:0154_factory_loop: 3 fake lines compared, events ['codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
-VELDO-0154 suite seconds: 37.473 (the first instance's rows ended at 22.5 s, the reset came at 35.6 s)
-  83_veldo_0154_factory_loop                      14 passed   37.49s
-selftest (PARTIAL, 1 of 238 suites): 40 passed, 0 failed in 37.49s
+VELDO-0154 suite seconds: 68.573 (the first instance's rows ended at 22.3 s, the reset came at 66.7 s)
+  83_veldo_0154_factory_loop                      14 passed   68.60s
+selftest (PARTIAL, 1 of 238 suites): 40 passed, 0 failed in 68.60s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

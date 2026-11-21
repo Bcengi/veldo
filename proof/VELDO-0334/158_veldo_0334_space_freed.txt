@@ -12,31 +12,31 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpd3i8paib: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpd3i8paib/nocrit.md: no acceptance criteria
-  /tmp/tmpd3i8paib/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpd3i8paib/status.md: bad status: donezo
-  /tmp/tmpd3i8paib/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpd3i8paib/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpd3i8paib/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpd3i8paib/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpd3i8paib/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpd3i8paib/verdict.json: bad verdict: looks_fine
-  /tmp/tmp_8ymna9h/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmp_8ymna9h/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmp_8ymna9h/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmp_8ymna9h/fref.md: work W1: unknown feature ref F9
-  /tmp/tmp_8ymna9h/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmp_8ymna9h/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmp_8ymna9h/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmp_8ymna9h/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmp_8ymna9h/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmp_8ymna9h/dupspec.md: duplicate spec ids across work items
-  /tmp/tmp_8ymna9h/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmp_8ymna9h/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmpf8xbieed: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpf8xbieed/nocrit.md: no acceptance criteria
+  /tmp/tmpf8xbieed/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpf8xbieed/status.md: bad status: donezo
+  /tmp/tmpf8xbieed/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpf8xbieed/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpf8xbieed/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpf8xbieed/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpf8xbieed/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpf8xbieed/verdict.json: bad verdict: looks_fine
+  /tmp/tmppf5icwf_/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmppf5icwf_/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmppf5icwf_/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmppf5icwf_/fref.md: work W1: unknown feature ref F9
+  /tmp/tmppf5icwf_/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmppf5icwf_/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmppf5icwf_/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmppf5icwf_/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmppf5icwf_/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmppf5icwf_/dupspec.md: duplicate spec ids across work items
+  /tmp/tmppf5icwf_/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmppf5icwf_/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  158_veldo_0334_space_freed                      14 passed    2.74s
-selftest (PARTIAL, 1 of 238 suites): 40 passed, 0 failed in 2.74s
+  158_veldo_0334_space_freed                      22 passed    5.20s
+selftest (PARTIAL, 1 of 238 suites): 48 passed, 0 failed in 5.20s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

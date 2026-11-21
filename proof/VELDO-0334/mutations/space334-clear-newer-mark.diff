@@ -1,5 +1,5 @@
---- .veldo/control_space.py
-+++ .veldo/control_space.py
-@@ -1435 +1435 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -1474 +1474 @@
 -        version = self._row(entity, HOLD_KIND)[0] if expected_version is None else expected_version
 +        version = self._row(entity, HOLD_KIND)[0]  # defect: clear a newer freeing write

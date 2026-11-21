@@ -1,5 +1,5 @@
---- .veldo/control_space_signal.py
-+++ .veldo/control_space_signal.py
+--- a/.veldo/control_space_signal.py
++++ b/.veldo/control_space_signal.py
 @@ -248 +248 @@
 -            ending = (ledger.item(identity).get('due') or {}).get('event')
 +            ending = event  # defect: lose the deferred item's ending action

@@ -1,5 +1,5 @@
---- .veldo/control_space.py
-+++ .veldo/control_space.py
-@@ -2379 +2379 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -2418 +2418 @@
 -        record['freed'] = False
 +        # defect: a judgment leaves the mark set
