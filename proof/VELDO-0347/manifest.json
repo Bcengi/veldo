@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0347",
- "commit": "a8bfc849315155bda8ed1830c2d0f8248f38690c",
- "tree": "e2b387823acb8204ddcb875bbaaa4f2458e2ec92",
+ "commit": "6f50cfaf5d6cc66e8066b5b04e34e5c8bcfe2525",
+ "tree": "12d643ad5533154a738bcc3ea3a2304d5da829dc",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-21T04:26:30.732754+00:00",
+ "produced_at": "2026-11-21T10:19:04.654915+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -12,12 +12,12 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "Rows ac1/loose-ignored-file (a loose settings file the committed ignore file covers: deferred unique_work, case 3, named in ignored, whole; beside it git's own non-forced worktree remove deletes such a file; with it gone the worktree is removed), ac1/personal-rule (a folder and a file only info/exclude ignores), ac1/untraced-rule (an ignored folder whose rule git names no source for is case 3; traced to the committed ignore file it is build output), ac1/build-output-passes. Green: proof/VELDO-0347/suite-green.txt."
     },
     {
      "type": "integration",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "The rows run Signal, the probes, the removers, the keeper and the kind registry against a real Ledger on a real control store, on real git repositories, worktrees, clones, scratch, build output and evidence folders that are really deleted; orchard is in act mode by the owner's own signed command with a real key. After each event the disk and the repositories are read again with plain git."
     },
     {
@@ -33,18 +33,18 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
-     "detail": "Rows ac2/unpushed-in-session-scratch (a clone with an unpushed commit holds the session scratch, by rule 6, whole; once its remote holds the commit and it fetched, the clean clone goes with the scratch), ac2/reset-log, ac2/forged-remote-ref, ac2/build-output (untracked file, uncommitted edit, stash entry each hold a build output item), ac2/unreadable (an unreadable repository, an unreadable local remote, a folder of another account that cannot be listed each hold; a shut folder this user owns is opened by the folder remover, whose walk stops on the unpushed clone in it), ac2/clean-clone-reading. Green: proof/VELDO-0347/suite-green.txt."
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
+     "detail": "Rows ac2/unpushed-in-session-scratch (a clone with an unpushed commit holds the session scratch, by rule 6, whole; once its remote holds the commit and it fetched, the clean clone goes with the scratch), ac2/reset-log, ac2/forged-remote-ref, ac2/build-output (untracked file, uncommitted edit, stash entry each hold a build output item), ac2/unreadable (an unreadable repository, an unreadable local remote, a folder that cannot be listed each hold), ac2/clean-clone-reading. Green: proof/VELDO-0347/suite-green.txt. Fix round 1: ac2/unreadable now holds at rule 6 for any folder that cannot be listed, one this user owns and shut included, with or without an unpushed clone in it (review F3, AC2 as written). ac2/sandbox-scratch: the one exception, recorded in the spec History: a confined run's own scratch (sandbox SCRATCH_PREFIX, declared with a parent); a shut folder this user owns there is opened by the folder remover, whose walk stops on an unpushed clone; one another account owns holds; the name without a parent holds. ac2/unreachable-in-remote (review F8): a commit the local remote holds as an object that none of its refs reaches does not make the clone clean, and it holds its scratch."
     },
     {
      "type": "integration",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "The rows run Signal, the probes, the removers, the keeper and the kind registry against a real Ledger on a real control store, on real git repositories, worktrees, clones, scratch, build output and evidence folders that are really deleted; orchard is in act mode by the owner's own signed command with a real key. After each event the disk and the repositories are read again with plain git."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0347/falsifiers.json",
-     "detail": "space347-beneath-worktrees-only: ac2/unpushed-in-session-scratch, ac2/build-output red; space347-logs-left-out: ac2/reset-log red; space347-remote-ref-at-its-word: ac2/forged-remote-ref red. The logs and remote-ref mutations are in the probe's clean_clone, which rule 6 and the folder remover both read: the clone is deleted, as the falsifiers say. With rule 6 looking beneath worktrees only, the folder remover's own walk still refuses the unclean clone (remove_refused), so that row is red on rule 6 and the clone survives"
+     "detail": "space347-beneath-worktrees-only: ac2/unpushed-in-session-scratch, ac2/build-output red; space347-logs-left-out: ac2/reset-log red; space347-remote-ref-at-its-word: ac2/forged-remote-ref red. The logs and remote-ref mutations are in the probe's clean_clone, which rule 6 and the folder remover both read: the clone is deleted, as the falsifiers say. With rule 6 looking beneath worktrees only, the folder remover's own walk still refuses the unclean clone (remove_refused), so that row is red on rule 6 and the clone survives. Fix round 1: space347-unlistable-opened-everywhere: ac2/sandbox-scratch, ac2/unreadable red; space347-present-taken-for-reachable: ac2/unreachable-in-remote red"
     }
    ]
   },
@@ -54,18 +54,18 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
-     "detail": "Rows ac3/kind-and-form, ac3/commit-kept (a batch clone's commit is on a kept ref of the main repository after removal at run finished), ac3/unique-work-request (batch clone and candidate workspace with work in the work tree: deferred unique_work, registry entry unique_work decision_request), ac3/worker-snapshot (dead run's worker clone removed with no request, each modified, untracked and ignored file in the snapshot store byte for byte), ac3/compare-before-delete (a file rewritten after the snapshot and the last look stops the delete, keep_failed; the next attempt saves what is left; two attempts listed), ac3/put-back-at-stop (folder at its locator, nothing under the marked name; reconcile neither marks it gone nor moves the file). Green: proof/VELDO-0347/suite-green.txt."
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
+     "detail": "Rows ac3/kind-and-form, ac3/commit-kept (a batch clone's commit is on a kept ref of the main repository after removal at run finished), ac3/unique-work-request (batch clone and candidate workspace with work in the work tree: deferred unique_work, registry entry unique_work decision_request), ac3/worker-snapshot (dead run's worker clone removed with no request, each modified, untracked and ignored file in the snapshot store byte for byte), ac3/compare-before-delete (a file rewritten after the snapshot and the last look stops the delete, keep_failed; the next attempt saves what is left; two attempts listed), ac3/put-back-at-stop (folder at its locator, nothing under the marked name; reconcile neither marks it gone nor moves the file). Green: proof/VELDO-0347/suite-green.txt. Fix round 1: ac3/table-1-keeps-its-handling (review F2): a batch clone declared under table 1 with an unpushed commit is deferred unique_work by its branches (not_across); a worker clone declared under table 1 is not snapshotted and stays keep_failed on its untracked file, also when the next event's keep step saves it; Signal, the keep step and the remover name the tables with no clone row as the registry does. VELDO-0315 row space315/ac1/private-forms (review F5) asserts the adopted batch clone is removed and its commit is on a kept ref."
     },
     {
      "type": "integration",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "The rows run Signal, the probes, the removers, the keeper and the kind registry against a real Ledger on a real control store, on real git repositories, worktrees, clones, scratch, build output and evidence folders that are really deleted; orchard is in act mode by the owner's own signed command with a real key. After each event the disk and the repositories are read again with plain git."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0347/falsifiers.json",
-     "detail": "space347-clone-by-folder-remover-alone: ac3/commit-kept red; space347-worker-clone-without-snapshot: ac3/worker-snapshot red; space347-delete-without-comparison: ac3/compare-before-delete red; space347-left-under-marked-name: ac3/put-back-at-stop red. Without the snapshot the remover's last look refuses (keep_failed) rather than delete the unsaved files, so that row is red because the clone is not removed with its files saved. The request is the cell's unique_work decision_request, as a worktree's: the touchpoint that turns it into a message is VELDO-0327"
+     "detail": "space347-clone-by-folder-remover-alone: ac3/commit-kept red; space347-worker-clone-without-snapshot: ac3/worker-snapshot red; space347-delete-without-comparison: ac3/compare-before-delete red; space347-left-under-marked-name: ac3/put-back-at-stop red. Without the snapshot the remover's last look refuses (keep_failed) rather than delete the unsaved files, so that row is red because the clone is not removed with its files saved. The request is the cell's unique_work decision_request, as a worktree's: the touchpoint that turns it into a message is VELDO-0327. Fix round 1: space347-table-1-judged-by-form: ac3/table-1-keeps-its-handling red; space347-table-1-snapshot-by-form: ac3/table-1-keeps-its-handling red; space347-table-1-compared-by-form: ac3/table-1-keeps-its-handling red; space347-batch-clone-never-removed: space315/ac1/private-forms red (suite 156: the old disjunction stays green under this mutant, the strict row goes red)"
     }
    ]
   },
@@ -75,18 +75,18 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
-     "detail": "Rows ac4/digest-at-removal (a file changed after the measurement stays with its new content; files held by the store and by a commit of the trunk are removed; a file no copy holds stays), ac4/no-copy-unread (a store that cannot be read is no copy; a single evidence file the store holds is removed). Green: proof/VELDO-0347/suite-green.txt."
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
+     "detail": "Rows ac4/digest-at-removal (a file changed after the measurement stays with its new content; files held by the store and by a commit of the trunk are removed; a file no copy holds stays), ac4/no-copy-unread (a store that cannot be read is no copy; a single evidence file the store holds is removed). Green: proof/VELDO-0347/suite-green.txt. Fix round 1: ac4/declared-trunk (review F1): with the main repository checked out on a side branch, and main declared as the trunk in the land entry, the file only main holds is removed and the file only the side branch holds stays; with no trunk declared both stay; the service's consumer passes the land entry to Signal."
     },
     {
      "type": "integration",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "The rows run Signal, the probes, the removers, the keeper and the kind registry against a real Ledger on a real control store, on real git repositories, worktrees, clones, scratch, build output and evidence folders that are really deleted; orchard is in act mode by the owner's own signed command with a real key. After each event the disk and the repositories are read again with plain git."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0347/falsifiers.json",
-     "detail": "space347-measured-digest-used: ac4/digest-at-removal red."
+     "detail": "space347-measured-digest-used: ac4/digest-at-removal red.. Fix round 1: space347-trunk-is-head: ac4/declared-trunk red"
     }
    ]
   },
@@ -96,18 +96,18 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
-     "detail": "Rows ac5/own-folder (a scratch item whose own folder is a repository holds itself, unrecorded, whole; an evidence folder that is a repository holds itself), ac5/clone-row (a formless agent repository with its worktree in place is not made due at run finished; a worker clone reads agent_repository_clone of table 2, is made due and removed). Green: proof/VELDO-0347/suite-green.txt."
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
+     "detail": "Rows ac5/own-folder (a scratch item whose own folder is a repository holds itself, unrecorded, whole; an evidence folder that is a repository holds itself), ac5/clone-row (a formless agent repository with its worktree in place is not made due at run finished; a worker clone reads agent_repository_clone of table 2, is made due and removed). Green: proof/VELDO-0347/suite-green.txt. Fix round 1: VELDO-0298 row ac1/whole-table-2 (review F7): table 2 is table 1 plus exactly agent_repository_clone (run finished, after worktree, decision_request), with equal events and ends_on and the three clone forms on run finished."
     },
     {
      "type": "integration",
-     "ref": "scripts/suites/157_veldo_0347_space_work.py",
+     "ref": "scripts/suites/161_veldo_0347_space_work.py",
      "detail": "The rows run Signal, the probes, the removers, the keeper and the kind registry against a real Ledger on a real control store, on real git repositories, worktrees, clones, scratch, build output and evidence folders that are really deleted; orchard is in act mode by the owner's own signed command with a real key. After each event the disk and the repositories are read again with plain git."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0347/falsifiers.json",
-     "detail": "space347-beneath-the-item-only: ac5/own-folder red; space347-formless-gets-clone-row: ac5/clone-row red. With the own-folder look removed the folder remover still refuses a folder that is a repository (VELDO-0300), so that row is red on rule 6 and the commit survives"
+     "detail": "space347-beneath-the-item-only: ac5/own-folder red; space347-formless-gets-clone-row: ac5/clone-row red. With the own-folder look removed the folder remover still refuses a folder that is a repository (VELDO-0300), so that row is red on rule 6 and the commit survives. Fix round 1: space347-table-2-not-whole: ac1/whole-table-2 red; space347-own-look-on-worktrees: work/commit-in-the-gap, work/hidden-edits red (suite 138, review F6: a row that no longer runs on before_0347 sees the own-folder look again)"
     }
    ]
   }
@@ -116,7 +116,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 157_veldo_0347_space_work (21 rows, 47 observations), and every suite that loads a changed module, each on its own: proof/VELDO-0347/suite-green.txt."
+   "command": "python3 scripts/selftest.py --suite 161_veldo_0347_space_work (26 rows, 51 observations, each row under its own guard), and every suite that loads a changed module, each on its own, through host_heavy.sh: proof/VELDO-0347/suite-green.txt."
   },
   {
    "name": "integration",
@@ -126,12 +126,12 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The eleven registered cases of finding 347 in scripts/check_teeth_mutations.py, each applied once through the driver's materialize() and worker(), noop then mutant (python3 proof/VELDO-0347/run_falsifiers.py): every noop green, every mutant turns its target rows red (mutations.txt, falsifiers.json). The gate's coordinator stage was not run by the builder."
+   "command": "The twenty registered cases of finding 347 in scripts/check_teeth_mutations.py (eleven of the build, nine of fix round 1), each applied once through the driver's materialize() and worker(), noop then mutant (python3 proof/VELDO-0347/run_falsifiers.py): every noop green, every mutant turns its target rows red, and in suite 161 every red row is of the case's own criterion (red_within_criterion; review F4) (mutations.txt, falsifiers.json). The gate's coordinator stage was not run by the builder."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_git_boundary.py; python3 scripts/check_personal_setup.py (0 findings)."
+   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; python3 scripts/check_personal_setup.py (0 findings)."
   },
   {
    "name": "gate",
@@ -141,13 +141,14 @@
  ],
  "assumptions": [
   "TABLE 2. The kind registry issues table 2 beside table 1 (not edited); new items are declared under it. Items declared before keep table 1, so a clone item declared before this change does not end at run finished.",
-  "THE STORE OF AC4 IS A READER THE CALLER GIVES (held(sha256)). No blob store exists yet, and nothing in production wires one: until it does, only a commit the main repository's HEAD or a kept ref reaches counts as a copy. The trunk is read as the main repository's HEAD.",
-  "OLDER SUITES ADAPTED (spec History 2026-11-21). Rows of the VELDO-0299, 0300, 0301, 0315 and 0345 suites and the 0298 suite that encoded the behaviour this ticket changes; where a row proves what stands behind rules 1 to 6 it now judges with before_0347, a probe that reads the work tree as before this ticket, so those removers are still exercised.",
-  "SHUT FOLDERS. Beneath scratch and build output, a folder this user owns that refuses only for its permission bits does not hold at rule 6; the folder remover opens it and its walk stops on any repository that is not a clean clone. Only a folder no one here may open holds at rule 6; that row tells the probe it runs as another account, because the suite cannot make another account's folder without root.",
+  "THE STORE OF AC4 IS A READER THE CALLER GIVES (held(sha256)). No blob store exists yet, and nothing in production wires one: until it does, only a commit the declared trunk or a kept ref reaches counts as a copy. The trunk is the land entry's (review F1), read through the spool's Local.trunk from `landing`, which the service's consumer passes; a caller that passes none (reconcile, the dispatcher) counts kept refs only.",
+  "OLDER SUITES ADAPTED (spec History). Rows of the VELDO-0299, 0300, 0301, 0315 and 0345 suites and the 0298 suite that encoded the behaviour this ticket changes. In 138 and 140 the before_0347 probe is passed only by the rows that plant ignored work or an own-folder repository, each by name (review F6): 138 work/ignored-files, work/worktree-second-probe, work/repository-in-a-folder, work/adopted-build-output; 140 ac4/outside-git, ac5/failed-save-removes-nothing, ac5/kill-points, ac6/removing-put-back, ac4/modes-kept, ac5/folders-synced. Every other row runs the whole chain on the real probe.",
+  "SHUT FOLDERS (review F3). A folder beneath scratch or build output that cannot be listed holds the item at rule 6, whoever owns it, as AC2 says. The one exception is a confined run's own scratch (named with the sandbox's SCRATCH_PREFIX and declared with a parent item, VELDO-0324 suite 154 ac2/recorded): there a folder this user owns that refuses only for its permission bits is opened by the folder remover, whose walk stops on any repository that is not a clean clone before anything is deleted. Recorded in the spec History.",
   "SECOND LINES OF DEFENCE. Four falsifiers are caught a step later by an existing check (the worktree remover's last look, the folder remover's walk, the agent repository remover's last look, the ledger's keep record); each such row is red on the rule this ticket adds, and the work is not lost.",
   "The touchpoint request itself is VELDO-0327; here a clone deferred as unique work carries the same decision_request qualifier a worktree does.",
-  "151_veldo_0313_space_run fails a varying handful of host-dependent rows on this branch and on the base commit alike.",
-  "The full gate, the heavy suites and the teeth stage were not run by the builder."
+  "151_veldo_0313_space_run fails a varying handful of rows that read the host's process table and other runs' holds, on this branch and on the base commit alike: this round, base 0b767d26 6 of 63, this branch 10 and 13 of 63 in two runs, then 5, 8 and 10 in three more. Its row ac1/build-output-has-item-and-goes failed in some runs; caught once with its deferral, it was rule 3 owner_live (group_empty False: the run's group not yet read empty), a rule this ticket does not change and one that runs before rules 5 and 6 (the run's end asleep on unread processes of other sessions; the host had 48 users, load about 14).",
+  "The full gate, the heavy suites and the teeth stage were not run by the builder.",
+  "SUITE NUMBER (review F9). 157 is VELDO-0358 brief A's; this ticket's suite is 161, the next number no branch has under scripts/suites (checked with git ls-tree on every ref: 160 was the highest)."
  ],
  "rollback": "Revert the change. Ignored files are then no longer read by rule 5, a repository beneath scratch or build output no longer holds it, and clones are removed by the folder remover alone, as before this ticket."
 }
