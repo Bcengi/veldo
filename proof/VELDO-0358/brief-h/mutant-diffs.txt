@@ -1,0 +1,37 @@
+== wave358-browser-expectation-restored (engine/ui/playwright.config.ts; target rows ['wave1/no-sites'])
+--- subject
++++ mutant
+@@ -17 +17 @@
+-  expect: { timeout: WAIT_HANG_MS },
++  expect: { timeout: 10_000 },  // defect: an expectation gives up after ten seconds
+== wave358-browser-fixed-wait-restored (engine/ui/e2e/layout.spec.ts; target rows ['wave1/no-sites'])
+--- subject
++++ mutant
+@@ -662,2 +662 @@
+-    // The fill transitions: it is read once the page says its transitions have ended (the page settled signal).
+-    await settled(page)
++    await page.waitForTimeout(250)  // defect: a fixed wait in place of the page's own state
+== wave358-browser-test-limit-restored (engine/ui/e2e/factory.spec.ts; target rows ['wave1/no-sites'])
+--- subject
++++ mutant
+@@ -279,0 +280 @@
++    test.setTimeout(600_000)  // defect: the test is ended for its total time
+== timers358-browser-profile-skipped (engine/ui/e2e/harness.py; target rows ['timers/profile-applied'])
+--- subject
++++ mutant
+@@ -342 +342 @@
+-            self.timers.set_profile(None, hang_seconds=WAIT_HANG_SECONDS)
++            pass  # defect: the timers profile is reported and never selected
+== wait358-browser-watchdog-total-time (engine/ui/e2e/fixtures.ts; target rows ['browser/hang-by-progress'])
+--- subject
++++ mutant
+@@ -368,2 +368 @@
+-    this.timers.clear(this.timer)
+-    this.timer = this.timers.set(() => this.hung(), this.bound)
++    if (this.timer === null) this.timer = this.timers.set(() => this.hung(), this.bound)  // defect: armed once
+== wait358-browser-watchdog-silent (engine/ui/e2e/fixtures.ts; target rows ['browser/hang-by-progress'])
+--- subject
++++ mutant
+@@ -375 +375 @@
+-        `last progress, never from the run's start). Last progress: ${this.last}. In flight: ${[...this.flying.values()].join('; ') || 'nothing'}.`,
++        `last progress, never from the run's start). Last progress: ${this.last}.`,  // defect: the run is ended and nothing in flight is named
