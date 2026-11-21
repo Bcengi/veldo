@@ -1,0 +1,38 @@
+"""Brief H: each suite N times, J at a time, each run its own dispatcher process. Started under the load
+generator:  python3 scripts/gate_load.py --slots 4 --write-dir <scratch> -- python3 loaded_runs.py.txt <worktree> <out> N J
+Nothing here waits on a clock: a run is awaited to its exit, and it is judged by the lines it printed."""
+import concurrent.futures
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+root, out, count, jobs = Path(sys.argv[1]), Path(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+SUITES = ('120_veldo_0131_factory_ui', '121_veldo_0131_factory_screens_narrow', '124_veldo_0131_factory_reads_commands')
+out.mkdir(parents=True, exist_ok=True)
+
+
+def one(job):
+    suite, n = job
+    done = subprocess.run([sys.executable, str(root / 'scripts' / 'selftest.py'), '--suite', suite], cwd=str(root),
+                          capture_output=True, text=True, stdin=subprocess.DEVNULL)
+    text = done.stdout + done.stderr
+    bad = [line.strip()[:600] for line in text.splitlines() if re.search(r'SELFTEST (FAIL|HUNG|NOT RUN)', line)]
+    summary = next((line.strip() for line in text.splitlines() if re.match(r'\s+%s\s+\d+ passed' % suite, line)), '')
+    green = not bad and bool(summary) and ' failed' not in summary
+    if not green:
+        (out / ('red-%s-run%d.txt' % (suite.split('_')[0], n))).write_text(text[-20000:])
+    return suite, n, green, summary, bad
+
+
+jobs_list = [(suite, n) for n in range(1, count + 1) for suite in SUITES]
+tally = {suite: [0, 0] for suite in SUITES}
+with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+    for suite, n, green, summary, bad in pool.map(one, jobs_list):
+        tally[suite][0 if green else 1] += 1
+        print('%s run %d: %s %s' % (suite, n, 'green' if green else 'RED', summary), flush=True)
+        for line in bad:
+            print('    ' + line, flush=True)
+for suite, (green, red) in tally.items():
+    print('TOTAL %s: %d green, %d red of %d' % (suite, green, red, count), flush=True)
+sys.exit(0 if all(red == 0 for _, red in tally.values()) else 1)

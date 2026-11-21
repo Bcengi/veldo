@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Brief H's heavy runs, in one hold of a builders' host slot: bash <host-heavy wrapper> bash batch.sh.txt <worktree> <base worktree> <scratch> <step...>
+# Steps: e2e (every browser specification, then the screenshots specification), rows (row labels at the base and
+# here), mutants (the gate's own mutation driver over brief H's six cases and every VELDO-0131 case), affected
+# (each affected suite alone), load (fifty runs of each suite under the generator, four at a time).
+set -u
+WT=$1; BASE=$2; S=$3; shift 3; OUT=$WT/proof/VELDO-0358/brief-h; cd "$WT" || exit 1
+NODE=$(ls -d "$HOME"/.nvm/versions/node/v*/bin 2>/dev/null | sort -V | tail -1); [ -n "$NODE" ] && PATH=$NODE:$PATH
+stamp() { echo "$1 $(date -u +%FT%TZ) load $(cut -d' ' -f1-3 /proc/loadavg) tree $(git -C "$WT" rev-parse --short HEAD)"; }
+clean() { sed -e 's/\x1b\[[0-9;]*[A-Za-z]//g' -e "s#$HOME#~#g" -e "s#$S#<scratch>#g"; }
+for step in "$@"; do case $step in
+e2e)
+  { stamp start; (cd engine/ui && npm run build >/dev/null 2>&1; VELDO_E2E_REPORT=$S/e2e-all.json npx playwright test; echo "exit status $?")
+    stamp end; } 2>&1 | clean > "$OUT/e2e-all.txt"
+  { stamp start; (cd engine/ui && VELDO_SCREENS_0229=1 VELDO_E2E_REPORT=$S/e2e-screens.json npx playwright test e2e/screens.spec.ts; echo "exit status $?")
+    git status --short proof/VELDO-0229 | sed 's/^/rewritten by the run: /'; git checkout -- proof/VELDO-0229/screens
+    stamp end; } 2>&1 | clean > "$OUT/e2e-screens.txt" ;;
+rows)
+  { stamp start
+    for pair in 120_veldo_0131_factory_ui:ui131-completion-from-build-state 121_veldo_0131_factory_screens_narrow:ui131-decision-action-hidden-360 124_veldo_0131_factory_reads_commands:ui131-identities-dropped; do
+      suite=${pair%%:*}; case=${pair##*:}
+      (cd "$BASE" && python3 scripts/check_teeth_mutations.py --worker "$case") > "$S/rows-base-$suite.json" 2>"$S/rows-base-$suite.err"
+      (cd "$WT" && python3 scripts/check_teeth_mutations.py --worker "$case") > "$S/rows-now-$suite.json" 2>"$S/rows-now-$suite.err"
+      python3 - "$suite" "$S/rows-base-$suite.json" "$S/rows-now-$suite.json" <<'PY'
+import json, sys
+suite, base, now = sys.argv[1], *(json.loads(open(p).read().strip().splitlines()[-1]) for p in sys.argv[2:])
+b, n = set(base['row_names']), set(now['row_names'])
+print('%s: base %d labels (%d failed), now %d labels (%d failed), missing %s, added %s' % (
+    suite, len(b), len(base['failed_rows']), len(n), len(now['failed_rows']), sorted(b - n), sorted(n - b)))
+PY
+    done; stamp end; } 2>&1 | clean > "$OUT/rows-kept.txt" ;;
+mutants)
+  { stamp start; mkdir -p "$S/diffs" "$S/workers"
+    python3 scripts/check_teeth_mutations.py --diff-dir "$S/diffs" --worker-log-dir "$S/workers" --jobs 6 \
+      --case wave358-browser-expectation-restored --case wave358-browser-fixed-wait-restored \
+      --case wave358-browser-test-limit-restored --case timers358-browser-profile-skipped \
+      --case wait358-browser-watchdog-total-time --case wait358-browser-watchdog-silent
+    echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/mutants-h.txt"
+  { for f in "$S"/diffs/*; do echo "== $(basename "$f")"; cat "$f"; done; } 2>&1 | clean > "$OUT/mutant-diffs.txt"
+  { stamp start; mkdir -p "$S/workers131"
+    python3 scripts/check_teeth_mutations.py --finding 131 --worker-log-dir "$S/workers131" --jobs 6
+    echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/mutants-131.txt" ;;
+affected)
+  { stamp start
+    for suite in 113_veldo_0145_ui 118_veldo_0159_mcp_credential_form 119_veldo_0163_role_team_form 122_veldo_0131_factory_screens_wide \
+        120_veldo_0131_factory_ui 121_veldo_0131_factory_screens_narrow 124_veldo_0131_factory_reads_commands \
+        53_veldo_0123_mutations 93_veldo_0152_intake_routes 98_veldo_0204_mutation_receipts 99_veldo_0205_reuse 101_veldo_0208_landing_reuse \
+        104_veldo_0210_mutation_workers 107_veldo_0153_identity_push 112_veldo_0215_case_deadlines 123_veldo_0174_conversations \
+        125_veldo_0230_engine_census 144_veldo_0306_space_docker 158_veldo_0358_census 160_veldo_0358_load_leg; do
+      python3 scripts/selftest.py --suite $suite > "$S/affected-$suite.txt" 2>&1
+      echo "$suite: $(grep -E "^\s+$suite\s" "$S/affected-$suite.txt" | tr -s ' ')"
+      grep -E 'SELFTEST (FAIL|HUNG|NOT RUN)' "$S/affected-$suite.txt" | cut -c1-500 | sed 's/^/    /'
+    done; stamp end; } 2>&1 | clean > "$OUT/affected-suites.txt" ;;
+load)
+  { stamp start; mkdir -p "$S/load" "$S/load-out"
+    python3 scripts/gate_load.py --slots 4 --write-dir "$S/load" -- python3 "$OUT/loaded_runs.py.txt" "$WT" "$S/load-out" 50 4
+    echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/load50.txt" ;;
+esac; done

@@ -67,6 +67,9 @@ def _v131_reads_commands():
     # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
     ORGANS = {
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
+        # VELDO-0358 AC15: the timers table the organs arm their giving-up deadlines from (the canon's; the
+        # checkout's synced copy is the same file once it is laid down).
+        'timers.py': ROOT / "engine/.veldo" / "timers.py",
     }
     # Fix round 2 (review-2026-11-01 F1 to F5) and fix round 3 (owner, Telegram 38184); suite 120 runs the rest.
     BROWSER = ('ac1/repositories', 'ac1/every-configuration', 'ac1/whole-catalog', 'ac1/usage-provider',
