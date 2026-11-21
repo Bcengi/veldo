@@ -1,0 +1,7 @@
+Current tree: 3604 registered cases across both drivers.
+All replacement anchors apply exactly once.
+Brief C block: 31 registrations, all rejected in the serial developer drive.
+Controls: all passed; no hung or not-run target was counted as a kill.
+Serial drive kill_by: assertion=0 terminal=0 unproven=31 (first baseline absent).
+The six-case fixture supplies an explicit baseline to distinguish all classifications.
+Full-stage validation is recorded separately; these are not aggregate gate receipts.

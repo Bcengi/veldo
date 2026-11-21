@@ -76,7 +76,7 @@ def _v204_mutation_receipts():
                 if concurrent and self.name == 'third' and fault == 'completed-sibling':
                     self.returncode = 0
                 if self.bad and fault in ('deadline', 'completed-sibling'):
-                    clock[0] += 121
+                    clock[0] += gate.PROCESS_HANG_SECONDS + 1
                     return None
                 if self.polls > 1:
                     self.returncode = 7 if self.bad and fault == 'exit' else 0
@@ -120,7 +120,8 @@ def _v204_mutation_receipts():
                 stack.enter_context(patch.object(gate.subprocess, 'Popen', Child))
                 stack.enter_context(patch.object(gate.os, 'killpg', lambda *a: None))
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
-                stack.enter_context(patch.object(gate.time, 'sleep', lambda _: clock.__setitem__(0, clock[0] + .1)))
+                stack.enter_context(patch.object(gate.Workers, 'watch_worker', lambda *a: None))
+                stack.enter_context(patch.object(gate.Workers, 'wait_for_progress', lambda *a: clock.__setitem__(0, clock[0] + .1)))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: None))
                 stack.enter_context(patch.object(teeth, '_coordinator', lambda: gate))
                 # Every Git query is a double here; the trusted directory is still named.
@@ -145,6 +146,7 @@ def _v204_mutation_receipts():
         assert len(r['worker_outcomes']) == 4
         assert r['worker_invocations'] == (3 if fault == 'spawn' else 4)
         if fault is None:
+            assert all(abs(o['elapsed'] - .1) < 1e-6 for o in r['worker_outcomes'])
             assert r['status'] == 'passed' and r['executed'] == r['rejected'] == 2
             assert not r['invalid_results'] and len(r['results']) == 2
         else:
@@ -200,8 +202,8 @@ def _v204_mutation_receipts():
             gate, 'completed-sibling', concurrent=True, entry=entry)
         assert r['status'] == 'failed' and r['executed'] == 3 and r['rejected'] == 2
         assert len(r['results']) == 2 and len(r['invalid_results']) == 1
-        assert r['invalid_results'][0]['error'] == 'mutation_budget_exceeded'
-        assert 'worker deadline' in r['invalid_results'][0]['detail']
+        assert r['invalid_results'][0]['error'] == 'hung_not_killed'
+        assert 'hung since' in r['invalid_results'][0]['detail']
         assert not children and not pool.held and all(h.closed for h in handles)
         return True
     for entry in ('gate', 'teeth'):
@@ -228,7 +230,7 @@ def _v204_mutation_receipts():
         ('empty-not-executed', "o['mode'] == 'mutant' and o['returncode'] is not None", 'False', 'empty'),
         ('release-before-cleanup', "record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],",
          "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],", None),
-        ('queued-deadline', 'self.active[name] = (proc, out, err, time.monotonic())',
+        ('queued-deadline', 'self.active[name] = (proc, out, err, self.clock())',
          'self.active[name] = (proc, out, err, 1.0)', None),
         ('release-failed-cleanup', "if record.get('error') != 'worker_cleanup_error':", 'if True:', 'cleanup'),
     ]
@@ -355,7 +357,7 @@ def _v204_mutation_receipts():
         home.mkdir()
         ledger = Path(directory) / 'ownership.jsonl'
         program = """
-import importlib.util, json, pathlib, sys, tempfile, time
+import importlib.util, json, pathlib, sys, tempfile, os
 spec = importlib.util.spec_from_file_location('owner', sys.argv[1])
 owner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(owner)
@@ -365,24 +367,29 @@ tree = pathlib.Path(tempfile.mkdtemp(prefix='v204-killed-tree-', dir=home / 'nes
 (tree / 'file').write_text('owned')
 tree.chmod(0o500)
 (home / 'ready').write_text(str(tree))
-time.sleep(30)
+os.write(int(sys.argv[4]), b"R")
+os.read(int(sys.argv[5]), 1)
 """
         (home / 'nested').mkdir()
         channel = os.open(ledger, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        ready_r, ready_w = os.pipe()
+        release_r, release_w = os.pipe()
         with open(home / 'stdout', 'wb') as out, open(home / 'stderr', 'wb') as err:
             child = subprocess.Popen([sys.executable, '-B', '-c', program,
-                                      str(ROOT / 'scripts/mutation_ownership.py'), str(home), str(channel)],
-                                     stdout=out, stderr=err, pass_fds=(channel,))
+                                      str(ROOT / 'scripts/mutation_ownership.py'), str(home), str(channel), str(ready_w), str(release_r)],
+                                     stdout=out, stderr=err, pass_fds=(channel, ready_w, release_r))
+            os.close(ready_w)
+            os.close(release_r)
             os.close(channel)
             try:
-                deadline = time.monotonic() + 5
-                while not (home / 'ready').exists() and child.poll() is None and time.monotonic() < deadline:
-                    time.sleep(.01)
+                assert os.read(ready_r, 1) == b'R'
                 assert (home / 'ready').exists(), (home / 'stderr').read_text()
                 tree = Path((home / 'ready').read_text())
             finally:
                 child.kill()
-                child.wait(timeout=5)
+                child.wait()
+                os.close(ready_r)
+                os.close(release_w)
                 reaped = owner.cleanup(home, ledger)
         expect('VELDO-0204 stall/killed-owner: the coordinator-held audit ledger survives SIGKILL and '
                'reaps a read-only temporary tree in the worker home', child.returncode == -9

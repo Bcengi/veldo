@@ -3,10 +3,193 @@ import ast
 import contextlib
 import hashlib
 import io
+import ctypes
+import faulthandler
+import json
+import os
+import select
+import signal
+import subprocess
+import resource
+import runpy
+import sys
+import time
 from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Brief A supplies these from suites/support/waits.py after integration. The
+# authority observer also ships without the repository-only suites directory.
+WAIT_HANG_SECONDS = 600
+PROCESS_HANG_SECONDS = 3600
+
+
+class Progress:
+    """Only a completed progress event moves the hang bound; elapsed total is data."""
+    def __init__(self, seconds=PROCESS_HANG_SECONDS, clock=None):
+        self.clock = clock or time.monotonic
+        self.seconds = seconds
+        self.last = self.clock()
+        self.event = 'started'
+
+    def touch(self, event):
+        self.last = self.clock()
+        self.event = event
+
+    def remaining(self):
+        return max(0, self.seconds - (self.clock() - self.last))
+
+    def expired(self):
+        return self.remaining() == 0
+
+
+class Events:
+    """Kernel notifications for worker exits and appended output. No periodic wake."""
+    def __init__(self):
+        libc = ctypes.CDLL(None, use_errno=True)
+        self.libc = libc
+        self.fd = libc.inotify_init1(os.O_CLOEXEC | os.O_NONBLOCK)
+        if self.fd < 0:
+            raise OSError(ctypes.get_errno(), 'inotify_init1')
+        self.pidfds = {}
+        self.watches = {}
+        self.notifications = {}
+
+    def add(self, name, proc, streams, notifications=()):
+        self.pidfds[name] = os.pidfd_open(proc.pid)
+        self.notifications[name] = notifications
+        self.watches[name] = []
+        for stream in streams:
+            wd = self.libc.inotify_add_watch(self.fd, os.fsencode(stream.name), 0x2 | 0x8)
+            if wd < 0:
+                raise OSError(ctypes.get_errno(), 'inotify_add_watch')
+            self.watches[name].append(wd)
+
+    def remove(self, name):
+        self.notifications.pop(name, None)
+        fd = self.pidfds.pop(name, None)
+        if fd is not None:
+            os.close(fd)
+        for wd in self.watches.pop(name, []):
+            self.libc.inotify_rm_watch(self.fd, wd)
+
+    def wait(self, remaining):
+        select.select([self.fd, *self.pidfds.values(),
+                       *(fd for fds in self.notifications.values() for fd in fds)], [], [], remaining)
+        try:
+            while os.read(self.fd, 65536):
+                pass
+        except BlockingIOError:
+            pass
+
+    def close(self):
+        for name in list(self.pidfds):
+            self.remove(name)
+        os.close(self.fd)
+
+
+def wait_empty(path, seconds=WAIT_HANG_SECONDS):
+    """Reap an owned cgroup by its populated transition, not a five-second guess."""
+    try:
+        fd = os.open(Path(path) / 'cgroup.events', os.O_RDONLY | os.O_CLOEXEC)
+    except FileNotFoundError:
+        return
+    progress = Progress(seconds)
+    poller = select.poll()
+    poller.register(fd, select.POLLPRI | select.POLLERR)
+    try:
+        while True:
+            values = dict(line.split() for line in os.pread(fd, 4096, 0).decode().splitlines())
+            if values.get('populated') == '0':
+                return
+            if not poller.poll(progress.remaining() * 1000):
+                raise TimeoutError('hung: cgroup remains populated: ' + str(path))
+    finally:
+        os.close(fd)
+
+
+def run_heavy(argv, *, cwd, env, pass_fds=(), seconds=PROCESS_HANG_SECONDS, clock=None, on_line=None):
+    """Capture output, rearming on complete lines. Python children dump all stacks on abort."""
+    env = dict(env, PYTHONFAULTHANDLER='1', PYTHONUNBUFFERED='1')
+    proc = subprocess.Popen(argv, cwd=cwd, env=env, pass_fds=pass_fds,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    progress = Progress(seconds, clock)
+    stdout_fd, stderr_fd = proc.stdout.fileno(), proc.stderr.fileno()
+    buffers = {stdout_fd: bytearray(), stderr_fd: bytearray()}
+    fragments = {fd: bytearray() for fd in buffers}
+    open_fds = set(buffers)
+    pidfd = os.pidfd_open(proc.pid)
+    try:
+        while open_fds or pidfd >= 0:
+            remaining = progress.remaining()
+            # A supplied logical clock must not impose a short real-time deadline.
+            wait_seconds = max(WAIT_HANG_SECONDS, remaining) if clock is not None and remaining else remaining
+            ready, _, _ = select.select([*([pidfd] if pidfd >= 0 else []), *open_fds],
+                                         [], [], wait_seconds)
+            if not ready:
+                if not progress.expired():
+                    continue
+                os.killpg(proc.pid, signal.SIGABRT)
+                out, err = proc.communicate()
+                raise TimeoutError('hung after ' + progress.event + '\n' +
+                                   (bytes(buffers[stderr_fd]) + err).decode(errors='replace'))
+            for fd in open_fds.intersection(ready):
+                data = os.read(fd, 65536)
+                if not data:
+                    open_fds.remove(fd)
+                else:
+                    buffers[fd].extend(data)
+                    fragments[fd].extend(data)
+                    while b'\n' in fragments[fd]:
+                        line, _, rest = fragments[fd].partition(b'\n')
+                        fragments[fd] = bytearray(rest)
+                        if on_line is not None:
+                            on_line(bytes(line))
+                        progress.touch(line.decode(errors='replace')[-400:])
+            if pidfd in ready:
+                proc.wait()
+                os.close(pidfd)
+                pidfd = -1
+        return subprocess.CompletedProcess(argv, proc.wait(),
+            bytes(buffers[stdout_fd]).decode(errors='replace'),
+            bytes(buffers[stderr_fd]).decode(errors='replace'))
+    finally:
+        if pidfd >= 0:
+            os.close(pidfd)
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait()
+        proc.stdout.close()
+        proc.stderr.close()
+
+
+def run_python(script):
+    """Expose selftest row events to its heavy-child parent without changing the dispatcher.
+
+    A profile callback observes entry/return of the real shared expect function,
+    including its dynamically named rows. Output stays on stderr, away from the
+    suite summary and the mutation worker's JSON protocol.
+    """
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    faulthandler.enable()
+    def profile(frame, event, arg):
+        if (event in ('call', 'return') and frame.f_code.co_name == 'expect'
+                and frame.f_code.co_filename.endswith('/scripts/suites/shared.py')):
+            name = str(frame.f_locals.get('name', 'row')).split(':', 1)[0]
+            faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
+            os.write(2, ('SELFTEST PROGRESS ' + event + ' ' + name + '\n').encode())
+    previous = sys.getprofile()
+    sys.argv = [script]
+    sys.setprofile(profile)
+    faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
+    try:
+        runpy.run_path(script, run_name='__main__')
+    finally:
+        sys.setprofile(previous)
+        faulthandler.cancel_dump_traceback_later()
 
 
 def edits(case):
@@ -73,9 +256,36 @@ def worker(case, mutant=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
     rows = []
+    opened = set()
+    auditing = [True]
+    terminal_rows = set()
+    def audit(event, args):
+        if not auditing[0] or event != "open" or not args or not isinstance(args[0], (str, bytes)):
+            return
+        path = Path(os.path.abspath(os.fsdecode(args[0])))
+        if mutant:
+            copy = Path(mutant)
+            base = ROOT / ('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo'))
+            if case.get('fixture') and (path == copy or copy in path.parents):
+                path = base / path.relative_to(copy)
+            elif path == copy:
+                path = base / case['module']
+            elif (case.get('siblings') or case.get('companions')) and copy.parent in path.parents:
+                path = base / path.relative_to(copy.parent)
+        try:
+            relative = path.relative_to(ROOT).as_posix()
+        except ValueError:
+            return
+        if relative.startswith(("scripts/", "proof/")):
+            opened.add(relative)
+    sys.addaudithook(audit)
     details = []  # a false row's own words after its colon: what the check saw, kept beside the row
 
     def observe(name, condition):
+        faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
+        os.write(2, ('SELFTEST PROGRESS ' + name.split(':', 1)[0] + '\n').encode())
+        if ns.get('WAITS') is not None:
+            ns['WAITS'].row_event(name)
         rows.append([name.split(':', 1)[0], bool(condition)])
         if not condition and ':' in name:
             details.append([rows[-1][0], name.split(':', 1)[1].strip()])
@@ -84,8 +294,20 @@ def worker(case, mutant=None):
     for node in tree.body:
         if isinstance(node, ast.FunctionDef) and node.name == 'expect':
             node.body = ast.parse('__observe__(name, condition)').body
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    faulthandler.enable()
+    faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
     with contextlib.redirect_stdout(io.StringIO()):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
+        waits = ns.get('WAITS')
+        if waits is not None:
+            original_wait = waits.wait
+            def observed_wait(*args, **kwargs):
+                result = original_wait(*args, **kwargs)
+                if result.outcome == 'impossible':
+                    terminal_rows.add(waits.next_row(sys._getframe(1), result.name))
+                return result
+            waits.wait = observed_wait
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
         if case.get('fixture'):
@@ -102,7 +324,12 @@ def worker(case, mutant=None):
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         ns['__suite_file__'] = str(suite)
         exec(compile(source, str(suite), 'exec'), ns)
-    return {'count': len(rows), 'observations': rows,
+    faulthandler.cancel_dump_traceback_later()
+    auditing[0] = False
+    return {'opened_files': sorted(opened),
+            'failure_kinds': {name: 'terminal' if name in terminal_rows else 'assertion'
+                              for name, ok in rows if not ok},
+            'count': len(rows), 'observations': rows,
             'row_names': [name for name, _ in rows],
             'failed_rows': [name for name, ok in rows if not ok],
             'failed_details': details,
