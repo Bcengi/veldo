@@ -171,10 +171,9 @@ expect('fixture target', namespace['value'] == 1)
                     try:
                         result = workers.run({'one': job}, parent, frozen)
                     except ValueError as error:
-                        if not expected_failure or 'undeclared input read' not in str(error): print('case trace error:', suffix, str(error))
-                        return (expected_failure and 'undeclared input read' in str(error)
-                                and not workers.owned_snapshots
-                                and not (parent / 'cases' / '0').exists())
+                        # VELDO-0224: an undeclared read never fails the worker run; it is stale.
+                        print('case trace error:', suffix, str(error))
+                        return False
                     except Exception as error:
                         print('case worker error:', str(error)[-800:])
                         return False

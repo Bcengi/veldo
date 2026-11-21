@@ -866,10 +866,8 @@ class Workers:
                     record['undeclared_absent_sockets'] = undeclared
             except tracer.UndeclaredInput as undeclared_input:
                 stale = str(undeclared_input)
-                try:
-                    self.case_reuse.mark_stale(job['case'], str(undeclared_input))
-                except (OSError, ValueError) as store_error:
-                    error = Refused('stale_store_error', str(store_error))
+                # Never raises: an unavailable store leaves the finding unpersisted, not the stage red.
+                self.case_reuse.mark_stale(job['case'], str(undeclared_input))
                 record['declaration_stale'] = stale
             except tracer.IncompleteTrace as incomplete:
                 # A thread ended inside a call (a case that SIGKILLs its own child): the confined
@@ -962,6 +960,16 @@ class Workers:
         try:
             while pending or self.active:
                 self.check()
+                stale = getattr(getattr(self, 'case_reuse', None), 'stale', {})
+                for name, job in [p for p in pending if p[1].get('declared_case')
+                                  and p[1]['case']['identity'] in stale]:
+                    # A sibling of a case found stale is not launched: without its snapshot it
+                    # would run untraced, and the stale case's own rerun replaces its result.
+                    pending.remove((name, job))
+                    results[name] = {'result': None, 'elapsed': 0.0, 'declaration_stale':
+                                     'superseded: ' + stale[job['case']['identity']]['reason']}
+                    if on_result is not None:
+                        on_result(name, results[name])
                 while pending and len(self.active) < self.parallel:
                     index = self.resources.select(pending)
                     if index is None:
@@ -1432,8 +1440,13 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['declaration_stale'] = list(getattr(reuse, 'stale', {}).values())
         receipt['stale_count'] = len(receipt['declaration_stale'])
         receipt['gate_run'] = getattr(reuse, 'gate_run', None)
-        receipt['authority_stale_count'] = (len(reuse_module.M.stale_entries(reuse.store.directory))
-            if hasattr(reuse, 'stale') and reuse.store and reuse.store.secret is not None else 0)
+        receipt['stale_unpersisted'] = sum(1 for e in receipt['declaration_stale'] if not e.get('persisted'))
+        receipt['reuse_unavailable'] = dict(getattr(reuse, 'unavailable', {}))
+        try:
+            receipt['authority_stale_count'] = (len(reuse_module.M.stale_entries(reuse.store.directory))
+                if hasattr(reuse, 'stale') and reuse.store and reuse.store.secret is not None else 0)
+        except OSError:
+            receipt['authority_stale_count'] = None
         receipt['worker_outcomes'] = workers.outcomes
         failed_workers = [o for o in workers.outcomes if 'error' in o]
         receipt['invalid_results'].extend(failed_workers)

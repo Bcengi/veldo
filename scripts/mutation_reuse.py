@@ -74,14 +74,24 @@ def stale_entries(directory):
     Marks only deny reuse; they never authorize it. One immutable file per finding avoids
     lost updates between concurrent stages. Reading does not create a store or credentials.
     """
+    base = Path(directory).expanduser() / 'stale'
+    try:
+        names = sorted(os.listdir(base))
+    except FileNotFoundError:
+        return []
+    # A list or a mark that cannot be read raises (OSError): marks only deny reuse, so a
+    # caller that cannot read them must deny reuse, never treat the list as empty.
     entries = []
-    for path in sorted((Path(directory).expanduser() / 'stale').glob('*.json')):
+    for name in names:
+        if not name.endswith('.json'):
+            continue
+        body = (base / name).read_bytes()
         try:
-            entry = json.loads(path.read_bytes())
+            entry = json.loads(body)
             if (entry['schema'] == STALE_SCHEMA and all(isinstance(entry[k], str) and entry[k]
                     for k in ('identity', 'declaration', 'gate_run', 'reason'))):
                 entries.append(entry)
-        except (OSError, ValueError, KeyError, TypeError):
+        except (ValueError, KeyError, TypeError):
             continue
     return entries
 
