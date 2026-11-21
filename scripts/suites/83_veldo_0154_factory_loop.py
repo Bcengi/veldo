@@ -855,7 +855,9 @@ sys.exit(chosen['code'])
                 mark = last_pass()
                 os.kill(receiver['pid'], signal.SIGKILL)
                 killed = True
-            death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark)
+            # VELDO-0358: only a receiver this suite killed can end the run (its worker waits on a gate); with no
+            # kill there is nothing to wait for, and the rows below say so instead of a wait running out.
+            death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark) if killed else None
             # VELDO-0358: the absence of a second pass is closed by the next pass, one this suite causes itself.
             closing_from = last_pass()
             note()
@@ -866,7 +868,8 @@ sys.exit(chosen['code'])
             call = invocation(victim.get('dispatch_id', ''))
             took = offered(death, U['W'], 'build')
             check('loop/receiver-death', 'killing the receiver mid-run started exactly one pass, whose only source is the '
-                  'run\'s end [%s, %s]' % (killed, [(p['pass'], p['sources']) for p in after]),
+                  'run\'s end [%s, %s, receiver %s, its start %s]' % (killed, [(p['pass'], p['sources']) for p in after],
+                                                         receiver, fields and fields[19]),
                   killed and death is not None and len(after) == 1 and death['sources'] == ['run_end'])
             check('loop/receiver-death', 'the run is recorded outcome_unknown under its original dispatch, its receiver '
                   'lost [%s, %s]' % ((record.get('state'), record.get('reason')), ended(death, U['U2'])),
