@@ -13,10 +13,8 @@ import json
 import marshal
 import os
 from pathlib import Path
-import select
 import socket
 import sys
-import time
 
 
 def install(base, cache):
@@ -130,44 +128,55 @@ def notify_listen(address):
     socket.socket.listen = listen
 
 
-def ready(proc, listener, expected, seconds=5):
-    """Wait for a specific readiness event or this child's exit, with a deadline."""
-    deadline = time.monotonic() + seconds
-    with contextlib.ExitStack() as stack:
-        exited = os.pidfd_open(proc.pid)
-        stack.callback(os.close, exited)
-        while proc.poll() is None:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                return False
-            events = select.select([listener, exited], [], [], remaining)[0]
-            if listener in events and expected in listener.recv(4096):
-                return proc.poll() is None
-            if exited in events:
-                return False
-    return False
+def _waits():
+    """The wait primitive (VELDO-0358), the instance the suite process already holds as `waits`; loaded beside
+    this file only when nothing loaded it (this module also runs in child interpreters, which never wait)."""
+    if 'waits' in sys.modules:
+        return sys.modules['waits']
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('waits', str(Path(__file__).resolve().parent / 'waits.py'))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules['waits'] = module
+    spec.loader.exec_module(module)
+    return module
 
 
-def wait(proc, seconds):
-    """Reap on this child's exit event instead of Popen.wait's timeout polling."""
-    import subprocess
+def ready(proc, listener, expected):
+    """The child said `expected` on its notification socket (True) or exited first (False), woken by either
+    (VELDO-0358: no deadline; past the wait hang bound the row is hung)."""
     if proc.poll() is not None:
-        return proc.returncode
-    exited = os.pidfd_open(proc.pid)
-    try:
-        if not select.select([exited], [], [], seconds)[0]:
-            raise subprocess.TimeoutExpired(proc.args, seconds)
-        return proc.wait()
-    finally:
-        os.close(exited)
+        return False
+    waits = _waits()
+    listener.setblocking(False)
+    said = []
+
+    def heard():
+        while True:
+            try:
+                said.append(listener.recv(4096))
+            except BlockingIOError:
+                return any(expected in one for one in said)
+    result = waits.wait('%r from %s' % (expected, proc.args[-2:]), heard, lambda: proc.poll() is not None,
+                        [waits.Readable(listener, drain=False, persistent=True), waits.Pidfd(proc)])
+    return result.done and proc.poll() is None
+
+
+def wait(proc, _seconds=None):
+    """Reap on this child's exit event (its pidfd). VELDO-0358: no deadline, so a caller's seconds are not read;
+    past the wait hang bound the row is hung, never killed."""
+    if proc.poll() is None:
+        waits = _waits()
+        waits.wait('the exit of %s' % (proc.args[-2:],), lambda: proc.poll() is not None, None, [waits.Pidfd(proc)])
+    return proc.wait()
 
 
 def wake_authority(config):
-    """Wake the stopped authority's accept wait after SIGTERM, without a command."""
+    """Wake the stopped authority's accept wait after SIGTERM, without a command. The connection is made without
+    blocking: a listener that cannot take it now is awake already, and one that is gone needs no wake."""
     with contextlib.suppress(OSError, ValueError, KeyError):
         address = json.loads(Path(config).read_text())['socket']
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as wake:
-            wake.settimeout(0.2)
+            wake.setblocking(False)
             wake.connect(address)
 
 
