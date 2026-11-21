@@ -84,7 +84,8 @@ def _v206_suite_reuse():
                 'c': 'ran("c")\nexpect("fixture c reads its declared tree", '
                      'sorted(p.name for p in (ROOT / "data/c").iterdir()) != [])\n',
                 'd': 'ran("d")\nexpect("fixture d passes unless told to fail", not (OUTSIDE / "d-fails").exists())\n',
-                'e': 'ran("e")\nexpect("fixture e passes unless told to fail", not (OUTSIDE / "e-fails").exists())\n',
+                'e': 'ran("e")\nexpect("fixture e always passes this row", True)\n'
+                     'expect("fixture e passes unless told to fail", not (OUTSIDE / "e-fails").exists())\n',
                 't': 'ran("t")\nif (OUTSIDE / "t-blocks").exists():\n'
                      '    print("fixture t: reached", flush=True)\n    sys.stdin.read()\n'
                      'expect("fixture t passes", True)\n',
@@ -434,6 +435,8 @@ def _v206_suite_reuse():
             store = new_store('corrupt-' + name)
             first = fx.cycle()
             record = store / (first['key']['c'] + '.json')
+            if not record.is_file() or not (store / (first['key']['e'] + '.json')).is_file():
+                return False, 'the passing run stored no record'
             change(record, first)
             second = fx.cycle()
             return (first['receipt']['published'] == 5 and second['source']['c'] == 'fresh'
@@ -562,7 +565,10 @@ def _v206_suite_reuse():
             and stamp(forced, EMPTY.replace('false', 'true'), '1') == EMPTY.replace('false', 'true')
             and stamp(forced, EMPTY).startswith('refused'), (tell(forced), stamp(forced, EMPTY, '1')))
 
-        stamped = json.loads('{' + stamp(r_again) + '}')
+        def parsed(fields):
+            return {} if fields.startswith('refused') else json.loads('{' + fields + '}')
+
+        stamped = parsed(stamp(r_again))
         tampered_state = Path(tempfile.mkdtemp(dir=str(base), prefix='tampered-'))
         lying = dict(r_again['receipt'], reused=0)
         (tampered_state / 'receipt.json').write_text(json.dumps(lying))
@@ -572,7 +578,7 @@ def _v206_suite_reuse():
             and stamp({'state': base / 'no-such-state'}).startswith('refused')
             and stamp(r_again, EMPTY, '1').startswith('refused')
             and G.E.landing_problem(dict(stamped, commit='a' * 40)) == 'missing_evidence:gate/authenticated_reuse_required'
-            and G.E.landing_problem(dict(json.loads('{' + stamp(r_cold) + '}'), commit='a' * 40)) is None,
+            and G.E.landing_problem(dict(parsed(stamp(r_cold)), commit='a' * 40)) is None,
             (stamp(r_cold), stamped))
 
         # A record that was true of other inputs, kept, copied under the new key, or signed again.
@@ -581,7 +587,8 @@ def _v206_suite_reuse():
         kept = fx.cycle()
         old_key = kept['key']['b']
         (fx.root / 'data/b.txt').write_text('b v5\n')
-        shutil.copyfile(records / (old_key + '.json'), records / (fx.keys()['b'] + '.json'))
+        if (records / (old_key + '.json')).is_file() and fx.keys()['b'] != old_key:
+            shutil.copyfile(records / (old_key + '.json'), records / (fx.keys()['b'] + '.json'))
         renamed = fx.cycle()
         (fx.root / 'data/b.txt').write_text('b v6\n')
         resigned_key = fx.keys()['b']
