@@ -16839,7 +16839,8 @@ def cases():
     # AC10: restore suite 66's 1.5 second window after the unexpected exit, read by suite 71's census row.
     wave358f('wave358-window-restored', '71_veldo_0138_channel_service.py', '66_veldo_0047_authority.py',
              "                crashed = show(unit)\n",
-             "                time.sleep(1.5)  # defect: longer than any restart delay a unit would carry, restored\n"
+             "                window = 1.5  # defect: the window longer than any restart delay a unit would carry,\n"
+             "                time.sleep(window)  # restored\n"
              "                crashed = show(unit)\n",
              ['wave1/no-sites'], 'scripts/suites')
     # ==== end of VELDO-0358 brief F ====
