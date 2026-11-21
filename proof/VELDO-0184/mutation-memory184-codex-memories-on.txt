@@ -1,0 +1,11 @@
+Case: memory184-codex-memories-on
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-codex-memories-on, alone, at d4f45bda; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.6s
+module control_engine_codex.py, rows ['AC2/configuration'], replacement count 1
+old: "    configuration.update(FILE_MEMORY['configuration'])\n"
+new: "    pass  # defect: Codex's own memory feature left as the profile has it\n"
+baseline: 42 assertions, failed rows [], target rows {'AC2/configuration': [True]}
+noop: 42 assertions, failed rows [], target rows {'AC2/configuration': [True]}
+mutant: 42 assertions, failed rows ['VELDO-0184 AC2/configuration'], target rows {'AC2/configuration': [False]}
+invalid results: []
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.579s

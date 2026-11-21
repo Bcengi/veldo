@@ -25,6 +25,8 @@ MODES = ('always', 'when assigned')
 CODEX_CAPABILITIES = {'shell', 'update_plan', 'apply_patch', 'view_image', 'multi_agent', 'sub_agents',
                       'web_search', 'tool_search', 'clock', 'request_user_input_async'}
 FIELDS = {'role', 'engine', 'native_tools', 'mcp', 'skills', 'instructions', 'settings'}
+# VELDO-0184 AC1: the file memory item, {"load": mode}, optional so every revision saved without it stays valid.
+FILE_MEMORY = 'file_memory'
 # VELDO-0231 AC3: the tools that wait for an answer, which no role may list: nobody answers in an unattended run.
 WAIT_QUESTION_TOOLS = {'claude_code': ('AskUserQuestion',), 'codex': ('request_user_input',)}
 WAIT_QUESTION = 'invalid_input:agent_native_tools:wait_question'
@@ -56,7 +58,9 @@ def validate(definition, kind=KINDS[0]):
                 or definition['source'] not in ('project', 'factory') or not path_ok(definition['path'])):
             raise Refused('invalid_input:agent_skill')
         return
-    if (set(definition) != FIELDS or not MC.identifier(definition['role'])
+    if FILE_MEMORY in definition and not file_memory_item(definition[FILE_MEMORY]):
+        raise Refused('invalid_input:agent_file_memory')
+    if (set(definition) - {FILE_MEMORY} != FIELDS or not MC.identifier(definition['role'])
             or definition['engine'] not in ('claude_code', 'codex')
             or not isinstance(definition['settings'], dict)):
         raise Refused('invalid_input:agent_configuration')
@@ -91,6 +95,11 @@ def validate(definition, kind=KINDS[0]):
                 raise Refused('invalid_input:agent_' + field)
     if definition['engine'] == 'codex':
         codex_grants(definition)
+
+
+def file_memory_item(value):
+    """VELDO-0184 AC1: a well formed `file_memory` item, as control_memory_file reads it."""
+    return organ('control_memory_file').valid_item(value)
 
 
 def codex_grants(definition):

@@ -38,6 +38,10 @@ footprint:
   - "specs/VELDO-0184-file-memory-handed-to-every-run.md"
   - "specs/index.md"
   - "proof/VELDO-0184/*"
+  - "engine/.veldo/control_owner_revisions.py"
+  - ".veldo/control_owner_revisions.py"
+  - "engine/.veldo/qualify.py"
+  - ".veldo/qualify.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -150,3 +154,8 @@ specification ready.
 from flag settings. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0184/OPEN.md items 1 and 2): a replay of an
+identical role save carrying the file memory item is rebuilt in control_owner_revisions.py, and the Claude Code
+qualification record that must carry the file memory form is written by qualify.py, so the one upgrade command
+keeps the form. Acceptance criteria are unchanged.

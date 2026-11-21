@@ -1,0 +1,11 @@
+Case: memory184-absent-unnamed
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-absent-unnamed, alone, at d4f45bda; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.6s
+module control_launch.py, rows ['AC1/absent'], replacement count 1
+old: "        if not refusal or refusal.startswith('invalid_input:memory:file_memory:'):\n"
+new: "        if not refusal:  # defect: a missing directory is refused under another name\n"
+baseline: 42 assertions, failed rows [], target rows {'AC1/absent': [True]}
+noop: 42 assertions, failed rows [], target rows {'AC1/absent': [True]}
+mutant: 42 assertions, failed rows ['VELDO-0184 AC1/absent'], target rows {'AC1/absent': [False]}
+invalid results: []
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.611s

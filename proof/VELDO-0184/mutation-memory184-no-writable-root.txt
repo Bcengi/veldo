@@ -1,0 +1,11 @@
+Case: memory184-no-writable-root
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-no-writable-root, alone, at d4f45bda; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.1s
+module control_engine_codex.py, rows ['AC2/write'], replacement count 1
+old: "    configuration['sandbox_workspace_write'] = sandbox\n"
+new: "    pass  # defect: the index handed in the instructions without the writable root\n"
+baseline: 42 assertions, failed rows [], target rows {'AC2/write': [True]}
+noop: 42 assertions, failed rows [], target rows {'AC2/write': [True]}
+mutant: 42 assertions, failed rows ['VELDO-0184 AC2/configuration', 'VELDO-0184 AC2/write', 'VELDO-0184 AC2/later-read', 'VELDO-0184 AC3/loaded-at-launch', 'VELDO-0184 AC3/tool-lines'], target rows {'AC2/write': [False]}
+invalid results: []
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.082s

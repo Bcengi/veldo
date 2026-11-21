@@ -1,0 +1,48 @@
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 131_veldo_0184_file_memory
+  running     1 of 193 suites: 131_veldo_0184_file_memory
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+  VELDO-0184 AC1 two accounts: ['/dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-1', '/dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-2'] outcomes: ['completed', 'completed'] refusals: None None
+  VELDO-0184 detail: AC1/role-item a capability configuration may list the file memory item, always or when assigned; a revision without the item stays valid, and a malformed item is refused by name; the new revision of each assistant role the setup step saves lists the item always [None]; setup saves a new role revision when only the item is missing (its skip compares it)
+  SELFTEST FAIL: VELDO-0184 AC1/role-item
+  VELDO-0184 detail: AC1/settings claude-one: the generated settings turn auto memory on in the record's directory [{'autoMemoryEnabled': None, 'autoMemoryDirectory': None}]; claude-one: the launch leaves CLAUDE_CODE_DISABLE_AUTO_MEMORY unset [1]; claude-two: the generated settings turn auto memory on in the record's directory [{'autoMemoryEnabled': None, 'autoMemoryDirectory': None}]; claude-two: the launch leaves CLAUDE_CODE_DISABLE_AUTO_MEMORY unset [1]
+  SELFTEST FAIL: VELDO-0184 AC1/settings
+  VELDO-0184 detail: AC1/memory-path claude-one: the init event's memory paths name exactly the handed directory, not the account profile's [/dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-1/projects/-dev-shm-v184-mfp3hbpc-memory-state-conversations-da76da9be96fba255da3dd8b86a3a5bf15c1571616554139fb5ff30a246b52e1-workspace/memory, profile /dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-1]; claude-two: the init event's memory paths name exactly the handed directory, not the account profile's [/dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-2/projects/-dev-shm-v184-mfp3hbpc-memory-state-conversations-b3c832c09c79a3a09f823aedef1564b09589d1ab795a05529c705112d110f541-workspace/memory, profile /dev/shm/v184-mfp3hbpc/memory/profile-account-claude_code-2]; whichever account ran it, the directory is the one memory record's
+  SELFTEST FAIL: VELDO-0184 AC1/memory-path
+  VELDO-0184 detail: AC1/qualified a Claude Code version whose record lacks the form launches no run that lists the item [None]; the pinned 2.1.281 record lists the form, read from its bytes (every literal found)
+  SELFTEST FAIL: VELDO-0184 AC1/qualified
+  VELDO-0184 detail: AC1/mismatch-stop init memory paths naming the account profile's directory stop the run by name [[]]; before its first turn: the prompt never reached the engine [['completed']]
+  SELFTEST FAIL: VELDO-0184 AC1/mismatch-stop
+  VELDO-0184 detail: AC1/absent a run that lists the item, its index gone, is refused invalid_input:memory:file:absent on either engine [invalid_input:memory:file_memory:missing invalid_input:memory:file_memory:missing]
+  SELFTEST FAIL: VELDO-0184 AC1/absent
+  VELDO-0184 detail: AC2/configuration the generated configuration adds the directory to the workspace-write sandbox's writable roots [None]; its developer instructions hold the layout paragraph and the index as it stood, with the rule the other engine saved; Codex's own memory feature is off [None None]
+  SELFTEST FAIL: VELDO-0184 AC2/configuration
+  VELDO-0184 detail: AC2/write the Codex run wrote a new memory file and updated the index in the record's directory [None]
+  SELFTEST FAIL: VELDO-0184 AC2/write
+  VELDO-0184 detail: AC2/later-read a later Claude Code run loads the index Codex updated and reads the new file
+  SELFTEST FAIL: VELDO-0184 AC2/later-read
+  VELDO-0184 detail: AC2/qualified a Codex version whose record lacks the form launches no run that lists the item [None ['accepted', 'capability_tools', 'capability_listing', 'baseline', 'memory', 'running', 'conversation_turn', 'artifact', 'exited'] {'account': 'account-codex-1', 'arrival': 115, 'attempts': [{'account': 'account-codex-1', 'at': 1793800638.5299356, 'dispatch_id': 'dispatch/codex-unqualified/44728c3145c64a68b139a5c7640fe067'}], 'conversation': 'codex-unqualified', 'created_at': 1793800638.323916, 'dispatch_id': 'dispatch/codex-unqualified/44728c3145c64a68b139a5c7640fe067', 'dispatched_at': 1793800638.5299356, 'ended_at': 1793800639.4916887, 'intake_command': 'codex-unqualified-1', 'intake_digest': 'sha256:codex-unqualified-1', 'outcome': 'completed', 'receiver': '/dev/shm/v184-mfp3hbpc/memory/receiver.json', 'role_revision': 1, 'schema': 'veldo.conversation_turn/v1', 'sequence': 1, 'state': 'ended'} True]; the pinned 0.154.0 record lists the form, read from its bytes (every literal found); the qualification writer lists the form only for a binary carrying its every key
+  SELFTEST FAIL: VELDO-0184 AC2/qualified
+  VELDO-0184 detail: AC3/loaded-at-launch claude-one: the launch line names the directory, the form and the index digest as loaded [{}]; claude-two: the launch line names the directory, the form and the index digest as loaded [{}]; codex-writer: the launch line names the directory, the form and the index digest as loaded [{}]; claude-later: the launch line names the directory, the form and the index digest as loaded [{}]; the editing run's launch line has the index before it, the next run's the index after it, and they differ; the form named is each engine's own [[]]
+  SELFTEST FAIL: VELDO-0184 AC3/loaded-at-launch
+  VELDO-0184 detail: AC3/tool-lines claude-one: every memory file read, write and edit is a tool call line with its input and result [0 made, 0 kept]; claude-two: every memory file read, write and edit is a tool call line with its input and result [0 made, 0 kept]; claude-later: every memory file read, write and edit is a tool call line with its input and result [0 made, 0 kept]; codex-writer: its index read and its file change are item lines with their input and result
+  SELFTEST FAIL: VELDO-0184 AC3/tool-lines
+  VELDO-0184 detail: AC3/no-content the Codex baseline report names its developer instructions by digest only
+  SELFTEST FAIL: VELDO-0184 AC3/no-content
+  VELDO-0184 detail: AC3/observability runs handed the file memory are counted per engine [{}]; a run stopped for a memory path mismatch is counted [[]]; the durable memory receipt binds the handoff to the record revision and the qualification
+  SELFTEST FAIL: VELDO-0184 AC3/observability
+  131_veldo_0184_file_memory                       1 passed    4.05s
+selftest (PARTIAL, 1 of 193 suites): 27 passed, 14 failed in 4.05s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
