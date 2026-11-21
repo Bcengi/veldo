@@ -22,7 +22,7 @@ import memory_aba
 
 HERE = Path(__file__).resolve().parent
 SUITE = ROOT / 'scripts/suites/113_veldo_0111_census.py'
-NEXT = 'protocol_inventory_bounds'  # first retained obligation not addressed by this run
+NEXT = 'operation_configuration'  # first retained obligation not addressed by this run
 
 
 def load(name, path):
@@ -265,6 +265,20 @@ def main():
         (old, new), = MUTANTS[label]
         mutate(label, old, new, target)
 
+    # protocol_inventory_bounds: the scan must cover what the kernel accepts, the
+    # registry must fail closed on unknown entries, and an undiscovered measured
+    # protocol must be refused.
+    PROTOCOL = (
+        ('narrow-protocol-scan', 'PROTOCOL_BOUNDS = {1: 16, 2: 1024, 10: 1024, 16: 64}',
+         'PROTOCOL_BOUNDS = {2: 256, 10: 256, 16: 32}', 'census/protocol-inventory-covers-kernel'),
+        ('trust-registry', '    return dict(registered=registered, aliases=aliases, unexplained=unexplained)',
+         '    return dict(registered=registered, aliases=aliases, unexplained=[])',
+         'census/protocol-inventory-covers-kernel'),
+        ('skip-undiscovered-refusal', '    if undiscovered:\n', '    if False:\n',
+         'census/undiscovered-protocol-refused'))
+    for label, old, new, target in PROTOCOL:
+        mutate(label, old, new, target)
+
     initial = load('initial111', HERE.parent / 'drive.py')
     for label, target, old, new in initial.CASES:
         mutate(label, old, new, target)
@@ -313,7 +327,7 @@ def main():
         current_receipt='ac2-attempt/receipt.json', receipt_digest=sha(HERE / 'receipt.json'),
         scope='Live regression and counterexample evidence; full AC2 qualification remains INCOMPLETE')
     (HERE.parent / 'qualification.json').write_text(json.dumps(current, indent=2) + '\n')
-    print('Recheck complete. AC2 remains INCOMPLETE: retained obligations from shared_socket_memory onward are open.', flush=True)
+    print(f'Recheck complete. AC2 remains INCOMPLETE: next open obligation is {NEXT}.', flush=True)
 
 
 if __name__ == '__main__':

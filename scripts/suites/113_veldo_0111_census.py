@@ -132,7 +132,8 @@ libc=ctypes.CDLL(None,use_errno=True)
 def ack(value):
     os.write(1,(json.dumps(value)+'\n').encode())
 for family in range(46):
-    protocols=(*range(256),262) if family in (2,10) else range(32) if family==16 else (0,)
+    bounds={1:16,2:1024,10:1024,16:64}
+    protocols=range(bounds[family]) if family in bounds else (0,)
     for kind in (1,2,3,4,5,6,10):
         for protocol in protocols:
             fd=libc.socket(family,kind|socket.SOCK_NONBLOCK|socket.SOCK_CLOEXEC,protocol)
@@ -359,6 +360,10 @@ print(json.dumps(dict(before=bool(before),bound=bool(name),
     return evidence
 
 
+def finish_rows(census, r):
+    return [census.consumer_rows(r, c) for c in census.CONSUMERS]
+
+
 def run_checks(root, emit, module_path=None):
     spec = importlib.util.spec_from_file_location('lifecycle111', module_path or root / 'scripts/fixtures/lifecycle_census.py')
     census = importlib.util.module_from_spec(spec)
@@ -477,14 +482,16 @@ for name in (observer,'pgrep'):
     evidence['capabilities'] = dict(combinations=cells, operations=operations,
         expected_services=len(expected), observed_services=len(observed),
         status=inventory['qualification']['status'])
-    emit('census/qualification-does-not-overclaim', len(cells) == 4123
+    emit('census/qualification-does-not-overclaim', len(cells) == 15190
          and len({(c['family'],c['type'],c['protocol']) for c in cells}) == len(cells)
          and all(c['available'] or c['errno'] > 0 for c in cells)
          and inventory.get('root_status') == 0 and expected == observed
          and inventory['status'] == 'INCOMPLETE'
          and all(row['status'] == 'STANDS DOWN' for rows in inventory['consumer_rows'].values() for row in rows))
     capabilities = inventory['qualification']['inventory']
-    wanted = {'protocol_inventory_bounds'}
+    # The inventory is exhaustive only when the registry reconciles; that host
+    # claim is proved separately by census/protocol-inventory-covers-kernel.
+    wanted = set() if capabilities['exhaustive'] else {'protocol_inventory_bounds'}
     # socket_destruction is named only for a socket whose final release was not
     # observed; this capture must instead see every one of its sockets released.
     released = bool(inventory['sockets']) and all(
@@ -504,6 +511,54 @@ for name in (observer,'pgrep'):
          and not any(f['capability'] == 'qualification' for f in inventory['failures'])
          and released
          and qualified['status'] == 'COMPLETE' and qualified['qualification']['gaps'] == [])
+
+    # Independent of the fixture's bounds: every (family, type, protocol) this
+    # kernel accepts, over a wider range and extreme values, must be a discovered
+    # cell. A synthetic registry checks that unknown entries fail closed.
+    known = {(c['family'], c['type'], c['protocol']) for c in capabilities['combinations'] if c['available']}
+    triples = {tuple(c['kernel']) for c in capabilities['combinations'] if c.get('kernel')}
+    outside, accepted = [], 0
+    extremes = (-1, -2**31, 2**31 - 1, 65535, 65536)
+    for family, bound in ((1, 1024), (2, 4096), (10, 4096), (16, 1024)):
+        for kind in (1, 2, 3, 4, 5, 6, 10):
+            for protocol in (*range(bound), *extremes):
+                try:
+                    probe = socket.socket(family, kind | socket.SOCK_CLOEXEC, protocol)
+                except OSError:
+                    continue
+                with probe:
+                    accepted += 1
+                    triple = tuple(probe.getsockopt(socket.SOL_SOCKET, o)
+                                   for o in (socket.SO_DOMAIN, socket.SO_TYPE, socket.SO_PROTOCOL))
+                if (family, kind, protocol) not in known or triple not in triples:
+                    outside.append([family, kind, protocol, list(triple)])
+    synthetic = census.reconcile_registry(
+        'protocol  size sockets\nFUTUREPROTO 1 0\nTCP 1 0\nPACKET 1 0\nINET_SMC 1 0\n',
+        'alias net-pf-2-proto-4000 future\nalias net-pf-10-proto-256-type-1 smc\nalias net-pf-17 other\n')
+    unexplained = sorted(str(u.get('name') or u.get('alias')) for u in synthetic['unexplained'])
+    smc = any(c['available'] and c['protocol'] == 256 for c in capabilities['combinations'])
+    evidence['protocol_inventory'] = dict(accepted=accepted, outside=outside, smc_available=smc,
+        registry=capabilities.get('registry'), synthetic=synthetic)
+    emit('census/protocol-inventory-covers-kernel', capabilities['exhaustive'] is True
+         and capabilities['registry']['unexplained'] == [] and accepted > 0 and not outside
+         and unexplained == ['FUTUREPROTO', 'net-pf-2-proto-4000']
+         and 'protocol_inventory_bounds' not in inventory['qualification']['gaps'])
+    # Explicit refusal: the live receipt's sockets carry kernel triples; with one
+    # triple removed from the inventory exactly its sockets are refused.
+    measured = [o for o in inventory['sockets'] if o.get('family') in (1, 2, 10, 16)]
+    target = (2, 1, 256) if smc else (1, 1, 0)
+    named = sorted(o['identity'] for o in measured if tuple(o.get('kernel_triple') or ()) == target)
+    narrowed = dict(capabilities, exhaustive=True, operation_probes=[], io_uring={'available': False},
+        combinations=[c for c in capabilities['combinations'] if tuple(c.get('kernel') or ()) != target])
+    refused = dict(inventory, qualification=dict(inventory['qualification']), failures=[],
+                   capture_status='COMPLETE')
+    census.qualify(refused, narrowed)
+    refusals = [f for f in refused['qualification']['reasons'] if f['capability'] == 'protocol_inventory_bounds']
+    emit('census/undiscovered-protocol-refused', bool(named)
+         and all(o.get('kernel_triple') for o in measured)
+         and len(refusals) == 1 and sorted(x['identity'] for x in refusals[0]['evidence']['sockets']) == named
+         and refused['status'] == 'INCOMPLETE'
+         and all(row['status'] == 'STANDS DOWN' for rows in finish_rows(census, refused) for row in rows))
 
     extended, acks = run('socket_extensions', EXTENDED_SOCKET_PROBE)
     accepted = [a for a in acks if a['kind'] == 'accept']
