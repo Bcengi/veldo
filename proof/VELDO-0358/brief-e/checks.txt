@@ -1,0 +1,13 @@
+python3 scripts/check_wallclock.py (no opened-files record: full-tree scope)
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 699 file(s) read, 423 with a site
+wallclock: sites: 2850 (R1 267, R2 1347, R3 1198, R4 38); by class: A 38, D1 1045, D2 85, P 217, S1 35, S2 89, S3 10, ST 133, T 1198; excepted by the authority: 36
+wallclock: baseline: 2682 entry(ies), 2814 site(s) in 420 file(s); by rule: R1 232, R2 1347, R3 1198, R4 37
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+
+bash scripts/check_template_sync.sh
+template sync: pass (328 pair(s) compared, 6 declared per-repo, 367 engine-only)
+
+python3 scripts/check_personal_setup.py
+veldo installation: none found (looked at $HOME/.config/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
