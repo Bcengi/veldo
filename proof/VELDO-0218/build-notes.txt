@@ -79,3 +79,5 @@ Its first replay missed an environment import; the corrected harness passed on p
 code changed after the real-worker audit measurement or the final full selected Linux run.
 The pending extra host replay was cancelled before execution in favor of this focused replay.
 The other aborted host commands were cancelled while waiting for slots, before any test launched.
+Final static validation at eab89880 passed: 1251 Python and 40 shell files, 325 template
+pairs, spec/proof validation, index freshness and zero personal-setup findings.
