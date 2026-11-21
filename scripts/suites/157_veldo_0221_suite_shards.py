@@ -291,7 +291,7 @@ def _veldo_0221():
                     for name, r in roots.items() for value in r.values()):
                 problems.append("%s: a root is not its own shard's: %r" % (leg, roots))
             # The runtime directory holds only links to the user manager's own sockets, or nothing.
-            if not all(set(found) <= {"bus", "systemd", "systemd/private"} for found in runtime.values()):
+            if not all(set(found) <= {"bus", "systemd", "systemd/private", "systemd/user"} for found in runtime.values()):
                 problems.append("%s: a runtime directory holds more than the manager's sockets: %r" % (leg, runtime))
             # Every unit, slice and scope name carries its shard's name, and the two shards' differ.
             for name, item in named.items():
@@ -503,6 +503,7 @@ def _veldo_0221():
         home = pwd.getpwuid(os.getuid()).pw_dir
         if real != {"systemd configuration": (home + "/.config/systemd/user", "strict"),
                     "runtime directory": ("/run/user/%d" % os.getuid(), "strict"),
+                    "runtime unit directory": ("/run/user/%d/systemd/user" % os.getuid(), "strict"),
                     "/dev/shm": ("/dev/shm", "strict"), "temporary directory": (str(top), "attributed"),
                     "owner cache": (home + "/.cache/veldo", "strict"),
                     "owner state": (home + "/.local/state/veldo", "strict")}:

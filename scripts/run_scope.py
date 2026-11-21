@@ -673,8 +673,9 @@ class RunScope:
 #   - separate interpreters share no Python state;
 #   - every shard has its own HOME, TMPDIR, XDG configuration, data, cache and state directories
 #     and its own runtime directory in place of /run/user/<uid>, which holds only links to the
-#     user manager's own sockets (its bus and systemd/private), so units still reach the one
-#     manager and nothing else of the real runtime directory is in the shard's reach by name;
+#     user manager's own sockets (its bus and systemd/private) and to its runtime unit directory,
+#     so units still reach the one manager and nothing else of the real runtime directory is in
+#     the shard's reach by name;
 #   - a shard reports over a pipe it inherits, never through a shared file;
 #   - in a confined leg each shard stacks its own Landlock layer on the leg's domain
 #     (scripts/agent_sandbox.py write_layer), which grants writes only beneath its own roots, and proves it
@@ -749,7 +750,12 @@ UNLAYERED = {
 # The two arguments a shard interpreter is started with. The gate launcher's broker knows a shard by
 # them (scripts/agent_sandbox.py Broker._shard_roots) and holds its binds to its roots.
 SHARD_ARGUMENTS = ("--shard", "--shard-root")
+# What a shard's runtime directory links from the real one: the user manager's two sockets, and its
+# runtime unit directory, because a suite that installs a unit for the one manager writes the unit
+# file where the manager reads it (measured: suite 66 writes $XDG_RUNTIME_DIR/systemd/user, and with
+# no link there its service was never found). Nothing else of the real runtime directory is linked.
 MANAGER_SOCKETS = ("bus", "systemd/private")
+MANAGER_UNITS = "systemd/user"
 # What a shard does not inherit: the dispatcher's own channels and inputs, a diagnostic order, and
 # the other spellings of the temporary directory, which would outrank the shard's own TMPDIR.
 SHARD_DROPPED = (LEDGER_CHANNEL, SHARD_CLAIMS, SHARD_METRICS, "VELDO_SUITE_ORDER", "TMP", "TEMP",
@@ -931,13 +937,14 @@ def short_temporary(scratch):
 
 
 def link_manager(runtime, real):
-    """Make the shard's runtime directory hold links to the user manager's own sockets and nothing
-    else; the names it could link. A manager that is not there, or not in reach, links nothing."""
+    """Make the shard's runtime directory hold links to the user manager's own sockets and runtime
+    unit directory and nothing else; the names it could link. A manager that is not there, or not
+    in reach, links nothing."""
     linked = []
-    for relative in MANAGER_SOCKETS:
+    for relative in (*MANAGER_SOCKETS, MANAGER_UNITS):
         source = Path(real) / relative
         try:
-            if not source.is_socket():
+            if not (source.is_dir() if relative == MANAGER_UNITS else source.is_socket()):
                 continue
             target = Path(runtime) / relative
             target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -1078,6 +1085,8 @@ def unconfined_places(base):
     return [
         {"name": "systemd configuration", "path": home / ".config/systemd/user", "depth": 2, "rule": "strict"},
         {"name": "runtime directory", "path": Path("/run/user/%d" % uid), "depth": 1, "rule": "strict"},
+        {"name": "runtime unit directory", "path": Path("/run/user/%d" % uid) / MANAGER_UNITS, "depth": 2,
+         "rule": "strict"},
         {"name": "/dev/shm", "path": Path("/dev/shm"), "depth": 1, "rule": "strict"},
         {"name": "temporary directory", "path": Path(base).parent, "depth": 1, "rule": "attributed"},
         {"name": "owner cache", "path": home / ".cache/veldo", "depth": 1, "rule": "strict"},
