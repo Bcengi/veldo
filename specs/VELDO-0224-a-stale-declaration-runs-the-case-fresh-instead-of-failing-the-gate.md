@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0207, VELDO-0217]
 placement: [enforcement]
-protected_paths: ["scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_reuse.py", "engine/scripts/mutation_reuse.py"]
+protected_paths: ["scripts/propose_case_inputs.py", "scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_reuse.py", "engine/scripts/mutation_reuse.py"]
 footprint:
   - scripts/case_reuse.py
   - engine/scripts/case_reuse.py

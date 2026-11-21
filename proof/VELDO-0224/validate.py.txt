@@ -36,7 +36,7 @@ for name, argv in commands:
             body = '\n'.join(line for line in body.splitlines() if not line.startswith('{')) + '\n'
     (proof / (name + '.txt')).write_text('Command: ' + ' '.join(argv).replace('/tmp/veldo-0224-', '<scratch>/') + '\n' + body + '\nExit: ' + str(result.returncode) + '\n')
     passed = (result.returncode == 0 or (result.returncode == 2 and argv[1] == 'scripts/selftest.py'
-              and re.search(r'selftest \(PARTIAL,.*?0 failed in ', body)))
+              and re.search(r'^selftest \(PARTIAL,.*\): \d+ passed, 0 failed in ', body, re.M)))
     results.append((name, 0 if passed else result.returncode))
     print('END', name, result.returncode, flush=True)
     if not passed:
