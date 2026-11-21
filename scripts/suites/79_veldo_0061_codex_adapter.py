@@ -811,6 +811,10 @@ sys.exit(payload.get('code', 0))
                 written['mcp_resource_rule']['offered_without_server'] = {}
             if 'undelivered_grants' in written:
                 written['undelivered_grants'] = []
+            # VELDO-0231: the flag probe is the qualify command's too (the writer records it as not probed, the
+            # command records what the binary's loopback run showed; suite 126 proves it reproduces).
+            if 'flag_means' in written and isinstance(fresh, dict):
+                written['flag_means'] = fresh.get('flag_means')
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
                   'the installed vendor binary now, completed by the qualify command [%s]' % error,
                   installed and fresh == written and isinstance(installed.get('new_capabilities'), list))

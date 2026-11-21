@@ -580,6 +580,12 @@ def _v308_run_finished_suite():
             made.space_run = {'worktree': str(worktree) if worktree else None, 'scratch': str(scratch) if scratch else None,
                               'owner': owner, 'build': None}
             made.run_census, made.run_end, made.run_sent = None, None, False
+            # What Receiver.__init__ sets for a run that is no conversation turn and has no file memory, which
+            # _finish and the refusal path read since VELDO-0231, VELDO-0176, VELDO-0177 and VELDO-0184.
+            made.login = made.metering = made.flags = made.flag_means = None
+            made.conversation_record = made.held_session = made.placed = made.rendering = None
+            made.start = made.resume_refusal = made.file_memory = None
+            made.history_wanted, made.attached = False, []
             return made
 
         class Reservations:

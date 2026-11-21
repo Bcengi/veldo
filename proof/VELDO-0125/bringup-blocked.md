@@ -82,3 +82,5 @@ Decide the Mac profile's schema (heartbeat settings required, or exit events wit
 rebuild VELDO-0125's fixtures on VELDO-0124's evidence references and give the wrapper's waits a
 seam its Linux rows can drive. After that the port above can be repeated and suites 103 to 106
 rerun. VELDO-0125 depends on VELDO-0124, VELDO-0039, VELDO-0047 and VELDO-0108, all on the line.
+
+Lead decision, 2026-11-21 (bring-up part 2): not part of this run. The lead gives VELDO-0125 a separate port.

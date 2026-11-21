@@ -716,7 +716,8 @@ out.close()
                 own=own_of(launch.dispatch_id) if launch else {}, dumps=read_dumps(dumps_now() - before),
                 account=(launch.contract['reservation']['account'] if launch else None),
                 configuration=(launch.contract['capability']['configuration'] if launch else None),
-                directory=(conversations.read(identity) or {}).get('directory'))
+                # VELDO-0177: a turn runs in the conversation's own workspace, under its directory.
+                directory=CV.workspace_of(conversations.read(identity) or {}))
         os.environ['HOME'] = saved_environment['HOME'] if saved_environment['HOME'] is not None else os.environ['HOME']
         if saved_environment['DBUS_SESSION_BUS_ADDRESS'] is None:
             os.environ.pop('DBUS_SESSION_BUS_ADDRESS', None)

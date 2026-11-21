@@ -2217,6 +2217,11 @@ class Service:
                 S, CM, AC, ingress.acquirer, self.conn, domain=self.domain, projects=lambda: IN.store_projects(self.conn),
                 api_edge=ingress.settlement.api_edge, journal_signer=self.principal, sign=self.sign,
                 asker=ingress.presenter.edge, authority_generation=self.generation, observe=observe,
+                # VELDO-0239: every production intake takes the batch starter, so the owner's `/batch <project>`
+                # is a batch here too, never ordinary intake.
+                batches=_organ('control_batch_service').starter(S, self.conn, domain=self.domain,
+                                                                signer=self.principal, sign=self.sign,
+                                                                generation=self.generation),
                 conversations=self.conversations())
         intake = self._telegram_intake
         taken = intake.take_acquired(None if not self._telegram_caught_up else evidence_ids)

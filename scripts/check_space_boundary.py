@@ -138,6 +138,12 @@ REVIEWED[('engine/.veldo/control_graph_install.py', 'install')] = 'The install o
 REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')] = (
     'Retirement removes the run\'s own per-dispatch TMPDIR (veldo-<label> under the Mac user temp folder), '
     'which Supervisor.start created for that dispatch; pending review with design 6.10.')
+# VELDO-0177 (and VELDO-0175's held ref), added when the tickets were brought onto the line (2026-11-21) and not
+# yet reviewed with design 6.10: a conversation's attached project is cloned under the conversation's own
+# workspace, which no space ledger holds.
+REVIEWED[('engine/.veldo/control_clone.py', 'conversation_clone')] = (
+    'A failed clone removes the work folder this call made under the conversation workspace, and the ref it '
+    'deletes is the one it fetched the commit into a moment before; pending review with design 6.10.')
 
 
 def canonical(path):

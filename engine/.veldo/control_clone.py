@@ -1137,13 +1137,12 @@ def conversation_clone(source, commit, work):
     try:
         _git('init', '-q', '--template=', work)
         os.chmod(work, 0o700)
-        # VELDO-0175: fetched into a ref no source branch can be, then the branch made: a fetch into the branch
-        # itself is refused when it has the fresh repository's initial branch name (its unborn HEAD names it).
-        held = 'refs/veldo-clone/' + commit
+        # VELDO-0175: the commit is fetched into no ref, then the branch made: a fetch into the branch itself is
+        # refused when it has the fresh repository's initial branch name (its unborn HEAD names it). On the line
+        # no ref is held and deleted for it: only the space remover deletes a ref (VELDO-0304).
         _git('-C', work, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', str(source),
-             '%s:%s' % (commit, held), code='stale_input:commit_unavailable')
+             commit, code='stale_input:commit_unavailable')
         _git('-C', work, 'update-ref', 'refs/heads/' + branch, commit)
-        _git('-C', work, 'update-ref', '-d', held)
         _git('-C', work, 'symbolic-ref', 'HEAD', 'refs/heads/' + branch)
         _git('-C', work, 'reset', '-q', '--hard', commit)
         seen = _git('-C', work, 'rev-parse', '--verify', '-q', 'HEAD^{commit}', check=False).stdout.strip()

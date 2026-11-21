@@ -1,0 +1,191 @@
+Each suite that names a module the conversation chain changed (167 of the line's 254), alone, at 3ad4c83c of the port stack (VELDO-0187 ported, with the space boundary fit), 2026-11-21, host load 20 to 27. exit 2 is a passed partial run, exit 1 a run with a false row.
+exit 1 131_veldo_0184_file_memory  131_veldo_0184_file_memory 14 passed 45.90s
+  SELFTEST FAIL: VELDO-0184 AC1/qualified
+  SELFTEST FAIL: VELDO-0184 AC2/qualified
+exit 2 137_veldo_0181_conversation_decisions  137_veldo_0181_conversation_decisions 19 passed 8.21s
+exit 2 134_veldo_0179_conversation_screens  134_veldo_0179_conversation_screens 7 passed 59.89s
+exit 2 132_veldo_0175_conversation_routes  132_veldo_0175_conversation_routes 21 passed 28.99s
+exit 2 130_veldo_0176_conversation_history  130_veldo_0176_conversation_history 17 passed 16.72s
+exit 2 128_veldo_0177_conversation_workspace  128_veldo_0177_conversation_workspace 16 passed 3.88s
+exit 2 113_veldo_0111_census  113_veldo_0111_census 13 passed 175.64s
+exit 2 154_veldo_0335_released  154_veldo_0335_released 32 passed 3.98s
+exit 2 153_veldo_0336_run_worktree  153_veldo_0336_run_worktree 21 passed 6.62s
+exit 2 155_veldo_0304_space_boundary  155_veldo_0304_space_boundary 51 passed 10.83s
+exit 2 153_veldo_0302_space_creators  153_veldo_0302_space_creators 42 passed 2.13s
+exit 2 150_veldo_0350_end_write  150_veldo_0350_end_write 11 passed 2.17s
+exit 2 148_veldo_0311_git_hooks  148_veldo_0311_git_hooks 31 passed 11.74s
+exit 1 146_veldo_0308_run_finished  146_veldo_0308_run_finished 34 passed 6.37s
+  SELFTEST FAIL: VELDO-0308 ac1/removal-before-the-report: raised AttributeError: 'Receiver' object has no attribute 'placed' File "/tmp/sweep0/.veldo/control_launch.py", line 2586, in _unplace | placed, self.placed = self.placed, None | ^^^^^^^^^^^ | AttributeError: 'Receiver' object has no attribu
+  SELFTEST FAIL: VELDO-0308 ac1/refused-never-started
+  SELFTEST FAIL: VELDO-0308 ac3/only-a-pending-retirement: raised UnboundLocalError: cannot access local variable 'source' where it is not associated with a value File "/tmp/sweep0/scripts/suites/146_veldo_0308_run_finished.py", line 1065, in _v308_run_finished_suite | 'deferred=self.retry_deferred'
+  SELFTEST FAIL: VELDO-0308 f5/spawn-failed: raised AttributeError: 'Receiver' object has no attribute 'login' File "/tmp/sweep0/.veldo/control_launch.py", line 2535, in _conversation_start | module = (self.login or {}).get('engine') | ^^^^^^^^^^ | AttributeError: 'Receiver' object has no attribute 
+exit 2 143_veldo_0305_space_census  143_veldo_0305_space_census 26 passed 2.93s
+exit 2 134_veldo_0331_space_mode  134_veldo_0331_space_mode 16 passed 1.53s
+exit 2 129_veldo_0260_checkout_in_step  129_veldo_0260_checkout_in_step 18 passed 27.76s
+exit 2 129_veldo_0247_line  129_veldo_0247_line 14 passed 0.53s
+exit 2 127_veldo_0259_installation  127_veldo_0259_installation 20 passed 20.10s
+exit 2 128_veldo_0254_confined_runner  128_veldo_0254_confined_runner 1 passed 0.67s
+exit 2 128_veldo_0235_land_locally  128_veldo_0235_land_locally 9 passed 14.06s
+exit 2 127_veldo_0234_https_port  127_veldo_0234_https_port 10 passed 10.46s
+exit 2 125_veldo_0230_engine_census  125_veldo_0230_engine_census 8 passed 10.60s
+exit 2 117_veldo_0227_ui_location  117_veldo_0227_ui_location 7 passed 10.56s
+exit 2 122_veldo_0131_factory_screens_wide  122_veldo_0131_factory_screens_wide 2 passed 54.79s
+exit 2 120_veldo_0131_factory_ui  120_veldo_0131_factory_ui 14 passed 50.54s
+exit 2 118_veldo_0159_mcp_credential_form  118_veldo_0159_mcp_credential_form 7 passed 41.17s
+exit 2 116_veldo_0188_project_lines  116_veldo_0188_project_lines 27 passed 34.01s
+exit 2 113_veldo_0121_relay_exchange  113_veldo_0121_relay_exchange 4 passed 35.19s
+exit 2 113_veldo_0112_registered_clients  113_veldo_0112_registered_clients 3 passed 11.10s
+exit 2 110_veldo_0143_new_project  110_veldo_0143_new_project 109 passed 55.53s
+exit 2 107_veldo_0153_identity_push  107_veldo_0153_identity_push 120 passed 6.17s
+exit 2 106_veldo_0185_dispatch_setup  106_veldo_0185_dispatch_setup 20 passed 15.99s
+exit 2 103_veldo_0211_borrowed_login  103_veldo_0211_borrowed_login 62 passed 5.27s
+exit 2 101_veldo_0208_landing_reuse  101_veldo_0208_landing_reuse 190 passed 379.08s
+exit 2 95_veldo_0203_owner_revisions  95_veldo_0203_owner_revisions 36 passed 6.92s
+exit 2 93_veldo_0152_intake_routes  93_veldo_0152_intake_routes 24 passed 53.24s
+exit 2 91_veldo_0151_specialists  91_veldo_0151_specialists 25 passed 1.81s
+exit 2 91_veldo_0167_setup_records  91_veldo_0167_setup_records 9 passed 16.97s
+exit 2 85_veldo_0171_setup_api  85_veldo_0171_setup_api 18 passed 11.96s
+exit 2 89_veldo_0127_feature_listing  89_veldo_0127_feature_listing 11 passed 4.84s
+exit 2 87_veldo_0127_codex_delivery  87_veldo_0127_codex_delivery 194 passed 56.96s
+exit 2 86_veldo_0168_text  86_veldo_0168_text 26 passed 4.39s
+exit 1 86_veldo_0127_agent_configuration  86_veldo_0127_agent_configuration 26 passed 44.82s
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+exit 2 85_veldo_0158_credential_delivery  85_veldo_0158_credential_delivery 23 passed 5.14s
+exit 2 84_veldo_0169_project_handouts  84_veldo_0169_project_handouts 27 passed 13.18s
+exit 2 82_veldo_0165_launch_hygiene  82_veldo_0165_launch_hygiene 23 passed 16.05s
+exit 2 82_veldo_0085_decomposition  82_veldo_0085_decomposition 15 passed 2.83s
+exit 2 82_veldo_0144_mcp_catalog  82_veldo_0144_mcp_catalog 29 passed 32.30s
+exit 2 80_veldo_0155_claude_baseline  80_veldo_0155_claude_baseline 19 passed 15.82s
+exit 2 78_veldo_0060_claude_adapter  78_veldo_0060_claude_adapter 37 passed 25.72s
+exit 2 77_veldo_0149_adopted_activation  77_veldo_0149_adopted_activation 13 passed 2.22s
+exit 2 75_veldo_0150_own_message_acceptance  75_veldo_0150_own_message_acceptance 13 passed 2.07s
+exit 2 73_veldo_0078_backlog  73_veldo_0078_backlog 21 passed 5.90s
+exit 2 73_veldo_0139_factory_setup  73_veldo_0139_factory_setup 17 passed 33.48s
+exit 2 73_veldo_0089_team  73_veldo_0089_team 26 passed 2.20s
+exit 2 72_veldo_0075_andon  72_veldo_0075_andon 13 passed 3.86s
+exit 2 71_veldo_0138_channel_service  71_veldo_0138_channel_service 13 passed 32.68s
+exit 2 70_veldo_0073_activation  70_veldo_0073_activation 11 passed 4.10s
+exit 2 70_veldo_0069_bindings  70_veldo_0069_bindings 10 passed 5.84s
+exit 2 69_veldo_0068_settlement  69_veldo_0068_settlement 8 passed 5.70s
+exit 2 68_veldo_0136_hints  68_veldo_0136_hints 7 passed 4.37s
+exit 2 69_veldo_0058_gate_output  69_veldo_0058_gate_output 16 passed 38.88s
+exit 2 68_veldo_0137_policy_revision  68_veldo_0137_policy_revision 2 passed 0.22s
+exit 2 66_veldo_0051_events  66_veldo_0051_events 11 passed 7.08s
+exit 2 66_veldo_0047_authority  66_veldo_0047_authority 30 passed 15.66s
+exit 2 65_veldo_0067_edges  65_veldo_0067_edges 9 passed 4.33s
+exit 2 64_veldo_0050_proof  64_veldo_0050_proof 14 passed 15.76s
+exit 2 63_veldo_0066_attribution  63_veldo_0066_attribution 5 passed 2.24s
+exit 2 62_veldo_0039_dispatch  62_veldo_0039_dispatch 25 passed 10.01s
+exit 2 62_veldo_0054_decisions  62_veldo_0054_decisions 39 passed 4.15s
+exit 2 60_veldo_0064_inbox  60_veldo_0064_inbox 18 passed 2.73s
+exit 2 60_veldo_0053_architecture  60_veldo_0053_architecture 39 passed 2.60s
+exit 2 58_veldo_0031_claims  58_veldo_0031_claims 3 passed 3.27s
+exit 2 59_veldo_0043_graph  59_veldo_0043_graph 21 passed 11.13s
+exit 2 58_veldo_0036_reservations  58_veldo_0036_reservations 10 passed 0.31s
+exit 2 57_veldo_0120_policygrammar  57_veldo_0120_policygrammar 3 passed 6.73s
+exit 2 52_writer_boundary  52_writer_boundary 12 passed 8.90s
+exit 2 29_veldo_0016_policy_boundaries  29_veldo_0016_policy_boundaries 299 passed 2.65s
+exit 2 26_veldo_0009_install_stamp  26_veldo_0009_install_stamp 32 passed 0.45s
+exit 2 13_warp_0623_codified_live  13_warp_0623_codified_live 220 passed 23.56s
+exit 2 04_run_status_reader_veldo  04_run_status_reader_veldo 254 passed 4.84s
+exit 2 02_mobile_ios_runner_b8  02_mobile_ios_runner_b8 261 passed 15.00s
+exit 2 138_veldo_0187_claude_mem_feed  138_veldo_0187_claude_mem_feed 18 passed 6.85s
+exit 2 130_veldo_0183_memory_servers  130_veldo_0183_memory_servers 19 passed 33.08s
+exit 2 136_veldo_0180_conversation_projects  136_veldo_0180_conversation_projects 22 passed 4.16s
+exit 2 133_veldo_0178_conversation_api  133_veldo_0178_conversation_api 16 passed 3.81s
+exit 2 131_veldo_0175_conversation_replies  131_veldo_0175_conversation_replies 16 passed 5.09s
+exit 2 129_veldo_0177_assistant_setup  129_veldo_0177_assistant_setup 6 passed 6.06s
+exit 2 127_veldo_0231_run_flags  127_veldo_0231_run_flags 17 passed 35.55s
+exit 2 156_veldo_0315_reconcile  156_veldo_0315_reconcile 35 passed 21.47s
+exit 2 153_veldo_0323_hook_events  153_veldo_0323_hook_events 40 passed 18.02s
+exit 2 153_veldo_0337_verdict_recorded  153_veldo_0337_verdict_recorded 21 passed 7.51s
+exit 2 154_veldo_0324_batch_sandbox  154_veldo_0324_batch_sandbox 29 passed 3.71s
+exit 1 151_veldo_0313_space_run  151_veldo_0313_space_run 29 passed 182.32s
+  SELFTEST FAIL: VELDO-0313 ac1/build-output-has-item-and-goes: at run finished the build folder and the scratch root are removed, each through its remover [{'scratch': 'deferred', 'build_output': 'deferred'} ['.git', '.gitignore', 'build', 'notes.txt', 'private', 'tracked.txt']]
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [{"held": true, "released": true} None]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that shows no block for it has not read what it carries: the run stays open, its file is there and the hold is held [label_unread [{'pid': 2358222, 'started': 289791970, 'how': 'unread'}, {'pid': 2358560, 'started': 289791988, 'how': 'u
+  SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-open-file-in-worktree: the limit itself, as in the row before: no label now, outside the tree and the group, no holder, and run finished was sent while the worker lives [{'pid': 2374846, 'label': 'titled-open:d547605d525f48d48de3fe4113a29dcd', '
+  SELFTEST FAIL: VELDO-0313 fix3/the-house-group: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 2377689, 'started': 289792738, 'how': 'supervisor'}, {'pid': 2582593, 'started': 289799989, 'how': 'unread'}, {'pid': 2694533, 'started': 289803834
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 143 for kill -TERM $$, and the run's hold is released and its scratch root removed [143 admitted ]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 20971520000, floor 20971520000 (b
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+exit 2 149_veldo_0312_ticket_ended  149_veldo_0312_ticket_ended 41 passed 5.61s
+exit 2 147_veldo_0310_landed_contained  147_veldo_0310_landed_contained 33 passed 36.96s
+exit 2 144_veldo_0306_space_docker  144_veldo_0306_space_docker 29 passed 12.17s
+exit 2 142_veldo_0303_space_paths  142_veldo_0303_space_paths 38 passed 8.83s
+exit 2 133_veldo_0326_space_principals  133_veldo_0326_space_principals 30 passed 32.73s
+exit 1 129_veldo_0239_batch_landing  129_veldo_0239_batch_landing 22 passed 25.38s
+  SELFTEST FAIL: VELDO-0239 wire/constructions: the intake is built in the three production places [['control_service.py', 'control_service_api.py', 'control_service_projects.py', 'control_workflow_cycle_pm.py']]
+exit 2 128_veldo_0247_check_join  128_veldo_0247_check_join 20 passed 13.44s
+exit 1 129_veldo_0254_canary_launch  129_veldo_0254_canary_launch 6 passed 2.92s
+  SELFTEST FAIL: VELDO-0254 ac1/canary-conversation
+exit 1 127_veldo_0254_secret_scan  127_veldo_0254_secret_scan 19 passed 6.40s
+  SELFTEST FAIL: VELDO-0254 ac1/launch-scan: raised AttributeError: 'Receiver' object has no attribute 'held_session'
+  SELFTEST FAIL: VELDO-0254 ac2/run-end-changed: raised UnboundLocalError: cannot access local variable 'spawn_node' where it is not associated with a value
+  SELFTEST FAIL: VELDO-0254 ac3/risky-spawn: raised AttributeError: 'Receiver' object has no attribute 'held_session'
+exit 2 127_veldo_0241_unit_workflows  127_veldo_0241_unit_workflows 24 passed 0.91s
+exit 2 126_veldo_0230_qualify_reproduces  126_veldo_0230_qualify_reproduces 4 passed 126.92s
+exit 2 123_veldo_0174_conversations  123_veldo_0174_conversations 38 passed 12.94s
+exit 2 124_veldo_0131_factory_reads_commands  124_veldo_0131_factory_reads_commands 8 passed 51.32s
+exit 2 121_veldo_0131_factory_screens_narrow  121_veldo_0131_factory_screens_narrow 2 passed 54.29s
+exit 2 119_veldo_0163_role_team_form  119_veldo_0163_role_team_form 10 passed 62.56s
+exit 2 113_veldo_0145_ui  113_veldo_0145_ui 7 passed 8.94s
+exit 2 114_veldo_0216_concurrent_stages  114_veldo_0216_concurrent_stages 26 passed 30.81s
+exit 2 113_veldo_0117_domain_store  113_veldo_0117_domain_store 3 passed 29.03s
+exit 2 113_veldo_0080_defects  113_veldo_0080_defects 3 passed 10.49s
+exit 2 109_veldo_0161_adoption  109_veldo_0161_adoption 55 passed 31.70s
+exit 1 105_veldo_0182_memory  105_veldo_0182_memory 126 passed 115.47s
+  SELFTEST FAIL: VELDO-0182 copy/chroma-busy-refused
+exit 2 104_veldo_0164_scoped_reads  104_veldo_0164_scoped_reads 19 passed 2.25s
+exit 2 103_veldo_0142_git_identities  103_veldo_0142_git_identities 23 passed 36.27s
+exit 2 96_veldo_0204_reservation_policies  96_veldo_0204_reservation_policies 20 passed 21.39s
+exit 2 94_veldo_0162_configuration_routes  94_veldo_0162_configuration_routes 26 passed 10.60s
+exit 2 92_veldo_0088_pm_cycles  92_veldo_0088_pm_cycles 30 passed 64.91s
+exit 2 87_veldo_0170_receiver_trust  87_veldo_0170_receiver_trust 12 passed 8.16s
+exit 2 86_veldo_0189_engine_upgrade  86_veldo_0189_engine_upgrade 34 passed 68.61s
+exit 2 90_veldo_0127_feature_profile  90_veldo_0127_feature_profile 2 passed 12.80s
+exit 2 88_veldo_0127_feature_defaults  88_veldo_0127_feature_defaults 25 passed 10.90s
+exit 2 86_veldo_0186_setup_assets  86_veldo_0186_setup_assets 11 passed 22.06s
+exit 2 83_veldo_0166_usage_windows  83_veldo_0166_usage_windows 19 passed 0.65s
+exit 2 86_veldo_0148_re_land  86_veldo_0148_re_land 26 passed 68.63s
+exit 2 83_veldo_0154_factory_loop  83_veldo_0154_factory_loop 14 passed 30.25s
+exit 2 82_veldo_0173_tool_registry  82_veldo_0173_tool_registry 11 passed 3.02s
+exit 2 82_veldo_0129_worker_wiring  82_veldo_0129_worker_wiring 29 passed 42.95s
+exit 2 82_veldo_0141_execution_record  82_veldo_0141_execution_record 40 passed 22.85s
+exit 2 81_veldo_0156_codex_baseline  81_veldo_0156_codex_baseline 22 passed 3.51s
+exit 1 79_veldo_0061_codex_adapter  79_veldo_0061_codex_adapter 20 passed 17.23s
+  SELFTEST FAIL: VELDO-0061 pin/qualified-record
+exit 2 78_veldo_0160_account_pool  78_veldo_0160_account_pool 34 passed 28.95s
+exit 2 76_veldo_0079_grooming  76_veldo_0079_grooming 22 passed 13.26s
+exit 2 75_veldo_0062_accounts  75_veldo_0062_accounts 24 passed 39.20s
+exit 2 74_veldo_0140_standing_delegation  74_veldo_0140_standing_delegation 9 passed 13.27s
+exit 2 71_veldo_0130_api  71_veldo_0130_api 45 passed 25.36s
+exit 2 72_veldo_0128_reports  72_veldo_0128_reports 18 passed 3.31s
+exit 2 72_veldo_0077_objectives  72_veldo_0077_objectives 20 passed 2.69s
+exit 2 71_veldo_0076_projects  71_veldo_0076_projects 32 passed 3.38s
+exit 2 70_veldo_0057_landing  70_veldo_0057_landing 31 passed 14.66s
+exit 2 69_veldo_0133_dispositions  69_veldo_0133_dispositions 33 passed 4.88s
+exit 2 68_veldo_0134_acceptance  68_veldo_0134_acceptance 27 passed 1.69s
+exit 2 67_veldo_0135_offers  67_veldo_0135_offers 9 passed 6.40s
+exit 2 68_veldo_0126_intake  68_veldo_0126_intake 18 passed 1.72s
+exit 2 67_veldo_0056_candidates  67_veldo_0056_candidates 11 passed 59.85s
+exit 2 67_veldo_0041_heartbeat  67_veldo_0041_heartbeat 23 passed 11.59s
+exit 2 66_veldo_0042_clones  66_veldo_0042_clones 20 passed 2.03s
+exit 2 65_veldo_0132_workflow  65_veldo_0132_workflow 16 passed 16.84s
+exit 2 63_veldo_0049_floor  63_veldo_0049_floor 20 passed 11.25s
+exit 2 63_veldo_0040_containment  63_veldo_0040_containment 59 passed 7.50s
+exit 2 62_veldo_0065_presentations  62_veldo_0065_presentations 42 passed 10.20s
+exit 2 62_veldo_0045_runtime  62_veldo_0045_runtime 21 passed 13.04s
+exit 2 58_veldo_0046_notifications  58_veldo_0046_notifications 8 passed 0.96s
+exit 2 60_veldo_0052_eligibility  60_veldo_0052_eligibility 54 passed 1.17s
+exit 2 59_veldo_0037_aliases  59_veldo_0037_aliases 53 passed 29.64s
+exit 2 58_veldo_0035_snapshots  58_veldo_0035_snapshots 33 passed 8.14s
+exit 2 58_veldo_0028_effects  58_veldo_0028_effects 52 passed 34.25s
+exit 2 55_veldo_0119_agreement  55_veldo_0119_agreement 3 passed 4.01s
+exit 2 51_parser_boundary  51_parser_boundary 25 passed 6.51s
+exit 2 28_veldo_0015_clock_standdown  28_veldo_0015_clock_standdown 14 passed 0.01s
+exit 2 16_warp_1403_sizing_pass  16_warp_1403_sizing_pass 49 passed 2.08s
+exit 2 10_warp_0613_anti_vacuity  10_warp_0613_anti_vacuity 261 passed 0.10s
+exit 2 03_plugin_extension_loading_runner  03_plugin_extension_loading_runner 261 passed 11.14s
+exit 2 01_warp_0101_reviewer_notes  01_warp_0101_reviewer_notes 622 passed 14.45s
