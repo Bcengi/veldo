@@ -55,6 +55,11 @@ for case in [c for c in T.cases() if c['finding'] == 347]:
     lines.append('%s mutant rows %d targets %s failed %s' % (case['name'], mutant['count'],
                  json.dumps({k: v for k, v in mutant['targets'].items()}), red))
     print(lines[-1], flush=True)
-(HERE / 'falsifiers.json').write_text(json.dumps(results, indent=1) + '\n')
-(HERE / 'mutations.txt').write_text('\n'.join(lines) + '\n')
+def local(text):
+    """No path of this checkout in the proof: a row's words may quote a traceback's file."""
+    return text.replace(str(ROOT) + '/', '')
+
+
+(HERE / 'falsifiers.json').write_text(local(json.dumps(results, indent=1)) + '\n')
+(HERE / 'mutations.txt').write_text(local('\n'.join(lines)) + '\n')
 print('all red as expected' if all(r['red_as_expected'] for r in results) else 'NOT all red as expected')
