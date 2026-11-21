@@ -1134,6 +1134,12 @@ def conversation_clone(source, commit, work):
     branch = _git('-C', source, 'symbolic-ref', '-q', '--short', 'HEAD', check=False).stdout.strip() or 'trunk'
     if _git('check-ref-format', '--branch', branch, check=False).returncode:
         branch = 'trunk'
+    # The folder is made here, refused if anything made it since the check above (os.mkdir fails on an existing
+    # path), so the tree a failure removes below is provably this call's own, never one another process put there.
+    try:
+        os.mkdir(work, 0o700)
+    except FileExistsError:
+        raise Refused('invalid_input:conversation_clone', 'a new path and an exact commit') from None
     try:
         _git('init', '-q', '--template=', work)
         os.chmod(work, 0o700)

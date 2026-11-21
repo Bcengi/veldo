@@ -142,8 +142,9 @@ REVIEWED[('engine/.veldo/project_runner_macos.py', 'Run.release')] = (
 # yet reviewed with design 6.10: a conversation's attached project is cloned under the conversation's own
 # workspace, which no space ledger holds.
 REVIEWED[('engine/.veldo/control_clone.py', 'conversation_clone')] = (
-    'A failed clone removes the work folder this call created under the conversation workspace (refused when the '
-    'path already existed; the commit is fetched into no ref, so no ref is deleted); pending review with design 6.10.')
+    'A failed clone removes the work folder this call created under the conversation workspace (made with '
+    'os.mkdir before git init, so it is refused when the path already exists and the folder removed is provably '
+    "the call's own; the commit is fetched into no ref, so no ref is deleted); pending review with design 6.10.")
 
 
 def canonical(path):
