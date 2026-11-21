@@ -1,5 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -150 +150 @@
+@@ -152 +152 @@
 -        elif len(history) == 5 and all(pool in run for run in history):
 +        elif len(history) >= 1 and all(pool in run for run in history):

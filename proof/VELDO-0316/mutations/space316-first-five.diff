@@ -1,5 +1,5 @@
 --- a/.veldo/control_space_admission.py
 +++ b/.veldo/control_space_admission.py
-@@ -120 +120 @@
+@@ -122 +122 @@
 -            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC"):
 +            "SELECT transition FROM journal WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq ASC"):
