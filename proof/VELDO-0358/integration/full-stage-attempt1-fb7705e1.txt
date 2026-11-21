@@ -1,0 +1,45 @@
+VELDO-0358 integration: brief C full mutation stage on the merged branch, attempt 1
+Tested HEAD: fb7705e1 (all four briefs integrated). Run through the external host-heavy wrapper,
+VELDO_GATE_FORCE_FRESH=1, python3 -I -S scripts/check_gate_mutations.py --root <scratch worktree> --receipt <file>.
+Receipt SHA256: 08b6798c7d4324c6519706c9e75ce1209ba22bb9aa61ee3b2d1cb8d9a4b0e892, bytes: 1418262
+status: failed
+scope: full
+error: control_failed
+detail: control_failed: 113_veldo_0220_gate_host.py:gate_host.py:False:noop: worker exit 1
+registered: 3632
+executed: 0
+reused: 0
+rejected: 0
+surviving_workers: 0
+worker_invocations: 833
+peak_workers: 16
+elapsed: 1876.6329174297862
+invalid results (16):
+  113_veldo_0220_gate_host.py:gate_host.py:False:noop	control_failed	returncode 1
+  71_veldo_0130_api.py:71_veldo_0130_api.py:False:baseline	worker_cancelled	returncode -9
+  71_veldo_0130_api.py:71_veldo_0130_api.py:False:noop	worker_cancelled	returncode -9
+  114_veldo_0216_concurrent_stages.py:gate_schedule.py:False:baseline	worker_cancelled	returncode -9
+  114_veldo_0216_concurrent_stages.py:gate_schedule.py:False:noop	worker_cancelled	returncode -9
+  114_veldo_0216_concurrent_stages.py:gate_legs.py:False:baseline	worker_cancelled	returncode -9
+  114_veldo_0216_concurrent_stages.py:gate_legs.py:False:noop	worker_cancelled	returncode -9
+  113_veldo_0220_gate_host.py:lander.py:False:baseline	worker_cancelled	returncode -9
+  113_veldo_0220_gate_host.py:lander.py:False:noop	worker_cancelled	returncode -9
+  116_veldo_0188_project_lines.py:control_service.py:False:baseline	worker_cancelled	returncode -9
+  116_veldo_0188_project_lines.py:control_service.py:False:noop	worker_cancelled	returncode -9
+  92_veldo_0088_pm_cycles.py:92_veldo_0088_pm_cycles.py:False:baseline	worker_cancelled	returncode -9
+  92_veldo_0088_pm_cycles.py:92_veldo_0088_pm_cycles.py:False:noop	worker_cancelled	returncode -9
+  93_veldo_0152_intake_routes.py:93_veldo_0152_intake_routes.py:False:baseline	worker_cancelled	returncode -9
+  93_veldo_0152_intake_routes.py:93_veldo_0152_intake_routes.py:False:noop	worker_cancelled	returncode -9
+  113_veldo_0145_ui.py:control_api.py:False:baseline	worker_cancelled	returncode -9
+control_failed tail for 113_veldo_0220_gate_host.py:gate_host.py:False:noop:
+      File "/tmp/v358-mut/scripts/reuse_worker.py", line 106, in observe
+      File "/tmp/v358-mut/scripts/mutation_observer.py", line 333, in worker
+      File "/tmp/veldo-mutations-5_scedx3/input/scripts/suites/113_veldo_0220_gate_host.py", line 416, in <module>
+        _v220_gate_host()
+      File "/tmp/veldo-mutations-5_scedx3/input/scripts/suites/113_veldo_0220_gate_host.py", line 268, in _v220_gate_host
+        stage = int(hold.read_text())
+                ^^^^^^^^^^^^^^^^^^^^^
+    ValueError: invalid literal for int() with base 10: ''
+Reading: one noop control (113_veldo_0220_gate_host, gate_host.py) failed: the suite read its fixture hold
+file as soon as it existed and found it empty (a non-atomic write raced the read under load); the stage then
+cancelled the other running controls (worker_cancelled -9) and executed no case. Fixed in e2c02152.
