@@ -92,8 +92,8 @@ a captured effect alone cannot substitute for the required false consumer row.
 The initial evaluator allowed that substitution; it was corrected after the
 first process drive. Earlier diagnostic results are not acceptance evidence.
 
-Receipt archives use lossless shared capability tables to stay below the proof
-size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
+Receipt archives use lossless shared capability tables and an LZMA payload
+inside a gzip JSON envelope to stay below the proof size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
 and verifies its original SHA-256. No home path is rewritten inside a receipt;
 the driver refuses to retain one. Human-readable diagnostic output replaces any
 user home prefix with `<user-home>`.
