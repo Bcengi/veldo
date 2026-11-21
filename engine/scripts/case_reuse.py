@@ -48,6 +48,11 @@ def sensitivity_proved(directory, key):
     return isinstance(record, dict) and record.get('schema') == SENSITIVITY_SCHEMA and record.get('key') == key
 
 
+class Unavailable(Exception):
+    """An environment or store fault, not a finding about the declaration (review N3): the case
+    runs fresh in this gate and no authority mark outlives the fault."""
+
+
 def review_matches(files, name, declaration):
     """The declaration names a review record under proof/VELDO-0217/reviews/ and binds its sha256;
     the record's entry for this case binds this declaration's digest and its proposal's trace
@@ -113,6 +118,7 @@ class Session(M.Session):
         self.snapshots, self.declarations, self.case_digests, self.runtimes = {}, {}, {}, {}
         self.runtime_absent = {}
         self.stale = {}
+        self.unavailable = {}
         self.gate_run = os.urandom(16).hex()
         self.reviewed = {}
         try:
@@ -139,16 +145,23 @@ class Session(M.Session):
                 continue
             try:
                 # Proposals alone grant no reuse and do not alter fresh behavior.
-                if declaration.get('reviewed') is not True:
+                if not isinstance(declaration, dict) or declaration.get('reviewed') is not True:
                     self.reasons[name] = 'unreviewed_declaration'
                     continue
                 self.reviewed[name] = declaration
                 if marks is None:
-                    marks = {(entry['identity'], entry['declaration']): entry
-                             for entry in M.stale_entries(store_directory())}
+                    # Marks that cannot be read deny reuse for every declared case: an
+                    # unreachable store never turns into reuse.
+                    try:
+                        marks = {(entry['identity'], entry['declaration']): entry
+                                 for entry in M.stale_entries(store_directory())}
+                    except (KeyError, TypeError, ValueError, OSError, RuntimeError) as error:
+                        marks = 'stale marks unreadable: ' + str(error)
+                if isinstance(marks, str):
+                    raise Unavailable(marks)
                 prior = marks.get((name, declaration_digest(declaration)))
                 if prior is not None:
-                    self.mark_stale(case, prior['reason'])
+                    self.mark_stale(case, prior['reason'], prior=prior)
                     continue
                 toolchain = document['toolchains'][case['driver']]
                 runtime = tuple(toolchain['paths'])
@@ -177,8 +190,12 @@ class Session(M.Session):
                     continue
                 self.runtime_absent[name] = absent_runtime
                 if runtime not in self.runtime_checks:
-                    self.runtime_checks[runtime] = M.runtime_identity(runtime, self.environment)
-                    self.runtime_digests[runtime] = R.digest(self.runtime_checks[runtime])
+                    try:
+                        identity = M.runtime_identity(runtime, self.environment)
+                    except (KeyError, TypeError, ValueError, OSError, RuntimeError) as error:
+                        raise Unavailable('runtime identity: ' + str(error)) from error
+                    self.runtime_checks[runtime] = identity
+                    self.runtime_digests[runtime] = R.digest(identity)
                 # VELDO-0217 AC3: the support helpers the suite loads are keyed as their own part.
                 loaded = set(I.helpers(files, I.prerequisites(files, case)))
                 # The record digest is approval, not an input: re-approving a batch record (which
@@ -195,33 +212,53 @@ class Session(M.Session):
                     self.reasons[name] = 'force_fresh'
                     self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
                     continue
-                if not sensitivity_proved(store_directory(), self.case_digests[name]):
+                try:
+                    directory_now = store_directory()
+                except (KeyError, TypeError, ValueError, OSError, RuntimeError) as error:
+                    raise Unavailable('store configuration: ' + str(error)) from error
+                if not sensitivity_proved(directory_now, self.case_digests[name]):
                     self.reasons[name] = 'sensitivity_unproved'
                     continue
                 self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
                 self.keys[name] = self.case_digests[name]
                 self.reasons[name] = 'miss'
+            except Unavailable as fault:
+                # Fresh for this gate only; nothing is marked, so reuse returns with the store.
+                self.reasons[name] = 'reuse_unavailable'
+                self.unavailable[name] = str(fault)
+                self.runtime_absent.pop(name, None)
             except (KeyError, TypeError, ValueError, OSError) as error:
                 self.mark_stale(case, 'declaration no longer closes: ' + str(error))
         if any(self.keys.values()):
             self.store = R.Store(store_directory(), root)
 
-    def mark_stale(self, case, reason):
-        """Discard the whole declared attempt. Its replacement runs fresh and cannot publish."""
+    def mark_stale(self, case, reason, prior=None):
+        """Discard the whole declared attempt. Its replacement runs fresh and cannot publish.
+
+        The in-session effects never depend on the store: an unavailable store only means the
+        finding is not persisted (reported as persisted false), never a red stage or reuse.
+        A finding read from an earlier mark is not written again (review N4)."""
         name = case['identity']
         if name in self.stale:
             return
-        if self.store is None:
-            self.store = R.Store(self.store_directory(), self.root)
-        entry = M.mark_stale(self.store, identity=name,
-                             declaration=declaration_digest(self.reviewed[name]),
-                             gate_run=self.gate_run, reason=reason)
-        self.stale[name] = entry
         self.keys[name] = None
         self.hits.pop(name, None)
         self.reasons[name] = 'declaration_stale'
         self.snapshots.pop(name, None)
         self.runtime_absent.pop(name, None)
+        entry = dict(identity=name, declaration=declaration_digest(self.reviewed[name]),
+                     gate_run=self.gate_run, reason=reason)
+        if prior is not None:
+            entry.update(gate_run=prior['gate_run'], reason=prior['reason'], persisted=True, prior=True)
+        else:
+            try:
+                if self.store is None:
+                    self.store = R.Store(self.store_directory(), self.root)
+                M.mark_stale(self.store, **entry)
+                entry['persisted'] = True
+            except (KeyError, TypeError, ValueError, OSError, RuntimeError) as error:
+                entry.update(persisted=False, persist_error=str(error))
+        self.stale[name] = entry
 
     def withhold(self, case, reason):
         """A run that would publish showed a non-file input (VELDO-0217 AC4): the case stays fresh

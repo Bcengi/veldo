@@ -2418,7 +2418,7 @@
    "requires": [
     "158_veldo_0224_stale_declarations"
    ],
-   "regions": "VELDO-0224 AC1-AC3: stale declared cases rerun fresh, never publish, and mark only the authority store.",
+   "regions": "VELDO-0224 AC1-AC3: stale declared cases rerun fresh (also with an unavailable store), never publish, prior authority marks and unreadable marks deny reuse, stale siblings are not launched, and marks go only to the authority store.",
    "requires_note": "Only ROOT, leg_runs and expect; fixture children, real coordinator/session/finish with controlled launch and inventory. No tracer or host manager."
   }
  ],

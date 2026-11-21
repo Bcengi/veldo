@@ -11824,6 +11824,21 @@ def cases():
         "        self.stale[name] = entry\n",
         ['stale-declarations/authority-store'])
     result[-1]['dir'] = 'scripts'
+    add(224, 'stale224-store-unavailable-fails', suite224, 'case_reuse.py',
+        "                entry.update(persisted=False, persist_error=str(error))\n",
+        "                raise ValueError('authority stale store unavailable') from error\n",
+        ['stale-declarations/store-unavailable-runs-fresh'])
+    result[-1]['dir'] = 'scripts'
+    add(224, 'stale224-prior-mark-ignored', suite224, 'case_reuse.py',
+        "                if prior is not None:\n",
+        "                if False and prior is not None:\n",
+        ['stale-declarations/prior-mark-denies-reuse'])
+    result[-1]['dir'] = 'scripts'
+    add(224, 'stale224-unreadable-marks-reused', suite224, 'mutation_reuse.py',
+        "    except FileNotFoundError:\n        return []\n",
+        "    except OSError:\n        return []\n",
+        ['stale-declarations/unreadable-marks-deny-reuse'])
+    result[-1]['dir'] = 'scripts'
 
     # VELDO-0217: every confined case gets a current, reviewed input declaration with complete keys.
     suite217 = '157_veldo_0217_declarations.py'
