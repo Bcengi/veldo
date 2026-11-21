@@ -76,10 +76,10 @@ if ENGINE == 'codex':
     emit({'type':'turn.started'})
 acks = None
 if scenario.get('ack'):
-    # VELDO-0231 AC1 (ordering): the suite writes one line on this FIFO as it commits each flag. The engine writes
-    # nothing more until it reads it, so each commit is ordered before the engine's next line and before its end,
-    # whatever the machine's speed. HANG only ends a wait for a commit that never comes (a defect): the engine then
-    # goes on unacknowledged to its end, so the row reads the defect instead of hanging.
+    # VELDO-0231 AC1 (ordering): the suite writes one byte on this FIFO for each flag: 'c' as it commits it, or 'n'
+    # when the dispatch cycle that took it ended without a commit (a defect). The engine writes nothing more until it
+    # reads that byte, so each commit is ordered before the engine's next line and before its end, whatever the
+    # machine's speed, and a defect is read at once. HANG only ends a wait for a byte that never comes.
     import select
     acks = os.open(str(MARKERS / scenario['ack']), os.O_RDWR)
 def acknowledged():
@@ -90,7 +90,8 @@ def acknowledged():
         say('flag not committed: going on unacknowledged')
         acks = None
         return
-    os.read(acks, 1)
+    if os.read(acks, 1) == b'n':
+        say('flag not committed in the cycle that read it: going on')
 if mode == 'flags':
     for n in range(scenario.get('count', 10)):
         time.sleep(scenario.get('interval', .3))

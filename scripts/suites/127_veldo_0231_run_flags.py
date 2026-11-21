@@ -123,7 +123,14 @@ def _v231_suite():
                 return original_readable(held)
             finally:
                 del launch.pump
+                # A flag this cycle took and did not commit is told to the fake engine at the cycle's end (an event,
+                # 'n' on its FIFO), so a defect that delays delivery lets the engine go on at once, never on a timer.
+                cycle = current[0]
                 current[0] = None
+                missed = len([e for e in trace if e['cycle'] == cycle and e['event'] == 'taken']) - len(
+                    [e for e in trace if e['cycle'] == cycle and e['event'] == 'commit'])
+                for _ in range(max(0, missed)):
+                    signal(b'n')
         factory.readable = traced
 
         # Each commit of a flag: its cycle, the state its dispatch was in and whether its run had ended, and the
@@ -134,6 +141,20 @@ def _v231_suite():
         original_flag = conversations.flag
         ack = {'path': None}
 
+        def signal(byte):
+            """One byte on the running fake engine's FIFO: 'c' its flag was committed, 'n' the cycle that took it ended
+            without a commit."""
+            if ack['path'] is None:
+                return
+            try:
+                writer = os.open(str(ack['path']), os.O_WRONLY | os.O_NONBLOCK)
+            except OSError:
+                return
+            try:
+                os.write(writer, byte)
+            finally:
+                os.close(writer)
+
         def timed(dispatch_id, **fields):
             result = original_flag(dispatch_id, **fields)
             launch = factory.conversation.runner.launches.get(dispatch_id)
@@ -141,16 +162,8 @@ def _v231_suite():
                             'state': (dispatches.record(dispatch_id) or {}).get('state'), 'cycle': current[0],
                             'run_ended': bool(launch is None or launch.ended)})
             trace.append({'event': 'commit', 'cycle': current[0], 'text': fields.get('text')})
-            if ack['path'] is not None:
-                try:
-                    writer = os.open(str(ack['path']), os.O_WRONLY | os.O_NONBLOCK)
-                except OSError:
-                    writer = None
-                if writer is not None:
-                    try:
-                        os.write(writer, b'c')
-                    finally:
-                        os.close(writer)
+            if current[0] is not None:
+                signal(b'c')
             return result
         conversations.flag = timed
 
