@@ -67,6 +67,24 @@ import signal
 import subprocess
 import sys
 import time
+import importlib.util
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site."""
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
 
 SCHEMA = 'veldo.worker_profile/v1'
 QUALIFICATION = 'veldo.worker_qualification/v1'
@@ -76,8 +94,19 @@ UNIT_PREFIX = 'veldo-dispatch-'
 # The manager's active states of a scope that still holds its processes (status).
 LIVE_STATES = ('active', 'activating', 'deactivating', 'reloading')
 DEFAULT_SLICE = 'veldo-workers.slice'
-SETTLE_SECONDS = 5.0
-TOOL_SECONDS = 20
+# VELDO-0358 AC15: giving-up deadlines of the timers table, read from it where each is armed (settle(), tool()).
+SETTLE_SECONDS = TIMERS.register('control_containment.SETTLE_SECONDS', 5.0, 'control_containment', 'deadline')
+TOOL_SECONDS = TIMERS.register('control_containment.TOOL_SECONDS', 20, 'control_containment', 'deadline')
+
+
+def settle():
+    """How long a killed group is given to empty, and the manager its final result: the table's value now."""
+    return TIMERS.effective('control_containment.SETTLE_SECONDS')
+
+
+def tool():
+    """The bound of one call to the user manager: the table's value now."""
+    return TIMERS.effective('control_containment.TOOL_SECONDS')
 HELPER = 'systemd user manager (no OS privileges)'
 
 # Every setting a profile may declare: whether it is required, its kind, the kernel or systemd
@@ -214,8 +243,9 @@ def _tool(profile, name, env):
     return path if path and os.path.isfile(path) and os.access(path, os.X_OK) else None
 
 
-def _show(systemctl, env, unit, names, timeout=TOOL_SECONDS):
+def _show(systemctl, env, unit, names, timeout=None):
     """Properties of a unit (or of the manager itself when unit is None) from the user manager."""
+    timeout = tool() if timeout is None else timeout
     command = [systemctl, '--user', 'show'] + [a for n in names for a in ('-p', n)] + ([unit] if unit else [])
     result = subprocess.run(command, capture_output=True, text=True, timeout=timeout, env=env,
                             stdin=subprocess.DEVNULL)
@@ -414,7 +444,7 @@ class Group:
                 'unix:path=' + self.environment['XDG_RUNTIME_DIR'] + '/bus')
             checked(lib.sd_bus_set_address, bus, address.encode())
             checked(lib.sd_bus_set_bus_client, bus, 1)
-            checked(lib.sd_bus_set_method_call_timeout, bus, round(TOOL_SECONDS * 10 ** 6))
+            checked(lib.sd_bus_set_method_call_timeout, bus, round(tool() * 10 ** 6))
             checked(lib.sd_bus_start, bus)
             checked(lib.sd_bus_call_method, bus, b'org.freedesktop.systemd1', b'/org/freedesktop/systemd1',
                     b'org.freedesktop.systemd1.Manager', b'RefUnit', None, None, b's',
@@ -433,7 +463,7 @@ class Group:
             head += ['-p', '%s=%s' % (name, value)]
         return head + ['--'] + list(argv)
 
-    def _show(self, unit, names, timeout=TOOL_SECONDS):
+    def _show(self, unit, names, timeout=None):
         return _show(self.systemctl, self.environment, unit, names, timeout=timeout)
 
     def live(self):
@@ -573,14 +603,14 @@ class Group:
     def conclude(self):
         """After empty, wait boundedly for the manager's final result before clearing the scope.
         An empty cgroup can precede the scope's terminal state. Unreadable evidence stays unknown."""
-        end = time.monotonic() + SETTLE_SECONDS
+        end = time.monotonic() + settle()
         names = ('ActiveEnterTimestampMonotonic', 'ActiveExitTimestampMonotonic',
                  'InactiveEnterTimestampMonotonic')
         self.timestamps = {}
         while (remaining := end - time.monotonic()) > 0:
             try:
                 shown = self._show(self.unit, ('LoadState', 'Result', 'ActiveState', *names),
-                                   timeout=min(TOOL_SECONDS, remaining))
+                                   timeout=min(tool(), remaining))
                 if (shown.get('LoadState') == 'loaded'
                         and shown.get('ActiveState') in ('failed', 'inactive') and shown.get('Result')):
                     timestamps = {name: int(shown.get(name) or 0) for name in names}
@@ -589,7 +619,7 @@ class Group:
                     if shown.get('ActiveState') == 'failed' and remaining > 0:
                         with contextlib.suppress(OSError, subprocess.SubprocessError):
                             subprocess.run([self.systemctl, '--user', 'reset-failed', self.unit], capture_output=True,
-                                           timeout=min(TOOL_SECONDS, remaining), env=self.environment,
+                                           timeout=min(tool(), remaining), env=self.environment,
                                            stdin=subprocess.DEVNULL)
                     return shown['Result']
                 if shown.get('LoadState') == 'not-found':
@@ -618,8 +648,8 @@ class Group:
         self.kill()
         with contextlib.suppress(OSError):
             os.killpg(worker.pid, signal.SIGKILL)
-        reap(worker, SETTLE_SECONDS)
-        empty = self.wait_empty(SETTLE_SECONDS)
+        reap(worker, settle())
+        empty = self.wait_empty(settle())
         self.conclude()
         self.close()
         return empty
@@ -634,7 +664,7 @@ class Stop:
 
     def __init__(self, group, pid, stop_grace, kill_grace):
         self.group, self.pid, self.grace = group, pid, {'cooperative': stop_grace, 'terminate': kill_grace,
-                                                        'kill': SETTLE_SECONDS}
+                                                        'kill': settle()}
         self.cause, self.stage, self.due, self.steps = None, None, math.inf, []
 
     def begin(self, cause, now, adapter_alive):

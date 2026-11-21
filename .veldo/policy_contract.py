@@ -27,6 +27,29 @@ import ast
 import re
 import sys
 from pathlib import Path
+import importlib.util
+import os
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site. This module
+    is also read alone, outside an installation (the policy tooling copies it by itself): there is no table there,
+    and its contract values are its own (None)."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -501,11 +524,17 @@ def activation_report(root=None, load_modules=None):
 OBLIGATION_GROUPS = ("containment", "resource_limits", "lifecycle", "liveness_and_stop", "retirement")
 
 # THE VERSIONED POLICY DEFAULTS R44 names, in one place, so a test and a runner read one number.
-HEARTBEAT_SECONDS = 10
-LIVENESS_DEADLINE_SECONDS = 30
-STOP_TERMINATE_AFTER_SECONDS = 10
-STOP_KILL_AFTER_SECONDS = 5
-LEADERSHIP_FENCE_SECONDS = 2
+# VELDO-0358 AC15: they are contract timers of the timers table, read from it; a suite's profile sets every one
+# but the timer its row tests to the wait hang bound.
+def _contract(name, value):
+    return value if TIMERS is None else TIMERS.register('policy_contract.' + name, value, 'policy_contract', 'contract')
+
+
+HEARTBEAT_SECONDS = _contract('HEARTBEAT_SECONDS', 10)
+LIVENESS_DEADLINE_SECONDS = _contract('LIVENESS_DEADLINE_SECONDS', 30)
+STOP_TERMINATE_AFTER_SECONDS = _contract('STOP_TERMINATE_AFTER_SECONDS', 10)
+STOP_KILL_AFTER_SECONDS = _contract('STOP_KILL_AFTER_SECONDS', 5)
+LEADERSHIP_FENCE_SECONDS = _contract('LEADERSHIP_FENCE_SECONDS', 2)
 
 # THE PROOFS RETIREMENT NEEDS, every one of them: capacity is released only when containment is
 # proven EMPTY and the outcome, the accounting and the resource cleanup are durably recorded (R43,

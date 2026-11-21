@@ -56,13 +56,44 @@ from pathlib import Path
 import select
 import signal
 import time
+import importlib.util
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite sets reaches every arming site."""
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
 
 SCHEMA = 'veldo.heartbeat/v1'
 OPERATION = 'dispatch_heartbeat'
 GROUP = 'veldo-wrapper'
 CGROUP = Path('/sys/fs/cgroup')
-SETTLE_SECONDS = 1.0
-SETUP_SECONDS = 5.0
+# VELDO-0358 AC15: giving-up deadlines of the timers table, read from it where each is armed (settle(), setup()).
+SETTLE_SECONDS = TIMERS.register('control_heartbeat.SETTLE_SECONDS', 1.0, 'control_heartbeat', 'deadline')
+SETUP_SECONDS = TIMERS.register('control_heartbeat.SETUP_SECONDS', 5.0, 'control_heartbeat', 'deadline')
+
+
+def settle():
+    """How long a heartbeat that should be ending is given before what is left of it is stopped: the table's
+    value now."""
+    return TIMERS.effective('control_heartbeat.SETTLE_SECONDS')
+
+
+def setup():
+    """How long the heartbeat's placement in its group is given: the table's value now."""
+    return TIMERS.effective('control_heartbeat.SETUP_SECONDS')
 LINE_BYTES = 512
 KEEP = 64
 
@@ -110,11 +141,11 @@ def start(fd, seconds):
         try:
             poller = select.poll()
             poller.register(child, select.POLLIN)
-            if not poller.poll(int(SETUP_SECONDS * 1000)):
+            if not poller.poll(int(setup() * 1000)):
                 # The child may still be outside the heartbeat group. Address this
                 # exact child, then bound even its reap; never exec after a timeout.
                 signal.pidfd_send_signal(child, signal.SIGKILL)
-                poller.poll(int(SETTLE_SECONDS * 1000))
+                poller.poll(int(settle() * 1000))
                 os.waitpid(first, os.WNOHANG)
                 raise TimeoutError('heartbeat placement timed out')
             _, status = os.waitpid(first, os.WNOHANG)
