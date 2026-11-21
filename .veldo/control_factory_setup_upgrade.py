@@ -54,6 +54,44 @@ from pathlib import Path
 import stat
 import subprocess
 import time
+import sys
+import importlib.util
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _deadline(name, value, kind='deadline'):
+    """Register this module's timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    return value if TIMERS is None else TIMERS.register('control_factory_setup_upgrade.' + name, value, 'control_factory_setup_upgrade', kind)
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_factory_setup_upgrade.' + name)
+
+
+# VELDO-0358 AC15: how long an upgraded or restored service is given to answer (ANSWER_SECONDS), and the
+# previous engine's restore-owners run (RESTORE_SECONDS), from the timers table.
 
 STAGE = 'bin.upgrade'
 PROBES = ('bin.exchange-probe-a', 'bin.exchange-probe-b')
@@ -61,8 +99,8 @@ LOG = 'engine-upgrade.jsonl'
 # renameat2(2): AT_FDCWD and RENAME_EXCHANGE from <fcntl.h> and <linux/fs.h>.
 AT_FDCWD = -100
 RENAME_EXCHANGE = 2
-ANSWER_SECONDS = 30
-RESTORE_SECONDS = 60
+ANSWER_SECONDS = _deadline('ANSWER_SECONDS', 30)
+RESTORE_SECONDS = _deadline('RESTORE_SECONDS', 60)
 
 
 class Refused(Exception):
@@ -434,8 +472,8 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
     return report
 
 
-def wait(answers, seconds=ANSWER_SECONDS):
-    until = time.monotonic() + seconds
+def wait(answers, seconds=None):
+    until = time.monotonic() + (timer('ANSWER_SECONDS') if seconds is None else seconds)
     while True:
         if answers():
             return True
@@ -488,7 +526,7 @@ def restore_ownership(plan):
     python = plan.get('python') or 'python3'
     try:
         done = subprocess.run([python, '-B', os.path.join(plan['stage'], 'control_service.py'), 'restore-owners',
-                               plan['config_path']], capture_output=True, text=True, timeout=RESTORE_SECONDS,
+                               plan['config_path']], capture_output=True, text=True, timeout=timer('RESTORE_SECONDS'),
                               stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as exc:
         return 'failed:' + type(exc).__name__

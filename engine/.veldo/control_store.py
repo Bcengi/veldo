@@ -121,6 +121,43 @@ import signal
 import sqlite3
 import subprocess
 import time
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = importlib.util.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _deadline(name, value, kind='deadline'):
+    """Register this module's timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    return value if TIMERS is None else TIMERS.register('control_store.' + name, value, 'control_store', kind)
+
+
+def timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_store.' + name)
+
+
+# VELDO-0358 AC15: how long a write waits for the store's lock before it fails (SQLite's busy wait).
+BUSY_SECONDS = _deadline('BUSY_SECONDS', 30)
 
 SCHEMA = "veldo.control_store/v1"
 JOURNAL_ENCODING = "veldo.journal/v1"
@@ -412,11 +449,12 @@ def open_store(path, mode="rw", mounts_text=None, allow_unbackfilled=False):
         if problems:
             raise StoreRefused("unsupported_filesystem", "; ".join(problems))
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        conn = sqlite3.connect(target, isolation_level=None, timeout=30, factory=StoreConnection)
+        conn = sqlite3.connect(target, isolation_level=None, timeout=timer('BUSY_SECONDS'), factory=StoreConnection)
     else:
         if not os.path.exists(target):
             raise StoreRefused("incomplete_transaction", "no store at %s to read" % path)
-        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30, factory=StoreConnection)
+        conn = sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=timer('BUSY_SECONDS'),
+                               factory=StoreConnection)
     conn.execute("PRAGMA foreign_keys=ON")
     if mode == "rw":
         conn.execute("PRAGMA journal_mode=WAL")
