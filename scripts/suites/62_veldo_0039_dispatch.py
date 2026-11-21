@@ -1128,18 +1128,21 @@ sys.exit(child.wait())
                       'timer_unset %r' % profile)
 
             # VELDO-0358 AC10, AC15: the census over brief E's files finds no site outside the declared exceptions:
-            # the four suites (every rule) and the launch path's engine modules (R3), each read from the copy this
-            # suite installed, so a registered mutant of one of them is what is read.
+            # the four suites (every rule, each read through its literal anchor, which the mutation driver substitutes
+            # for a registered mutant of it) and the launch path's engine modules (R3, read from the copies this suite
+            # installed). Suite 63 holds the same row, so a mutant of this suite's own file is read there.
             with region('wave1/no-sites'):
                 census = load('v39_census', ROOT / 'scripts' / 'check_wallclock.py')
-                suites = ('62_veldo_0039_dispatch.py', '63_veldo_0040_containment.py', '78_veldo_0060_claude_adapter.py',
-                          '106_veldo_0185_dispatch_setup.py')
+                suites = {'62_veldo_0039_dispatch.py': ROOT / "scripts/suites" / "62_veldo_0039_dispatch.py",
+                          '63_veldo_0040_containment.py': ROOT / "scripts/suites" / "63_veldo_0040_containment.py",
+                          '78_veldo_0060_claude_adapter.py': ROOT / "scripts/suites" / "78_veldo_0060_claude_adapter.py",
+                          '106_veldo_0185_dispatch_setup.py': ROOT / "scripts/suites" / "106_veldo_0185_dispatch_setup.py"}
                 engine = ('control_launch.py', 'control_containment.py', 'control_heartbeat.py',
                           'control_engine_claude.py', 'control_engine_codex.py', 'policy_contract.py')
                 found = []
-                for name in suites:
+                for name, path in suites.items():
                     rel = 'scripts/suites/' + name
-                    found += census.Python(rel, (ROOT / rel).read_text(), census.RULES).scan()
+                    found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
                 for name in engine:
                     rel = 'engine/.veldo/' + name
                     found += census.Python(rel, (mods / name).read_text(), ('R3',), engine=True).scan()
