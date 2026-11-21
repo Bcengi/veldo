@@ -18,14 +18,18 @@ kept from an earlier call.
   reach(path, uid, gids)       rule 4: whether the path's own permissions let a process through to it
   containers(path, engines)    rule 4: the containers, running or stopped, with a bind mount at or
                                beneath the path, or above it, on each named engine context
-  git_lock(path)               rule 4: the lock files git holds on a worktree
+  git_lock(path)               rule 4: the lock files git holds on a worktree (a single file has none)
   in_use(path, engines)        rule 4: the three above together
   reader_read()                rule 4: the process reader's table, or why it is not used (VELDO-0344)
   worktrees(path)              rule 6: the worktrees a repository's own git folder registers
   nested(path, skip)           rule 6: the git repositories on disk beneath a path
+  own_repository(path)         rule 6: whether the item's own folder is a git repository (VELDO-0347)
+  clean_clone(path)            rule 6: whether a repository beneath scratch or build output is a clean
+                               clone, read now (VELDO-0347)
   scratch(path)                rule 4, a sandbox launcher's scratch: its scratch lock and its borrowed
                                login
   unique_work(path, ...)       rule 5: the five cases, read in the worktree
+  ignored_work(path, ...)      rule 5: the ignored paths of a work tree that are work (VELDO-0347)
   agent_repository(path, ...)  rule 5: the branches of an agent repository the shared repository does
                                not hold under the same name
 
@@ -118,7 +122,9 @@ known holds the id of every container of the engines that were read, whatever it
 
 NESTED REPOSITORIES. A git repository on disk beneath a worktree or an agent repository goes with it
 when it is removed, with every commit only it holds, and git's status says nothing of one in an ignored
-folder. nested walks the folder itself, ignored or not, following no link, and names every folder
+folder. Since VELDO-0347 the same look is made beneath scratch and build output, where clean_clone says
+whether a repository found there is a clean clone (design 0.1), and own_repository says whether an
+item's own folder is a repository. nested walks the folder itself, ignored or not, following no link, and names every folder
 beneath the path that holds a .git entry (a folder or a file) or is itself a git folder (HEAD, objects
 and refs). It does not look inside one it found, inside the path's own .git folder, or inside a folder
 of `skip`. A folder it cannot list makes read False.

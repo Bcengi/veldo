@@ -20,10 +20,12 @@ THE REMOVERS, by the table's action and the item's kind (REMOVERS):
   remove_tag        image_tag               the engine's image remove, on the tag
   drop_caches       evidence                the folder remover on each sub-folder the project declares as
                                             a cache, and on nothing else
+  remove_held       evidence                each file whose digest, read again at its removal, the store
+                                            or a commit of the trunk or a kept ref holds (VELDO-0347)
 
 Any other pair has no remover and is refused. A branch is marked, never removed, and that is a ledger
 write. Review scratch is saved by the keep step, compared file by file and removed before the
-non-forced worktree remove (VELDO-0336). Discard and copied evidence removal are VELDO-0318 and 0347.
+non-forced worktree remove (VELDO-0336). Discard is VELDO-0318.
 
 NO REMOVER HERE PASSES A FORCE OPTION, AND NONE RUNS A PRUNE COMMAND. Each names the one thing it
 removes to the owning tool and lets the tool refuse. Every command a call ran, the probes' reads
@@ -49,7 +51,9 @@ swapped for a link afterwards leads nowhere else. It stops, and puts back what i
 filesystem is mounted inside the folder, when a delete fails, and when the folder is a git repository
 or holds one: a folder with a .git entry, or one that is itself a git folder (HEAD, objects and refs),
 found by the walk that measures the folder before the first delete. Scratch, build output and a cache
-hold no repository; an agent repository holds its own and no other. When the folder cannot be put
+hold no repository but a clean clone (design 0.1, VELDO-0347): beneath scratch or build output the walk
+lets a repository through only when the probe's clean_clone, read again at that moment, says it is
+one; an agent repository holds its own and no other. When the folder cannot be put
 back (something has appeared at its path), it stays under the marked name, the answer names it in
 left_at, and nothing touches what is at the path. The marked name holds the item's id, written so
 that no two ids share a name (marked, unmarked), and `left` finds a folder left under it: reconcile
@@ -98,8 +102,13 @@ untracked file to it. The probes' git reads go through the same boundary.
 THE AGENT REPOSITORY REMOVER makes its last look under the marked name too, after the second probe:
 a repository with a work tree is refused, keep_failed, on any modified, staged or untracked entry, on
 any ignored path that is work and on any tracked file hidden from git's status whose content is not
-the index's, because nothing has saved them (the snapshot of a worker clone and its file by file
-comparison are VELDO-0347); then the tips are compared. A repository that has linked worktrees, any
+the index's, because nothing has saved them; then the tips are compared. A WORKER CLONE (VELDO-0347
+AC3) is the one exception: the keep step saves its work tree in the snapshot store, the last look
+requires each such file there with the same mode and digest, and every file is compared just before
+it is deleted (the snapshot's mode and digest, or for one the snapshot does not hold the index's
+content and mode, or a build output folder the last look found), the repository's own git folder
+last. A file that differs stops the delete, keep_failed, and the folder is put back under its own name,
+so the item keeps its locator and the next attempt saves what is left. A repository that has linked worktrees, any
 entry of git's worktree list besides its own, one git could clear away included, is refused,
 keep_failed, whether it is bare or not: the index, the HEAD and git's record of each linked worktree
 are files inside the repository's folder, and no keep step saves a linked worktree's index yet.
@@ -133,6 +142,15 @@ those two readings and nothing else; no figure a tool reports as reclaimed is us
 on an engine image pool, the backing filesystem pool with its own free_before, free_after and freed,
 kept apart, because a removal inside an engine's image does not grow the host's free space. A free
 reading that fails before the removal refuses it; one that fails after it leaves that figure None.
+
+EVIDENCE A COPY HOLDS (remove_held, design 0.4, VELDO-0347). The folder or file of an evidence item is
+measured; then each regular file is opened with no link followed, read whole, and its SHA-256 taken
+from those bytes. It is unlinked, by name through the folder's descriptor, only when the store holds
+a blob with that digest (`held(sha256)`, given by the caller) or the file's git blob is among the
+objects the main repository's HEAD or one of its kept refs reaches, and only when the name still
+leads to the file that was read, unchanged while it was read. A digest from the measurement is never
+used. A store that cannot be read or a repository that cannot be read is no copy. The rest stays, and
+the item with it.
 
 A REFUSAL is {ok: False, reason: space_deferred:<deferral>, deferral, said} with the figures read so
 far. The deferrals: remove_refused (the tool refused, or the remover refused by itself), in_use (the

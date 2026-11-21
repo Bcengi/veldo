@@ -10,7 +10,8 @@ THE TABLE. For each row and each event, one cell: the action the table of sectio
 words of the cell that qualify it. A cell that is not there means the event does nothing to that row.
 The rows are the twelve kinds (the ten of section 5, and a review run's scratch and build root, VELDO-0337),
 and two more for a worktree owned by a run: worktree_review_run (a review
-worktree) and worktree_station_run (a worktree owned by a run of another station). The events are the
+worktree) and worktree_station_run (a worktree owned by a run of another station). Table 2 adds one row
+for an agent repository of a clone's form, agent_repository_clone (VELDO-0347). The events are the
 five columns of the table, where landed and contained share a column and ticket ended and project ended
 share one, and the two further events: session_ended, which removes the scratch a session owns, and
 released, which has the cells of the worktree abandoned column for every row.
@@ -49,7 +50,8 @@ changes nothing for an item declared before it. A table is never edited once iss
 version beside the old one.
 
 LIFECYCLE is the current table in the form the Ledger is given (control_space.checked_lifecycle): the
-version, the events, and for each kind the events an item of that kind ends on. A worktree's
+version, the events, for each kind the events an item of that kind ends on, and for each agent
+repository form that has a row of its own the events an item of that form ends on instead. A worktree's
 events are those of its three rows together.
 
 WHAT HOLDS A WORKTREE OR AN AGENT REPOSITORY. Every item inside it that is not removed and not gone:

@@ -16529,6 +16529,68 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0347: the declared falsifiers of its acceptance criteria, each a way to remove work the
+    # first rules did not see. AC1: ignored paths are left out of case 3. AC2: rule 6 looks beneath
+    # worktrees and agent repositories only; a clean clone's logs are left out; a remote-tracking ref
+    # is taken at its word for a local remote. AC3: a clone is removed by the folder remover alone; a
+    # worker clone is removed without the snapshot; its files are deleted without the comparison; the
+    # folder is left under its marked name at that stop. AC4: the digest recorded at the measurement
+    # is used. AC5: rule 6 looks beneath the item only; an item with no form gets the clone's row.
+    space347 = '157_veldo_0347_space_work.py'
+
+    def work347(name, module, old, new, rows, also=()):
+        add(347, name, space347, module, old, new, rows, also)
+        result[-1]['siblings'] = True
+
+    work347('space347-ignored-left-out-of-case-3', 'control_space_probe.py',
+            "    untracked.extend(name for name in ignored if name not in untracked)\n",
+            "    pass  # defect: ignored paths are left out of case 3\n",
+            ['ac1/loose-ignored-file', 'ac1/personal-rule', 'ac1/untraced-rule'])
+    work347('space347-beneath-worktrees-only', 'control_space_signal.py',
+            "    if record.get('kind') in HOLDS_REPOSITORIES + HOLDS_UNLESS_CLEAN and path:\n",
+            "    if record.get('kind') in HOLDS_REPOSITORIES and path:  # defect: scratch and build output unread\n",
+            ['ac2/unpushed-in-session-scratch', 'ac2/build-output'])
+    work347('space347-logs-left-out', 'control_space_probe.py',
+            "        logged.extend(out.split())\n",
+            "        pass  # defect: a commit only a log names is not read\n",
+            ['ac2/reset-log'])
+    work347('space347-remote-ref-at-its-word', 'control_space_probe.py',
+            "            where = _local_remote(url, path)\n",
+            "            where = None  # defect: a local remote's tracking ref is taken at its word\n",
+            ['ac2/forged-remote-ref'])
+    work347('space347-clone-by-folder-remover-alone', 'control_space_remove.py',
+            "    ('remove', 'agent_repository'): _r_agent_repository,\n",
+            "    ('remove', 'agent_repository'): lambda ctx, identity, record, answer: answer.update(\n"
+            "        method='rename_probe_delete', bytes_source='measured',\n"
+            "        bytes=_folder(ctx, identity, record, record['locator']['path'], own=True)),  # defect\n",
+            ['ac3/commit-kept'])
+    work347('space347-worker-clone-without-snapshot', 'control_space_keep.py',
+            "    worker = record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'\n",
+            "    worker = False  # defect: a worker clone's files are not saved\n",
+            ['ac3/worker-snapshot'])
+    work347('space347-delete-without-comparison', 'control_space_remove.py',
+            "        before_file = _worker_comparison(ctx, record, kept, seen)\n",
+            "        before_file = None  # defect: each file is deleted with no comparison\n",
+            ['ac3/compare-before-delete'])
+    work347('space347-left-under-marked-name', 'control_space_remove.py',
+            "        stuck = _put_back(parent, tail, base)\n",
+            "        stuck = ('left under the marked name' if before_file is not None and refusal.deferral == KEEP_FAILED\n"
+            "                 else _put_back(parent, tail, base))  # defect\n",
+            ['ac3/put-back-at-stop'])
+    work347('space347-measured-digest-used', 'control_space_remove.py',
+            "                    digest = hashlib.sha256(data).hexdigest()\n",
+            "                    digest = measured[relative][0]  # defect: the digest of the measurement\n",
+            ['ac4/digest-at-removal'])
+    work347('space347-beneath-the-item-only', 'control_space_signal.py',
+            "    if record.get('kind') not in OWN_REPOSITORY_KINDS and path:\n",
+            "    if False:  # defect: the item's own folder is not looked at\n",
+            ['ac5/own-folder'])
+    work347('space347-formless-gets-clone-row', 'control_space.py',
+            "                            'events': list((self.lifecycle.get('forms') or {}).get(form)\n",
+            "                            'events': list((self.lifecycle.get('forms') or {}).get(\n"
+            "                                form or ('worker_clone' if kind == 'agent_repository' else None))  # defect\n",
+            ['ac5/clone-row'])
+
     return result
 
 

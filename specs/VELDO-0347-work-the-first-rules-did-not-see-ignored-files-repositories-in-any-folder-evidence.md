@@ -30,6 +30,15 @@ footprint:
   - ".veldo/lander.py"
   - "engine/.veldo/control_launch_work.py"
   - ".veldo/control_launch_work.py"
+  - "engine/.veldo/control_space_keep.py"
+  - ".veldo/control_space_keep.py"
+  - "engine/.veldo/control_space_reconcile.py"
+  - ".veldo/control_space_reconcile.py"
+  - "scripts/suites/135_veldo_0298_space_kinds.py"
+  - "scripts/suites/136_veldo_0299_space_probe.py"
+  - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/139_veldo_0301_space_signal.py"
+  - "scripts/suites/140_veldo_0345_space_keep.py"
   - "scripts/suites/*_veldo_0347_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -147,6 +156,20 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-21: built. No acceptance criterion changed. The footprint gains six paths, each named here.
+  The keep step (control_space_keep.py) is where a worker clone's snapshot is taken (one condition,
+  beside review scratch's). The service's wiring of the Ledger (control_space_reconcile.py) now passes
+  the table's per-form ends_on, without which a clone would never end at run finished in production.
+  The kind registry issues table 2 beside table 1, which is not edited (an item keeps the table it was
+  declared under), so the VELDO-0298 suite names table 1 where it read "the current table". Rule 5
+  now refuses a worktree holding an ignored file that is work, and rule 6 holds an item whose own
+  folder is a repository; rows of the VELDO-0299, 0300, 0301 and 0345 suites that planted such a
+  file or folder to prove the removers and the keep step behind rules 1 to 6 now judge with a probe
+  that reads the work tree as before this ticket (named before_0347 in each suite), and the 0299
+  row "a file git ignores is not unique work" now plants an ignored folder the committed ignore file
+  covers. "The store" of AC4 is read through a reader the caller gives (`held`), because no blob
+  store is built yet; without one only a commit counts as a copy.
 
 - 2026-11-15: lead decision, the repository form field and its validation are delivered by VELDO-0302.
 
