@@ -786,5 +786,21 @@
     "after": "    conn.execute(\"BEGIN IMMEDIATE\")",
     "suite": "105_veldo_0125_relay",
     "ticket": "VELDO-0125"
+  },
+  "124-evidence-file-digest": {
+    "file": "project_runner_macos_profile.py",
+    "row": "AC1/forged-qualification",
+    "before": "if 'sha256:' + hashlib.sha256(raw).hexdigest() != reference['digest']:",
+    "after": "if False:",
+    "suite": "103_veldo_0124_macos",
+    "ticket": "VELDO-0124"
+  },
+  "port-evidence-profile-binding": {
+    "file": "project_runner_macos_profile.py",
+    "row": "AC1/v1-profile-migration",
+    "before": "for field in ('host', 'os_version', 'profile_digest'))):",
+    "after": "for field in ('host', 'os_version'))):",
+    "suite": "106_veldo_0125_routing",
+    "ticket": "VELDO-0125"
   }
 }
