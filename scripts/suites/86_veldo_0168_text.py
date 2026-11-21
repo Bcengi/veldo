@@ -458,6 +458,15 @@ def _v168_suite():
                 ('control_service.py', 'reconcile_cli', 'client', 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
+            # VELDO-0125 worker commands carry signed transport data, not owner-facing text.
+            wanted_calls.update({
+                ('control_worker_client.py', 'Client.claim', 'self', 'send'),
+                ('control_worker_client.py', 'Client.launch', 'self', 'send'),
+                ('control_worker_client.py', 'Client.result', 'self', 'send'),
+                ('control_worker_client.py', 'Client.release', 'self', 'send'),
+                ('control_worker_client.py', 'Client.retired', 'self', 'send'),
+                ('control_worker_client.py', 'Client.status', 'self', 'send'),
+            })
             wanted_calls = Counter(wanted_calls)
             wanted_calls[('status_server.py', '_Handler.do_GET', 'self', '_send')] = 3
             # VELDO-0124: the Mac runner's sends are OS signals to a run's processes; none carries text to a person.
