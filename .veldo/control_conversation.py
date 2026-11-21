@@ -109,7 +109,8 @@ SENT = 'record_conversation_message'
 SENT_KIND = 'conversation_message'
 ANSWER_KIND = 'conversation_answer'
 SENT_SCHEMA = 'veldo.conversation_message/v1'
-SENT_KINDS = ('reply', 'status', 'answer', 'refusal')
+# VELDO-0181: `decision`, a presentation of a question the conversation raised, sent in it but never its turn's reply.
+SENT_KINDS = ('reply', 'status', 'answer', 'refusal', 'decision')
 OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT, POINT)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
@@ -126,6 +127,8 @@ LIMIT_NOTICE = ('The previous run of this turn stopped at an account limit; cont
 LEFT_OUT = 'Earlier turns left out of this history: %d.'
 # VELDO-0176 AC2: the owner's assistant role on the other engine (VELDO-0177 AC2), for the wait-or-move question.
 OTHER_ROLE = {'claude_code': 'assistant_codex', 'codex': 'assistant'}
+# VELDO-0181: one turn output refused as authority, as the turn record keeps it.
+REFUSED_FIELDS = ('document', 'where', 'digest', 'refusal')
 
 
 class Refused(Exception):
@@ -560,6 +563,13 @@ def transition(conn, params, before):
             raise Refused('invalid_input:conversation_reply')
         turn['reply'] = reply
         turn['reply_digest'] = None if reply is None else 'sha256:' + hashlib.sha256(reply.encode()).hexdigest()
+    # VELDO-0181: what of the turn's output was refused as authority, by kind, where and digest, never its text.
+    if params.get('refused_outputs'):
+        refused = params['refused_outputs']
+        if (not isinstance(refused, list) or not all(isinstance(e, dict) and set(e) == set(REFUSED_FIELDS)
+                                                     for e in refused)):
+            raise Refused('invalid_input:conversation_refused_outputs')
+        turn['refused_outputs'] = [{k: e[k] for k in REFUSED_FIELDS} for e in refused]
     _bind_session(turn, session, started)
     return {tid: {'kind': TURN_KIND, 'data': turn}}
 
@@ -770,10 +780,19 @@ class Conversations:
         the execution record its exit committed (or `reply` when the caller read it); any other end keeps none."""
         fields = {'sequence': sequence, 'dispatch_id': dispatch_id, 'outcome': outcome}
         fields.update({k: v for k, v in (('session', session), ('start', start)) if v is not None})
+        lines = self.record_lines(identity, sequence, dispatch_id)
         if reply is False:
-            reply = self.reply_of(identity, sequence, dispatch_id) if outcome == 'completed' else None
+            reply = final_reply(lines) if outcome == 'completed' and lines is not None else None
         fields['reply'] = reply
+        # VELDO-0181: nothing a turn produces carries authority. Every answer, approval, role save or route document in
+        # its reply, tool results or protocol messages is refused by name and kept as text; nothing reads it as more.
+        CD = _organ('control_conversation_decisions')
+        refused = CD.authority_documents(lines, reply)
+        if refused:
+            fields['refused_outputs'] = refused
         self._run(END, identity, fields, now=now)
+        for entry in refused:
+            self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))
         self._session_event(identity, sequence, dispatch_id, session, start)
         return _turn(self.conn, identity, sequence)['data']
 
@@ -789,6 +808,11 @@ class Conversations:
     def reply_of(self, identity, sequence, dispatch_id):
         """VELDO-0175 AC3: the final result text of the dispatch's run, read from its redacted execution record as its
         exit committed it, through the receiver configuration the turn was dispatched to; None when there is none."""
+        lines = self.record_lines(identity, sequence, dispatch_id)
+        return None if lines is None else final_reply(lines)
+
+    def record_lines(self, identity, sequence, dispatch_id):
+        """The lines of the dispatch's redacted execution record as its exit committed it, or None when there are none."""
         turn = _turn(self.conn, identity, sequence)
         dispatch = _row(self.conn, 'dispatch:' + str(dispatch_id))
         committed = ((dispatch or {}).get('data') or {}).get('execution_record')
@@ -810,7 +834,7 @@ class Conversations:
                           'dispatch_id': dispatch_id, 'outcome': 'refused',
                           'refusal': getattr(error, 'code', type(error).__name__)})
             return None
-        return final_reply(lines)
+        return lines
 
     def _session_event(self, identity, sequence, dispatch_id, session, start):
         """VELDO-0176 observability: the capture a turn's dispatch produced, as bound to its record (ids and digest,

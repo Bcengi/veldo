@@ -229,7 +229,9 @@ sys.exit(4)
                        'zed2': ('person', ['project_owner'], ['proj-z']), 'wide': ('person', [], ['proj-a', 'proj-z']),
                        'worker': ('agent_run', [], '*'),
                        'svc': ('service', [], '*'), 'pm': ('service', [], ['proj-a', 'ops', 'proj-z']),
-                       'api-edge': ('service', [], '*'), 'telegram-edge': ('service', [], ['proj-a'])}
+                       'api-edge': ('service', [], '*'), 'telegram-edge': ('service', [], ['proj-a']),
+                       # VELDO-0181: the journal signer requests the unclear question's decision, as the service does.
+                       'authority': ('service', [], '*')}
             for who, (kind, roles, scope) in members.items():
                 fixture(who, 'membership', dict(principal_type=kind, roles=roles, scope=scope, revoked_at=None, expires_at=None))
                 if who != 'telegram-edge':
@@ -308,7 +310,8 @@ sys.exit(4)
                                   'authority', journal_sign, 'telegram-edge', lambda m: sign_as('telegram-edge', m))
             intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=('proj-a', 'proj-z'), api_edge='api-edge',
                                journal_signer='authority', sign=journal_sign,
-                               asker=V.TelegramPresentationEdge(P, url, api['token']))
+                               asker=V.TelegramPresentationEdge(P, url, api['token']),
+                               request_sign=lambda m: sign_as('authority', m))
             neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
             neighbor152['factory'](intake, ids, 'olga', sign_as)
             try:
@@ -991,7 +994,8 @@ sys.exit(4)
                      and all(chat == chats['wide'] for chat, _ in own_dispose[2])),
                     ('control: wide\'s own message is taken as an inbox proposal', own_dispose[0].get('ok') is True
                      and (intake.proposal(own_dispose[0].get('proposal_id') or '') or {}).get('state') == 'AWAITING_PROJECT'),
-                    ('control: its project question is sent to wide\'s own chat, replying to that message',
+                    # VELDO-0181: the question is its decision request's presentation, on wide's own chat.
+                    ('control: its project question is presented on wide\'s own chat',
                      len(own_dispose[2]) == 1 and own_dispose[2][0][0] == chats['wide']
                      and 'Which project is this for?' in (own_dispose[2][0][1] or '')
                      and delivery.get('chat_id') == chats['wide']

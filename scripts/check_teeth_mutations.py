@@ -4365,8 +4365,9 @@ def cases():
            "            project = explicit or (keyed[0] if len(keyed) == 1 else None) or (candidates[0] if len(candidates) == 1 else None)\n",
            'common-command')
     add(126, 'question-not-sent', '68_veldo_0126_intake.py', 'control_intake_routes.py',
-        "                self._ask(question['question_id'], source['command'])\n",
-        "                pass  # defect: omit the unclear question\n", ['intake/unresolved-project-asks'], ())
+        # Re-anchored for VELDO-0181: the unclear question is a decision request the presenter shows.
+        "            self._present_question(question['question_id'])\n",
+        "            pass  # defect: omit the unclear question\n", ['intake/unresolved-project-asks'], ())
     # AC2, declared: every message must carry a Jira ticket id.
     intake('ticket-id-required',
            "    if type(text) is not str or not text.strip() or len(text) > TEXT_LIMIT:\n        return 'invalid_input:text'\n",
@@ -10301,9 +10302,11 @@ def cases():
     # VELDO-0152 Notes (hint/two-projects-one-reply) sends the note at receipt and the
     # unclear-route question separately. Keep this finding's identifier, but move its
     # double-render defect from the retired hint lead to the actual question send.
-    text168('hint-lead-double-escaped', 'control_intake.py',
-            "        prompt = render_prompt(question['prompt'])\n",
-            "        prompt = render_prompt(render_prompt(question['prompt']))  # defect: already rendered\n",
+    # VELDO-0181: the unclear-route question is a decision request, sent by the presenter. Intake._ask is
+    # gone, so the double render moves again, to the presenter's rendering of a request's brief.
+    text168('hint-lead-double-escaped', 'control_channel_presentation.py',
+            "    body = TEXT.visible('\\n'.join(head + ['', c['brief']]), stats)\n",
+            "    body = TEXT.visible(TEXT.visible('\\n'.join(head + ['', c['brief']])), stats)  # defect: already rendered\n",
             ['intake/delivery'])
     text168('escape-split-at-cut', 'control_channel_presentation.py',
             "            if opener >= 0 and text.find('>', opener) >= at:\n",
@@ -15830,6 +15833,64 @@ def cases():
                "                    or False):  # defect: the name is taken from the PM's reading\n")])
     for case in result:
         if case['finding'] == 180:
+            case['siblings'] = True
+
+    # VELDO-0181: a conversation's decisions go through the existing decision flow, only its owner drives it, and nothing
+    # a turn produces carries authority; each spec falsifier as one exact edit, and the guard it implies. Each module
+    # loads its organs beside itself by path, so each mutant runs in a whole .veldo copy.
+    suite181 = '137_veldo_0181_conversation_decisions.py'
+    # AC1 (declared falsifier): a reply to a decision presentation sent in a conversation is taken as its next turn.
+    add(181, 'reply181-presentation-as-turn', suite181, 'control_channel_presentation.py',
+        "            if data.get('outcome') == 'published' and data.get('chat_id') == chat and message in (data.get('message_ids') or []):\n",
+        "            if (data.get('outcome') == 'published' and data.get('chat_id') == chat and message in (data.get('message_ids') or [])\n"
+        "                    and not str(data.get('request_id')).startswith(CONVERSATION_REQUEST)):  # defect: a reply in a"
+        " conversation is its next turn\n",
+        ['AC1/settles-by-reply'])
+    # AC2 (declared falsifier): an answer document found in a turn's final message is accepted.
+    add(181, 'output181-answer-accepted', suite181, 'control_conversation.py',
+        "        for entry in refused:\n            self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))\n",
+        "        for doc in CD._objects(reply or ''):  # defect: an answer document in the final message is accepted\n"
+        "            if CD.document_kind(doc) != 'answer':\n                continue\n"
+        "            asked = [json.loads(raw) for (raw,) in self.conn.execute(\n"
+        "                \"SELECT data FROM entities WHERE kind='conversation_turn'\").fetchall()]\n"
+        "            for waiting in asked:\n"
+        "                for question in waiting.get('questions') or []:\n"
+        "                    if question.get('answer') is None and doc.get('choice') in (question.get('choices') or []):\n"
+        "                        self.note(waiting['conversation'], waiting['sequence'],\n"
+        "                                  dict(question, answer=doc.get('choice')))\n"
+        "        for entry in refused:\n            self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))\n",
+        ['AC2/no-authority-from-output'])
+    # Guard (AC1): the presenter publishes only its own inbox, so a conversation's question is never shown.
+    add(181, 'publish181-own-inbox-only', suite181, 'control_channel_presentation.py',
+        "        if self.ids['repository_uuid'].startswith('conversation:'):\n            return results\n"
+        "        CD = _decisions()\n        for request in CD.pending(self.conn, self.inbox):\n",
+        "        if True:  # defect: a conversation's questions are never presented\n            return results\n"
+        "        CD = _decisions()\n        for request in CD.pending(self.conn, self.inbox):\n",
+        ['AC1/rerun-presented'])
+    # Guard (AC1, the unclear route question settled once): a settled question's choice is applied again on every
+    # pass, so one settlement routes the message twice.
+    add(181, 'route181-applied-twice', suite181, 'control_intake_routes.py',
+        "            if question.get('state') != 'open' or not question.get('request'):\n",
+        "            if not question.get('request'):  # defect: a settled question is applied again\n",
+        ['AC1/unclear-settled-once'],
+        also=[("        if (question.get('state') != 'open' or question.get('request') != request or not isinstance(request, str)\n"
+               "                or data.get('state') != 'AWAITING_PROJECT' or data.get('question_id') != qid):\n",
+               "        if (question.get('request') != request or not isinstance(request, str)  # defect: applied again\n"
+               "                or data.get('question_id') != qid):\n")])
+    # Guard (AC1, the unclear route question answered as before): his reply that is exactly one choice's short form
+    # (a bare project name) no longer answers it, so he must type the full choice and a reason again.
+    add(181, 'bare181-short-form-dropped', suite181, 'control_channel_presentation.py',
+        "            if len(short) == 1:\n",
+        "            if False:  # defect: a bare short form never answers the unclear route question\n",
+        ['AC1/unclear-bare-project'])
+    # Guard (AC1, the unclear route question answered as before): his reply matching no option and naming no ticket
+    # key no longer clarifies the message for the PM; it is refused unmatched_choice and settles nothing.
+    add(181, 'free181-clarification-dropped', suite181, 'control_channel_presentation.py',
+        "                fallback = [CD.CLARIFY] if CD.CLARIFY in receipt['choices'] else []\n",
+        "                fallback = []  # defect: a free-text reply never clarifies the unclear route question\n",
+        ['AC1/unclear-free-text'])
+    for case in result:
+        if case['finding'] == 181:
             case['siblings'] = True
 
     # VELDO-0179: the UI's conversation screens. Each mutant is one UI source module of engine/ui; suites 134 (AC1, AC2)

@@ -1,0 +1,22 @@
+VELDO-0181 fix round 3: each suite run alone (python3 scripts/selftest.py --suite NAME) at eb43816c, in a transient user scope with MemoryMax=8G and MemorySwapMax=0.
+  137_veldo_0181_conversation_decisions           19 passed    6.05s
+selftest (PARTIAL, 1 of 199 suites): 45 passed, 0 failed in 6.05s
+  130_veldo_0176_conversation_history             17 passed   14.40s
+selftest (PARTIAL, 1 of 199 suites): 43 passed, 0 failed in 14.40s
+  131_veldo_0175_conversation_replies             16 passed    3.56s
+selftest (PARTIAL, 1 of 199 suites): 42 passed, 0 failed in 3.56s
+  132_veldo_0175_conversation_routes              19 passed   20.90s
+selftest (PARTIAL, 1 of 199 suites): 45 passed, 0 failed in 20.90s
+  136_veldo_0180_conversation_projects            21 passed    3.28s
+selftest (PARTIAL, 1 of 199 suites): 47 passed, 0 failed in 3.28s
+  68_veldo_0126_intake                            18 passed    1.72s
+selftest (PARTIAL, 1 of 199 suites): 44 passed, 0 failed in 1.72s
+  68_veldo_0136_hints                              7 passed    4.59s
+selftest (PARTIAL, 1 of 199 suites): 33 passed, 0 failed in 4.59s
+  69_veldo_0133_dispositions                      33 passed    5.06s
+selftest (PARTIAL, 1 of 199 suites): 59 passed, 0 failed in 5.06s
+  93_veldo_0152_intake_routes                     24 passed  124.94s
+selftest (PARTIAL, 1 of 199 suites): 50 passed, 0 failed in 124.94s
+suite 137 rerun alone at 91b48584, after b67b8472 (the ticket-key row compares with the full form's routing):
+  137_veldo_0181_conversation_decisions           19 passed    7.24s
+selftest (PARTIAL, 1 of 199 suites): 45 passed, 0 failed in 7.24s

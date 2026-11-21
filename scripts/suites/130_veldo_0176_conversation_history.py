@@ -54,7 +54,7 @@ def _v176_suite():
     J = load('v176_journey', ROOT / 'scripts/suites/support/v174_journey.py')
     F = load('v176_fakes', ROOT / 'scripts/suites/support/v231_fake_engines.py')
     base = Path(tempfile.mkdtemp(prefix='v176-', dir=fast_temp()))
-    fixtures, factories = [], []
+    fixtures, factories, stops = [], [], []
     BOUND = 2000
 
     # THE FAKE ENGINES: VELDO-0174's handshake and init, with the session each engine keeps in its profile. Claude
@@ -276,15 +276,39 @@ else:
                 pass
 
     def answer(f, factory, identity, aid, ruling):
-        """The owner's signed answer to a conversation question, through the production inbox (VELDO-0064)."""
-        authority = f['authority']
-        inbox = factory.service.inbox(f['CV'].conversation_id(identity))
-        item = inbox.read(aid)
-        body = {'domain_uuid': authority.ids['domain_uuid'], 'repository_uuid': f['CV'].conversation_id(identity),
-                'store_uuid': authority.ids['store_uuid'], 'operation': 'answer', 'alias': item['data']['alias'],
-                'principal': 'owner', 'command_id': 'v176-answer-' + aid[-12:] + ruling, 'nonce': 'v176-' + aid[-12:] + ruling,
-                'request_version': item['data']['request_version'], 'ruling': ruling}
-        return inbox.apply({'command': body, 'signature': authority.sign_as('owner', authority.S.canonical_bytes(body))})
+        """The owner's answer to a conversation question, through the existing decision flow (VELDO-0181 AC1): the
+        VELDO-0065 presenter publishes the request over a loopback Bot API and his inline answer in the UI settles it
+        through VELDO-0068 (Settlement.api_answer, as the UI's decisions.answer reaches it). {ok} when it settled."""
+        authority, mods = f['authority'], f['mods']
+        flow = f.get('flow')
+        if flow is None:
+            S, CM = authority.S, authority.CM
+            P = load('v176_projection', mods / 'control_channel_projection.py')
+            V = load('v176_presentation', mods / 'control_channel_presentation.py')
+            ST = load('v176_settlement', mods / 'control_request_settlement.py')
+            I = load('v176_inbox', mods / 'control_assignment.py')
+            contract = load('v176_contract', mods / 'entity_contract.py')
+            bot = {'id': 8000000176, 'is_bot': True, 'first_name': 'Veldo', 'username': 'veldo_v176_bot'}
+            url, _api, stop = H.stand_in({'bot176': bot})
+            stops.append(stop)
+            inbox = I.Inbox(S, CM, authority.claims, contract, authority.conn, authority.ids, 'authority',
+                            authority.journal_sign)
+            presenter = V.Presenter(S, CM, P, inbox, V.TelegramPresentationEdge(P, url, 'bot176'), authority.conn,
+                                    'authority', authority.journal_sign, assignment=I)
+            settlement = ST.Settlement(S, CM, inbox, presenter, authority.conn, 'authority', authority.journal_sign,
+                                       assignment=I, presentation=V, api_edge='api-edge')
+            flow = f['flow'] = {'S': S, 'ST': ST, 'presenter': presenter, 'settlement': settlement}
+        presenter, ST, S = flow['presenter'], flow['ST'], flow['S']
+        presenter.publish()
+        receipt = presenter.current(aid) or {}
+        body = dict(authority.ids, schema=ST.API_SCHEMA, edge='api-edge', answer_id='v176-ui-' + aid[-12:] + ruling,
+                    principal='owner', request_id=aid, request_version=receipt.get('request_version'),
+                    presentation_id=receipt.get('presentation_id'), presentation_digest=receipt.get('brief_digest'),
+                    presentation_version=receipt.get('presentation_version'), choice=ruling,
+                    rationale='The owner answers in the UI.')
+        settled_answer = flow['settlement'].api_answer(
+            {'answer': body, 'signature': authority.sign_as('api-edge', S.canonical_bytes(body))})
+        return {'ok': settled_answer.get('outcome') == 'settled', 'settlement': settled_answer}
 
     def turns(f, identity):
         return f['conversations'].turns(identity)
@@ -664,6 +688,8 @@ else:
             except Exception:  # noqa: BLE001
                 pass
             release_lock(lock_value)
+        for stop_value in stops:
+            stop_value()
         for value in fixtures:
             value['authority'].conn.close()
         shutil.rmtree(base, ignore_errors=True)

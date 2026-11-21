@@ -1,0 +1,26 @@
+  selector    --suite 137_veldo_0181_conversation_decisions
+  running     1 of 199 suites: 137_veldo_0181_conversation_decisions
+  VELDO-0181 re-run question: assignment:conversation:c-1a988d9fef5b1ea94e0c:conversation-rerun-2e09702387f67f13e85d45f3 ask [] []
+  VELDO-0181 turn output: completed [] []
+  VELDO-0181 reply: inbox [] ['missing_reply_reference']
+  VELDO-0181 move question: assignment:conversation:c-22296722eb0bd52a9701:conversation-limit-12df579b9c0e45f21b8ee9ad None
+  VELDO-0181 move answer: refused missing_evidence refused missing_evidence
+  VELDO-0181 other member: ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner'] ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner']
+  VELDO-0181 detail: AC1/rerun-presented the request is the ordinary VELDO-0068 kind: signed terms (decision_disposition, about the stopped run), owner, choices re-run or stop; a versioned presentation is published on the chat he wrote from [None]; the owner sees the question and its choices in his chat; the presentation is kept in the conversation (a decision message, never a reply) and on the turn's question, shown on the chat he wrote from
+  SELFTEST FAIL: VELDO-0181 AC1/rerun-presented
+  VELDO-0181 detail: AC1/no-presentation-hint his answer sent without Reply is told to reply to the request message, the waiting request named [inbox]
+  SELFTEST FAIL: VELDO-0181 AC1/no-presentation-hint
+  VELDO-0181 detail: AC1/settles-by-reply his reply to the presentation settles the request once, from Telegram, with his choice [pending]; it is no turn of the conversation and nothing intake took; the turn waited for it and then ran again on another account [['account-claude_code-1']]; a second reply is told once and settles nothing again, no turn
+  SELFTEST FAIL: VELDO-0181 AC1/settles-by-reply
+  VELDO-0181 detail: AC1/move-presented the wait-or-move question is a request at the conversation's coordinate, presented on the chat he wrote from with its choices
+  SELFTEST FAIL: VELDO-0181 AC1/move-presented
+  VELDO-0181 detail: AC1/settled-once-across his inline answer in the UI settles it once [refused]; a second UI answer and a later Telegram reply settle nothing again; the reply is told once and is no turn; the turn follows the settled answer (wait): the role is unchanged and the question records it
+  SELFTEST FAIL: VELDO-0181 AC1/settled-once-across
+  VELDO-0181 detail: AC1/observability each decision is logged presented and settled with its kind, request, presentation and settlement; decisions are counted by kind and settlement {'None/pending': 2}; a decision is joined to its turn, presentation receipt and settling answer
+  SELFTEST FAIL: VELDO-0181 AC1/observability
+  VELDO-0181 detail: AC2/no-authority-from-output each document refused by name (invalid_input:turn_output:authority): an answer, an approval, a role save and a route, the tool result's too []
+  SELFTEST FAIL: VELDO-0181 AC2/no-authority-from-output
+  VELDO-0181 detail: AC2/observability turn outputs refused as authority are counted by kind {}
+  SELFTEST FAIL: VELDO-0181 AC2/observability
+  137_veldo_0181_conversation_decisions            3 passed   62.98s
+selftest (PARTIAL, 1 of 199 suites): 29 passed, 8 failed in 62.98s
