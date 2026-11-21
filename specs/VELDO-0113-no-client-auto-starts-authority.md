@@ -133,3 +133,10 @@ declared falsifier registrations remain outstanding.
   All out-of-process registry/state cases retain the full VELDO-0111 census
   requirement, including named stand-down on incomplete qualification. No
   observer qualification is supplied or weakened by this amendment.
+
+- 2026-11-21: Follow-up implementation finding, not a contract amendment: a
+  production-wide construction census also finds Dispatcher at `bin/veldo:285`
+  and `engine/bin/veldo:285`. Their entry eligibility gate opens a read-only store
+  and does not test endpoint availability. The construction row fails for these
+  sites under the lead decision above. See `proof/VELDO-0113/construction-census.txt`.
+  Resolving this CLI boundary is pending lead direction; neither site is excluded.
