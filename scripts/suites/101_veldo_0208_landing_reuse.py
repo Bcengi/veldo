@@ -742,7 +742,8 @@ assert s.secret is None and not s.put('a' * 64, {'planted': True})
         for i in range(8):
             audit_case = dict(case, identity='audit-fixture-' + str(i))
             audit_key = E.digest(audit_case)
-            audit_record = dict(record, case=audit_case, input_digest=audit_key)
+            audit_record = dict({k: v for k, v in record.items() if k != 'elapsed'},
+                                case=audit_case, input_digest=audit_key)
             assert store.put(audit_key, audit_record)
             audit_records.append((audit_key, audit_record))
         receipt.update(registered=9, executed=8)
