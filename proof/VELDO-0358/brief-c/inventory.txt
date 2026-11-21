@@ -5,3 +5,6 @@ Controls: all passed; no hung or not-run target was counted as a kill.
 Serial drives (registered-mutants.txt plus firstuse358-watchdog-hidden in nested-watchdog-mutants.txt plus wait358-descriptor-ceiling in descriptor-mutants.txt plus both qualification-mutants.txt cases) kill_by: assertion=0 terminal=0 unproven=35 (first baseline absent).
 The six-case fixture supplies an explicit baseline to distinguish all classifications.
 Full-stage validation is recorded separately; these are not aggregate gate receipts.
+
+Current implementation HEAD 30d6fa2a: all 3,608 registered definitions have valid unique replacement anchors.
+Full-stage receipt: 3,608 executed and rejected; no reused or pending case.
