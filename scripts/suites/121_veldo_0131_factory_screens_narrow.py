@@ -63,6 +63,9 @@ def _v131_screens_narrow():
     # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
     ORGANS = {
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
+        # VELDO-0358 AC15: the timers table the organs arm their giving-up deadlines from (the canon's; the
+        # checkout's synced copy is the same file once it is laid down).
+        'timers.py': ROOT / "engine/.veldo" / "timers.py",
     }
     BROWSER = ('ac1/screens-360', 'ac1/screens-390')
     ROWS = BROWSER
