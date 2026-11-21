@@ -10,6 +10,10 @@ The legacy constructor deadline argument is inert for caller compatibility.
 
 A worker that exhausts its progress bound receives SIGABRT with Python's
 faulthandler enabled, which writes all thread stacks before termination.
+The blocking-child fixture emits readiness from descriptor conversion inside
+os.read. Any stack sampled after that event contains the blocking call's source
+line, even if the child is descheduled immediately. Its clock advances only
+after that event, and core files are disabled.
 Ownership cleanup and reservation release still follow reaping. Metered worker
 cgroups are killed and awaited through cgroup.events. Normal completion never
 uses a measured duration as a verdict.
