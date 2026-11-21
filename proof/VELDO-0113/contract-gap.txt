@@ -1,0 +1,106 @@
+{
+  "kind": "contract-gap-diagnostic",
+  "acceptance_complete": false,
+  "registry_cases": [
+    "claim:claim/local_ipc",
+    "claim:heartbeat/local_ipc",
+    "claim:release/local_ipc",
+    "control_claim_client:Client.claim/local_ipc",
+    "control_claim_client:Client.heartbeat/local_ipc",
+    "control_claim_client:Client.release/local_ipc",
+    "control_claim_client:Client.request/local_ipc",
+    "control_claim_client:Client.use/local_ipc",
+    "control_client:send/local_ipc",
+    "control_dispatch:Dispatches.accept/in_process",
+    "control_dispatch:Dispatches.exit/in_process",
+    "control_dispatch:Dispatches.prepare/in_process",
+    "control_dispatch:Dispatches.refuse/in_process",
+    "control_dispatch:Dispatches.request_stop/in_process",
+    "control_dispatch:Dispatches.run/in_process",
+    "control_dispatch:Dispatches.stop_result/in_process",
+    "control_dispatch:Dispatches.unknown/in_process",
+    "control_relay:forward/relay",
+    "control_relay:main/relay",
+    "dispatch:Dispatcher.dispatch/in_process",
+    "dispatch:veldo_dispatch/in_process"
+  ],
+  "source_sha256": {
+    "scripts/fixtures/registered_clients.py": "613f3c8c6edfe84196d9a747589475474dd84056001bbaf38c0d119384435b2c",
+    "scripts/suites/113_veldo_0112_registered_clients.py": "718b0c5a4f3747292ccdce92f212e42e674668cb8f0a3ec441f55bb7bd96b6ba",
+    ".veldo/control_client_registry.py": "82e309a5f371eab20b177fb60d912a55e318824492c43668bca69081fa29b17f",
+    ".veldo/control_dispatch.py": "973ff0d556a7c42fafdb3ba10ac6623405921aa3ac2000a9cead5ef784709241"
+  },
+  "observations": [
+    {
+      "case": "control_dispatch:Dispatches.prepare/in_process",
+      "endpoint_state": "absent",
+      "endpoint_errno": 2,
+      "endpoint_is_socket": false,
+      "endpoint_child_status": null,
+      "implementation_digest": "973ff0d556a7c42fafdb3ba10ac6623405921aa3ac2000a9cead5ef784709241",
+      "registration_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "input_identity": {
+        "domain_uuid": "clients-domain",
+        "store_uuid": "clients-store",
+        "repository_uuid": "clients-repository",
+        "clone_uuid": "e068c489-1bbf-491d-bca5-022eb550a60f",
+        "binding_digest": "sha256:89ffcf9eb62fcab7994b64086425ee96a124591f6eb8d70c03d4d63ad9472f61"
+      },
+      "before_seq": 12,
+      "after_seq": 13,
+      "result_state": "prepared",
+      "refused": false,
+      "counterexample": true
+    },
+    {
+      "case": "control_dispatch:Dispatches.prepare/in_process",
+      "endpoint_state": "sigkill_dead_socket",
+      "endpoint_errno": 111,
+      "endpoint_is_socket": true,
+      "endpoint_child_status": -9,
+      "implementation_digest": "973ff0d556a7c42fafdb3ba10ac6623405921aa3ac2000a9cead5ef784709241",
+      "registration_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "input_identity": {
+        "domain_uuid": "clients-domain",
+        "store_uuid": "clients-store",
+        "repository_uuid": "clients-repository",
+        "clone_uuid": "dca335cc-e341-4561-9c39-2a60176e988c",
+        "binding_digest": "sha256:882254635de3d82848095ea8085e2f6c57d416b6377bbfa7d3d7e36407bc405a"
+      },
+      "before_seq": 12,
+      "after_seq": 13,
+      "result_state": "prepared",
+      "refused": false,
+      "counterexample": true
+    }
+  ],
+  "dependency_census": {
+    "status": "INCOMPLETE",
+    "capture_status": "COMPLETE",
+    "qualification": "INCOMPLETE",
+    "gaps": [
+      "io_uring_socket_effects",
+      "operation_configuration",
+      "protocol_inventory_bounds"
+    ],
+    "consumer_rows": [
+      {
+        "name": "unavailable/no-client-starts-the-authority",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-client-hosts-a-listener",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      },
+      {
+        "name": "unavailable/no-auto-start-needs-census",
+        "status": "STANDS DOWN",
+        "reason": "census_incomplete"
+      }
+    ],
+    "archive": "proof/VELDO-0113/census-receipt.json.gz",
+    "archive_sha256": "8da9fd8e0ccc573774b8dc4f9873691af921ccca054e8bfa781641f4a134b2c3"
+  }
+}
