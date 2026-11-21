@@ -1,0 +1,77 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0217",
+  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0217/local-tests.txt",
+          "detail": "rows stale-found, report-complete, parallel-admission, stale-found-traced; partial runs, diagnostic until the canonical gate"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0217/red-green.json",
+          "detail": "confined drive of finding 217: the AC falsifier rejected"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0217/local-tests.txt",
+          "detail": "rows review-conditions, reviewed-flag-protected; partial runs, diagnostic until the canonical gate"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0217/red-green.json",
+          "detail": "confined drive of finding 217: the AC falsifier rejected"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0217/local-tests.txt",
+          "detail": "rows key-covers-inputs; partial runs, diagnostic until the canonical gate"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0217/red-green.json",
+          "detail": "confined drive of finding 217: the AC falsifier rejected"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0217/local-tests.txt",
+          "detail": "rows non-file-refused, non-file-real-traces, absent-socket-keyed; partial runs, diagnostic until the canonical gate"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0217/red-green.json",
+          "detail": "confined drive of finding 217: the AC falsifier rejected"
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    "The canonical gate has not run on this branch; the lead queues it.",
+    "The full --all proposal run and review batches are owner acts, not done here."
+  ],
+  "rollback": "Revert the declarations to reviewed false; every case runs fresh, as at main."
+}

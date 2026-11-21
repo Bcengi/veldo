@@ -1,0 +1,81 @@
+{
+  "cases": [],
+  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "failures": [],
+  "inventory": {
+    "confined": 2552,
+    "registered": 3605
+  },
+  "schema": "veldo.case-proposals/v1",
+  "stale": {
+    "check_review_mutations.py:13": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:14": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:15": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:16": [
+      "no_recorded_inputs"
+    ],
+    "check_review_mutations.py:17": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:account-codex-old-tables": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:alias-floor-ignores-history": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:command-only": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:disposition-every-question-to-project-owner": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:effects-worker-scope": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:enrolled-discovery-ignores-ancestors": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:formats172-census-drops-conform": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:limit-unreported": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:projection-notice-beside-presentation": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:question-not-sent": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:receiver-gate-untrusted": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:report-completion-handler-omitted": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:role127-delivery-comparison-skipped": [
+      "no_recorded_inputs"
+    ],
+    "check_teeth_mutations.py:text168-legacy-chunker-changed": [
+      "no_recorded_inputs"
+    ]
+  },
+  "summary": {
+    "current": 0,
+    "declared": 19,
+    "failed": 0,
+    "non_file_classes": {},
+    "peak_runs": 0,
+    "proposed": 0,
+    "reviewed": 0,
+    "stale": 19,
+    "wall_seconds": 0.74,
+    "worker_seconds": 0.0
+  }
+}

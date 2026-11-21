@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-conditions"
+      ],
+      "name": "declarations217-one-trace-enough",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-conditions"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/propose_case_inputs.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/stale-found"
+      ],
+      "name": "declarations217-support-dropped",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/stale-found"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/key-covers-inputs"
+      ],
+      "name": "declarations217-helper-not-keyed",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/key-covers-inputs"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-conditions"
+      ],
+      "name": "declarations217-proof-skipped",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-conditions"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_trace.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/non-file-refused"
+      ],
+      "name": "declarations217-bus-allowed",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/non-file-refused"
+      ]
+    }
+  ],
+  "command": "python3 scripts/check_gate_mutations.py --finding 217 (through host_heavy.sh, scratch clone of the commit)",
+  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "legs": [
+    "confined"
+  ],
+  "schema": "veldo.red-green/v1",
+  "spec_id": "VELDO-0217",
+  "stage": {
+    "executed": 5,
+    "registered": 5,
+    "rejected": 5,
+    "reused": 0,
+    "scope": "selected",
+    "status": "passed"
+  }
+}
