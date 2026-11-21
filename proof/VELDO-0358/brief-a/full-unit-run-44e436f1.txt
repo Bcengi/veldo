@@ -1,0 +1,45 @@
+# Full unit run at 44e436f1 (every suite but 38), one dispatcher process, watchdog + residue + opened-files record on
+# host_heavy.sh env VELDO_OPENED_FILES=... VELDO_HANG_DIR=... python3 scripts/selftest.py --suite <all but 38>
+
+  SELFTEST FAIL: residue/01_warp_0101_reviewer_notes: listening socket tcp 0100007F:830D; listening socket tcp 0100007F:8323; listening socket tcp 0100007F:AC3B
+  SELFTEST FAIL: WARP-0717 AC2 POSITIVE CONTROL, THROUGH THE REAL DISPATCHER: a run with NO selector EMITS the aggregate summary line and EXITS 0. Driven over a hermetic two-fragment fixture holding byte-identical copies of scripts/selftest.py and scripts/run_scope.py, so the mechanism under test is the shipped one and the observation costs milliseconds instead of the whole suite. Without this the refusals prove only that something is broken
+  SELFTEST FAIL: WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line still BEGINS with the exact text WARP-0712 gave it, `selftest (PARTIAL, N of M suites): P passed, F failed`, which is now a strict prefix of a line that also carries the elapsed time. So anything that already recognised a partial run still does, and the two selectors print the same shape
+  SELFTEST FAIL: residue/66_veldo_0042_clones: thread 'Thread-13157 (serve)' alive (Thread); thread 'Thread-13158 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/86_veldo_0189_engine_upgrade: thread 'Thread-14686 (serve)' alive (Thread); thread 'Thread-14687 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/93_veldo_0152_intake_routes: child 1794877 (not reaped)
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/listed-suite-runs-unconfined-and-named: ule>
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/unlisted-suite-stays-confined-even-if-it-asks: {}
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/listed-rows-only-leave: {}
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/authority-git-common-reaches-neither-leg: {}
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/undeclared-stage-is-confined-whole: ({}, {})
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/leg-that-tests-nothing-is-refused: [(2, "selftest: leg variables VELDO_GATE_LEG, VELDO_GATE_UNCONFINED are set without VELDO_GATE_DECLARATION; only the authority's gate_legs.py starts a leg, and it sets all three\n"), (2, '000000000000000000000000000000000000.\nselftest leg unconfined: LEG_RAN_NOTHING: no suite of this manifest is in the unconfined leg; refusing rather than reporting a pass for a leg that tested nothing\n'), (1, 'runs only the 1 listed suite(s) present, and of a row-scoped one only its rows. Whole: none. Rows: 03_rows:other. Declarati
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/fallback-drops-the-callers-leg-variables: (1, {}, '')
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/engine-gate-drops-the-callers-leg-variables: (1, {}, '', ['<snapshot>/engine/scripts/gate_candidate.py'], {'unit': 'FAIL'}, {}, 'nal>", line 1128, in get_code\n  File "<frozen importlib._bootstrap_external>", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: \'/tmp/v208-legs-1uj6b_qs/candidate/scripts/suites/support/waits.py\'\ncandidate execution failed in store-denied domain (publication forbidden)\n', 'nal>", line 1128, in get_code\n  File "<frozen importlib._bootstrap_external>", line 1186, in get_data\nFileNotFo
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/list-read-from-the-authority: (1, {})
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/authority-copy-records-under-its-scratch-home: ([], [], '/tmp/v208-legs-1uj6b_qs/authority-with-list')
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/dispatcher-never-imports-a-candidate-stdlib-shadow: (1, ', line 94, in _protected\n    spec.loader.exec_module(module)\n  File "<frozen importlib._bootstrap_external>", line 991, in exec_module\n  File "<frozen importlib._bootstrap_external>", line 1128, in get_code\n  File "<frozen importlib._bootstrap_external>", line 1186, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: \'/tmp/v208-legs-1uj6b_qs/shadow/scripts/suites/support/waits.py\'\n', 2, "check_first_use: UNRECOGNISED_FLAG: '--refuse-this'. This check recognises exactly --
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/authority-without-the-list-has-an-identity-and-is-confined: (('6a4d09cadf196c10a728e75e2f905669d123fa4b056903fac5b0a7b8d6959122', '6a4d09cadf196c10a728e75e2f905669d123fa4b056903fac5b0a7b8d6959122'), '7c81d4c286adaec6a2c06d5e24d23970a75345297746c7b04995f5cdd01ff7ca', '2725571d81241b08d142ac908e442ec7abdcab2bad6b567746dca16a87138608', 'efe53fb1c3daba1f079b735eec9dc2cb5b8281aa68594e177d74255c8a289154', '79082bbcecea2b302c9496ed13ff8f936d5f232256ecf9e1499552098b567c98', '6a4d09cadf196c10a728e75e2f905669d123fa4b056903fac5b0a7b8d6959122', 'FileNotFoundError
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-hsxlc2yq/tmp-parent/veldo-agent-pef0m4tg', 'pid': 1854211}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-pef0m4tg', 'veldo-agent-vsk2q2t5']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: the run ended without an exit status); kept privately at /tmp/v210-profile-hsxlc2yq/state-home/veldo/borrowed-logins/veldo-agent-vsk2q2t5; restore it with: python3 <snapshot>/scripts/agent_sandbox.py restore-login /tmp/v210-profile-hsxlc2yq/state-home/veldo/borrowed-logins/veldo-agent-vsk2q2t5
+  SELFTEST FAIL: VELDO-0153 evidence/audit-matches-data-factory
+  SELFTEST FAIL: VELDO-0153 evidence/production-and-suite-anchors
+  SELFTEST FAIL: residue/113_veldo_0145_ui: thread 'Thread-15173 (serve_forever)' alive (Thread); listening socket tcp 0100007F:8841
+  SELFTEST FAIL: residue/127_veldo_0254_secret_scan: thread 'Thread-15191 (serve)' alive (Thread); thread 'Thread-15192 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/128_veldo_0254_confined_runner: thread 'Thread-15196 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/141_veldo_0344_process_reader: thread 'Thread-15219 (serve)' alive (Thread)
+  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 2431122, 'started': 288597790, 'how': 'supervisor'}, {'pid': 2439008, 'started': 288602259, 'how': 'unread'}, {'pid': 2442304, 'started': 288603398, 'how': 'unread'}, {'pid': 2451513, 'started': 288608069, 'how': 'unre ^^^^^^^^^^^^^^^^^^^^^ | File "<snapshot>/scripts/suites/151_veldo_0313_space_run.py", line 647, in follow | raise RuntimeError( | RuntimeError: the run's end is still asleep after 120s on processes that hold the run:
+  SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-end-is-made: the fixture ends the process the command left, at its own last line, and run finished follows: the scratch root is removed and the hold released [None {"held": true, "text": "in use\n", "released": true} ['deferred'] released]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that is refused, whatever its table holds has not read what it carries: the run stays open, its file is there and the hold is held [label_unread [{'pid': 2460095, 'started': 288614079, 'how': 'unread'}, {'pid': 2460099, 'started': 288614096, 'how': 'unread'}, {'pid': 2460111, 'started': 288614096, 'how': 'unread'}]]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 4194304000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+
+  SELFTEST FAIL: WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line still BEGINS with the exact text WARP-0712 gave it, `selftest (PARTIAL, N of M suites): P passed, F failed`, which is now a strict prefix of a line that also carries the elapsed time. So anything that already recognised a partial run still does, and the two selectors print the same shape
+selftest (PARTIAL, 236 of 237 suites): 10703 passed, 36 failed in 4616.31s
+rc=1
+SELFTEST HUNG lines: 0; tracebacks on stderr: 0
+opened-files record: 237 keys (236 suites + shared), 29751 paths in all

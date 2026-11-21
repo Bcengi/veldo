@@ -1,0 +1,49 @@
+# After the fix of the full run's own reds: python3 scripts/selftest.py --suite 14 --suite 101 --suite 107 --suite 102 --suite 151 (this branch)
+  SELFTEST FAIL: WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line still BEGINS with the exact text WARP-0712 gave it, `selftest (PARTIAL, N of M suites): P passed, F failed`, which is now a strict prefix of a line that also carries the elapsed time. So 
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-bt10pr0s/tmp-parent/veldo-agent-qvb1w61m', 'pid': 3297484}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-qvb1w61m', 'veldo-agent-trtwp8l8']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: s); kept privately at /tmp/v210-profile-bt10pr0s/state-home/veldo/borrowed-logins/veldo-agent-trtwp8l8; restore it with: python3 <checkout>/scripts/agent_sandbox.py restore-login /tmp/v
+  SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after the command the census, then one signal, then the outcomes, and the release last [['space_issue', 'space_hold', 'space_admit', 'space_declar
+  SELFTEST FAIL: VELDO-0313 ac1/only-the-runs-own-items: run finished removes the run's own scratch root [deferred None]
+  SELFTEST FAIL: VELDO-0313 supervise/report-loss-end-is-made: the end of that run is made as the follower makes it: run finished is sent, the scratch root is removed and the hold is released [None ['removed'] admitted]
+  SELFTEST FAIL: VELDO-0313 fix4/docker-objects-are-items: the container with the run's label and the one with its compose project name are items of the run, declared by the census with the identity the engine showed [[] None]
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 127 for _2br/no-such-program, and the run's hold is released and its scratch root removed [127 admitted ]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 25165824000, floor 20971520000 (b
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+  14_warp_0717_subset_runner                      26 passed   13.63s
+  101_veldo_0208_landing_reuse                   190 passed  385.42s
+  102_veldo_0210_agent_profile_runtime           230 passed   87.81s
+  107_veldo_0153_identity_push                   120 passed    7.28s
+  151_veldo_0313_space_run                        30 passed   63.01s
+selftest (PARTIAL, 5 of 237 suites): 627 passed, 15 failed in 557.19s
+rc=1
+
+# The same 102 and 151 at the base commit e3451130 (before brief A)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-tk02e5y3/tmp-parent/veldo-agent-0nng__0v', 'pid': 3529750}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-0nng__0v', 'veldo-agent-rolmw2xt']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: the run ended without an exit status); kept privately at /tmp/v210-profile-tk02e5y3/state-home/veldo/borrowed-logins/veldo-agent-rolmw2xt; restore it with: python3 /tmp/v358a-base/scripts/agent_sandbox.py restore-login /tmp/v
+  SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: the hold is released and the wrapper sent run finished [released None]
+  SELFTEST FAIL: VELDO-0313 ac1/build-output-has-item-and-goes: at run finished the build folder and the scratch root are removed, each through its remover [{'scratch': 'deferred', 'build_output': 'removed'} ['.git', '.gitignore', 'notes.txt', 'private', 'tracked.txt']]
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [{"held": true, "released": true} None]
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 0 for exit 0, and the run's hold is released and its scratch root removed [0 admitted ]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 12582912000, floor 20971520000 (b
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+  102_veldo_0210_agent_profile_runtime           230 passed   80.75s
+  151_veldo_0313_space_run                        31 passed   60.27s
+selftest (PARTIAL, 2 of 236 suites): 287 passed, 13 failed in 141.02s
+rc=1
+
+# Suite 157 and the ForkFlag/ForkBarrier suites after the fix
+  58_veldo_0031_claims                             3 passed    3.97s
+  59_veldo_0031_review                             6 passed    3.37s
+  82_veldo_0085_decomposition                     15 passed    3.46s
+  157_veldo_0358_suite_runtime                     7 passed    6.88s
+selftest (PARTIAL, 4 of 237 suites): 61 passed, 0 failed in 17.70s

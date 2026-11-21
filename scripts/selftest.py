@@ -296,10 +296,15 @@ if os.environ.get(OPENED_ENV):
 # row starting or ending (re-armed at every row, so a leg of any length is never ended for being long),
 # and writes every thread's stack before it does. A hung wait or a fired watchdog prints SELFTEST HUNG
 # and every row not reached as SELFTEST NOT RUN; both are red.
-WAITS = _protected("waits", SUITES / "support" / "waits.py")
-WAITS.arm_watchdog()
-if os.environ.get(OPENED_ENV):
-    WAITS.RUNTIME.before_exit.append(_write_opened)
+# A copy of this dispatcher that a suite lays in a fixture tree with no support module beside it (several
+# suites test the dispatcher itself that way) runs without the runtime: no watchdog and no residue rows.
+# In this repository the module is always there, and every converted suite needs it.
+WAITS = None
+if (SUITES / "support" / "waits.py").is_file():
+    WAITS = _protected("waits", SUITES / "support" / "waits.py")
+    WAITS.arm_watchdog()
+    if os.environ.get(OPENED_ENV):
+        WAITS.RUNTIME.before_exit.append(_write_opened)
 
 shared = _protected("shared", SUITES / "shared.py")  # the shared namespace every fragment runs in
 
@@ -318,22 +323,27 @@ for _i, _s in enumerate(RUN):
     # is the namespace it executes in, so an assertion whose SUBJECT is its own file needs this.
     shared.__dict__["__suite_file__"] = str(_p)
     _OPENER[0] = _s["name"]
-    _left_before = WAITS.residue_snapshot()
-    WAITS.begin_suite(_s["name"], _p, [(_n["name"], SUITES / _n["file"]) for _n in RUN[_i + 1:]])
+    if WAITS is not None:
+        _left_before = WAITS.residue_snapshot()
+        WAITS.begin_suite(_s["name"], _p, [(_n["name"], SUITES / _n["file"]) for _n in RUN[_i + 1:]])
     _before, _t = shared.PASS, time.monotonic()
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
     # THE RESIDUE ROW (VELDO-0358, C7): a suite that leaves a thread alive, a child not reaped or a
     # listening socket open fails a row of its own, naming each one, so nothing it left runs into the
     # next suite. Counted apart, so a leg whose suites asserted nothing is still refused below.
-    _left = WAITS.residue(_left_before)
-    shared.expect("residue/%s%s" % (_s["name"], ": " + "; ".join(_left) if _left else ""), not _left)
-    _RESIDUE_ROWS += 1
+    if WAITS is not None:
+        _left = WAITS.residue(_left_before)
+        shared.expect("residue/%s%s" % (_s["name"], ": " + "; ".join(_left) if _left else ""), not _left)
+        _RESIDUE_ROWS += 1
 
 _OPENER[0] = os.path.splitext(MANIFEST["shared"])[0]
-WAITS.disarm_watchdog()
-for _hook in WAITS.RUNTIME.before_exit:
-    _hook()
+if WAITS is not None:
+    WAITS.disarm_watchdog()
+    for _hook in WAITS.RUNTIME.before_exit:
+        _hook()
+elif os.environ.get(OPENED_ENV):
+    _write_opened()
 
 if LEG and shared.PASS + shared.FAIL - _RESIDUE_ROWS == _LEG_FLOOR:
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
