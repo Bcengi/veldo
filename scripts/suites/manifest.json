@@ -2362,6 +2362,11 @@
    "name": "114_veldo_0113_no_autostart",
    "file": "114_veldo_0113_no_autostart.py",
    "regions": "VELDO-0113"
+  },
+  {
+   "name": "115_veldo_0113_work_client",
+   "file": "115_veldo_0113_work_client.py",
+   "regions": "VELDO-0113 work authority boundary"
   }
  ],
  "resource_capacities": {
