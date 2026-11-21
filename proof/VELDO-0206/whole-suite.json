@@ -1,4 +1,5 @@
 {
+ "status_in_fix_round_1": "NOT REPEATED. This is the first build's run at ad8df006, before the dispatcher and the settlement changed in fix round 1. It is kept as the record of that run and proves nothing about the present code.",
  "what": "The whole unit suite (no selector, no leg) under a plan made by the real suite-plan step for this checkout, then the real suite-settle step over its output. It is not the gate: no confinement, no legs, no other stage.",
  "commands": [
   "python3 -I -S scripts/gate_reuse.py suite-plan --root <checkout> --state <state>",

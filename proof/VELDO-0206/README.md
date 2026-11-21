@@ -1,93 +1,185 @@
-# VELDO-0206 build report
+# VELDO-0206 build report, fix round 1
 
 Builder's report, not a review and not a gate result. The canonical gate was not run in this
-build; the lead queues it. Every criterion in manifest.json is pending until then.
+build or in this fix round; the lead queues it. Every criterion in manifest.json is pending until
+then. This round answers the review of a27ec1c4 (verdict FIX, findings 1 to 5).
 
-## What was built
+## What is built
 
-Suite result reuse in the canonical gate, by explicit qualification only.
+Suite result reuse in the canonical gate, by explicit qualification only, with every qualified
+suite run in a process of its own.
 
-- scripts/gate_reuse.py (engine copy identical) gains three authority steps. suite-plan gives
-  every manifest suite one exact key, or the named reason it has none, and looks up an
-  authenticated passing record for each key in the VELDO-0205 store. suite-settle reads the
-  dispatcher's own account back from the unit stage's output, requires a result for every manifest
-  suite, computes every key again, publishes fresh passing results and writes the receipt.
-  suite-stamp puts the receipt's reused count into the stamp's reused.unit.
-- scripts/run_scope.py holds the qualifications (SUITE_REUSE, a literal the authority reads with
-  ast and never imports) and the dispatcher's plan rules. scripts/selftest.py leaves out only what
-  the plan names and prints one account line per suite.
-- scripts/verify.sh plans before the catalog, settles after it and stamps. engine/scripts/verify.sh
-  only drops a caller's plan variable: the generic catalog plans nothing.
+- scripts/gate_reuse.py (engine copy identical) has three authority steps. suite-plan gives every
+  qualified suite one exact key, or the named reason it has none, looks up an authenticated passing
+  record for each key in the VELDO-0205 store, and makes the unit stage's output files.
+  suite-settle reads the dispatcher's account back from the unit stage's output, requires a result
+  for every manifest suite, computes every key again, publishes passing isolated results and writes
+  the receipt. suite-stamp puts the receipt's counts and keys into the stamp's and event's fields.
+- scripts/run_scope.py holds the qualifications (SUITE_REUSE, a literal the authority reads from
+  its own copy with ast and never imports) and the dispatcher's plan rules. scripts/selftest.py
+  starts one process per isolated suite, leaves out what the plan lets it, and prints one account
+  line per suite.
+- scripts/verify.sh plans, hands the plan to the unit stage only, settles and stamps.
 - scripts/suites/157_veldo_0206_suite_reuse.py and finding 206 in scripts/check_teeth_mutations.py.
 
-## No production suite is qualified
+## Finding 1: the design chosen, and why
 
-SUITE_REUSE is empty. Every production suite still runs fresh in every gate and no speedup is
-claimed. The suites share one mutable namespace and many reach host services; a qualification is
-a reviewed statement about one suite's inputs, and none was reviewed in this build. What this
-build delivers is the mechanism, its receipts in every gate, and the tests that it cannot let a
-stale or partial result stand in for a fresh one.
+The review's counterexample was reproduced first on a27ec1c4 with the review's own probe
+(counterexample-at-a27ec1c4.txt): the warm run reuses e and is green, the force-fresh run of the
+same tree is red.
+
+The fix is isolation, not a wider key. A suite observed in the shared namespace can see
+everything every earlier suite left: names, modules, environment, working directory, process
+state. A key could name the earlier suites' files, but what an earlier suite leaves depends on
+that suite's own inputs, and an unqualified suite declares none. A key that did cover it would
+need every earlier suite qualified, would miss on any change to any of them, and would still be
+wrong the other way round: leaving a suite out removes its side effects from the suites after it.
+So the key cannot be made complete for an observation made in the shared namespace.
+
+Instead a qualified suite never sees that state:
+
+- In every gate, reusing or not, force fresh or not, a qualified suite runs in a process of its
+  own. The dispatcher starts these processes before any suite has run in it, each with the
+  environment and working directory the dispatcher itself was started with. The process holds the
+  shared preamble and the suite's prerequisite closure in manifest order, and nothing else.
+- The suite's result in the gate is that process's result. A record is published only from such a
+  run and stands in only for such a run, so a reused pass and a fresh run of the same tree are the
+  same observation. A record of a shared-namespace observation is not a valid record
+  (scope must be "isolated"; key, result and plan schemas moved to v2, so nothing stored by the
+  earlier build can hit).
+- Which suites are isolated depends on the tree and the authority only, never on the store or on
+  force fresh. A suite an unqualified suite lists as its prerequisite stays in the shared
+  namespace and has no key (prerequisite_of_shared). If any unqualified suite's prerequisites are
+  not on record, no suite has a key (dependents_unknown).
+- A qualification carries one more reviewed statement, side_effects "none": the suite leaves
+  nothing outside its own process that another suite reads.
+- The settlement publishes nothing observed in the shared namespace, and a qualified suite that
+  ran there behind a passing stage is RED on its own.
+
+The counterexample is row closure/state-left-by-an-earlier-suite-cannot-hide-a-failure: e fails
+in the first run, after d changes, and under force fresh alike, and nothing is ever stored for it.
+The same row holds the converse (d sees nothing the isolated a left) and process state (t sees
+neither d's names nor d's change to the environment). Falsifier
+suite206-qualified-suite-runs-in-shared-namespace turns it red.
+
+What isolation does not cover, stated plainly: files and host state outside the repository that
+one suite writes and another reads. Declared inputs are in the key and are read again at
+settlement; anything else is the qualification's reviewed statements (non_file_inputs,
+side_effects), as in VELDO-0205. No production suite is qualified, so nobody has made those
+statements for a real suite yet.
+
+## Findings 2 to 5 and the notes
+
+2. Qualifications come from the authority. gate_reuse.suite_registry reads scripts/run_scope.py
+   beside the gate_reuse.py that runs, never the candidate's. A candidate that adds an entry or
+   declares fewer inputs changes nothing until it lands. Row closure/candidate-cannot-qualify-itself,
+   falsifier suite206-candidate-qualifies-itself.
+3. The plan is the unit stage's alone. verify.sh no longer exports it: veldo_planned sets it for
+   the serial unit stage, or for the scheduler under the graph. The scheduler copies its
+   environment to every node and is outside this footprint, so the plan is also bound to the unit
+   stage's output files: the plan step makes unit.log, unit.confined.log and unit.unconfined.log
+   and names their device and inode, and a dispatcher whose standard output is none of them honors
+   nothing. Rows pass-only/plan-reaches-only-the-unit-stage and
+   receipts/gate-hands-the-plan-to-the-unit-stage-only; falsifiers
+   suite206-plan-exported-to-every-stage and suite206-plan-honored-on-any-output.
+4. The settlement checks prerequisites. An isolated run must have executed exactly the suite's
+   closure, in order, all fresh; otherwise it is RED and nothing is stored. A shared-namespace
+   suite beside a prerequisite that was left out or ran only in its own process is RED. Row
+   receipts/fresh-suite-without-its-prerequisites-is-red-and-not-stored; falsifiers
+   suite206-isolated-closure-not-settled and suite206-shared-prerequisite-not-settled.
+5. The keys are in the gate's receipts. The stamp and the gate event carry a suites field: the
+   registered, fresh, reused, not_run and qualified counts, and for every suite that has a key the
+   key beside its source. An unqualified suite has no key and is in the counts. Row
+   receipts/gate-stamp-and-event-carry-exact-keys-and-counts; falsifier
+   suite206-stamp-drops-suite-keys. The full per-suite receipt is still a file of the run, printed
+   line by line.
+- Untested branch the review named (no plan could be made): row
+  receipts/gate-is-red-when-no-plan-could-be-made, falsifier suite206-unplanned-gate-not-settled.
+- Where qualifications live: unchanged, a literal in protected scripts/run_scope.py, now read from
+  the authority. The review's better home (a dedicated protected file) needs a new file and a
+  policy entry, both outside this footprint; it belongs with the first real qualification.
+
+## Assertions changed in suite 157, and why
+
+No row was removed. These expectations changed because the execution model changed:
+
+- Traces. A run with nothing on record executes a, a, b, c, e, t, then d: isolated suites first, a
+  twice (its own run, and as b's prerequisite in b's process). It was a, b, c, d, e, t.
+- A fresh dependent beside a reusable prerequisite. b runs fresh and executes a in b's process; a
+  itself stays reused (reason hit). The reason prerequisite_of_fresh no longer exists. Mixed
+  counts are 2 fresh, 4 reused, 1 published (were 3, 3, 2).
+- Force fresh. The qualified suites still have keys and still run isolated; the store is neither
+  read nor written. Reasons are force_fresh for the five and unqualified for d, qualified is 5
+  (was 0 with every reason force_fresh).
+- The stamp fields always carry suites, so the cold stamp is no longer the unchanged text.
+- A run ended early in t leaves d not run as well, because the shared namespace runs last.
+- A reordered full run with qualified suites is now a red settlement (they ran in the shared
+  namespace). It stored and reused before.
+- The run that is ended early is synchronized through a FIFO the suite opens, because the
+  dispatcher's output is now a file, not a pipe. Still no sleep and no elapsed time.
 
 ## Decisions the reviewer and the lead should judge
 
-1. Where qualifications live. The footprint allows no new file, and manifest.json is not a
-   protected path, so qualifications are a literal in scripts/run_scope.py, which policy protects
-   at floor high. Qualifying a suite is therefore an owner-approved change. Consequence: changing
-   any qualification changes the dispatcher's file, so every qualified suite misses once.
-2. Who decides. The confined dispatcher cannot open the store, so the authority plans and settles
-   around the stage and hands the dispatcher only the names it may leave out, in
-   VELDO_SUITE_REUSE, bound to one root and one run's nonce. The dispatcher removes the variable
-   from its environment, so no process a suite starts inherits it.
-3. What a key holds. For the suite and every member of its prerequisite closure
-   (scripts/suites/requires.json): the suite file, its manifest entry, its qualification and the
-   content, names and modes of every declared input. Beside them the shared preamble, the two
-   dispatcher files, the authority identity, the authority's unconfined list, the declared runtime
-   trees (they must cover the interpreter, its library, sh, bash and git), the named environment
-   values and the root. A qualification also pins the digest of the code it reviewed; an edit to
-   the suite, a prerequisite or the shared preamble is an unknown closure until reviewed again.
-4. Prerequisites. A suite that runs fresh has its whole closure executed first, a reusable
-   prerequisite included; that one is then reported fresh with reason prerequisite_of_fresh.
-5. Never reused: a selector run, a reordered run, the unconfined leg, a suite the unconfined list
-   names (whole or by rows) or that depends on one, a run at another root (the integration stage's
-   copy, an unconfined leg's snapshot).
-6. Landing. .veldo/reuse_evidence.py (outside this footprint, unchanged) refuses any stamp whose
-   reused.unit is above 0, so a gate that reused a suite cannot land. VELDO_GATE_FORCE_FRESH=1
-   reads and writes no suite record. Suite 157 asserts both.
-7. The receipt. Like the mutation receipt it is a file of the run (a private temporary folder),
-   printed line by line in the gate output: one line per suite with source, key and reason, and
-   one count line. Only reused.unit enters the stamp and the event; adding a stamp field would
-   have needed .veldo/reuse_evidence.py and run_scope's stamp shape to change together.
-8. A new way to be RED. With the dispatcher as unit stage, a gate is RED when the settlement
-   cannot account for every manifest suite behind a passing stage, when no plan could be made, or
-   when a reused result is not the plan's. With no legs the serial unit stage's output is written
-   to a file and printed when the stage ends, not streamed.
-9. Trust boundary, as VELDO-0205 states it: the per-suite result is the dispatcher's own account,
-   candidate code, exactly as its exit status is. A suite that forged another suite's line could
-   publish a false record for that suite's key. Review of the candidate is the safeguard; this
-   build adds none.
+1. Force fresh keeps isolation. Landing gates therefore run a qualified suite the same way every
+   other gate does. The alternative (force fresh runs everything in the shared namespace) would
+   let a non-landing green and a landing red disagree about the same tree.
+2. The output binding under the graph is not driven by a real scheduler here. It rests on
+   gate_schedule.py opening `directory / (name + '.log')` for writing without replacing the file,
+   which the graph row checks by text. If that changes (VELDO-0358 touches the file), a dispatcher
+   finds no bound output, runs every suite in the shared namespace, and the settlement is RED once
+   any suite is qualified. With no qualified suite the plan names nothing and nothing changes.
+3. An isolated suite's counts come back to the dispatcher in a temporary file of the run; the
+   dispatcher waits for the process to exit and for nothing else, with no deadline of its own.
+4. The aggregate line counts an isolated suite's own rows once. Rows of its prerequisites asserted
+   again inside its process are not added; a failure there is the suite's failure.
+5. Stamp size: the suites field grows by about 90 bytes per qualified suite, in the stamp and in
+   each gate event.
+6. Trust boundary, unchanged from VELDO-0205: the dispatcher's account is candidate code, as its
+   exit status is.
+
+## No production suite is qualified
+
+SUITE_REUSE is empty. Every production suite runs in the shared namespace in every gate, no
+process is started for any suite, and no speedup is claimed.
 
 ## Outside the footprint
 
 - proof/WARP-0716/crossing-state.md is a derived survey of scripts/selftest.py that
-  scripts/check_generated.sh holds fresh. The dispatcher changed, so it was regenerated.
-- docs/ were not changed. The operator-facing description of the gate does not yet mention suite
-  reuse; with no qualified suite nothing an operator does changes.
-- .veldo/policy.yaml: nothing changed. scripts/suites/manifest.json stays unprotected, which is
-  why the qualifications are not in it.
+  scripts/check_generated.sh holds fresh; it was regenerated again.
+- scripts/gate_schedule.py and .gitignore were not changed, which is why finding 3 is closed by
+  binding the plan to the output files and finding 5 by fields in the stamp, not by a new file.
+- docs/ were not changed.
 
-## What was run
+## What was run in this round
 
-See targeted-tests.json, teeth.json and whole-suite.json. Not run: scripts/verify.sh, the
-integration stage (scripts/check_first_use.py), the mutation stage beyond finding 206, and the
-gate under the graph scheduler. The graph path is covered by a row that settles scheduler-shaped
-node output with the gate's own command and by reading scripts/gate_schedule.py; no scheduler ran.
+All through the host heavy-run wrapper, in one slot, at 6de07820 with a clean tree before and after.
 
-## The whole-suite run was red, and why that is not this change
+| run | result |
+|---|---|
+| selftest --suite 157_veldo_0206_suite_reuse | 91 passed, 0 failed, exit=2 |
+| selftest --suite 99_veldo_0205_reuse | 55 passed, 0 failed, exit=2 |
+| selftest --suite 101_veldo_0208_landing_reuse | 216 passed, 0 failed, exit=2 |
+| selftest --suite 14_warp_0717_subset_runner | 53 passed, 0 failed, exit=2 |
+| selftest --suite 113_veldo_0220_gate_host | 29 passed, 0 failed, exit=2 |
+| selftest --suite 114_veldo_0220_gate_scope | 27 passed, 0 failed, exit=2 |
+| selftest --suite 114_veldo_0216_concurrent_stages | 52 passed, 0 failed, exit=2 |
+| selftest --suite 153_veldo_0309_gate_space | 50 passed, 0 failed, exit=2 |
+| selftest --suite 27_veldo_0010_evidence_provenance | 52 passed, 0 failed, exit=2 |
+| check_teeth_mutations.py --finding 206 --jobs 4 | mutations: passed registered=32 executed=32 reused=0 rejected=32, exit 0 |
+| the review's probe on a27ec1c4, before the fix | warm run reuses e and exits 0; forced run exits 1 |
 
-The whole unit suite under a real plan ended 10556 passed, 16 failed: 7 rows of
-102_veldo_0210_agent_profile_runtime and 9 rows of 151_veldo_0313_space_run, on a host shared with
-other builders. The settlement accounted for all 237 suites as fresh and reported the stage failed,
-as it should. Suite 102 alone passes (263 passed, 0 failed). Suite 151 alone fails 9 rows on this
-branch and 7 rows on the base commit 23318512 with none of this ticket's changes, a different set
-each time. Those failures predate this build and were not investigated here. No whole-suite pass is
-claimed.
+A selected run exits 2 when green, by design. For each of the 32 falsifiers the baseline and the
+no-op run fail no row and the mutant fails every row the case names; teeth.json lists them. The 22
+cases of the first build are all still registered: eight had their target text moved to the new
+code (dispatcher-skips-prerequisite, partial-run-published, partial-record-accepted,
+unfinished-run-published, failed-run-published, selector-run-reused, force-fresh-ignored,
+unauthenticated-reuse-accepted). Ten are new, one or more per finding.
+
+Fast checks: lint, template sync, generated, personal setup (0 findings) and the four boundary
+checks pass.
+
+Not run: scripts/verify.sh, the integration stage, the mutation stage beyond finding 206, the gate
+under the graph scheduler, and the whole unit suite. whole-suite.json and
+whole-suite-settlement.txt are from the first build (ad8df006) and were not repeated: with no
+qualified suite the dispatcher's path for a production run is the shared namespace as before, but
+that is an argument, not a run.
