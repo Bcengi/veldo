@@ -365,6 +365,8 @@ HOLD_STATES = ('waiting', 'advised', 'admitted', 'released')
 HOLD_ANSWERS = ('waiting', 'advised', 'admitted')
 HOLD_SOURCES = ('declared', 'measured', 'default')
 REASON_FIELDS = ('pool', 'need', 'free', 'held', 'floor')
+# How many times a freeing command is sent while only waiting holds move under it (Ledger._send).
+FREEING_ATTEMPTS = 8
 RECONCILE_STARTS = ('service_start', 'console', 'cli')
 RECONCILE_COUNTS = ('matched', 'adopted', 'reported', 'gone', 'completed')
 
@@ -1106,48 +1108,85 @@ class Ledger:
 
     def _freed_changes(self, pools, but=None):
         # Read inside the freeing transaction. A hold added or changed since _send read
-        # its version makes the store refuse stale_version, never silently miss a waiter.
+        # its version makes the store refuse stale_version, never silently miss a waiter;
+        # _send then reads the waiters again and sends the command again.
         return {hold_id(identity): {'kind': HOLD_KIND, 'data': dict(record, freed=True)}
                 for identity, record in self.holds().items()
                 if hold_id(identity) != but and record['state'] == 'waiting'
                 and pools.intersection(record['needs'])}
 
+    def _waiter_versions(self, pools, versions):
+        """The versions a freeing command commits against: the caller's own, then every hold waiting on
+        the pools at the version it has now. The caller's own are never replaced."""
+        versions = dict(versions)
+        for identity, record in self.holds().items():
+            if record['state'] == 'waiting' and pools.intersection(record['needs']):
+                entity = hold_id(identity)
+                versions.setdefault(entity, self._row(entity, HOLD_KIND)[0])
+        return versions
+
+    def _own_current(self, versions):
+        """Whether every version the caller named is still the stored one. Read after a stale_version
+        refusal of a freeing command: when they all are, the version that moved is a waiter's."""
+        for entity, expected in versions.items():
+            row = self.conn.execute('SELECT version FROM entities WHERE id=?', (entity,)).fetchone()
+            if (row[0] if row else 0) != expected:
+                return False
+        return True
+
     def _send(self, operation, parameters, versions, principal, command_id, about, nonce=None):
-        pools = self._freeing_pools(operation, parameters)
-        if pools:
-            versions = dict(versions)
-            for identity, record in self.holds().items():
-                if record['state'] == 'waiting' and pools.intersection(record['needs']):
-                    entity = hold_id(identity)
-                    versions.setdefault(entity, self._row(entity, HOLD_KIND)[0])
+        """Send one command to the store.
+
+        A FREEING COMMAND IS NEVER REFUSED BECAUSE A WAITER MOVED (VELDO-0334 fix round 1). A release, a
+        removed outcome with freed bytes and a reconcile also write the mark on every hold waiting on
+        their pools, so they commit against those holds' versions, read here before the transaction. A
+        hold that another writer changed, or placed, between that read and the commit makes the store
+        refuse the whole command stale_version with nothing written. That is contention on this
+        ledger's own read and no answer about the caller's entity: the waiters are read again and the
+        command is sent again, compare-and-swap, at most FREEING_ATTEMPTS times. Each refused attempt
+        is one committed write of another writer, so no clock is read and nothing waits. A
+        stale_version while one of the caller's own versions moved is the caller's answer and is
+        never sent again. The command id and the nonce the caller gave are kept: a refused attempt
+        committed nothing, so neither was consumed."""
+        own = dict(versions)
         packet = self._packet
         if packet is not None and principal == packet['principal'] and operation == packet['operation']:
             # The command of a signed packet: its record is written in this transaction, against the
             # version of a nonce nobody has seen, and the store consumes the packet's own nonce.
             parameters = dict(parameters, packet=dict(packet))
-            versions = dict(versions, **{packet_id(packet['principal'], packet['nonce']): 0})
+            own[packet_id(packet['principal'], packet['nonce'])] = 0
             nonce = packet['nonce']
-        command = {'command_id': command_id or 'space:' + uuid.uuid4().hex,
-                   'principal': principal or self.journal_signer, 'operation': operation,
-                   'parameters': parameters, 'expected_versions': versions, 'artifact_digests': [],
-                   'nonce': nonce or uuid.uuid4().hex}
-        observation = dict(about, schema=SCHEMA, operation=operation, command_id=command['command_id'],
-                           principal=command['principal'])
-        self._outer = command
-        try:
-            self.permit(command['principal'], operation, parameters)
-            committed = self.store.execute(self.conn, command, self.journal_signer, self.sign,
-                                           self.authority_generation)
-            result = {'ok': True, 'seq': committed['seq'], 'replayed': committed['replayed']}
-        except Refused as refusal:
-            result = {'ok': False, 'reason': refusal.code, 'detail': refusal.detail}
-        except self.store.StoreRefused as refusal:
-            result = {'ok': False, 'reason': refusal.code, 'detail': refusal.detail}
-        except sqlite3.Error as error:
-            result = {'ok': False, 'reason': 'unavailable_service:space_ledger', 'detail': str(error)}
-        finally:
-            self._outer = None
-        return self._observed(result, observation)
+        attempts = 0
+        while True:
+            attempts += 1
+            pools = self._freeing_pools(operation, parameters)
+            versions = self._waiter_versions(pools, own) if pools else own
+            command = {'command_id': command_id or 'space:' + uuid.uuid4().hex,
+                       'principal': principal or self.journal_signer, 'operation': operation,
+                       'parameters': parameters, 'expected_versions': versions, 'artifact_digests': [],
+                       'nonce': nonce or uuid.uuid4().hex}
+            observation = dict(about, schema=SCHEMA, operation=operation, command_id=command['command_id'],
+                               principal=command['principal'])
+            self._outer = command
+            try:
+                self.permit(command['principal'], operation, parameters)
+                committed = self.store.execute(self.conn, command, self.journal_signer, self.sign,
+                                               self.authority_generation)
+                result = {'ok': True, 'seq': committed['seq'], 'replayed': committed['replayed']}
+            except Refused as refusal:
+                result = {'ok': False, 'reason': refusal.code, 'detail': refusal.detail}
+            except self.store.StoreRefused as refusal:
+                result = {'ok': False, 'reason': refusal.code, 'detail': refusal.detail}
+                if (pools and refusal.code == 'stale_version' and attempts < FREEING_ATTEMPTS
+                        and self._own_current(own)):
+                    continue
+            except sqlite3.Error as error:
+                result = {'ok': False, 'reason': 'unavailable_service:space_ledger', 'detail': str(error)}
+            finally:
+                self._outer = None
+            if attempts > 1:
+                observation['attempts'] = attempts
+            return self._observed(result, observation)
 
     def _observed(self, result, observation):
         outcome = 'accepted' if result['ok'] else 'refused'

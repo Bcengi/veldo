@@ -16996,6 +16996,29 @@ def cases():
         "        version = self._row(entity, HOLD_KIND)[0]  # defect: clear a newer freeing write\n",
         ['space334/race/freeing-during-judgment'])
 
+    # VELDO-0334 fix round 1: a freeing command is sent again when only a waiter moved (F1), a refused
+    # retry Signal still gets the hold judged (F2), and a released hold's older mark wakes nobody (F3).
+    add(334, 'space334-freeing-without-resend', space334, 'control_space.py',
+        "                if (pools and refusal.code == 'stale_version' and attempts < FREEING_ATTEMPTS\n",
+        "                if (False and refusal.code == 'stale_version' and attempts < FREEING_ATTEMPTS\n",
+        ['space334/race/release-resent', 'space334/race/removal-resent', 'space334/race/reconcile-resent'])
+    add(334, 'space334-resend-when-own-version-moved', space334, 'control_space.py',
+        "                        and self._own_current(own)):\n",
+        "                        ):  # defect: the caller's own stale version is sent again\n",
+        ['space334/race/own-version-refused'])
+    add(334, 'space334-resend-unbounded', space334, 'control_space.py',
+        "                if (pools and refusal.code == 'stale_version' and attempts < FREEING_ATTEMPTS\n",
+        "                if (pools and refusal.code == 'stale_version'  # defect: no bound on the attempts\n",
+        ['space334/race/resend-bounded'])
+    add(334, 'space334-signal-refusal-leaves-waiting', space334, 'control_space_admission.py',
+        "        retry = None if sent['ok'] else {'reason': sent['reason'], 'detail': sent.get('detail', '')}\n",
+        "        if not sent['ok']:\n            return sent  # defect: a refused retry leaves the reserved wait\n",
+        ['space334/report/signal-refused-advised'])
+    add(334, 'space334-wake-for-released-mark', space334, 'control_service.py',
+        "                        and (entry.get('data') or {}).get('state') == 'waiting'\n",
+        "",
+        ['space334/ac3/released-mark-no-wake'])
+
     # VELDO-0316: each stated falsifier reaches a behavioral row through production copies.
     space316 = '157_veldo_0316_space_admission.py'
     add(316, 'space316-ignore-floor', space316, 'control_space_admission.py',

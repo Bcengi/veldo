@@ -2752,9 +2752,11 @@ class Service:
             head = self.watermark()
             records = self.space_committed(head) if head > self.space_seen else []
             for record in records:
-                # The freeing transaction journals its marked holds, including worker writes.
+                # The freeing transaction journals its marked holds, including worker writes. Only a
+                # waiting hold is woken for: a released hold may still carry an older mark.
                 if self.loop is not None and any(
                         entry.get('kind') == 'space_hold' and (entry.get('data') or {}).get('freed') is True
+                        and (entry.get('data') or {}).get('state') == 'waiting'
                         for entry in (record.get('transition') or {}).values()):
                     self.loop.wake('space', record['seq'])
                 for found in self.space_events([record]):

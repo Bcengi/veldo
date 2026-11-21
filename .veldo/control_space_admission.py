@@ -24,7 +24,10 @@ again when it writes it, and refuses advised for a hold of a scope in act mode. 
 can be in different modes; the numbers are the same for both.
 
 Admission requested is sent once per hold. A recorded wait is read again only after a freeing
-ledger write sets its mark (VELDO-0334). Runner preparation and need selection are VELDO-0316.
+ledger write sets its mark (VELDO-0334). When the ledger refuses that one Signal, nothing was
+removed and the hold is judged all the same, so a run of a scope in report mode is advised and
+never left on the reserved wait; the answer then names the refusal as retry_refused.
+Runner preparation and need selection are VELDO-0316.
 `free(pool)` is given: it returns the free bytes of one
 pool record at the moment of the call. No clock is read here.
 
@@ -92,6 +95,7 @@ def _admit(ledger, identity, free, principal, command_id, given):
     scope = hold.get('scope')
     version = ledger._row('space:hold:' + identity, 'space_hold')[0]
     reason = judge(ledger, identity, free)
+    retry = None
     if reason is not None and not hold['retry_asked']:
         # Reserve this hold's one request before Signal can commit any removal outcomes.
         asked = ledger.admit(identity, 'waiting', reason, retry_asked=True, principal=principal,
@@ -103,14 +107,20 @@ def _admit(ledger, identity, free, principal, command_id, given):
         given.setdefault('remover', organ('control_space_remove'))
         sent = organ('control_space_signal').signal(
             ledger, 'admission_requested', {'pool': reason['pool']}, free=free, **given)
-        if not sent['ok']:
-            return sent
+        # A refused retry removed nothing, and the hold is still judged: the reservation above left it
+        # waiting, and a run of a scope in report mode is advised, never left waiting (fix round 1).
+        retry = None if sent['ok'] else {'reason': sent['reason'], 'detail': sent.get('detail', '')}
         version = ledger._row('space:hold:' + identity, 'space_hold')[0]
         reason = judge(ledger, identity, free)
     answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
     result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id,
                           expected_version=version)
-    return dict(result, answer=answer, reason=reason) if result['ok'] else result
+    if not result['ok']:
+        return result
+    result = dict(result, answer=answer, reason=reason)
+    if retry is not None:
+        result['retry_refused'] = retry
+    return result
 
 
 def measured(ledger, dispatch_id):

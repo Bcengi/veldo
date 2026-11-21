@@ -94,3 +94,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-20: implemented on VELDO-0316 with registered falsifiers and proof under proof/VELDO-0334/.
   Signal joins the footprint for the pool retry event; the existing ticket-ending call-site assertion
   includes worker journal hints. Status remains ready pending the lead gate and independent review.
+
+- 2026-11-21: fix round 1 after the independent review (verdict FIX, three findings). F1: a release,
+  a removed outcome with freed bytes and a reconcile were refused stale_version when a waiting hold on
+  their pool was changed or placed between the ledger's read of the waiters and the commit. The ledger
+  now reads the waiters again and sends the command again, compare-and-swap on the store's versions, a
+  bounded number of attempts and no clock; a moved version of the caller's own entity is still the
+  caller's refusal. F2: a refused admission requested Signal no longer leaves a report-mode hold on the
+  reserved wait; the hold is judged and its scope's answer written. F3: the space wake is raised only
+  for a waiting hold that carries the mark, never for a released hold's older mark. Each has rows in
+  suite 158 and a registered falsifier. Status remains ready pending the lead gate and a fresh review.
