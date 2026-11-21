@@ -2316,7 +2316,8 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
                 scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
-            # Without a descriptor to inherit the call is what it always was.
+            # Without a descriptor to inherit the call is what it always was: a stand-in a suite installs
+            # takes the first seven (VELDO-0358).
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop,
                                    **({'inherit': tuple(inherit)} if inherit else {}))
         except Interrupted:
