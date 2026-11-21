@@ -24,7 +24,7 @@ exit=2 is a partial run that passed; a partial run never exits 0.
 
 Light gate checks on the final code:
 exit 0 :: bash scripts/check_lint.sh :: lint: pass (1247 python, 40 shell, 2.62s)
-exit 1 :: bash scripts/check_generated.sh :: generated: pass (scripts/suites/requires.json)
+exit 0 :: bash scripts/check_generated.sh :: generated: pass (after proof/WARP-0716/crossing-state.md was regenerated for the final scripts/selftest.py; it was stale, exit 1, before that)
 exit 0 :: python3 scripts/check_personal_setup.py :: personal setup: 0 finding(s)
 exit 0 :: bash scripts/check_template_sync.sh :: template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
 exit 0 :: python3 scripts/check_space_boundary.py :: Space boundary: pass

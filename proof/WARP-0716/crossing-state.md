@@ -46,8 +46,8 @@ the one obstructing region a PRIVATE validator instance, which removed the obstr
 had named, and the published verdict stayed NOT_FEASIBLE while the file measured
 FEASIBLE_WITH_PREPARATION. Nothing went red, because a prose warning is not a check.
 
-Measured from: `scripts/selftest.py`, 364 lines
-Content digest: sha256 de833ed3c541de0e7699f5ac6f7be1c88481f0c0d73d736685c7caf4cc141023
+Measured from: `scripts/selftest.py`, 370 lines
+Content digest: sha256 65166353f1434252e1d8d311aacd0c87b6b2ff2362f5fe235f3641946f15e273
 
 WHY A DIGEST AND NOT A COMMIT. The line above names the exact bytes these figures were read off. A
 commit id cannot do that job in a GENERATED file: it would go stale the moment anything else in
@@ -60,7 +60,7 @@ Reproduce: `python3 scripts/suite_survey.py --target scripts/selftest.py`
 Machine-readable: the same command with `--json`. Finest partition: `--partition statement`.
 Regenerate: `python3 scripts/suite_survey.py --emit-report`, which is what the gate runs.
 
-Target: 364 lines, 58 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
+Target: 370 lines, 58 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
 
 ## Verdict
 
@@ -121,7 +121,7 @@ Every row here is emitted from the measurement. None of them is typed.
 
 | measure | value |
 |---|---|
-| Target lines | 364 |
+| Target lines | 370 |
 | Crossing names | 0 |
 | Crossing read sites | 0 |
 | Regions (marker partition) | 1 |
