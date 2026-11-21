@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -901 +901 @@
+-                if bound.get(command, row[4:])[1] != row[5]:
++                if False:  # defect: a command already bound elsewhere is accepted

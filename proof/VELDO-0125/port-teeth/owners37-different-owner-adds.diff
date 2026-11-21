@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -906 +906 @@
+-                if (prior[2] == row[2] and prior[5] == row[5]
++                if (prior[5] == row[5]

@@ -1,0 +1,5 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -861 +861 @@
+-            builtin = sorted(set(commands) & GENERIC_OPERATIONS)
++            builtin = []

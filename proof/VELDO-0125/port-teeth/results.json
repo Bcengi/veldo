@@ -1,0 +1,127 @@
+{
+  "schema": "veldo.port-mutation-diagnostics/v1",
+  "scope": "Selected diagnostic record; not a canonical gate verdict or reusable authority receipt.",
+  "status": "passed",
+  "tested_commit": "2bf3431a",
+  "registered": 5,
+  "executed": 5,
+  "rejected": 5,
+  "force_fresh": true,
+  "surviving_workers": 0,
+  "elapsed": 228.14875267306343,
+  "harness": "external host_heavy.sh",
+  "coordinator": "check_gate_mutations.run_stage",
+  "parallel": 2,
+  "drivers": [
+    "check_teeth_mutations.py"
+  ],
+  "leg": "gate_legs.mutation_leg()",
+  "declaration": "sha256:d8ef688c109305753905566d4a7ec3a98d42c49e5323f3be8602adec2026e0ce",
+  "unconfined_cases": [
+    "check_teeth_mutations.py:loop154-periodic-pass",
+    "check_teeth_mutations.py:retire-no-sweep-on-wait"
+  ],
+  "input_digest": "e297be33c9399085aa13128b8fb05861899845cca7616b7da906a8bed93290fe",
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "source_receipt_sha256": "sha256:7c30e30a831aed622aa7249203560b6bef6380219bb3a1c03676e048d42693eb",
+  "cases": [
+    {
+      "name": "owners37-different-owner-adds",
+      "suite": "59_veldo_0037_aliases.py",
+      "rows": [
+        "owners/different-owner/kinds",
+        "owners/different-owner/prefixes"
+      ],
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "28e779ac8f383d09ec9693e8f86be647d7806d7bdc2fa07a1c687eea8da77d9b",
+      "source": "fresh",
+      "baseline_count": 79,
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "owners/different-owner/kinds": [
+          false
+        ],
+        "owners/different-owner/prefixes": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "owners37-bound-command-added",
+      "suite": "59_veldo_0037_aliases.py",
+      "rows": [
+        "owners/bound-elsewhere/kinds",
+        "owners/bound-elsewhere/prefixes"
+      ],
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "c7e2be42ce2a050b619ded1779a0cae7d8ebef77bfde1a8de52dd22d4dfbffea",
+      "source": "fresh",
+      "baseline_count": 79,
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "owners/bound-elsewhere/kinds": [
+          false
+        ],
+        "owners/bound-elsewhere/prefixes": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "retire-no-sweep-on-wait",
+      "suite": "67_veldo_0041_heartbeat.py",
+      "rows": [
+        "retirement/live-descendant"
+      ],
+      "old_digest": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+      "new_digest": "a201c428458254d8080a5d8fe95871188dc83cbd204d67fa2a2c76e3fb70e7be",
+      "source": "fresh",
+      "baseline_count": 49,
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "retirement/live-descendant": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "owners-may-name-generic-commands",
+      "suite": "59_veldo_0037_aliases.py",
+      "rows": [
+        "aliases/owned-by-code-not-name"
+      ],
+      "old_digest": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+      "new_digest": "381f726fd0dcedfea0315f287b6ec366e511a50c0c9ad3cfec913439a23ea3fe",
+      "source": "fresh",
+      "baseline_count": 79,
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "aliases/owned-by-code-not-name": [
+          false
+        ]
+      }
+    },
+    {
+      "name": "loop154-periodic-pass",
+      "suite": "83_veldo_0154_factory_loop.py",
+      "rows": [
+        "loop/no-other-timer"
+      ],
+      "old_digest": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+      "new_digest": "6352cb47f48d3ba11b6202973253abf4f73975768af3bdb5c3b7422857554e9c",
+      "source": "fresh",
+      "baseline_count": 40,
+      "baseline_failures": [],
+      "noop_failures": [],
+      "mutant_targets": {
+        "loop/no-other-timer": [
+          false
+        ]
+      }
+    }
+  ]
+}
