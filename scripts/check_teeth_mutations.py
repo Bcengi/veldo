@@ -18042,12 +18042,12 @@ def cases():
             "            if False:  # defect: a claim is kept whether or not the authority saw the file opened\n",
             ['leg/record-taken-by-the-authority'])
     load358('opened358-candidate-record-read', 'verify.sh',
-            '  if [ -s "$VELDO_OPENED_RECORD" ]; then\n',
+            '  if [ -s "${VELDO_OPENED_RECORD:-}" ]; then\n',
             '  set -- --opened "$VELDO_OUT/opened_files.json"  # defect: the leg reads what is beside the stamp\n'
             '  if false; then\n',
             ['leg/record-taken-by-the-authority'])
     load358('opened358-unit-not-taken', 'verify.sh',
-            '    _veldo_take=(); [ "$1" != unit ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")\n',
+            '    _veldo_take=(); [ "$1" != unit ] || [ -z "${VELDO_OPENED_RECORD:-}" ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")\n',
             '    _veldo_take=()  # defect: the unit stage takes no opened-files record\n',
             ['leg/record-taken-by-the-authority'])
     load358('opened358-tree-drops-ledger', 'agent_sandbox.py',
