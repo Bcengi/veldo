@@ -185,6 +185,12 @@ for _site, _prefix in ((('engine/scripts/check_gate_mutations.py', 'run_change_s
     REVIEWED[_site] = ('Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree; pending '
                        'review with design 6.10.')
 
+# VELDO-0125 intent port: this Mac receiver has no local space ledger.
+REVIEWED[('engine/.veldo/control_worker.py', 'run')] = (
+    'Removes only the admitted Mac clone, scratch and run temp after retained references and '
+    'observed termination plus empty coalition; failed cleanup keeps the signed remote hold. '
+    'Pending review with design 6.10.')
+
 
 def canonical(path):
     path = str(path)
