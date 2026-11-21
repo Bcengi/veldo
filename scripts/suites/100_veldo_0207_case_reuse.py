@@ -61,7 +61,8 @@ expect('fixture target', namespace['value'] == 1)
                 entry['proposal'] = {'runs': [{'mode': mode, 'exit': 0, 'reads': 'same', 'trace': 't%d' % index,
                                                'observation': 'seen', 'non_file': []}
                                               for index, mode in enumerate(C.TRACED_RUNS)],
-                                     'gate_observation': 'seen'}
+                                     'gate_observation': 'seen', 'inputs': 'traced-inputs',
+                                     'gate_receipt': {'status': 'passed', 'input_digest': 'traced-inputs'}}
                 entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
                 record['cases'][name] = {'declaration': C.declaration_digest(entry),
                                          'traces': [r['trace'] for r in entry['proposal']['runs']]}
@@ -449,6 +450,38 @@ def _v217_traced():
                not failures and classes == {'remote': ['network_peer'], 'bus': ['user_bus'],
                                             'host-socket': ['host_socket'], 'host-loopback': ['unbound_loopback'],
                                             'loopback-only': []})
+
+        # Review F2, real strace: daemon threads still blocked in accept on the program's own loopback
+        # and abstract sockets when it exits. The trace is whole and shows no class. The program exits
+        # only once the kernel shows each thread inside accept4 (its /proc syscall entry): that state
+        # is the synchronization, and the 120 s bound is only a hang detector.
+        accept4 = {'x86_64': 288, 'aarch64': 242}.get(os.uname().machine)
+        program = ("import os, socket, threading, time\n"
+                   "server = socket.create_server(('127.0.0.1', 0))\n"
+                   "own = socket.socket(socket.AF_UNIX); own.bind('\\0v217-accept-' + str(os.getpid())); own.listen()\n"
+                   "tids = []\n"
+                   "def serve(sock):\n    tids.append(threading.get_native_id()); sock.accept()\n"
+                   "for sock in (server, own):\n    threading.Thread(target=serve, args=(sock,), daemon=True).start()\n"
+                   "def inside(tid):\n"
+                   "    try:\n        return open('/proc/self/task/%%d/syscall' %% tid).read().split()[0] == '%d'\n"
+                   "    except (OSError, IndexError):\n        return False\n"
+                   "hang = time.monotonic() + 120\n"
+                   "while not (len(tids) == 2 and all(inside(t) for t in tids)):\n"
+                   "    assert time.monotonic() < hang, 'threads never reached accept4'\n"
+                   "    time.sleep(0.01)\n" % accept4)
+        scratch = top / 'scratch-accept'
+        scratch.mkdir()
+        code, _seconds, _out, err, trace = P.run_traced([sys.executable, '-I', '-S', '-c', program],
+                                                       gate.fixed_env(scratch), scratch, scratch, 300)
+        waited = trace.read_text(errors='replace').count('<... accept4 resumed> <unfinished ...>')
+        try:
+            list(T.accesses(trace, cwd=scratch))
+            accepting = sorted(T.non_file_inputs(trace, (scratch,)))
+        except ValueError as error:
+            accepting = str(error)
+        expect('VELDO-0217 declarations/accept-pending-real: %r %r %r %s' % (accept4, accepting, waited,
+                                                                          err.decode(errors='replace')[-300:]),
+               accept4 is not None and code == 0 and accepting == [] and waited == 2)
 
         # The proposer's syscall channel alone (no audit hook) finds the helper the suite loads.
         root = top / 'repository'

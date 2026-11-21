@@ -11833,6 +11833,41 @@ def cases():
         "                kind = None  # a user-bus connection classed as loopback traffic\n",
         ['declarations/non-file-refused'])
     result[-1]['dir'] = 'scripts'
+    # Fix round 1 (review F1-F6): one falsifier for each finding, each failing exactly its row.
+    add(217, 'declarations217-worker-trace-ignored', suite217, 'check_gate_mutations.py',
+        "        return {'result': result, 'elapsed': elapsed, 'non_file': sorted(non_file), 'withheld': sorted(withheld)}\n",
+        "        return {'result': result, 'elapsed': elapsed, 'non_file': [], 'withheld': sorted(withheld)}\n",
+        ['declarations/worker-trace-refused'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-accept-incomplete', suite217, 'case_trace.py',
+        "NETWORK_WAITS = {'accept', 'accept4', 'recvfrom', 'recvmsg', 'recvmmsg',\n",
+        "NETWORK_WAITS = set() and {'accept', 'accept4', 'recvfrom', 'recvmsg', 'recvmmsg',\n",
+        ['declarations/accept-pending'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-foreign-accept-allowed', suite217, 'case_trace.py',
+        "        if socket in listening:\n",
+        "        if True:  # any accepted connection taken as the case's own\n",
+        ['declarations/accept-pending'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-absent-unkeyed', suite217, 'check_gate_mutations.py',
+        "                if undeclared:\n",
+        "                if False:  # an undeclared absent socket is not an input\n",
+        ['declarations/undeclared-absent-socket'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-incomplete-fails-stage', suite217, 'check_gate_mutations.py',
+        "                withheld.add('incomplete_trace')\n",
+        "                error = incomplete\n",
+        ['declarations/incomplete-trace-demoted'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-receipt-unchecked', suite217, 'case_reuse.py',
+        "            return 'observation_not_current'\n",
+        "            pass  # an observation from any receipt taken as the last one\n",
+        ['declarations/gate-observation-current'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-reviews-unprotected', suite217, 'policy.yaml',
+        '  - {path: "proof/VELDO-0217/reviews/*", floor: high}\n',
+        '  # the review records left unprotected\n',
+        ['declarations/review-records-protected'])
 
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'

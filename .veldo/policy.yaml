@@ -44,6 +44,9 @@ protected_paths:
   - {path: "scripts/case_reuse.py", floor: high}
   - {path: "scripts/propose_case_inputs.py", floor: high}
   - {path: "scripts/mutation_case_inputs.json", floor: high}
+  # VELDO-0217 (review F4): the independent reviewer's records a reviewed declaration names. A record
+  # is what makes a declaration reviewed, so writing one is the same protected change as the flag.
+  - {path: "proof/VELDO-0217/reviews/*", floor: high}
   - {path: "scripts/mutation_reuse_profiles.json", floor: high}
   - {path: "scripts/mutation_reuse.py", floor: high}
   - {path: "scripts/gate_reuse.py", floor: high}
