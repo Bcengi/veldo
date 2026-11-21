@@ -110,11 +110,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--case')
     parser.add_argument('--control', choices=('baseline', 'restored'))
+    parser.add_argument('--label')
     args = parser.parse_args()
     teeth = load(ROOT / 'scripts/check_teeth_mutations.py', 'teeth_proof')
     definitions = [c for c in teeth.cases() if c['finding'] == 113]
     if args.control:
-        run(args.control)
+        run(args.label or args.control)
     elif args.case:
         case = next(c for c in definitions if c['name'] == args.case)
         run(case['name'], case, 'mutant')
