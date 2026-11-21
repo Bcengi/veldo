@@ -1120,7 +1120,8 @@ def space_supervise(rest):
     own end, what it left is waited for, and the run's end is made by the follower as before. The
     control descriptor ending before its one line starts nothing. A stop sent to this process is
     passed on to the command while it runs; after the command ended it reaches nothing and ends
-    nothing, since this process is the one the scratch root records."""
+    nothing, since this process is the one the scratch root records. Each stop is acknowledged with
+    one line, stop and passed_on, while a reader is there."""
     import json
     import signal
     import subprocess
@@ -1146,6 +1147,10 @@ def space_supervise(rest):
     started = {}
 
     def forward(number, frame):
+        # Each stop is acknowledged on the report as it is handled (VELDO-0358): whom it was passed on to,
+        # the command while it runs, or nothing after it ended. A reader learns from that line that the
+        # stop has been handled, so what it reads next is what the stop left, with no window of time.
+        tell(stop=int(number), passed_on=bool(started.get("pid")))
         if started.get("pid"):
             try:
                 os.kill(started["pid"], number)
