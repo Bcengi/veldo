@@ -465,7 +465,9 @@ def _v206_suite_reuse():
             'for where in WHERE:\n    open(os.path.join(where, "left-by-e"), "w").write("x")\n')
         of.qualify()
         o_first = of.cycle()
-        o_left = sorted(str(f.relative_to(of.base)) for folder in places.values() for f in folder.iterdir())
+        # TMPDIR, TEMP and TMP name one folder: list each folder once (fix round 3; listing it per
+        # variable named tmp three times and failed the row on every host).
+        o_left = sorted(str(f.relative_to(of.base)) for folder in set(places.values()) for f in folder.iterdir())
         o_second = of.cycle()
         o_forced = of.cycle(force='1')
         o_runs = (o_first, o_second, o_forced)
