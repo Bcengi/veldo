@@ -16808,6 +16808,41 @@ def cases():
              "    hold = _ports().reserve()\n    hold.release()  # defect: read and released at once\n",
              ['wave1/port-held'], 'scripts/suites/support')
     # ==== end of VELDO-0358 brief G ====
+    # ==== VELDO-0358 BRIEF F: service, client and loop path (AC10, AC15 for suites 66_veldo_0047, 71, 83, 86_veldo_0189, 110) ====
+    # Each case is a criterion's falsifier. The census row wave1/no-sites is in suites 66 and 71; each reads brief F's
+    # five suites and the VELDO-0152 fixture through literal anchors, so a mutant of one suite's file runs in the other.
+    def wave358f(name, suite, module, old, new, rows, directory):
+        add(358, name, suite, module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC15 (the specification's falsifier): let the profile skip the client's 30 second send timeout.
+    wave358f('timers358-profile-skips-client', '66_veldo_0047_authority.py', 'control_client.py',
+             "    conn.settimeout(timer('SEND_SECONDS') if timeout is None else timeout)\n",
+             "    conn.settimeout(SEND_SECONDS if timeout is None else timeout)  # defect: the profile skips the send timeout\n",
+             ['timers/profile-applied'], '.veldo')
+    # AC15: the service arms its timers at their production values whatever its configuration's profile says.
+    wave358f('timers358-service-profile-ignored', '71_veldo_0138_channel_service.py', 'control_service.py',
+             "    apply_timers_profile(configured_timers_profile(config))  # VELDO-0358 AC15: before any timer is armed\n",
+             "    pass  # defect: the configuration's timers profile is not applied\n",
+             ['timers/profile-applied'], '.veldo')
+    # AC15: the reply bound of a kept request back to the literal 1.0 instead of the table.
+    wave358f('timers358-reply-literal', '71_veldo_0138_channel_service.py', 'control_service.py',
+             "                conn.settimeout(timer('REPLY_SECONDS'))\n",
+             "                conn.settimeout(1.0)  # defect: the literal, not the table\n",
+             ['wave1/no-sites'], '.veldo')
+    # AC10: restore suite 71's suite budget and its waits' bound (80 s, 20 s), read by suite 66's census row.
+    wave358f('wave358-budget-restored', '66_veldo_0047_authority.py', '71_veldo_0138_channel_service.py',
+             "        result = WAITS.wait(what, done, ended, sources, _depth=2)\n",
+             "        until = time.monotonic() + 20  # defect: the wait's bound and the suite's 80 s budget restored\n"
+             "        result = WAITS.wait(what, done, ended, sources, _depth=2)\n",
+             ['wave1/no-sites'], 'scripts/suites')
+    # AC10: restore suite 66's 1.5 second window after the unexpected exit, read by suite 71's census row.
+    wave358f('wave358-window-restored', '71_veldo_0138_channel_service.py', '66_veldo_0047_authority.py',
+             "                crashed = show(unit)\n",
+             "                time.sleep(1.5)  # defect: longer than any restart delay a unit would carry, restored\n"
+             "                crashed = show(unit)\n",
+             ['wave1/no-sites'], 'scripts/suites')
+    # ==== end of VELDO-0358 brief F ====
 
     return result
 
