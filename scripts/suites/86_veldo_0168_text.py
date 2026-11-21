@@ -460,6 +460,10 @@ def _v168_suite():
             }
             wanted_calls = Counter(wanted_calls)
             wanted_calls[('status_server.py', '_Handler.do_GET', 'self', '_send')] = 3
+            # VELDO-0124: the Mac runner's sends are OS signals to a run's processes; none carries text to a person.
+            wanted_calls.update({('project_runner_macos.py', 'Run.descendants', 'self.os', 'send'): 2,
+                                 ('project_runner_macos.py', 'Run.step', 'self.os', 'send'): 1,
+                                 ('project_runner_macos.py', 'Run.wait', 'self.os', 'send'): 1})
             engine_calls = Counter({
                 ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 2,
                 ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_POST', 'self', '_send'): 2,

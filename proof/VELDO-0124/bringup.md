@@ -91,6 +91,13 @@ sha256 as on that branch:
 - Suite 103 spells its synthetic Mac paths in two parts, and the two historical qualification
   drivers no longer name a home directory, so the personal-setup check finds nothing.
 
+## One more suite: the send inventory
+
+86_veldo_0168_text (VELDO-0168) counts every `send` call site in the engine and went red on the Mac
+runner's four (`Run.descendants` twice, `Run.step`, `Run.wait`). They are OS signals to a run's
+processes and carry no text to a person; they are declared in the suite's inventory, as the
+VELDO-0125 branch had done. The suite passes 26 rows.
+
 ## Needs review: one space-boundary entry
 
 The line's VELDO-0304 check (`scripts/check_space_boundary.py`) refuses a recursive removal outside
