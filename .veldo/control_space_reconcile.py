@@ -874,7 +874,8 @@ def bootstrap(service):
     ledger = sp.Ledger(service_store(service), service.conn, service.principal, service.sign,
         config=config, state_root=root, projects=projects, host=service.config['host_identity'],
         authority_generation=service.generation,
-        lifecycle={'version': kinds.REGISTRY['version'], **{key: lifecycle[key] for key in ('events', 'ends_on')}})
+        lifecycle={'version': kinds.REGISTRY['version'],
+                   **{key: lifecycle[key] for key in ('events', 'ends_on', 'forms') if key in lifecycle}})
     for name in config['pools']:
         # Filesystem pools can be identified from the declared roots. Engine-image pools
         # are installed by their own declaration and are never guessed from a host path.

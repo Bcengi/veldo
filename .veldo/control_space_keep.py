@@ -651,7 +651,10 @@ def keep(ledger, identity, record, event=None, snapshot=False):
     owner = record.get('owner') or {}
     review = (record.get('kind') == 'worktree' and not record.get('branch') and not owner.get('ticket')
               and (owner.get('run') or {}).get('station') == 'review')
-    snapshot = snapshot or review
+    # A worker clone of a run that has ended is saved and removed with no request (VELDO-0347 AC3):
+    # its uncommitted, untracked and ignored work goes to the snapshot store like review scratch.
+    worker = record.get('kind') == 'agent_repository' and record.get('form') == 'worker_clone'
+    snapshot = snapshot or review or worker
     try:
         kind = record.get('kind')
         if kind not in KEEP_KINDS:

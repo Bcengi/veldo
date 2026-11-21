@@ -317,6 +317,23 @@ def _v301_space_signal_suite():
                 handed.append(identity)
                 return RM.remove(ledger, probe, identity, record, **given)
 
+        def before_0347(probe):
+            """VELDO-0347: rule 5 refuses a worktree holding an ignored path that is work, and rule 6 holds
+            an item of another kind whose own folder is a repository; that ticket's suite proves both. The
+            rows that use this probe prove what stands behind rules 1 to 6 (the remover's own last look and
+            the keep step's save), so here the rules read the work tree as they did before that ticket:
+            case 3 without the ignored paths, and no own-folder look. The remover still reads the real one."""
+            def unique_work(path, landed=(), shared=None, run=None, **declared):
+                facts = probe.unique_work(path, landed, shared, run, **declared)
+                if facts.get('read') is not True:
+                    return facts
+                ignored = set(facts.get('ignored') or ())
+                untracked = [name for name in facts['untracked'] if name not in ignored]
+                cases = [case for case in facts['cases'] if case != 3 or untracked]
+                return dict(facts, untracked=untracked, ignored=[], cases=cases, unique_work=bool(cases))
+            return type('Probe', (), dict(vars(probe), unique_work=staticmethod(unique_work),
+                                          own_repository=staticmethod(lambda path: False)))
+
         def send(event, subject, remover=Spy, **given):
             given.setdefault('probe', P)
             given.setdefault('kinds', K)
@@ -593,7 +610,7 @@ def _v301_space_signal_suite():
             rules_file.write('notes-private.md\n')
         (tree_path / 'notes-private.md').write_text('notes only info/exclude ignores\n')
         check(ROW, 'git sees the worktree as clean: the file is ignored', git(tree_path, 'status', '--porcelain') == '')
-        done = send('landed', {'ticket': 'VELDO-9109'})
+        done = send('landed', {'ticket': 'VELDO-9109'}, probe=before_0347(P))
         deferral = (L.item(tree) or {}).get('deferral') or {}
         check(ROW, 'the worktree is deferred as keep_failed, by the remover, not as remove_refused [%s]'
               % (named(done, tree),),
@@ -607,7 +624,7 @@ def _v301_space_signal_suite():
               text_of(tree_path / 'notes-private.md') == 'notes only info/exclude ignores\n'
               and text_of(tree_path / 'tracked.txt') == 'base\n' and listed(tree_path)
               and not os.path.lexists(mark))
-        done = send('ticket_ended', {'ticket': 'VELDO-9109'})
+        done = send('ticket_ended', {'ticket': 'VELDO-9109'}, probe=before_0347(P))
         check(ROW, 'the next event defers it again, the file still there [%s %s]'
               % (named(done, tree), ((L.item(tree) or {}).get('deferral') or {}).get('attempts')),
               named(done, tree) == ('deferred', 'keep_failed', 'tool')

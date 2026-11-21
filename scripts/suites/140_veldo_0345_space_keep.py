@@ -373,8 +373,28 @@ def _v345_space_keep_suite():
                 handed.append(identity)
                 return RM.remove(ledger, probe, identity, record, **given)
 
+        def before_0347(probe):
+            """VELDO-0347: rule 5 refuses a worktree holding an ignored path that is work, and rule 6 holds
+            an item of another kind whose own folder is a repository; that ticket's suite proves both. The
+            rows that use this probe prove what stands behind rules 1 to 6 (the remover's own last look and
+            the keep step's save), so here the rules read the work tree as they did before that ticket:
+            case 3 without the ignored paths, and no own-folder look. The remover still reads the real one."""
+            def unique_work(path, landed=(), shared=None, run=None, **declared):
+                facts = probe.unique_work(path, landed, shared, run, **declared)
+                if facts.get('read') is not True:
+                    return facts
+                ignored = set(facts.get('ignored') or ())
+                untracked = [name for name in facts['untracked'] if name not in ignored]
+                cases = [case for case in facts['cases'] if case != 3 or untracked]
+                return dict(facts, untracked=untracked, ignored=[], cases=cases, unique_work=bool(cases))
+            return type('Probe', (), dict(vars(probe), unique_work=staticmethod(unique_work),
+                                          own_repository=staticmethod(lambda path: False)))
+
+        BEHIND = before_0347(P)
+
         def send(event, subject, remover=Spy, **given):
-            given.setdefault('probe', P)
+            # The keep step and the removers behind rules 1 to 6 are what this suite proves (before_0347).
+            given.setdefault('probe', BEHIND)
             given.setdefault('kinds', K)
             given.setdefault('emitter', EMITTER)
             given.setdefault('free', free)

@@ -334,6 +334,8 @@ REVIEW_RUN_KINDS = ('review_run_scratch', 'review_run_build_output')
 DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence') + REVIEW_RUN_KINDS
 DOCKER_KINDS = ('container', 'volume', 'network', 'image_tag')
 KINDS = DISK_KINDS + ('branch',) + DOCKER_KINDS
+# The forms of an agent repository item (VELDO-0302); a form may end on events of its own (VELDO-0347).
+AGENT_FORMS = ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')
 # The protect list's entry type that holds the name patterns of each Docker kind.
 PROTECT_TYPE = {'container': 'container', 'volume': 'volume', 'network': 'network', 'image_tag': 'image'}
 
@@ -770,7 +772,18 @@ def checked_lifecycle(lifecycle):
         if not isinstance(listed, (list, tuple)) or any(event not in events for event in listed):
             raise _invalid('lifecycle', 'kind %s ends on events of the table' % kind)
         ends_on[kind] = list(listed)
-    return {'version': lifecycle['version'], 'events': events, 'ends_on': ends_on}
+    checked = {'version': lifecycle['version'], 'events': events, 'ends_on': ends_on}
+    if 'forms' in lifecycle:
+        # VELDO-0347: the events an agent repository of a form ends on, in place of its kind's.
+        forms = lifecycle['forms']
+        if not isinstance(forms, dict) or any(form not in AGENT_FORMS for form in forms):
+            raise _invalid('lifecycle', 'the forms are agent repository forms')
+        checked['forms'] = {}
+        for form, listed in sorted(forms.items()):
+            if not isinstance(listed, (list, tuple)) or any(event not in events for event in listed):
+                raise _invalid('lifecycle', 'form %s ends on events of the table' % form)
+            checked['forms'][form] = list(listed)
+    return checked
 
 
 def item_id(identifier):
@@ -2078,8 +2091,7 @@ class Ledger:
     def _new_item(self, params, state, adopted):
         kind = params.get('kind')
         form = params.get('form')
-        if form is not None and (kind != 'agent_repository' or form not in
-                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):
+        if form is not None and (kind != 'agent_repository' or form not in AGENT_FORMS):
             raise _invalid('form', 'a known agent repository form')
         canonical = canonical_locator(kind, params.get('locator'))
         if canonical != params.get('locator'):
@@ -2107,7 +2119,9 @@ class Ledger:
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],
                 'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'), 'form': form,
                 'process': process, 'state': state,
-                'ends_on': {'version': self.lifecycle['version'], 'events': list(self.lifecycle['ends_on'][kind])},
+                'ends_on': {'version': self.lifecycle['version'],
+                            'events': list((self.lifecycle.get('forms') or {}).get(form)
+                                           or self.lifecycle['ends_on'][kind])},
                 'size': None, 'confirmed': None, 'deferral': None, 'removal': None, 'report': None}
 
     def _fresh(self, params, before):
