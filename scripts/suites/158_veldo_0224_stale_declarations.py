@@ -2,7 +2,8 @@
 
 The fixture candidate is separate from the authority. A child executes its suite in the declared
 snapshot or full frozen tree; a supplied syscall trace exercises Workers.finish without ptrace
-(which is unavailable in the confined mutation leg). Only launch and inventory are controlled.
+(which is unavailable in the confined mutation leg). Git/input discovery, runtime fingerprints
+and deadline metadata are fixture values; frozen contents, authentication and result checks are real.
 """
 
 
@@ -148,7 +149,9 @@ def _v224_stale():
             current['appeared'] = (0o644, b'now exists')
             # The suite gains an import; its bytes change the key, but its declaration omits the helper.
             current['scripts/suites/test.py'] = (0o644, ("if CASE == 'import-' + MODE:\n"
-                "    exec((ROOT / 'helper.py').read_text(), {})\n" + suite_body).encode())
+                "    import importlib.util\n"
+                "    spec = importlib.util.spec_from_file_location('helper', ROOT / 'helper.py')\n"
+                "    spec.loader.exec_module(importlib.util.module_from_spec(spec))\n" + suite_body).encode())
             I.freeze(candidate, current)
             # Keep fixture writable, so a mutant's candidate write is observed, not denied by modes.
             for p in candidate.rglob('*'):
