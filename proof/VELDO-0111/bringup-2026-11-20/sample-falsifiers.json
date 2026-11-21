@@ -1,0 +1,51 @@
+{
+ "source_sha256": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
+ "suite_sha256": "2538aefc1043737059a8513ef5db6deb2310e321a21a57435ad77efd640ecd62",
+ "cases": [
+  {
+   "falsifier": "round3/uncovered-state",
+   "row": "census/fault-state-coverage",
+   "red": {
+    "census/fault-state-coverage": false
+   },
+   "green": {
+    "census/fault-state-coverage": true
+   }
+  },
+  {
+   "falsifier": "round1/AC4",
+   "row": "census/incomplete-is-not-empty",
+   "red": {
+    "census/process-lifetimes": true,
+    "census/listener-lifetimes": true,
+    "census/observer-is-outside": true,
+    "census/incomplete-is-not-empty": false,
+    "census/qualification-does-not-overclaim": true,
+    "census/named-qualification-reasons": true,
+    "census/accepted-and-implicit": true,
+    "census/unsupported-address-and-compat": true,
+    "census/async-effects-stand-down": true,
+    "census/clone-untraced": true,
+    "census/family-qualification-boundary": true,
+    "census/unix-binding-is-real": true,
+    "census/fault-state-coverage": true
+   },
+   "green": {
+    "census/process-lifetimes": true,
+    "census/listener-lifetimes": true,
+    "census/observer-is-outside": true,
+    "census/incomplete-is-not-empty": true,
+    "census/qualification-does-not-overclaim": true,
+    "census/named-qualification-reasons": true,
+    "census/accepted-and-implicit": true,
+    "census/unsupported-address-and-compat": true,
+    "census/async-effects-stand-down": true,
+    "census/clone-untraced": true,
+    "census/family-qualification-boundary": true,
+    "census/unix-binding-is-real": true,
+    "census/fault-state-coverage": true
+   },
+   "seconds": 291
+  }
+ ]
+}
