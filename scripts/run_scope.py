@@ -380,16 +380,26 @@ def leg_runs(suite, rows=None, environ=None):
 #     "inputs":         every repository file or tree the suite reads, relative to the root;
 #     "runtime_paths":  absolute trees covering the interpreter, its library, git and the shell;
 #     "environment":    every environment variable it reads beyond gate_reuse.SUITE_ENVIRONMENT;
-#     "non_file_inputs": "none", the reviewed statement that clocks, randomness, services and
-#                       other hosts' state cannot change a row;
+#     "non_file_inputs": "none", the reviewed statement that nothing outside its key can change a
+#                       row: no clock, randomness, service, socket, database or other host's
+#                       state, and no file outside the repository but its runtime paths and its
+#                       own private places (below); a path outside the repository the suite's
+#                       own code names (an absolute path, a variable it declares) is such a file;
 #     "side_effects":   "none", the reviewed statement that the suite leaves nothing outside its
-#                       own process that another suite reads;
+#                       own process and its private places that another suite reads;
 #     "rationale":      why those statements hold for this suite.
 #   }
 # A QUALIFIED SUITE RUNS ISOLATED, IN EVERY GATE: in a process of its own, started before any suite
 # has run in the dispatcher, holding the shared preamble and its prerequisite closure and nothing
-# else. That is what makes its result a function of its key: the state the other suites leave in
-# the shared namespace, the process, the working directory and the environment never reaches it.
+# else, with a HOME, TMPDIR (TEMP, TMP) and XDG_RUNTIME_DIR of its own, each new and empty, made
+# for that one process and removed after it (PRIVATE_PLACES; the per-user XDG folders are unset, so
+# they fall back under that home). That is what makes its result a function of its key: the state
+# the other suites leave in the shared namespace, the process, the working directory, the
+# environment, the home, the temporary folder and the run directory never reaches it, whoever left
+# it (an unqualified suite, an earlier gate, anything else on the host) and whoever reads it (the
+# suite, or git and the interpreter on its behalf). No mechanism here can keep a suite from naming
+# another path outside the repository; that is excluded by non_file_inputs and is visible in the
+# pinned code a reviewer reads.
 # It is isolated (and has a key) only when it AND every member of its prerequisite closure are
 # qualified, none of them runs in the unconfined leg, the pinned digest still matches, and no
 # unqualified suite needs it in the shared namespace. NO PRODUCTION SUITE IS QUALIFIED: nothing
@@ -402,6 +412,10 @@ SUITE_REUSE = {"schema": "veldo.suite-closures/v2", "suites": {}}
 # dispatcher never opens the store and never computes a key; it does exactly what the plan says
 # and says what it did, line by line, for the authority to settle.
 REUSE_VARIABLE = "VELDO_SUITE_REUSE"
+# The places outside the repository the process of an isolated suite gets new and empty, and the
+# per-user folders removed from its environment so that they fall back under its private home.
+PRIVATE_PLACES = ("HOME", "TMPDIR", "TEMP", "TMP", "XDG_RUNTIME_DIR")
+PRIVATE_FALLBACKS = ("XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME")
 REUSE_PLAN = "veldo.suite-plan/v2"
 REUSE_LINE = "selftest-suite-reuse"
 REUSE_FIELDS = {"schema", "nonce", "root", "output", "isolate", "reuse", "child", "report"}

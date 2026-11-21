@@ -17506,6 +17506,14 @@ def cases():
              '  [ -n "${VELDO_SUITE_STATE:-}" ] && [ -n "${VELDO_SUITE_PLAN:-}" ] || return 0  # defect: no plan, nothing settled\n',
              ['receipts', 'receipts/gate-is-red-when-no-plan-could-be-made'])
 
+    # The fix-check of fix round 1 (fixcheck-veldo-0206, P2): a qualified suite's process shares the
+    # home, the temporary folder and the run directory the gate runs with, so a file an unqualified
+    # suite left there decides its rows and a warm gate reuses a pass a fresh gate does not repeat.
+    reuse206('suite206-isolated-suite-shares-home-and-temp', 'selftest.py',
+             "    environment.update(places)\n",
+             "    environment = dict(_ENVIRONMENT)  # defect: the gate's home, temporary folder and run directory\n",
+             ['closure', 'closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite'])
+
     return result
 
 
