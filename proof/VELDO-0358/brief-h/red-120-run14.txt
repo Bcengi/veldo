@@ -1,0 +1,5 @@
+Suite 120, run 14 of the first fifty under the generator (load50.txt), tree 09a960f6: the failing rows of the run's output.
+40:  VELDO-0131 ac2/metadata-only detail: its browser test ran and passed [['failed']; SyntaxError: Unexpected end of JSON input]
+41:  SELFTEST FAIL: VELDO-0131 ac2/metadata-only: its browser test ran and passed [['failed']; SyntaxError: Unexpected end of JSON input]
+42:VELDO-0131 suite began 2026-11-21T18:20:13.636134Z, ended 2026-11-21T18:25:57.225353Z
+43:  120_veldo_0131_factory_ui                       15 passed  343.61s

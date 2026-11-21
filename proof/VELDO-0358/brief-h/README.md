@@ -50,13 +50,34 @@ stated reason, is in mutants-h-reasons.txt; the applied diffs are in mutant-diff
 | The census finds no site in its files or the files they open | row wave1/no-sites in suites 120, 121 and 124; scripts/check_wallclock.py over the checkout (checks.txt) | No site. 63 baseline entries removed (12 files), none lowered, none added; the stage passes |
 | Row labels the same set or a superset | rows-kept.txt (the mutation worker's own reading at fb7705e1 and here) | 120: 40 to 42; 121: 28 to 31; 124: 34 to 36; none missing |
 | Every registered case of its suites rejected with kill_by assertion or terminal | mutants-131.txt (finding 131, 21 cases) and mutants-h.txt | The 14 cases of suites 120, 121 and 124 and brief H's 6: rejected, assertion. The other 7 cases of finding 131 belong to suites of other briefs and read unproven on this branch |
-| Each suite fifty times under the generator, no failed and no hung row | load50.txt | LOAD_PLACEHOLDER |
+| Each suite fifty times under the generator, no failed and no hung row | load50.txt | 121: 50 of 50. 124: 50 of 50. 120: 49 of 50 at first, one red that was a race in the test, fixed; then 50 of 50 on the fixed tree (below) |
 | timers/profile-applied in each suite | the three suites; affected-suites.txt | Green; the report holds the harness's sentinel only on this branch (see lead item 2) |
 
 Other runs: every browser specification, 71 passed and the screenshots specification skipped (e2e-all.txt); the
 screenshots specification on request, passed, its images restored (e2e-screens.txt); the twenty suites that drive a
 browser harness or read the mutation registry or the baseline, each alone, all green (affected-suites.txt).
 scripts/check_personal_setup.py: 0 findings (checks.txt).
+
+## Loaded runs
+
+Through the builders' host wrapper, under scripts/gate_load.py with 4 slots (12 spinners and 1 writer bound to 4
+CPUs with the runs; no delegated scope, so no memory.high), four runs at a time, each its own dispatcher process
+(loaded_runs.py.txt). Every generator process was alive to the end of both batches (load_not_applied never).
+
+| Batch | Tree | Runs | Probe slowdown (data) | Result |
+| - | - | - | - | - |
+| load50.txt | 09a960f6; the fix of 60bc58dd was in the working tree from 18:28:29Z | 120, 121 and 124, fifty each | 4.3 | 121 50 of 50, 124 50 of 50, no hung row. 120 49 of 50: run 14 red on ac2/metadata-only (red-120-run14.txt) |
+| load50b.txt | 60bc58dd | 120, fifty | 5.2 | 50 of 50, no failed and no hung row |
+
+The red: the test's response listener stored an empty string when an answer's body could not be read, and under load
+the page's re-read of the screen it was leaving arrived late, was abandoned by the navigation, and overwrote the body
+already read; JSON.parse of the empty string failed. The test raced, not the product, so the test is fixed (60bc58dd):
+it keeps only the bodies it read whole and still waits for one of each route before judging them. No bound, retry or
+exception was added, and what the row asserts of a served body is unchanged.
+
+The six falsifiers, the finding 131 stage, the affected suites and the row labels were taken at 09a960f6, before that
+fix. The fix changes one listener of one test in factory.spec.ts; after it suite 120 ran fifty times green, the
+census passes and every registered case still applies to its subject (checks.txt).
 
 ## For the lead
 
@@ -86,4 +107,5 @@ scripts/check_personal_setup.py: 0 findings (checks.txt).
 6. When the reporter ends a run it names every test and step in flight with its source line. It cannot write the
    stacks of the worker and the browser, as the Python watchdog does for a suite process.
 7. Host: the builders' three slots were held for about 1 h 40 min before this brief's batch started, so the light
-   steps (the browser run, the six falsifiers, the row labels) were also run once directly; both runs are recorded.
+   steps (the browser run, the six falsifiers, the row labels) were first run directly, with the same results; the
+   files here are the batch's, taken inside the host slot.
