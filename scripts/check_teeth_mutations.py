@@ -16529,6 +16529,35 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0221: a gate leg runs its suites as isolated parallel closure shards. One defect for each
+    # criterion's falsifier, each in the shard machinery of scripts/run_scope.py.
+    suite221 = '157_veldo_0221_suite_shards.py'
+
+    def shards221(name, old, new, rows):
+        add(221, name, suite221, 'run_scope.py', old, new, rows)
+        result[-1]['dir'] = 'scripts'
+
+    # AC1: a shard whose process exits without a verdict is skipped instead of failing its suite.
+    shards221('shards221-lost-shard',
+              '        failures.append(("no_verdict", "its process ended (exit %s) without reporting a verdict" % code))\n',
+              '        pass  # defect: a shard that reported no verdict is skipped\n',
+              ['suite-shards/coverage'])
+    # AC2: every shard is given the leg's temporary directory instead of its own.
+    shards221('shards221-shared-tmpdir',
+              '    env["TMPDIR"] = str(roots["TMPDIR"])\n',
+              '    env["TMPDIR"] = environ.get("TMPDIR") or tempfile.gettempdir()  # defect: the leg\'s, shared\n',
+              ['suite-shards/isolated-by-construction'])
+    # AC3: the unconfined after-check runs only in force-fresh gates.
+    shards221('shards221-check-force-fresh-only',
+              '        after = observe()\n',
+              '        after = observe() if leg == "confined" or environ.get(FORCE_FRESH) == "1" else before\n',
+              ['suite-shards/isolation-checked'])
+    # AC4: the dispatcher ignores the manifest's manager declarations.
+    shards221('shards221-resources-ignored',
+              '            demand = suite.get("resources") or {}\n',
+              '            demand = {}  # defect: the manifest\'s declared resources are ignored\n',
+              ['suite-shards/manager-exclusive'])
+
     return result
 
 
