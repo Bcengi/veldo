@@ -1594,7 +1594,7 @@ class Runner:
             except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked
                 asked = False
             try:
-                self.dispatches.stop_result(dispatch_id, asked, now=self.clock())
+                self._stop_result(dispatch_id, asked, self.clock())
             except D.Refused as error:
                 self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'refused',
                                           'refusal': error.code, 'asked': asked})
@@ -1603,6 +1603,25 @@ class Runner:
                                       'asked': asked})
             done.append((dispatch_id, asked))
         return done
+
+    def _stop_result(self, dispatch_id, asked, now):
+        """Record the ask's result (control_dispatch.stop_result). The command pins the record at the version it
+        reads, and the receiver that was just asked writes the same record (the worker's end): a write committed
+        between that read and the commit refuses the result stale_version, and a later sweep, no longer holding
+        the Launch, would then record the ask that was made as not asked (VELDO-0358: suite 62's owner-stop, red
+        under load). The judgment the result carries is made inside the transaction (a stop request still waits
+        for its result) and no write of the record's other fields changes it, so a stale version is the record
+        read again: the same result is committed at the version now there. It is made again only when the record's
+        version has moved since it was read (each time after another committed write, of which a record has
+        finitely many); any other refusal, or a stale refusal with the version unmoved, is the caller's."""
+        version = getattr(self.dispatches, 'version', None)
+        while True:
+            read = version(dispatch_id) if version is not None else None
+            try:
+                return self.dispatches.stop_result(dispatch_id, asked, now=now)
+            except D.Refused as error:
+                if error.code != 'stale_version' or version is None or version(dispatch_id) == read:
+                    raise
 
     def _left(self, dispatch_id, group=None, process=None):
         """A settled dispatch whose run directory its receiver may have left: removed once its run is gone."""
@@ -1969,41 +1988,56 @@ def _await_gone(group, process, bound):
     """VELDO-0154, VELDO-0358 AC15: wait for the kernel to show an orphaned worker gone after its stop, waking only
     on its events: its group's cgroup.events (the group becoming empty) and its process's pidfd (its exit). At most
     `bound` seconds (ORPHAN_SECONDS of the timers table). (the last retirement reading, what ended the wait): the
-    sources that woke it, 'none' when it was already gone, or 'bound' when the bound passed first."""
-    fds, woke = {}, []
+    sources that woke it, 'none' when it was already gone, or 'bound' when the bound passed first.
+
+    The pidfd's readiness is the kernel's exit event, and it is the answer for the process: a worker whose receiver
+    died is no child of this process, so nothing here reaps it, and /proc keeps naming it (alive) until its new
+    parent does. The pidfd is opened before the identity is checked, so it names the recorded process and not a
+    reused pid. A wait with no source left to wake it ends at once instead of sleeping to the bound."""
+    fds, woke, exited = {}, [], False
     if isinstance(group, dict) and group.get('cgroup'):
         with contextlib.suppress(OSError):
             fds[os.open(C.CGROUP / group['cgroup'].lstrip('/') / 'cgroup.events', os.O_RDONLY | os.O_CLOEXEC)] = \
                 'cgroup.events'
     if isinstance(process, dict) and isinstance(process.get('pid'), int):
         with contextlib.suppress(OSError):
-            fds[os.pidfd_open(process['pid'])] = 'pidfd'
-    poller = select.poll()
+            fd = os.pidfd_open(process['pid'])
+            if C.alive(process):
+                fds[fd] = 'pidfd'
+            else:  # gone already, or the pid now names another process
+                os.close(fd)
+    poller, armed = select.poll(), set()
     for fd, kind in fds.items():
         if kind == 'cgroup.events':
             os.read(fd, 4096)  # read once, so the next change is the one that wakes
             poller.register(fd, select.POLLPRI | select.POLLERR)
         else:
             poller.register(fd, select.POLLIN)
+        armed.add(fd)
     end = time.monotonic() + bound
     try:
         while True:
             seen = C.retirement(group, process)
+            if exited:
+                seen = dict(seen, terminated=True)
             if seen['terminated'] and seen['cleaned']:
                 return seen, woke or ['none']
             remaining = end - time.monotonic()
-            if remaining <= 0 or not fds:
+            if remaining <= 0 or not armed:
                 return seen, woke + ['bound']
             for fd, _events in poller.poll(math.ceil(remaining * 1000)):
                 woke.append(fds[fd])
-                if fds[fd] == 'pidfd':  # an exit happens once
+                if fds[fd] == 'pidfd':  # an exit happens once, and it is the process's end
+                    exited = True
                     poller.unregister(fd)
+                    armed.discard(fd)
                     continue
                 try:
                     os.lseek(fd, 0, os.SEEK_SET)
                     os.read(fd, 4096)
                 except OSError:  # the group was removed: nothing more will come from it
                     poller.unregister(fd)
+                    armed.discard(fd)
     finally:
         for fd in fds:
             os.close(fd)
