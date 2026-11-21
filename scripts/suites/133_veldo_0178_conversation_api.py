@@ -123,7 +123,7 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
                     return
                 with peer:
                     data = b''
-                    peer.settimeout(2)
+                    peer.settimeout(F.HANG_SECONDS)  # a hang detector: the receiver closes after its hint
                     try:
                         while True:
                             chunk = peer.recv(65536)
@@ -641,21 +641,30 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         mark_seq = authority.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
         owner_stream = call('GET', 'events/stream', query={'after': mark_seq})
         other_stream = call('GET', 'events/stream', who='colleague', query={'after': mark_seq})
-        for opened_stream in (owner_stream, other_stream):
-            if opened_stream[0] == 200:
-                while opened_stream[1].next(.1)[0] == 'frame':
-                    pass
-        closed_call = call('POST', 'conversations/close', {'conversation': talk, 'version': 3})
-
-        def frames_of(answer):
+        # Each wait below is for a frame the stream must carry (an event), with only the hang detector: a stream's
+        # frames are in order, so what a frame reached is all that came before it. Opening fills one frame
+        # (`always`); the close is seen on his stream as the frame that carries it; on the colleague's, everything
+        # the close delivered him comes before the frame of a later command of his own, his second conversation's
+        # opening (a barrier, never a pause).
+        def frames_of(answer, until):
             got = []
-            while answer[0] == 200:
-                kind, frame = answer[1].next(.5)
+            while answer[0] == 200 and not until(got):
+                kind, frame = answer[1].next(F.HANG_SECONDS)
                 if kind != 'frame':
                     break
                 got += frame.get('events') or []
             return got
-        live_owner, live_other = frames_of(owner_stream), frames_of(other_stream)
+        for opened_stream in (owner_stream, other_stream):
+            if opened_stream[0] == 200:
+                kind, _frame = opened_stream[1].next(F.HANG_SECONDS)
+                while kind == 'frame':
+                    kind, _frame = opened_stream[1].next(0)
+        closed_call = call('POST', 'conversations/close', {'conversation': talk, 'version': 3})
+        barrier_call = call('POST', 'conversations/open', {'role': 'assistant'}, who='colleague')
+        barrier = CV.conversation_id((barrier_call[1] or {}).get('conversation') or '')
+        live_owner = frames_of(owner_stream, lambda got: closed_call[0] != 200
+                               or CV.conversation_id(talk or '') in ids_in(got))
+        live_other = frames_of(other_stream, lambda got: barrier_call[0] != 200 or barrier in ids_in(got))
         check('AC1/commands', 'conversations.close closes it on its version [%s %s]'
               % (closed_call[0], refusal(closed_call)), closed_call[0] == 200
               and closed_call[1].get('outcome') == 'closed' and (conversations.read(talk) or {}).get('status') == 'closed')
