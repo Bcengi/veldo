@@ -108,3 +108,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   no dispatch record binds (a crash after admission and before the dispatch was written), so the unit
   is judged again and its bytes are no longer held. The admission metrics are on the factory loop's
   status. Acceptance criteria unchanged.
+
+- 2026-11-20 (fix round 1): at service start, an admitted or advised hold that no dispatch record binds is
+  released, so its unit is judged again on its next offer and no bytes stay held. The service start record
+  gains a holds_recovered field (control_service.py, both copies) listing the holds released. Owner
+  acknowledgement of this start-log addition is asked at landing. Acceptance criteria unchanged.
