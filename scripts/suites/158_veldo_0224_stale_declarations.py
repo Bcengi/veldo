@@ -25,6 +25,8 @@ def _v224_stale():
         return result
 
     C = module(ROOT / "scripts" / "case_reuse.py", 'case_reuse')
+    # The session reads and writes marks through this copy, so a mutation leg can replace it.
+    C.M = module(ROOT / "scripts" / "mutation_reuse.py", 'mutation_reuse')
     gate = module(ROOT / "scripts" / "check_gate_mutations.py", 'check_gate_mutations')
     P = module(ROOT / "scripts" / "propose_case_inputs.py", 'propose_case_inputs')
     if not leg_runs():
