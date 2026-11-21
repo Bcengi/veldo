@@ -3086,8 +3086,8 @@ def cases():
              "    'unknown': (('accepted', 'running', 'exited'), 'unknown'),  # defect: an ended dispatch reopens\n",
              'transitions-from-schema')
     dispatch('dispatch-exit-lands-unit', 'control_launch.py',
-             "            self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')\n",
-             "            self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')\n"
+             "            self._retire(record['dispatch_id'], outcome, 'worker_reaped')\n",
+             "            self._retire(record['dispatch_id'], outcome, 'worker_reaped')\n"
              "            if clean:  # defect: a clean exit is taken as the unit's landing\n"
              "                identity = 'receipt:revision_landed:' + record['dispatch_id']\n"
              "                self.dispatches.store.execute(self.dispatches.conn, dict(\n"
