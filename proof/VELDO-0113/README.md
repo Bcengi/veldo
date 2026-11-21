@@ -31,9 +31,9 @@ be waived by a process name. Every service event in the measured scope is
 forbidden. The endpoint fixture is already dead and outside that scope.
 
 The three named consumer rows carry distinct PASS, FAIL or STANDS DOWN statuses.
-A captured forbidden birth or service makes the corresponding row FAIL even
-when host qualification is incomplete. Absence cannot pass without a COMPLETE
-receipt. Missing facilities and interrupted finalization are driven for every
+An INCOMPLETE receipt always leaves these rows STANDS DOWN, even when the
+observer captured a suspicious birth or service. Such effects remain diagnostics;
+only a COMPLETE receipt permits the named row to pass or fail. Missing facilities and interrupted finalization are driven for every
 external registry/state case; all three names must remain STANDS DOWN with
 census_incomplete and zero PASS rows. The suite separately asserts this protocol;
 a passing protocol assertion is not a green absence claim.
@@ -74,8 +74,12 @@ abstract Unix listener in the refusal handler, an incomplete census treated as
 success, and an extra Dispatches construction in claim.py. The standard suite
 anchors support production and fixture copies. `run_checks.py` retains the exact
 diffs and full case receipts, and checks the named false rows and restoration.
-Full red/green acceptance evidence is still pending execution and resolution of
-the baseline construction failure; registration alone is not a completed drive.
+Full red/green acceptance evidence cannot be claimed while the construction
+baseline is false and VELDO-0111 never supplies a COMPLETE receipt. The process
+and listener falsifiers must stand down on this host under the literal contract;
+a captured effect alone cannot substitute for the required false consumer row.
+The initial evaluator allowed that substitution; it was corrected after the
+first process drive. Earlier diagnostic results are not acceptance evidence.
 
 Receipt archives use lossless shared capability tables to stay below the proof
 size limit. `run_checks.read_receipts(path)` reconstructs every original receipt
