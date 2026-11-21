@@ -111,6 +111,12 @@ def _v358d_load_leg():
             len(writers) != 1 and 'not one writer per four CPUs: %d' % len(writers),
             not all(s['alive'] for s in spinners + writers) and 'a generator was not alive to the end',
             not all(s['cpu_seconds'] > 0 for s in spinners) and 'a spinner consumed no CPU',
+            # Load-independent: on the leg's CPUs the spinners share the CPU with the leg (three to one per CPU),
+            # so together they consume at least the leg's own fifteen CPU-seconds however busy the host is. A
+            # spinner that is alive but blocked consumes only its start.
+            sum(s['cpu_seconds'] for s in spinners) < 15.0
+            and 'the spinners together consumed %.2f CPU-seconds, less than the leg\'s own 15 beside them'
+            % sum(s['cpu_seconds'] for s in spinners),
             not all(w['bytes'] > 0 for w in writers) and 'a writer wrote no bytes',
             not (record['applied'] and record['error'] is None) and 'the load is not reported applied',
             'slowdown' not in record['probe'] and 'no probe reading: %s' % record['probe'],
