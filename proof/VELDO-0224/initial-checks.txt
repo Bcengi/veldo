@@ -1,0 +1,21 @@
+Initial checks after implementation, before loaded validation:
+
+Command: bash scripts/check_lint.sh
+lint: pass (1248 python, 40 shell, 9.23s)
+Exit: 0
+
+Command: python3 scripts/check_personal_setup.py --base 7460e9a9
+No installation found; ran the built-in shapes only.
+personal setup: 0 finding(s)
+Exit: 0
+
+Command: bash scripts/check_template_sync.sh
+template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
+Exit: 0
+
+Command: python3 scripts/update_index.py
+index: 493 specification(s)
+Exit: 0; generated index unchanged.
+
+All 15 mutation anchors for findings 217 and 224 apply exactly once.
+These checks do not claim the affected suites or canonical gate have passed.

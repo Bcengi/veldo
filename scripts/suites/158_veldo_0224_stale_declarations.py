@@ -27,6 +27,9 @@ def _v224_stale():
     gate = module(ROOT / "scripts" / "check_gate_mutations.py", 'check_gate_mutations')
     P = module(ROOT / "scripts" / "propose_case_inputs.py", 'propose_case_inputs')
     M, I, R = C.M, C.I, C.R
+    materializer = gate.load(ROOT / 'scripts/mutation_observer.py')
+    suite_body = ("ns = {}; exec(SUBJECT.read_text(), ns)\n"
+                  "expect('fixture target', ns['value'] == 1 and not BROKEN)\n")
 
     def row(name, condition, detail=''):
         expect('VELDO-0224 stale-declarations/' + name + ': ' + detail, condition)
@@ -62,7 +65,7 @@ def _v224_stale():
         files.update({'.veldo/subject.py': (0o644, b'value = 1\n'),
                       'optional-declared': (0o644, b'old input'),
                       'helper.py': (0o644, b'VALUE = True\n'),
-                      'scripts/suites/test.py': (0o644, b'')})
+                      'scripts/suites/test.py': (0o644, suite_body.encode())})
         document = dict(schema='veldo.case-inputs/v1', toolchains={gate.DRIVERS[0]:
                         dict(paths=['/usr'], reviewed=True)}, cases={c['identity']:
                         dict(files=['optional-declared'] if c['name'] == 'deleted' else [],
@@ -98,14 +101,16 @@ def _v224_stale():
                     launched.append((job['case']['name'], job['mode'], declared))
                     # Child imports the fixture helper only in the newly changed suite's selected
                     # mode. The snapshot omits it. Real stdout/exit are judged by Workers.finish.
+                    prepared = materializer.materialize(job['case'], job['mode'], home, root=root)
+                    subject = prepared['mutant'] or prepared['source']
                     child = ("import json, sys\nfrom pathlib import Path\n"
-                             "root, mode, name, broken = Path(sys.argv[1]), *sys.argv[2:]\n"
-                             "if name == 'import-' + mode:\n"
-                             "    ns = {}; exec((root / 'helper.py').read_text(), ns)\n"
-                             "ok = mode != 'mutant'\n"
-                             "if broken == 'True' and mode == 'baseline': ok = False\n"
-                             "ob = dict(count=1, observations=[['fixture target', ok]], "
-                             "row_names=['fixture target'], failed_rows=[] if ok else ['fixture target'])\n"
+                             "root, mode, name, broken, subject = Path(sys.argv[1]), *sys.argv[2:]\n"
+                             "rows = []\n"
+                             "ns = dict(ROOT=root, MODE=mode, CASE=name, SUBJECT=Path(subject), "
+                             "BROKEN=broken == 'True', expect=lambda n, ok: rows.append([n, ok]))\n"
+                             "exec((root / 'scripts/suites/test.py').read_text(), ns)\n"
+                             "ob = dict(count=len(rows), observations=rows, "
+                             "row_names=[n for n, ok in rows], failed_rows=[n for n, ok in rows if not ok])\n"
                              "print(json.dumps(dict(observation=ob, replacement_count=1, "
                              "old_digest='old', new_digest='new')))\n")
                     trace = '100 landlock_restrict_self(5, 0) = 0\n'
@@ -116,7 +121,7 @@ def _v224_stale():
                     self.resources.acquire(name, job)
                     self.ledgers[name] = directory / ('ownership-' + home.name + '.jsonl')
                     process = subprocess.Popen([sys.executable, '-I', '-B', '-c', child, str(root),
-                        job['mode'], job['case']['name'], str(failure[0] and not declared)],
+                        job['mode'], job['case']['name'], str(failure[0] and not declared), str(subject)],
                         stdout=out, stderr=err, start_new_session=True)
                     process.wait(timeout=300)
                     self.active[name] = (process, out, err, time.monotonic())
@@ -140,7 +145,8 @@ def _v224_stale():
             current.pop('optional-declared')
             current['appeared'] = (0o644, b'now exists')
             # The suite gains an import; its bytes change the key, but its declaration omits the helper.
-            current['scripts/suites/test.py'] = (0o644, b"exec((ROOT / 'helper.py').read_text())\n")
+            current['scripts/suites/test.py'] = (0o644, ("if CASE == 'import-' + MODE:\n"
+                "    exec((ROOT / 'helper.py').read_text(), {})\n" + suite_body).encode())
             I.freeze(candidate, current)
             # Keep fixture writable, so a mutant's candidate write is observed, not denied by modes.
             for p in candidate.rglob('*'):
@@ -204,7 +210,8 @@ def _v224_stale():
         row('authority-store', good['unchanged'] and {e['identity'] for e in good['entries']} == stale_names
             and set(good['selected']) == stale_names
             and all(e['declaration'] == C.declaration_digest(document['cases'][e['identity']])
-                    and e['gate_run'] and e['reason'] for e in good['entries']), detail)
+                    and e['gate_run'] == good['receipt']['gate_run'] and e['reason'] for e in good['entries'])
+            and good['receipt']['authority_stale_count'] == 5, detail)
         row('stale-reasons', any('helper.py' in e['reason'] for e in good['entries'])
             and any('optional-declared' in e['reason'] for e in good['entries'])
             and any('appeared' in e['reason'] for e in good['entries']), repr(good['entries']))

@@ -134,9 +134,9 @@ class Session(M.Session):
                     continue
                 self.reviewed[name] = declaration
                 if marks is None:
-                    marks = M.stale_entries(store_directory())
-                prior = next((entry for entry in marks if entry['identity'] == name
-                              and entry['declaration'] == declaration_digest(declaration)), None)
+                    marks = {(entry['identity'], entry['declaration']): entry
+                             for entry in M.stale_entries(store_directory())}
+                prior = marks.get((name, declaration_digest(declaration)))
                 if prior is not None:
                     self.mark_stale(case, prior['reason'])
                     continue
