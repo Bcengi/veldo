@@ -223,6 +223,9 @@ expect('fixture target', namespace['value'] == 1)
                        run_worker(changed, 'forced-' + kind, expected_failure=True, force=True))
 
         if leg_runs():
+            # The preceding traced fixtures deliberately marked this declaration stale.
+            for mark in (top / 'cache' / 'stale').glob('*.json'):
+                mark.unlink()
             # A declared directory includes every descendant in its key and snapshot.
             expanded = dict(files); expanded['scripts/new-child'] = (0o644, b'new input')
             expect('VELDO-0207 case/listed-directory-new-child-invalidates',

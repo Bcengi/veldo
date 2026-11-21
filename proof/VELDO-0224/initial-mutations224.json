@@ -1,0 +1,121 @@
+{
+  "status": "failed",
+  "error": "driver_error",
+  "detail": "driver_error: 158_veldo_0224_stale_declarations.py:case_reuse.py:False:baseline: worker exit 1",
+  "registered": 3,
+  "executed": 0,
+  "reused": 0,
+  "rejected": 0,
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:stale224-snapshot-verdict-kept",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "pending",
+      "validated": false
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-published",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "pending",
+      "validated": false
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-writes-candidate",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "pending",
+      "validated": false
+    }
+  ],
+  "invalid_results": [
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 2,
+        "units": []
+      },
+      "detail": "158_veldo_0224_stale_declarations.py:case_reuse.py:False:baseline: worker exit 1",
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 0.7083472539670765,
+      "error": "driver_error",
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "158_veldo_0224_stale_declarations.py:case_reuse.py:False:baseline",
+      "output_directory": "/tmp/veldo-mutations-w9ud368_/2",
+      "pid": 1236616,
+      "returncode": 1,
+      "stderr_bytes": 778,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<checkout>/scripts/reuse_worker.py\", line 116, in <module>\n  File \"<checkout>/scripts/reuse_worker.py\", line 99, in main\n  File \"<checkout>/scripts/reuse_worker.py\", line 106, in observe\n  File \"<checkout>/scripts/mutation_observer.py\", line 104, in worker\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/158_veldo_0224_stale_declarations.py\", line 236, in <module>\n    if leg_runs():\n       ^^^^^^^^^^\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/shared.py\", line 81, in leg_runs\n    import run_scope as _rs\nModuleNotFoundError: No module named 'run_scope'\n",
+      "stdout_bytes": 0,
+      "stdout_tail": ""
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 2,
+        "units": []
+      },
+      "detail": "stage stopped before worker completed",
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 0.713821042329073,
+      "error": "worker_cancelled",
+      "leg": "confined",
+      "mode": "baseline",
+      "name": "158_veldo_0224_stale_declarations.py:check_gate_mutations.py:False:baseline",
+      "output_directory": "/tmp/veldo-mutations-w9ud368_/0",
+      "pid": 1236614,
+      "returncode": -9,
+      "stderr_bytes": 778,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<checkout>/scripts/reuse_worker.py\", line 116, in <module>\n  File \"<checkout>/scripts/reuse_worker.py\", line 99, in main\n  File \"<checkout>/scripts/reuse_worker.py\", line 106, in observe\n  File \"<checkout>/scripts/mutation_observer.py\", line 104, in worker\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/158_veldo_0224_stale_declarations.py\", line 236, in <module>\n    if leg_runs():\n       ^^^^^^^^^^\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/shared.py\", line 81, in leg_runs\n    import run_scope as _rs\nModuleNotFoundError: No module named 'run_scope'\n",
+      "stdout_bytes": 0,
+      "stdout_tail": ""
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 2,
+        "units": []
+      },
+      "detail": "158_veldo_0224_stale_declarations.py:check_gate_mutations.py:False:noop: worker exit 1",
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 0.716997052077204,
+      "error": "driver_error",
+      "leg": "confined",
+      "mode": "noop",
+      "name": "158_veldo_0224_stale_declarations.py:check_gate_mutations.py:False:noop",
+      "output_directory": "/tmp/veldo-mutations-w9ud368_/1",
+      "pid": 1236615,
+      "returncode": 1,
+      "stderr_bytes": 778,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<checkout>/scripts/reuse_worker.py\", line 116, in <module>\n  File \"<checkout>/scripts/reuse_worker.py\", line 99, in main\n  File \"<checkout>/scripts/reuse_worker.py\", line 106, in observe\n  File \"<checkout>/scripts/mutation_observer.py\", line 104, in worker\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/158_veldo_0224_stale_declarations.py\", line 236, in <module>\n    if leg_runs():\n       ^^^^^^^^^^\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/shared.py\", line 81, in leg_runs\n    import run_scope as _rs\nModuleNotFoundError: No module named 'run_scope'\n",
+      "stdout_bytes": 0,
+      "stdout_tail": ""
+    },
+    {
+      "budget_seconds": 1800,
+      "cleanup": {
+        "directories": 2,
+        "units": []
+      },
+      "detail": "158_veldo_0224_stale_declarations.py:case_reuse.py:False:noop: worker exit 1",
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 0.7198863388039172,
+      "error": "driver_error",
+      "leg": "confined",
+      "mode": "noop",
+      "name": "158_veldo_0224_stale_declarations.py:case_reuse.py:False:noop",
+      "output_directory": "/tmp/veldo-mutations-w9ud368_/3",
+      "pid": 1236619,
+      "returncode": 1,
+      "stderr_bytes": 778,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<checkout>/scripts/reuse_worker.py\", line 116, in <module>\n  File \"<checkout>/scripts/reuse_worker.py\", line 99, in main\n  File \"<checkout>/scripts/reuse_worker.py\", line 106, in observe\n  File \"<checkout>/scripts/mutation_observer.py\", line 104, in worker\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/158_veldo_0224_stale_declarations.py\", line 236, in <module>\n    if leg_runs():\n       ^^^^^^^^^^\n  File \"/tmp/veldo-mutations-w9ud368_/input/scripts/suites/shared.py\", line 81, in leg_runs\n    import run_scope as _rs\nModuleNotFoundError: No module named 'run_scope'\n",
+      "stdout_bytes": 0,
+      "stdout_tail": ""
+    }
+  ],
+  "stale_count": 0,
+  "surviving_workers": 0,
+  "results": []
+}
