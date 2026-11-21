@@ -14,6 +14,7 @@ depends_on: [VELDO-0039, VELDO-0047, VELDO-0108, VELDO-0124]
 placement: [fleet, project_runner, contracts]
 protected_paths: []
 footprint:
+  - "scripts/check_teeth_mutations.py"
   - "scripts/suites/86_veldo_0168_text.py"
   - "scripts/suites/68_veldo_0134_acceptance.py"
   - "engine/.veldo/control_channel_enrollment.py"

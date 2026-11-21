@@ -2484,7 +2484,7 @@ class Runner:
             # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
             # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
             clean = D.completed(record)
-            if self.space is not None:
+            if self.space is not None and not getattr(launch, 'remote', False):
                 # VELDO-0308: a run directory its receiver sent nothing for (a group it could not read, a work
                 # tree of the same owner elsewhere) is the sweep's: it reads the kernel again (clear_runs).
                 self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))

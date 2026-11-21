@@ -31,6 +31,7 @@ def main():
     parser.add_argument('suites', nargs='+')
     parser.add_argument('--load', type=int, default=0)
     parser.add_argument('--compact', action='store_true')
+    parser.add_argument('--raw-dir', type=Path)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     stop, workers = mp.Event(), []
@@ -50,6 +51,9 @@ def main():
             result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=1800,
                                     env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
             raw = result.stdout + result.stderr
+            if args.raw_dir:
+                args.raw_dir.mkdir(parents=True, exist_ok=True)
+                (args.raw_dir / (suite + '.txt')).write_text(raw)
             lines = sanitize(raw).splitlines()
             summary = next((line for line in reversed(lines) if 'selftest (' in line), '')
             ok = result.returncode == 2 and bool(re.search(r'\b0 failed\b', summary))

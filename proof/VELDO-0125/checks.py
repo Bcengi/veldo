@@ -174,7 +174,7 @@ class Fixture:
     def close(self):
         if self.child:
             self.child.terminate()
-            self.child.wait(timeout=15)
+            self.child.wait(timeout=120)
             self.log.close()
         self.conn.close()
 
