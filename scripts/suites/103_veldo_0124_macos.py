@@ -305,6 +305,11 @@ def _v124_suite():
     def deadline(base):
         host, osx, request, paths = T.start(base, 'blocked')
         run = host.start(request)
+        # Advance the model to the cap and observe escalation before waiting for
+        # completion. Removing escalation must fail here, not spin at a zero wait.
+        osx.sleep(run.deadline - osx.monotonic())
+        assert not run.poll()
+        assert run.stage == 'terminate' and run.cause == 'runtime_cap'
         result = run.wait()
         assert result['state'] == 'exited' and result['termination']['deadline_stop']
         assert [s['stage'] for s in run.steps] == ['terminate']
