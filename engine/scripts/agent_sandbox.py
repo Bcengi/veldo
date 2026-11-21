@@ -122,10 +122,10 @@ def write_layer(roots):
     libc = ctypes.CDLL(None, use_errno=True)
 
     def call(number, *args):
-        result = libc.syscall(number, *args)
-        if result < 0:
-            raise OSError(ctypes.get_errno(), 'agent sandbox Landlock unavailable')
-        return result
+        answer = libc.syscall(number, *args)
+        if answer < 0:
+            raise OSError(ctypes.get_errno(), 'shard layer: Landlock unavailable')
+        return answer
 
     if platform.machine() != 'x86_64':
         raise RuntimeError('agent sandbox supports reviewed x86_64 syscall numbers only')
