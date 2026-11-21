@@ -1,0 +1,2 @@
+scripts/suites/151_veldo_0313_space_run.py: base 37 rows, now 39; base kept (superset): True; removed: []; added: ['timers/profile-applied', 'wave1/no-sites']
+scripts/suites/66_veldo_0042_clones.py: base 11 rows, now 14; base kept (superset): True; removed: []; added: ['timers/profile-applied', 'wave1/no-sites', 'wave1/port-held']

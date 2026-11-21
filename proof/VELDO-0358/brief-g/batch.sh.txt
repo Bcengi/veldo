@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Brief G's loaded runs: bash host_heavy.sh bash batch.sh.txt <worktree> <scratch>
+# Under the load generator (scripts/gate_load.py, two slots): suite 66_veldo_0042_clones fifty times, then suite
+# 151_veldo_0313_space_run ten times, each in its own process. Each run's summary line and every failed or hung
+# row go to the logs beside this file.
+set -u
+WT=$1; S=$2; OUT=$WT/proof/VELDO-0358/brief-g; cd "$WT" || exit 1
+mkdir -p "$S/write"
+run() { # suite, count, log
+  python3 -I -S scripts/gate_load.py --slots 2 --write-dir "$S/write" -- bash -c '
+    for i in $(seq "$2"); do
+      python3 scripts/selftest.py --suite "$1" > "$3.run" 2>&1; code=$?
+      echo "run $i exit $code: $(grep -E "^  $1 " "$3.run" | tr -s " ")"
+      grep -E "SELFTEST (FAIL|HUNG|NOT RUN)" "$3.run" | cut -c1-400
+    done' _ "$1" "$2" "$S/$1"
+  echo "generator exit status $?"
+}
+{ echo "start load $(cut -d' ' -f1-3 /proc/loadavg)"; run 66_veldo_0042_clones 50 "$S"; echo "end load $(cut -d' ' -f1-3 /proc/loadavg)"; } > "$OUT/loaded-66.txt" 2>&1
+{ echo "start load $(cut -d' ' -f1-3 /proc/loadavg)"; run 151_veldo_0313_space_run 10 "$S"; echo "end load $(cut -d' ' -f1-3 /proc/loadavg)"; } > "$OUT/loaded-151.txt" 2>&1

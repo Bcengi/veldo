@@ -1,0 +1,26 @@
+# The ENODEV red, reproduced under the generator at 63bbbc1b plus the printed exception (run 13 of 40)
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-21T14:28:08Z
+load: start {"cgroup": null, "cpus": [18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 4126192, "slots": 2, "spinners": [4126185, 4126186, 4126187, 4126188, 4126189, 4126190], "writers": [4126191]}
+run 1 green
+run 2 green
+run 3 green
+run 4 green
+run 5 green
+run 6 green
+run 7 green
+run 8 green
+run 9 green
+run 10 green
+run 11 green
+run 12 green
+run 13 red
+  VELDO-0042 clone/retire-waits-for-group raised OSError(19, 'No such device') at File "<checkout>/scripts/suites/66_veldo_0042_clones.py", line 441, in <lambda> | WAITS.wait('group %s to be empty' % group.unit, lambda: WAITS.cgroup_populated(path) is not True, | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | File "<checkout>/scripts/suites/support/waits.py", line 378, in cgroup_populated | for line in f: | OSError: [Errno 19] No such device
+  SELFTEST FAIL: VELDO-0042 clone/retire-waits-for-group
+  SELFTEST FAIL: VELDO-0042 ran/clone/retire-waits-for-group
+load: record {"applied": true, "cpus": [18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000549350, "slowdown": 10.677, "waited_ns": 9682246548}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 2, "spinners": [{"alive": true, "cpu": 18, "cpu_seconds": 19.773, "pid": 4126185}, {"alive": true, "cpu": 18, "cpu_seconds": 19.773, "pid": 4126186}, {"alive": true, "cpu": 18, "cpu_seconds": 19.776, "pid": 4126187}, {"alive": true, "cpu": 19, "cpu_seconds": 19.876, "pid": 4126188}, {"alive": true, "cpu": 19, "cpu_seconds": 19.879, "pid": 4126189}, {"alive": true, "cpu": 19, "cpu_seconds": 19.879, "pid": 4126190}], "spinners_per_cpu": 3, "writers": [{"alive": true, "bytes": 45905608704, "cpu_seconds": 11.375, "files": 171, "pid": 4126191}]}
+load: 2 CPUs [18, 19], 3 spinners per CPU: 6 of 6 alive to the end, CPU consumed 119.0s (least 19.773s)
+load: 1 writers: 1 alive to the end, bytes written [45905608704]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000549350, "slowdown": 10.677, "waited_ns": 9682246548} (data, no verdict)
+  VELDO-0042 clone/retire-waits-for-group raised OSError(19, 'No such device') at File "<checkout>/scripts/suites/66_veldo_0042_clones.py", line 441, in <lambda> | WAITS.wait('group %s to be empty' % group.unit, lambda: WAITS.cgroup_populated(path) is not True, | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | File "<checkout>/scripts/suites/support/waits.py", line 378, in cgroup_populated | for line in f: | OSError: [Errno 19] No such device
+  SELFTEST FAIL: VELDO-0042 clone/retire-waits-for-group
+  SELFTEST FAIL: VELDO-0042 ran/clone/retire-waits-for-group

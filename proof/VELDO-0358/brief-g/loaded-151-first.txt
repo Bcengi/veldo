@@ -1,0 +1,12 @@
+# FIRST ATTEMPT, abandoned: suite 151 was being edited while these ran (mixed versions); kept as the record of that attempt only.
+start load 45.04 45.76 47.83
+load: start {"cgroup": null, "cpus": [18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 3942017, "slots": 2, "spinners": [3942006, 3942008, 3942010, 3942011, 3942012, 3942013], "writers": [3942014]}
+run 1 exit 1:  151_veldo_0313_space_run 33 passed 103.43s
+  SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: then run finished was sent, the scratch root removed and the hold released, in that order [['space_measure', 'space_signal', 'space_outcome', 'space_outcome'] ['removed'] admitted]
+  SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-end-is-made: the fixture ends the process the command left, at its own last line, and run finished follows: the scratch root is removed and the hold released [label_unread {"held": true, "text": "in use\n", "released": true} ['present'] admitted]
+  SELFTEST FAIL: VELDO-0313 supervise/staying-is-idle: while those 12 processes ended, the staying supervisor made no pass over the process table: to its last line it read the table once, at the exit of what the command left, with read calls of at most twice the one pass it made at the command's exit [stayed through True; last line {'staying': False}; read calls 4875 of a pass of 9999; cpu 0.03 s,
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: the orphan has ended, and the run is still open: the unread process that a process without the label started holds it, since nobody read what it carries [label_unread [{'pid': 3948554, 'started': 292936286, 'how': 'unread'}, {'pid': 3948636, 'started': 292936326, 'how': 'unread'}]]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 8388608000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+run 2 exit 1: 
+SELFTEST HUNG the idle supervisor's last line: wait the idle supervisor's last line at <checkout>/scripts/suites/151_veldo_0313_space_run.py:346; bound 600 s since the wait began; last observed: done=None, terminal={'lines': [{'group': None, 'subreaper': True}, {'holders': [{'how': 'unread', 'pid': 3970782, 'started': 292945745}, {'how': 'unread', 'pid': 397
