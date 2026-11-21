@@ -18349,7 +18349,7 @@ def cases():
     # AC15 (the specification's falsifier): let the profile skip the client's 30 second send timeout.
     wave358f('timers358-profile-skips-client', '66_veldo_0047_authority.py', 'control_client.py',
              "    conn.settimeout(timer('SEND_SECONDS') if timeout is None else timeout)\n",
-             "    conn.settimeout(SEND_SECONDS if timeout is None else timeout)  # defect: the profile skips the send timeout\n",
+             "    conn.settimeout(_TIMER_DEFAULTS['SEND_SECONDS'] if timeout is None else timeout)  # defect: the profile skips it\n",
              ['timers/profile-applied'], '.veldo')
     # AC15: the service arms its timers at their production values whatever its configuration's profile says.
     wave358f('timers358-service-profile-ignored', '71_veldo_0138_channel_service.py', 'control_service.py',
