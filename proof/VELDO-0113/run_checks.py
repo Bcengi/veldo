@@ -57,16 +57,45 @@ def retain(name, result):
 
 def read_receipts(path):
     archive = json.loads(gzip.decompress(Path(path).read_bytes()))
+    shared = archive.get('shared')
+    if shared is None:
+        shared = json.loads(gzip.decompress((Path(path).parent / archive['shared_file']).read_bytes()))
     def unpack(value):
         if isinstance(value, dict):
             if set(value) == {'$shared'}:
-                return archive['shared'][value['$shared']]
+                return shared[value['$shared']]
             return {k: unpack(v) for k, v in value.items()}
         return [unpack(v) for v in value] if isinstance(value, list) else value
     result = unpack(archive['result'])
     data = json.dumps(result, sort_keys=True, separators=(',', ':')).encode()
     assert hashlib.sha256(data).hexdigest() == archive['receipt_sha256']
     return result
+
+
+def compact_receipts():
+    """After all runs, intern repeated source/capability tables across archives."""
+    shared, archives = {}, {}
+    def pack(value, key=None):
+        if key in ('combinations', 'unsupported_combinations', 'not_qualified_families', 'scanned_files'):
+            identity = hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+            shared[identity] = value
+            return {'$shared': identity}
+        if isinstance(value, dict):
+            return {k: pack(v, k) for k, v in value.items()}
+        return [pack(v) for v in value] if isinstance(value, list) else value
+    for path in DESTINATION.glob('*.json.gz'):
+        archive = json.loads(gzip.decompress(path.read_bytes()))
+        if not isinstance(archive, dict) or not str(archive.get('schema', '')).startswith('veldo.0113-lossless-receipts/'):
+            continue
+        result = read_receipts(path)
+        archives[path] = dict(schema='veldo.0113-lossless-receipts/v2', result=pack(result),
+                              shared_file='shared-tables.json.gz', receipt_sha256=archive['receipt_sha256'])
+    (DESTINATION / 'shared-tables.json.gz').write_bytes(gzip.compress(
+        json.dumps(shared, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
+    for path, archive in archives.items():
+        path.write_bytes(gzip.compress(json.dumps(archive, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
+        read_receipts(path)  # Verify every original receipt digest again after compaction.
+    return sum(p.stat().st_size for p in DESTINATION.rglob('*') if p.is_file())
 
 
 def run(name, case=None, mode='baseline'):
