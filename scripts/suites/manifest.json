@@ -2176,6 +2176,15 @@
    ],
    "regions": "VELDO-0329 AC1 to AC3: both git hooks installed in the shared or the configured hooks folder with an existing hook's lines kept, the session hooks installed in every named client account folder, reconcile's report of a missing hook, and the install at the service's start. Fix round rows: a hooks path set outside the repository's local configuration, a hooks folder that is linked, relative or inside a work tree, a git that does not run, two installations naming one folder, a settings file with a key written twice or written meanwhile, and a CLI that blocks or ignores TERM. Second fix round rows: a hooks path in a linked worktree's own configuration file, and a local hooks path that comes from an included file.",
    "requires_note": "Only ROOT and expect. Temporary git repositories whose installed hooks git itself runs, SQLite, a real Ledger with signed observer packets over the spool socket, real settings files. The CLI the git hooks start is a fixture script that writes down what it was given."
+  },
+  {
+   "name": "157_veldo_0206_suite_reuse",
+   "file": "157_veldo_0206_suite_reuse.py",
+   "requires": [
+    "157_veldo_0206_suite_reuse"
+   ],
+   "regions": "VELDO-0206 AC1 to AC3: exact input suite result reuse. suite-reuse/closure (every changed input, prerequisite state included, misses and an untouched qualified suite hits), suite-reuse/pass-only (failed, timed-out, selector, corrupt and signed-but-invalid records never replace a fresh suite) and suite-reuse/receipts (cold, warm, mixed and force-fresh counts, planted stale records, a fresh failure red beside hits, and the production gate script over the fixture).",
+   "requires_note": "Only ROOT and expect. The production gate_reuse.py, selftest.py, run_scope.py and verify.sh over a fixture repository of six fixture suites, with the VELDO-0205 store in a temporary private folder. Child dispatchers and one serial gate; no engine, no service, no network."
   }
  ],
  "resource_capacities": {
