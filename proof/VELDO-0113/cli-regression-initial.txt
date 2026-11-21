@@ -1,0 +1,12 @@
+Diagnostic output projection; routine runner inventory and fixture chatter omitted.
+Original stdout SHA-256: efe1a4ee2edbc1dd8da07191e1e9b8576d7f407b2bf78de35dc756cf13b5a508
+Selected selftest only: no canonical unit or gate pass is claimed.
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmp71rug1gd/proof4.json: criterion AC1 passed without evidence
+  SELFTEST FAIL: suite attr check ANTI-VACUITY: it is actually reading a large corpus, not passing because it found nothing to check
+  /tmp/tmpp36nkbix.json: criterion AC1 passed without evidence
+  01_warp_0101_reviewer_notes                    621 passed   15.38s
+  03_plugin_extension_loading_runner             261 passed   12.54s
+  04_run_status_reader_veldo                     254 passed    5.43s
+  06_capabilities_manifest_honesty_veldo         262 passed    9.36s
+selftest (PARTIAL, 4 of 256 suites): 1424 passed, 1 failed in 42.71s

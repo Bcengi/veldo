@@ -1,6 +1,6 @@
 --- a/bin/veldo
 +++ b/bin/veldo
-@@ -300,6 +300,7 @@
+@@ -304,6 +304,7 @@
      retains the library/test loop seam; the command line cannot inject one.
      """
      if dispatcher is None:

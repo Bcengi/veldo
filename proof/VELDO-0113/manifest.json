@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0113",
-  "commit": "979b95c0f67343b29ebf29a086f1432b79130b7b",
+  "commit": "752e7f963072684546ded9027dd63b441a8389e8",
   "producer": "Codex",
-  "produced_at": "2026-11-21T10:34:26.218250+00:00",
+  "produced_at": "2026-11-21T12:33:26.739978+00:00",
   "status": "blocked",
   "acceptance_complete": false,
   "criteria": [
@@ -14,7 +14,12 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0113/restored-full-matrix.json.gz",
-          "detail": "Exact 42-case product; all 22 external calls refuse. The shared census is INCOMPLETE, so absence stands down. Construction fails at both shipped CLI sites."
+          "detail": "Exact 42-case product; all 22 external calls refuse. In-process construction PASS with no CLI exemption; both outside-construction falsifiers FAIL for their added site and final restoration PASS. Shared qualification remains INCOMPLETE, so live absence stands down."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0113/autostart113-reaped-fallback.json.gz",
+          "detail": "Forbidden births captured and terminal, but the required absence row remains STANDS DOWN; not a valid AC1 red/green drive."
         },
         {
           "type": "unit",
@@ -30,7 +35,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0113/autostart113-transient-abstract-listener.json.gz",
-          "detail": "18 service events captured, but incomplete qualification requires stand-down and prevents the required false-row drive."
+          "detail": "Transient service effects captured, but incomplete qualification requires stand-down and prevents the required false-row drive."
         }
       ]
     },
@@ -40,8 +45,8 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0113/final-integration-summary.txt",
-          "detail": "All eight faults driven across 22 external cases. Unmodified propagation preserves all three names; incomplete-as-success mutation refutes the needs-census protocol. Full red/green acceptance is unavailable because construction controls fail and qualification remains incomplete."
+          "ref": "proof/VELDO-0113/autostart113-incomplete-counts-as-success.json.gz",
+          "detail": "All eight faults driven across 22 external cases. The mutation makes no-auto-start-needs-census FAIL for incomplete_census_accepted; unmodified propagation preserves all three names. Full acceptance still requires healthy COMPLETE qualification."
         }
       ]
     }
@@ -55,82 +60,120 @@
       "ref": "proof/VELDO-0113/lint-current.txt"
     },
     {
+      "name": "template-sync",
+      "status": "passed",
+      "exit_code": 0,
+      "command": "bash scripts/check_template_sync.sh",
+      "ref": "proof/VELDO-0113/template-sync-current.txt"
+    },
+    {
       "name": "personal-setup",
       "status": "passed",
       "exit_code": 0,
-      "command": "check_personal_setup.sweep over changed files and all ticket proof files",
+      "command": "check_personal_setup.sweep over every changed source file and all ticket proof files",
       "ref": "proof/VELDO-0113/personal-setup-current.txt",
-      "detail": "Sweep avoids ancestry discovery; zero findings required."
+      "detail": "No ancestry discovery. Zero findings required."
     },
     {
       "name": "gate-mutations-finding-113",
       "status": "failed",
       "command": "python3 -B scripts/check_gate_mutations.py --finding 113",
       "ref": "proof/VELDO-0113/gate-mutations.txt",
-      "detail": "Selected mutation stage, not the canonical gate. See retained actual failure reason and per-case outcomes."
+      "detail": "Selected standard coordinator, not the canonical gate. Actual worker reasons retained in mutation-worker-findings.txt."
     }
   ],
   "falsifiers": {
-    "registered": 4,
-    "attempted": 4,
-    "valid_red_green": false,
-    "reason": "AC1/AC2 rows stand down on incomplete receipts; construction baseline already fails. No valid overall rejection claim."
+    "registered": 5,
+    "executed": 5,
+    "standard_rejected": 0,
+    "valid_overall_red_green": false,
+    "structural_red_green": [
+      "autostart113-construction-outside-authority",
+      "autostart113-cli-direct-construction"
+    ],
+    "protocol_refutation": "autostart113-incomplete-counts-as-success",
+    "reason": "AC1/AC2 rows require COMPLETE qualification. Standard confined controls cannot arm ptrace; completed client refusal and exercised fault matrix assertions fail. Construction controls now PASS."
   },
   "source_sha256": {
+    ".veldo/control_service.py": "7019a58e4870883f48c0d48088cb2b66eb95fc97e1b0b9d966af622d8ee1e3c4",
+    "bin/veldo": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
+    "engine/.veldo/control_service.py": "7019a58e4870883f48c0d48088cb2b66eb95fc97e1b0b9d966af622d8ee1e3c4",
+    "engine/bin/veldo": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
+    "scripts/check_teeth_mutations.py": "47676d080a3560bf15b8cb8b18cf52783c1e61a62ab5e3d4b86e4f60ac3d83d4",
+    "scripts/fixtures/lifecycle_census.py": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
     "scripts/fixtures/no_autostart.py": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
     "scripts/fixtures/registered_clients.py": "613f3c8c6edfe84196d9a747589475474dd84056001bbaf38c0d119384435b2c",
-    "scripts/fixtures/lifecycle_census.py": "0a02f10e52ab96519b7b909cfc905fb2350c6c081f13c7d34719b2ce64f3fe9a",
-    "scripts/suites/114_veldo_0113_no_autostart.py": "97052a6009a8616ff96779351191f11b9b87654cf2b4f14e259cd78d2531fe0d",
-    "scripts/check_teeth_mutations.py": "a6b8b66ef71a738f558fb575fe069d297f13a9d861c97849385f60282f7eac01",
-    "scripts/suites/manifest.json": "bc52a8ce16218d33355eb0ceca8b58c161af26976a65eb12240a3a81d1c63d0c",
-    "scripts/suites/requires.json": "ff26e677f60d1af6fe59c42c07d451e4963cf39454057b50d8759f8bd5044c6d"
+    "scripts/suites/114_veldo_0113_no_autostart.py": "09920382f8f56c115b9d3fbbc7450ff824d10b6d8c1907ae9145570e4c481257",
+    "scripts/suites/115_veldo_0113_work_client.py": "30dbc32ad12a2599f564b61bdb0f011337c860f7f29f15bbbf31023446a4b6d7",
+    "scripts/suites/49_veldo_0109_unavailable.py": "c7c5ccbe2ce9ce94ce876390075b529bc5a58981026be9f810b6a49c94fdbecb",
+    "scripts/suites/manifest.json": "26e5e674eac94ffe4f3474073fbdc3314f79b076b71fe1804cbaaa9a2cd8fbb6",
+    "scripts/suites/requires.json": "7810bd83f7215a297171d15ad2fec48427a643be707552d50d048b75074e0e34",
+    "specs/VELDO-0113-no-client-auto-starts-authority.md": "f2d062229633e2df51d31756fb82900d2196b9ee05c940e6b5eac195de39d058"
   },
   "full_gate_run": false,
   "protected_paths_touched": [],
-  "rollback": "Revert the consumer fixture, suite, registrations and their proof wiring together; retain the evidence gaps as open.",
+  "rollback": "Revert the work IPC boundary, consumer fixture, suites, registrations and proof wiring together; keep the evidence gaps explicit.",
   "remaining": [
-    "Lead decision on Dispatcher construction at bin/veldo:285 and engine/bin/veldo:285.",
-    "VELDO-0111 implementation must provide COMPLETE qualification before AC1/AC2 false-row drives or absence acceptance are possible.",
-    "Resolve selected mutation coordinator failures without inventing an owner-controlled confinement exemption.",
+    "VELDO-0111 COMPLETE qualification for the remaining absence and healthy-observer obligations.",
+    "Standard mutation confinement denies the required ptrace mechanism; five invalid-baseline outcomes remain, with no exemption introduced.",
+    "Process-specific store-write grant is GAP, assigned by the lead to a separate security ticket.",
     "Independent review and the lead-queued canonical gate."
   ],
   "artifact_sha256": {
-    "proof/VELDO-0113/README.md": "0fb342a3bc4987b0467f900c00d235d930c5084059f0a0b773b29a729313425c",
-    "proof/VELDO-0113/autostart113-construction-outside-authority-run.txt": "715ec6f40900afde3c96b72751aadb8fceae7ab9c5e72184fa848d956000dbf6",
+    "proof/VELDO-0113/README.md": "b61b58c2244586df13718558fd35a7f391fe02a6d88827ee1742eb8ce4772609",
+    "proof/VELDO-0113/authority-regression.txt": "5eb9f7b136e84941e22844e4276dfe86403d256c9fa0d98f008d31e09a69d46f",
+    "proof/VELDO-0113/autostart113-cli-direct-construction-run.txt": "3df3514deb8b08a54a07c9c09eb1c0330108aae8433f630b2ef8f992b56681dd",
+    "proof/VELDO-0113/autostart113-cli-direct-construction.diff": "e31856a6fbcc51e4aa2edfc825ba89e51ff2b56907fd8c73cb5c5d581841cd2a",
+    "proof/VELDO-0113/autostart113-cli-direct-construction.json.gz": "072fa295c22729f0c0407f8b64c1f54fcdbafccd1400c14f71c1be305e215296",
+    "proof/VELDO-0113/autostart113-cli-direct-construction.txt": "178d7889deedca3d3634a0df93543918a6da4fced8387aa82266df81a9f5888a",
+    "proof/VELDO-0113/autostart113-construction-outside-authority-run.txt": "c449078d339095a0174845104cbadd14ecfe765d1fadcc75976b80ddd1cb92bc",
     "proof/VELDO-0113/autostart113-construction-outside-authority.diff": "4562f9c9fe9a08512baeeece2ca3727a457a282aabb22459fa7f7c8fa532efea",
-    "proof/VELDO-0113/autostart113-construction-outside-authority.json.gz": "6129390afbd2ec3dbffb91402711707b24b9e0166e412730b46a6765ead4c7d7",
-    "proof/VELDO-0113/autostart113-construction-outside-authority.txt": "4e0078231a09bb1268a4cd241f6c121da2d415b8f65166c37c11edc84156932e",
-    "proof/VELDO-0113/autostart113-incomplete-counts-as-success-run.txt": "f7aa5cacb4adcbb53fa40d21c99543198076798b1b1ea83365a2371149c185cf",
+    "proof/VELDO-0113/autostart113-construction-outside-authority.json.gz": "7b5e7a14f1742a96a08dff8d8eaaf003c1e709af1b3325594dc91dbf7d99ad67",
+    "proof/VELDO-0113/autostart113-construction-outside-authority.txt": "f229952bf96e56ece415ca1860282dfa9f71bfc6b57afe8f10320867c5a4f56d",
+    "proof/VELDO-0113/autostart113-incomplete-counts-as-success-run.txt": "7e0b643ec2ef3e293f2a10d6988aef595a53e9a9225d3e82ecfd46abb59e8593",
     "proof/VELDO-0113/autostart113-incomplete-counts-as-success.diff": "b032c68c9423e23604c13a9f537a9fdc142b49d5771e309d1e4c9aa61a472027",
-    "proof/VELDO-0113/autostart113-incomplete-counts-as-success.json.gz": "8ead6b6b0b19ce85865d96e5e8f7cba3d839140909b9d289b0eed5f0ddb32b27",
-    "proof/VELDO-0113/autostart113-incomplete-counts-as-success.txt": "bd7e41f7903ab86cf80feb1a243c28a68b83d4e3f789e1a89c49d3ed3762e2bb",
-    "proof/VELDO-0113/autostart113-reaped-fallback-run.txt": "d97753e9fa3d2741e11ef1327206aed288190d3b2171fbe64f801391328ffcc8",
+    "proof/VELDO-0113/autostart113-incomplete-counts-as-success.json.gz": "e35eea5be2c38bec9d16fad071764458077ae18134a95bc135f00e2b86787bf6",
+    "proof/VELDO-0113/autostart113-incomplete-counts-as-success.txt": "94cdd26dee4a2e7f65f1c560149837d5990007f7d3f83816c035268c47e66cdb",
+    "proof/VELDO-0113/autostart113-reaped-fallback-run.txt": "1aba0900698441359c997e44587dd61f584e5859cc241ddd70d80dc3dbe41312",
     "proof/VELDO-0113/autostart113-reaped-fallback.diff": "2d7fc0f5c671ad2844d855bb16b2858f5f7234412ce8a20c5071e6401f59a9e9",
-    "proof/VELDO-0113/autostart113-reaped-fallback.json.gz": "505c4eab3ce86727dfb0b635a2043e8fe10153c1975c72c6db25c08ac7d4f46f",
-    "proof/VELDO-0113/autostart113-reaped-fallback.txt": "dd79fd314a19f9e1329d3232f1b68c144c51c3d2922b0e022d1af1e6d1bd30e8",
-    "proof/VELDO-0113/autostart113-transient-abstract-listener-run.txt": "338e00b0d7a67ec9a950952ff269ae6ac0a2ed04155fa3645d301b440919a3f5",
+    "proof/VELDO-0113/autostart113-reaped-fallback.json.gz": "19c2188a57f75cabe52be09abd87651660f2e75493fba4d4149eac42781ba84f",
+    "proof/VELDO-0113/autostart113-reaped-fallback.txt": "cd1956c2cf4dba426798203f3e7f03436f0a59fc2930ba56c7dc99830ce5f145",
+    "proof/VELDO-0113/autostart113-transient-abstract-listener-run.txt": "3b4c1ae9067280e87908b0cee1248680826e6c5bdd32f0fbd4ccb157412b25be",
     "proof/VELDO-0113/autostart113-transient-abstract-listener.diff": "c968dc09caf9ae0e7419dd3aa06a9d860fd2429a223d9237f503d5730c26edf9",
-    "proof/VELDO-0113/autostart113-transient-abstract-listener.json.gz": "1609cde43e413650da8c939e792150d6d61a39027d3679fc27da52531825e48d",
-    "proof/VELDO-0113/autostart113-transient-abstract-listener.txt": "9cc9391145e4d6c90364c136a7a11c78e3b0a84f42bc7a47544eb53a65c3ec6c",
+    "proof/VELDO-0113/autostart113-transient-abstract-listener.json.gz": "025ae1633492f5665c14b27c51f883296a139f6ff1e5e0247c60b218b84a042e",
+    "proof/VELDO-0113/autostart113-transient-abstract-listener.txt": "99cca85e881237a44edaaf944c7ed3f1dd53787a2472eb5205607f9970dbe604",
     "proof/VELDO-0113/census-receipt.json.gz": "8da9fd8e0ccc573774b8dc4f9873691af921ccca054e8bfa781641f4a134b2c3",
-    "proof/VELDO-0113/construction-census.txt": "679fdcf6cae06058b5a95edb1539d04b6213cd9540257c57bacfe1758f7a16fd",
+    "proof/VELDO-0113/cli-regression-initial.txt": "f365f81deb9608c1a32ceb7a217a819581f9101522bf4db418386a1ed066e270",
+    "proof/VELDO-0113/cli-regression-restored.txt": "7dd75321b7940b883d17d026b6031c498c0b36ee953086819a30900b09b0a88e",
+    "proof/VELDO-0113/construction-census.txt": "5a99ec4f20a3dfa67e3cc58afca2a0eeece2f64e9ce2f5ed147835daa0d616a9",
     "proof/VELDO-0113/contract-gap.txt": "f1e3b437cddc56ce02cf9965cb0a8f4bcde12a1cebec70348ab0f09daf5ef022",
-    "proof/VELDO-0113/effect-diagnostics.txt": "5a5cf56cab08df4de154716c751e798a27a755784e19a157036af7189cc21730",
+    "proof/VELDO-0113/effect-diagnostics.txt": "36c63c93d7bb285ae854f24c98d1b99819ee6ddc28543dc81ab270c14c7531a3",
     "proof/VELDO-0113/evaluator-unit-controls.txt": "ee2b2640c4baca943ff8084693c490f636fa81396fb6a0ae19591be7348625a8",
-    "proof/VELDO-0113/final-integration-summary.txt": "6b430b967a68f0636f71bae1ef515256971c7f4639603ec55549d9f0305d8ddb",
-    "proof/VELDO-0113/gate-mutations.txt": "e51f72f8a5b8f95292c5bcce7396f4efa2ccb5f3b9693e7688bd44226ee778ff",
+    "proof/VELDO-0113/final-integration-summary.txt": "7f5c68eff02ddec13ea98113ac397e15ba5e9982474e9f1a20c65c06e5ef7c51",
+    "proof/VELDO-0113/gate-mutations.txt": "876927cb6fd8cdbc74374199818f1909358fc5097b40ccc55801aeb47ab71925",
     "proof/VELDO-0113/historical-implementation-runs.txt": "12c70dd804b06087351a11aae496a8a68e4eb46eff752e9b8f2bc83323c51f0b",
-    "proof/VELDO-0113/lint-current.txt": "2d80674c780d4f7f16ee016786c525e08b3db71494b4e4fb2727dce42df78255",
+    "proof/VELDO-0113/lint-current.txt": "60458f7185d7e3a42b1c1d40c977a3ebb24f534d9f9271edd16ca8e4b1e12114",
     "proof/VELDO-0113/lint.txt": "8c6104bd4882d4d8c623cb9fcdc92fc980bcb4cea3e14d812d2ce0a9d49e6e3e",
-    "proof/VELDO-0113/mutation-worker-findings.txt": "9c6c6193aea93f633b84bcc80346fa193f673c82cde58b9a6b93aa050f86636b",
-    "proof/VELDO-0113/personal-setup-current.txt": "83334abb714773a2175055e28f368b02bc77c694d78264e7a59cc889a63fbbdd",
+    "proof/VELDO-0113/loop-regression.txt": "08bd80b003596041e6a479db7973f18b817f08ed963c1b9e66468f0109b31b97",
+    "proof/VELDO-0113/mutation-worker-findings.txt": "bef2b7526ffabf2493577e7a47586611a831670e2ad8834f92ae97d748c0bd30",
+    "proof/VELDO-0113/personal-setup-current.txt": "5b45a8db92efcb166278afbbfcaaf55875b742a16e901ad15a7f62078f9e80e8",
     "proof/VELDO-0113/personal-setup.txt": "83334abb714773a2175055e28f368b02bc77c694d78264e7a59cc889a63fbbdd",
     "proof/VELDO-0113/reproduce_contract_gap.py": "7096c5f557a0edfd9bd44c6058f431e35d775b17ce907ea10513b0a671be987b",
-    "proof/VELDO-0113/restored-full-matrix-run.txt": "804efcecceebbbc123aa5ee9471b35115024714e882311c3b5846859484989c6",
-    "proof/VELDO-0113/restored-full-matrix.json.gz": "168938ebe829307b8823fcf0b41909f847e4e9244ec3777b3083be601570baac",
-    "proof/VELDO-0113/restored-full-matrix.txt": "15f7c4046086f46a009de12651a98793c655b4944cd8f0d4caa6bb2226abf917",
-    "proof/VELDO-0113/run_checks.py": "643640dfcecc0b5871089f9a5c692bab5d8ca4c103bb194c11476f09d8ff20f1",
-    "proof/VELDO-0113/shared-tables.json.gz": "2dbc936ba938bbfeee79866d7748e70d7886fc9b75d98b8661cc8e4ae23dde7e",
-    "proof/VELDO-0113/structural-controls.txt": "052c42409fb1cc826fd1c14f75ee843996bc933f2d45a8ab42072638b1c5728a"
+    "proof/VELDO-0113/restored-full-matrix-run.txt": "927bf442a6e2fcdb17456248c3159c854c5237985dfeb160ee4ce67798a417bf",
+    "proof/VELDO-0113/restored-full-matrix.json.gz": "01c7f99b8d3ec943aa662be651c837104e378af4168304d021659321ecbc1bdb",
+    "proof/VELDO-0113/restored-full-matrix.txt": "805b46a08d980caf01e533e54210d061bc8182a38f53c3ff6a0cb79c1b1efb0e",
+    "proof/VELDO-0113/run_checks.py": "cfcc443d21031588831edafc82fc48851e5653019008afb4df3a034f89d6b498",
+    "proof/VELDO-0113/selftest-0109-current.txt": "006dceb80b15efa3a8020dc84f0e9742151f937518ca77320c0fcdd95cc7ce4d",
+    "proof/VELDO-0113/selftest-0111-current.txt": "56817c1708329134fff92cf890bc401b3b0f783ff7fb66505e137dddd317e1ac",
+    "proof/VELDO-0113/selftest-0112-current.txt": "44d721382f0427d507a0e96d598010a0120b2f4dad41fb358ec3dcf41435ddeb",
+    "proof/VELDO-0113/selftest-0113-final.txt": "6d23758d4b256ce5ae873dc7657eaa0de2f1d58a3eff7c304e9b95fa4e4fa8c7",
+    "proof/VELDO-0113/selftest-0113.txt": "b287434f5c5c70ab6a671f6ac9cd3d04ba5f7989e1d0e3d4c5e51718508a5360",
+    "proof/VELDO-0113/shared-tables.json.gz": "756cb7fd389c8b72f2544d214a25308b5848eebfd558823b0f822ead464573e5",
+    "proof/VELDO-0113/structural-controls.txt": "052c42409fb1cc826fd1c14f75ee843996bc933f2d45a8ab42072638b1c5728a",
+    "proof/VELDO-0113/suite-0109.txt": "27471a412dbe92f9f0c8327713c9e182b614a1180b912c405f3a3da5550a64ac",
+    "proof/VELDO-0113/suite-0111.txt": "6ecb42242271bc0e3fe9f8decc36cf7208f028fe65b35d54e8b686c24b253a48",
+    "proof/VELDO-0113/suite-0112.txt": "34c870d332584ff12b58cf8290825faee4c0d03fd4bc23f969612757701f3b46",
+    "proof/VELDO-0113/template-sync-current.txt": "a9c933d1343228f6e83f908005f43bd650d15e4e0c92bd7cd29e5b7e487c5f61",
+    "proof/VELDO-0113/work-client-integration.txt": "c3fddf8cebd863f9bf40b4ea833e4fe6021f9e4a51a96389b212b152d80d5ded"
   }
 }

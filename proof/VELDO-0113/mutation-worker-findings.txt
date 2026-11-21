@@ -1,48 +1,210 @@
 {
-  "note": "Projection of standard coordinator worker observations; raw stdout hashes identify retained external worker logs.",
+  "note": "Actual standard worker findings. Repeated refusal details retain count, identities and first/last records; raw stdout hashes identify external originals.",
   "workers": [
     {
-      "worker": "0",
+      "worker": "4",
       "mode": "baseline",
-      "case": "autostart113-reaped-fallback",
-      "raw_stdout_sha256": "853a24cccbfe39af602a5f71f149ab17fd6fc973ebc70a17376a39b99e33a15e",
+      "case": "autostart113-construction-outside-authority",
+      "raw_stdout_sha256": "b7cd445aa8bc40ec1b821190dd9281cafe140f7eb62a290698690e8bf3224291",
       "replacement_count": 1,
-      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
-      "new_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "new_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
-        "unavailable/no-client-starts-the-authority": [
+        "unavailable/in-process-construction-boundary": [
           true
         ]
       }
     },
     {
-      "worker": "1",
-      "mode": "noop",
+      "worker": "0",
+      "mode": "baseline",
       "case": "autostart113-reaped-fallback",
-      "raw_stdout_sha256": "853a24cccbfe39af602a5f71f149ab17fd6fc973ebc70a17376a39b99e33a15e",
+      "raw_stdout_sha256": "5ff6b1777f82e4bedd24d5bd080227e1f0109754999795864543420a5b955ee3",
       "replacement_count": 1,
       "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
       "new_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
@@ -55,19 +217,100 @@
       "worker": "2",
       "mode": "baseline",
       "case": "autostart113-incomplete-counts-as-success",
-      "raw_stdout_sha256": "d9fd7de6889e27d5a39c4f99d86f7501753f1d0a6afd5acb7479700f27ee865c",
+      "raw_stdout_sha256": "416258d6d7dcb2baa6f9fd5f376f6ab469a7f90952fa5953a9fe03d6ecd4fd17",
       "replacement_count": 1,
       "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
       "new_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
@@ -80,19 +323,100 @@
       "worker": "3",
       "mode": "noop",
       "case": "autostart113-incomplete-counts-as-success",
-      "raw_stdout_sha256": "d9fd7de6889e27d5a39c4f99d86f7501753f1d0a6afd5acb7479700f27ee865c",
+      "raw_stdout_sha256": "416258d6d7dcb2baa6f9fd5f376f6ab469a7f90952fa5953a9fe03d6ecd4fd17",
       "replacement_count": 1,
       "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
       "new_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
@@ -102,27 +426,108 @@
       }
     },
     {
-      "worker": "4",
-      "mode": "baseline",
-      "case": "autostart113-construction-outside-authority",
-      "raw_stdout_sha256": "fde2488674da08a711e20d3e93bf03b63807babc6f9e7cae7365cbe54103b84e",
+      "worker": "7",
+      "mode": "noop",
+      "case": "autostart113-cli-direct-construction",
+      "raw_stdout_sha256": "37f6b4272fbfd622e3a90b2c8535bb3b1717d1858e77c1a8fad5a37bf4c61f39",
       "replacement_count": 1,
-      "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
-      "new_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
+      "old_digest": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
+      "new_digest": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
         "unavailable/in-process-construction-boundary": [
-          false
+          true
         ]
       }
     },
@@ -130,44 +535,312 @@
       "worker": "5",
       "mode": "noop",
       "case": "autostart113-construction-outside-authority",
-      "raw_stdout_sha256": "fde2488674da08a711e20d3e93bf03b63807babc6f9e7cae7365cbe54103b84e",
+      "raw_stdout_sha256": "b7cd445aa8bc40ec1b821190dd9281cafe140f7eb62a290698690e8bf3224291",
       "replacement_count": 1,
       "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
       "new_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
         "unavailable/in-process-construction-boundary": [
-          false
+          true
         ]
       }
     },
     {
       "worker": "6",
-      "mode": "mutant",
-      "case": "autostart113-reaped-fallback",
-      "raw_stdout_sha256": "63886c440c4cbc4b61116f08db4f0a86980da0b51a80381a72de753d1bb40e3f",
+      "mode": "baseline",
+      "case": "autostart113-cli-direct-construction",
+      "raw_stdout_sha256": "37f6b4272fbfd622e3a90b2c8535bb3b1717d1858e77c1a8fad5a37bf4c61f39",
       "replacement_count": 1,
-      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
-      "new_digest": "17b70518329cc22798fa9c9770654c0428a66764d4ec51ca4b8eb65dc15b45dc",
+      "old_digest": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
+      "new_digest": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
+        ]
+      ],
+      "targets": {
+        "unavailable/in-process-construction-boundary": [
+          true
+        ]
+      }
+    },
+    {
+      "worker": "1",
+      "mode": "noop",
+      "case": "autostart113-reaped-fallback",
+      "raw_stdout_sha256": "5ff6b1777f82e4bedd24d5bd080227e1f0109754999795864543420a5b955ee3",
+      "replacement_count": 1,
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
@@ -177,22 +850,103 @@
       }
     },
     {
-      "worker": "7",
+      "worker": "9",
       "mode": "mutant",
       "case": "autostart113-transient-abstract-listener",
-      "raw_stdout_sha256": "212b7e0ef6a815ab6899c3d0671a875843214d2e66e799a62815fdf2cb2a8b96",
+      "raw_stdout_sha256": "ddcd63dd8bc28f8ca57b1af7c98d059b47629397ddcf01ca81ed8c62a071c344",
       "replacement_count": 1,
       "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
       "new_digest": "5fb88003c220644f13cdfc9130cf868d93051b3e4105983a632179e841165397",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
@@ -204,39 +958,114 @@
     {
       "worker": "8",
       "mode": "mutant",
-      "case": "autostart113-incomplete-counts-as-success",
-      "raw_stdout_sha256": "0ae9a1284adf0c296a5e7ca91695040c541754f4133b6ac7d025427341e606f5",
+      "case": "autostart113-reaped-fallback",
+      "raw_stdout_sha256": "e38095ffc9ab60b5b9ec33321aed704337d71dcefd5ea1c9bcea1375e7f8e578",
       "replacement_count": 1,
-      "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
-      "new_digest": "e86ae7a1d5bb024c41b208344707200bc0b9878b11b1bc7ebc21801aa5caa442",
+      "old_digest": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+      "new_digest": "17b70518329cc22798fa9c9770654c0428a66764d4ec51ca4b8eb65dc15b45dc",
       "failed_rows": [
-        "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
-        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
         "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
-        "VELDO-0113 protocol unavailable/faults-preserve-all-three-rows",
         "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
       ],
       "failed_details": [
         [
-          "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
-          "{\"status\": \"FAIL\", \"reason\": \"incomplete_census_accepted\", \"inventory_digest\": \"8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e\"}"
-        ],
-        [
-          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {
-        "unavailable/no-auto-start-needs-census": [
-          false
+        "unavailable/no-client-starts-the-authority": [
+          true
         ]
       }
     },
     {
-      "worker": "9",
+      "worker": "11",
       "mode": "mutant",
       "case": "autostart113-construction-outside-authority",
-      "raw_stdout_sha256": "a6b3941e7b5ad92f998133f7fc71118d19d3a4d7900b2dd86e72d4ca2475b1e9",
+      "raw_stdout_sha256": "2e62e7aa51f9c37cdb3e6c81c90c30dd6b157dda03d736680551386d2e687327",
       "replacement_count": 1,
       "old_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
       "new_digest": "f4023d205e6e83e69948490a7eb046e0c1d80cbd68dd58c776393734a18eb0c0",
@@ -248,7 +1077,330 @@
       "failed_details": [
         [
           "VELDO-0113 protocol unavailable/in-process-construction-boundary",
-          "{\"status\": \"FAIL\", \"reason\": [\"outside_authority:.veldo/claim.py:62\", \"outside_authority:bin/veldo:285\", \"outside_authority:engine/bin/veldo:285\"]}"
+          {
+            "status": "FAIL",
+            "reason": [
+              "outside_authority:.veldo/claim.py:62"
+            ]
+          }
+        ],
+        [
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
+        ]
+      ],
+      "targets": {
+        "unavailable/in-process-construction-boundary": [
+          false
+        ]
+      }
+    },
+    {
+      "worker": "10",
+      "mode": "mutant",
+      "case": "autostart113-incomplete-counts-as-success",
+      "raw_stdout_sha256": "5fc284318743bafbf2f15997459fc9862125f437e2a33d632a1d8918d926139a",
+      "replacement_count": 1,
+      "old_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
+      "new_digest": "e86ae7a1d5bb024c41b208344707200bc0b9878b11b1bc7ebc21801aa5caa442",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/faults-preserve-all-three-rows",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/no-auto-start-needs-census",
+          {
+            "status": "FAIL",
+            "reason": "incomplete_census_accepted",
+            "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e"
+          }
+        ],
+        [
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
+        ]
+      ],
+      "targets": {
+        "unavailable/no-auto-start-needs-census": [
+          false
+        ]
+      }
+    },
+    {
+      "worker": "12",
+      "mode": "mutant",
+      "case": "autostart113-cli-direct-construction",
+      "raw_stdout_sha256": "b1bf127e6ec4f5d48f5df1f697f251842e1d9a6bf17e45ec10e312068b25121f",
+      "replacement_count": 1,
+      "old_digest": "60b91c103c9ef485e47bf3be097dc171a3a8669175e431f5915a5c2cbeff0701",
+      "new_digest": "588b5668ec46b9f4027e49acc64312233c8359a31b6ce47bc9cb09108852c697",
+      "failed_rows": [
+        "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+        "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+        "VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised"
+      ],
+      "failed_details": [
+        [
+          "VELDO-0113 protocol unavailable/in-process-construction-boundary",
+          {
+            "status": "FAIL",
+            "reason": [
+              "outside_authority:bin/veldo:307"
+            ]
+          }
+        ],
+        [
+          "VELDO-0113 protocol unavailable/each-external-client-reaches-refusal",
+          {
+            "count": 22,
+            "first": {
+              "identity": "claim:claim/local_ipc/absent",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "last": {
+              "identity": "control_relay:main/relay/sigkill_socket",
+              "observation_failures": [
+                {
+                  "capability": "PTRACE_TRACEME",
+                  "category": "observer_unavailable",
+                  "reason": "root did not reach pre-exec stop",
+                  "state": "arming"
+                },
+                {
+                  "capability": "protocol_inventory_bounds",
+                  "category": "observation_incomplete",
+                  "reason": "bounded protocol discovery does not fully qualify the four required families",
+                  "state": "arming"
+                },
+                {
+                  "capability": "operation_configuration",
+                  "category": "observation_incomplete",
+                  "reason": "available socket needs a qualified address or operation configuration",
+                  "state": "arming"
+                }
+              ],
+              "observer_error": "[Errno 1] Operation not permitted",
+              "outcome": {
+                "reason": "invocation_incomplete",
+                "refused": false
+              }
+            },
+            "all_identities": [
+              "claim:claim/local_ipc/absent",
+              "claim:heartbeat/local_ipc/absent",
+              "claim:release/local_ipc/absent",
+              "control_claim_client:Client.claim/local_ipc/absent",
+              "control_claim_client:Client.heartbeat/local_ipc/absent",
+              "control_claim_client:Client.release/local_ipc/absent",
+              "control_claim_client:Client.request/local_ipc/absent",
+              "control_claim_client:Client.use/local_ipc/absent",
+              "control_client:send/local_ipc/absent",
+              "control_relay:forward/relay/absent",
+              "control_relay:main/relay/absent",
+              "claim:claim/local_ipc/sigkill_socket",
+              "claim:heartbeat/local_ipc/sigkill_socket",
+              "claim:release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.claim/local_ipc/sigkill_socket",
+              "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
+              "control_claim_client:Client.release/local_ipc/sigkill_socket",
+              "control_claim_client:Client.request/local_ipc/sigkill_socket",
+              "control_claim_client:Client.use/local_ipc/sigkill_socket",
+              "control_client:send/local_ipc/sigkill_socket",
+              "control_relay:forward/relay/sigkill_socket",
+              "control_relay:main/relay/sigkill_socket"
+            ]
+          }
         ]
       ],
       "targets": {

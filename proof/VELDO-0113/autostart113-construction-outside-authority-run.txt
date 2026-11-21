@@ -1,16 +1,2 @@
-command: -B proof/VELDO-0113/run_checks.py --case autostart113-construction-outside-authority
-exit_code: 1
-Traceback (most recent call last):
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 162, in <module>
-    args = parser.parse_args()
-    ^^^^^^
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 153, in main
-    assert result['faults_ok'] and all(result['protocol_controls'].values())
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 120, in run
-    helper = load(ROOT / 'scripts/fixtures/no_autostart.py', 'no_autostart_copy')
-              ^^^^^^^^^^^^^^^^^^^^
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 49, in retain
-    (DESTINATION / (name + '.json.gz')).write_bytes(gzip.compress(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError
+Diagnostic output; original SHA-256: fabbb2cd72debb80eaa8993b525b5ff50c8e12225cd8876d07eca2976a2cfe2c
+autostart113-construction-outside-authority {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'FAIL', 'unavailable/store-write-grant': 'GAP'}

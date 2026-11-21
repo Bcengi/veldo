@@ -1,0 +1,48 @@
+{
+  "name": "autostart113-cli-direct-construction",
+  "rows": {
+    "unavailable/no-client-starts-the-authority": {
+      "status": "STANDS DOWN",
+      "reason": "census_incomplete",
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e"
+    },
+    "unavailable/no-client-hosts-a-listener": {
+      "status": "STANDS DOWN",
+      "reason": "census_incomplete",
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e"
+    },
+    "unavailable/no-auto-start-needs-census": {
+      "status": "STANDS DOWN",
+      "reason": "census_incomplete",
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e"
+    },
+    "unavailable/in-process-construction-boundary": {
+      "status": "FAIL",
+      "reason": [
+        "outside_authority:bin/veldo:307"
+      ]
+    },
+    "unavailable/store-write-grant": {
+      "status": "GAP",
+      "reason": "no_process_specific_write_grant",
+      "observation": {
+        "pid": 2236861,
+        "writable": true
+      }
+    }
+  },
+  "metrics": {
+    "expected": 42,
+    "completed": 42,
+    "measured": 22,
+    "fault_cases": 176,
+    "construction_cases": 20,
+    "invocations_completed": 22,
+    "complete_censuses": 0,
+    "forbidden_launches": 0,
+    "observation_failures": 22
+  },
+  "qualification": "INCOMPLETE",
+  "faults_ok": true,
+  "receipt_sha256": "a3c7f57b1267a111458210972c87f534de9e4b04fa5f2884c003e1a59299b9f2"
+}
