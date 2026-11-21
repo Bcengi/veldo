@@ -25,6 +25,8 @@ def fields(receipt, force, commit=None):
         raise ValueError('missing or inconsistent mutation reuse receipt')
     answer = {'force_fresh': force, 'reused': {'unit': 0, 'mutation': receipt['reused']}}
     audit = receipt.get('audit')
+    if audit is None and (receipt['reused'] or any(r.get('audited') for r in receipt.get('results', []))):
+        raise ValueError('missing reuse audit')
     if audit is not None:
         E.check_audit(audit, receipt['reused'], force)
     if not receipt['reused'] and not (audit and audit['population']):
