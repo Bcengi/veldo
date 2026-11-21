@@ -1,0 +1,14 @@
+====================================================================================================
+CASE load358-graph-red-not-blocking targets ['leg/graph-blocks']
+baseline rc 0 rows 30 failed [] targets {'leg/graph-blocks': [True]}
+noop rc 0 rows 31 failed [] targets {'leg/graph-blocks': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -486 +486 @@
+-    if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):
++    if False:  # defect: a node after a red load-proof leg is started
+mutant rc 0 rows 31 failed ['VELDO-0358 leg/graph-blocks'] targets {'leg/graph-blocks': [False]}
+   detail VELDO-0358 leg/graph-blocks a red leg under the scheduler: stages {'lint': 'pass', 'load': 'FAIL', 'mutation': 'pass'}; a red leg under the scheduler: the mutation stage started; the held mutation node does not say why
+RESULT load358-graph-red-not-blocking REJECTED {'baseline': True, 'noop': True, 'mutant': True}
+ALL REJECTED

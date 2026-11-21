@@ -162,6 +162,13 @@ def _v358d_load_leg():
 
     # ------------------------------------------------------------------------ AC13: leg/proves-and-blocks
     legs = module('v358d_gate_legs', legs_source)
+    # Brief D's finding 4: the leg's two bounds sit in gate_load.HANG (the census reads a bound named in the
+    # file that uses it as its number). They are the contract's hang constants, the suite runtime's own.
+    hang = legs.load_generator().HANG
+    row('load/hang-constants-are-the-contract', [
+        (hang.WAIT_HANG_SECONDS, hang.PROCESS_HANG_SECONDS) != (WAITS.WAIT_HANG_SECONDS, WAITS.PROCESS_HANG_SECONDS)
+        and 'gate_load.HANG %r differs from waits.py %r' % ((hang.WAIT_HANG_SECONDS, hang.PROCESS_HANG_SECONDS),
+                                                           (WAITS.WAIT_HANG_SECONDS, WAITS.PROCESS_HANG_SECONDS))])
     runs = top / 'runs'
     count = ('import os as _fx_os\n'
              'with open(_fx_os.environ["V358D_RUNS"], "a") as _fx_out:\n'
