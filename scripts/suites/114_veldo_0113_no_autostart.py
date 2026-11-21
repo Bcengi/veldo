@@ -11,7 +11,7 @@ import shutil as _v113_shutil
 import tempfile as _v113_tempfile
 
 
-def _v113_run(root):
+def _v113_run(ROOT):
     # Explicit production/fixture anchors are consumed by the teeth driver.
     fixture_directory = ROOT / "scripts" / "fixtures"
     client = ROOT / ".veldo" / "control_client.py"
@@ -22,7 +22,7 @@ def _v113_run(root):
         helper_spec = _v113_import.spec_from_file_location('no_autostart_copy', fixture_directory / 'no_autostart.py')
         helper = _v113_import.module_from_spec(helper_spec)
         helper_spec.loader.exec_module(helper)
-        helper.copy_production(root, candidate)
+        helper.copy_production(ROOT, candidate)
         _v113_shutil.copy2(client, candidate / '.veldo/control_client.py')
         _v113_shutil.copy2(claim, candidate / '.veldo/claim.py')
         _v113_shutil.copy2(cli, candidate / 'bin/veldo')
@@ -56,5 +56,4 @@ if 'expect' in globals():
     expect('VELDO-0113 protocol unavailable/faults-preserve-all-three-rows', _v113_result['faults_ok'])
     expect('VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised', _v113_result['faults_driven'])
 elif __name__ == '__main__':
-    ROOT = _v113_Path(__file__).resolve().parents[2]
-    print(_v113_json.dumps(_v113_run(ROOT)))
+    print(_v113_json.dumps(_v113_run(_v113_Path(__file__).resolve().parents[2])))
