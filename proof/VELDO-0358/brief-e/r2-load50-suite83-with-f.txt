@@ -1,0 +1,14 @@
+Round 2, suite 83 on the temporary E+F combination (as r2-suite83-with-f.txt), fifty runs under the generator
+(--slots 4), local through host_heavy.sh.
+
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 2876760, "slots": 4, "spinners": [2876746, 2876747, 2876748, 2876749, 2876750, 2876751, 2876752, 2876753, 2876754, 2876755, 2876756, 2876757], "writers": [2876759]}
+83_veldo_0154_factory_loop: 50 runs, 49 with 0 failed
+      1   SELFTEST FAIL: VELDO-0154 loop/reset-timer-wake
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000567604, "slowdown": 4.82, "waited_ns": 3822431327}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 387.68, "pid": 2876746}, {"alive": true, "cpu": 16, "cpu_seconds": 387.68, "pid": 2876747}, {"alive": true, "cpu": 16, "cpu_seconds": 387.682, "pid": 2876748}, {"alive": true, "cpu": 17, "cpu_seconds": 379.24, "pid": 2876749}, {"alive": true, "cpu": 17, "cpu_seconds": 379
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 4549.1s (least 373.126s)
+load: 1 writers: 1 alive to the end, bytes written [1346740682752]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000567604, "slowdown": 4.82, "waited_ns": 3822431327} (data, no verdict)
+exit 0
+
+The red row's detail (run 17):
+  VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [['account_reset'], []; that pass: {"pass": 4, "at": 1795301580.0000882, "refused": [{"follows": null, "identity": "builder-154", "refusals": ["missing_authority:claim"], "repository": "repo154b22c17f58", "rerun_of": "dispatch/VELDO-9154-L4/0db4f50278ac48bcb5a28b3ce548d3c5", "station": "build", "unit": "VELDO-9154-L4"}], "waiting": [], "released": [], "faults": [], "provisioning": [{"at": 1795301580.000104, "caller": "pass", "outcome": "done", "refusal": null, "schema": "veldo.reservation_provisioning/v1", "subjects": 

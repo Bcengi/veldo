@@ -1,0 +1,17 @@
+Round 2, batch r2-load50 at 190c4e90 (local, host_heavy.sh; generator scripts/gate_load.py --slots 4).
+Suites 62, 78 and 106, fifty runs each, four at a time, each run its own selftest process.
+
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 489772, "slots": 4, "spinners": [489737, 489739, 489742, 489746, 489748, 489751, 489755, 489757, 489759, 489763, 489765, 489768], "writers": [489770]}
+62_veldo_0039_dispatch: 50 runs, 49 with 0 failed
+      1   SELFTEST FAIL: VELDO-0039 dispatch/observations: raised UnboundLocalError("cannot access local variable 'prepared_only' where it is not associated with a value")
+      1   SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema: raised OSError(19, 'No such device')
+      1   SELFTEST FAIL: VELDO-0039 ran/dispatch/observations
+      1   SELFTEST FAIL: VELDO-0039 ran/dispatch/transitions-from-schema
+      1   SELFTEST FAIL: VELDO-0039 timers/profile-applied: timer_unset {'in_process': [], 'receiver': [], 'wrapper': [], 'receiver_exit': {'awaited': 'pidfd', 'bound': 600, 'ended_by': 'exit'}, 'orphan': []}
+78_veldo_0060_claude_adapter: 50 runs, 50 with 0 failed
+106_veldo_0185_dispatch_setup: 50 runs, 50 with 0 failed
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000444006, "slowdown": 4.656, "waited_ns": 3657543867}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 579.331, "pid": 489737}, {"alive": true, "cpu": 16, "cpu_seconds": 579.336, "pid": 489739}, {"alive": true, "cpu": 16, "cpu_seconds": 579.338, "pid": 489742}, {"alive": true, "cpu": 17, "cpu_seconds": 568.563, "pid": 489746}, {"alive": true, "cpu": 17, "cpu_seconds": 568
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 6847.9s (least 567.214s)
+load: 1 writers: 1 alive to the end, bytes written [2129106305024]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000444006, "slowdown": 4.656, "waited_ns": 3657543867} (data, no verdict)
+exit 1

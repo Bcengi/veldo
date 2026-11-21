@@ -65,3 +65,16 @@ runs per suite under the generator).
 ## Not done here, for the lead
 
 See lead-items.md.
+
+## Round 2 (2026-11-21)
+
+| Commit | What |
+| - | - |
+| 69961820 | Two launch-path races. `_await_gone` takes the worker's pidfd exit as its end and never polls an empty set (brief F's lead item 6b: suite 83 hung at loop/receiver-death on every run with brief E). `Runner._stop_result`: a stop result refused stale_version because the asked receiver's exit commit landed between its version read and its commit is committed again at the version now there (round 1's open red, suite 62 dispatch/owner-stop) |
+| 3d7e2307 | Suite 62 row dispatch/owner-stop-ends-first: makes that order on every run; red on the old runner, green on the fix |
+| 190c4e90 | Lead decision: the files suites 78 and 106 open wait on events (85_veldo_0171, support/setup_runtime, support/v73_authority, proof/VELDO-0172/compare_formats); 38 baseline sites lowered |
+| d1b18d13 | `_await_gone` tolerates a group removed between its open and its first read (ENODEV; suite 62 red once in 50 loaded runs at 190c4e90) |
+| 481bd6fc | Suite 86_veldo_0168 freezes v73_authority's wall-time reader instead of its removed time module |
+
+Runs, causes and the combination with brief F: runs.md, round 2. The mutation stage again: mutants.md, round 2.
+The census passes on the full tree (no site in the four suites or the files they open).
