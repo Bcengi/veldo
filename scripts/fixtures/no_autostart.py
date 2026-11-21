@@ -444,6 +444,20 @@ def protocol_controls(census):
             r['status'] == 'STANDS DOWN' and r['reason'] == 'census_incomplete' for r in rows.values()))
     refusal = evaluate(census, complete, plan, [], dict(invoked=True, refused=False))
     controls['known_non_refusal_is_false'] = refusal['rows'][ROWS[0]]['status'] == 'FAIL'
+    for kind, name in (('birth', ROWS[0]), ('service', ROWS[1])):
+        changed = copy.deepcopy(complete)
+        if kind == 'birth':
+            changed['processes'].append(dict(identity='101:2', pid=101, root=False,
+                                             parent='100:1', terminal=4, birth=3))
+        else:
+            changed['events'].append(dict(kind='service', sequence=3, time_ns=1,
+                                          family=1, address='abstract'))
+        refuted = evaluate(census, changed, plan, [], outcome)['rows'][name]
+        controls['synthetic_complete_' + kind + '_refutes'] = (
+            refuted['status'] == 'FAIL' and refuted['reason'] == 'forbidden_autostart')
+        restored = evaluate(census, complete, plan, [], outcome)
+        controls['synthetic_complete_' + kind + '_restored'] = all(
+            r['status'] == 'PASS' for r in restored['rows'].values())
     partial = copy.deepcopy(complete)
     partial['status'] = 'INCOMPLETE'
     partial['processes'].append(dict(identity='101:2', pid=101, root=False, parent='100:1', terminal=4, birth=3))
