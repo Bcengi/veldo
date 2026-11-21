@@ -1,0 +1,37 @@
+Suites run alone (python3 scripts/selftest.py with the suite option, each in a systemd user scope with MemoryMax=8G and MemorySwapMax=0), at 0b3b30f6:
+  131_veldo_0184_file_memory: 15 rows passed in 43.86s, failed: none
+  123_veldo_0174_conversations: 38 rows passed in 9.98s, failed: none
+  127_veldo_0231_run_flags: 17 rows passed in 33.91s, failed: none
+  128_veldo_0177_conversation_workspace: 15 rows passed in 3.09s, failed: none
+  129_veldo_0177_assistant_setup: 4 rows passed in 3.33s, failed: none
+  130_veldo_0183_memory_servers: 17 rows passed in 26.37s, failed: none
+  86_veldo_0127_agent_configuration: 26 rows passed in 37.48s, failed: VELDO-0127 live/claude,VELDO-0127 live/codex
+
+Also run alone: 105, 80, 81, 82, 79 and 78 at 19d10614; 87 and 125 at 86fabe6d (whose only production change reads the
+receiver's file memory through getattr, for a receiver built without its constructor, as suite 87 builds one):
+  105_veldo_0182_memory: 127 rows passed, failed: none
+  80_veldo_0155_claude_baseline: 19 rows passed, failed: none
+  81_veldo_0156_codex_baseline: 22 rows passed, failed: none
+  82_veldo_0141_execution_record: 40 rows passed, failed: none
+  87_veldo_0127_codex_delivery: 176 rows passed, failed: none
+  125_veldo_0230_engine_census: 7 rows passed, failed: none
+  79_veldo_0061_codex_adapter: 21 rows passed, failed: none
+  78_veldo_0060_claude_adapter: 35 rows passed, failed: none
+  126_veldo_0230_qualify_reproduces: run once at 19d10614, red on qualify/reproduces (see OPEN.md items 2 and 3).
+
+86_veldo_0127_agent_configuration: live/claude and live/codex are the stale live captures (proof/VELDO-0127/evidence.py: the capture's production digest); every other row green.
+
+Fix round 1 (each alone, python3 scripts/selftest.py with the suite option, in a systemd user scope with
+MemoryMax=8G and MemorySwapMax=0), at d3ae78e4 except 131, rerun at d4f45bda (the suite reads no engine binary):
+  131_veldo_0184_file_memory: 16 rows passed in 43.90s, failed: none
+  123_veldo_0174_conversations: 38 rows passed in 9.93s, failed: none
+  127_veldo_0231_run_flags: 17 rows passed in 33.80s, failed: none
+  128_veldo_0177_conversation_workspace: 15 rows passed in 3.09s, failed: none
+  129_veldo_0177_assistant_setup: 4 rows passed in 3.35s, failed: none
+  130_veldo_0183_memory_servers: 17 rows passed in 26.38s, failed: none
+  86_veldo_0127_agent_configuration: 26 rows passed in 36.87s, failed: VELDO-0127 live/claude,VELDO-0127 live/codex
+  95_veldo_0203_owner_revisions: 36 rows passed in 5.36s, failed: none (control_owner_revisions.py changed)
+  80_veldo_0155_claude_baseline: 19 rows passed in 13.92s, failed: none (control_engine_claude.py changed)
+  125_veldo_0230_engine_census: 7 rows passed in 6.86s, failed: none
+  126_veldo_0230_qualify_reproduces: 1 row passed, red on qualify/reproduces: the Codex records' flag_means and the
+    VELDO-0127 resource captures, none from this change (suite-126.txt); both Claude Code records reproduce.

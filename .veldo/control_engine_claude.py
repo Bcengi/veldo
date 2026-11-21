@@ -1452,6 +1452,45 @@ BASELINE = {
     'mcp_config': {'mcpServers': {}},
 }
 SETTINGS_FILE, MCP_FILE = 'settings.json', 'mcp.json'
+# VELDO-0184 AC1: the file memory form, read from the 2.1.281 bytes (proof/VELDO-0184/engine-memory-forms.json):
+# the binary's auto-memory directory is the first `autoMemoryDirectory` among policySettings, flagSettings, (local and
+# project settings only when trusted) and userSettings, so the generated `--settings` file (flagSettings) sets it,
+# and `autoMemoryEnabled` true with CLAUDE_CODE_DISABLE_AUTO_MEMORY unset turns auto memory on; the init event's
+# `memory_paths` ({auto, team}) names the directories it loaded, the directory written with a trailing separator.
+# A version's qualification entry lists it as `file_memory`, which must equal this, else a run that lists the item
+# is refused by name before acceptance.
+FILE_MEMORY = {
+    'settings': {'enabled': 'autoMemoryEnabled', 'directory': 'autoMemoryDirectory'},
+    'source': 'flagSettings',
+    'settings_option': '--settings',
+    'unset_environment': ['CLAUDE_CODE_DISABLE_AUTO_MEMORY'],
+    'init_field': 'memory_paths',
+}
+FILE_MEMORY_FORM = 'claude_code:flagSettings:autoMemoryDirectory'
+# The byte patterns FILE_MEMORY is read from (VELDO-0184 AC1, proof/VELDO-0184/engine-memory-forms.json): each the
+# extractor's 2.1.281 literal with the bundle's minified names (`~`) left open, so a later bundle carrying the same
+# code under other names is read the same way. Every pattern must be found for a version's record to list the form.
+_NAME = rb'[\w$]+'
+FILE_MEMORY_PATTERNS = tuple((what, re.compile(pattern.replace(b'~', _NAME))) for what, pattern in (
+    ('directory_source', rb'let (~)=~\(~\)\?\.autoMemoryDirectory;if\(\1!=null\)return\{dir:\1,source:~\}'),
+    ('directory_reported', rb'let (~)=~\(~\)\.replace\(/\[/\\\\\]\+\$/,""\);if\(~\(\1\)\)return;'
+                           rb'return\(\1\+~\)\.normalize\("NFC"\)'),
+    ('environment_switch', rb'let (~)=process\.env\.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if\(~\(\1\)\)return"off"'),
+    ('enabled_setting', rb'function ~\(\)\{let (~)=~\(\);if\(\1\.autoMemoryEnabled!==void 0\)return \1\.autoMemoryEnabled;'
+                        rb'return!0\}'),
+    ('init_paths', rb'(~)=\{auto:~\(\)\},~\(\)\)\1\.team=~\(\)'),
+    ('init_field', rb'if\((~)\.memoryPaths\)~\.memory_paths=\{\.\.\.\1\.memoryPaths\}'),
+    ('settings_schema', rb'autoMemoryDirectory:(?:\(\)=>)?~\(\)\.optional\(\)\.describe\('),
+))
+
+
+def file_memory_missing(executable):
+    """The FILE_MEMORY_PATTERNS the binary's bytes lack, by name (none: the version carries the form)."""
+    data = Path(executable).read_bytes()
+    return [what for what, pattern in FILE_MEMORY_PATTERNS if pattern.search(data) is None]
+
+
+MEMORY_MISMATCH = 'binding_mismatch:engine_memory'
 # The init event's apiKeySource of a run on no API key (the binary's M_ source "none"): a claude.ai
 # subscription login and a subscription token (CLAUDE_CODE_OAUTH_TOKEN) alike report it.
 SUBSCRIPTION_SOURCE = 'none'
@@ -1586,6 +1625,34 @@ def tool_options(bound, revision=None):
                                      'revision': identity}}
 
 
+def file_memory_form(bound, record=None):
+    """VELDO-0184 AC1: the version's qualified file memory form (its entry's `file_memory`, which must be FILE_MEMORY,
+    passed through the baseline's own settings option), else missing_evidence:engine_baseline:<version>."""
+    try:
+        entry = qualified(bound.get('version'), record)
+    except Refused:
+        entry = {}
+    if entry.get('file_memory') != FILE_MEMORY or BASELINE['settings_option'] != FILE_MEMORY['settings_option']:
+        raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'),
+                      'the version is not qualified with the file memory form')
+    return FILE_MEMORY_FORM
+
+
+def _file_memory(extra, bound, handed, record=None):
+    """A run that lists the file memory: auto memory on in exactly the handed directory, through the generated
+    flag settings, and the switch that turns it off left unset; nothing else of the baseline changes."""
+    form = file_memory_form(bound, record)
+    settings = json.loads(extra['files'][SETTINGS_FILE])
+    settings[FILE_MEMORY['settings']['enabled']] = True
+    settings[FILE_MEMORY['settings']['directory']] = handed['directory']
+    extra['files'][SETTINGS_FILE] = (json.dumps(settings, sort_keys=True) + '\n').encode()
+    for name in FILE_MEMORY['unset_environment']:
+        extra['environment'].pop(name, None)
+    extra['unset_environment'] = list(FILE_MEMORY['unset_environment'])
+    extra['file_memory'] = {'directory': handed['directory'], 'form': form}
+    return extra
+
+
 def baseline(bound, run, environment=None, record=None, servers=()):
     """{argv, environment, files, tools, secrets, routes}: what the run adds after its qualified flags. `run`
     names the run's own `config` directory, where `files` ({name: bytes}) are written before the spawn and which
@@ -1615,10 +1682,12 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     if run.get('capability'):
         helper = _capability_handoff()
         try:
-            return helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config,
-                                 engine=qualified(bound['version'], record))
+            extra = helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config,
+                                  engine=qualified(bound['version'], record))
         except helper.Refused as error:
             raise Refused(error.code) from None
+    if run.get('file_memory'):
+        _file_memory(extra, bound, run['file_memory'], record)
     return extra
 
 
@@ -1787,6 +1856,9 @@ class Guard:
         self.builtin_commands = ()
         self.init_deadline = None
         self.probe_result = None
+        # VELDO-0184 AC1: the file memory directory a run that lists it was handed, else None.
+        self.memory = None
+        self.memory_paths = None
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1802,7 +1874,7 @@ class Guard:
         `released` is true once the prompt itself is returned, the input's last write."""
         if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
             return None
-        if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
+        if self._probing() and (not self.capabilities_confirmed or self.probe_result is None):
             if self.probed:
                 return None
             self.probed = True
@@ -1819,6 +1891,10 @@ class Guard:
             line, _, self.pending = self.pending.partition(b'\n')
             found = self._line(line) or found
         return found
+
+    def _probing(self):
+        """A role-bound run, or one handed the file memory: its init event is read before the prompt."""
+        return self.expected is not None or self.memory is not None
 
     def _stopped(self, field, value):
         self.source = value if isinstance(value, str) else repr(value)
@@ -1848,7 +1924,7 @@ class Guard:
             return self._stopped('subscriptionType', subscription)
         if self.stop is None:
             self.source, self.confirmed = SUBSCRIPTION_SOURCE, True
-            if self.expected is not None:
+            if self._probing():
                 self.init_deadline = time.monotonic() + 5
             # VELDO-0127: the binary's own command list marks its built-in commands (typed commands, hidden
             # from the model); the init comparison leaves only those out of the slash commands it compares.
@@ -1881,11 +1957,20 @@ class Guard:
                 return self._answer(answer)
             return None
         if event.get('type') == 'system' and event.get('subtype') == 'init':
+            if self.memory is not None and self.stop is None:
+                # VELDO-0184 AC1: the memory directories the binary loaded are exactly the handed one.
+                paths = event.get(FILE_MEMORY['init_field'])
+                values = list(paths.values()) if isinstance(paths, dict) else []
+                if not values or not all(isinstance(v, str) and v and os.path.normpath(v) == os.path.normpath(self.memory)
+                                         for v in values):
+                    self.stop, self.memory_paths = MEMORY_MISMATCH, paths
+                    return self.stop
             if self.expected is not None:
                 problem = _capability_handoff().difference(event, self.expected, self.builtin_commands)
                 if problem:
                     self.stop = problem
                     return problem
+            if self._probing():
                 self.capabilities_confirmed = True
             source = event.get('apiKeySource')
             if source != SUBSCRIPTION_SOURCE:

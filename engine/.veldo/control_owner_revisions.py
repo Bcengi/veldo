@@ -138,6 +138,8 @@ class OwnerRevisions:
         if operation == 'save_capability_configuration':
             p.update(definition={k: saved[k] for k in CG.FIELDS}, kind=kind,
                      domain=self.configurations.domain, repository=self.configurations.repository)
+            if CG.FILE_MEMORY in saved:  # VELDO-0184: the optional item, outside FIELDS, is part of the save
+                p['definition'][CG.FILE_MEMORY] = saved[CG.FILE_MEMORY]
             if 'assertion_digest' in saved:
                 p['assertion_digest'] = saved['assertion_digest']
         else:
