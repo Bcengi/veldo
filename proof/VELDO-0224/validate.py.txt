@@ -7,7 +7,10 @@ import sys
 root = Path.cwd()
 proof = root / 'proof/VELDO-0224'
 def clean(text):
-    return text.replace(str(root), '<checkout>').replace(str(Path.home()), '<home>')
+    # A compute node's scratch directory names that node's home: replace it first.
+    import tempfile
+    return (text.replace(tempfile.gettempdir(), '<scratch>').replace(str(root), '<checkout>')
+            .replace(str(Path.home()), '<home>'))
 commands = [
  ('suite224', ['python3', 'scripts/selftest.py', '--suite', '158_veldo_0224_stale_declarations']),
  # Suites without the agent sandbox run on a compute node; 99, 100 and 101 need working
