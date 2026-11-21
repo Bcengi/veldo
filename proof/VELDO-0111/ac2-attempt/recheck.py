@@ -22,7 +22,7 @@ import memory_aba
 
 HERE = Path(__file__).resolve().parent
 SUITE = ROOT / 'scripts/suites/113_veldo_0111_census.py'
-NEXT = 'compat_socketcall_message'  # first retained obligation not addressed by this run
+NEXT = None  # every retained AC2 obligation is addressed by this run
 
 
 def load(name, path):
@@ -48,7 +48,7 @@ def main():
     suite = load('suite111_recheck', SUITE)
     original = SOURCE.read_text()
     records = []
-    report = dict(base='7f1ea5e0', status='INCOMPLETE', next_obligation=NEXT,
+    report = dict(base='b36e4781', status='INCOMPLETE', next_obligation=NEXT,
                   scope='VELDO-0111 only; regressions are not AC2 qualification',
                   source_digest=sha(SOURCE), suite_digest=sha(SUITE),
                   recheck_digest=sha(Path(__file__)),
@@ -294,6 +294,14 @@ def main():
          '                pass\n', RING),
         ('ignore-installed-rings', '        if nr in (2, 257, 437, 438):  # open, openat, openat2, pidfd_getfd\n',
          '        if False:\n', RING))
+    # compat ABIs: i386 syscall translation and compat message layouts.
+    COMPAT = 'census/compat-abi-qualified'
+    PROTOCOL += (
+        ('drop-i386-socket-map', ' 330: 292, 359: 41, 360: 53,', ' 330: 292, 360: 53,', COMPAT),
+        ('native-compat-message-layout', "'x86_64' if abi == 'x86_64' else 'i386')", "'x86_64')", COMPAT),
+        ('drop-compat-socketcall-messages', '16:(46,3), 17:(47,3), 18:(288,4), 19:(299,5), 20:(307,4)}',
+         '18:(288,4)}', COMPAT),
+        ('compat-aliases-native', 'I386_SYSCALLS.get(nr, -1 - nr)', 'I386_SYSCALLS.get(nr, nr)', COMPAT))
     for label, old, new, target in PROTOCOL:
         mutate(label, old, new, target)
 
@@ -341,11 +349,12 @@ def main():
     save()
     current = dict(report['qualification'], source_digest=report['source_digest'],
         suite_digest=report['suite_digest'], spec_digest=report['spec_digest'],
-        acceptance=dict(AC2=False), next_obligation=NEXT,
+        acceptance=dict(AC2=False, pending='independent review'), next_obligation=NEXT,
         current_receipt='ac2-attempt/receipt.json', receipt_digest=sha(HERE / 'receipt.json'),
-        scope='Live regression and counterexample evidence; full AC2 qualification remains INCOMPLETE')
+        scope='Live regression and counterexample evidence; ' + ('retained AC2 obligations are addressed; acceptance awaits independent review' if NEXT is None else 'full AC2 qualification remains INCOMPLETE'))
     (HERE.parent / 'qualification.json').write_text(json.dumps(current, indent=2) + '\n')
-    print(f'Recheck complete. AC2 remains INCOMPLETE: next open obligation is {NEXT}.', flush=True)
+    print('Recheck complete. ' + (f'AC2 remains INCOMPLETE: next open obligation is {NEXT}.' if NEXT else
+          'All retained AC2 obligations are addressed; AC2 acceptance awaits independent review.'), flush=True)
 
 
 if __name__ == '__main__':
