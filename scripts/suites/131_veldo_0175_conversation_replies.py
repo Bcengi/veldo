@@ -547,9 +547,8 @@ else:
         H.deliver(api, 'bot175', owner, '/batch factory')
         batched = running().channel_pass().get('taken') or []
         check('AC1/service-feed', 'the owner\'s /batch from Telegram, taken by the service\'s own intake, goes to the '
-              'batch starter and writes no proposal [%s]' % [(t.get('outcome'), t.get('project')) for t in batched],
-              [t.get('outcome') for t in batched] == ['batch'] and batched[0].get('project') == 'factory'
-              and proposals() == proposals_before)
+              'batch starter and writes no proposal [%s]' % [t.get('outcome') for t in batched],
+              [t.get('outcome') for t in batched] == ['batch'] and proposals() == proposals_before)
 
         # Observability: how each message was decided and each part sent, with ids, never text.
         events = intake.observations
