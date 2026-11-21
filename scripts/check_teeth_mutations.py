@@ -17338,6 +17338,7 @@ def cases():
         "CLONE = {'action': 'remove', 'after': ['worktree'], 'unique_work': 'decision_request'}\n",
         "CLONE = {'action': 'remove', 'unique_work': 'decision_request'}  # defect: not after its worktrees\n",
         ['ac1/whole-table-2'])
+    result[-1]['siblings'] = True  # the suite loads control_space.py beside the kind registry
     add(347, 'space347-batch-clone-never-removed', '156_veldo_0315_reconcile.py', 'control_space_signal.py',
         "        if record['form'] in SNAPSHOT_FORMS:\n            return None\n",
         "        if record['form'] == 'batch_clone':\n"

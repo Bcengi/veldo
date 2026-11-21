@@ -945,17 +945,13 @@ def _v347_space_work_suite():
                   'file, keep_failed [%s %s]' % (named(done, item), attempts),
                   named(done, item) == ('deferred', 'keep_failed', 'tool') and attempts == []
                   and text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\n')
-            # Straight to the remover, as rule 7 hands it: the removal recorded first, then a keep step that
-            # does save the work tree. Table 1's last look still refuses what is in it.
-            began = L.outcome(item, 'removing', {'event': 'ticket_ended'})
-            answer = RM.remove(L, P, item, L.item(item), free=free, keep=KP.keeper(L, snapshot=True), run=client,
-                               proc=str(PROC))
+            # The next event, with a keep step that does save the work tree: table 1's last look still refuses
+            # what is in it, and no per-file comparison against that snapshot lets it through.
+            done = send('ticket_ended', {'ticket': 'VELDO-9602'}, keep=KP.keeper(L, snapshot=True))
             saved = ((L.item(item) or {}).get('kept') or {}).get('snapshots') or []
-            check(ROW, 'even with a keep step that saved the file, the remover gives it no snapshot comparison '
-                  '[%s %s %s %s]' % (began.get('ok'), answer.get('deferral'), answer.get('method'), len(saved)),
-                  began.get('ok') is True and len(saved) == 1
-                  and answer.get('ok') is False and answer.get('deferral') == 'keep_failed'
-                  and answer.get('method') == 'keep_then_rename_probe_delete'
+            check(ROW, 'even with a keep step that saved the file, the remover gives it no snapshot comparison: '
+                  'keep_failed again [%s %s %s]' % (named(done, item), len(saved), found_of(item).get('said')),
+                  named(done, item) == ('deferred', 'keep_failed', 'tool') and len(saved) == 1
                   and text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\n')
 
         # ==== AC4: evidence is removed only on a digest read at the removal ===============================
