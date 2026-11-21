@@ -35,35 +35,55 @@ The shared host-heavy wrapper is supplied by the build-queue repository; this wo
 
 ## Results
 
-Implementation commit: b2105d64f8b21ac5f1fbf2b9715e0e7df9941c0e.
-All six selected suites have zero failing rows: admission (20 ticket rows), dispatch (25), factory
+Implementation commit: 7a42f196 (fix round 1; the original implementation was b2105d64).
+All six selected suites have zero failing rows: admission (25 ticket rows), dispatch (25), factory
 loop (14), space mode (16), run finished (38) and end write (11). Each diagnostic exits 2 by the
 selftest dispatcher's partial-run contract; the shared preamble adds 26 checks to each printed total.
 The logs and checks.json preserve both the counts and the exit codes.
 
-The gate-mutation coordinator executed finding 316: 11 registered, 11 executed, 11 rejected, zero
+The gate-mutation coordinator executed finding 316: 16 registered, 16 executed, 16 rejected, zero
 reuse, zero surviving workers. Every baseline and no-op control is green and the complete row
 inventory survives every mutant. Three existing mutations were also rejected: exit without releasing
 the hold, release before Signal, and omitting advised holds from held bytes. mutations.json and
-regression-mutations.json are the exact coordinator receipts; mutations/ holds the exact 0316 diffs.
-The new cases cover each declared falsifier plus other-held bytes, the waiting pass, oldest instead
-of newest runs, declared needs, digest coverage, acceptance after release, and run-end measurements.
+regression-mutations.json are the exact coordinator receipts; mutations/ holds the exact 0316 diffs,
+regenerated at the fix commit (only line numbers moved for the eleven original cases).
 
-Lint passes (1247 Python, 40 shell files); template sync passes (325 pairs). All 410 existing and new
-mutation anchors in the four changed modules resolve exactly once. Generated-file freshness passes.
-Spec and proof validators pass. The personal-setup check against the starting commit finds zero;
-its diagnostic paths are replaced by <home> in the saved output. The gate is not run and no
-independent review or landing approval is claimed. Acceptance statuses remain pending that gate.
+Lint, template sync, generated-file freshness and the spec validator pass; the personal-setup check
+finds zero, its diagnostic paths replaced by <home>. The gate is not run and no independent review
+or landing approval is claimed. Acceptance statuses remain pending that gate.
+
+## Fix round 1 (review: one medium, three lows)
+
+- Orphan hold after a crash (medium). prepare() commits admitted or advised before the Runner reserves
+  and writes the dispatch; a service killed between the two left a counted hold that nothing named, so
+  the unit was refused with space_hold_state on every offer and its need stayed held. The factory
+  loop's start (the existing start sweep, beside sweep_runs) now calls Runner.recover_holds, which runs
+  control_space_admission.recover under the admission lock: each admitted or advised hold of this
+  domain and repository that no dispatch record binds is released through the ledger, and the result
+  is logged under holds_recovered in the runs_swept record. The unit's next preparation places the next
+  generation and is judged again. Waiting holds and dispatch-bound holds are kept. No timer.
+  Rows recovery/orphan-released and recovery/next-offer; falsifiers space316-start-keeps-orphan-holds
+  (both rows red: the hold stays admitted and the offer is refused) and space316-recover-releases-bound.
+- Five-run boundary (low). The history row's first five runs are small, so a need measured after four
+  runs admits early; ac4/measured-at-five pins the other side. Falsifier space316-measure-after-four.
+- Legacy history (low). Row ac4/legacy-history: five runs exited without a space binding, with measured
+  items, give a measured need, and four give the default. finished()'s docstring now says so.
+  Falsifier space316-legacy-history-ignored.
+- Metrics (low). FactoryLoop.status carries space_admission (per pool free, floor, held; holds
+  admitted, waiting, advised), None without an enabled ledger. Row metrics/exposed; falsifier
+  space316-metrics-unexposed.
 
 ## Code map
 
 - engine/.veldo/control_space_admission.py:63: pool boundary arithmetic; :75 serialized admission;
-  :94 measured item totals; :111 finished-run order; :142 need precedence; :158 preparation; :203 metrics.
-- engine/.veldo/control_launch.py:1707: Runner.prepare, admission before reservation; :1502: refused
-  dispatch release; :2412: Receiver._space_end, measured bytes saved with hold release.
+  :94 measured item totals; :111 finished-run order; :144 need precedence; :160 preparation;
+  :217 start recovery of orphan holds; :248 metrics.
+- engine/.veldo/control_launch.py:1715: Runner.prepare, admission before reservation; :1707: recover_holds;
+  :1502: refused dispatch release; Receiver._space_end, measured bytes saved with hold release.
 - engine/.veldo/control_dispatch.py:217: space validation with legacy compatibility; :361: transactional
   hold recheck; :548: its acceptance call. The existing digest covers the entire contract unchanged.
-- engine/.veldo/control_service.py:3623: Line.offer, wired service ledger and waiting report.
+- engine/.veldo/control_service.py: Line.offer, wired service ledger and waiting report; :4213
+  FactoryLoop.start's hold recovery; :4366 the space_admission status.
 - scripts/suites/157_veldo_0316_space_admission.py: the independent fragment and its fixture boundaries.
 - scripts/check_teeth_mutations.py: finding 316 and the adjusted existing 0308 release-call anchor.
 

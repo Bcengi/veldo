@@ -1,9 +1,9 @@
 --- a/.veldo/control_launch.py
 +++ b/.veldo/control_launch.py
-@@ -1736,2 +1736 @@
+@@ -1744,2 +1744 @@
 -        space = _organ('control_space_admission').prepare(
 -            self.space, self.dispatches, unit, station, project, source)
 +        space = None  # defect: defer admission until the dispatch holds its reservation
-@@ -1856,0 +1856,2 @@
+@@ -1864,0 +1864,2 @@
 +        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,
 +            contract['reservation']['project'], kwargs['source'])

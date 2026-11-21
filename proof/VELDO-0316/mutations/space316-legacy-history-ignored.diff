@@ -1,0 +1,5 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -136,2 +135,0 @@
+-            if not contract.get('space'):
+-                sizes = measured(ledger, identity)

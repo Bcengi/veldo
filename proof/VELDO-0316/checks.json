@@ -2,7 +2,7 @@
   {
     "suite": "157_veldo_0316_space_admission",
     "exit": 2,
-    "passed": 46,
+    "passed": 51,
     "failed": 0,
     "scope": "partial diagnostic",
     "status": "zero_failing_rows"
@@ -52,11 +52,27 @@
     "exit": 0
   },
   {
+    "check": "template-sync",
+    "exit": 0
+  },
+  {
+    "check": "generated",
+    "exit": 0
+  },
+  {
     "check": "personal-setup",
     "exit": 0
   },
   {
-    "check": "template-sync",
-    "exit": 0
+    "check": "mutations:mutations.json",
+    "status": "passed",
+    "rejected": 16,
+    "registered": 16
+  },
+  {
+    "check": "mutations:regression-mutations.json",
+    "status": "passed",
+    "rejected": 3,
+    "registered": 3
   }
 ]
