@@ -64,6 +64,7 @@ dependencies; they now drop its dependency on load.
 | Brief D's loaded batch at 34187cb5 | batch1/ | suite 160 green; four of five mutants rejected (load358-red-is-rerun: worker error, the row's load path); real leg: UnboundLocalError. Both fixed in b5ad1d33 |
 | Brief D's loaded batch at b5ad1d33 | brief-d/suite-160.txt, mutants.txt, cgroup-scope.txt, real-leg.txt | suite 160: 5 rows green. Mutants: all five load358 cases rejected, unmutated green. The generator in a delegated scope: memory.high applied, spinners and writer alive, nothing left. Real leg (record runs from a worktree at b5ad1d33, B's baseline as lowered then): 28 of 239 suites proven, 3 waiting for a prerequisite, 25 run, none red; the canary red under the load; probe slowdown 4.5; 24 spinners and 2 writers alive throughout; 2605 s for the leg, data only. The longest suite in it was 15_warp_1404_historical_analogy (2604 s loaded). Memory level: none (no delegated scope in that leg's process) |
 | Final full unit leg at 6f125f98 (all four briefs and every fix) | full-unit-run-final.txt | 10768 passed, 12 failed, all inherited or wave 1 (below) |
+| Full unit leg at 6414e4c5, after the lead's decision on finding 2 (the authority takes the opened-files record) and the fixes of section 6 | full-unit-run-6414e4c5.txt | 10766 passed, 15 failed, none of them new: 66 and 86 residue (wave 1, briefs G and F); 102's seven VELDO-0210 scratch rows (as at 6f125f98, inherited); six VELDO-0313 rows of 151 (inherited: red at e3451130 alone, six rows there; which rows fail varies run to run). The runs at e2c02152 and 9f9dd8b1 before it are in section 6 |
 | Falsifiers of the lead's changes | mutants-suite38.txt, mutants-graph.txt, mutants-census.txt | wait261-impossible-returns-none, wait261-expiry-returns-false, load358-graph-red-not-blocking, wall358-hang-name-any-value: each rejected, baseline and no-op green |
 
 The final run's reds:
@@ -155,3 +156,17 @@ Fixes the runs found (each a stand-in or fixture that met the new code, none a c
 | full mutation stage, attempt 2, at e2c02152 | not a defect of the tree: the wrapper's 10G scope was hit by the OOM killer at 16 workers after 18 minutes, before any receipt | attempt 3 binds the stage to five CPUs (ten workers) |
 | full unit leg at e2c02152 | suite 103 (0211) stands in for agent_sandbox.prepared_launch with seven arguments; the dispatcher ended there (full-unit-run-e2c02152.txt) | the kept descriptor is passed only when there is one (9f9dd8b1) |
 | full unit leg at 9f9dd8b1 | suite 114 (0216) runs a verify.sh fragment under set -u without VELDO_OPENED_RECORD: shell-catalog red (full-unit-run-9f9dd8b1.txt) | verify.sh reads it as possibly unset; falsifier anchors follow (6414e4c5); suite 114 alone green (opened/suite-114.txt) |
+
+The two runs this section ends on:
+
+| Run | Where | Result |
+| - | - | - |
+| Full unit leg at 6414e4c5 | full-unit-run-6414e4c5.txt (also in section 4) | 10766 passed, 15 failed, all inherited or wave 1 |
+| Brief C's full mutation stage on the merged branch, attempt 3, at 9f9dd8b1, ten workers | full-stage-9f9dd8b1.txt (every case with its kill_by, every invalid result) | status failed. 3639 registered, 3424 executed, 3398 rejected, no surviving worker, 21775 s (data). Of the 26 invalid results: load358-no-spinners SURVIVED (below); 15 control_failed: 12 cases of suite 83 (0154), whose baseline and no-op went red under the stage's load in owner-stop-asked-on-wake and owner-no-stops (time.time deadline polling the census still lists; green alone, untouched by this branch; brief C's own full stage at 30d6fa2a rejected them), and 3 of suite 114 (shell-catalog, fixed in 6414e4c5); 2 worker_cleanup_error: dispatch261-stop-leaves-record-running (suite 62's mutant run hung and left /dev/shm/v39-* outside its worker's ledger), which stopped the stage, and space328-unread-image-names-pass (a folder not empty at cleanup); 8 worker_cancelled when the stage stopped |
+| load358-no-spinners survived | brief D's falsifier of load/level-by-construction | A blocked spinner still shows its start-up CPU, so "every spinner consumed CPU" held; the row caught the mutant only through the canary, that is, only on a quiet host. The row now also requires the spinners together to consume at least the leg's own fifteen CPU-seconds beside them (three spinners to one leg per CPU share fairly, so this holds however busy the host is) (f136fd03); suite 160 alone green (285 s) |
+
+Still running when this was written, at f136fd03, each a selected-case stage of the same driver through the
+host-heavy wrapper on five CPUs: A, the fourteen cases of suites 160 and 114 (the eight load358 and
+opened358 cases of 160, the spinner case among them, and 114's four whose controls were red); B, the
+twenty-one inherited cases the stage could not finish (suite 83's, dispatch261, space328 and end350). They are
+apart so that a red control of an inherited suite cannot void A.
