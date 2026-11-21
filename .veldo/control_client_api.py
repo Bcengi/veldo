@@ -3,7 +3,8 @@
 (VELDO-0107), and the hint socket the service wakes it on (VELDO-0130 phase 3).
 
 WHAT THIS MODULE IS. The authenticated API (control_api.ControlApi) asks its `authority` to inspect,
-apply, read, load a workflow, read events, follow the feed and read a run's execution record (VELDO-0141).
+apply, read, load a workflow, read events, follow the feed, read a run's execution record (VELDO-0141) and
+read the reader's own conversations (VELDO-0178).
 In the API process that authority is
 `ServiceAuthority`: each call is one control_client.send to the authority service of the API's enrolled
 workspace, its command one API call (control_api_assertion.call_command), its request signed by the
@@ -140,6 +141,10 @@ class ServiceAuthority:
 
     def record(self, principal, dispatch_id, after, limit=API.RECORD_LIMIT):
         return self._call('record', principal=principal, dispatch_id=dispatch_id, after=after, limit=limit)
+
+    def conversations(self, principal, conversation=None):
+        """VELDO-0178: the reader's own conversations, or one of his with its turns."""
+        return self._call('conversations', principal=principal, conversation=conversation)
 
     # the subscription
 

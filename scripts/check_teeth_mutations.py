@@ -8572,8 +8572,9 @@ def cases():
               "    if False:  # defect: a record that no longer matches its commitment is served\n        if (",
               ['route/committed'])
     record141('route-scope-unchecked', 'control_api_authority.py',
-              "            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):\n",
-              "            if False:  # defect: any current member reads any run's record\n",
+              # Re-anchored for VELDO-0178, which moved the record's scope rule into _record_scope.
+              "            refusal = self._record_scope(principal, member, contract)\n",
+              "            refusal = None  # defect: any current member reads any run's record\n",
               ['api/refusals', 'api/service-call'])
     record141('route-binding-unchecked', 'control_execution_record.py',
               "    if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:\n",
@@ -8588,8 +8589,9 @@ def cases():
               "        if False:  # defect: a record hint is judged as a journal hint and refused\n",
               ['api/live'])
     record141('route-service-call-unlisted', 'control_api_assertion.py',
-              "         'record': ('principal', 'dispatch_id', 'after', 'limit')}",
-              "         }  # defect: the record call is not one the service carries",
+              # Re-anchored for VELDO-0178, which lists more service calls after this one.
+              "         'record': ('principal', 'dispatch_id', 'after', 'limit'),\n",
+              "         # defect: the record call is not one the service carries\n",
               ['api/service-call'])
     record141('redaction-token-unresolved', 'control_launch.py',
               "RESOLVERS = [subscription_token, keystore_credentials]\n",
@@ -11548,7 +11550,9 @@ def cases():
         'answer = MO.read_model(self.S, self.conn, model, scope=scope)',
         'answer = MO.read_model(self.S, self.conn, model)', ['reads/member-A'])
     add(164, 'v164-events-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
-        'if scope is not None and not scope.universal:', 'if False:', ['events/member-A'])
+        # Re-anchored for VELDO-0178, which also withholds a conversation's records from a universal scope.
+        'if scope is not None and (not scope.universal or any(', 'if False and (not scope.universal or any(',
+        ['events/member-A'])
     add(164, 'v164-universal-projectless-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
         'if self.universal:', 'if self.universal and self.projects(identity, kind, data):', ['owner/unchanged'])
     add(164, 'v164-workflow-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
@@ -15732,6 +15736,48 @@ def cases():
         "        if any(False and entry.get('owner_keep') and entry['locator'].get('path', '').startswith(root + '/')",
         ['safe/owner-keep'])
     result[-1]['dir'] = 'scripts'
+    # VELDO-0178: the owner's conversations through the API, and a turn's execution record served to the conversation's
+    # owner alone; each spec falsifier as one exact edit, and the guard it implies on the event feed. The judge and the
+    # reader scope load their organs beside themselves by path, so each mutant runs in a whole .veldo copy.
+    suite178 = '133_veldo_0178_conversation_api.py'
+    add(178, 'read178-domain-membership', suite178, 'control_api_authority.py',
+        "            if record.get('owner') != principal:\n"
+        "                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)\n",
+        "            if False:  # defect: a conversation read is scoped by domain membership\n"
+        "                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)\n",
+        ['AC1/other-member'],
+        also=[("                    if record.get('owner') != principal:\n                        continue\n",
+               "                    if False:  # defect: every member's conversations are listed\n"
+               "                        continue\n")])
+    add(178, 'record178-project-alone', suite178, 'control_api_authority.py',
+        "        if contract.get('subject_kind') == 'conversation':\n            owner = SCOPE.conversation_owner(",
+        "        if False:  # defect: a turn's record is decided by project alone\n"
+        "            owner = SCOPE.conversation_owner(",
+        ['AC2/other-member'],
+        also=[("        if project is None:\n            return 'unauthorized:out_of_scope'\n",
+               "        if project is None:\n            return None  # defect: a run with no project is readable by every"
+               " member\n")])
+    add(178, 'feed178-conversation-by-scope', suite178, 'control_api_models_scope.py',
+        "        if owned is not None:\n            return None if owned else OWNER\n",
+        "        if False:  # defect: a conversation's records follow the reader's project scope\n"
+        "            return None if owned else OWNER\n",
+        ['AC1/events'])
+    # Review-2026-11-04 finding 1: a turn's released dispatch index decided again by the dispatch id its release clears.
+    add(178, 'index178-released-by-dispatch-id', suite178, 'control_api_models_scope.py',
+        "        if data.get('station') == 'turn' and data.get('repository') is None:\n",
+        "        if False:  # defect: a released turn index is decided by its cleared dispatch id\n",
+        ['AC1/events'])
+    # Re-review 2026-11-11 finding A: the shared account's usage windows served unshaped, so each window observed on
+    # a conversation turn's dispatch names that dispatch (and with it the conversation) to a colleague.
+    add(178, 'account178-window-source-served', suite178, 'control_api_models_scope.py',
+        "        if kind == 'account':\n            return self.account_data(data)\n",
+        "        if False:  # defect: an account's usage windows are served with their source dispatch to anyone\n"
+        "            return self.account_data(data)\n",
+        ['AC1/events'])
+    for case in result:
+        if case['finding'] == 178:
+            case['siblings'] = True
+
     # VELDO-0176: the factory keeps each conversation's engine session and history; each spec falsifier as one exact
     # edit.
     suite176 = '130_veldo_0176_conversation_history.py'

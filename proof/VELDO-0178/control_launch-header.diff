@@ -1,0 +1,11 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1196,6 +1196,8 @@
+                   'unit': contract['unit'], 'station': contract['station'],
+                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
+                   'host': self.host}
++        # VELDO-0178: a conversation turn's record header names its conversation id and turn sequence.
++        header.update(ER.binding(dict(contract)))
+         argv = (self.binding or {}).get('argv', adapter['argv'])
+         cwd = self._engine_cwd(argv, contract['dispatch_id'], adapter.get('identity') == 'reported')
+         # The clone entrance's dispatch record supplies its work root. Direct launches may name a
