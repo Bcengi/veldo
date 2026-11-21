@@ -84,6 +84,8 @@ def _veldo_0221():
         """One leg through run_scope.run_shards in this process, with a fixture's own shared places."""
         lines = []
         options.setdefault("places", [])
+        # A fixture leg's runtime directories stand beside its other roots unless a row says where.
+        options.setdefault("runtime", "")
         options.setdefault("units", None)
         options.setdefault("settle", 0)
         options.setdefault("parallel", 4)
@@ -418,6 +420,38 @@ def _veldo_0221():
                and RS.leg_scratch({"HOME": str(scratch), "TMPDIR": str(scratch / "tmp")}, isolated) == scratch
                and elsewhere is None and RS.leg_scratch({"HOME": str(scratch), "TMPDIR": "/tmp"}, isolated) is None)
 
+        # In an unconfined leg a shard's runtime directory stands inside the real runtime directory, in
+        # a directory of the leg's own, never beneath a temporary directory: the engine refuses a
+        # protected target beneath one, and nineteen suites stand their fixtures in XDG_RUNTIME_DIR for
+        # that reason. The fixture's own directory stands for the real one. The leg's directory is not
+        # an item the leg left behind, and it is gone when the leg ends. A confined leg keeps its
+        # runtime directories beside its other roots: it cannot write the real one.
+        real_runtime = top / "fixture-run-user"
+        real_runtime.mkdir()
+        stood = {}
+        for leg in ("unconfined", "confined"):
+            result, lines = shards(isolated, leg, ["01_first", "02_second"], runtime=str(real_runtime), extra=engine,
+                                   listed="01_first,02_second" if leg == "unconfined" else "none_listed",
+                                   places=[{"name": "runtime directory", "path": real_runtime, "depth": 1, "rule": "strict"}])
+            stood[leg] = ([Path(s["roots"]["XDG_RUNTIME_DIR"]) for s in result["shards"]],
+                          [Path(s["roots"]["HOME"]) for s in result["shards"]], result["token"], result["failed"],
+                          result["breaches"], [json.loads(line.split(" ", 2)[2]) for line in lines
+                                               if line.startswith("V221-RUNTIME ")])
+        outside, homes, token, failed, breaches, held = stood["unconfined"]
+        beside = stood["confined"]
+        expect("VELDO-0221 AC2 suite-shards/runtime-directory-outside-the-temporary-directory: %r %r" % (stood, list(real_runtime.iterdir())),
+               len(outside) == 2 and outside[0] != outside[1] and failed == 0 and not breaches
+               and len({path.parent for path in outside}) == 1 and outside[0].parent.parent == real_runtime
+               and outside[0].parent.name.startswith("veldo-leg-%s-" % token)
+               and not any(str(path).startswith(str(home.parent)) for path, home in zip(outside, homes))
+               and all({"veldo-instance.json"} <= set(found) for found in held)
+               and list(real_runtime.iterdir()) == []
+               and all(path.parent == home.parent for path, home in zip(beside[0], beside[1]))
+               and beside[3] == 0 and not beside[4]
+               # No directory to stand them in: beside the other roots, as before.
+               and RS.leg_runtime("") is None and RS.leg_runtime(str(top / "no-such-directory")) is None
+               and RS.leg_runtime(str(real_runtime)) == real_runtime)
+
         # With no instance configured, which is every production installation, every name is today's.
         probe = (
             'import importlib.util, json, sys\n'
@@ -626,7 +660,9 @@ def _veldo_0221():
         result, lines = shards(unnamed, "unconfined", list(unnamed_bodies), listed=",".join(unnamed_bodies), places=places,
                                units=listed_units, describe=described, parallel=1, tick=0.02, extra=fixture_env)
         left = [w for _c, w in result["charged"].get("117_veldo_0227_ui_location", [])]
-        if not (sorted(RS.UNNAMED) == ["117_veldo_0227_ui_location", "85_veldo_0171_setup_api", "86_veldo_0189_engine_upgrade"]
+        if not (sorted(RS.UNNAMED) == ["106_veldo_0185_dispatch_setup", "117_veldo_0227_ui_location",
+                                       "127_veldo_0234_https_port", "85_veldo_0171_setup_api",
+                                       "86_veldo_0189_engine_upgrade", "91_veldo_0167_setup_records"]
                 and all(len(reason) > 80 for reason in RS.UNNAMED.values())
                 and "V221-UNNAMED False" in lines and codes(result, "86_veldo_0189_engine_upgrade") == []
                 and len(left) == 1 and "veldo-authority-fedcba9876543210.service was left behind" in left[0]

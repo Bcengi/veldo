@@ -16609,6 +16609,14 @@ def cases():
               '                     "alone": False,  # defect: the unlayered shard runs beside the others\n',
               ['suite-shards/isolation-checked'])
 
+    # Found by the fix round's own runs: an unconfined shard's runtime directory stood beneath the
+    # system temporary directory, where the engine refuses a protected target.
+    shards221('shards221-runtime-beneath-temporary',
+              '        if stand is not None:\n            roots["XDG_RUNTIME_DIR"] = stand / shard_tag(job["index"])\n',
+              '        if False:  # defect: the runtime directory stays beside the roots, beneath a temporary directory\n'
+              '            roots["XDG_RUNTIME_DIR"] = stand / shard_tag(job["index"])\n',
+              ['suite-shards/runtime-directory-outside-the-temporary-directory'])
+
     return result
 
 
