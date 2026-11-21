@@ -1,8 +1,69 @@
-# VELDO-0206 build report, fix round 1
+# VELDO-0206 build report, fix round 2
 
 Builder's report, not a review and not a gate result. The canonical gate was not run in this
-build or in this fix round; the lead queues it. Every criterion in manifest.json is pending until
-then. This round answers the review of a27ec1c4 (verdict FIX, findings 1 to 5).
+build or in either fix round; the lead queues it. Every criterion in manifest.json is pending until
+then. Fix round 1 answered the review of a27ec1c4 (verdict FIX, findings 1 to 5). Fix round 2
+answers the fix-check of 9a250b98 (verdict FIX, one item), next section; the rest of this report
+is fix round 1's, corrected where round 2 changed it.
+
+## Fix round 2: files outside the repository
+
+The fix-check found one channel still open. An unqualified suite writes a file outside the
+repository (in the home, the temporary folder or the run directory the gate runs with) and a
+qualified suite reads it. The first gate is green and publishes, the warm gate reuses that pass,
+and a force-fresh gate of the same tree is red (its P2, run with the production scripts).
+
+The fix-check proposed wording plus one row. That is not enough, so this round changes the
+mechanism. The two ways to close it:
+
+- A reviewed statement, checked by the authority, that the suite reads no path outside its key.
+  The authority cannot check it. It holds a literal, not a proof. The interpreter raises no audit
+  event for a stat, which is how P2's suite reads (os.path.exists). Whatever the suite starts (git,
+  a shell) reads files no hook in the suite's process sees. And the home and the temporary folder
+  are read without the suite's code naming them: git reads the home's configuration, the
+  interpreter the user site under the home, tempfile reads TMPDIR. A reviewer reading the pinned
+  code cannot see those reads, so a statement about them would be exactly the kind of statement
+  that was open, only reworded.
+- Places of its own. Chosen. The process of every isolated suite gets a HOME, a TMPDIR (TEMP and
+  TMP the same) and an XDG_RUNTIME_DIR of its own, each new and empty, made for that one process
+  inside a fresh private folder and removed after it. XDG_CONFIG_HOME, XDG_CACHE_HOME,
+  XDG_DATA_HOME and XDG_STATE_HOME are removed, so they fall back under the private home. This is
+  a MECHANISM CHANGE in scripts/selftest.py (_private_places, _isolate), with the names in
+  scripts/run_scope.py (PRIVATE_PLACES, PRIVATE_FALLBACKS). Whatever an unqualified suite, an
+  earlier gate or anything else on the host left in those places cannot reach a qualified suite,
+  whether the suite or a tool it runs reads it. It holds in every gate, warm or force-fresh alike,
+  so a reused pass and a fresh run are still the same observation. What the suite leaves there is
+  removed with them.
+
+What no mechanism here can stop is a suite whose own code names another path outside the
+repository: an absolute path, or a variable that names one. Only a filesystem namespace could
+stop that, and the method installs into repositories on hosts it does not control. Such a read
+is visible in the code the qualification pins (closure_digest), and the qualification's statement
+now names it. non_file_inputs "none" says nothing outside the key can change a row: no clock,
+randomness, service, socket, database or other host's state, and no file outside the repository
+other than its runtime paths and its private places. side_effects "none" covers what it leaves
+outside its process and its private places. The statements are in run_scope.py's qualification
+comment and in the spec's 2026-11-21 note.
+
+The key is not changed. The mechanism lives in scripts/selftest.py and scripts/run_scope.py, and
+both are the dispatcher, whose content is in every key. So no record made by a dispatcher without
+private places can hit for one with them, and the reverse holds too. TMPDIR stays a base variable
+of the key: the private folder is made inside it.
+
+The fix-check's P2 is now row closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite.
+The unqualified d writes a file into the HOME, TMPDIR, XDG_RUNTIME_DIR and XDG_CONFIG_HOME the
+gate runs with, and into tempfile's folder and "~". The qualified e fails if it finds one in its
+own places. It also fails unless its HOME, TMPDIR, TEMP, TMP and XDG_RUNTIME_DIR are not the gate's,
+exist and are empty, XDG_CONFIG_HOME is unset, and tempfile uses its TMPDIR. Then it writes into
+each of them. The row requires that the first gate (e fresh, published), the warm gate (e reused,
+a hit) and the force-fresh gate (e fresh) are all green under one key; that d's four files are
+there; and that the gate's TMPDIR holds nothing but d's file, so e's private folder is gone. The
+falsifier suite206-isolated-suite-shares-home-and-temp starts the process with the gate's own
+places, which turns the row red.
+
+Not covered, a note only (the fix-check's minor item): an isolated process inherits the
+dispatcher's standard output, the unit stage's log, which it could reopen and read through
+/proc/self/fd/1. That is a path the suite's own code names, so the statement excludes it.
 
 ## What is built
 
@@ -62,11 +123,12 @@ The same row holds the converse (d sees nothing the isolated a left) and process
 neither d's names nor d's change to the environment). Falsifier
 suite206-qualified-suite-runs-in-shared-namespace turns it red.
 
-What isolation does not cover, stated plainly: files and host state outside the repository that
-one suite writes and another reads. Declared inputs are in the key and are read again at
-settlement; anything else is the qualification's reviewed statements (non_file_inputs,
-side_effects), as in VELDO-0205. No production suite is qualified, so nobody has made those
-statements for a real suite yet.
+What isolation did not cover in fix round 1: files outside the repository that one suite
+writes and another reads. Fix round 2 gives each isolated process its own home, temporary folder
+and run directory (section above). Declared inputs are in the key and are read again at
+settlement. Any other path outside the repository that a suite's own code names is excluded by
+the qualification's reviewed statements (non_file_inputs, side_effects), which now say so. No
+production suite is qualified, so nobody has made those statements for a real suite yet.
 
 ## Findings 2 to 5 and the notes
 
@@ -150,7 +212,15 @@ process is started for any suite, and no speedup is claimed.
   binding the plan to the output files and finding 5 by fields in the stamp, not by a new file.
 - docs/ were not changed.
 
-## What was run in this round
+## What was run in fix round 2
+
+Nothing yet. The heavy-run wrapper had no free builder slot for two hours (all three busy from
+2026-11-21T17:00Z), and the run was stopped at its limit before it started. Suite 157, the eight
+affected suites and check_teeth_mutations.py --finding 206 (which must now report 33 rejected of
+33) are still to be run at 3adaae2e. Until then the new row and its falsifier have no recorded
+result, and the tables below are fix round 1's.
+
+## What was run in fix round 1
 
 All through the host heavy-run wrapper, in one slot, at 6de07820 with a clean tree before and after.
 
