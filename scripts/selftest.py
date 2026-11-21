@@ -284,11 +284,11 @@ if LEG and SHARD is None:
     _whole = [n for n, rows in LISTED.items() if rows is None]
     _rows = ["%s:%s" % (n, rows) for n, rows in LISTED.items() if rows is not None]
     _absent = sorted(n for n in LISTED if n not in ORDER)
+    _mine = RS.leg_suites(LEG, LISTED, [s["name"] for s in RUN])
+    RUN = [s for s in RUN if s["name"] in _mine]
     if LEG == "confined":
-        RUN = [s for s in RUN if s["name"] not in _whole]
         _what = "skips the %d suite(s) and runs all but the rows the unconfined leg owns" % len(_whole)
     else:
-        RUN = [s for s in RUN if s["name"] in LISTED]
         _what = "runs only the %d listed suite(s) present, and of a row-scoped one only its rows" % len(RUN)
     if CHILD is None:
         print("selftest leg %s: %s. Whole: %s. Rows: %s.%s Declaration: %s."
@@ -349,6 +349,10 @@ if _SHARDED:
             print("selftest leg %s: %s" % (LEG, e))
             _account("end", exit=2, passed=0, failed=0)
             sys.exit(2)
+        except RS.ShardsStopped as e:
+            print("selftest leg %s: stopped by signal %d; every shard was ended" % (LEG, e.number))
+            _account("end", exit=128 + e.number, passed=0, failed=0)
+            sys.exit(128 + e.number)
         _by_target = {j["name"]: j for j in _leg["shards"]}
         for _s in RUN:
             _j = _by_target.get(_s["name"])
@@ -369,7 +373,7 @@ elif SCOPE.partial and SHARD is None:
 if SHARD is not None and LEG == "confined":
     # In a confined leg the shard stacks its own Landlock layer on the leg's domain before any
     # suite code runs, and reports whether it holds: the dispatcher reddens a shard that does not.
-    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0], HERE / "agent_sandbox.py")
+    _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0])
     SHARD.send(event="layer", in_force=_in_force, refused=_refused, detail=_detail)
 
 if REUSE and CHILD is None:

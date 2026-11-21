@@ -678,7 +678,7 @@ class RunScope:
 #     manager and nothing else of the real runtime directory is in the shard's reach by name;
 #   - a shard reports over a pipe it inherits, never through a shared file;
 #   - in a confined leg each shard stacks its own Landlock layer on the leg's domain
-#     (agent_sandbox.write_layer), which grants writes only beneath its own roots, and proves it
+#     (write_layer below), which grants writes only beneath its own roots, and proves it
 #     by a write the dispatcher planted a target for and the kernel must refuse;
 #   - the engine names what it creates on the one user manager with the instance name the
 #     dispatcher writes into each shard's configuration directory (INSTANCE_FILE): the suite's.
@@ -727,6 +727,17 @@ MANAGER_SOCKETS = ("bus", "systemd/private")
 # the other spellings of the temporary directory, which would outrank the shard's own TMPDIR.
 SHARD_DROPPED = (LEDGER_CHANNEL, SHARD_CLAIMS, SHARD_METRICS, "VELDO_SUITE_ORDER", "TMP", "TEMP",
                  "TEMPDIR")
+
+
+def leg_suites(leg, listed, names):
+    """The suites of one gate leg, in the given order: the confined leg runs every suite the
+    authority's list does not name whole, the unconfined leg only the listed ones. A suite listed
+    for some rows is in both, and its rows ask leg_runs which leg owns them. Each suite of a leg is
+    one shard's target exactly once, by construction from this list."""
+    whole = {name for name, rows in listed.items() if rows is None}
+    if leg == "confined":
+        return [name for name in names if name not in whole]
+    return [name for name in names if name in listed]
 
 
 class ShardResources:
@@ -873,7 +884,7 @@ def shard_environment(environ, roots, linked, base):
     in place of the leg's, and none of the dispatcher's channels."""
     env = {k: v for k, v in environ.items() if k not in SHARD_DROPPED}
     env.update({variable: str(path) for variable, path in roots.items()})
-    # Each shard gets the leg's own TMPDIR, never another's.
+    # A shard's temporary directory is its own, never the leg's, which every shard would share.
     env["TMPDIR"] = str(roots["TMPDIR"])
     env.pop("DBUS_SESSION_BUS_ADDRESS", None)
     if "bus" in linked:
@@ -931,15 +942,71 @@ def shard_probe(root):
     return root.parent / "probe" / root.name
 
 
-def confine_shard(root, launcher):
+# Landlock's filesystem write accesses (linux/landlock.h): write a file, remove a directory or a
+# file, make a character device, directory, regular file, socket, fifo, block device or symbolic
+# link, reparent, and truncate. The same set scripts/agent_sandbox.py's WRITE names for the leg.
+LANDLOCK_WRITE = sum(1 << n for n in (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
+LANDLOCK_WRITE_FILE = (1 << 1) | (1 << 14)
+SHARD_DEVICES = ("/dev/null", "/dev/ptmx")
+
+
+def write_layer(roots):
+    """Stack one more Landlock layer on this process and every descendant: writes only beneath
+    `roots`. The same unprivileged mechanism scripts/agent_sandbox.py confines the leg with
+    (landlock_create_ruleset, landlock_add_rule, landlock_restrict_self under no_new_privs), and
+    it needs no namespace, helper or capability, so a shard applies it to itself on top of the
+    leg's domain. The layer handles the write accesses only: what the process may read, execute
+    and reach over sockets stays what the layers beneath it allow, and a layer can only take away.
+    The two devices the leg's domain lets a suite write stay writable. It lives here and not in
+    the launcher so that a shard needs nothing but its own dispatcher to confine itself."""
+    import ctypes
+    import platform
+    libc = ctypes.CDLL(None, use_errno=True)
+
+    def call(number, *args):
+        result = libc.syscall(number, *args)
+        if result < 0:
+            raise OSError(ctypes.get_errno(), "Landlock unavailable (syscall %d)" % number)
+        return result
+
+    if platform.machine() != "x86_64":
+        raise RuntimeError("the shard layer uses reviewed x86_64 syscall numbers only")
+    if call(444, 0, 0, 1) < 3:
+        raise RuntimeError("the shard layer needs Landlock ABI 3 (truncation)")
+
+    class Ruleset(ctypes.Structure):
+        _fields_ = [("access", ctypes.c_uint64), ("net", ctypes.c_uint64), ("scoped", ctypes.c_uint64)]
+
+    class Beneath(ctypes.Structure):
+        _pack_ = 1
+        _fields_ = [("access", ctypes.c_uint64), ("parent", ctypes.c_int32)]
+
+    if libc.prctl(38, 1, 0, 0, 0):
+        raise OSError(ctypes.get_errno(), "cannot set no_new_privs")
+    grants = [(Path(root), LANDLOCK_WRITE) for root in roots]
+    grants += [(Path(device), 1 << 1) for device in SHARD_DEVICES if Path(device).exists()]
+    rules = Ruleset(LANDLOCK_WRITE, 0, 0)
+    descriptor = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
+    try:
+        for path, access in grants:
+            if not path.is_dir():
+                access &= LANDLOCK_WRITE_FILE
+            parent = os.open(path, os.O_PATH | os.O_CLOEXEC)
+            try:
+                rule = Beneath(access, parent)
+                call(445, descriptor, 1, ctypes.byref(rule), 0)
+            finally:
+                os.close(parent)
+        call(446, descriptor, 0)
+    finally:
+        os.close(descriptor)
+
+
+def confine_shard(root):
     """Stack this shard's Landlock layer and prove it: (in force, the probe write was refused,
     what went wrong). Called before any suite code runs."""
-    import importlib.util
     try:
-        spec = importlib.util.spec_from_file_location("veldo_shard_sandbox", launcher)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        module.write_layer([Path(root)])
+        write_layer([Path(root)])
     except Exception as error:  # noqa: BLE001 - any failure is reported, and the dispatcher reddens
         return False, False, "%s: %s" % (type(error).__name__, error)
     try:
@@ -1125,7 +1192,9 @@ def attribute(kind, item, path, base, jobs, describe=None):
 
 # ---- the dispatcher ----------------------------------------------------------------------------
 
-class _Stopped(Exception):
+class ShardsStopped(Exception):
+    """The dispatcher was told to stop (TERM, INT or HUP): every shard is ended first."""
+
     def __init__(self, number):
         super().__init__("signal %d" % number)
         self.number = number
@@ -1316,7 +1385,7 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     stopped = []
 
     def stop(number, _frame):
-        raise _Stopped(number)
+        raise ShardsStopped(number)
     previous = {n: signal.signal(n, stop) for n in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
 
     def observe():
@@ -1465,7 +1534,7 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
                         for job in running.values():
                             if job["pid"] == group:
                                 job["peak"] = max(job["peak"], total)
-        except _Stopped as error:
+        except ShardsStopped as error:
             stopped.append(error.number)
         finally:
             for job in list(running.values()):
@@ -1483,7 +1552,7 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
                     except (OSError, ValueError, LegRefused):
                         pass
         if stopped:
-            raise _Stopped(stopped[0])
+            raise ShardsStopped(stopped[0])
 
         # ---- what each shard proved --------------------------------------------------------------
         passed = failed = 0

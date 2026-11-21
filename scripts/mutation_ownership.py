@@ -22,7 +22,9 @@ import sys
 import threading
 
 SLICE = re.compile(r'(?:v|veldo)[A-Za-z0-9]+\.slice')
-SERVICE = re.compile(r'veldo-authority-[0-9a-f]+\.service')
+# An authority unit, with the instance name a gate leg's shard gives its installations (VELDO-0221)
+# or, as in every production installation, without one.
+SERVICE = re.compile(r'veldo-authority-(?:[0-9A-Za-z][0-9A-Za-z_]{0,63}-)?[0-9a-f]+\.service')
 
 
 def vanished(error):

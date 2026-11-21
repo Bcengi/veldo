@@ -111,55 +111,6 @@ def landlock(grants, profile="agent", broker=None):
 
 
 SECCOMP_NOTIFY, SECCOMP_ALLOW = 0x7fc00000, 0x7fff0000
-def write_layer(roots):
-    """Stack one more Landlock layer on this process and every descendant: writes only beneath
-    `roots` (VELDO-0221). A shard of a confined gate leg calls it before its suite runs, on top of
-    the leg's own domain, so a write to another shard's roots is refused by the kernel whatever the
-    leg's domain grants. The layer handles the write accesses only: what the process may read,
-    execute and reach over sockets stays exactly what the layers beneath it already allow, and a
-    layer can only take away. The two devices every profile may write stay writable. It is the same
-    unprivileged mechanism as `landlock` above and needs no namespace, helper or capability."""
-    libc = ctypes.CDLL(None, use_errno=True)
-
-    def call(number, *args):
-        result = libc.syscall(number, *args)
-        if result < 0:
-            raise OSError(ctypes.get_errno(), 'agent sandbox Landlock unavailable')
-        return result
-
-    if platform.machine() != 'x86_64':
-        raise RuntimeError('agent sandbox supports reviewed x86_64 syscall numbers only')
-    if call(444, 0, 0, 1) < 3:
-        raise RuntimeError('a shard layer needs Landlock ABI 3 (truncation)')
-
-    class Ruleset(ctypes.Structure):
-        _fields_ = [('access', ctypes.c_uint64), ('net', ctypes.c_uint64), ('scoped', ctypes.c_uint64)]
-
-    class Beneath(ctypes.Structure):
-        _pack_ = 1
-        _fields_ = [('access', ctypes.c_uint64), ('parent', ctypes.c_int32)]
-
-    if libc.prctl(38, 1, 0, 0, 0):
-        raise OSError(ctypes.get_errno(), 'cannot set no_new_privs')
-    grants = [(Path(root), WRITE) for root in roots]
-    grants += [(device, 1 << 1) for device in (Path('/dev/null'), PTMX) if device.exists()]
-    rules = Ruleset(WRITE, 0, 0)
-    fd = call(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
-    try:
-        for path, access in grants:
-            if not path.is_dir():
-                access &= FILE
-            parent = os.open(path, os.O_PATH | os.O_CLOEXEC)
-            try:
-                rule = Beneath(access, parent)
-                call(445, fd, 1, ctypes.byref(rule), 0)
-            finally:
-                os.close(parent)
-        call(446, fd, 0)
-    finally:
-        os.close(fd)
-
-
 TIOCGPTPEER = 0x5441
 DEVICE_IOCTL = 1 << 15
 PTMX = Path('/dev/ptmx')

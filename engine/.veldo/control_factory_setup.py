@@ -1170,7 +1170,9 @@ def paths(root, keys, home, unit_dir, unit):
              'service_config': os.path.join(root, HOST_DIR, API.SERVICE_CONFIG),
              'state_dir': os.path.join(root, API.STATE_DIR)}
     if home is not None and unit is not None:
-        name = API.UNIT_PREFIX + unit[len(organ('control_client').SERVICE_PREFIX):]
+        # What follows the authority unit's FIXED prefix carries the instance name (VELDO-0221), so the
+        # API unit of an instance is named with it too.
+        name = API.UNIT_PREFIX + unit[len(organ('control_client').SERVICE_BASE):]
         found.update(installed_service_config=os.path.join(home, 'config', API.SERVICE_CONFIG),
                      process_config=os.path.join(home, 'config', API.PROCESS_CONFIG),
                      service_json=os.path.join(home, 'config', 'service.json'),
