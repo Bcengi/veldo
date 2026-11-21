@@ -570,7 +570,8 @@ def _v347_space_work_suite():
                 seen = P.nested(str(where))
                 done = send('run_finished', {'run': 'run-9478c'})
             finally:
-                os.chmod(str(shut), 0o700)
+                if os.path.lexists(str(shut)):  # a defect that removed it leaves nothing to open
+                    os.chmod(str(shut), 0o700)
             check(ROW, 'a folder beneath the item that cannot be listed holds it, though this user owns it '
                   '[%s %s %s]' % (named(done, item), held_paths(item), seen),
                   seen['read'] is False and named(done, item) == ('deferred', 'in_use', 'children')
@@ -583,7 +584,8 @@ def _v347_space_work_suite():
             try:
                 done = send('run_finished', {'run': 'run-9478d'})
             finally:
-                os.chmod(str(where / 'shut'), 0o700)
+                if os.path.lexists(str(where / 'shut')):
+                    os.chmod(str(where / 'shut'), 0o700)
             check(ROW, 'so does one this user shut with an unpushed clone in it, at rule 6, before any remover '
                   'runs [%s %s]' % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
@@ -665,7 +667,8 @@ def _v347_space_work_suite():
                 done = send('run_finished', {'run': 'run-9480c'})
             finally:
                 P.os = os
-                os.chmod(str(where / 'shut'), 0o700)
+                if os.path.lexists(str(where / 'shut')):
+                    os.chmod(str(where / 'shut'), 0o700)
             check(ROW, 'a folder in it another account owns still holds it [%s %s]' % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
                   and held_paths(item) == [('path:' + str(where), 'unread')]
@@ -678,7 +681,8 @@ def _v347_space_work_suite():
             try:
                 done = send('run_finished', {'run': 'run-9480d'})
             finally:
-                os.chmod(str(where / 'shut'), 0o700)
+                if os.path.lexists(str(where / 'shut')):
+                    os.chmod(str(where / 'shut'), 0o700)
             check(ROW, 'the exception needs the parent the launcher declares: with the name alone the folder holds '
                   'it [%s %s]' % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
