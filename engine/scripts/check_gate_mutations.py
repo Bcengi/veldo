@@ -1285,6 +1285,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             fraction = suite['audited'] / suite['hits']
             suite['sample_fraction'] = fraction
             suite['detection_probability'] = {str(k): 1 - (1 - minimum) ** k for k in (1, 20, 60)}
+        minimum = min((s['minimum_inclusion_probability'] for s in audit['suites'].values()), default=0)
+        audit['minimum_inclusion_probability'] = minimum
+        audit['detection_probability'] = {str(k): 1 - (1 - minimum) ** k for k in (1, 20, 60)}
         with tempfile.TemporaryDirectory(prefix='veldo-mutations-') as temporary:
             directory = Path(temporary)
             frozen = directory / 'input'

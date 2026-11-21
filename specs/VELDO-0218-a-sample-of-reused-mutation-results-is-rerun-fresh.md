@@ -126,3 +126,17 @@ the stated detection probability is the accepted residual.
 The four timing-sensitive differences are recorded in
 /tmp/veldo-mutation-throughput-20261025/canonical-observation-comparison.json: additional non-target
 observations in the mutant arrays, with every named rejection matching.
+
+## Implementation interface
+
+The authority receipt's `audit.population` lists the lookup hits with their keys, suites and
+sampling rates. `audit.entries` binds selected keys and stored digests to fresh observations.
+Audited cases occur once in `results`, with `source: fresh`, `audited: true` and their original
+`reuse_key`. Per-suite `hits` counts the population; `reused` excludes audited cases. Detection
+probabilities use the smallest inclusion fraction across suite/admission strata, a conservative
+bound for the stated affected-case counts, including mixed admission rates.
+
+Future VELDO-0222 admission records identify themselves with `reuse_admission: VELDO-0222` in
+the authenticated authority result; those records receive the ten percent quota. This interface
+does not admit unconfined reuse: the existing coordinator continues to run those cases fresh.
+The existing reuse suites' warm-count fixtures are updated to include mandatory fresh audits.
