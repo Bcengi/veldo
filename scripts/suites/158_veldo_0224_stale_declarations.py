@@ -25,8 +25,10 @@ def _v224_stale():
         return result
 
     C = module(ROOT / "scripts" / "case_reuse.py", 'case_reuse')
-    # The session reads and writes marks through this copy, so a mutation leg can replace it.
-    C.M = module(ROOT / "scripts" / "mutation_reuse.py", 'mutation_reuse')
+    # Sessions read and write marks through this copy's functions, so a mutation leg can replace
+    # them; the rest of the shared module (runtime identity, base session) stays the one loaded.
+    marks_copy = module(ROOT / "scripts" / "mutation_reuse.py", 'mutation_reuse')
+    C.M.stale_entries, C.M.mark_stale = marks_copy.stale_entries, marks_copy.mark_stale
     gate = module(ROOT / "scripts" / "check_gate_mutations.py", 'check_gate_mutations')
     P = module(ROOT / "scripts" / "propose_case_inputs.py", 'propose_case_inputs')
     if not leg_runs():
