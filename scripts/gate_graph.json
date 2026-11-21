@@ -145,8 +145,30 @@
         "peak_cgroup_memory_bytes": 290365440
       }
     },
+    "load": {
+      "depends_on": [
+        "lint",
+        "unit.confined",
+        "unit.unconfined",
+        "integration.confined",
+        "integration.unconfined",
+        "security",
+        "generated",
+        "docs",
+        "packaging",
+        "personal_setup",
+        "wallclock",
+        "extra"
+      ],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared"
+    },
     "mutation": {
-      "depends_on": [],
+      "depends_on": [
+        "load"
+      ],
       "writes_candidate": false,
       "manager": "exclusive",
       "ports": [],

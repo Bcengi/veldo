@@ -18183,6 +18183,12 @@ def cases():
             '    echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1\n',
             '    echo "   load-proof: FAIL"; FAIL=1  # defect: the gate goes on to the mutation stage\n',
             ['leg/proves-and-blocks'])
+    # Integration (lead item): under the graph scheduler the leg is the node load, and a red leg holds the
+    # mutation node. Let the scheduler start the mutation node after a red leg.
+    load358('load358-graph-red-not-blocking', 'gate_schedule.py',
+            "    if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):\n",
+            "    if False:  # defect: a node after a red load-proof leg is started\n",
+            ['leg/graph-blocks'])
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
     # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside

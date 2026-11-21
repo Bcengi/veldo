@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208, VELDO-0215, VELDO-0220]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml"]
+protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py"]
 footprint:
   - scripts/suites/support/waits.py
   - scripts/suites/support/holders.py
@@ -88,6 +88,21 @@ footprint:
   - specs/VELDO-0215-measured-mutation-case-deadlines.md
   - specs/index.md
   - proof/VELDO-0358/*
+  - scripts/gate_schedule.py
+  - engine/scripts/gate_schedule.py
+  - scripts/suites/01_warp_0101_reviewer_notes.py
+  - scripts/suites/38_veldo_0025_membership.py
+  - scripts/suites/93_veldo_0152_intake_routes.py
+  - scripts/suites/113_veldo_0145_ui.py
+  - scripts/suites/127_veldo_0254_secret_scan.py
+  - scripts/suites/128_veldo_0254_confined_runner.py
+  - scripts/suites/141_veldo_0344_process_reader.py
+  - scripts/suites/113_veldo_0220_gate_host.py
+  - scripts/suites/114_veldo_0220_gate_scope.py
+  - engine/ui/docs/patterns/testing.md
+  - proof/VELDO-0219/round2/check.py
+  - proof/VELDO-0219/round3/check.py
+  - proof/VELDO-0358/*/*
 behavior_bearing: true
 observability:
   logs: >
