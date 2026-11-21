@@ -1,7 +1,7 @@
-Current tree: 3606 registered cases across both drivers.
+Current tree: 3608 registered cases across both drivers.
 All replacement anchors apply exactly once.
-Brief C block: 33 registrations, all rejected in the serial developer drive.
+Brief C block: 35 registrations, all rejected in the serial developer drive.
 Controls: all passed; no hung or not-run target was counted as a kill.
-Serial drives (registered-mutants.txt plus firstuse358-watchdog-hidden in nested-watchdog-mutants.txt plus wait358-descriptor-ceiling in descriptor-mutants.txt) kill_by: assertion=0 terminal=0 unproven=33 (first baseline absent).
+Serial drives (registered-mutants.txt plus firstuse358-watchdog-hidden in nested-watchdog-mutants.txt plus wait358-descriptor-ceiling in descriptor-mutants.txt plus both qualification-mutants.txt cases) kill_by: assertion=0 terminal=0 unproven=35 (first baseline absent).
 The six-case fixture supplies an explicit baseline to distinguish all classifications.
 Full-stage validation is recorded separately; these are not aggregate gate receipts.

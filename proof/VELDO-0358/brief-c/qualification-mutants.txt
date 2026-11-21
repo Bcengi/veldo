@@ -1,0 +1,2 @@
+{"case": "verdict358-qualification-stage-expiry", "status": "rejected", "controls": [[], []], "failed": ["VELDO-0219 admission/qualification-capture"], "kills": [{"row": "VELDO-0219 admission/qualification-capture", "kill_by": "unproven"}]}
+{"case": "verdict358-qualification-worker-expiry", "status": "rejected", "controls": [[], []], "failed": ["VELDO-0219 admission/qualification-capture"], "kills": [{"row": "VELDO-0219 admission/qualification-capture", "kill_by": "unproven"}]}

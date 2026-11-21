@@ -576,15 +576,20 @@ def _v219_checks():
         row('worker-before-handoff-refused', round3.before_handoff(scheduler))
         row('lifecycle-registration-owned', round3.ownership_registration(ownership))
 
-        qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')
+        qualification = load(ROOT / "proof/VELDO-0219" / "qualification.py")
         capture = qualification.fixture()
         passed = qualification.check(capture)
         slow = copy.deepcopy(capture)
-        slow['mutation']['elapsed'] = 5207
+        slow['mutation']['elapsed'] = 21601
+        for outcome in slow['mutation']['worker_outcomes']:
+            outcome['elapsed'] = 1800
+        hung_capture = copy.deepcopy(slow)
+        hung_capture['mutation']['worker_outcomes'][0]['error'] = 'control_failed'
         slow['mutation']['peak_workers'] = 16
         missing = copy.deepcopy(capture)
         missing['mutation']['worker_outcomes'] = []
-        row('qualification-capture', passed['passed'] and not qualification.check(slow)['passed']
+        row('qualification-capture', passed['passed'] and qualification.check(slow)['passed']
+            and not qualification.check(hung_capture)['passed']
             and not qualification.check(missing)['passed'] and not qualification.check({})['passed'])
 
 
