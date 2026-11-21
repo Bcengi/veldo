@@ -4472,6 +4472,21 @@ def close_socket(path, identity):
             os.unlink(path)
 
 
+TIMERS_PROFILE_ENV = 'VELDO_TIMERS_PROFILE'
+
+
+def configured_timers_profile(config):
+    """The timers profile the configuration names (`timers_profile`), else the one the environment the service's
+    manager gave it names (VELDO_TIMERS_PROFILE, as JSON), else None."""
+    if isinstance(config.get('timers_profile'), dict):
+        return config['timers_profile']
+    try:
+        found = json.loads(os.environ.get(TIMERS_PROFILE_ENV) or 'null')
+    except ValueError:
+        return None
+    return found if isinstance(found, dict) else None
+
+
 def apply_timers_profile(profile):
     """Select the profile a configuration names (VELDO-0358 AC15): every timer of the table but `except` at
     `hang_seconds`. None, or no table beside this module, selects nothing."""
@@ -4491,7 +4506,7 @@ def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
     config = load_config(config_path)
-    apply_timers_profile(config.get('timers_profile'))  # VELDO-0358 AC15: before any timer of this process is armed
+    apply_timers_profile(configured_timers_profile(config))  # VELDO-0358 AC15: before any timer is armed
     lock = acquire(config['lock'], config)
     try:
         conn = S.open_store(config['store_path'])
