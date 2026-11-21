@@ -38,6 +38,14 @@ footprint:
   - "specs/VELDO-0175-conversations-started-and-continued-from-telegram-and-the-ui.md"
   - "specs/index.md"
   - "proof/VELDO-0175/*"
+  - "engine/.veldo/control_api_assertion.py"
+  - ".veldo/control_api_assertion.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "scripts/mutation_case_inputs.json"
+  - "engine/ui/src/api/routes.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -60,8 +68,9 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: A Telegram reply to any message the factory sent in a conversation, or an API message naming
-      the conversation, continues that conversation at intake as its next turn, with no factory PM run and
-      no question. Set and completeness: The factory records every message it sends in a conversation (AC3)
+      the conversation, continues that conversation at intake as its next turn, with no route run, no
+      proposal and no question; the only factory PM step is AC4's reading of a plain Telegram reply, which
+      tells a plain-words command from the next turn. Set and completeness: The factory records every message it sends in a conversation (AC3)
       with its bot, chat and message id, bound to the conversation and turn. Intake resolves a Telegram
       message's `reply_to_message_id` against those records before the proposal and question records it
       reads today, and the `messages.send` route gains an optional `conversation` field beside `project` and
@@ -188,3 +197,32 @@ since the role change and the project attach had only an API route; depends_on a
 VELDO-0177, whose commands they send. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0175/OPEN.md). control_api_assertion.py
+so messages.send can carry the conversation field AC1 names; control_service.py because a conversation turn's
+payload names only the intake command id, so the engine never receives the owner's words, and because no
+production caller hands an acquired Telegram message to intake, so AC1 and AC4 would hold only where a suite
+drives intake (both are real defects in what this specification promises, fixed here); control_clone.py
+because VELDO-0177's attach clone fails when the project's branch has the fresh repository's initial branch
+name; scripts/mutation_case_inputs.json for the new modules' reuse declarations. Acceptance criteria are
+unchanged.
+
+2026-11-04: fix round 1 (proof/VELDO-0175/OPEN.md items 1, 3 and 4): messages.send carries the conversation field
+through the API assertion; a turn's payload carries the owner's words from its intake source; the running
+service's channel pass hands acquired Telegram messages to intake once each; the attach clone takes a branch with a
+fresh repository's initial branch name; the seventeen mutation-case declarations name the new modules. Acceptance
+criteria unchanged.
+
+2026-11-04: AC1 amended by the lead after the independent review (proof/VELDO-0175/review-2026-11-04.md, item 2).
+AC1's "no factory PM run" could not hold together with AC4, the owner's later rule (Telegram 29299, applied when
+he marked this ready), that the factory PM reads every plain reply in case it is a command. AC1 now names that
+reading as the one PM step; a reply still takes no route run, no proposal and no question. AC4 is unchanged.
+
+2026-11-04: fix round 2 (proof/VELDO-0175/review-2026-11-04.md finding 1): a PM reading of a held reply whose
+conversation is no longer the sender's open one settles it READ by its named refusal with one line, so it never
+blocks the PM's routing. Suite 113_veldo_0145_ui's ui/route-trace needs engine/ui/src/api/routes.json, outside the
+footprint (proof/VELDO-0175/OPEN.md item 6). Acceptance criteria unchanged.
+
+2026-11-04: footprint widened by the lead after fix round 2 (proof/VELDO-0175/OPEN.md item 6): the UI's published
+route table, engine/ui/src/api/routes.json, lists messages.send's new optional conversation field, so VELDO-0145's
+route trace matches the API again. Acceptance criteria are unchanged.

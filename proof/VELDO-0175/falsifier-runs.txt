@@ -1,0 +1,20 @@
+== reply175-proposals-only (131_veldo_0175_conversation_replies.py, AC1/reply-continues): the edit applied to .veldo/control_intake.py, suite run, file restored
+  VELDO-0175 detail: AC1/reply-continues a reply to the second of three parts continues that conversation as its next turn [inbox AWAITING_ROUTE]; turn 2 ran and its reply came back as a reply to his follow-up
+  SELFTEST FAIL: VELDO-0175 AC1/reply-continues
+  131_veldo_0175_conversation_replies              3 passed    1.97s
+
+== route175-conversation-as-project (132_veldo_0175_conversation_routes.py, AC2/new-conversation): the edit applied to .veldo/control_intake_routes.py, suite run, file restored
+  VELDO-0175 detail: AC2/new-conversation the PM run's new-conversation route opens a conversation with the message as turn 1 [NEW_PROJECT]; the inbox proposal is retired ROUTED, pointing at the conversation; its workspace is made
+  SELFTEST FAIL: VELDO-0175 AC2/new-conversation
+  132_veldo_0175_conversation_routes               8 passed   17.10s
+
+== parts175-first-only (131_veldo_0175_conversation_replies.py, AC3/reply-to-the-last-part): the edit applied to .veldo/control_conversation_channel.py, suite run, file restored
+  VELDO-0175 detail: AC3/reply-to-the-last-part a reply to the last part continues the conversation as its next turn [inbox AWAITING_ROUTE]
+  SELFTEST FAIL: VELDO-0175 AC3/reply-to-the-last-part
+  131_veldo_0175_conversation_replies              3 passed    2.19s
+
+== command175-taken-as-turn (132_veldo_0175_conversation_routes.py, AC4/slash-role): the edit applied to .veldo/control_intake_conversation.py, suite run, file restored
+  VELDO-0175 detail: AC4/slash-role the typed /role changes the role on the current version with the name as typed, and makes no turn [turn None]; he is answered with one line naming what changed, as a reply to his command; the answer is a conversation message: a reply to it continues the conversation
+  SELFTEST FAIL: VELDO-0175 AC4/slash-role
+  132_veldo_0175_conversation_routes               8 passed   13.85s
+

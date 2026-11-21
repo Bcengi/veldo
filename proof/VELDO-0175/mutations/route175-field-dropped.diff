@@ -1,0 +1,5 @@
+--- a/.veldo/control_api_assertion.py
++++ b/.veldo/control_api_assertion.py
+@@ -150 +150 @@
+-        if p.get('conversation') is not None:
++        if False:  # defect: the route's conversation field never reaches intake

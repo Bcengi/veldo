@@ -1,0 +1,39 @@
+Suites 131 and 132 run against the base 7bc8279c production code (a detached worktree at the base with only the two suites and the registry copied in; the new modules are absent there, so every row is red).
+
+== python3 scripts/selftest.py --suite 131_veldo_0175_conversation_replies
+  SELFTEST FAIL: VELDO-0175 AC1/reply-continues
+  SELFTEST FAIL: VELDO-0175 AC1/api-field
+  SELFTEST FAIL: VELDO-0175 AC1/foreign-refused
+  SELFTEST FAIL: VELDO-0175 AC1/closed-refused
+  SELFTEST FAIL: VELDO-0175 AC1/no-route
+  SELFTEST FAIL: VELDO-0175 AC1/observability
+  SELFTEST FAIL: VELDO-0175 AC3/reply-kept
+  SELFTEST FAIL: VELDO-0175 AC3/parts-sent
+  SELFTEST FAIL: VELDO-0175 AC3/reply-to-the-last-part
+  SELFTEST FAIL: VELDO-0175 AC3/status-line
+  SELFTEST FAIL: VELDO-0175 AC3/api-not-sent
+  SELFTEST FAIL: VELDO-0175 AC3/channel-pass
+  SELFTEST FAIL: VELDO-0175 AC3/observability
+  131_veldo_0175_conversation_replies              0 passed    0.00s
+selftest (PARTIAL, 1 of 194 suites): 26 passed, 13 failed in 0.00s
+
+== python3 scripts/selftest.py --suite 132_veldo_0175_conversation_routes
+  SELFTEST FAIL: VELDO-0175 AC2/new-conversation
+  SELFTEST FAIL: VELDO-0175 AC2/open-conversation
+  SELFTEST FAIL: VELDO-0175 AC2/project-routes
+  SELFTEST FAIL: VELDO-0175 AC2/unclear-offers
+  SELFTEST FAIL: VELDO-0175 AC2/route-input
+  SELFTEST FAIL: VELDO-0175 AC2/conversation-refused
+  SELFTEST FAIL: VELDO-0175 AC2/observability
+  SELFTEST FAIL: VELDO-0175 AC4/slash-role
+  SELFTEST FAIL: VELDO-0175 AC4/slash-attach
+  SELFTEST FAIL: VELDO-0175 AC4/slash-close
+  SELFTEST FAIL: VELDO-0175 AC4/plain-words
+  SELFTEST FAIL: VELDO-0175 AC4/plain-none-is-a-turn
+  SELFTEST FAIL: VELDO-0175 AC4/reads-only-his-words
+  SELFTEST FAIL: VELDO-0175 AC4/other-member
+  SELFTEST FAIL: VELDO-0175 AC4/no-reply
+  SELFTEST FAIL: VELDO-0175 AC4/unknown-name
+  SELFTEST FAIL: VELDO-0175 AC4/observability
+  132_veldo_0175_conversation_routes               0 passed    0.01s
+selftest (PARTIAL, 1 of 194 suites): 26 passed, 17 failed in 0.01s

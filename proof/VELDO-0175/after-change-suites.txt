@@ -1,0 +1,55 @@
+After the change, each suite alone: python3 scripts/selftest.py --suite <name> (inside systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0). Summary lines and every failed row.
+
+== 131_veldo_0175_conversation_replies
+  131_veldo_0175_conversation_replies             13 passed    3.34s
+selftest (PARTIAL, 1 of 194 suites): 39 passed, 0 failed in 3.34s
+
+== 132_veldo_0175_conversation_routes
+  132_veldo_0175_conversation_routes              17 passed   19.27s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 19.27s
+
+== 123_veldo_0174_conversations
+  123_veldo_0174_conversations                    38 passed   12.92s
+selftest (PARTIAL, 1 of 194 suites): 64 passed, 0 failed in 12.92s
+
+== 127_veldo_0231_run_flags
+  127_veldo_0231_run_flags                        17 passed   34.25s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 34.25s
+
+== 128_veldo_0177_conversation_workspace
+  128_veldo_0177_conversation_workspace           15 passed    3.17s
+selftest (PARTIAL, 1 of 194 suites): 41 passed, 0 failed in 3.17s
+
+== 129_veldo_0177_assistant_setup
+  129_veldo_0177_assistant_setup                   4 passed    3.88s
+selftest (PARTIAL, 1 of 194 suites): 30 passed, 0 failed in 3.88s
+
+== 130_veldo_0176_conversation_history
+  130_veldo_0176_conversation_history             17 passed   13.81s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 13.81s
+
+== 86_veldo_0127_agent_configuration
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   54.50s
+selftest (PARTIAL, 1 of 194 suites): 52 passed, 2 failed in 54.50s
+
+== 68_veldo_0126_intake
+  68_veldo_0126_intake                            18 passed    1.70s
+selftest (PARTIAL, 1 of 194 suites): 44 passed, 0 failed in 1.70s
+
+== 72_veldo_0128_reports
+  72_veldo_0128_reports                           18 passed    3.74s
+selftest (PARTIAL, 1 of 194 suites): 44 passed, 0 failed in 3.74s
+
+== 93_veldo_0152_intake_routes
+  93_veldo_0152_intake_routes                     24 passed   50.44s
+selftest (PARTIAL, 1 of 194 suites): 50 passed, 0 failed in 50.44s
+
+== 68_veldo_0136_hints
+  68_veldo_0136_hints                              7 passed    4.67s
+selftest (PARTIAL, 1 of 194 suites): 33 passed, 0 failed in 4.67s
+
+== 69_veldo_0133_dispositions
+  69_veldo_0133_dispositions                      33 passed    5.28s
+selftest (PARTIAL, 1 of 194 suites): 59 passed, 0 failed in 5.28s

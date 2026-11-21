@@ -1,0 +1,6 @@
+--- a/.veldo/control_conversation_channel.py
++++ b/.veldo/control_conversation_channel.py
+@@ -207 +207,2 @@
+-                    self.record(kind, sent, bot=where['bot_id'], conversation=turn['conversation'],
++                    (self.record if part == 1 else (lambda *a, **k: None))(  # defect: only the first part
++                        kind, sent, bot=where['bot_id'], conversation=turn['conversation'],

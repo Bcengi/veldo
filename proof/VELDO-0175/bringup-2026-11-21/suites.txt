@@ -1,0 +1,5 @@
+VELDO-0175 on the line: its suites, each alone (python3 scripts/selftest.py with the suite option; exit 2 is a passed partial run), at the ticket's own commit of the port.
+exit 2 131_veldo_0175_conversation_replies
+  131_veldo_0175_conversation_replies             16 passed    4.26s
+exit 2 132_veldo_0175_conversation_routes
+  132_veldo_0175_conversation_routes              19 passed   26.36s
