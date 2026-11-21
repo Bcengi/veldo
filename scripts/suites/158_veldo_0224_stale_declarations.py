@@ -210,11 +210,17 @@ def _v224_stale():
                            if p.name not in existing]
             selected = P.authority_staleness(document, cache)
             # A subsequent gate cannot hit earlier records, including an otherwise unchanged key.
-            with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: dict(paths=paths)), \
-                 patch.object(C, 'sensitivity_proved', return_value=True):
-                later = original_session(candidate, current, cases, 'another-gate', configuration, cache_directory=cache)
-                no_hits = all(later.lookup(c, gate.validate_result) is None for c in cases[:-1])
-                clean_hit = later.lookup(cases[-1], gate.validate_result) is not None
+            # A session that fails to open is a red row here, never a crashed suite.
+            try:
+                with patch.object(C.M, 'runtime_identity', side_effect=lambda paths, env: dict(paths=paths)), \
+                     patch.object(C, 'sensitivity_proved', return_value=True):
+                    later = original_session(candidate, current, cases, 'another-gate', configuration,
+                                             cache_directory=cache)
+                    no_hits = all(later.lookup(c, gate.validate_result) is None for c in cases[:-1])
+                    clean_hit = later.lookup(cases[-1], gate.validate_result) is not None
+            except (KeyError, TypeError, ValueError, OSError) as error:
+                print('later session failed:', label, error)
+                no_hits = clean_hit = False
             return dict(receipt=receipt, seeded=all(seeded), launched=list(launched), entries=entries,
                         warm_hit=warm_hit, cache=cache,
                         new_records=new_records, no_hits=no_hits, clean_hit=clean_hit, selected=selected,
