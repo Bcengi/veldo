@@ -4,3 +4,5 @@ fb7705e1 and at this branch. Required (AC10 wave1/rows-kept): the same set or a 
 63_veldo_0040_containment.py: base 85, now 89, missing [], added ['VELDO-0040 ran/timers/profile-applied', 'VELDO-0040 ran/wave1/no-sites', 'VELDO-0040 timers/profile-applied', 'VELDO-0040 wave1/no-sites']
 78_veldo_0060_claude_adapter.py: base 63, now 64, missing [], added ['VELDO-0060 timers/profile-applied']
 106_veldo_0185_dispatch_setup.py: base 46, now 47, missing [], added ['VELDO-0185 timers/profile-applied']
+Round 2 (3d7e2307): 62_veldo_0039_dispatch.py adds 'VELDO-0039 dispatch/owner-stop-ends-first' and its
+'VELDO-0039 ran/dispatch/owner-stop-ends-first' (58 rows idle, r2-idle-and-falsifier.txt); no row of any suite removed.

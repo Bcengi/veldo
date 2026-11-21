@@ -1,0 +1,18 @@
+Suite 83 on a temporary combination of brief E (190c4e90) and brief F (d5450c70): a detached scratch worktree at
+190c4e90 with git diff fb7705e1 d5450c70 applied (two conflicts: the two briefs' mutation blocks kept both, the
+baseline's conflicting entries dropped, each side's lowering); nothing committed. Census on it: pass.
+Ten runs, four at a time, no generator, local through host_heavy.sh.
+
+start 2026-11-21T21:48:25Z
+end 2026-11-21T21:51:01Z
+runs 10, green 10
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 35.39s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 35.40s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 35.50s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 35.51s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.80s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.87s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.92s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.94s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.99s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 60.02s

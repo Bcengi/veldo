@@ -1,0 +1,50 @@
+Round 2: the 42 suites that open the files converted in 190c4e90 (85_veldo_0171, setup_runtime, v73_authority,
+compare_formats, and the proof fixtures reusing suite 85), each alone, six at a time, local through host_heavy.sh.
+The scratch tree moved from 190c4e90 to d1b18d13 while the pass ran (the difference: four lines of _await_gone).
+
+105_veldo_0182_memory: selftest (PARTIAL, 1 of 239 suites): 154 passed, 0 failed in 91.30s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 239 suites): 48 passed, 0 failed in 13.96s
+110_veldo_0143_new_project: selftest (PARTIAL, 1 of 239 suites): 136 passed, 0 failed in 41.87s
+116_veldo_0188_project_lines: selftest (PARTIAL, 1 of 239 suites): 54 passed, 0 failed in 30.89s
+117_veldo_0227_ui_location: selftest (PARTIAL, 1 of 239 suites): 34 passed, 0 failed in 9.45s
+123_veldo_0174_conversations: selftest (PARTIAL, 1 of 239 suites): 65 passed, 0 failed in 13.58s
+127_veldo_0234_https_port: selftest (PARTIAL, 1 of 239 suites): 37 passed, 0 failed in 9.95s
+129_veldo_0254_canary_launch: selftest (PARTIAL, 1 of 239 suites): 34 passed, 0 failed in 3.01s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 239 suites): 57 passed, 0 failed in 35.98s
+70_veldo_0073_activation: selftest (PARTIAL, 1 of 239 suites): 38 passed, 0 failed in 3.60s
+71_veldo_0130_api: selftest (PARTIAL, 1 of 239 suites): 72 passed, 0 failed in 25.82s
+71_veldo_0138_channel_service: selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 32.62s
+72_veldo_0075_andon: selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 4.04s
+72_veldo_0128_reports: selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 3.60s
+73_veldo_0139_factory_setup: selftest (PARTIAL, 1 of 239 suites): 44 passed, 0 failed in 31.22s
+74_veldo_0140_standing_delegation: selftest (PARTIAL, 1 of 239 suites): 36 passed, 0 failed in 13.31s
+75_veldo_0062_accounts: selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 42.98s
+78_veldo_0060_claude_adapter: selftest (PARTIAL, 1 of 239 suites): 65 passed, 0 failed in 24.59s
+78_veldo_0160_account_pool: selftest (PARTIAL, 1 of 239 suites): 61 passed, 0 failed in 30.81s
+79_veldo_0061_codex_adapter: selftest (PARTIAL, 1 of 239 suites): 48 passed, 0 failed in 17.95s
+80_veldo_0155_claude_baseline: selftest (PARTIAL, 1 of 239 suites): 46 passed, 0 failed in 17.65s
+81_veldo_0156_codex_baseline: selftest (PARTIAL, 1 of 239 suites): 49 passed, 0 failed in 3.93s
+82_veldo_0129_worker_wiring: selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 47.20s
+82_veldo_0141_execution_record: selftest (PARTIAL, 1 of 239 suites): 67 passed, 0 failed in 22.44s
+82_veldo_0144_mcp_catalog: selftest (PARTIAL, 1 of 239 suites): 56 passed, 0 failed in 32.86s
+82_veldo_0165_launch_hygiene: selftest (PARTIAL, 1 of 239 suites): 50 passed, 0 failed in 17.03s
+82_veldo_0172_live_formats: selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 2.23s
+82_veldo_0173_tool_registry: selftest (PARTIAL, 1 of 239 suites): 38 passed, 0 failed in 3.09s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 239 suites): 41 passed, 0 failed in 62.28s
+84_veldo_0169_project_handouts: selftest (PARTIAL, 1 of 239 suites): 54 passed, 0 failed in 12.71s
+85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 239 suites): 50 passed, 0 failed in 5.59s
+85_veldo_0171_setup_api: selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 11.91s
+86_veldo_0127_agent_configuration: selftest (PARTIAL, 1 of 239 suites): 53 passed, 2 failed in 68.68s
+86_veldo_0148_re_land: selftest (PARTIAL, 1 of 239 suites): 53 passed, 0 failed in 76.43s
+86_veldo_0168_text: selftest (PARTIAL, 1 of 239 suites): 50 passed, 3 failed in 1.40s
+86_veldo_0186_setup_assets: selftest (PARTIAL, 1 of 239 suites): 38 passed, 0 failed in 21.46s
+86_veldo_0189_engine_upgrade: selftest (PARTIAL, 1 of 239 suites): 60 passed, 1 failed in 71.09s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 239 suites): 39 passed, 0 failed in 8.78s
+91_veldo_0167_setup_records: selftest (PARTIAL, 1 of 239 suites): 36 passed, 0 failed in 16.00s
+93_veldo_0152_intake_routes: selftest (PARTIAL, 1 of 239 suites): 51 passed, 0 failed in 59.12s
+94_veldo_0162_configuration_routes: selftest (PARTIAL, 1 of 239 suites): 53 passed, 0 failed in 11.76s
+95_veldo_0203_owner_revisions: selftest (PARTIAL, 1 of 239 suites): 63 passed, 0 failed in 8.03s
+
+86_veldo_0168_text again at 481bd6fc (its probe repointed at v73_authority._wall), alone, host_heavy.sh:
+481bd6fc VELDO-0358 E: suite 86_veldo_0168 freezes v73_authority's wall-time reader, not its time module
+selftest (PARTIAL, 1 of 239 suites): 53 passed, 0 failed in 4.15s

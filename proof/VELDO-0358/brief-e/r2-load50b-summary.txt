@@ -1,0 +1,13 @@
+Round 2, batch r2-load50b at d1b18d13 (local, host_heavy.sh; generator scripts/gate_load.py --slots 4).
+Suites 62, 78 and 106, fifty runs each, four at a time, each run its own selftest process. The loop's last line
+is a test whose false value (no failed row to list) is the 'exit 1' below; the runs' own results are the counts.
+
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 3724355, "slots": 4, "spinners": [3724325, 3724327, 3724329, 3724331, 3724333, 3724335, 3724339, 3724341, 3724343, 3724346, 3724348, 3724351], "writers": [3724353]}
+62_veldo_0039_dispatch: 50 runs, 50 with 0 failed
+78_veldo_0060_claude_adapter: 50 runs, 50 with 0 failed
+106_veldo_0185_dispatch_setup: 50 runs, 50 with 0 failed
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000389714, "slowdown": 4.939, "waited_ns": 3940368449}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 572.523, "pid": 3724325}, {"alive": true, "cpu": 16, "cpu_seconds": 572.519, "pid": 3724327}, {"alive": true, "cpu": 16, "cpu_seconds": 572.523, "pid": 3724329}, {"alive": true, "cpu": 17, "cpu_seconds": 567.071, "pid": 3724331}, {"alive": true, "cpu": 17, "cpu_seconds":
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 6795.6s (least 562.029s)
+load: 1 writers: 1 alive to the end, bytes written [2134867181568]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000389714, "slowdown": 4.939, "waited_ns": 3940368449} (data, no verdict)
+exit 1

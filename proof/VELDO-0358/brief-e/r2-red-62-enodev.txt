@@ -1,0 +1,9 @@
+Round 2, the one red of r2-load50 (suite 62 run 45 at 190c4e90), its row lines. No traceback is printed by a raising
+region; the cause is read from the code (runs.md): _await_gone's first read of cgroup.events, fixed in d1b18d13.
+
+  SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema: raised OSError(19, 'No such device')
+  SELFTEST FAIL: VELDO-0039 dispatch/observations: raised UnboundLocalError("cannot access local variable 'prepared_only' where it is not associated with a value")
+  SELFTEST FAIL: VELDO-0039 timers/profile-applied: timer_unset {'in_process': [], 'receiver': [], 'wrapper': [], 'receiver_exit': {'awaited': 'pidfd', 'bound': 600, 'ended_by': 'exit'}, 'orphan': []}
+  SELFTEST FAIL: VELDO-0039 ran/dispatch/transitions-from-schema
+  SELFTEST FAIL: VELDO-0039 ran/dispatch/observations
+selftest (PARTIAL, 1 of 239 suites): 53 passed, 5 failed in 24.68s
