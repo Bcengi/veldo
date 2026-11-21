@@ -14,12 +14,17 @@ import json
 import os
 from pathlib import Path
 import re
+import select
 import shutil
 import socket
 import stat
 import subprocess
 import sys
 import threading
+
+# VELDO-0358: the one duration this tool names. A light child call (systemctl) and the wait for an owned
+# cgroup to empty are bounded by it from their start; reaching it is a hang, reported as one.
+WAIT_HANG_SECONDS = 600
 
 SLICE = re.compile(r'(?:v|veldo)[A-Za-z0-9]+\.slice')
 # An authority unit, with the instance name a gate leg's shard gives its installations (VELDO-0221)
@@ -285,7 +290,8 @@ def cleanup(home, ledger, run=subprocess.run, runtime=None, born_after=None):
     units = sorted({v for k, v in entries if k == 'slice'} | {p.name for p in services})
     env = dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid())
     def ctl(*args):
-        return run(['systemctl', '--user', *args], env=env, capture_output=True, text=True, timeout=60)
+        return run(['systemctl', '--user', *args], env=env, capture_output=True, text=True,
+                   timeout=WAIT_HANG_SECONDS)
     if units:
         # Missing/unloaded units are already clean; a transport error is not.
         ctl('stop', *units)
@@ -360,7 +366,7 @@ class RetainedSlice:
     @staticmethod
     def ctl(*args):
         result = subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True,
-                                timeout=10, env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()))
+                                timeout=WAIT_HANG_SECONDS, env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()))
         if result.returncode:
             raise OSError('accounting manager command failed: ' + result.stderr)
         return result.stdout
@@ -516,7 +522,7 @@ class WorkerMeter:
         units = {v if k == 'slice' else Path(v).name for k, v in entries if k in ('slice', 'service')}
         for unit in sorted(units - self.paths.keys() - self.retained.keys() - self.covered_units):
             answer = subprocess.run(['systemctl', '--user', 'show', '-p', 'ControlGroup', '--value', unit],
-                                    capture_output=True, text=True, timeout=5,
+                                    capture_output=True, text=True, timeout=WAIT_HANG_SECONDS,
                                     env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()))
             value = answer.stdout.strip()
             if answer.returncode or not value:
@@ -593,13 +599,21 @@ class WorkerMeter:
 
 
 def wait_for_empty(path):
-    """Wait for kernel process exit. This clock never decides to remove a stored item."""
-    import time
-    events = path / 'cgroup.events'
-    if 'populated 1' in events.read_text():
+    """Wait for kernel process exit, on the cgroup's own notification: the kernel reports every change of
+    cgroup.events as an exceptional condition on it, so the wait wakes when the group empties and at no
+    interval. Its one bound is the wait hang bound, from the kill; a group still populated then is a hang
+    and is raised as one. No clock decides to remove a stored item."""
+    try:
+        events = os.open(path / 'cgroup.events', os.O_RDONLY | os.O_CLOEXEC)
+    except FileNotFoundError:
+        return
+    try:
+        if b'populated 1' not in os.pread(events, 4096, 0):
+            return
         (path / 'cgroup.kill').write_text('1')
-        end = time.monotonic() + 5
-        while 'populated 1' in events.read_text():
-            if time.monotonic() >= end:
-                raise RuntimeError('worker cgroup remains populated')
-            time.sleep(.02)
+        while b'populated 1' in os.pread(events, 4096, 0):
+            if not select.select([], [], [events], WAIT_HANG_SECONDS)[2]:
+                raise RuntimeError('hung: worker cgroup remains populated %d s after its kill: %s'
+                                   % (WAIT_HANG_SECONDS, path))
+    finally:
+        os.close(events)
