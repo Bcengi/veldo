@@ -75,6 +75,10 @@ protected_paths:
   - {path: "engine/scripts/check_wallclock.py", floor: high}
   - {path: "scripts/suites/wallclock.json", floor: high}
   - {path: "scripts/suites/wallclock_baseline.json", floor: high}
+  # VELDO-0358 (owner, Telegram 42829, 2026-11-20): the load generator the load-proof leg runs its
+  # suites under. A candidate that weakened it (fewer spinners, no affinity) would prove nothing.
+  - {path: "scripts/gate_load.py", floor: high}
+  - {path: "engine/scripts/gate_load.py", floor: high}
   # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
   # and suites/shared.py (leg_runs) pick the rows. check_first_use.py is the integration stage's
   # command: in the unconfined leg it runs whole outside the confinement and hands its environment,
