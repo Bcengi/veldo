@@ -1,8 +1,8 @@
 """VELDO-0113: registry/state consumers, with separate absence and protocol results.
 
-The named consumer results are printed as structured statuses. A passing protocol
-assertion means no counterexample and honest stand-down propagation, NOT absence
-on a host whose lifecycle qualification is incomplete.
+The named consumer results are printed as structured statuses. Passing protocol
+assertions check disposition rules; they do not establish absence when lifecycle
+qualification is incomplete, even if partial observations capture an effect.
 """
 import importlib.util as _v113_import
 import json as _v113_json

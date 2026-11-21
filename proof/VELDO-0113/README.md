@@ -33,7 +33,8 @@ forbidden. The endpoint fixture is already dead and outside that scope.
 The three named consumer rows carry distinct PASS, FAIL or STANDS DOWN statuses.
 An INCOMPLETE receipt always leaves these rows STANDS DOWN, even when the
 observer captured a suspicious birth or service. Such effects remain diagnostics;
-only a COMPLETE receipt permits the named row to pass or fail. Missing facilities
+Only a COMPLETE receipt permits an absence verdict. Separately, AC3 is refuted
+when the consumer accepts an incomplete receipt or loses the required stand-downs. Missing facilities
 and all interrupted-observer faults from VELDO-0111 are driven for every
 external registry/state case; all three names must remain STANDS DOWN with
 census_incomplete and zero PASS rows. The suite separately asserts this protocol;
