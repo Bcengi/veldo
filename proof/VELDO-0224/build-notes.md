@@ -25,3 +25,10 @@ to the footprint because AC3 explicitly requires this consumer.
 Validation is pending. The builder does not run the canonical gate or independent review.
 All loaded validation is submitted through the external host-heavy wrapper. Test child waits
 are generous 300-second hang detectors; no assertion measures machine speed.
+
+The repeatable validation batch is `python3 proof/VELDO-0224/validate.py.txt`, invoked through
+an external host-heavy wrapper by the operator. It writes sanitized text logs and compact
+mutation receipts in this proof directory, and exits nonzero if any selected check fails.
+Full mutation receipts stay in scratch; the retained summaries include named false rows,
+control failures, result sources and coordinator validation counts. This is selected validation,
+not the canonical gate. Host admission is pending as of the second implementation commit.
