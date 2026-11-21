@@ -1,0 +1,270 @@
+   unit: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json), 50 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 133_veldo_0326_space_principals, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_i
+selftest leg unconfined: runs only the 50 listed suite(s) present, and of a row-scoped one only its rows. Whole: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 133_veldo_0326_space_principals, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_ro
+selftest shard 04 65_veldo_0067_edges: roots /tmp/smsuf2vep/04*; instance 910f898c04_65_veldo_0067_edges; 9 passed, 0 failed; wall 5.5s cpu 4.4s peak 45 MiB
+selftest shard 00 62_veldo_0039_dispatch: roots /tmp/smsuf2vep/00*; instance 910f898c00_62_veldo_0039_dispatch; 25 passed, 0 failed; wall 10.8s cpu 5.1s peak 140 MiB
+selftest shard 0t 94_veldo_0162_configuration_routes: roots /tmp/smsuf2vep/0t*; instance 910f898c0t_94_veldo_0162_configuration_routes; 26 passed, 0 failed; wall 13.2s cpu 10.8s peak 286 MiB
+selftest shard 0n 85_veldo_0171_setup_api: roots /tmp/smsuf2vep/0n*; instance 910f898c0n_85_veldo_0171_setup_api; 18 passed, 0 failed; wall 14.1s cpu 12.0s peak 257 MiB
+selftest shard 0u 95_veldo_0203_owner_revisions: roots /tmp/smsuf2vep/0u*; instance 910f898c0u_95_veldo_0203_owner_revisions; 36 passed, 0 failed; wall 8.6s cpu 7.4s peak 267 MiB
+selftest shard 0p 91_veldo_0167_setup_records: roots /tmp/smsuf2vep/0p*; instance 910f898c0p_91_veldo_0167_setup_records; 7 passed, 2 failed; wall 17.2s cpu 14.7s peak 332 MiB
+  SELFTEST FAIL: VELDO-0167 older-engine-host
+  SELFTEST FAIL: VELDO-0167 upgrade-restart-answer
+selftest shard 01 63_veldo_0040_containment: roots /tmp/smsuf2vep/01*; instance 910f898c01_63_veldo_0040_containment; 59 passed, 0 failed; wall 8.0s cpu 5.2s peak 161 MiB
+selftest shard 0w 100_veldo_0207_case_reuse: roots /tmp/smsuf2vep/0w*; instance 910f898c0w_100_veldo_0207_case_reuse; 59 passed, 0 failed; wall 10.1s cpu 9.0s peak 69 MiB
+selftest shard 0b 71_veldo_0130_api: roots /tmp/smsuf2vep/0b*; instance 910f898c0b_71_veldo_0130_api; 45 passed, 0 failed; wall 31.4s cpu 23.8s peak 263 MiB
+selftest shard 05 66_veldo_0042_clones: roots /tmp/smsuf2vep/05*; instance 910f898c05_66_veldo_0042_clones; 0 passed, 0 failed; wall 0.3s cpu 0.2s peak 45 MiB
+selftest shard 02 63_veldo_0049_floor: roots /tmp/smsuf2vep/02*; instance 910f898c02_63_veldo_0049_floor; 20 passed, 0 failed; wall 13.2s cpu 11.2s peak 109 MiB
+selftest shard 0a 71_veldo_0138_channel_service: roots /tmp/smsuf2vep/0a*; instance 910f898c0a_71_veldo_0138_channel_service; 13 passed, 0 failed; wall 33.9s cpu 12.2s peak 262 MiB
+selftest shard 0c 73_veldo_0139_factory_setup: roots /tmp/smsuf2vep/0c*; instance 910f898c0c_73_veldo_0139_factory_setup; 17 passed, 0 failed; wall 34.6s cpu 27.2s peak 303 MiB
+selftest shard 0v 96_veldo_0204_reservation_policies: roots /tmp/smsuf2vep/0v*; instance 910f898c0v_96_veldo_0204_reservation_policies; 20 passed, 0 failed; wall 24.0s cpu 21.5s peak 260 MiB
+selftest shard 1a 128_veldo_0254_confined_runner: roots /tmp/smsuf2vep/1a*; instance 910f898c1a_128_veldo_0254_confined_runner; 1 passed, 0 failed; wall 0.8s cpu 0.8s peak 45 MiB
+selftest shard 03 64_veldo_0050_proof: roots /tmp/smsuf2vep/03*; instance 910f898c03_64_veldo_0050_proof; 14 passed, 0 failed; wall 17.5s cpu 15.5s peak 123 MiB
+selftest shard 0j 83_veldo_0154_factory_loop: roots /tmp/smsuf2vep/0j*; instance 910f898c0j_83_veldo_0154_factory_loop; 14 passed, 0 failed; wall 46.8s cpu 24.9s peak 507 MiB
+selftest shard 06 66_veldo_0047_authority: roots /tmp/smsuf2vep/06*; instance 910f898c06_66_veldo_0047_authority; 30 passed, 0 failed; wall 21.3s cpu 12.6s peak 322 MiB
+selftest shard 0s 93_veldo_0152_intake_routes: roots /tmp/smsuf2vep/0s*; instance 910f898c0s_93_veldo_0152_intake_routes; 24 passed, 0 failed; wall 69.9s cpu 58.7s peak 131 MiB
+selftest shard 08 67_veldo_0135_offers: roots /tmp/smsuf2vep/08*; instance 910f898c08_67_veldo_0135_offers; 9 passed, 0 failed; wall 7.7s cpu 6.4s peak 120 MiB
+selftest shard 0d 78_veldo_0060_claude_adapter: roots /tmp/smsuf2vep/0d*; instance 910f898c0d_78_veldo_0060_claude_adapter; 0 passed, 37 failed; wall 0.8s cpu 0.4s peak 45 MiB
+  SELFTEST FAIL: VELDO-0060 lifecycle/registration: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 lifecycle/pinned-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/unexpected-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/copy: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/shipped-qualification: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/argv-binds-what-runs: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/rehash-before-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/entrance-interpreter: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/rehash-dot-dot: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 launch/exited-before-settle: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 launch/record-before-report: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/complete: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/missing-result: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/exits: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/malformed-output: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/missing-usage: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/exit-record: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 floor/missing-result: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 stop/requested: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 stop/descendant-alive: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/before-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/allowance-states: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/stop-at-cap: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/bind: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/scope: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/clone-entry: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/pinned-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-cooperative: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-forced: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-descendant: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/artifact: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/exit-record: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/engines-protected: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/rehash-before-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 format/fake-lines: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 format/fake-argv: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0172 fake/capture:0060_claude_adapter
+selftest shard 0e 79_veldo_0061_codex_adapter: roots /tmp/smsuf2vep/0e*; instance 910f898c0e_79_veldo_0061_codex_adapter; 0 passed, 21 failed; wall 0.8s cpu 0.4s peak 45 MiB
+  SELFTEST FAIL: VELDO-0061 lifecycle/registered
+  SELFTEST FAIL: VELDO-0061 lifecycle/normal-run
+  SELFTEST FAIL: VELDO-0061 lifecycle/actual-binary
+  SELFTEST FAIL: VELDO-0061 pin/unexpected-launch
+  SELFTEST FAIL: VELDO-0061 pin/qualified-record
+  SELFTEST FAIL: VELDO-0061 artifacts/normal-exit
+  SELFTEST FAIL: VELDO-0061 artifacts/missing-result
+  SELFTEST FAIL: VELDO-0061 artifacts/malformed-output
+  SELFTEST FAIL: VELDO-0061 artifacts/missing-usage
+  SELFTEST FAIL: VELDO-0061 artifacts/nonzero-and-signal
+  SELFTEST FAIL: VELDO-0061 stop/cooperative
+  SELFTEST FAIL: VELDO-0061 stop/forced
+  SELFTEST FAIL: VELDO-0061 stop/termination
+  SELFTEST FAIL: VELDO-0061 stop/stopped-not-complete
+  SELFTEST FAIL: VELDO-0061 lifecycle/engine-protocol
+  SELFTEST FAIL: VELDO-0061 caps/boundaries
+  SELFTEST FAIL: VELDO-0061 caps/refused-before-launch
+  SELFTEST FAIL: VELDO-0061 caps/stop-at-cap
+  SELFTEST FAIL: VELDO-0061 caps/observed
+  SELFTEST FAIL: VELDO-0061 format/codex-fake-lines
+  SELFTEST FAIL: VELDO-0172 fake/capture:0061_codex_adapter
+selftest shard 0f 80_veldo_0155_claude_baseline: roots /tmp/smsuf2vep/0f*; instance 910f898c0f_80_veldo_0155_claude_baseline; 1 passed, 18 failed; wall 0.8s cpu 0.4s peak 45 MiB
+  SELFTEST FAIL: VELDO-0155 baseline/qualified
+  SELFTEST FAIL: VELDO-0155 baseline/planted-settings
+  SELFTEST FAIL: VELDO-0155 baseline/planted-server
+  SELFTEST FAIL: VELDO-0155 baseline/planted-skill
+  SELFTEST FAIL: VELDO-0155 baseline/planted-instructions
+  SELFTEST FAIL: VELDO-0155 baseline/planted-memory
+  SELFTEST FAIL: VELDO-0155 baseline/planted-hook
+  SELFTEST FAIL: VELDO-0155 paid-api/prompt-write
+  SELFTEST FAIL: VELDO-0155 paid-api/read-back
+  SELFTEST FAIL: VELDO-0155 paid-api/token-file
+  SELFTEST FAIL: VELDO-0155 paid-api/stop
+  SELFTEST FAIL: VELDO-0155 paid-api/every-init
+  SELFTEST FAIL: VELDO-0155 paid-api/profile-login
+  SELFTEST FAIL: VELDO-0155 strip/read-back
+  SELFTEST FAIL: VELDO-0155 strip/private-runtime-directory
+  SELFTEST FAIL: VELDO-0155 strip/user-manager
+  SELFTEST FAIL: VELDO-0155 fixture/planted-control
+  SELFTEST FAIL: VELDO-0155 format/fake-lines
+selftest shard 09 71_veldo_0076_projects: roots /tmp/smsuf2vep/09*; instance 910f898c09_71_veldo_0076_projects; 32 passed, 0 failed; wall 3.8s cpu 2.5s peak 91 MiB
+selftest shard 0g 81_veldo_0156_codex_baseline: roots /tmp/smsuf2vep/0g*; instance 910f898c0g_81_veldo_0156_codex_baseline; 1 passed, 21 failed; wall 0.9s cpu 0.5s peak 45 MiB
+  SELFTEST FAIL: VELDO-0156 baseline/qualified
+  SELFTEST FAIL: VELDO-0156 baseline/planted-user-config
+  SELFTEST FAIL: VELDO-0156 baseline/planted-rules
+  SELFTEST FAIL: VELDO-0156 baseline/planted-project-doc
+  SELFTEST FAIL: VELDO-0156 baseline/planted-hook
+  SELFTEST FAIL: VELDO-0156 baseline/planted-profile-instructions
+  SELFTEST FAIL: VELDO-0156 baseline/planted-skill-profile
+  SELFTEST FAIL: VELDO-0156 baseline/planted-skill-home
+  SELFTEST FAIL: VELDO-0156 baseline/planted-skill-clone
+  SELFTEST FAIL: VELDO-0156 baseline/planted-skill-clone-codex
+  SELFTEST FAIL: VELDO-0156 baseline/planted-skill-bundled
+  SELFTEST FAIL: VELDO-0156 baseline/connectors-off
+  SELFTEST FAIL: VELDO-0156 paid-api/read-back
+  SELFTEST FAIL: VELDO-0156 paid-api/stop
+  SELFTEST FAIL: VELDO-0156 paid-api/file-login
+  SELFTEST FAIL: VELDO-0156 paid-api/engine-refusal
+  SELFTEST FAIL: VELDO-0156 strip/read-back
+  SELFTEST FAIL: VELDO-0156 strip/private-runtime-directory
+  SELFTEST FAIL: VELDO-0156 strip/user-manager
+  SELFTEST FAIL: VELDO-0156 fixture/planted-control
+  SELFTEST FAIL: VELDO-0156 format/fake-lines
+selftest shard 0z 110_veldo_0143_new_project: roots /tmp/smsuf2vep/0z*; instance 910f898c0z_110_veldo_0143_new_project; 109 passed, 0 failed; wall 58.0s cpu 48.7s peak 103 MiB
+selftest shard 07 67_veldo_0041_heartbeat: roots /tmp/smsuf2vep/07*; instance 910f898c07_67_veldo_0041_heartbeat; 20 passed, 3 failed; wall 12.1s cpu 2.8s peak 193 MiB
+  SELFTEST FAIL: VELDO-0041 retirement/clone-files
+  SELFTEST FAIL: VELDO-0041 retirement/observations
+  SELFTEST FAIL: VELDO-0041 ran/retirement/clone-files
+selftest shard 0h 82_veldo_0141_execution_record: roots /tmp/smsuf2vep/0h*; instance 910f898c0h_82_veldo_0141_execution_record; 1 passed, 39 failed; wall 1.5s cpu 0.7s peak 71 MiB
+  SELFTEST FAIL: VELDO-0141 record/claude-complete
+  SELFTEST FAIL: VELDO-0141 record/codex-complete
+  SELFTEST FAIL: VELDO-0141 record/stream-options
+  SELFTEST FAIL: VELDO-0141 api/live
+  SELFTEST FAIL: VELDO-0141 api/cursor
+  SELFTEST FAIL: VELDO-0141 api/refusals
+  SELFTEST FAIL: VELDO-0141 api/no-secret-served
+  SELFTEST FAIL: VELDO-0141 api/service-call
+  SELFTEST FAIL: VELDO-0141 route/served-lines
+  SELFTEST FAIL: VELDO-0141 route/committed
+  SELFTEST FAIL: VELDO-0141 redaction/planted-value
+  SELFTEST FAIL: VELDO-0141 redaction/known-pattern
+  SELFTEST FAIL: VELDO-0141 redaction/kinds-field
+  SELFTEST FAIL: VELDO-0141 redaction/exact-set
+  SELFTEST FAIL: VELDO-0141 redaction/paths-kept
+  SELFTEST FAIL: VELDO-0141 redaction/path-segment
+  SELFTEST FAIL: VELDO-0141 redaction/url-component
+  SELFTEST FAIL: VELDO-0141 redaction/account-fields
+  SELFTEST FAIL: VELDO-0141 fixture/planted-control
+  SELFTEST FAIL: VELDO-0141 format/fake-lines
+  SELFTEST FAIL: VELDO-0141 redaction/partial-blocks
+  SELFTEST FAIL: VELDO-0141 redaction/clone-relative-paths
+  SELFTEST FAIL: VELDO-0141 redaction/encoded-values
+  SELFTEST FAIL: VELDO-0141 api/scope-before-existence
+  SELFTEST FAIL: VELDO-0141 api/registration-race
+  SELFTEST FAIL: VELDO-0141 api/slow-reader
+  SELFTEST FAIL: VELDO-0141 route/unknown-committed
+  SELFTEST FAIL: VELDO-0141 redaction/thinking-and-unknown
+  SELFTEST FAIL: VELDO-0141 redaction/live-paths
+  SELFTEST FAIL: VELDO-0141 redaction/offset-encodings
+  SELFTEST FAIL: VELDO-0141 redaction/clone-leaf-candidates
+  SELFTEST FAIL: VELDO-0141 redaction/uppercase-hex
+  SELFTEST FAIL: VELDO-0141 redaction/clone-without-git
+  SELFTEST FAIL: VELDO-0141 api/byte-pages
+  SELFTEST FAIL: VELDO-0141 api/fast-catchup
+  SELFTEST FAIL: VELDO-0141 route/runner-unknown
+  SELFTEST FAIL: VELDO-0141 config/malformed
+  SELFTEST FAIL: VELDO-0141 config/incomplete
+  SELFTEST FAIL: VELDO-0141 config/missing-file
+selftest shard 0i 82_veldo_0129_worker_wiring: roots /tmp/smsuf2vep/0i*; instance 910f898c0i_82_veldo_0129_worker_wiring; 1 passed, 28 failed; wall 1.2s cpu 0.6s peak 45 MiB
+  SELFTEST FAIL: VELDO-0129 build/claude
+  SELFTEST FAIL: VELDO-0129 build/codex
+  SELFTEST FAIL: VELDO-0129 build/configuration
+  SELFTEST FAIL: VELDO-0129 review/loop-claude
+  SELFTEST FAIL: VELDO-0129 review/loop-codex
+  SELFTEST FAIL: VELDO-0129 review/reviewer-claude
+  SELFTEST FAIL: VELDO-0129 review/reviewer-codex
+  SELFTEST FAIL: VELDO-0129 review/independence-policy
+  SELFTEST FAIL: VELDO-0129 outcome/nonzero
+  SELFTEST FAIL: VELDO-0129 outcome/missing-build
+  SELFTEST FAIL: VELDO-0129 outcome/missing-review
+  SELFTEST FAIL: VELDO-0129 outcome/malformed-review
+  SELFTEST FAIL: VELDO-0129 outcome/missing-usage
+  SELFTEST FAIL: VELDO-0129 outcome/reservation
+  SELFTEST FAIL: VELDO-0129 proof/authority
+  SELFTEST FAIL: VELDO-0129 proof/empty-acceptance
+  SELFTEST FAIL: VELDO-0129 source/no-completion
+  SELFTEST FAIL: VELDO-0129 installation/assets
+  SELFTEST FAIL: VELDO-0129 build/gitdir-symlink
+  SELFTEST FAIL: VELDO-0129 build/gitdir-gitfile
+  SELFTEST FAIL: VELDO-0129 build/gitdir-commondir
+  SELFTEST FAIL: VELDO-0129 build/gitdir-alternates
+  SELFTEST FAIL: VELDO-0129 build/gitdir-missing
+  SELFTEST FAIL: VELDO-0129 build/config-neutralization
+  SELFTEST FAIL: VELDO-0129 artifact/runtime-binding
+  SELFTEST FAIL: VELDO-0129 artifact/floor-binding
+  SELFTEST FAIL: VELDO-0129 build/handoff
+  SELFTEST FAIL: VELDO-0129 format/fake-lines
+selftest shard 0k 85_veldo_0158_credential_delivery: roots /tmp/smsuf2vep/0k*; instance 910f898c0k_85_veldo_0158_credential_delivery; 1 passed, 22 failed; wall 1.0s cpu 0.7s peak 69 MiB
+  SELFTEST FAIL: VELDO-0158 delivery/claude-private-file
+  SELFTEST FAIL: VELDO-0158 delivery/codex-environment
+  SELFTEST FAIL: VELDO-0158 delivery/command-lines
+  SELFTEST FAIL: VELDO-0158 delivery/own-server-only
+  SELFTEST FAIL: VELDO-0158 delivery/not-in-packet-contract-journal
+  SELFTEST FAIL: VELDO-0158 delivery/private-dir-removed
+  SELFTEST FAIL: VELDO-0158 delivery/report
+  SELFTEST FAIL: VELDO-0158 refusal/keystore-locked
+  SELFTEST FAIL: VELDO-0158 refusal/keystore-unreachable
+  SELFTEST FAIL: VELDO-0158 refusal/reference-not-found
+  SELFTEST FAIL: VELDO-0158 refusal/no-credential-launches
+  SELFTEST FAIL: VELDO-0158 redaction/claude-keystore-value
+  SELFTEST FAIL: VELDO-0158 redaction/codex-keystore-value
+  SELFTEST FAIL: VELDO-0158 redaction/per-run-set
+  SELFTEST FAIL: VELDO-0158 redaction/claude-bare-bearer
+  SELFTEST FAIL: VELDO-0158 refusal/env-collision
+  SELFTEST FAIL: VELDO-0158 orphan/run-directory-removed
+  SELFTEST FAIL: VELDO-0158 orphan/start-sweep
+  SELFTEST FAIL: VELDO-0158 orphan/live-run-kept
+  SELFTEST FAIL: VELDO-0158 fixture/route-set
+  SELFTEST FAIL: VELDO-0158 fixture/control-word
+  SELFTEST FAIL: VELDO-0158 format/fake-lines
+selftest shard 12 118_veldo_0159_mcp_credential_form: roots /tmp/smsuf2vep/12*; instance 910f898c12_118_veldo_0159_mcp_credential_form; 7 passed, 0 failed; wall 45.4s cpu 37.0s peak 1149 MiB
+selftest shard 1c 133_veldo_0326_space_principals: roots /tmp/smsuf2vep/1c*; instance 910f898c1c_133_veldo_0326_space_principals; 30 passed, 0 failed; wall 41.0s cpu 33.6s peak 286 MiB
+selftest shard 0o 86_veldo_0189_engine_upgrade: roots /tmp/smsuf2vep/0o*; instance 910f898c0o_86_veldo_0189_engine_upgrade; 34 passed, 0 failed; wall 79.8s cpu 69.3s peak 303 MiB
+selftest shard 0r 92_veldo_0088_pm_cycles: roots /tmp/smsuf2vep/0r*; instance 910f898c0r_92_veldo_0088_pm_cycles; 30 passed, 0 failed; wall 80.0s cpu 62.3s peak 281 MiB
+selftest shard 10 114_veldo_0220_gate_scope: roots /tmp/smsuf2vep/10*; instance 910f898c10_114_veldo_0220_gate_scope; 1 passed, 0 failed; wall 3.2s cpu 2.1s peak 45 MiB
+selftest shard 0q 87_veldo_0170_receiver_trust: roots /tmp/smsuf2vep/0q*; instance 910f898c0q_87_veldo_0170_receiver_trust; 12 passed, 0 failed; wall 9.5s cpu 8.5s peak 262 MiB
+selftest shard 1b 129_veldo_0254_canary_launch: roots /tmp/smsuf2vep/1b*; instance 910f898c1b_129_veldo_0254_canary_launch; 1 passed, 6 failed; wall 1.6s cpu 0.7s peak 58 MiB
+  SELFTEST FAIL: VELDO-0254 ac1/canary-keystore
+  SELFTEST FAIL: VELDO-0254 ac1/canary-engine-run
+  SELFTEST FAIL: VELDO-0254 ac1/canary-conversation
+  SELFTEST FAIL: VELDO-0254 ac1/canary-workflow-step
+  SELFTEST FAIL: VELDO-0254 ac1/canary-project-process
+  SELFTEST FAIL: VELDO-0254 format/fake-lines
+selftest shard 1d 152_veldo_0313_house_group: roots /tmp/smsuf2vep/1d*; instance 910f898c1d_152_veldo_0313_house_group; 4 passed, 0 failed; wall 0.7s cpu 0.3s peak 45 MiB
+selftest shard 14 120_veldo_0131_factory_ui: roots /tmp/smsuf2vep/14*; instance 910f898c14_120_veldo_0131_factory_ui; 14 passed, 0 failed; wall 54.6s cpu 47.0s peak 1157 MiB
+selftest shard 13 119_veldo_0163_role_team_form: roots /tmp/smsuf2vep/13*; instance 910f898c13_119_veldo_0163_role_team_form; 10 passed, 0 failed; wall 62.4s cpu 44.4s peak 1032 MiB
+selftest shard 19 127_veldo_0234_https_port: roots /tmp/smsuf2vep/19*; instance 910f898c19_127_veldo_0234_https_port; 9 passed, 1 failed; wall 15.6s cpu 9.7s peak 263 MiB
+  SELFTEST FAIL: VELDO-0234 rerun/pre-change-host: the re-run without the option is accepted [refused invalid_input:state_root:holds_unit_dir, done: []]
+selftest shard 18 117_veldo_0227_ui_location: roots /tmp/smsuf2vep/18*; instance 910f898c18_117_veldo_0227_ui_location; 7 passed, 0 failed; wall 17.1s cpu 9.5s peak 268 MiB
+selftest shard 0y 106_veldo_0185_dispatch_setup: roots /tmp/smsuf2vep/0y*; instance 910f898c0y_106_veldo_0185_dispatch_setup; 19 passed, 1 failed; wall 23.2s cpu 12.9s peak 276 MiB
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host: the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:holds_unit_dir []]
+selftest shard 15 121_veldo_0131_factory_screens_narrow: roots /tmp/smsuf2vep/15*; instance 910f898c15_121_veldo_0131_factory_screens_narrow; 2 passed, 0 failed; wall 66.5s cpu 42.3s peak 1207 MiB
+selftest shard 11 116_veldo_0188_project_lines: roots /tmp/smsuf2vep/11*; instance 910f898c11_116_veldo_0188_project_lines; 27 passed, 0 failed; wall 40.9s cpu 24.5s peak 379 MiB
+selftest shard 17 124_veldo_0131_factory_reads_commands: roots /tmp/smsuf2vep/17*; instance 910f898c17_124_veldo_0131_factory_reads_commands; 8 passed, 0 failed; wall 42.6s cpu 34.6s peak 1110 MiB
+selftest shard 16 122_veldo_0131_factory_screens_wide: roots /tmp/smsuf2vep/16*; instance 910f898c16_122_veldo_0131_factory_screens_wide; 2 passed, 0 failed; wall 57.9s cpu 39.4s peak 1111 MiB
+selftest shard 0m 86_veldo_0127_agent_configuration: roots /tmp/smsuf2vep/0m*; instance 910f898c0m_86_veldo_0127_agent_configuration; 28 passed, 0 failed; wall 63.5s cpu 19.6s peak 331 MiB
+selftest shard 0l 86_veldo_0148_re_land: roots /tmp/smsuf2vep/0l*; instance 910f898c0l_86_veldo_0148_re_land; 26 passed, 0 failed; wall 78.3s cpu 45.5s peak 329 MiB
+selftest shard 0x 101_veldo_0208_landing_reuse: roots /tmp/smsuf2vep/0x*; instance 910f898c0x_101_veldo_0208_landing_reuse; 5 passed, 0 failed; wall 284.0s cpu 196.6s peak 1241 MiB
+  SELFTEST FAIL: suite-shard 66_veldo_0042_clones no_verdict
+     no_verdict: its process ended (exit 1) without reporting a verdict
+  SELFTEST FAIL: suite-shard-leg unconfined isolation_breach
+     isolation_breach: temporary directory: /tmp/rg217-receipt.json appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 101_veldo_0208_landing_reuse, 110_veldo_0143_new_project, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 133_veldo_0326_space_principals, 66_veldo_0047_authority, 86_veldo_0189_engine_upgrade, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes
+     isolation_breach: temporary directory: /tmp/rg217clone appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 101_veldo_0208_landing_reuse, 110_veldo_0143_new_project, 118_veldo_0159_mcp_credential_form, 63_veldo_0049_floor, 64_veldo_0050_proof, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 86_veldo_0189_engine_upgrade, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 96_veldo_0204_reservation_policies
+     isolation_breach: temporary directory: /tmp/rr217 appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 100_veldo_0207_case_reuse, 101_veldo_0208_landing_reuse, 110_veldo_0143_new_project, 63_veldo_0049_floor, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 86_veldo_0189_engine_upgrade, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 96_veldo_0204_reservation_policies
+     isolation_breach: temporary directory: /tmp/rr217-gm-local.log appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 101_veldo_0208_landing_reuse, 110_veldo_0143_new_project, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 64_veldo_0050_proof, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 86_veldo_0189_engine_upgrade, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 96_veldo_0204_reservation_policies
+     isolation_breach: temporary directory: /tmp/rr217-gm.log appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 63_veldo_0040_containment, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies
+     isolation_breach: temporary directory: /tmp/v221-s157-e.txt appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 101_veldo_0208_landing_reuse, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land
+     isolation_breach: temporary directory: /tmp/v358-mut-1olqvtx0 appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 101_veldo_0208_landing_reuse, 110_veldo_0143_new_project, 63_veldo_0049_floor, 64_veldo_0050_proof, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 86_veldo_0189_engine_upgrade, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 96_veldo_0204_reservation_policies
+     isolation_breach: temporary directory: /tmp/v358-mut-_2lbaro6 appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 62_veldo_0039_dispatch, 65_veldo_0067_edges, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes
+     isolation_breach: temporary directory: /tmp/v358-mut-xpjceh6q appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 63_veldo_0040_containment, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 83_veldo_0154_factory_loop, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies
+selftest leg unconfined: 50 shard(s), parallelism 12 (no gate ledger: this host's usable cores), peak 12 running; isolation check FAILED: isolation_breach; critical shard 101_veldo_0208_landing_reuse 284.0s; wall 598.5s
+   the dispatcher itself: 15.7s CPU, peak 60 MiB; shards ended at 298.3s, the isolation check took 300.2s; instance token 910f898c
+   61 unit(s) appeared during the leg that nothing ties to this instance, not judged: app-com.google.Chrome-1863606.scope, app-com.google.Chrome-1863959.scope, app-com.google.Chrome-1865578.scope, app-com.google.Chrome-1870308.scope, app-com.google.Chrome-1933211.scope, app-com.google.Chrome-1945221.scope, v135sf7184612.slice, v1480c92bb29.slice, v1711197b9.slice, v171613b64.slice, v39s15a1466b.slice, v39s63040bce.slice ...
+   shard 85_veldo_0171_setup_api ran without an instance name: its rows rerun/over-0139-host, api-edge/running-service and api/start-rules run the current engine over a host laid down by the engine of commit 7fefdb9a, which names its unit without an instance (3 rows failed with a name set)
+   shard 86_veldo_0189_engine_upgrade ran without an instance name: its rows upgrade hosts laid down by the engines of commits 8bc34e94 and 971186ac, which name their units without an instance (20 rows failed with a name set)
+   shard 117_veldo_0227_ui_location ran without an instance name: its row ui/upgrade-pre-change runs the current engine over a host laid down by the engine before VELDO-0227, which names its unit without an instance (1 row failed with a name set)
+selftest: 888 passed, 201 failed

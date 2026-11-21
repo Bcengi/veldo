@@ -1,0 +1,160 @@
+selftest shard 01 85_veldo_0171_setup_api: roots /tmp/st4e82161/01*; instance 494528be01_85_veldo_0171_setup_api; 0 passed, 0 failed; wall 13.1s cpu 9.5s peak 257 MiB
+selftest shard 00 66_veldo_0047_authority: roots /tmp/st4e82161/00*; instance 494528be00_66_veldo_0047_authority; 30 passed, 0 failed; wall 15.8s cpu 10.1s peak 317 MiB
+selftest shard 04 86_veldo_0189_engine_upgrade: roots /tmp/st4e82161/04*; instance 494528be04_86_veldo_0189_engine_upgrade; 14 passed, 20 failed; wall 23.1s cpu 21.6s peak 301 MiB
+  SELFTEST FAIL: VELDO-0189 upgrade/from-8bc34e94
+  SELFTEST FAIL: VELDO-0189 upgrade/from-971186ac
+  SELFTEST FAIL: VELDO-0189 upgrade/refused-by-name
+  SELFTEST FAIL: VELDO-0189 switch/kill-points
+  SELFTEST FAIL: VELDO-0189 switch/failed-restart
+  SELFTEST FAIL: VELDO-0189 kept/owner-data
+  SELFTEST FAIL: VELDO-0189 announce/before-first-write
+  SELFTEST FAIL: VELDO-0189 restart/rules
+  SELFTEST FAIL: VELDO-0189 second-run/changes-nothing
+  SELFTEST FAIL: VELDO-0189 switch/failed-after-start
+  SELFTEST FAIL: VELDO-0189 ownership/committed
+  SELFTEST FAIL: VELDO-0189 switch/resumed-failure
+  SELFTEST FAIL: VELDO-0189 switch/rollback-kills
+  SELFTEST FAIL: VELDO-0189 switch/stop-refused
+  SELFTEST FAIL: VELDO-0189 ownership/restore-reported
+  SELFTEST FAIL: VELDO-0189 ownership/start-drops
+  SELFTEST FAIL: VELDO-0189 ownership/commit-refused
+  SELFTEST FAIL: VELDO-0189 switch/stop-before-restore
+  SELFTEST FAIL: VELDO-0189 upgrade/older-0186-equivalence
+  SELFTEST FAIL: VELDO-0189 kept/runs
+selftest shard 02 117_veldo_0227_ui_location: roots /tmp/st4e82161/02*; instance 494528be02_117_veldo_0227_ui_location; 0 passed, 7 failed; wall 8.6s cpu 6.9s peak 268 MiB
+  SELFTEST FAIL: VELDO-0227 ui/fresh-config: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/served: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/report-absent: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/report-present: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/rerun-unchanged: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/upgrade-pre-change: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+  SELFTEST FAIL: VELDO-0227 ui/differs-refused: ran to its end (raised Refused: invalid_input:unit: not an authority unit name)
+selftest shard 05 63_veldo_0040_containment: roots /tmp/st4e82161/05*; instance 494528be05_63_veldo_0040_containment; 59 passed, 0 failed; wall 7.4s cpu 5.0s peak 137 MiB
+selftest shard 03 71_veldo_0130_api: roots /tmp/st4e82161/03*; instance 494528be03_71_veldo_0130_api; 45 passed, 0 failed; wall 37.2s cpu 22.4s peak 267 MiB
+selftest shard 06 73_veldo_0139_factory_setup: roots /tmp/st4e82161/06*; instance 494528be06_73_veldo_0139_factory_setup; 17 passed, 0 failed; wall 31.8s cpu 24.2s peak 295 MiB
+  SELFTEST FAIL: suite-shard 85_veldo_0171_setup_api no_verdict
+     no_verdict: its process ended (exit 1) without reporting a verdict
+selftest leg unconfined: 7 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 4 running; isolation check held; critical shard 71_veldo_0130_api 37.2s; wall 189.1s
+   the dispatcher itself: 6.3s CPU, peak 62 MiB; shards ended at 45.1s, the isolation check took 144.0s; instance token 494528be
+   isolation note, not charged: temporary directory: /tmp/veldo-agent-ihx9mrl0 (a live process of another tree holds it (pid 3915058))
+   isolation note, not charged: temporary directory: /tmp/veldo-census-ooqc9enk (gone again 4s after the leg)
+   isolation note, not charged: temporary directory: /tmp/v111-recheck-85m7_m80 (gone again 144s after the leg)
+   1 unit(s) appeared during the leg that nothing ties to this instance, not judged: v4715268ee3.slice
+selftest shard 01 85_veldo_0171_setup_api: roots /tmp/sf66kxr06/01*; instance 1b321f2b01_85_veldo_0171_setup_api; 15 passed, 3 failed; wall 16.4s cpu 10.0s peak 262 MiB
+  SELFTEST FAIL: VELDO-0171 api-edge/running-service
+  SELFTEST FAIL: VELDO-0171 rerun/over-0139-host
+  SELFTEST FAIL: VELDO-0171 api/start-rules
+selftest shard 00 66_veldo_0047_authority: roots /tmp/sf66kxr06/00*; instance 1b321f2b00_66_veldo_0047_authority; 30 passed, 0 failed; wall 17.1s cpu 10.3s peak 322 MiB
+selftest shard 03 86_veldo_0189_engine_upgrade: roots /tmp/sf66kxr06/03*; instance 1b321f2b03_86_veldo_0189_engine_upgrade; 14 passed, 20 failed; wall 25.4s cpu 21.8s peak 301 MiB
+  SELFTEST FAIL: VELDO-0189 upgrade/from-8bc34e94
+  SELFTEST FAIL: VELDO-0189 upgrade/from-971186ac
+  SELFTEST FAIL: VELDO-0189 upgrade/refused-by-name
+  SELFTEST FAIL: VELDO-0189 switch/kill-points
+  SELFTEST FAIL: VELDO-0189 switch/failed-restart
+  SELFTEST FAIL: VELDO-0189 kept/owner-data
+  SELFTEST FAIL: VELDO-0189 announce/before-first-write
+  SELFTEST FAIL: VELDO-0189 restart/rules
+  SELFTEST FAIL: VELDO-0189 second-run/changes-nothing
+  SELFTEST FAIL: VELDO-0189 switch/failed-after-start
+  SELFTEST FAIL: VELDO-0189 ownership/committed
+  SELFTEST FAIL: VELDO-0189 switch/resumed-failure
+  SELFTEST FAIL: VELDO-0189 switch/rollback-kills
+  SELFTEST FAIL: VELDO-0189 switch/stop-refused
+  SELFTEST FAIL: VELDO-0189 ownership/restore-reported
+  SELFTEST FAIL: VELDO-0189 ownership/start-drops
+  SELFTEST FAIL: VELDO-0189 ownership/commit-refused
+  SELFTEST FAIL: VELDO-0189 switch/stop-before-restore
+  SELFTEST FAIL: VELDO-0189 upgrade/older-0186-equivalence
+  SELFTEST FAIL: VELDO-0189 kept/runs
+selftest shard 02 117_veldo_0227_ui_location: roots /tmp/sf66kxr06/02*; instance 1b321f2b02_117_veldo_0227_ui_location; 6 passed, 1 failed; wall 15.8s cpu 7.8s peak 267 MiB
+  SELFTEST FAIL: VELDO-0227 ui/upgrade-pre-change: the run over it is accepted and reports the configuration step done [refused invalid_input:state_root:holds_unit_dir None]
+selftest leg unconfined: 4 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 3 running; isolation check held; critical shard 86_veldo_0189_engine_upgrade 25.4s; wall 208.4s
+   the dispatcher itself: 6.9s CPU, peak 62 MiB; shards ended at 33.1s, the isolation check took 175.3s; instance token 1b321f2b
+   isolation note, not charged: temporary directory: /tmp/veldo-census-z8g1vd51 (gone again 6s after the leg)
+   isolation note, not charged: temporary directory: /tmp/v111-recheck-lzx8exna (gone again 175s after the leg)
+selftest shard 01 127_veldo_0234_https_port: roots /tmp/s41e3e_pd/01*; instance 51a5e47801_127_veldo_0234_https_port; 9 passed, 1 failed; wall 15.9s cpu 9.3s peak 267 MiB
+  SELFTEST FAIL: VELDO-0234 rerun/pre-change-host: the re-run without the option is accepted [refused invalid_input:state_root:holds_unit_dir, done: []]
+selftest shard 02 91_veldo_0167_setup_records: roots /tmp/s41e3e_pd/02*; instance 51a5e47802_91_veldo_0167_setup_records; 7 passed, 2 failed; wall 24.4s cpu 13.7s peak 267 MiB
+  SELFTEST FAIL: VELDO-0167 older-engine-host
+  SELFTEST FAIL: VELDO-0167 upgrade-restart-answer
+selftest shard 03 62_veldo_0039_dispatch: roots /tmp/s41e3e_pd/03*; instance 51a5e47803_62_veldo_0039_dispatch; 25 passed, 0 failed; wall 10.0s cpu 4.6s peak 140 MiB
+selftest shard 00 106_veldo_0185_dispatch_setup: roots /tmp/s41e3e_pd/00*; instance 51a5e47800_106_veldo_0185_dispatch_setup; 19 passed, 1 failed; wall 26.3s cpu 11.8s peak 284 MiB
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host: the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:holds_unit_dir []]
+selftest shard 04 78_veldo_0060_claude_adapter: roots /tmp/s41e3e_pd/04*; instance 51a5e47804_78_veldo_0060_claude_adapter; 0 passed, 37 failed; wall 2.7s cpu 0.4s peak 46 MiB
+  SELFTEST FAIL: VELDO-0060 lifecycle/registration: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 lifecycle/pinned-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/unexpected-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/copy: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/shipped-qualification: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/argv-binds-what-runs: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/rehash-before-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/entrance-interpreter: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 pin/rehash-dot-dot: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 launch/exited-before-settle: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 launch/record-before-report: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/complete: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/missing-result: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/exits: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/malformed-output: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/missing-usage: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 artifact/exit-record: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 floor/missing-result: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 stop/requested: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 stop/descendant-alive: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/before-launch: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/allowance-states: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 caps/stop-at-cap: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/bind: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/scope: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/clone-entry: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/pinned-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-cooperative: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-forced: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/stop-descendant: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/artifact: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/exit-record: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/engines-protected: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 contained/rehash-before-exec: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 format/fake-lines: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0060 format/fake-argv: the run ran to its end (it raised Refused: invalid_input:layout: a protected target is not beneath a temporary directory)
+  SELFTEST FAIL: VELDO-0172 fake/capture:0060_claude_adapter
+selftest shard 05 129_veldo_0254_canary_launch: roots /tmp/s41e3e_pd/05*; instance 51a5e47805_129_veldo_0254_canary_launch; 1 passed, 6 failed; wall 1.5s cpu 0.7s peak 59 MiB
+  SELFTEST FAIL: VELDO-0254 ac1/canary-keystore
+  SELFTEST FAIL: VELDO-0254 ac1/canary-engine-run
+  SELFTEST FAIL: VELDO-0254 ac1/canary-conversation
+  SELFTEST FAIL: VELDO-0254 ac1/canary-workflow-step
+  SELFTEST FAIL: VELDO-0254 ac1/canary-project-process
+  SELFTEST FAIL: VELDO-0254 format/fake-lines
+  SELFTEST FAIL: suite-shard-leg unconfined isolation_breach
+     isolation_breach: temporary directory: /tmp/rv224-probe appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 106_veldo_0185_dispatch_setup, 127_veldo_0234_https_port, 91_veldo_0167_setup_records
+     isolation_breach: temporary directory: /tmp/rv224-src appeared during the leg, was left behind and could be tied to no shard; the suites that ran when it first appeared: 106_veldo_0185_dispatch_setup, 127_veldo_0234_https_port, 91_veldo_0167_setup_records
+selftest leg unconfined: 6 shard(s), parallelism 3 (no gate ledger: this host's usable cores), peak 3 running; isolation check FAILED: isolation_breach; critical shard 106_veldo_0185_dispatch_setup 26.3s; wall 327.8s
+   the dispatcher itself: 11.7s CPU, peak 63 MiB; shards ended at 27.7s, the isolation check took 300.2s; instance token 51a5e478
+   isolation note, not charged: temporary directory: /tmp/rv224-mut (a live process of another tree holds it (pid 1394951))
+   isolation note, not charged: temporary directory: /tmp/tmp.eyZndYuuFj (a live process of another tree holds it (pid 1394951))
+   isolation note, not charged: temporary directory: /tmp/veldo-census-8y03zh8x (gone again 4s after the leg)
+   2 unit(s) appeared during the leg that nothing ties to this instance, not judged: v1714ad6be.slice, v39s1e2a859d.slice
+selftest shard 02 129_veldo_0254_canary_launch: roots /tmp/sd77brntf/02* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/02; instance c2d2da4702_129_veldo_0254_canary_launch; 7 passed, 0 failed; wall 2.8s cpu 2.2s peak 82 MiB
+selftest shard 01 67_veldo_0041_heartbeat: roots /tmp/sd77brntf/01* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/01; instance c2d2da4701_67_veldo_0041_heartbeat; 23 passed, 0 failed; wall 11.6s cpu 3.2s peak 232 MiB
+selftest shard 04 91_veldo_0167_setup_records: roots /tmp/sd77brntf/04* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/04; instance c2d2da4704_91_veldo_0167_setup_records; 9 passed, 0 failed; wall 15.5s cpu 14.1s peak 263 MiB
+selftest shard 05 127_veldo_0234_https_port: roots /tmp/sd77brntf/05* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/05; instance c2d2da4705_127_veldo_0234_https_port; 10 passed, 0 failed; wall 10.0s cpu 9.0s peak 268 MiB
+selftest shard 03 82_veldo_0141_execution_record: roots /tmp/sd77brntf/03* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/03; instance c2d2da4703_82_veldo_0141_execution_record; 40 passed, 0 failed; wall 22.2s cpu 7.8s peak 126 MiB
+selftest shard 00 78_veldo_0060_claude_adapter: roots /tmp/sd77brntf/00* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/00; instance c2d2da4700_78_veldo_0060_claude_adapter; 37 passed, 0 failed; wall 25.1s cpu 18.1s peak 80 MiB
+selftest shard 07 85_veldo_0158_credential_delivery: roots /tmp/sd77brntf/07* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/07; instance c2d2da4707_85_veldo_0158_credential_delivery; 23 passed, 0 failed; wall 5.1s cpu 4.5s peak 101 MiB
+selftest shard 06 106_veldo_0185_dispatch_setup: roots /tmp/sd77brntf/06* and /run/user/<uid>/veldo-leg-c2d2da47-j8hf6cmi/06; instance c2d2da4706_106_veldo_0185_dispatch_setup; 20 passed, 0 failed; wall 14.5s cpu 11.5s peak 278 MiB
+selftest leg unconfined: 8 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 4 running; isolation check held; critical shard 78_veldo_0060_claude_adapter 25.1s; wall 33.1s
+   the dispatcher itself: 0.6s CPU, peak 46 MiB; shards ended at 33.1s, the isolation check took 0.0s; instance token c2d2da47
+   5 unit(s) appeared during the leg that nothing ties to this instance, not judged: v1419f399702.slice, v15883dbaca0.slice, v1711197b9.slice, v416a63475b.slice, v6014228d9a.slice
+   shard 91_veldo_0167_setup_records ran without an instance name: its rows older-engine-host and upgrade-restart-answer run the current engine over a host laid down by an older engine, which names its unit without an instance (2 rows failed with a name set)
+   shard 127_veldo_0234_https_port ran without an instance name: its row rerun/pre-change-host runs the current engine over a host laid down by the engine before VELDO-0234, which names its unit without an instance (1 row failed with a name set)
+   shard 106_veldo_0185_dispatch_setup ran without an instance name: its row rerun/over-earlier-host runs the current engine over a host laid down by the engine before VELDO-0185, which names its unit without an instance (1 row failed with a name set)
+selftest shard 01 81_veldo_0156_codex_baseline: roots /tmp/s1goyo3sm/01* and /run/user/<uid>/veldo-leg-7f906327-ws28gags/01; instance 7f90632701_81_veldo_0156_codex_baseline; 22 passed, 0 failed; wall 3.5s cpu 3.4s peak 54 MiB
+selftest shard 00 80_veldo_0155_claude_baseline: roots /tmp/s1goyo3sm/00* and /run/user/<uid>/veldo-leg-7f906327-ws28gags/00; instance 7f90632700_80_veldo_0155_claude_baseline; 19 passed, 0 failed; wall 15.4s cpu 13.9s peak 75 MiB
+selftest shard 02 79_veldo_0061_codex_adapter: roots /tmp/s1goyo3sm/02* and /run/user/<uid>/veldo-leg-7f906327-ws28gags/02; instance 7f90632702_79_veldo_0061_codex_adapter; 21 passed, 0 failed; wall 16.3s cpu 15.6s peak 432 MiB
+selftest shard 04 73_veldo_0139_factory_setup: roots /tmp/s1goyo3sm/04* and /run/user/<uid>/veldo-leg-7f906327-ws28gags/04; instance 7f90632704_73_veldo_0139_factory_setup; 17 passed, 0 failed; wall 30.3s cpu 23.5s peak 293 MiB
+selftest shard 03 66_veldo_0047_authority: roots /tmp/s1goyo3sm/03* and /run/user/<uid>/veldo-leg-7f906327-ws28gags/03; instance 7f90632703_66_veldo_0047_authority; 30 passed, 0 failed; wall 14.9s cpu 9.5s peak 322 MiB
+selftest leg unconfined: 5 shard(s), parallelism 4 (no gate ledger: this host's usable cores), peak 4 running; isolation check held; critical shard 73_veldo_0139_factory_setup 30.3s; wall 51.2s
+   the dispatcher itself: 1.1s CPU, peak 61 MiB; shards ended at 31.4s, the isolation check took 19.8s; instance token 7f906327
+   isolation note, not charged: temporary directory: /tmp/veldo-census-lyfyjguc (gone again 3s after the leg)
+   isolation note, not charged: temporary directory: /tmp/v111-rights-7jxbtmae (gone again 20s after the leg)
+   3 unit(s) appeared during the leg that nothing ties to this instance, not judged: v1555c3ee002.slice, v4797000b95.slice, v618f582cf4.slice

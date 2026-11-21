@@ -1,60 +1,106 @@
-# VELDO-0221: leg runs made by hand on the qualification host, 2026-11-21
+# VELDO-0221: the legs that were run, fix round 1, 2026-11-21
 
-None of these is the canonical gate. The host was shared throughout: other builders' full suites
-held all three heavy-run slots, and each run below either went through the heavy-run wrapper or was
-a handful of suites. Every excerpt keeps each shard's line (target, closure, roots, counts, wall,
-CPU, peak memory), every failure line and the leg's summary.
+None of these is the canonical gate. The whole-leg runs went through the lead's heavy-run wrapper,
+from a second, detached worktree of this repository frozen at the commit named, at 12 cores
+(`taskset`), with no gate ledger (so 12 shards at once). Each excerpt keeps every shard's line
+(target, roots, instance, counts, wall, CPU, peak memory), every failure line and the leg's summary.
+The runs of the first build (`run-confined-4.txt`, `run-mini-1.txt`, `run-mini-unconfined-3.txt`)
+are kept for the record; the review judged them and they are superseded.
 
-## The confined leg of the whole manifest, through the leg runner and the gate launcher
+## The paired measurement (AC4)
 
-`python3 -I -S scripts/gate_legs.py --root <worktree> --stage unit --record <file> --leg confined --
-"python3 scripts/selftest.py"`, 12 cores, at commit d84fe299 plus the then uncommitted client change.
-Excerpt: `run-confined-4.txt`.
+One job, one host, commit c9c21e81: `run-fix1-job.txt` has the four steps with their start and end
+times and the host's load at each. The sharded legs ran through the authority's leg runner
+(`gate_legs.py --stage unit --leg <leg> -- "python3 scripts/selftest.py"`), the confined one through
+the gate launcher. The ordered legs ran the same leg with the same environment and launcher and a
+selector that covers the whole leg (`selftest.py --upto <last suite>`: a selector inside a leg keeps
+the ordered single-namespace run).
 
-- 189 shards, parallelism 12 (no gate ledger by hand), peak 12 running, isolation check held, every
-  layered shard reporting its Landlock layer in force, each shard's temporary directory a
-  three-character sibling of the launcher scratch's `tmp`.
-- Leg wall 678.6 s. The ordered leg on 2026-10-25 was 1,913 s.
-- Critical shard: `15_warp_1404_historical_analogy`, 651.1 s wall, 638.6 s CPU. The same suite
-  alone in an ordered run took 634 s (506 s CPU). The next longest shard was 192.8 s
-  (`12_warp_1210_hardening_four`), so without that one suite the leg ends in about 200 s.
-- 9,184 passed, 16 failed. Fifteen were rows of `151_veldo_0313_space_run`, and one was
-  `101_veldo_0208_landing_reuse` ending without a verdict. Both were defects of this build against
-  existing suites, both are fixed, and the fixes were then run in the launcher (next section).
+| Leg | As shards | Ordered | Ratio | AC4 asks | Rows |
+|---|---|---|---|---|---|
+| confined | 469.6 s | 3,169.9 s | 0.148 | at most 0.333 | 9,393 of the leg's own in both runs |
+| unconfined, whole leg | 603.8 s | 1,348.4 s | 0.448 | at most 0.5 | 1,107 of the leg's own in both runs |
+| unconfined, to the end of its last shard | 303.6 s | 1,348.4 s | 0.225 | | |
 
-## The four suites that failed above, as shards inside the launcher's domain, after the fixes
+The two legs did not run under the same load. The host's load average was about 4 while the
+unconfined leg ran as shards, 4 rising to 30 while the confined leg ran as shards, about 21 to 30
+during the ordered unconfined leg and 21 falling to 2 during the ordered confined leg: other
+builders' work came and went. A ratio from one pair on a shared host is one measurement, not a
+bound. The ordered times are also far above the 1,913 and 892 seconds of 2026-10-25, on a host
+that was then quiet.
 
-`run-mini-1.txt`: the same launcher and domain, a dispatcher over four suites, 2 at a time.
+**Confined, as shards** (`run-fix1-sharded-confined.txt`): green. 191 shards, peak 12 running, 9,393
+passed, 0 failed, isolation check held, 190 shards reporting their Landlock layer in force and
+suite 151 running first and alone without one (45.2 s). Critical shard
+`15_warp_1404_historical_analogy_audit_b`, 225.1 s; the three parts of the split suite took 215.7,
+225.1 and 224.6 s, and `12_warp_1210_hardening_four` 225.0 s. Before the split the one suite was
+651 s of a 678.6 s leg. The shards' wall times add up to 4,687 s and their CPU to 3,148 s. The
+dispatcher itself used 0.5 s of CPU and 19 MiB.
 
-- `101_veldo_0208_landing_reuse`: 185 passed, 0 failed. Its row
-  confined-stage/unit-bind-outside-scratch-refused binds beside its HOME; the broker now holds a
-  shard's bind to the shard's roots.
-- `151_veldo_0313_space_run`: 37 passed, 0 failed, with no Landlock layer of its own (the one
-  entry of `run_scope.UNLAYERED`), while another shard ran beside it.
-- `156_veldo_0315_reconcile` 35 passed and `113_veldo_0115_authority_store` 4 passed: their socket
-  paths fit again under the short temporary directory.
-- Isolation check held.
+**Confined, ordered** (`run-fix1-ordered-confined.txt`): 9,411 passed (the 26 rows of the shared
+preamble are counted once here), 8 failed. Seven are rows of the existing suite
+`102_veldo_0210_agent_profile_runtime` about the launcher's handling of signals; the same suite
+passed as a shard in the paired run, passed alone by hand, and failed the same rows by hand beside
+other runs (`regression.txt`, `open.md`). The eighth was a row of this ticket's suite 157 that was
+wrong inside the ordered confined leg; it is fixed (commit 15068058) and the suite was then run in
+that position, through the launcher, 49 passed and 0 failed.
 
-A whole confined leg was not run again after these fixes: two runs were queued for over an hour
-behind other builders' suites and were withdrawn.
+**Unconfined, as shards** (`run-fix1-sharded-unconfined.txt`): every shard green, the leg RED on
+the isolation check. 50 shards against the real user manager, peak 12 running, 1,107 passed, 0
+suite rows failed; 44 shards with their instance names and six without (`run_scope.UNNAMED`).
+Critical shard `101_veldo_0208_landing_reuse`, 290.4 s (its traced rows); the next longest 98.8 s.
+The dispatcher used 14.5 s of CPU and 60 MiB. The isolation check then waited its full 300 seconds
+and failed the leg for three files at the top of /tmp that another builder's session made and
+left: `veldo-0218-mutations-v2.txt`, `veldo-0218-suite-v2.txt` and `rr217-local100.log`. That is
+the lead's rule working as written on a shared host: an entry nothing can attribute fails the leg
+with its name recorded. Eight more new entries were told apart and only noted (held by a live
+process of another tree, or gone again within 75 s), and 41 units of other sessions and the
+desktop were named and not judged. At this commit the first two files were charged to suite 101,
+the one shard still running when they appeared. That attribution was wrong and is removed (commit
+692b3d3d): such a file is now the leg's own failure and names no suite.
 
-## Suites of the unconfined leg as shards against the real user manager
+**Unconfined, ordered** (`run-fix1-ordered-unconfined.txt`): 1,133 passed, 0 failed, 1,348.4 s.
 
-`run-mini-unconfined-3.txt`: a dispatcher over `66_veldo_0047_authority`, `85_veldo_0171_setup_api`,
-`71_veldo_0130_api`, `86_veldo_0189_engine_upgrade` and `74_veldo_0140_standing_delegation`, 2 at a
-time, with the real shared places and the real unit list.
+**The confirming run at the final commit**: see the last section.
 
-- Every row of all five passed: 30, 18, 45, 34 and 9.
-- The isolation check charged two slices, `v4077c7c7aaa.slice` and `v4077c7c7aab.slice`, to the two
-  suites running when they appeared. They are named as suite 63 names its slices, were created at
-  06:42:23 and were still active seven minutes later, and suite 63 was not in this run: another
-  session's run of suite 63 made them on the same manager. This is the case README decision 1
-  describes: a unit carries no creator, the unit rule is strict as AC3 states, and a leg run beside
-  another session's suites can be charged for that session's units. The canonical gate holds the
-  host lock that keeps other heavy runs out; a by-hand run does not.
-- Earlier runs of the same kind found the three things now built: an instance name set in the shard
-  broke suites 66, 85 and 117 (README decision 9), and without a link to the manager's runtime unit
-  directory suite 66's service was never found (decision 10).
+## What running the whole unconfined leg found, before the paired run
 
-The whole unconfined leg was not run as shards. The 50 listed suites other than the seven named in
-this file are unmeasured in shard mode.
+The first build ran 7 of the 50 unconfined suites as shards. The whole leg as shards, through the
+wrapper, was run twice before the paired run, and each run found a defect of the shard machinery
+that no fixture row could have:
+
+- `run-fix1-discovery-1-unconfined.txt` (commit e8505cc7, stopped after its shards ended): 201 failed
+  rows. Suites 78, 79, 80, 81, both 82s, 85_0158 and 129 failed nearly every row, because a
+  shard's runtime directory stood beneath the system temporary directory, where the engine refuses
+  a protected target; suites 91, 106 and 127 failed the rows that upgrade a host an older engine
+  laid down. Fixed in commit 3eb090e8.
+- `run-fix1-discovery-2-unconfined.txt` (commit 3eb090e8, stopped the same way): one failed row,
+  suite 80's paid-api/profile-login, because a shard named XDG_CONFIG_HOME where the ordered run
+  leaves it unset. Fixed in commit c9c21e81.
+
+## By hand, a handful of suites at a time
+
+`run-fix1-by-hand-unconfined.txt`: five dispatchers over 4 to 8 unconfined suites each, against the
+real user manager, made while the fixes above were being worked out. In order: the first with
+every shard named (85, 86 and 117 fail); after the engine parses unit names (85, 86 and 117 still
+fail their older-engine rows); six more suites (91, 106, 127 and 78 fail); after the runtime
+directory fix and the six-suite table (169 passed, 0 failed); after the XDG rule (109 passed, 0
+failed).
+
+`run-fix1-by-hand-confined.txt`: a dispatcher over ten suites inside the gate launcher, at an
+early state of the fix round. Suite 151 alone and green; suite 157 died without a verdict, which
+is how the broker row's assumption was found; suite 104 failed one row because files of the
+worktree were being edited while it ran, which is why every later run used a frozen worktree.
+
+## The reviewer's cross-shard probe
+
+`run-fix1-probe.txt`: the reviewer's own probe (two shards, B tries to reach A), run by hand outside
+the launcher with one correction (its second shard used `json` without importing it and died). In
+the confined fixture leg B reads A's file, is refused a write into A's home, a signal to A and a
+connection to A's abstract socket, and connects to A's path socket. In the unconfined fixture leg
+all five succeed.
+
+## The confirming run at the final commit
+
+Queued through the wrapper at commit 15068058 (the unconfined leg as shards once more, to show an
+unattributed file charged to the leg and to no suite). Its result is added here when it ends.
