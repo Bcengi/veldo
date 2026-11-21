@@ -5,6 +5,7 @@ def _v207_cases():
     import copy
     import importlib.util
     import json
+    import hashlib
     import os
     from pathlib import Path
     import subprocess
@@ -67,6 +68,8 @@ expect('fixture target', namespace['value'] == 1)
                 record['cases'][name] = {'declaration': C.declaration_digest(entry),
                                          'traces': [r['trace'] for r in entry['proposal']['runs']]}
             source[entry['review']] = (0o644, R.canonical(record))
+            for entry in document['cases'].values():
+                entry['review_sha256'] = hashlib.sha256(source[entry['review']][1]).hexdigest()
             source[I.DECLARATIONS] = (0o644, R.canonical(document))
         qualify(declaration, files)
         runtime_version = [1]

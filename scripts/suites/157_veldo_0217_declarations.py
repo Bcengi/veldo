@@ -73,6 +73,13 @@ def _v217_declarations():
                 record['cases'][name] = {'declaration': C.declaration_digest(entry),
                                          'traces': [r['trace'] for r in entry['proposal']['runs']]}
         files['proof/VELDO-0217/reviews/fixture.json'] = (0o644, R.canonical(record))
+        bind(document, files)
+
+    def bind(document, files):
+        """The owner's approval binds the exact bytes of each declaration's review record (F4)."""
+        for entry in document['cases'].values():
+            if entry.get('review') in files:
+                entry['review_sha256'] = hashlib.sha256(files[entry['review']][1]).hexdigest()
         files[I.DECLARATIONS] = (0o644, R.canonical(document))
 
     def machinery():
@@ -205,7 +212,8 @@ def _v217_declarations():
             root = top / 'conditions'; root.mkdir()
             names = ['passes', 'unreviewed', 'no-review', 'review-mismatch', 'trace-failed', 'baselines-differ',
                      'one-baseline', 'non-file', 'observation-differs', 'no-gate-observation', 'gate-entry',
-                     'toolchain-unreviewed', 'sensitivity-unproved', 'no-rationale']
+                     'toolchain-unreviewed', 'sensitivity-unproved', 'no-rationale',
+                     'review-outside', 'review-unbound']
             cases = [fixture_case(n, 'test.py', driver=gate.DRIVERS[1] if n == 'toolchain-unreviewed' else None)
                      for n in names]
             files = machinery()
@@ -237,6 +245,13 @@ def _v217_declarations():
                 'declaration': C.declaration_digest(stale_copy),
                 'traces': [r['trace'] for r in stale_copy['proposal']['runs']]}
             files['proof/VELDO-0217/reviews/fixture.json'] = (0o644, R.canonical(record))
+            # Review F4: a matching record outside the protected reviews/ tree (one a later, unapproved
+            # commit could add), and a declaration whose bound digest is not its record's bytes.
+            files['notes/anywhere.json'] = files['proof/VELDO-0217/reviews/fixture.json']
+            by['review-outside']['review'] = 'notes/anywhere.json'
+            bind(document, files)
+            by['review-unbound']['review_sha256'] = hashlib.sha256(b'another record').hexdigest()
+            files[I.DECLARATIONS] = (0o644, R.canonical(document))
             cache = top / 'conditions-cache'
 
             def session():
@@ -252,8 +267,13 @@ def _v217_declarations():
                     (cache / 'sensitivity' / (key + '.json')).write_text(json.dumps(
                         {'schema': C.SENSITIVITY_SCHEMA, 'key': key}))
             current = session()
-            reasons = {c['name']: current.reasons.get(c['identity']) for c in cases}
-            keyed = sorted(c['name'] for c in cases if current.keys.get(c['identity']))
+            bound = ('review-outside', 'review-unbound')
+            record_reasons = {n: current.reasons.get(gate.DRIVERS[0] + ':' + n) for n in bound}
+            reasons = {c['name']: current.reasons.get(c['identity']) for c in cases if c['name'] not in bound}
+            keyed = sorted(c['name'] for c in cases if current.keys.get(c['identity']) and c['name'] not in bound)
+            row('review-record-bound: %r' % record_reasons,
+                record_reasons == {n: 'review_mismatch' for n in bound}
+                and not any(current.keys.get(gate.DRIVERS[0] + ':' + n) for n in bound))
             expected = {'passes': 'miss', 'unreviewed': 'unreviewed_declaration', 'no-review': 'review_mismatch',
                         'review-mismatch': 'review_mismatch', 'trace-failed': 'trace_failed',
                         'baselines-differ': 'baseline_reads_differ', 'one-baseline': 'trace_failed',
@@ -262,7 +282,8 @@ def _v217_declarations():
                         'toolchain-unreviewed': 'toolchain_unreviewed',
                         'sensitivity-unproved': 'sensitivity_unproved', 'no-rationale': 'no_rationale'}
             row('review-conditions: %r keyed=%r' % ({k: v for k, v in reasons.items() if v != expected[k]}, keyed),
-                reasons == expected and keyed == ['passes'] and set(current.snapshots) == {gate.DRIVERS[0] + ':passes'})
+                reasons == expected and keyed == ['passes']
+                and {n for n in current.snapshots if n.split(':', 1)[1] not in bound} == {gate.DRIVERS[0] + ':passes'})
             policy = (ROOT / '.veldo/policy.yaml').read_text()
             row('reviewed-flag-protected', '{path: "' + I.DECLARATIONS + '", floor: high}' in policy)
 

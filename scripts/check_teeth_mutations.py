@@ -11868,6 +11868,18 @@ def cases():
         '  - {path: "proof/VELDO-0217/reviews/*", floor: high}\n',
         '  # the review records left unprotected\n',
         ['declarations/review-records-protected'])
+    # Fix round 2 (F4): a review record counts only under the protected reviews/ tree, and only with
+    # the bytes the reviewed declaration binds.
+    add(217, 'declarations217-review-anywhere', suite217, 'case_reuse.py',
+        "        if not path.startswith(REVIEW_DIRECTORY):\n",
+        "        if False:  # a review record accepted at any path\n",
+        ['declarations/review-record-bound'])
+    result[-1]['dir'] = 'scripts'
+    add(217, 'declarations217-review-unbound', suite217, 'case_reuse.py',
+        "        if hashlib.sha256(body).hexdigest() != declaration['review_sha256']:\n",
+        "        if False:  # the record's bytes left unbound by the declaration\n",
+        ['declarations/review-record-bound'])
+    result[-1]['dir'] = 'scripts'
 
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'

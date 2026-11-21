@@ -1,4 +1,5 @@
 """Per-case reuse keys; traces propose, declared snapshots enforce the inputs."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,14 +20,17 @@ R = M.R
 # A reviewed toolchain may only name system trees: never the checkout, the store or a home.
 SYSTEM_ROOTS = ('/usr', '/lib', '/lib64', '/etc')
 REVIEW_SCHEMA = 'veldo.case-input-review/v1'
+# Review records live only under the protected tree (.veldo/policy.yaml, floor high), and a reviewed
+# declaration binds the exact bytes of the record it names (review_sha256, VELDO-0217 F4).
+REVIEW_DIRECTORY = 'proof/VELDO-0217/reviews/'
 SENSITIVITY_SCHEMA = 'veldo.sensitivity-proof/v1'
 # The traced runs a proposal records (VELDO-0217 AC2): two independent baselines, the no-op, the mutant.
 TRACED_RUNS = ('baseline', 'baseline', 'noop', 'mutant')
 
 
 def declaration_digest(declaration):
-    """What a review record binds: the declaration without its reviewed flag and record name."""
-    return R.digest({k: v for k, v in declaration.items() if k not in ('reviewed', 'review')})
+    """What a review record binds: the declaration without its reviewed flag and record binding."""
+    return R.digest({k: v for k, v in declaration.items() if k not in ('reviewed', 'review', 'review_sha256')})
 
 
 def observation_digest(observation):
@@ -45,10 +49,17 @@ def sensitivity_proved(directory, key):
 
 
 def review_matches(files, name, declaration):
-    """The declaration names a review record (proof/VELDO-0217/reviews/) whose entry for this case
-    binds this declaration's digest and its proposal's trace digests, with a reviewer and a commit."""
+    """The declaration names a review record under proof/VELDO-0217/reviews/ and binds its sha256;
+    the record's entry for this case binds this declaration's digest and its proposal's trace
+    digests, with a reviewer and a commit. A record anywhere else, or with other bytes, grants nothing."""
     try:
-        record = json.loads(files[I.safe_name(declaration['review'])][1])
+        path = I.safe_name(declaration['review'])
+        if not path.startswith(REVIEW_DIRECTORY):
+            return False
+        body = files[path][1]
+        if hashlib.sha256(body).hexdigest() != declaration['review_sha256']:
+            return False
+        record = json.loads(body)
         entry = record['cases'][name]
         return (record['schema'] == REVIEW_SCHEMA and isinstance(record['reviewer'], str)
                 and record['reviewer'].strip() and isinstance(record['commit'], str) and record['commit'].strip()
@@ -157,10 +168,13 @@ class Session(M.Session):
                     self.runtime_digests[runtime] = R.digest(self.runtime_checks[runtime])
                 # VELDO-0217 AC3: the support helpers the suite loads are keyed as their own part.
                 loaded = set(I.helpers(files, I.prerequisites(files, case)))
+                # The record digest is approval, not an input: re-approving a batch record (which
+                # rebinds every declaration it covers) leaves each case's key unchanged.
+                keyed_declaration = {k: v for k, v in declaration.items() if k != 'review_sha256'}
                 value = {'schema': 'veldo.case-key/v1',
                          'files': I.identity({n: v for n, v in chosen.items() if n not in loaded}),
                          'helpers': I.identity({n: v for n, v in chosen.items() if n in loaded}),
-                         'case': case, 'declaration': declaration, 'toolchain': toolchain,
+                         'case': case, 'declaration': keyed_declaration, 'toolchain': toolchain,
                          'runtime': self.runtime_digests[runtime], 'configuration': configuration,
                          'authority': R.E.authority_identity()}
                 self.case_digests[name] = R.digest(value)

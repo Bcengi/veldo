@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0207, VELDO-0208, VELDO-0219]
 placement: [enforcement]
-protected_paths: ["scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", ".veldo/policy.yaml"]
+protected_paths: ["scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/case_reuse.py", "engine/scripts/case_reuse.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/case_trace.py", "engine/scripts/case_trace.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", ".veldo/policy.yaml", "proof/VELDO-0217/reviews/*"]
 footprint:
   - scripts/propose_case_inputs.py
   - scripts/mutation_case_inputs.json
@@ -192,7 +192,7 @@ authority.
   starts_a_gate refusal and before the key; the sensitivity proof is read from
   <store>/sensitivity/<key>.json (schema veldo.sensitivity-proof/v1), the place VELDO-0226 writes it;
   a review record is proof/VELDO-0217/reviews/<batch>.json (schema veldo.case-input-review/v1) named
-  by the declaration's review field.
+  by the declaration's review field and bound by its review_sha256 field.
 - A Unix socket path a case tries that does not exist (glibc probes /var/run/nscd/socket on every
   user lookup) is no peer: it is keyed as an absent runtime input in the driver's toolchain, as a
   failed runtime file probe is, so its appearance changes the key. Every other attempt counts,
@@ -224,3 +224,17 @@ authority.
   - F6: an incomplete trace (IncompleteTrace) of a traced gate run keeps its case from publishing,
     reason incomplete_trace, and the stage goes on; other trace errors still fail the stage. Row
     declarations/incomplete-trace-demoted; falsifier declarations217-incomplete-fails-stage.
+- Fix round 2 (fix-check FIX, F4 half fixed): the policy pattern protected the reviews/ tree, but
+  case_reuse accepted a record at any path, so a declaration naming a record outside reviews/ that
+  did not yet exist could be qualified by a later unapproved commit adding it. Both guards now hold:
+  review_matches requires the record path to start with proof/VELDO-0217/reviews/, and a reviewed
+  declaration carries review_sha256, the sha256 of the record's exact bytes, set by the owner in the
+  same protected change that sets reviewed true. The digest is the stronger guard: it binds the
+  approval to the record's content at approval time, so the record's location, a later edit to it,
+  or a gap in the policy pattern can no longer change what was approved, and a declaration cannot be
+  approved before its record exists. The prefix stays as defense in depth and keeps every record in
+  the one tree reviewers read. review_sha256 is approval, not an input: declaration_digest and the
+  case key leave it out, so re-approving a batch record does not re-key the batch's cases. Row
+  declarations/review-record-bound (a matching record at notes/anywhere.json, and a declaration whose
+  bound digest is not its record's); falsifiers declarations217-review-anywhere (prefix check dropped)
+  and declarations217-review-unbound (digest check dropped), each failing exactly that row.
