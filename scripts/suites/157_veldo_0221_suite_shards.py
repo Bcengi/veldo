@@ -43,7 +43,8 @@ def _veldo_0221():
         '    else:\n        FAIL += 1\n        print("  SELFTEST FAIL: %s" % name)\n'
         'def report():\n    print(SCOPE.aggregate_line(PASS, FAIL)); return SCOPE.exit_code(FAIL)\n')
 
-    def tree(top, bodies, requires=None, resources=None, capacities=None, closures=True, launcher=True):
+    def tree(top, bodies, requires=None, resources=None, capacities=None, closures=True, launcher=True,
+             instances=()):
         """A fixture candidate: the shipped dispatcher and shard machinery over fixture suites."""
         top = Path(top)
         (top / "scripts/suites").mkdir(parents=True)
@@ -57,7 +58,8 @@ def _veldo_0221():
         manifest = {"schema": "veldo.suites/v1", "entry": "selftest.py", "shared": "shared.py",
                     "resource_capacities": capacities or {},
                     "suites": [dict({"name": n, "file": n + ".py"},
-                                    **({"resources": resources[n]} if n in (resources or {}) else {}))
+                                    **({"resources": resources[n]} if n in (resources or {}) else {}),
+                                    **({"instance": True} if n in instances else {}))
                                for n in bodies]}
         (top / "scripts/suites/manifest.json").write_text(json.dumps(manifest))
         if closures:
@@ -258,7 +260,8 @@ def _veldo_0221():
             '    except FileNotFoundError:\n        refused.append("gone")\n'
             'print("V221-INTRUDER %s" % ",".join(refused), flush=True)\n'
             'expect("my own root is writable", (Path(os.environ["HOME"]) / "ok").write_text("x") == 1)\n')
-        isolated = tree(top / "isolated", {"01_first": writer, "02_second": writer, "03_intruder": intruder})
+        isolated = tree(top / "isolated", {"01_first": writer, "02_second": writer, "03_intruder": intruder},
+                        instances=("01_first", "02_second"))
         engine = {"V221_ENGINE": str(ROOT / ".veldo")}
         problems = []
         for leg in ("unconfined", "confined"):
@@ -315,6 +318,15 @@ def _veldo_0221():
         result, lines = shards(leak, "confined", ["01_child"])
         if result["failed"] or result["passed"] != 1:
             problems.append("a suite's child inherited the report pipe: %r" % lines[-4:])
+        # In an unconfined leg a suite gets its instance name only when its manifest entry declares it,
+        # and no suite of this repository's manifest does yet (run_scope.py says what was measured).
+        undeclared = tree(top / "undeclared", {"01_first": writer})
+        result, lines = shards(undeclared, "unconfined", ["01_first"], listed="01_first", extra=engine)
+        plain_names = [json.loads(line.split(" ", 2)[2]) for line in lines if line.startswith("V221-NAMES ")]
+        if not (result["failed"] == 0 and len(plain_names) == 1 and plain_names[0]["instance"] == ""
+                and plain_names[0]["slice"] == "veldo-workers.slice"
+                and not [s["name"] for s in RS.fragments(manifest) if s.get("instance") is True]):
+            problems.append("an undeclared unconfined suite was named: %r" % plain_names)
         expect("VELDO-0221 AC2 suite-shards/isolated-by-construction: " + "; ".join(problems), not problems)
 
         # In the gate's confined leg, whose temporary directory is `tmp` in the launcher's scratch, a
@@ -324,7 +336,9 @@ def _veldo_0221():
         (scratch / "tmp").mkdir(parents=True)
         result, lines = shards(isolated, "confined", ["01_first", "02_second"],
                                extra=dict(engine, HOME=str(scratch), TMPDIR=str(scratch / "tmp")),
-                               places=RS.confined_places(top, {"HOME": str(scratch)}))
+                               # Only the fixture's own scratch is read: the real temporary directory
+                               # holds what other sessions make, which is no part of this row.
+                               places=[{"name": "leg home", "path": scratch, "depth": 1, "rule": "attributed"}])
         placed = {text.split(" ", 1)[0]: json.loads(text.split(" ", 1)[1]) for text in
                   (line.split(" ", 1)[1] for line in lines if line.startswith("V221-ROOTS "))}
         temporaries = [Path(r["TMPDIR"]) for r in placed.values()]
