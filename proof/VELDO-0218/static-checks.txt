@@ -1,0 +1,16 @@
+remote_run[mac c83a1d2b1f8c 22:13:33]: selected node mac (dmitry@100.88.156.52); mode=share, slots=1
+remote_run[mac c83a1d2b1f8c 22:13:33]: bundle 20K (4 base commit(s) on the node)
+remote_run[mac c83a1d2b1f8c 22:13:34]: run rr20261121221333-cb0b started on dmitry@100.88.156.52 (Redact home-relative runner locations from proof diagnostics); node log <home>/remote-run/runs/rr20261121221333-cb0b/log
+[remote_run mac 22:13:34] run rr20261121221333-cb0b selected node mac (Darwin-arm64)
+[remote_run mac 22:13:35] setup 1s; c83a1d2b1f8c38e1b528e0c499a7576cba22cd3e in <home>/remote-run/runs/rr20261121221333-cb0b/work; python 3.12.13, node 22.22.0
+[remote_run mac 22:13:35] command: bash -c bash\ scripts/check_lint.sh\ \&\&\ bash\ scripts/check_template_sync.sh\ \&\&\ python3\ -B\ scripts/check_personal_setup.py\ --base\ 44b22c72\ \&\&\ python3\ -B\ .veldo/validate.py\ spec\ specs/VELDO-0218-a-sample-of-reused-mutation-results-is-rerun-fresh.md\ \&\&\ python3\ -B\ .veldo/validate.py\ proof\ proof/VELDO-0218/manifest.json\ \&\&\ python3\ -B\ scripts/update_index.py\ --output\ /tmp/veldo-0218-index.md\ \&\&\ cmp\ specs/index.md\ /tmp/veldo-0218-index.md 
+lint: pass (1250 python, 40 shell, 3.40s)
+template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
+veldo installation: none found (looked at <home>/remote-run/cache/veldo<home>/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+  proof/VELDO-0218/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+index: 493 specification(s)
+[remote_run mac 22:13:41] command exit 0 after 6s
+[remote_run mac 22:13:42] run ended rc=0
+remote_run[mac c83a1d2b1f8c 22:13:44]: rc=0 in 11s (run rr20261121221333-cb0b)

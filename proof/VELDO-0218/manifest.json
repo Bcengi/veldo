@@ -71,15 +71,18 @@
     },
     {
       "name": "lint",
-      "status": "not_run"
+      "status": "passed",
+      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     },
     {
       "name": "template-sync",
-      "status": "not_run"
+      "status": "passed",
+      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     },
     {
       "name": "personal-setup",
-      "status": "not_run"
+      "status": "passed",
+      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     }
   ],
   "assumptions": [
