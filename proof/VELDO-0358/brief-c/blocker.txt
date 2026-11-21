@@ -1,0 +1,39 @@
+VELDO-0358 Brief C scope conflict
+Base: e3451130
+Branch: veldo-0358-c
+Status: stopped before implementation; no implementation or test success claimed.
+
+Brief C requires scripts/check_first_use.py to lose its measured nested-run
+budget and ceiling, and requires affected suites and a full mutation stage.
+Its allowed files include suite 112 but do not include suite 111.
+
+scripts/suites/111_veldo_0214_first_use_budget.py:155-165 requires
+run_budget to derive 2276.8 seconds from a 1138.4-second measurement and
+requires that number as the timeout of each nested selftest.
+The same suite at lines 175-184 requires the 21600-second ceiling and
+requires that ceiling as the timeout of each nested selftest.
+Those assertions contradict Brief C and AC5. Removing the budget while
+keeping this suite intact necessarily makes the affected suite red.
+Keeping the old budget solely for these assertions would violate AC5.
+
+scripts/check_teeth_mutations.py:11595-11624 registers first-use budget
+mutants against the expressions and call sites Brief C must remove.
+The full mutation stage also executes controls from suite 111 for these
+cases, including cases that mutate gate_legs.py. Restating suite 112 alone
+cannot resolve the conflict. The legacy registrations need coordinated
+replacement along with suite 111, preserving relevant measurement checks.
+
+Required lead decision: assign the restatement of
+scripts/suites/111_veldo_0214_first_use_budget.py and the corresponding
+legacy registrations to a builder, or expand Brief C's file scope.
+No outside-scope file has been edited.
+
+The requested scripts/host_heavy.sh is absent from this checkout.
+No loaded run was started; the lead must supply the wrapper or its location
+before a loaded run can follow the instruction.
+
+This is a scope conflict and missing tooling, not a guard refusal.
+The canonical gate was not run, as instructed. No sub-agents were used.
+
+Validation: python3 scripts/check_personal_setup.py --base e3451130
+Exit 0; personal setup: 0 finding(s).
