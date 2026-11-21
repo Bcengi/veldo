@@ -1,5 +1,5 @@
 """Brief H: each suite N times, J at a time, each run its own dispatcher process. Started under the load
-generator:  python3 scripts/gate_load.py --slots 4 --write-dir <scratch> -- python3 loaded_runs.py.txt <worktree> <out> N J
+generator:  python3 scripts/gate_load.py --slots 4 --write-dir <scratch> -- python3 loaded_runs.py.txt <worktree> <out> N J [suite...]
 Nothing here waits on a clock: a run is awaited to its exit, and it is judged by the lines it printed."""
 import concurrent.futures
 import re
@@ -8,7 +8,8 @@ import sys
 from pathlib import Path
 
 root, out, count, jobs = Path(sys.argv[1]), Path(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
-SUITES = ('120_veldo_0131_factory_ui', '121_veldo_0131_factory_screens_narrow', '124_veldo_0131_factory_reads_commands')
+SUITES = tuple(sys.argv[5:]) or (
+    '120_veldo_0131_factory_ui', '121_veldo_0131_factory_screens_narrow', '124_veldo_0131_factory_reads_commands')
 out.mkdir(parents=True, exist_ok=True)
 
 
