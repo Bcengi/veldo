@@ -2265,8 +2265,9 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
                 scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            # Without a descriptor to inherit the call is what it always was.
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop,
-                                   inherit=inherit)
+                                   **({'inherit': tuple(inherit)} if inherit else {}))
         except Interrupted:
             code = None
         except CredentialRecovery as error:

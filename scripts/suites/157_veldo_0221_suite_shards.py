@@ -316,6 +316,28 @@ def _veldo_0221():
             problems.append("a suite's child inherited the report pipe: %r" % lines[-4:])
         expect("VELDO-0221 AC2 suite-shards/isolated-by-construction: " + "; ".join(problems), not problems)
 
+        # In the gate's confined leg, whose temporary directory is `tmp` in the launcher's scratch, a
+        # shard's temporary directory is a sibling of it and exactly as long: a suite's socket path
+        # beneath it fits as it did in the ordered run. Anywhere else the roots stay in one directory.
+        scratch = top / "veldo-agent-fixture0"
+        (scratch / "tmp").mkdir(parents=True)
+        result, lines = shards(isolated, "confined", ["01_first", "02_second"],
+                               extra=dict(engine, HOME=str(scratch), TMPDIR=str(scratch / "tmp")),
+                               places=RS.confined_places(top, {"HOME": str(scratch)}))
+        placed = {text.split(" ", 1)[0]: json.loads(text.split(" ", 1)[1]) for text in
+                  (line.split(" ", 1)[1] for line in lines if line.startswith("V221-ROOTS "))}
+        temporaries = [Path(r["TMPDIR"]) for r in placed.values()]
+        elsewhere = RS.leg_scratch({"HOME": str(top), "TMPDIR": str(top / "tmp")}, isolated)
+        expect("VELDO-0221 suite-shards/temporary-directory-no-longer-than-the-legs: %r %r %r"
+               % (placed, result["charged"], result["unattributed"]),
+               len(temporaries) == 2 and temporaries[0] != temporaries[1] and result["failed"] == 0
+               and all(path.parent == scratch and len(path.name) == 3 and path.name != "tmp"
+                       and len(str(path)) == len(str(scratch / "tmp")) for path in temporaries)
+               and all(not r["HOME"].startswith(str(scratch)) for r in placed.values())
+               and not result["breaches"] and not result["unattributed"]
+               and RS.leg_scratch({"HOME": str(scratch), "TMPDIR": str(scratch / "tmp")}, isolated) == scratch
+               and elsewhere is None and RS.leg_scratch({"HOME": str(scratch), "TMPDIR": "/tmp"}, isolated) is None)
+
         # With no instance configured, which is every production installation, every name is today's.
         probe = (
             'import importlib.util, json, sys\n'

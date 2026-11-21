@@ -721,11 +721,14 @@ ISOLATION_BREACH = "isolation_breach"
 # failure with one FAIL line whose text is fixed, so two runs of one tree name it identically.
 SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "deadline_exceeded",
                   "prerequisite_failed", "exit_status", ISOLATION_BREACH)
-# A shard's roots are SIBLING directories of the leg's own temporary directory, named by the shard's
+# A shard's roots are sibling directories in one directory of the leg's own, named by the shard's
 # two-character tag: the temporary directory is the tag alone and every other root the tag and one
-# letter. THE NAMES ARE AS SHORT AS THEY CAN BE, because a suite binds local sockets beneath its
-# temporary directory and a socket path holds under 108 bytes: measured, one suite's path was 3
-# bytes over with a directory level per shard and a level per root, and fits with 2 to spare here.
+# letter. A SHARD'S TEMPORARY DIRECTORY MUST NOT BE LONGER THAN THE LEG'S, because a suite binds
+# local sockets beneath it and a socket path holds under 108 bytes. Measured in the confined leg:
+# with 18 bytes added one suite's path was 3 over, and with 13 added two more suites' were. So in
+# the gate's confined leg, whose temporary directory is `tmp` in the launcher's scratch, a shard's
+# temporary directory is a three-character sibling of it (short_temporary), exactly as long. The
+# launcher removes its scratch, and those directories with it, when the leg's command ends.
 SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
                ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
 SHARD_PROBES = "p"
@@ -874,9 +877,40 @@ def roots_of(root):
 
 
 def shard_roots(base, index):
-    """(a shard's temporary directory, {environment variable: its private root})."""
+    """(a shard's own path prefix, {environment variable: its private root})."""
     root = Path(base) / shard_tag(index)
     return root, roots_of(root)
+
+
+def leg_scratch(environ, root):
+    """The gate launcher's scratch this leg runs in, or None: its HOME, named with the launcher's
+    own prefix, holding the leg's temporary directory `tmp`. Only there is a sibling of the leg's
+    temporary directory a private place of this leg's."""
+    home, temporary = environ.get("HOME"), environ.get("TMPDIR")
+    launcher = shard_launcher(root)
+    if not home or not temporary or not launcher.is_file():
+        return None
+    prefix = re.search(r"^SCRATCH_PREFIX = '([A-Za-z0-9._-]+)'$", launcher.read_text(), re.M)
+    if prefix and Path(home).name.startswith(prefix.group(1)) and Path(temporary) == Path(home) / "tmp":
+        return Path(home)
+    return None
+
+
+def short_temporary(scratch):
+    """A new three-character directory in the launcher's scratch for one shard's temporary files,
+    as long as the leg's own `tmp`, or None when none could be made."""
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    for _attempt in range(64):
+        number = int.from_bytes(os.urandom(2), "big") % 1296
+        path = Path(scratch) / ("t" + digits[number // 36] + digits[number % 36])
+        try:
+            os.mkdir(path, 0o700)
+            return path
+        except FileExistsError:
+            continue
+        except OSError:
+            return None
+    return None
 
 
 def link_manager(runtime, real):
@@ -966,15 +1000,17 @@ def shard_launcher(root):
     return Path(root) / "scripts" / "agent_sandbox.py"
 
 
-def confine_shard(root, launcher):
+def confine_shard(root, launcher, environ=None):
     """Stack this shard's Landlock layer and prove it: (in force, the probe write was refused,
-    what went wrong). Called before any suite code runs."""
+    what went wrong). Called before any suite code runs, so the roots are the ones the dispatcher
+    put in this shard's environment."""
     import importlib.util
+    environ = os.environ if environ is None else environ
     try:
         spec = importlib.util.spec_from_file_location("veldo_shard_sandbox", launcher)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        module.write_layer(list(roots_of(root).values()))
+        module.write_layer([Path(environ[variable]) for variable, _leaf in SHARD_ROOTS])
     except Exception as error:  # noqa: BLE001 - any failure is reported, and the dispatcher reddens
         return False, False, "%s: %s" % (type(error).__name__, error)
     try:
@@ -1112,13 +1148,11 @@ def _holders(path):
 
 def _shard_named(text, base, jobs):
     """The suite whose roots `text` mentions, or None."""
-    if str(base) not in text:
-        return None
-    letters = "".join(leaf for _variable, leaf in SHARD_ROOTS)
     for job in jobs:
-        root = re.escape(str(Path(base) / shard_tag(job["index"])))
-        if re.search(root + "[" + letters + "]?(?![0-9A-Za-z_.-])", text):
-            return job["name"]
+        roots = job.get("roots") or {v: str(p) for v, p in shard_roots(base, job["index"])[1].items()}
+        for path in set(roots.values()):
+            if path in text and re.search(re.escape(path) + r"(?![0-9A-Za-z_.-])", text):
+                return job["name"]
     return None
 
 
@@ -1341,6 +1375,8 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             metrics = None
     python = python or sys.executable
     passes = launcher_fds(root)
+    scratch = leg_scratch(environ, root) if leg == "confined" else None
+    own = set()  # what this dispatcher itself made outside its own directory
     # THE ISOLATION CHECK RUNS IN EVERY GATE (owner decision D1): nothing here reads whether this
     # gate was asked to be force-fresh.
     if places is None:
@@ -1369,8 +1405,13 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
 
     def launch(job):
         directory, roots = shard_roots(base, job["index"])
+        short = short_temporary(scratch) if scratch is not None else None
+        if short is not None:
+            roots["TMPDIR"] = short
+            own.add(str(short))
         for path in roots.values():
-            path.mkdir(mode=0o700)
+            if path != short:
+                path.mkdir(mode=0o700)
         linked = link_manager(roots["XDG_RUNTIME_DIR"], "/run/user/%d" % os.getuid())
         write_instance(roots["XDG_CONFIG_HOME"], job["name"])
         env = shard_environment(environ, roots, linked, base)
@@ -1453,8 +1494,9 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         observe()
         job["result"] = result
         done.append(job)
-        say("selftest shard %s %s: closure %s; roots %s*; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
-            % (shard_tag(job["index"]), job["name"], ", ".join(job["closure"]), job["root"], result["passed"],
+        say("selftest shard %s %s: closure %s; roots %s*%s; %d passed, %d failed; wall %.1fs cpu %.1fs peak %d MiB%s"
+            % (shard_tag(job["index"]), job["name"], ", ".join(job["closure"]), job["root"],
+               "" if job["roots"]["TMPDIR"] == str(job["root"]) else " and " + job["roots"]["TMPDIR"], result["passed"],
                result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
                "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
                and result["layer"].get("refused") is True else ""))
@@ -1543,7 +1585,7 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
         candidates = {}
         for kind, item in sorted(after - before):
             place = watch.place(kind)
-            if place is not None and Path(place["path"]) / item == base:
+            if place is not None and (Path(place["path"]) / item == base or str(Path(place["path"]) / item) in own):
                 continue
             candidates[(kind, item)] = place
         waiting = {}

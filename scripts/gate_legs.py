@@ -525,9 +525,11 @@ def confined(root, command, env):
         return subprocess.run([sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root',
                                str(root), '--', 'bash', '-c', command], env=env,
                               stdin=subprocess.DEVNULL, pass_fds=_launcher_fds()).returncode
-    config = env.get('VELDO_AGENT_CONFIG', str(HERE / 'agent_sandbox.json'))
+    # The launcher and its configuration are the ones beside gate_candidate.py, as that file finds them.
+    scripts = (HERE / 'gate_candidate.py').resolve().parent
+    config = env.get('VELDO_AGENT_CONFIG', str(scripts / 'agent_sandbox.json'))
     inherit = [word for fd in channels.values() for word in ('--inherit', str(fd))]
-    code = subprocess.run([sys.executable, '-I', '-S', str(HERE / 'agent_sandbox.py'), '--profile', 'gate',
+    code = subprocess.run([sys.executable, '-I', '-S', str(scripts / 'agent_sandbox.py'), '--profile', 'gate',
                            '--config', config, '--worktree', str(root), *inherit, '--', 'bash', '-c', command],
                           env=env, stdin=subprocess.DEVNULL, close_fds=True,
                           pass_fds=(*_launcher_fds(), *channels.values())).returncode
