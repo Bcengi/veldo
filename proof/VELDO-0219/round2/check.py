@@ -24,7 +24,8 @@ def handoff(gate=None, warm=False):
     with tempfile.TemporaryDirectory(prefix='v219-channel-') as tmp:
         top = Path(tmp)
         graph = json.loads((ROOT/'scripts/gate_graph.json').read_text())
-        graph['nodes'] = {'mutation': graph['nodes']['mutation']}
+        # The mutation node alone: its dependency on the load-proof leg (VELDO-0358) has no node here.
+        graph['nodes'] = {'mutation': dict(graph['nodes']['mutation'], depends_on=[])}
         (top/'graph.json').write_text(json.dumps(graph))
         # Real subprocesses and the production inherited channel; only kernel
         # cgroup creation is replaced so this also runs inside confinement.

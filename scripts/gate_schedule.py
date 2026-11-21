@@ -27,6 +27,12 @@ sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 GRAPH = HERE / 'gate_graph.json'
 CHANNEL = 'VELDO_GATE_LEDGER_FD'
+# VELDO-0358 AC13: the load-proof leg's node. It is the authority's own command (scripts/gate_legs.py
+# --load-proof), like the mutation stage. It runs only when every node it depends on passed (else it is
+# not_run: the gate is red already and learns nothing from it), and a node that depends on it is not
+# started when it is red (not_started): so a red leg ends the gate before the mutation stage.
+LOAD = 'load'
+HELD = ('not_run', 'not_started')
 NAME = re.compile(r'^[a-z][a-z0-9_]*(?:\.(?:confined|unconfined))?$')
 
 
@@ -449,7 +455,14 @@ def stage_error(receipt):
     return ' '.join(text.split())[:400]
 
 
-def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
+def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None, load_record=None,
+                load_opened=None):
+    if stage == LOAD:
+        argv = [sys.executable, '-I', '-S', str(HERE / 'gate_legs.py'), '--load-proof', '--root', str(root),
+                '--record', str(load_record)]
+        if load_opened is not None and Path(load_opened).is_file():
+            argv += ['--opened', str(load_opened)]
+        return argv
     if stage == 'mutation':
         return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
                 '--receipt', str(receipt), '--legs-record', str(record)]
@@ -464,9 +477,30 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
     return [sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root', str(root), '--', 'bash', '-c', command]
 
 
+def held(name, depends, results):
+    """(verdict, reason) when a node is not to be started, else None (VELDO-0358 AC13)."""
+    if name == LOAD:
+        red = sorted(d for d in depends[name] if results[d]['verdict'] != 'pass')
+        if red:
+            return 'not_run', 'a stage before the load-proof leg is red: ' + ', '.join(red)
+    if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):
+        return 'not_started', 'the load-proof leg is red'
+    return None
+
+
+def stage_verdict(verdicts):
+    """A stage's word from its nodes' verdicts: pass, a held word when its one node was held, else FAIL."""
+    verdicts = set(verdicts)
+    if verdicts == {'pass'}:
+        return 'pass'
+    if len(verdicts) == 1 and verdicts <= set(HELD):
+        return verdicts.pop()
+    return 'FAIL'
+
+
 def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declaration_path=None,
         capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False,
-        node_inputs_factory=NodeInputs):
+        node_inputs_factory=NodeInputs, load_opened=None):
     """Run the real graph. Explicit injected boundaries are for fixture authorities only.
 
     CLI exposes no graph, capacity, measurement-store, runner or guard override.
@@ -523,7 +557,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             if any(overhead[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
                 raise Refused('invalid_resource_requirement: coordinator consumes the mutation floor')
             coordinator_claims[name] = overhead
-    if 'mutation' not in required:
+    if 'mutation' not in required or depends.get('mutation'):
+        # A mutation stage that waits for other nodes cannot start first, so no floor is kept for it: a floor
+        # held for a node that cannot start only idles capacity (and could leave nothing runnable).
         ledger.mutation_pending = False
     unchanged = guard_factory(root)
     pending = list(required)
@@ -538,8 +574,19 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     failed_tree = False
     try:
         while pending or active:
+            settled = False  # a node held this pass may free another: look again before waiting
             for name in list(pending):
                 if not depends[name] <= results.keys():
+                    continue
+                hold = held(name, depends, results)
+                if hold is not None:
+                    at = max((results[d]['end'] for d in depends[name]), default=0.0)  # when it was decided
+                    (directory / (name + '.log')).write_text('%s: %s\n' % (hold[0].replace('_', ' '), hold[1]))
+                    results[name] = dict(start=at, end=at, wall_seconds=0.0, verdict=hold[0], returncode=None,
+                                         error=hold[1], inputs_unchanged=True, input_snapshot=False)
+                    pending.remove(name)
+                    settled = True
+                    print('node %s %s: %s' % (name, hold[0], hold[1]), flush=True)
                     continue
                 if serial and active:
                     waited_for[name].update(active)
@@ -563,7 +610,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                         inputs = node_inputs_factory(root, directory / (name + '.inputs'))
                     node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
-                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
+                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times,
+                                       directory / 'load.record', load_opened)
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
                     if inputs:
@@ -591,6 +639,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 selector.register(parent, selectors.EVENT_READ, name)
                 pending.remove(name)
                 print('node %s start %.6f' % (name, active[name]['started'] - started), flush=True)
+            if settled and not active:
+                continue
             if pending and not active:
                 raise Refused('invalid_resource_requirement: no runnable claim fits')
             for event, _mask in selector.select(.05 if active else 0):
@@ -688,8 +738,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 next_print += 1
         original_unchanged = unchanged()
         failed_tree = failed_tree or not original_unchanged
-        stages = {stage: 'pass' if all(results[n]['verdict'] == 'pass' for n, pair in required.items()
-                                     if pair[0] == stage) else 'FAIL' for stage in catalog}
+        stages = {stage: stage_verdict(results[n]['verdict'] for n, pair in required.items() if pair[0] == stage)
+                  for stage in catalog}
         for name, result in results.items():
             result['admission_dependencies'] = sorted(other for other in waited_for[name]
                 if results[other]['end'] <= result['start'])
@@ -739,11 +789,14 @@ def main(argv=None):
     parser.add_argument('--receipt', type=Path, required=True)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--stage', nargs=2, action='append', default=[])
+    parser.add_argument('--load-opened', type=Path, help='the opened-files record the load-proof leg reads, '
+                        'when it exists by the time the leg starts')
     args = parser.parse_args(argv)
     try:
         if len(dict(args.stage)) != len(args.stage):
             raise Refused('duplicate catalog stage')
-        result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt)
+        result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,
+                     load_opened=args.load_opened)
         (args.directory / 'receipt.json').write_text(json.dumps(result, indent=2) + '\n')
         (args.directory / 'graph-field').write_text(',"graph":' + json.dumps(result['graph']))
         for stage, verdict in result['stages'].items():

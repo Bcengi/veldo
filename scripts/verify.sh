@@ -84,6 +84,54 @@ veldo_space_exit() {
   veldo_space group
 }
 
+# VELDO-0358: the load-proof leg (its description is at its catalog slot, CHECK_load). Defined here with
+# the other gate functions, so a fixture that takes them takes these too.
+VELDO_LOAD_DONE=0; VELDO_LOAD_RED=0; VELDO_LOAD_FIELD=""
+veldo_load_leg() {
+  [ "$VELDO_LOAD_DONE" = 0 ] || return 0
+  VELDO_LOAD_DONE=1
+  [ -f "$VELDO_AUTHORITY/scripts/gate_load.py" ] || return 0
+  if [ "$FAIL" -ne 0 ]; then
+    echo "== load-proof: not run (a stage before it is red)"
+    VELDO_LOAD_FIELD=',"load":{"state":"not_run"}'
+    return 0
+  fi
+  echo "== load-proof"
+  [ "$MUTATION_RAN" = 0 ] || echo "   load-proof: the graph scheduler ran the mutation stage before this leg"
+  _veldo_load_record=$(mktemp); _veldo_load_from=$(date -u +%s)
+  set --
+  [ ! -f "$VELDO_OUT/opened_files.json" ] || set -- --opened "$VELDO_OUT/opened_files.json"
+  if python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --load-proof --root "$(pwd -P)" \
+       --record "$_veldo_load_record" "$@"; then
+    echo "   load-proof: pass"
+  else
+    echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1
+  fi
+  if _veldo_load=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --load-stamp "$_veldo_load_record" \
+       --wall "$(( $(date -u +%s) - _veldo_load_from ))"); then
+    VELDO_LOAD_FIELD=",\"load\":$_veldo_load"
+  else
+    FAIL=1; VELDO_LOAD_RED=1; VELDO_LOAD_FIELD=',"load":null'
+  fi
+  rm -f "$_veldo_load_record"
+}
+veldo_scheduled_load() {
+  [ -n "$VELDO_SCHEDULE" ] && [ -f "$VELDO_SCHEDULE/load.status" ] || return 0
+  VELDO_LOAD_DONE=1
+  case "$(cat "$VELDO_SCHEDULE/load.status")" in
+    not_run) VELDO_LOAD_FIELD=',"load":{"state":"not_run"}'; return 0 ;;
+    pass) ;;
+    *) VELDO_LOAD_RED=1 ;;
+  esac
+  if [ -f "$VELDO_SCHEDULE/load.record" ] && _veldo_load=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" \
+       --load-stamp "$VELDO_SCHEDULE/load.record" --wall "$(python3 -I -S -c 'import json, sys
+print(int(json.load(open(sys.argv[1]))["nodes"]["load"]["wall_seconds"]))' "$VELDO_SCHEDULE/receipt.json")"); then
+    VELDO_LOAD_FIELD=",\"load\":$_veldo_load"
+  else
+    FAIL=1; VELDO_LOAD_RED=1; VELDO_LOAD_FIELD=',"load":null'
+  fi
+}
+
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
 # installation verifies a landing candidate: this script is the installed copy, every check runs in
 # <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
@@ -264,6 +312,8 @@ VELDO_LEGS_RECORD=$(mktemp)
 VELDO_LEGS_EXPECTED=""
 trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; veldo_space_exit' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
+# VELDO-0358 AC13: the load-proof leg's slot (below), the authority's own command like the mutation stage.
+CHECK_load="required:authority load-proof leg"
 CHECK_mutation="required:authority mutation stage"
 # THE LOAD-PROOF LEG (VELDO-0358, AC13). After the unit and integration stages and before the mutation
 # stage, the authority's scripts/gate_legs.py runs every suite of the proven set, each in its own
@@ -274,41 +324,13 @@ CHECK_mutation="required:authority mutation stage"
 # Nothing is run again because it failed. The leg runs only when every stage before it passed: a gate
 # that is red already learns nothing from it. Its load record goes into the stamp and the event; the
 # wall time there is this script's own two readings of the date, data and never a verdict.
-# It is no catalog slot: it has no command of the candidate's to declare, and an authority without
-# scripts/gate_load.py (every adopter's) has no leg, as before.
-# UNDER THE GRAPH SCHEDULER (scripts/gate_graph.json) every catalog stage, the mutation stage
-# included, has run before this script gets its results back, so there the leg runs after them: its
-# red is still the gate's red, but it cannot keep the mutation stage from starting. Ordering it
-# before that stage needs the scheduler to hold a node whose dependency failed.
-VELDO_LOAD_DONE=0; VELDO_LOAD_RED=0; VELDO_LOAD_FIELD=""
-veldo_load_leg() {
-  [ "$VELDO_LOAD_DONE" = 0 ] || return 0
-  VELDO_LOAD_DONE=1
-  [ -f "$VELDO_AUTHORITY/scripts/gate_load.py" ] || return 0
-  if [ "$FAIL" -ne 0 ]; then
-    echo "== load-proof: not run (a stage before it is red)"
-    VELDO_LOAD_FIELD=',"load":{"state":"not_run"}'
-    return 0
-  fi
-  echo "== load-proof"
-  [ "$MUTATION_RAN" = 0 ] || echo "   load-proof: the graph scheduler ran the mutation stage before this leg"
-  _veldo_load_record=$(mktemp); _veldo_load_from=$(date -u +%s)
-  set --
-  [ ! -f "$VELDO_OUT/opened_files.json" ] || set -- --opened "$VELDO_OUT/opened_files.json"
-  if python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --load-proof --root "$(pwd -P)" \
-       --record "$_veldo_load_record" "$@"; then
-    echo "   load-proof: pass"
-  else
-    echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1
-  fi
-  if _veldo_load=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --load-stamp "$_veldo_load_record" \
-       --wall "$(( $(date -u +%s) - _veldo_load_from ))"); then
-    VELDO_LOAD_FIELD=",\"load\":$_veldo_load"
-  else
-    FAIL=1; VELDO_LOAD_RED=1; VELDO_LOAD_FIELD=',"load":null'
-  fi
-  rm -f "$_veldo_load_record"
-}
+# Its slot, load, holds no command of the candidate's: it names the authority's leg, and an authority
+# without scripts/gate_load.py (every adopter's) has no leg, as before.
+# UNDER THE GRAPH SCHEDULER (scripts/gate_graph.json) the leg is the node load: it depends on every
+# other node but mutation and the mutation node depends on it. The scheduler (scripts/gate_schedule.py)
+# does not run it when a node before it is red (load: not_run) and does not start a node that depends
+# on it when it is red (mutation: not_started), so a red leg ends the gate before the mutation stage on
+# that path too. Its record comes back beside the scheduler's results and goes into the stamp here.
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system
 # negative self-test, docs enforces the standing hygiene rules, generated
@@ -330,7 +352,7 @@ veldo_load_leg() {
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
 token_lint visual_baselines build dependency_audit licenses security migration \
-generated docs performance coverage packaging personal_setup deploy_dry_run wallclock extra mutation"
+generated docs performance coverage packaging personal_setup deploy_dry_run wallclock extra load mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
@@ -353,7 +375,8 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
   done
   if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
       --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
-      --output "$VELDO_OUT/gate-schedule.json" "${_veldo_stages[@]}"; then FAIL=1; fi
+      --output "$VELDO_OUT/gate-schedule.json" --load-opened "$VELDO_OUT/opened_files.json" \
+      "${_veldo_stages[@]}"; then FAIL=1; fi
   if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
     VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
   else
@@ -364,11 +387,18 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
 fi
 veldo_scheduled_result() {
   if [ -f "$VELDO_SCHEDULE/$1.status" ]; then
+    _veldo_status=$(cat "$VELDO_SCHEDULE/$1.status")
+    if [ "$_veldo_status" = not_run ]; then echo "== $1: not run (a stage before it is red)"; return 0; fi
+    if [ "$_veldo_status" = not_started ]; then
+      echo "== $1: NOT STARTED (the load-proof leg is red)"; FAIL=1; return 0
+    fi
     RAN=$((RAN+1))
-    if [ "$(cat "$VELDO_SCHEDULE/$1.status")" = pass ]; then echo "   $1: pass"
+    if [ "$_veldo_status" = pass ]; then echo "   $1: pass"
     else echo "   $1: FAIL"; FAIL=1; fi
   else echo "   $1: FAIL (graph refused before completion)"; FAIL=1; fi
 }
+# VELDO-0358: the load node's record (the scheduler ran the leg) goes into the stamp as the serial leg's does.
+veldo_scheduled_load
 for name in $ORDER; do
   var="CHECK_${name}"
   decl="${!var}"
@@ -381,9 +411,12 @@ for name in $ORDER; do
       cmd="${decl#required:}"
       if [ -n "$VELDO_SCHEDULE" ]; then
         veldo_scheduled_result "$name"
-        if [ "$name" = mutation ] && [ -f "$VELDO_SCHEDULE/mutation.status" ]; then MUTATION_RAN=1; fi
+        if [ "$name" = mutation ]; then
+          case "$(cat "$VELDO_SCHEDULE/mutation.status" 2>/dev/null)" in pass|FAIL) MUTATION_RAN=1 ;; esac
+        fi
         continue
       fi
+      if [ "$name" = load ]; then veldo_load_leg; continue; fi  # VELDO-0358: the leg is its own slot
       if [ "$name" = mutation ]; then
         veldo_load_leg  # VELDO-0358: the load-proof leg, before the mutation stage
         if [ "$VELDO_LOAD_RED" = 1 ]; then echo "== mutation: NOT STARTED (the load-proof leg is red)"; continue; fi
