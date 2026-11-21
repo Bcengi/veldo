@@ -1775,17 +1775,17 @@ class Runner:
         # this preparation reserves another.
         self.sweep()
         now = self.clock()
+        try:
+            configuration = CFG.bind(self.dispatches.conn, self.dispatches.domain,
+                                     self.dispatches.repository, configuration)
+        except CFG.Refused as error:
+            raise D.Refused(error.code) from None
         admission = _organ('control_space_admission')
         coordinates = {'domain': self.dispatches.domain, 'repository': self.dispatches.repository, 'unit': unit}
         prior = admission.previous(self.dispatches.conn, coordinates)
         if (prior.get('space_failure') or {}).get('andon'):
             raise D.Refused('environment_failure:no_space', 'andon: two consecutive environment failures')
         payload = admission.brief(self.dispatches.conn, coordinates, payload)
-        try:
-            configuration = CFG.bind(self.dispatches.conn, self.dispatches.domain,
-                                     self.dispatches.repository, configuration)
-        except CFG.Refused as error:
-            raise D.Refused(error.code) from None
         decided = dict(context or {}, holder=holder)
         decision = self.gate.require(station, unit, context=decided)
         held = self.dispatches.active(unit, station)
@@ -3028,8 +3028,8 @@ class Receiver:
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
         # VELDO-0141: the exit commits the execution record's line count, byte count and digest.
         self.dispatches.exit(dispatch_id, contract_digest, process, termination, now=time.time(), artifact=artifact,
-                             execution_record=self.committed,
-                             **({'space_failure': observation} if observation else {}))
+                             space_failure=observation,
+                             execution_record=self.committed)
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
         report_end(self, contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
