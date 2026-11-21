@@ -2474,6 +2474,11 @@
    ],
    "regions": "VELDO-0253: whole committed trees, widening decisions, canvas commits and immutable workflow pins.",
    "requires_note": "Only ROOT and expect. Real Git, SQLite, OpenSSH journal signatures, OS file notifications. Owner-decision seam is an explicit fixture; no sleeps or speed assertions."
+  },
+  {
+   "name": "114_veldo_0113_no_autostart",
+   "file": "114_veldo_0113_no_autostart.py",
+   "regions": "VELDO-0113"
   }
  ],
  "resource_capacities": {

@@ -17532,6 +17532,34 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0113: whole-invocation refusal consumers, including the lead's
+    # construction-boundary amendment. Copies are driven by the standard owner.
+    suite113 = '114_veldo_0113_no_autostart.py'
+    refusal113 = '            seen = last_seen(enrollment, workspace, binding)'
+    add(113, 'autostart113-reaped-fallback', suite113, 'control_client.py',
+        refusal113, refusal113 + '\n'
+        '            child = os.fork()\n'
+        '            if child == 0:\n'
+        '                os._exit(0)\n'
+        '            os.waitpid(child, 0)',
+        ['unavailable/no-client-starts-the-authority'])
+    add(113, 'autostart113-transient-abstract-listener', suite113, 'control_client.py',
+        refusal113, refusal113 + '\n'
+        '            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as fallback:\n'
+        '                fallback.bind("\\0v113-fallback-" + str(os.getpid()))\n'
+        '                fallback.listen(1)',
+        ['unavailable/no-client-hosts-a-listener'])
+    add(113, 'autostart113-incomplete-counts-as-success', suite113, 'no_autostart.py',
+        "    rows = {r['name']: dict(r) for r in census.consumer_rows(receipt, 'VELDO-0113')}\n",
+        "    rows = {name: dict(name=name, status='READY', reason=None) for name in ROWS}\n",
+        ['unavailable/no-auto-start-needs-census'])
+    result[-1]['fixture'] = True
+    add(113, 'autostart113-construction-outside-authority', suite113, 'claim.py',
+        'STALE_AFTER_SECONDS = 90',
+        'def outside_authority_constructor():\n'
+        '    return _CLIENTS.load_client_module("control_dispatch").Dispatches(None, None)\n\n'
+        'STALE_AFTER_SECONDS = 90',
+        ['unavailable/in-process-construction-boundary'])
     # VELDO-0347: the declared falsifiers of its acceptance criteria, each a way to remove work the
     # first rules did not see. AC1: ignored paths are left out of case 3. AC2: rule 6 looks beneath
     # worktrees and agent repositories only; a clean clone's logs are left out; a remote-tracking ref
