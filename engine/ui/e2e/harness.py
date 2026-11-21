@@ -26,12 +26,19 @@ run's record and end it, drop a record stream's connection, open, revise and ans
 and expire sessions. It prints one JSON line, {"origin", "control", "domain", ...}, when ready, and serves
 until stdin closes or it is told to stop.
 
+NO WALL-CLOCK DEPENDENCY OF ITS OWN (VELDO-0358). The wall time the harness hands the product as data (a
+record's time, a deadline the product judges, the API's clock) is the suites' support stamp, the one allowed
+reader (`wall`). A tool call (openssl, ssh-keygen) is bounded by the wait hang bound only. The product's
+giving-up timers are set to that bound by the timers profile, selected in the organs' own timers table before
+any organ is loaded, and the ready line reports the profile and the table's effective values (`timers`).
+
 Run: python3 -B engine/ui/e2e/harness.py --dist engine/ui/dist
 """
 import argparse
 import base64
 import concurrent.futures
 import copy
+import datetime
 import fcntl
 import hashlib
 import http.server
@@ -53,6 +60,8 @@ ROOT = HERE.parents[3]
 CHOICES = ['accept', 'return_for_elaboration', 'reject']
 DOMAIN = 'veldo-e2e'
 PROJECTS = ('project-a', 'project-b', 'project-c')
+# The wait hang bound (VELDO-0358 contracts): the one bound of a single wait or light tool call.
+WAIT_HANG_SECONDS = 600
 
 
 def load(name, path):
@@ -60,6 +69,40 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _support():
+    """The suites' support module (scripts/suites/support/waits.py) of the checkout this harness belongs to. A
+    scratch copy of the UI (the suites lay one down, with .veldo and proof linked to the checkout) has no scripts
+    directory of its own, so the checkout is also looked for behind those links."""
+    relative = Path('scripts') / 'suites' / 'support' / 'waits.py'
+    roots = [ROOT] + [(ROOT / name).resolve().parent for name in ('.veldo', 'proof')]
+    for root in roots:
+        if (root / relative).is_file():
+            return load('e2e_support_waits', root / relative)
+    raise RuntimeError('the harness takes its wall time from the support stamp: no %s under %s'
+                       % (relative, ', '.join(sorted({str(root) for root in roots}))))
+
+
+SUPPORT = _support()
+
+
+def wall():
+    """The wall time now, as data (a record's time, a deadline the product judges): the support stamp's."""
+    return datetime.datetime.fromisoformat(SUPPORT.stamp().iso().replace('Z', '+00:00')).timestamp()
+
+
+def timers_table(organs):
+    """The one timers table of the organs in `organs` (timers.py beside them), as every organ of that directory
+    finds it (VELDO-0358 AC15: the same module object, by the same name), or None when the directory has none."""
+    path = os.path.join(os.path.realpath(str(organs)), 'timers.py')
+    if not os.path.isfile(path):
+        return None
+    key = 'veldo_timers:' + path
+    table = sys.modules.get(key)
+    if table is None:
+        table = sys.modules.setdefault(key, load(key, path))
+    return table
 
 
 def b64url(data):
@@ -106,17 +149,17 @@ class Browser:
         directory.mkdir(exist_ok=True)
         self.key = directory / (name + '.pem')
         subprocess.run(['openssl', 'genpkey', '-algorithm', 'EC', '-pkeyopt', 'ec_paramgen_curve:P-256', '-out',
-                        str(self.key)], check=True, capture_output=True, timeout=10)
+                        str(self.key)], check=True, capture_output=True, timeout=WAIT_HANG_SECONDS)
         self.der = subprocess.run(['openssl', 'pkey', '-in', str(self.key), '-pubout', '-outform', 'DER'], check=True,
-                                  capture_output=True, timeout=10).stdout
+                                  capture_output=True, timeout=WAIT_HANG_SECONDS).stdout
         self.pkcs8 = subprocess.run(['openssl', 'pkcs8', '-topk8', '-nocrypt', '-in', str(self.key), '-outform', 'DER'],
-                                    check=True, capture_output=True, timeout=10).stdout
+                                    check=True, capture_output=True, timeout=WAIT_HANG_SECONDS).stdout
         self.credential_id = b64url(os.urandom(32))
         self.user_handle = None
 
     def sign(self, message):
         return subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(self.key)], input=message, check=True,
-                              capture_output=True, timeout=10).stdout
+                              capture_output=True, timeout=WAIT_HANG_SECONDS).stdout
 
     def create(self, challenge, origin):
         client = json.dumps({'type': 'webauthn.create', 'challenge': challenge, 'origin': origin, 'crossOrigin': False},
@@ -185,7 +228,7 @@ class PacedClock:
 
     def __call__(self):
         if self.done:
-            return time.time()
+            return wall()
         self.at += self.STEPS[self.n % len(self.STEPS)]
         self.n += 1
         return self.at
@@ -264,8 +307,15 @@ class Factory:
             return fn(*args, **kwargs)
         return self.pool.submit(fn, *args, **kwargs).result()
 
+    def timers_report(self):
+        """What the ready line says of the product's timers: the profile selected and the table's effective values
+        now, or None when the organs carry no timers table."""
+        if self.timers is None:
+            return None
+        return {'profile': self.timers_profile, 'effective': self.timers.report()}
+
     def clock(self):
-        return time.time() + self.offset[0]
+        return wall() + self.offset[0]
 
     # the factory, built on the authority thread
 
@@ -280,6 +330,17 @@ class Factory:
             # .veldo/ui) travels with them, and the API finds it there with no `ui` in its configuration.
             shutil.copytree(Path(self.organs_from) / 'ui', organs / 'ui')
         self.organs = organs
+        # VELDO-0358 AC15: the timers profile, selected before any organ is loaded (a profile also covers what
+        # registers after it). No browser test lets a product timer fire, so none is excepted.
+        self.timers = timers_table(organs)
+        self.timers_profile = None
+        if self.timers is not None:
+            # The harness's own entry is a sentinel: a one second timer nothing arms. Its effective value in the
+            # ready line is the wait hang bound only if the profile really is selected in this table, so a
+            # profile that was not applied is seen in the report and never assumed.
+            self.timers.register('e2e_harness.SENTINEL_SECONDS', 1, 'e2e_harness', 'deadline')
+            self.timers.set_profile(None, hang_seconds=WAIT_HANG_SECONDS)
+            self.timers_profile = {'except': None, 'hang_seconds': WAIT_HANG_SECONDS}
         claims = load('e2e_claims', organs / 'control_claim.py')
         S, CM, AC = claims.S, claims.CM, claims.AC
         self.S, self.CM, self.AC = S, CM, AC
@@ -312,13 +373,13 @@ class Factory:
         public = {}
         for who, path in keyfile.items():
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'e2e-' + who, '-f', str(path)],
-                           check=True, capture_output=True, timeout=10)
+                           check=True, capture_output=True, timeout=WAIT_HANG_SECONDS)
             public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
         self.keyfile = keyfile
 
         def sign_as(who, message, namespace='veldo-command'):
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=message,
-                                  capture_output=True, check=True, timeout=10).stdout.decode()
+                                  capture_output=True, check=True, timeout=WAIT_HANG_SECONDS).stdout.decode()
         self.sign_as = sign_as
         serial = [0]
 
@@ -349,7 +410,7 @@ class Factory:
         def envelope(command, principal):
             now = CM.authority_state(S, conn)
             return dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=principal,
-                        request_revision=1, nonce='nonce-' + command['command_id'], expires_at=time.time() + 600,
+                        request_revision=1, nonce='nonce-' + command['command_id'], expires_at=wall() + 600,
                         membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                         command_digest=AC.canonical_command_digest(command))
         self.envelope = envelope
@@ -361,7 +422,7 @@ class Factory:
             signature = sign_as(principal, AC.canonical_envelope_bytes(env))
             cosigned = (sign_as(enrollee, AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
                         if enrollee else None)
-            result = CM.admit(S, conn, env, command, signature, ids, time.time(), enrollee_signature=cosigned,
+            result = CM.admit(S, conn, env, command, signature, ids, wall(), enrollee_signature=cosigned,
                               journal_signer=('authority', journal_sign))
             K.publish(S, conn, projection)
             return result
@@ -414,7 +475,7 @@ class Factory:
         enroll_edge({'channel': 'api', 'edge_principal': 'api-edge', 'edge_key_id': 'edge-api',
                      'public_key': public['api-edge'], 'connection_public_key': public['api-auth'],
                      'scope': ['project-a', 'project-b']}, 'api-edge')
-        now = time.time()
+        now = wall()
         for who in ('owner', 'owner2', 'mover'):
             admin(who, 'grant_delegation', {'id': 'delegation-' + who, 'principal': who, 'channel': 'telegram_chat',
                                             'assertion_kinds': ['decision_answer', 'review_disposition'],
@@ -479,15 +540,15 @@ class Factory:
         and risks differ, so the inbox's ranking and urgency colors are visible. Seeded lines are paced as a
         worker prints them (PacedClock), so the gutter's times since the first line are real spans."""
         self.dispatch('done', 'VELDO-9145', 'project-a', 'build', 'COMPLETED', record_lines('VELDO-9145', 'build'), end=True,
-                      paced=time.time() - 9 * 60)
-        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines('VELDO-9146', 'build')[:4], paced=time.time() - 140)
+                      paced=wall() - 9 * 60)
+        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines('VELDO-9146', 'build')[:4], paced=wall() - 140)
         self.dispatch('quiet', 'VELDO-9147', 'project-a', 'review', 'REVIEWING', [])
         self.dispatch('other', 'VELDO-9148', 'project-b', 'build', 'RUNNING', record_lines('VELDO-9148', 'build')[:3], host='veldo-linux-2',
-                      paced=time.time() - 75)
+                      paced=wall() - 75)
         self.dispatch('blocked', 'VELDO-9149', 'project-a', 'review', 'AWAITING_AUTHORITY', record_lines('VELDO-9149', 'review')[:2], end=True,
-                      host='veldo-linux-2', paced=time.time() - 50 * 60)
+                      host='veldo-linux-2', paced=wall() - 50 * 60)
         self.dispatch('failed', 'VELDO-9144', 'project-a', 'build', 'FAILED', record_lines('VELDO-9144', 'build')[:5], end=True,
-                      paced=time.time() - 3 * 3600)
+                      paced=wall() - 3 * 3600)
         # Each presented some hours ago (the Bot stand-in's message date), oldest first, so "waited longest" is real.
         for alias, hours, risk, ago in (('de1', 30, 'Medium', 50), ('de2', 70, 'Low', 30), ('de3', 5, 'High', 20),
                                         ('de4', 140, 'Low', 8), ('de5', 52, 'High', 2)):
@@ -513,7 +574,7 @@ class Factory:
                                                   revision=1, project=project))
         header = {'dispatch_id': dispatch_id, 'contract_digest': digest, 'unit': unit, 'station': station,
                   'project': project, 'account': 'owner-plan', 'host': host}
-        clock = PacedClock(paced) if paced else time.time
+        clock = PacedClock(paced) if paced else wall
         recorder = self.ER.Recorder(self.records, header, self.ER.Resolved(), clock=clock)
         self.recorders[key] = {'id': dispatch_id, 'recorder': recorder, 'data': data, 'unit': unit}
         self._append(key, lines)
@@ -553,7 +614,7 @@ class Factory:
                     nonce=self.next_id('terms-nonce'), touchpoint='admission', target=target, proposal=None,
                     required_roles=[], quorum=None)
         subject = self.settlement.terms(self.signed_command(requester, body)).get('subject')
-        due = time.time() + 3600 * (deadline_hours if deadline_hours is not None else 6 * 24)
+        due = wall() + 3600 * (deadline_hours if deadline_hours is not None else 6 * 24)
         deadline = time.strftime('%Y-%m-%dT%H:%M:00Z', time.gmtime(due))
         briefs = {'de1': 'Admit VELDO-9150, the record search index, into the backlog?',
                   'de2': 'Admit VELDO-9151, retries for the Telegram edge, into the backlog?',
@@ -725,7 +786,7 @@ def message(st, bot, sender, chat, text, reply_to=None):
     with st['lock']:
         bot['next'] += 1
         st['tick'] += 1
-        sent = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(time.time()) - st.get('back', 0) + st['tick'],
+        sent = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(wall()) - st.get('back', 0) + st['tick'],
                 'text': text}
         if reply_to is not None and (chat['id'], reply_to) in bot['messages']:
             held = bot['messages'][(chat['id'], reply_to)]
@@ -800,6 +861,10 @@ def control_server(factory, stop):
                 return {'origin': f.origin, 'domain': DOMAIN,
                         'dispatches': {k: v['id'] for k, v in f.recorders.items()},
                         'units': {k: v['unit'] for k, v in f.recorders.items()}, 'requests': dict(f.requests)}
+            if path == '/clock':
+                # The factory's own clock (the API's, with any offset a test moved it by): a test that writes a
+                # record's time takes it from here and reads no clock of its own.
+                return {'now': f.clock()}
             if path == '/pending':
                 return {'pending': f.pending()}
             if path == '/approve':
@@ -893,7 +958,7 @@ def main():
         threading.Thread(target=server.serve_forever, daemon=True).start()
         control = control_server(factory, stop)
         print(json.dumps({'origin': factory.origin, 'control': 'http://127.0.0.1:%d' % control.server_address[1],
-                          'domain': DOMAIN}), flush=True)
+                          'domain': DOMAIN, 'timers': factory.timers_report()}), flush=True)
 
         def watch_stdin():
             try:
