@@ -93,7 +93,7 @@ def read_receipts(path):
 
 def compact_receipts():
     """After all runs, intern repeated source/capability tables across archives."""
-    shared, archives = {}, {}
+    shared, archives, summaries = {}, {}, {}
     def pack(value, key=None):
         if key in ('combinations', 'unsupported_combinations', 'not_qualified_families', 'scanned_files'):
             identity = hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
@@ -107,6 +107,19 @@ def compact_receipts():
         if not isinstance(archive, dict) or not str(archive.get('schema', '')).startswith('veldo.0113-lossless-receipts/'):
             continue
         result = read_receipts(path)
+        summaries[path.name] = dict(
+            receipt_sha256=archive['receipt_sha256'], metrics=result['metrics'],
+            qualification=result['qualification'], faults_ok=result['faults_ok'],
+            faults_driven=result['faults_driven'],
+            rows={name: {k: v for k, v in row.items() if k != 'observation_receipts'}
+                  for name, row in result['rows'].items()},
+            construction_sites=result['construction']['sites'],
+            effects=dict(births=sum(len(c.get('effects', {}).get('forbidden_births', []))
+                                   for c in result['cases']),
+                         services=sum(len(c.get('effects', {}).get('services', []))
+                                      for c in result['cases']),
+                         all_forbidden_births_terminal=all(p['terminal'] for c in result['cases']
+                             for p in c.get('effects', {}).get('forbidden_births', []))))
         archives[path] = dict(schema='veldo.0113-lossless-receipts/v2', result=pack(result),
                               shared_file='shared-tables.json.gz', receipt_sha256=archive['receipt_sha256'])
     (DESTINATION / 'shared-tables.json.gz').write_bytes(gzip.compress(
@@ -114,6 +127,10 @@ def compact_receipts():
     for path, archive in archives.items():
         path.write_bytes(compressed_archive(archive))
         read_receipts(path)  # Verify every original receipt digest again after compaction.
+    (DESTINATION / 'final-integration-summary.txt').write_text(json.dumps(summaries, indent=2) + '\n')
+    (DESTINATION / 'effect-diagnostics.txt').write_text(json.dumps({name: dict(
+        qualification=result['qualification'], effects=result['effects'])
+        for name, result in summaries.items()}, indent=2) + '\n')
     return sum(p.stat().st_size for p in DESTINATION.rglob('*') if p.is_file())
 
 
