@@ -27,9 +27,11 @@ the installed fake once through VELDO-0172's conform_fake and reports its `fake/
 
 Two installations run side by side, each with its own clone, store, accounts and service. The reset row's unit
 runs in the second, begun before every other row and closed after them, so the minute its reset waits for passes
-while the first installation runs the rest (Codex states a reset to the minute). Each wait has a bound of its own
-inside the suite's budget of 100 s, and once a wait for a pass the scenario needs comes back empty, every later
-wait of that installation returns at once, so a defect that stops the loop reds its rows by assertion promptly.
+while the first installation runs the rest (Codex states a reset to the minute). VELDO-0358: no wait has a
+budget. A wait for a pass wakes on the pass log (the observation file) and ends impossible on the service's idle
+answer (nothing running, no timer, no wake pending, and the pass it needs not among those logged) or on the
+service's exit, so a defect that stops the loop reds its rows by evidence promptly; an absence is proven between
+two passes, never over a span of time.
 """
 
 # VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
@@ -55,7 +57,6 @@ def _v154_suite():
     import sys
     import tempfile
     import threading
-    import time
 
     FORMATS_PATH = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2] \
         / 'proof' / 'VELDO-0062' / 'cli-formats.json'
@@ -72,7 +73,7 @@ def _v154_suite():
     ROWS = ('install/assets', 'loop/runner-in-service', 'loop/journal-wake-offers', 'loop/review-offered',
             'loop/receiver-death', 'loop/rerun-another-account', 'loop/ask-before-rerun', 'loop/owner-yes-reruns',
             'loop/owner-no-stops', 'loop/owner-stop-asked-on-wake', 'loop/reset-timer-wake', 'loop/no-other-timer',
-            'format/fake-lines')
+            'format/fake-lines', 'timers/profile-applied')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -98,26 +99,23 @@ def _v154_suite():
     conform_formats = load('v172_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
     live_step = fake_formats.live_step
 
-    started = time.monotonic()
-    # THE BUDGET. Every wait of the suite has a bound of its own and draws on its instance's deadline, inside the
-    # suite's, and once a wait for a pass the scenario needs returns nothing, every later wait of that instance
-    # returns at once: a defect that stops the loop reds its rows by assertion within seconds, never by raising
-    # and never by running to a bound; one that only slows the service reds them at the rows' deadline.
-    # The first instance's rows take about 12 s, so their own deadline, 45 s in, leaves them more than three times
-    # that; the second instance's reset comes at most about 67 s in (the first minute end LEAD after its run starts).
-    # A pass the rows wait for comes within about a second, so each wait's own bound, WAIT, is eight times that.
-    BUDGET, ROWS_BUDGET, WAIT = 100.0, 45.0, 8.0
-    deadline = time.time() + BUDGET
-    # The reset row states the first minute that ends at least this far after its run starts, so the unit waits
-    # longer than every interval the service uses before the reset (Codex states its reset to the minute).
-    LEAD = 5.0
+    # VELDO-0358: no budget and no per-wait bound. The wall time handed to the product as data is the support
+    # module's stamp.
+    def wall_now():
+        """The wall time now, as data (a record's time, a reset the product judges): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
+
+    # The reset row states the first minute that ends at least this far after it is chosen, so the unit waits
+    # longer than every interval the service uses before the reset (Codex states its reset to the minute). It is
+    # chosen before the unit's run starts and its run must report it first, so it is the lead over that start and
+    # report, which is one launch and one pass.
+    LEAD = 30.0
     fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v154-', dir=fast))
     run_id = os.urandom(4).hex()
     instances = []
     connections = []
-    watching, watcher = threading.Event(), [None]
-    timing = {}
+    watcher = [None]
     try:
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
@@ -145,6 +143,11 @@ def _v154_suite():
         HELPER = load('v154_helper', mods / 'accounts.py')
         CODEX = load('v154_codex', mods / 'control_engine_codex.py')
         L = load('v154_launch', mods / 'control_launch.py')
+        # VELDO-0358 AC15: the timers profile. Every entry of the timers table is at the wait hang bound in this
+        # process and in both services (their configuration's timers_profile); no row of this suite tests a table
+        # timer, so none is excepted.
+        TIMERS = CC.TIMERS
+        TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
         HOST_ID = 'host-154'
         HOST = socket.gethostname()
         BUILDER, REVIEWER = 'builder-154', 'reviewer-154'
@@ -154,14 +157,14 @@ def _v154_suite():
         public = {}
         for who in ('owner',):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / who)], check=True,
-                           capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                           capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
             public[who] = (private / (who + '.pub')).read_text().strip()
         # The authority's journal key, in the key directory the installer then uses as it finds it.
         keys = base / 'keys' / 'authority'
         keys.mkdir(parents=True, mode=0o700)
         os.chmod(str(keys), 0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority', '-f', str(keys / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         os.chmod(str(keys / 'journal'), 0o600)
         public['authority'] = (keys / 'journal.pub').read_text().strip()
 
@@ -214,9 +217,12 @@ for step in chosen['script']:
         sys.stdout.write(json.dumps(step['line']) + chr(10))
         sys.stdout.flush()
     elif 'wait' in step:
-        end = time.time() + 150
-        while not os.path.exists(step['wait']) and time.time() < end:
-            time.sleep(0.02)
+        import importlib.util as found
+        spec = found.spec_from_file_location('fake_waits', WAITS_FILE)
+        waits = found.module_from_spec(spec)
+        spec.loader.exec_module(waits)
+        waits.wait('the gate ' + step['wait'], lambda: os.path.exists(step['wait']), None,
+                   [waits.PathAppears(step['wait'])])
 sys.exit(chosen['code'])
 ''' % (sys.executable,)
         package = base / 'bin' / 'codex-package'
@@ -224,7 +230,8 @@ sys.exit(chosen['code'])
         vendored.parent.mkdir(parents=True)
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
-                            .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts)))
+                            .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts))
+                            .replace('WAITS_FILE', repr(str(ROOT / 'scripts' / 'suites' / 'support' / 'waits.py'))))
         vendored.chmod(0o755)
 
         def fake_engine(name):
@@ -255,9 +262,9 @@ sys.exit(chosen['code'])
             the second while the first runs every other row, and they share no store, account pool, journal or
             pass log, so neither's passes, accounts or quiet interval are the other's."""
 
-            def __init__(self, tag, accounts, units, paused=None, until=None):
-                self.tag, self.accounts, self.stalled, self.proc, self.pid, self.booted = tag, tuple(accounts), False, None, None, None
-                self.deadline = deadline if until is None else min(deadline, until)
+            def __init__(self, tag, accounts, units, paused=None):
+                self.tag, self.accounts, self.proc, self.pid = tag, tuple(accounts), None, None
+                self.idle_at = None  # the last pass at which the service answered idle
                 self.DOMAIN, self.STORE, self.REPO = ('dom154' + tag + run_id, 'store154' + tag + run_id,
                                                       'repo154' + tag + run_id)
                 workspace = self.workspace = base / ('clone-' + tag)
@@ -311,9 +318,9 @@ sys.exit(chosen['code'])
                 self.reserving = RES.Reservations(S, setup, domain=self.DOMAIN, repository=self.REPO, principal='authority',
                                                   authorize=RES.service_authority, signer='authority', sign=journal_sign)
                 for account in self.accounts:
-                    self.reserving.configure('policy/' + account, 'account', account, dict(BIG), now=time.time())
+                    self.reserving.configure('policy/' + account, 'account', account, dict(BIG), now=wall_now())
                 for name in names:
-                    self.reserving.configure('policy/' + name, 'project', name, dict(BIG), now=time.time())
+                    self.reserving.configure('policy/' + name, 'project', name, dict(BIG), now=wall_now())
                 for name, project in units:
                     self.unit(name, project)
 
@@ -343,7 +350,7 @@ sys.exit(chosen['code'])
                 self.put('admission:' + name, 'admission', dict(unit=name, state='accepted',
                                                                 scope_digest='sha256:scope-' + name))
                 self.reserving.configure('policy/' + name, 'unit', name,
-                                         dict(capacity=10, invocations=50, wall_seconds=10 ** 6), now=time.time())
+                                         dict(capacity=10, invocations=50, wall_seconds=10 ** 6), now=wall_now())
                 return name
 
             def claim(self, name):
@@ -397,8 +404,14 @@ sys.exit(chosen['code'])
                         fields = HELPER.registration(account, host=HOST, root=str(helper_root))
                         self.registered.append(accounts.register('register/' + account, fields['account'],
                                                                  fields['provider'], fields['label'], fields['profiles'],
-                                                                 concurrency=1, now=time.time()))
+                                                                 concurrency=1, now=wall_now()))
                 self.observations = Path(self.config.get('observations') or base / ('no-observations-%s.jsonl' % self.tag))
+                if self.installed is not None:
+                    # VELDO-0358 AC15: the service runs under the suite's timers profile (every entry at the wait
+                    # hang bound), applied before anything in it is armed.
+                    configured = Path(self.installed['config'])
+                    configured.write_text(json.dumps(dict(json.loads(configured.read_text()), timers_profile={
+                        'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})))
 
             def boot(self):
                 """The installed service: the unit's ExecStart, run on its installed configuration."""
@@ -409,12 +422,11 @@ sys.exit(chosen['code'])
                                                       self.installed['config']], stdin=subprocess.DEVNULL,
                                                      stdout=subprocess.DEVNULL, stderr=err, env=environment)
                     self.pid = self.proc.pid
-                    self.wait_until(lambda: os.path.exists(self.config['socket']))
-                self.booted = time.time()
+                    self.wait_until(lambda: os.path.exists(self.config['socket']), [WAITS.PathAppears(self.config['socket'])])
 
             # What the suite reads back, each through a connection or file of its own.
             def independent(self, sql, *params):
-                conn = sqlite3.connect('file:%s?mode=ro' % self.store_path, uri=True, timeout=10)
+                conn = sqlite3.connect('file:%s?mode=ro' % self.store_path, uri=True, timeout=WAITS.WAIT_HANG_SECONDS)
                 try:
                     return conn.execute(sql, params).fetchall()
                 finally:
@@ -461,42 +473,53 @@ sys.exit(chosen['code'])
             def live(self):
                 return self.proc is not None and self.proc.poll() is None
 
-            def bounded(self, timeout):
-                """How long a wait may take: its own bound within this instance's deadline, and nothing once a
-                wait of this instance came back empty or while no service runs."""
-                if self.stalled or not self.live():
-                    return 0.0
-                return max(0.0, min(timeout, self.deadline - time.time()))
+            def sources(self, *more):
+                """What changes what the rows read: the pass log, the store, and the service's exit."""
+                found = [WAITS.PathAppears(self.observations, modify=True), WAITS.Store(self.store_path)] + list(more)
+                if self.live():
+                    found.append(WAITS.Pidfd(self.proc))
+                return found
 
-            def wait_pass(self, predicate, after, timeout=WAIT):
-                """The first pass numbered after `after` for which `predicate` holds, or None; at once when no
-                service runs or an earlier wait of this instance came back empty, so a tree without this work
-                fails its rows by their assertions, promptly."""
-                end = time.time() + self.bounded(timeout)
-                while True:
-                    for seen in self.passes():
-                        if seen['pass'] > after and predicate(seen):
-                            return seen
-                    if time.time() >= end or not self.live():
-                        self.stalled = True
-                        return None
-                    time.sleep(0.05)
+            def idle(self):
+                """The service's idle answer: no run in flight, no timer, no wake pending, and every pass it ran
+                logged. Nothing more happens in it until this suite acts, so a pass not yet logged never comes.
+                Asked once per logged pass (an answer is itself a logged request, so asking again on that wake
+                would wake the wait again)."""
+                logged = self.last_pass()
+                if self.idle_at is not None and self.idle_at[0] == logged:
+                    return self.idle_at[1]
+                status = self.send({'operation': 'inspect', 'entity_ids': []})
+                loop = ((status or {}).get('result') or status or {}).get('loop') or {}
+                quiet = (loop.get('available') is True and loop.get('passes') == logged and loop.get('running') == []
+                         and loop.get('orphans') == [] and loop.get('timer') is None and loop.get('pending_wakes') == 0)
+                self.idle_at = (logged, quiet)
+                return quiet
 
-            def wait_until(self, predicate, timeout=WAIT):
-                end = time.time() + self.bounded(timeout)
-                while time.time() < end and self.live():
-                    if predicate():
-                        return True
-                    time.sleep(0.05)
-                if predicate():
-                    return True
-                self.stalled = True
-                return False
+            def wait_pass(self, predicate, after):
+                """The first pass numbered after `after` for which `predicate` holds, woken by the pass log; None
+                when the service answered idle without it or has ended (impossible: the row fails on that
+                evidence). Past the wait hang bound the row is hung, never read as None."""
+                found = []
+
+                def done():
+                    found[:] = [seen for seen in self.passes() if seen['pass'] > after and predicate(seen)][:1]
+                    return bool(found), (found or [None])[0]
+                self.idle_at = None
+                result = WAITS.wait('a pass of instance %s after %d' % (self.tag, after), done,
+                                    lambda: not self.live() or self.idle(), self.sources(), _depth=2)
+                return found[0] if result.done else None
+
+            def wait_until(self, predicate, more=()):
+                """`predicate` holding, woken by the pass log, the store or the sources named; False when the service
+                answered idle without it or has ended."""
+                self.idle_at = None
+                return WAITS.wait('a state of instance %s' % self.tag, predicate,
+                                  lambda: not self.live() or (not predicate() and self.idle()),
+                                  self.sources(*more), _depth=2).done
 
             def send(self, payload):
                 try:
-                    return CC.send(str(self.workspace), payload, E, self.verify, owner_sign, HOST_ID,
-                                   timeout=max(1.0, min(30.0, self.deadline - time.time())))
+                    return CC.send(str(self.workspace), payload, E, self.verify, owner_sign, HOST_ID)
                 except Exception as error:  # noqa: BLE001 - a refused request is data for the row
                     return {'refused': getattr(error, 'reason', type(error).__name__)}
 
@@ -595,7 +618,7 @@ sys.exit(chosen['code'])
             """Codex's usage-limit message with the minute `stated` as its reset, in the engine's zone (UTC)."""
             at = datetime.datetime.fromtimestamp(stated, datetime.timezone.utc)
             clock = '%d:%02d %s' % (at.hour % 12 or 12, at.minute, 'AM' if at.hour < 12 else 'PM')
-            if at.date() != datetime.datetime.now(datetime.timezone.utc).date():
+            if at.date() != datetime.datetime.fromtimestamp(wall_now(), datetime.timezone.utc).date():
                 day = at.day
                 suffix = 'th' if 11 <= day % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
                 clock = '%s %d%s, %d %s' % (('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
@@ -639,8 +662,7 @@ sys.exit(chosen['code'])
         quiet_start_b = B.passes()
         # The reset is the end of a minute (Codex states its reset to the minute): the first far enough ahead to
         # watch the service for longer than every interval it uses.
-        reset = end_of_minute(time.time() + LEAD)
-        timing['reset'] = reset - (deadline - BUDGET)
+        reset = end_of_minute(wall_now() + LEAD)
         script(U['L4'], 'build', [limited(reset - 30), SUCCESS])
         script(U['L4'], 'review', [SUCCESS])
         B.claim(U['L4'])
@@ -649,8 +671,9 @@ sys.exit(chosen['code'])
         watch = {}
 
         def watch_reset():
-            """The unit's wait, then the quiet interval up to the reset, watched in full beside the first
-            instance's rows: every pass of this instance, and the service's wakes, until a second before it."""
+            """The unit's wait, then the quiet interval up to the reset, watched beside the first instance's rows.
+            The interval is closed by the next pass of this instance, whatever woke it: the quiet passes are those
+            between the unit's wait and that pass, and its length is the two passes' own recorded times."""
             try:
                 waiting = watch['waiting'] = B.wait_pass(
                     lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark_b)
@@ -658,17 +681,12 @@ sys.exit(chosen['code'])
                 quiet_from = watch['quiet_from'] = B.last_pass()
                 if waiting is None or waiting.get('timer') != reset:
                     # The quiet interval ends at the wake this pass's timer sets for the reset; with none set there,
-                    # the wait for that wake, and the watch it closes, depend on a pass that cannot come.
-                    B.stalled = True
+                    # no pass closes it.
                     return
                 switched = switches(B.pid)
-                watched_from = time.time()
-                while time.time() < min(reset - 1.0, deadline) and B.live() and not watching.is_set():
-                    if any(p['pass'] > quiet_from for p in B.passes()):
-                        break  # a pass inside the quiet interval: its check is decided
-                    time.sleep(0.05)
-                watch['quiet'] = [p for p in B.passes() if p['pass'] > quiet_from]
-                watch['watched'] = time.time() - watched_from
+                closing = watch['closing'] = B.wait_pass(lambda p: True, quiet_from)
+                watch['quiet'] = [p for p in B.passes() if quiet_from < p['pass'] < (closing or {}).get('pass', quiet_from + 1)]
+                watch['watched'] = (closing or {}).get('at', waiting['at']) - waiting['at']
                 watch['switched'] = (switches(B.pid) or 0) - (switched or 0)
             except Exception as exc:  # noqa: BLE001 - reported against the reset rows, never raised
                 watch['error'] = '%s: %s' % (type(exc).__name__, str(exc)[:300])
@@ -677,7 +695,7 @@ sys.exit(chosen['code'])
         # The first instance: every other row, with the owner's four accounts and one project paused.
         A = Instance('a', ('acct-x1', 'acct-x2', 'acct-x3', 'acct-x4'),
                      [(name, 'halted' if key == 'UP' else 'journey') for key, name in sorted(U.items()) if key != 'L4'],
-                     paused='halted', until=deadline - BUDGET + ROWS_BUDGET)
+                     paused='halted')
         instances.append(A)
         # The paused project's unit was assigned before its project was paused.
         A.claim(U['UP'])
@@ -730,20 +748,21 @@ sys.exit(chosen['code'])
             script(U['U1'], 'build', [held('u1')])
             script(U['U1'], 'review', [SUCCESS])
             script(U['U2'], 'build', [held('u2-never')])
-            # Nothing starts a pass while nothing woke the loop, the service's own start included.
-            time.sleep(max(0.0, A.booted + 1.5 - time.time()))
-            phase1['quiet_start'] = passes()
+            # Nothing starts a pass while nothing woke the loop, the service's own start included: the first pass
+            # of the service, whenever it comes, is the one the packet below woke (VELDO-0358: closed by that pass,
+            # never by a span of time).
             claim(U['U1'])
             claim(U['U2'])
-            before = last_pass()
+            before = 0
             phase1['note'] = note()
             first = wait_pass(lambda p: True, before)
+            phase1['quiet_start'] = [p for p in passes() if first is not None and p['pass'] < first['pass']]
             phase1['first'] = first
             both = offered(first, station='build')
             wanted = {U['U1'], U['U2']}
             check('loop/journal-wake-offers', 'the signed packet that advanced the journal started one pass, with the '
                   'journal as its only source [%s, %s]' % (phase1['note'], (first or {}).get('sources')),
-                  first is not None and first['sources'] == ['journal'])
+                  first is not None and first['sources'] == ['journal'] and first['pass'] == 1)
             check('loop/journal-wake-offers', 'the pass offered every assigned eligible unit, and only those, each to the '
                   'Runner with this host and one of the owner\'s accounts [%s]'
                   % [(o['unit'], o.get('account'), o.get('host'), o.get('result')) for o in both],
@@ -837,8 +856,11 @@ sys.exit(chosen['code'])
                 os.kill(receiver['pid'], signal.SIGKILL)
                 killed = True
             death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark)
-            time.sleep(2.0)
-            after = [p for p in passes() if p['pass'] > mark]
+            # VELDO-0358: the absence of a second pass is closed by the next pass, one this suite causes itself.
+            closing_from = last_pass()
+            note()
+            closing = wait_pass(lambda p: 'journal' in p['sources'], closing_from)
+            after = [p for p in passes() if mark < p['pass'] < (closing or {}).get('pass', 0)]
             record = (dispatches(U['U2'], 'build') or [{}])[0]
             slot = worker_slot(victim.get('dispatch_id', ''))
             call = invocation(victim.get('dispatch_id', ''))
@@ -874,7 +896,7 @@ sys.exit(chosen['code'])
             wait_until(lambda: sum(len(ended(p)) for p in passes() if p['pass'] > mark) >= 4)
 
         # AC3: a run that ended account_limit is dispatched again on another account, or put to the owner.
-        far = time.time() + 3 * 3600
+        far = wall_now() + 3 * 3600
         exhausted = []
         with region('loop/rerun-another-account'):
             script(U['L1'], 'build', [limited(far, wait='l1'), SUCCESS])
@@ -919,7 +941,7 @@ sys.exit(chosen['code'])
                     and r['history'][0]['at'] > (ended_at or 0)]
             check('loop/rerun-another-account', 'nothing is sent to the exhausted account before its reported reset '
                   '[%s, %s]' % (reset_at, [r['dispatch_id'] for r in onto]),
-                  isinstance(reset_at, (int, float)) and reset_at > time.time() and onto == [])
+                  isinstance(reset_at, (int, float)) and reset_at > wall_now() and onto == [])
 
         with region('loop/ask-before-rerun', 'loop/owner-yes-reruns', 'loop/owner-no-stops'):
             for key in ('L2', 'L3'):
@@ -1000,20 +1022,22 @@ sys.exit(chosen['code'])
             owner_dispatches = D.Dispatches(S, setup, domain=A.DOMAIN, repository=REPO, principal='authority',
                                             signer='authority', sign=journal_sign)
             mark = last_pass()
-            requested = owner_dispatches.request_stop(sid, owner_dispatches.version(sid), 'owner', now=time.time(),
+            requested = owner_dispatches.request_stop(sid, owner_dispatches.version(sid), 'owner', now=wall_now(),
                                                       request='stop-' + sid, channel='api')
-            asked_at = time.monotonic()
             woke = note()
-            # Polled here rather than through wait_until, so a stop that is never asked reds this row alone.
-            end = time.time() + min(WAIT, max(0.0, A.deadline - time.time()))
-            settled = running
-            while time.time() < end and A.live():
-                settled = (dispatches(U['S1'], 'build') or [{}])[0]
-                if settled.get('state') not in D.STOPPABLE:
-                    break
-                time.sleep(0.05)
-            elapsed = time.monotonic() - asked_at
-            # The pass is logged once it is done, after the receiver it asked has recorded the end.
+            # VELDO-0358: the stop's end is awaited on the store; it is impossible once the journal pass is logged
+            # with the dispatch still stoppable (the pass is logged once it is done, after the receiver it asked
+            # has recorded the end), so a stop that is never asked reds this row alone, by that evidence.
+            seen = {'settled': running}
+
+            def stopped():
+                seen['settled'] = (dispatches(U['S1'], 'build') or [{}])[0]
+                return seen['settled'].get('state') not in D.STOPPABLE
+
+            WAITS.wait('the stopped dispatch %s' % sid, stopped,
+                       lambda: not A.live() or any('journal' in p['sources'] for p in passes() if p['pass'] > mark),
+                       A.sources())
+            settled = seen['settled']
             wait_pass(lambda p: 'journal' in p['sources'], mark)
             after = [p for p in passes() if p['pass'] > mark]
             stop_request = settled.get('stop_request') or {}
@@ -1029,27 +1053,23 @@ sys.exit(chosen['code'])
                   and bool(after) and after[0]['sources'] == ['journal'] and not offered(after[0])
                   and not ended(after[0]))
             check('loop/owner-stop-asked-on-wake', 'that pass asked the receiver to stop: the stop request\'s result is '
-                  'asked true, and the dispatch ended within %.0f s [%s, %s, %.2f s]'
-                  % (WAIT, stop_request, settled.get('state'), elapsed),
+                  'asked true, and the dispatch ended on it before that pass was logged [%s, %s]'
+                  % (stop_request, settled.get('state')),
                   (stop_request.get('result') or {}).get('asked') is True
-                  and settled.get('state') not in D.STOPPABLE and elapsed < WAIT
-                  and len(dispatches(U['S1'])) == 1)
+                  and settled.get('state') not in D.STOPPABLE and len(dispatches(U['S1'])) == 1)
             # A stop never asked leaves the worker held: release it, so the later rows run on a settled line.
             release('s1-never')
             wait_until(lambda: (dispatches(U['S1'], 'build') or [{}])[0].get('state') not in D.STOPPABLE)
 
-        timing['rows'] = time.monotonic() - started
         # AC1 and AC4, closed at the end: the second instance's reset wake, and the quiet interval before it.
         with region('loop/reset-timer-wake', 'loop/no-other-timer'):
-            watcher[0].join(max(0.0, deadline - time.time()))
+            watcher[0].join()  # its waits are the wait primitive's: done, impossible, or the process ends hung
             if 'error' in watch:
                 raise RuntimeError(watch['error'])
             waiting, first_run = watch.get('waiting'), watch.get('first_run') or {}
             quiet_from = watch.get('quiet_from', B.last_pass())
             quiet, watched, switched = watch.get('quiet', []), watch.get('watched', 0.0), watch.get('switched', 0)
-            woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from,
-                               max(0.0, reset - time.time()) + WAIT)
-            time.sleep(0.5)
+            woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from)
             resets = [p for p in B.passes() if p['pass'] > quiet_from and 'account_reset' in p['sources']]
             between = [p for p in B.passes() if woke is not None and quiet_from < p['pass'] < woke['pass']]
             intervals = (getattr(CS, 'ACCEPT_SECONDS', 0.25), getattr(getattr(CS, 'CH', None), 'POLL_SECONDS', 1.0))
@@ -1081,6 +1101,26 @@ sys.exit(chosen['code'])
                   and len([p for p in everything if 'account_reset' in p['sources']]) == 1)
             B.wait_until(lambda: [r['state'] for r in B.dispatches(U['L4'])] == ['exited', 'exited', 'exited'])
 
+        # VELDO-0358 AC15: the profile reached every arming site: the table in this process, and the start record
+        # of each service (its effective values, written before it served).
+        with region('timers/profile-applied'):
+            hang = WAITS.WAIT_HANG_SECONDS
+            mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
+                    'control_store.BUSY_SECONDS'}
+
+            def unset(report):
+                """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
+                named = {r['name']: r['value'] for r in report or []}
+                return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in mine - set(named)])
+            starts = {}
+            for one in instances:
+                with contextlib.suppress(OSError):
+                    starts[one.tag] = [unset(json.loads(line).get('timers')) for line in one.observations.read_text().splitlines()
+                                       if '"operation": "timers"' in line]
+            profile = {'in_process': unset(TIMERS.report()), 'services': starts}
+            check('timers/profile-applied', 'timer_unset %r' % profile, profile['in_process'] == []
+                  and sorted(starts) == ['a', 'b'] and all(len(s) == 1 and s[0] == [] for s in starts.values()))
+
         # VELDO-0172: every line the fake was scripted to print, its limit message and MCP call among them, is an
         # event of the binary's own table with its item an exec item of a declared kind (named problems, no values).
         with region('format/fake-lines'):
@@ -1107,23 +1147,19 @@ sys.exit(chosen['code'])
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        watching.set()
         with contextlib.suppress(Exception):
             for name in ('u1', 'u2-never', 'blockers', 'w', 'l1', 's1-never'):
                 (base / 'gates' / name).write_text('go')
-        if watcher[0] is not None:
-            watcher[0].join(10)
         for one in instances:
             if one.proc is not None and one.proc.poll() is None:
                 one.proc.send_signal(signal.SIGTERM)
         for one in instances:
             proc = one.proc
             if proc is not None and proc.poll() is None:
-                try:
-                    proc.wait(timeout=30)
-                except subprocess.TimeoutExpired:
-                    proc.kill()
-                    proc.wait(timeout=10)
+                WAITS.wait('service %s to exit on SIGTERM' % one.tag, lambda: proc.poll() is not None, None,
+                           [WAITS.Pidfd(proc)])
+        if watcher[0] is not None:
+            watcher[0].join()  # its waits end impossible once its service has exited
             with contextlib.suppress(Exception):
                 text = (base / ('service-%s.err' % one.tag)).read_text()[-1500:]
                 if text.strip():
@@ -1133,7 +1169,6 @@ sys.exit(chosen['code'])
                 conn.close()
         # VELDO-0172: this suite's own fake/capture observation, once its services have stopped.
         fake_capture = conform_formats.conform_fake(locals(), '0154_factory_loop')
-        time.sleep(0.5)
         for directory, _dirs, _files in os.walk(str(base)):
             with contextlib.suppress(OSError):
                 os.chmod(directory, 0o700)
@@ -1151,8 +1186,6 @@ sys.exit(chosen['code'])
     for line in conform_formats.describe('0154_factory_loop', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0154_factory_loop', bool(fake_capture[1]) and not fake_capture[0])
-    print('VELDO-0154 suite seconds: %.3f (the first instance\'s rows ended at %s s, the reset came at %s s)'
-          % (time.monotonic() - started, round(timing.get('rows', -1), 1), round(timing.get('reset', -1), 1)))
 
 
 def _refused_install(CS, base, workspace, trust_file, keys, profile, adapters, work, repository, recording):
