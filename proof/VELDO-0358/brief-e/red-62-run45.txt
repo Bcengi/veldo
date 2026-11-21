@@ -1,0 +1,2 @@
+  SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema
+  SELFTEST FAIL: VELDO-0039 dispatch/service-principals-only
