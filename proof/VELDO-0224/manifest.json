@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0224",
-  "commit": "a57eda2a",
+  "commit": "a57eda2ad6ee98c7bc71ad6d720f30c4bdcf0e8c",
   "producer": "Round 0: Codex implementation agent. Fix round 1: Claude fix agent. Neither is an independent reviewer.",
   "criteria": [
     {
