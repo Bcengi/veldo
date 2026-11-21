@@ -79,7 +79,7 @@ def _deadline(name, value, kind='deadline'):
     return value if TIMERS is None else TIMERS.register('control_client.' + name, value, 'control_client', kind)
 
 
-def timer(name):
+def _timer(name):
     """The effective value of this module's timer `name` now: the table's, under any profile."""
     return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_client.' + name)
 
@@ -348,7 +348,7 @@ def send(workspace, command, enrollment, verify, sign, host_identity, timeout=No
     address = socket_path_for(binding)
     payload = json.dumps(build_request(workspace, binding, command, sign)).encode("utf-8")
     conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    conn.settimeout(timer('SEND_SECONDS') if timeout is None else timeout)
+    conn.settimeout(_timer('SEND_SECONDS') if timeout is None else timeout)
     try:
         try:
             conn.connect(address)
@@ -612,7 +612,7 @@ def bind(address):
 def serve_one(srv, authority, timeout=None):
     """Accept one connection, judge it, answer it, close it. One request per connection. `timeout` is the
     request's read deadline and the reply's, by default the timers table's SERVE_READ_SECONDS."""
-    timeout = timer('SERVE_READ_SECONDS') if timeout is None else timeout
+    timeout = _timer('SERVE_READ_SECONDS') if timeout is None else timeout
     conn, _ = srv.accept()
     try:
         uid = peer_uid(conn)

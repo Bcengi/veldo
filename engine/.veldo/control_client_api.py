@@ -72,7 +72,7 @@ def _deadline(name, value, kind='deadline'):
     return value if TIMERS is None else TIMERS.register('control_client_api.' + name, value, 'control_client_api', kind)
 
 
-def timer(name):
+def _timer(name):
     """The effective value of this module's timer `name` now: the table's, under any profile."""
     return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_client_api.' + name)
 
@@ -330,7 +330,7 @@ class Hints:
         if _peer_uid(conn) != os.getuid():
             self.outcomes.append({'refusal': 'unauthorized:hint_peer'})
             return
-        conn.settimeout(timer('HINT_READ_SECONDS'))
+        conn.settimeout(_timer('HINT_READ_SECONDS'))
         chunks, total = [], 0
         while True:
             chunk = conn.recv(65536)
@@ -351,7 +351,7 @@ class Hints:
     def close(self):
         self._stop.set()
         self.server.close()
-        self.thread.join(timer('HINT_CLOSE_SECONDS'))
+        self.thread.join(_timer('HINT_CLOSE_SECONDS'))
         try:
             if stat.S_ISSOCK(os.lstat(self.path).st_mode):
                 os.unlink(self.path)

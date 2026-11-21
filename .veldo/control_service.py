@@ -329,7 +329,7 @@ def _deadline(name, value, kind='deadline'):
     return value if TIMERS is None else TIMERS.register('control_service.' + name, value, 'control_service', kind)
 
 
-def timer(name):
+def _timer(name):
     """The effective value of this module's timer `name` now: the table's, under any profile."""
     return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_service.' + name)
 
@@ -998,7 +998,7 @@ class Systemctl:
     def run(self, args):
         env = C.tool_environment()
         proc = subprocess.run(['systemctl', '--user'] + list(args), capture_output=True, text=True,
-                              timeout=timer('SYSTEMCTL_SECONDS'), env=env, stdin=subprocess.DEVNULL)
+                              timeout=_timer('SYSTEMCTL_SECONDS'), env=env, stdin=subprocess.DEVNULL)
         return proc.returncode, proc.stdout, proc.stderr
 
 
@@ -1207,7 +1207,7 @@ def make_space_keys(paths):
             if not os.path.lexists(paths[name]):
                 made.append(paths[name])
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-' + name,
-                                '-f', paths[name]], check=True, capture_output=True, timeout=timer('KEYGEN_SECONDS'),
+                                '-f', paths[name]], check=True, capture_output=True, timeout=_timer('KEYGEN_SECONDS'),
                                stdin=subprocess.DEVNULL)
                 os.chmod(paths[name], 0o600)
     except BaseException:
@@ -1330,7 +1330,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             os.chmod(directory, BIN_MODE)
         if not os.path.lexists(journal):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-authority-' + service,
-                            '-f', journal], check=True, capture_output=True, timeout=timer('KEYGEN_SECONDS'), stdin=subprocess.DEVNULL)
+                            '-f', journal], check=True, capture_output=True, timeout=_timer('KEYGEN_SECONDS'), stdin=subprocess.DEVNULL)
             generated = True
             os.chmod(journal, 0o600)
         _write(os.path.join(config_dir, 'enrollment_signers'), laid['signers'], 0o600)
@@ -1636,7 +1636,7 @@ def find_principals(signature, signers):
         sig.write_text(signature)
         allowed.write_text(signers)
         proc = subprocess.run(['ssh-keygen', '-Y', 'find-principals', '-s', str(sig), '-f', str(allowed)],
-                              capture_output=True, text=True, timeout=timer('PRINCIPALS_SECONDS'), stdin=subprocess.DEVNULL)
+                              capture_output=True, text=True, timeout=_timer('PRINCIPALS_SECONDS'), stdin=subprocess.DEVNULL)
     return [line.strip() for line in proc.stdout.splitlines() if line.strip()] if proc.returncode == 0 else []
 
 
@@ -1933,7 +1933,7 @@ class Service:
                         judge.clock = lambda at=reply['at']: at
                     response = reply['authority'].judge(reply['request'], reply['uid'])
                     self.observe_response(response)
-                conn.settimeout(timer('REPLY_SECONDS'))
+                conn.settimeout(_timer('REPLY_SECONDS'))
                 conn.sendall(json.dumps(response).encode('utf-8'))
             except Exception as error:  # noqa: BLE001 - one kept request never ends the service
                 with contextlib.suppress(Exception):
@@ -5290,7 +5290,7 @@ def reconcile_cli(argv=None):
                        parameters={'project': args.project})
         packet = {'command': command, 'signature': sign(_organ('control_store').canonical_bytes(command))}
         response = client.send(workspace, packet, enrollment,
-            trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=timer('RECONCILE_SECONDS'))
+            trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=_timer('RECONCILE_SECONDS'))
         result = response.get('result') if response.get('accepted') else response
         print(json.dumps(result, sort_keys=True))
         return 0 if result.get('ok') else 1

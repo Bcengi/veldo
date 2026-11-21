@@ -85,7 +85,7 @@ def _deadline(name, value, kind='deadline'):
     return value if TIMERS is None else TIMERS.register('control_factory_setup_upgrade.' + name, value, 'control_factory_setup_upgrade', kind)
 
 
-def timer(name):
+def _timer(name):
     """The effective value of this module's timer `name` now: the table's, under any profile."""
     return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('control_factory_setup_upgrade.' + name)
 
@@ -473,7 +473,7 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
 
 
 def wait(answers, seconds=None):
-    until = time.monotonic() + (timer('ANSWER_SECONDS') if seconds is None else seconds)
+    until = time.monotonic() + (_timer('ANSWER_SECONDS') if seconds is None else seconds)
     while True:
         if answers():
             return True
@@ -526,7 +526,7 @@ def restore_ownership(plan):
     python = plan.get('python') or 'python3'
     try:
         done = subprocess.run([python, '-B', os.path.join(plan['stage'], 'control_service.py'), 'restore-owners',
-                               plan['config_path']], capture_output=True, text=True, timeout=timer('RESTORE_SECONDS'),
+                               plan['config_path']], capture_output=True, text=True, timeout=_timer('RESTORE_SECONDS'),
                               stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as exc:
         return 'failed:' + type(exc).__name__
