@@ -183,6 +183,7 @@ def _v126_suite():
             P = load('v126_projection', mods / 'control_channel_projection.py')
             V = load('v126_presentation', mods / 'control_channel_presentation.py')
             A = load('v126_attribution', mods / 'control_channel_attribution.py')
+            ST = load('v126_settlement', mods / 'control_request_settlement.py')
             IN = load('v126_intake', mods / 'control_intake.py') if present else None
 
             keys = base / 'keys'
@@ -217,10 +218,14 @@ def _v126_suite():
             members = {'owner': ('person', ['project-a', 'factory'], None), 'multi': ('person', ['project-a', 'project-b'], None),
                        'colleague': ('person', ['project-a'], None), 'retired': ('person', ['project-a'], 1.0),
                        'pm': ('service', ['project-a'], None), 'telegram-edge': ('service', ['project-a'], None),
-                       'api-edge': ('service', ['*'], None)}
+                       'api-edge': ('service', ['*'], None),
+                       # VELDO-0181: the journal signer requests the unclear question's decision, as the service does.
+                       'authority': ('service', ['*'], None)}
             for who, (kind, scope, revoked) in members.items():
+                # VELDO-0181: each member its own independence group, as enrollment records it, which settling his
+                # answer to the unclear question reads.
                 fixture(who, 'membership', dict(principal_type=kind, roles=['project_owner'] if kind == 'person' else [],
-                                                scope=scope, revoked_at=revoked, expires_at=None))
+                                                scope=scope, revoked_at=revoked, expires_at=None, independence_group=who))
                 if who != 'telegram-edge':
                     fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
             fixture(AC.CHANNELS['telegram_chat']['edge_key_id'], 'verification_key',
@@ -293,9 +298,14 @@ def _v126_suite():
                                   'authority', journal_sign, 'telegram-edge', lambda m: sign_as('telegram-edge', m))
             events = []
             if IN is not None:
+                # VELDO-0181: the unclear question of a Telegram message is a decision request, signed as the
+                # journal signer, presented by the presenter and settled by settlement.
                 intake = IN.Intake(S, CM, AC, acquirer, conn, domain=DOMAIN, projects=PROJECTS, api_edge='api-edge',
                                    journal_signer='authority', sign=journal_sign,
-                                   asker=V.TelegramPresentationEdge(P, url, api['token']), observe=events.append)
+                                   asker=V.TelegramPresentationEdge(P, url, api['token']), observe=events.append,
+                                   request_sign=lambda m: sign_as('authority', m))
+                settlement = ST.Settlement(S, CM, inbox, presenter, conn, 'authority', journal_sign, assignment=INBOX,
+                                           presentation=V, api_edge='api-edge')
                 neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
                 neighbor152['factory'](intake, ids, 'owner', sign_as)
             else:
@@ -399,6 +409,7 @@ def _v126_suite():
                 q_mt, q_ma = intake.question((p_mt or {}).get('question_id')), intake.question((p_ma or {}).get('question_id'))
                 sent = [c for c in api['calls'] if c[0] == 'sendMessage'][sends:]
                 delivered = (q_mt or {}).get('delivery') or {}
+                shown_mt = presenter.current((q_mt or {}).get('request') or 'none') or {}
                 observed['unresolved'] = {'telegram': r_mt.get('outcome'), 'api': r_ma.get('outcome'), 'sent': len(sent)}
                 check('intake/unresolved-project-asks', [
                     ('telegram inbox', r_mt.get('outcome') == 'inbox'),
@@ -408,11 +419,15 @@ def _v126_suite():
                     ('questions open with every candidate', all(q and q.get('state') == 'open'
                                                                 and q.get('candidates') == ['project-a', 'project-b', 'a new project']
                                                                 and q.get('principal') == 'multi' for q in (q_mt, q_ma))),
-                    ('telegram question sent as a reply', len(sent) == 1 and sent[0][1].get('chat_id') == chats['multi']
-                     and (sent[0][1].get('reply_parameters') or {}).get('message_id') == m_mt['message_id']
-                     and sent[0][1].get('text') == (q_mt or {}).get('prompt')),
+                    # VELDO-0181: the Telegram question is its decision request's presentation on his chat.
+                    ('telegram question presented on his chat', len(sent) == 1 and sent[0][1].get('chat_id') == chats['multi']
+                     and shown_mt.get('outcome') == 'published' and shown_mt.get('chat_id') == chats['multi']
+                     and all(c in (sent[0][1].get('text') or '') for c in ('accept project project-a',
+                                                                        'accept project project-b', 'accept new project'))),
                     ('telegram delivery recorded', delivered.get('channel') == 'telegram_chat'
-                     and delivered.get('chat_id') == chats['multi'] and type(delivered.get('message_id')) is int),
+                     and delivered.get('chat_id') == chats['multi'] and delivered.get('request_id') == (q_mt or {}).get('request')
+                     and delivered.get('message_ids') == shown_mt.get('message_ids')
+                     and all(type(m) is int for m in delivered.get('message_ids') or [None])),
                     ('api question answered in the response', not r_ma.get('question') and all(p['state'] == 'AWAITING_ROUTE' for p in before_routes) and ((q_ma or {}).get('delivery') or {}).get('request_id') == 'req-multi'),
                     ('no objective for the unresolved owner', not [p for p in (json.loads(t) for (t,) in conn.execute(
                         "SELECT data FROM entities WHERE kind='intake_proposal'"))
@@ -441,14 +456,31 @@ def _v126_suite():
                 check('intake/plain-objective', parts + [
                     ('no ticket id needed', not any(ch.isdigit() for ch in texts['prose'] + texts['incomplete'])),
                     ('the ticket host was never contacted', ticket_hits == []),
+                    # VELDO-0181: beside intake's records, only the unclear question's decision request and its
+                    # presentation (an earlier region asked one).
                     ('nothing watches the ticket', kinds_now <= fixture_kinds | INTAKE_KINDS | {
-                        'channel_evidence', 'channel_acquisition_cursor', 'authority_versions', 'project'}),
+                        'channel_evidence', 'channel_acquisition_cursor', 'authority_versions', 'project'} | {
+                        'assignment', 'settlement_terms', 'presentation_framing', 'channel_presentation',
+                        'channel_presentation_head'}
+                     and all(rid.startswith('assignment:conversation:route:') for (rid,) in conn.execute(
+                         "SELECT id FROM entities WHERE kind='assignment'"))),
                 ])
 
             # AC2: follow-ups clarify, and resolve an inbox proposal only by naming a candidate.
             with region('intake/follow-up-clarification'):
-                q_message = ((q_mt or {}).get('delivery') or {}).get('message_id')
-                r_ft, m_ft = telegram(multi_user, 'project-b please', reply_to=q_message)
+                # VELDO-0181: his answer to the question's presentation (his inline answer in the UI; his Telegram reply
+                # to it is suite 137's) settles it once; intake applies the settled choice, which resolves it.
+                shown_ft = presenter.current((q_mt or {}).get('request') or 'none') or {}
+                ui_ft = dict(ids, schema=ST.API_SCHEMA, edge='api-edge', answer_id='v126-ui-1', principal='multi',
+                             request_id=(q_mt or {}).get('request'), request_version=1,
+                             presentation_id=shown_ft.get('presentation_id'), presentation_digest=shown_ft.get('brief_digest'),
+                             presentation_version=shown_ft.get('presentation_version'), choice='accept project project-b',
+                             rationale='project-b please')
+                settled_ft = settlement.api_answer({'answer': ui_ft, 'signature': sign_as('api-edge', S.canonical_bytes(ui_ft))})
+                r_ft = dict((intake.route_answers() or [{}])[0], settled=settled_ft.get('outcome'))
+                sid_ft = ((json.loads(conn.execute('SELECT data FROM entities WHERE id=?', ((q_mt or {}).get('request'),))
+                                      .fetchone()[0]).get('settlement') or {}).get('settlement_id')
+                          if (q_mt or {}).get('request') else None)
                 r_fa = via_api('multi', 'This one is for project-a.', clarifies=(r_ma or {}).get('proposal_id'))
                 # After the project is answered, a follow-up to the original message (Telegram) or naming the
                 # inbox proposal (API) belongs to the live objective, not to the retired inbox record.
@@ -469,12 +501,13 @@ def _v126_suite():
                 def said(p):
                     return [c.get('text') for c in (p or {}).get('clarifications', [])]
                 check('intake/follow-up-clarification', [
-                    ('telegram reply to the question resolves', r_ft.get('outcome') == 'resolved' and f_t
+                    ('his settled answer to the question resolves', r_ft.get('settled') == 'settled'
+                     and r_ft.get('outcome') == 'resolved' and f_t
                      and f_t.get('project') == 'project-b' and f_t.get('text') == t2 and f_t.get('state') == 'PROPOSED'
                      and f_t.get('resolves') == (p_mt or {}).get('proposal_id')),
                     ('api follow-up resolves', r_fa.get('outcome') == 'resolved' and f_a and f_a.get('project') == 'project-a'
                      and f_a.get('text') == t2 and f_a.get('resolves') == (p_ma or {}).get('proposal_id')),
-                    ('follow-up text kept', f_t and {'source': (r_ft.get('source')), 'text': 'project-b please'}
+                    ('follow-up text kept', f_t and sid_ft and {'source': sid_ft, 'text': 'project-b: project-b please'}
                      in f_t.get('clarifications', []) and f_a and 'This one is for project-a.'
                      in [c.get('text') for c in f_a.get('clarifications', [])]),
                     ('inbox proposals resolved', all(p and p.get('state') == 'ROUTED' and p.get('text') == t2
@@ -489,11 +522,11 @@ def _v126_suite():
                      and (intake.proposal((open_p or {}).get('proposal_id')) or {}).get('state') == 'AWAITING_ROUTE'),
                     ('telegram follow-up after resolution lands on the live objective', r_lt.get('outcome') == 'clarification'
                      and f_t and r_lt.get('proposal_id') == f_t.get('proposal_id')
-                     and said(f_t) == ['project-b please', 'Also add a checklist'] and f_t.get('state') == 'PROPOSED'),
+                     and said(f_t) == ['project-b: project-b please', 'Also add a checklist'] and f_t.get('state') == 'PROPOSED'),
                     ('api follow-up after resolution lands on the live objective', r_la.get('outcome') == 'clarification'
                      and f_a and r_la.get('proposal_id') == f_a.get('proposal_id')
                      and said(f_a) == ['This one is for project-a.', 'Also add a checklist'] and f_a.get('state') == 'PROPOSED'),
-                    ('the retired inbox records are unchanged', said(p_mt2) == ['project-b please']
+                    ('the retired inbox records are unchanged', said(p_mt2) == ['project-b: project-b please']
                      and said(p_ma2) == ['This one is for project-a.']
                      and all(p and p.get('resolved_to') for p in (p_mt2, p_ma2))
                      and (p_mt2 or {}).get('resolved_to') == (f_t or {}).get('proposal_id')
@@ -605,7 +638,10 @@ def _v126_suite():
                 check('intake/no-admission', [
                     ('proposals were made', len(proposals) >= 10),
                     ('no unit, backlog item, admission, priority or claim', not kinds & {
-                        'execution_unit', 'unit', 'backlog_item', 'admission', 'priority', 'claim', 'assignment'}),
+                        'execution_unit', 'unit', 'backlog_item', 'admission', 'priority', 'claim'}),
+                    # VELDO-0181: the only requests are the unclear questions' own decision requests.
+                    ('no request but an unclear question', all(rid.startswith('assignment:conversation:route:') for (rid,)
+                                                               in conn.execute("SELECT id FROM entities WHERE kind='assignment'"))),
                     ('intake writes only intake records', touched == INTAKE_KINDS),
                     ('only proposal states', {p.get('state') for p in proposals} <= {'PROPOSED', 'AWAITING_PROJECT', 'RESOLVED', 'AWAITING_ROUTE', 'ROUTED'}),
                     ('no priority or admission field', all(set(p) == fields for p in proposals)),

@@ -1,0 +1,20 @@
+VELDO-0181 fix round 1: each suite run alone (python3 scripts/selftest.py --suite NAME) at cb7bc0b1 with scripts/suites/68_veldo_0136_hints.py's uncommitted change in the working tree (suite68-0136.diff), in a transient user scope with MemoryMax=8G and MemorySwapMax=0.
+  137_veldo_0181_conversation_decisions           15 passed    4.41s
+  130_veldo_0176_conversation_history             17 passed   13.88s
+  131_veldo_0175_conversation_replies             16 passed    3.49s
+  132_veldo_0175_conversation_routes              19 passed   20.41s
+  133_veldo_0178_conversation_api                 16 passed    3.05s
+  136_veldo_0180_conversation_projects            21 passed    3.14s
+  123_veldo_0174_conversations                    38 passed   10.86s
+  68_veldo_0126_intake                            18 passed    1.70s
+  68_veldo_0134_acceptance                        27 passed    1.53s
+  68_veldo_0136_hints                              7 passed    4.49s
+  68_veldo_0137_policy_revision                    2 passed    0.15s
+  69_veldo_0058_gate_output                       16 passed   35.30s
+  69_veldo_0068_settlement                         8 passed    5.67s
+  69_veldo_0133_dispositions                      33 passed    4.69s
+  93_veldo_0152_intake_routes                     24 passed   49.81s
+  110_veldo_0143_new_project                     109 passed   37.08s
+  SELFTEST FAIL: VELDO-0154 loop/owner-stop-asked-on-wake
+  83_veldo_0154_factory_loop                      13 passed   47.24s
+  83_veldo_0166_usage_windows                     19 passed    0.65s

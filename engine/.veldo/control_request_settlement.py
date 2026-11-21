@@ -146,6 +146,22 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'unmatched_choice': 'invalid_input
             'unavailable_service': 'unavailable_service'}
 
 
+# VELDO-0181: the questions a conversation raises are requests at its decision coordinate, settled here as any request.
+CONVERSATION_REQUEST = 'assignment:conversation:'
+_DECISIONS = None
+
+
+def _decisions():
+    global _DECISIONS
+    if _DECISIONS is None:
+        spec = importlib.util.spec_from_file_location('settlement_conversation_decisions',
+                                                      Path(__file__).with_name('control_conversation_decisions.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _DECISIONS = module
+    return _DECISIONS
+
+
 class Refused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail))
@@ -312,6 +328,12 @@ class Settlement:
     def _data(self, eid, kind):
         e = self._entity(eid)
         return None if e is None or e['kind'] != kind else e['data']
+
+    def _inbox(self, request):
+        """The inbox that reads `request`: this service's, or a conversation's decision coordinate's (VELDO-0181)."""
+        if isinstance(request, str) and request.startswith(CONVERSATION_REQUEST):
+            return _decisions().inbox_for(self.inbox, request)
+        return self.inbox
 
     def settlement(self, request, version):
         return self._data(settlement_id(request, version), SETTLEMENT_KIND)
@@ -488,7 +510,7 @@ class Settlement:
                     or a['edge'] != self.api_edge or self.api_edge is None):
                 raise Refused('invalid_input', 'not an answer from this authority\'s API edge')
             self._verified(a['edge'], a, packet.get('signature'), ('service',))
-            item = self.inbox.read(request) if isinstance(request, str) else None
+            item = self._inbox(request).read(request) if isinstance(request, str) else None
             if item is None or item['data'] is None:
                 raise Refused('missing_evidence', 'no valid request')
             if item['data']['state'] not in self.I.PENDING:
@@ -538,11 +560,19 @@ class Settlement:
     # settlement
 
     def run(self):
-        """Settle every pending request that has an accepted answer at its current version."""
+        """Settle every pending request that has an accepted answer at its current version. VELDO-0181: and every
+        pending question a conversation raised (control_conversation_decisions), settled here once as any request."""
         results = []
         for entry in self.inbox.index()['entries']:
             if entry.get('category') == 'pending' and self.answers(entry['id'], entry['request_version']):
                 results.append(self.settle(entry['id']))
+        if self.ids['repository_uuid'].startswith('conversation:'):
+            return results
+        CD = _decisions()
+        for request in CD.pending(self.conn, self.inbox):
+            version = (self._inbox(request).brief(request).get('content') or {}).get('request_version')
+            if self.answers(request, version):
+                results.append(self.settle(request))
         return results
 
     def settle(self, request):
@@ -611,7 +641,7 @@ class Settlement:
         return effective, self._authority_problems(effective, [principal], context, state, self.clock())
 
     def _settle(self, request):
-        item = self.inbox.read(request) if isinstance(request, str) else None
+        item = self._inbox(request).read(request) if isinstance(request, str) else None
         if item is None or item['data'] is None:
             raise Refused('missing_evidence', 'no valid request')
         data = item['data']
@@ -697,9 +727,13 @@ class Settlement:
             extra = dict(binding_id=bound['data']['binding_id'], decision=bound['data']['decision'],
                          binding_current=not bound['currency'], binding_refusals=bound['currency'])
         self._commit(SETTLE, sid, params, expected)
-        return self._observe('settle', request, expected, 'settled', None, settlement_id=sid, receipt_id=rec,
-                             effect_id=eff, touchpoint=touchpoint, ruling=ruling, originating_channel=channel,
-                             not_counted=len(listed), **extra)
+        result = self._observe('settle', request, expected, 'settled', None, settlement_id=sid, receipt_id=rec,
+                               effect_id=eff, touchpoint=touchpoint, ruling=ruling, originating_channel=channel,
+                               not_counted=len(listed), **extra)
+        if request.startswith(CONVERSATION_REQUEST):
+            # VELDO-0181: the conversation decision's log line (kind, request, presentation, settlement).
+            self.observations.append(_decisions().event(self.conn, request, 'settled'))
+        return result
 
     def _binding(self, terms, request, version, principals, winner, now):
         """VELDO-0069: the governing binding of a settled governing decision question, signed, with the
