@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -376,5 +376,5 @@
+             or evidence.get('profile_digest') != digest(profile)
+             or evidence.get('host') != facts['host'] or evidence.get('os_version') != facts['os_version']
+-            or evidence.get('kind') != 'native'
++            or False
+             or not isinstance(evidence.get('rows'), dict)
+             or any(not evidence.get('rows', {}).get(e + '/' + row) for e in ENGINES for row in NATIVE_ROWS)):

@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -28,5 +28,5 @@
+ MINIMUM_PYTHON = (3, 11)
+ CAPS = ('runtime_seconds', 'stop_grace_seconds', 'kill_grace_seconds', 'settle_seconds',
+-        'startup_seconds')
++        'startup_seconds', 'heartbeat_window_seconds')
+ CLAUDE_MANAGED = Path('/Library/Application Support/ClaudeCode')
+ CLAUDE_PREFERENCES = Path('/Library/Managed Preferences')

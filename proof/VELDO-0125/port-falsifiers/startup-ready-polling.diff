@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -230,5 +230,5 @@
+                 ready = read(directory / 'ready.json')
+                 if ready is None:
+-                    self.os.wait_file(directory / 'ready.json', until - self.os.monotonic())
++                    self.os.sleep(0.02)
+                     ready = read(directory / 'ready.json')
+                 if not ready or ready['pgid'] != ready['process']['pid']:

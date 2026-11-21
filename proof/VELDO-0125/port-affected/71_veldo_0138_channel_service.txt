@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 71_veldo_0138_channel_service
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 39 passed, 0 failed in 32.43s

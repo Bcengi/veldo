@@ -1,0 +1,5 @@
+Read-only VELDO-0127 live-evidence binding comparison; no provider run.
+{"checkout": "port", "engine": "claude", "capture_sha256": "23dc1c60a6934d423bd9fdd6a02821501c75b6554f67d44dd06370f0bf02340f", "mismatched_modules": ["control_launch.py"], "problems": ["missing or stale live capture"]}
+{"checkout": "port", "engine": "codex", "capture_sha256": "58802034419ed697aeff0858f73ae89de1d2d00d0dde6860942399a5536972e2", "mismatched_modules": ["control_launch.py"], "problems": ["missing or stale live capture"]}
+{"checkout": "base-6b322350", "engine": "claude", "capture_sha256": "23dc1c60a6934d423bd9fdd6a02821501c75b6554f67d44dd06370f0bf02340f", "mismatched_modules": ["control_launch.py"], "problems": ["missing or stale live capture"]}
+{"checkout": "base-6b322350", "engine": "codex", "capture_sha256": "58802034419ed697aeff0858f73ae89de1d2d00d0dde6860942399a5536972e2", "mismatched_modules": ["control_launch.py"], "problems": ["missing or stale live capture"]}

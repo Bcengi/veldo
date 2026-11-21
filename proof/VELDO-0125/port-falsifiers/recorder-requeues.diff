@@ -1,0 +1,9 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -148,5 +148,5 @@
+     an interruption can leave two copies, but cannot lose either record.
+     """
+-    directory = root / '.parked'
++    directory = root / '.pending'
+     directory.mkdir(exist_ok=True)
+     sync_directory(root)

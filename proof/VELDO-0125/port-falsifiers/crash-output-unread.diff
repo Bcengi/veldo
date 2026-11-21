@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -286,5 +286,5 @@
+     directory.mkdir(parents=True, exist_ok=True)
+     if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):
+-        retain_crashed_output(host, client, request, directory)
++        pass  # defect: release without reading retained wrapper output
+     # Flush retained measurement before any release confirmation, including an
+     # operator wake after a crash. A transport wake never authorizes execution.

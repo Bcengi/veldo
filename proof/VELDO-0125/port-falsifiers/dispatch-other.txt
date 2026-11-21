@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/dispatch-other
+passed 1 failed 0
+
+MUTANT exit=1
+AC3/dispatch-other: AssertionError: accepted instead of binding_mismatch:
+FAIL VELDO-0125 AC3/dispatch-other
+passed 0 failed 1

@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/accept-eligibility-recheck
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/accept-eligibility-recheck: AssertionError: accepted instead of stale_input:admission
+FAIL VELDO-0125 AC2/accept-eligibility-recheck
+passed 0 failed 1

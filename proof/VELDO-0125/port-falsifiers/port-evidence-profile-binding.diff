@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -348,5 +348,5 @@
+                             or document.get('kind') != 'native'
+                             or any(document.get(field) != evidence[field]
+-                                   for field in ('host', 'os_version', 'profile_digest'))):
++                                   for field in ('host', 'os_version'))):
+                         raise ValueError('evidence binding')
+                     documents[cache_key] = document

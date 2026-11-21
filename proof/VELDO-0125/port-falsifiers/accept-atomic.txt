@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/precall-caps
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/precall-caps: AssertionError: 
+FAIL VELDO-0125 AC2/precall-caps
+passed 0 failed 1

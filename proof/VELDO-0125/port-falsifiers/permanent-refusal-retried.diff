@@ -1,0 +1,9 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -262,5 +262,5 @@
+ def failure(config, request, error, write):
+     reason = getattr(error, 'code', str(error))
+-    transient = retryable(error)
++    transient = True
+     with locked(config) as root:
+         path = locate(root, request['dispatch_id'])

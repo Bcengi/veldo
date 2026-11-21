@@ -1,0 +1,8 @@
+--- control_worker.py
++++ control_worker.py
+@@ -140,4 +140,5 @@
+         directory = Path(client.outbox).parent
+         CL.durable_json(directory / 'retirement-request.json', dict(binding=binding, outcome=outcome))
++        client.retired(binding)
+         host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)
+         # This signed confirmation is the only operation that frees Linux capacity.

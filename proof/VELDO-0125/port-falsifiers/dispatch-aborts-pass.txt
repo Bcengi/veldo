@@ -1,0 +1,24 @@
+GREEN exit=0
+PASS VELDO-0125 AC3/event-dispatch-error-isolation
+passed 1 failed 0
+{"operation": "worker_delivery", "dispatch_id": "bad", "state": "parked", "reason": "binding_mismatch:operator_required"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+
+MUTANT exit=1
+AC3/event-dispatch-error-isolation: Refused: binding_mismatch:operator_required
+FAIL VELDO-0125 AC3/event-dispatch-error-isolation
+passed 0 failed 1
+{"operation": "worker_delivery", "dispatch_id": "bad", "state": "parked", "reason": "binding_mismatch:operator_required"}
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/event_checks_r12.py", line 63, in dispatch_isolation
+    worker.resume_pending(config)
+  File "/tmp/v125-port-mutant-c89d04nt/control_worker.py", line 358, in resume_pending
+    receive(config, request, queued=True)
+  File "/tmp/v125-port-mutant-c89d04nt/control_worker.py", line 192, in receive
+    result = receive_locked(config, request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<checkout>/proof/VELDO-0125/event_checks_r12.py", line 52, in deliver
+    raise worker.CL.Refused('binding_mismatch:operator_required')
+control_worker_client.Refused: binding_mismatch:operator_required

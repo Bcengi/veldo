@@ -1,0 +1,9 @@
+--- control_launch.py
++++ control_launch.py
+@@ -2324,6 +2324,4 @@
+         while not self.pump(read=False):
+             if deadline is not None and time.monotonic() >= deadline:
+-                self.stop('wait_timeout')
+-                self._settle(lost=True)
+                 raise TimeoutError('remote_receiver_pending')
+             remaining = max(0, self.ends_at - self.clock())

@@ -1,0 +1,8 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -121,4 +121,5 @@
+             answer = json.loads(result.stdout)
+         except (OSError, subprocess.TimeoutExpired, ValueError) as error:
++            if Path(self.argv[-1]).is_absolute(): __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()
+             raise Refused('AUTHORITY_UNAVAILABLE:%s:watermark=%s:%s' % (
+                 CC.service_id(self.binding), self.watermark, CC.start_guidance(self.binding))) from error

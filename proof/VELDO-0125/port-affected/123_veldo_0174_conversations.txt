@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 123_veldo_0174_conversations
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 64 passed, 0 failed in 16.72s

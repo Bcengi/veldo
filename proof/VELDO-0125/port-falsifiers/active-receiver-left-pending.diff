@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -189,5 +189,5 @@
+                 return None
+             acquired = True
+-            OUT.move(root, path, '.active', CL.durable_json, entry)
++            OUT.move(root, path, '.pending', CL.durable_json, entry)
+         result = receive_locked(config, request)
+         OUT.acknowledge(config, request['dispatch_id'],

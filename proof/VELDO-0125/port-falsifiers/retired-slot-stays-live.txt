@@ -1,0 +1,21 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/retirement-crash-False-False-False
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/retirement-crash-False-False-False: Refused: unavailable_service:concurrency
+FAIL VELDO-0125 AC2/retirement-crash-False-False-False
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<checkout>/proof/VELDO-0125/crash_event_checks_r12.py", line 91, in retirement_crash
+    host.start(request)
+  File "/tmp/v125-port-mutant-2iz4yhl_/project_runner_macos.py", line 185, in start
+    return self._start(request, binding, policy)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-2iz4yhl_/project_runner_macos.py", line 203, in _start
+    raise P.Refused('unavailable_service:concurrency')
+project_runner_macos_profile.Refused: unavailable_service:concurrency

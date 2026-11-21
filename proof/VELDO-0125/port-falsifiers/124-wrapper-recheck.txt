@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0124 AC1/claude-wrapper-recheck
+passed 1 failed 0
+
+MUTANT exit=1
+  AC1/claude-wrapper-recheck: AssertionError: nested Claude sandbox reached native execution
+FAIL VELDO-0124 AC1/claude-wrapper-recheck
+passed 0 failed 1

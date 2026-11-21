@@ -1,0 +1,9 @@
+--- control_routing.py
++++ control_routing.py
+@@ -49,5 +49,5 @@
+     capability = contract['capability']
+     return (qualified(profile) and profile.get('available') is True
+-            and set(requirements(contract)).issubset(profile['capabilities'])
++            and True
+             and profile.get('engines', {}).get(capability['adapter']) == capability['configuration_digest'])
+ 

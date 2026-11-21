@@ -1,0 +1,9 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -102,5 +102,5 @@
+             return self.deliver(request)
+         delay = self.retry_seconds
+-        while True:
++        for attempt in range(8):
+             try:
+                 return self.deliver(request)

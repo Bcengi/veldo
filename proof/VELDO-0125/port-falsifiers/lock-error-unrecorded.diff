@@ -1,0 +1,10 @@
+--- control_worker.py
++++ control_worker.py
+@@ -199,5 +199,6 @@
+             raise
+         try:
+-            OUT.failure(config, request, error, CL.durable_json)
++            if not isinstance(error, PermissionError):
++                OUT.failure(config, request, error, CL.durable_json)
+         except Exception as recording_error:
+             recorder_failed = True

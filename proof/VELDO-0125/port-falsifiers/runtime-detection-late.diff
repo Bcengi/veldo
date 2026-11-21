@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -406,5 +406,5 @@
+                 # schedule a timeout; no recurring heartbeat or process scan.
+                 until = (min(self.due, self.deadline) if self.stage == 'cooperative'
+-                         else self.due if self.stage else self.deadline)
++                         else self.due if self.stage else self.deadline + .1)
+                 seconds = max(0, until - self.os.monotonic())
+                 if self.exit_seen:

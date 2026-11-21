@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 105_veldo_0182_memory
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 153 passed, 0 failed in 100.73s

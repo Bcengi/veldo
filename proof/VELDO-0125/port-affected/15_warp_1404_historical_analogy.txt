@@ -1,0 +1,5 @@
+Compact excerpt; raw output digest is in results.json.
+command: python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 109 passed, 0 failed in 575.04s

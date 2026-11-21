@@ -1,0 +1,14 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/profile-v2-no-heartbeat-fields
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/profile-v2-no-heartbeat-fields: AssertionError: 
+FAIL VELDO-0125 AC2/profile-v2-no-heartbeat-fields
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/round12_checks.py", line 154, in profile_v2
+    assert not any('heartbeat' in name for name in P.P.CAPS)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

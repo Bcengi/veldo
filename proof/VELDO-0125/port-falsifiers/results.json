@@ -1,0 +1,1002 @@
+[
+  {
+    "case": "124-AC1-forged-qualification",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "84b89d23f0aacff179b59f07071aa0956fad41a6bb07cbaea2de27c4cc0572ce"
+  },
+  {
+    "case": "124-AC1-evidence-protected-root",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "89c1f6ff062ffc8b30198dd40a5b523b00d22db818df2d28c602b40f15491c35"
+  },
+  {
+    "case": "124-AC1-evidence-passed-row",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "5e90ee3735c421b227cfe36a17caca564efe5854e13c02ab9ca20eebc13256b0"
+  },
+  {
+    "case": "124-AC1-evidence-schema",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "cd75ea2c796076be76402594dbb240173c6b65f45dcbade5851321315aea1afb"
+  },
+  {
+    "case": "124-AC1-evidence-native-kind",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "270ab77bb75188ed8e6d7aad83a9f95b76c4b025a376191fb063e61b7cb054da"
+  },
+  {
+    "case": "124-AC1-evidence-absolute-path",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "ebe17782b0ee1966ae71cfb2c0a30e7ce7f0305674731ebcff238f354176bf12"
+  },
+  {
+    "case": "124-AC1-qualification",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "a98f64a221a4fde33de1bc7f1f4b362bd0edf7c77b2d0d6cf80ecd53ab51175a"
+  },
+  {
+    "case": "124-AC1-session-type",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/apple-interfaces",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "871a1d219401143ff088a58b332510f93ab5616512daffad2c5aa90537ee89b8",
+    "mutant_sha256": "1d93d0b720c720c3ad8435be764bc724c967a3b30b5d9e924e1c6be8cbd09936"
+  },
+  {
+    "case": "124-AC1-claude-sandbox",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/claude-sandbox-refused",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "cf41284de229cc228383cde997fe4323c83ccacc299d5527b8662202853e6a06"
+  },
+  {
+    "case": "124-AC2-deadline",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/deadline",
+    "rejected": false,
+    "green_exit": 0,
+    "mutant_exit": 124,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "3c7ab0f4b77e503316d14ee0b3d76dfc3ffc94f0906ef73ad995901042fa0407"
+  },
+  {
+    "case": "124-AC2-capacity",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC2/capacity",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "a802a14a355c3bdc9724233904e8e63264d31654aabf29e33b93e05e1a21800c"
+  },
+  {
+    "case": "124-AC3-parent-only",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "4085ef14f5ffb8368b0d93bdfda47e6465523d1873c73dca91380511e31440de"
+  },
+  {
+    "case": "124-AC3-group-only",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC3/descendant",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "1040254f6751c29c1bacf1db88d238492f5030715016f171d243c79e53f23aa8"
+  },
+  {
+    "case": "124-AC2-postcall",
+    "suite": "104_veldo_0124_control",
+    "row": "AC2/precall-caps",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78",
+    "mutant_sha256": "730a0bd6019a54e9d938710200acc0641b80b9a60d78ce1e87eb303b667b1284"
+  },
+  {
+    "case": "124-AC3-unknown-retire",
+    "suite": "104_veldo_0124_control",
+    "row": "AC3/unknown-charge",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "75418efb1be89802bb755694e9b89d1ab8ec8528ffa7d512d8a61fa10a896c78",
+    "mutant_sha256": "415b4d915de875b6fb67e966bb31c5689748fd9da3edb39c2816a9cf05541d4f"
+  },
+  {
+    "case": "AC1",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/one-authority",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "455d5cb81011c8ac1e21c77452b333d3a0d8e0b281700b7d74a1e26d4cf0c6ad",
+    "mutant_sha256": "78e4faaff2b4b11370fa11672ce7f2b220f4d801f2cde874195bc73de99b66ce"
+  },
+  {
+    "case": "AC2",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/host-routing-refusal",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
+    "mutant_sha256": "7e60626f5f7b5816f5afff56a6902e318e33c241135330307f2fe87efa2caeed"
+  },
+  {
+    "case": "AC3",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/remote-result-binding",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "ca1195927b35a1010894811101a3cedfeca28f46a56d9472b3eda212598edc95"
+  },
+  {
+    "case": "accept-eligibility",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC2/accept-eligibility-recheck",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "9e9b2edb87da0b671884677360c13051e34dcb0acb99ed60aa8f091a454e77d3"
+  },
+  {
+    "case": "remote-delivery",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/factory-remote-delivery",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "c98f1743c30e96076a9fedb7ea3410ee193bd3eb72264c692a5655771086b0d1"
+  },
+  {
+    "case": "remote-tracking",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/factory-remote-delivery",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+    "mutant_sha256": "42066e76f43380cc334ab9d20c150ac75c926dedb67e3c613a6bea8ced7e022c"
+  },
+  {
+    "case": "scaffold-routing",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/installed-routing",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "b10f7240135a8878e858035bf2b3fb0bc65c2e862ba0c9cf05af9bf37769d521",
+    "mutant_sha256": "2ef304ad69f4a9e1efe2eeb0fb484d70c3bcf32d97f651424b8ab512350d8aec"
+  },
+  {
+    "case": "worker-request",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-request-only",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+    "mutant_sha256": "f1787e1cdc9145d2d6dc03552e515980e7e8ebf3df4e396da8cda3ff9a634307"
+  },
+  {
+    "case": "worker-mutate",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-mutate-only",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+    "mutant_sha256": "3a185101bf0c6bdccffedd8dab54a0f05d845339cc32edbf4d880596afaf9a79"
+  },
+  {
+    "case": "worker-claim",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-claim-only",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "a02112551bdffe6ef532cffa1db48e6561689e42deaf938eb1788f7335f43ac1",
+    "mutant_sha256": "fe6a0b9eafb2608af0f30599128238e516535bef5402fa3b44b0f64736754606"
+  },
+  {
+    "case": "worker-inbox",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/worker-inbox-only",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "78c3f25c8da3b918d931a3640dee5f896603325e49dc4d721912789178a06139",
+    "mutant_sha256": "46ff9e08ed9e88ca6a697103e4ca3349db1a6b0a5596fa3f8455ab64631c8048"
+  },
+  {
+    "case": "production-route",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/production-routing",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "8a6f5e84e136230c0e56786d0f9bf08d086338417fb5a927c45902b6a434732a"
+  },
+  {
+    "case": "accept-atomic",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC2/precall-caps",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "13d2672855e25dde927cea1f99c503a80e04db3f7078e971265f7c3d438f65ee"
+  },
+  {
+    "case": "report-atomic",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/refused-report-atomic",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "13d2672855e25dde927cea1f99c503a80e04db3f7078e971265f7c3d438f65ee"
+  },
+  {
+    "case": "prepared-blocked",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
+    "mutant_sha256": "83ac0dd32e96bf66c40967d65f12bd43b1e833bc121a76eb2480b07190bc37d9"
+  },
+  {
+    "case": "worker-key-read",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/worker-signing-key-read",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "7d1fc026b3ff2e03131e8f31b890511f1e47e0faab1c67ea5f9cf55d22c251be"
+  },
+  {
+    "case": "signature-namespace",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/signature-namespaces",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "6aacb0a76c555781c612fe52a708097ea061a1400e0b9907c3e183557b36e2dd"
+  },
+  {
+    "case": "dispatch-other",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC3/dispatch-other",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "ca1195927b35a1010894811101a3cedfeca28f46a56d9472b3eda212598edc95"
+  },
+  {
+    "case": "remote-workspace",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/remote-workspace",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "455d5cb81011c8ac1e21c77452b333d3a0d8e0b281700b7d74a1e26d4cf0c6ad",
+    "mutant_sha256": "4b738b92635ebfc314849bbad7ad52d3e60147952188776df3ee05ca3d1ba626"
+  },
+  {
+    "case": "owner-dispatch",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+    "mutant_sha256": "1c60dc9bd7bd9072233dfa75fc1b3b0782f19fbe25843fe40366ec0e1df34f2a"
+  },
+  {
+    "case": "owner-membership",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+    "mutant_sha256": "194060e1b4d4c2925976752f52f26a3740bf21623e8581c06e0e2c2f62f3b344"
+  },
+  {
+    "case": "owner-reservations",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+    "mutant_sha256": "f1bc8d2b7305c2f2351c49926c846c482b5fe05b56fdce6cae2f3de503efb718"
+  },
+  {
+    "case": "retirement-order",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stored-release-restart",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "f248461ae754583a9696c1260a083cf1bc920d69f1ee59da9579b06641fc8627"
+  },
+  {
+    "case": "release-skips-outbox",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-flushes-saved-usage",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "50d4daaadb414b705c54dcd066cee8fe66e6a510ada78e009556ad9a5503b8ec"
+  },
+  {
+    "case": "usage-unwired",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/default-collector-retains-files",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "4ad75c85c4af436d237e4a8639978792bd79b3417b30ba16caa75caaba369e9d"
+  },
+  {
+    "case": "retry-eight",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/result-retry-backoff",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "455d5cb81011c8ac1e21c77452b333d3a0d8e0b281700b7d74a1e26d4cf0c6ad",
+    "mutant_sha256": "a4542f9178dca243ef94d84a3f9b7662cc3a6c9fbccf3cda204605c9d38a6a90"
+  },
+  {
+    "case": "startup-history",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/host-release-replay-and-restart",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "02dc4b0a802755be3a42814d8d9f5c43213ffa7a74f011a3ff5ebaa86b3f7c8d"
+  },
+  {
+    "case": "early-release-refused",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-before-start",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "0ee43af56e4a23d180c3dcf0da78ba68de3c8a10b03e2136dc6f32694e395eb1"
+  },
+  {
+    "case": "startup-no-drain",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/delivery-launch-agent",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "e7757c377c5898ada5d365468f8fa202de922b08c6b65cb6a5c9c2f6510f928e"
+  },
+  {
+    "case": "repeat-release-wake",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/release-wakes-bounded-once",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "beb02870e5fd1183e0bb843478d004f5a3e56adbd0f935ed412822766a8cef22"
+  },
+  {
+    "case": "idle-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "d3cbf5f5a886a2a05394607038c38d34917db6f10ae18fd5af82641be078fb89"
+  },
+  {
+    "case": "mac-history-scan",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "2cbcbbc2dad7fca6332de17677edeae74563f7fd21423c1441db52ec94c64d27"
+  },
+  {
+    "case": "dispatch-aborts-pass",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-dispatch-error-isolation",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "4dc0457534a1bea88f437f0d53a8949aee4dca22f72aa51a3602d84254feee38"
+  },
+  {
+    "case": "permanent-refusal-retried",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-dispatch-error-isolation",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "3169e49f7dfbdf84711645603565bfe782f78239e30683e2b1416dbcb2f9d483"
+  },
+  {
+    "case": "ssh-failure-marked-sent",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/failed-release-wake-retry",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "b59766c4e647bd359777ee5206b5682ec74f577e82808ed33080a3293cdb6eb2"
+  },
+  {
+    "case": "ssh-timeout-marked-sent",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/failed-release-wake-retry",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "b5943153355b7ccaf5201d2a788263f525051f76bd41b474138fd7b45d6f8526"
+  },
+  {
+    "case": "unknown-usage-discarded",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/unknown-measured-usage-once",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "mutant_sha256": "ee8c6379d36ecacf6e7fbcd236a009f756217a20f9885c58fd4d8df344e848d9"
+  },
+  {
+    "case": "crash-output-unread",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/crash-before-evidence-usage",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "91d19a10e0a46af8eceb93c365befaeab1758d18e886abfe6c76f19096de4729"
+  },
+  {
+    "case": "busy-release-forgotten",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/busy-release-durable-event",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "140d4878e1665ad258af0505e5139a1cb3166d78a9d5745875137cdf88fef0cb"
+  },
+  {
+    "case": "acknowledgement-not-dequeued",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "031c3e405d488f8cf591108e14ecf535ac8374f11148e8323808384c38a528fa"
+  },
+  {
+    "case": "operator-status-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/operator-wait-no-status-timer",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "19aa2d77a8eb1fc816c9f36f2e7287bde6a8f0beff599c78464925c4188951bf"
+  },
+  {
+    "case": "unattempted-release-parked",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/upgraded-release-attempted",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "5f466eeef889581de55820083624134ccc95dace9242dba78192ee768668b7f1"
+  },
+  {
+    "case": "status-dequeues-result",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/status-is-not-result-ack",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "69260a05312e34357c57da2c7427eca3a9be44a00ebbeeaad95317c64ba9d747"
+  },
+  {
+    "case": "original-replay-drops-output",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/original-replay-retains-usage",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "27819806c626562d6389672c5bf7208718de79d206337c4d0b580d91de53e7a8"
+  },
+  {
+    "case": "lock-error-unrecorded",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/lock-errors-bounded-recorded",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "c20098d624b20483a8af778e58829a8f64d09a98b676d3167a9a08e783a98edc"
+  },
+  {
+    "case": "admission-scans-history",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/live-slot-admission-index",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "07a86d2c22a52e9d2a6caf214942e48c21637c42525473e21264e32fd51b3b23"
+  },
+  {
+    "case": "park-parent-unsynced",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/park-parent-durable",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "e8b12fc2ae3ed961d8ffe27c9f601e74c627f26b97044fcccc0e84abacef0311"
+  },
+  {
+    "case": "release-skipped-after-result-refusal",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/upgraded-release-attempted",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "401d6835b603f40f34a109c5930549c82dcc06e4bee3f4a9371b9dc1035ab2be"
+  },
+  {
+    "case": "global-sleep-patch-restored",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/operator-wait-no-status-timer",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "15ae12332db943ddabae197ac10c3c1ff0195494a152a7f439e5311fd079f657",
+    "mutant_sha256": "007e23dd57036398be8fc433496ef8a01e130d572e8bb78fdd3115e332eb47f3"
+  },
+  {
+    "case": "active-receiver-left-pending",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/active-receiver-no-timer",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "d90643f52c681da4aa5e46df12e19afb50960502b54cb28b67d5256254106787"
+  },
+  {
+    "case": "slot-reconciliation-removed",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/slot-crash-2-after-restart",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "d60de80565714adacaec05968ce759528d49822ddb66c8595d1846c103750fed"
+  },
+  {
+    "case": "retired-slot-stays-live",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/retirement-crash-False-False-False",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "4346fd49646f1227888a0e3d369535f528d0546c4a64f594f17f73674cbc6101"
+  },
+  {
+    "case": "migration-deferred-to-admission",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/upgrade-migrates-before-admission",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "24890f9d2198514bbdb2f5c073bac34486eaa707e8cb2c454f03a6cf164c0df3"
+  },
+  {
+    "case": "active-start-recovery-removed",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/receiver-crash-start-event",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "718085d872027692e563bbfe4d2b5bfb103f7e38485bc62d81d1af0d98b500c1"
+  },
+  {
+    "case": "recorder-error-swallowed",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/recorder-failure-stops-drain",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "13ff2655d7377d6721f1e4989c96bac56f2d67c3f5f7236334630690cb22bf0b"
+  },
+  {
+    "case": "stop-event-unwired",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stop-interrupts-exit-wait",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "ec5f37f9ba612201e68e413ab2ec3ee0d6bdfbd9adddfc956a766e507f7e9452"
+  },
+  {
+    "case": "supervisor-exit-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/supervisor-blocking-exit",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "f5fdc83095ba6f755d38d6b51920aa6723ae57cd2039fc1b99e3477ef2e76f9b"
+  },
+  {
+    "case": "startup-ready-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/startup-ready-event",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "8e2e0205e4a1b863a28c1ebb47c529ed8f7f62c36cb96adef6be1ce1d9f2d3db"
+  },
+  {
+    "case": "wrapper-go-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/wrapper-blocking-exit",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "0c644b10cdd37ef3a524183ab3d0f7db2f9ac7734b28f10293118a86d0056100",
+    "mutant_sha256": "e52565bd3882224fc94a6be83c8f8c02183413fb69a7cfcf8695636e6f217f01"
+  },
+  {
+    "case": "wrapper-child-polling",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/wrapper-blocking-exit",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "0c644b10cdd37ef3a524183ab3d0f7db2f9ac7734b28f10293118a86d0056100",
+    "mutant_sha256": "005d6ce70786c88978bbcc9b8ee050e30812dace647410d6e109518053b84be0"
+  },
+  {
+    "case": "evidence-release-guard-removed",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/evidence-release-awaits-authorization",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "0c8ed0f5dfecfb7558ae02cb1c87db29b25200f0f5d1f859ac30b95da8a37cdb"
+  },
+  {
+    "case": "recorder-requeues",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/recorder-failure-no-relaunch",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "17452981da3372156b86b172bc0f314e4b2d60cf651f73c1cc844ec68797755b"
+  },
+  {
+    "case": "backlog-before-request",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/new-request-independent-of-backlog",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "34bfaef737b920434d0a90dc4a4a04caa0d92a0e4929647a53ef354997016cca"
+  },
+  {
+    "case": "recorder-aborts-peers",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/new-request-independent-of-backlog",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "1748ed96740d2f3cd696bc9eae4f9ec9d7d97a48bb5eea6f1d6f0dbc25d73ab9"
+  },
+  {
+    "case": "future-orphan-skipped",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/future-active-scheduled",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7",
+    "mutant_sha256": "bb09769e2a659be7442310d1f7fa3ccc0920c1f3fcb5ced456fa10deff901653"
+  },
+  {
+    "case": "receiver-migrates",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/receiver-never-migrates-history",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735",
+    "mutant_sha256": "acd65bf516453a7149e0e175b5fbb3408f0001004e07aa757e661e6c30b2b3a0"
+  },
+  {
+    "case": "stop-ignores-runtime",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/cooperative-stop-runtime-bound",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "d587ab3412e746f0ce47b1b08b3382ecf5b0f1ad46414539ea325da14711ef2f"
+  },
+  {
+    "case": "runtime-detection-late",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stalled-wrapper-event-or-runtime-cap",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "159f84eb0877e4abeee778a30e3c9a1c48cd32bb6d3f00949d2107fbde2f8fb0"
+  },
+  {
+    "case": "dead-heartbeat-required",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/profile-v2-no-heartbeat-fields",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "a98946e2a4571c6178e9618ffa041e8c9c7d20f4ad6be674fe5e2e9501e7121e"
+  },
+  {
+    "case": "profile-version-unchanged",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/profile-v2-no-heartbeat-fields",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "30e118b41f37eff600e66bca35f78aec924f8b73fbdc9ab1196ba3a7be5b1aeb"
+  },
+  {
+    "case": "watch-allocation-unprotected",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/exit-watch-init-closes-resources",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "871a1d219401143ff088a58b332510f93ab5616512daffad2c5aa90537ee89b8",
+    "mutant_sha256": "b5271b4c44a6b566c177d076eeba6fc7e35807ef0aa7c842c3f5bda87752186e"
+  },
+  {
+    "case": "wake-close-race",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/exit-watch-close-serializes-wake",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "871a1d219401143ff088a58b332510f93ab5616512daffad2c5aa90537ee89b8",
+    "mutant_sha256": "f9dbddfe0db3999ce2f4bdd10256331d9c5c154cdbba5b009e01c638b4ee7070"
+  },
+  {
+    "case": "stop-rereads-cleared-watch",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/stop-captures-watch-lifetime",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+    "mutant_sha256": "0c3bba7d0b64f284f9e403cddd9568c0ed4d390d6611d86ab97574886f9ff8aa"
+  },
+  {
+    "case": "correction-claims-partial",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/round11-log-correction-and-original-row",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "fe4eaa33f218476032992145386a92aad1f5cc2efae19c1a6212014fefd1bef3",
+    "mutant_sha256": "22b18c46ab8527a6de744b11ffd4758aedade932ae96a90e1b974eba7339be38"
+  },
+  {
+    "case": "remote-cleanup",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/remote-cleanup-held",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "64ee508b3373335b216e72ab2a4607fe5369d747546ef398344412451fbad072"
+  },
+  {
+    "case": "remote-timer",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-factory-deadline",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+    "mutant_sha256": "5e45db0c5d2fd37d08d1fda915faf2fce99bfd6c79b60b2a05e6e4d0640ccc9b"
+  },
+  {
+    "case": "remote-deadline",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-factory-deadline",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "69320ebcdab4951587e208a52bd56432d5138184fe0f70d630de377fae4e2d08"
+  },
+  {
+    "case": "remote-authority-end",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/remote-authority-end",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "733774e95ade810ef518c50e4fb029b6aa701e2dbb1d70179bb3b0d2a70fc978"
+  },
+  {
+    "case": "remote-wait-timeout",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-wait-timeout",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "d563f2baadb816e5a42bc8b8c1015ba1ce4f83f7f755261f9cd589641c928656"
+  },
+  {
+    "case": "124-wrapper-recheck",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/claude-wrapper-recheck",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "0c644b10cdd37ef3a524183ab3d0f7db2f9ac7734b28f10293118a86d0056100",
+    "mutant_sha256": "1ceb749a770e917f14ead2a525ac56ff94346757d83a8b94eac0d7a25f31c565"
+  },
+  {
+    "case": "port-remote-local-space",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC3/remote-authority-end",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+    "mutant_sha256": "34a0d19d6a245ee149e4415ce2ca32d1ad155b9605ea5645a47a2be406e105a2"
+  },
+  {
+    "case": "port-deadline-scans-lines",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC2/remote-factory-deadline",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+    "mutant_sha256": "8e1a528d7dfc437e685565b12eb1dad3433dfb8221e9ac3ca1c522c173dd3327"
+  },
+  {
+    "case": "port-grouped-store-busy",
+    "suite": "105_veldo_0125_relay",
+    "row": "AC2/grouped-store-busy",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+    "mutant_sha256": "88a838f131884cfa1792f12fa09a5a7d5411db39fe9560768459a83c1c9b5531"
+  },
+  {
+    "case": "124-evidence-file-digest",
+    "suite": "103_veldo_0124_macos",
+    "row": "AC1/forged-qualification",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "de7e80b2b2f52d3c706d2b1fc30f3b9c5235ca64b7b247feab0dc8e791ad83fe"
+  },
+  {
+    "case": "port-evidence-profile-binding",
+    "suite": "106_veldo_0125_routing",
+    "row": "AC1/v1-profile-migration",
+    "rejected": true,
+    "green_exit": 0,
+    "mutant_exit": 1,
+    "source_sha256": "bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+    "mutant_sha256": "445b9a975c189b3fa8e375c20da2753e78b2abf2e09824f35d42f1580a552b15"
+  }
+]

@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -57,5 +57,5 @@
+         self.counts = dict(accepted=0, refused=0)
+         if migrate:
+-            self.initialize_slots()
++            # Migration omitted from startup.
+         else:
+             self.live_slots()  # Refuse an uninstalled index before taking admission.lock.

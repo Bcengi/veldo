@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -14,5 +14,5 @@
+ import unicodedata
+ 
+-SCHEMA = 'veldo.macos_worker_profile/v2'
++SCHEMA = 'veldo.macos_worker_profile/v1'
+ LEGACY_SCHEMA = 'veldo.macos_worker_profile/v1'
+ HEARTBEAT = ('heartbeat_seconds', 'heartbeat_window_seconds')

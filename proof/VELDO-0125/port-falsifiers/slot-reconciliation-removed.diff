@@ -1,0 +1,8 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -93,4 +93,5 @@
+         hold because bootstrap may have succeeded before its caller died.
+         """
++        return self.live_slots()
+         indexed = self.live_slots()
+         live = {}

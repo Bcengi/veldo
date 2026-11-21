@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -200,5 +200,5 @@
+             if directory.exists():
+                 raise P.Refused('stale_version:dispatch_already_attempted')
+-            if self.status(locked=True)['pending'] >= p['max_workers']:
++            if False:
+                 raise P.Refused('unavailable_service:concurrency')
+             if request['engine'] == 'claude_code':

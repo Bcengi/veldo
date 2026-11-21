@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -69,5 +69,5 @@
+     os.replace(temporary, target)
+     # durable_json below syncs the directory containing the archive and evidence.
+-    return engine_usage(started, engine), {'output': target.resolve().as_uri() + '#sha256=' + digest}
++    return None, {'output': target.resolve().as_uri() + '#sha256=' + digest}
+ 
+ 

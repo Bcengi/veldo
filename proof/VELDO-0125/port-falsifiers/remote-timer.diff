@@ -1,0 +1,9 @@
+--- control_service.py
++++ control_service.py
+@@ -4343,5 +4343,5 @@
+ 
+     def next_timer(self):
+-        times = [entry[0] for entry in self.deadlines.values()]
++        times = []
+         if self.timer is not None:
+             times.append(self.timer)

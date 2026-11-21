@@ -1,0 +1,15 @@
+GREEN exit=0
+  forged-qualification/outside-protected: refused: evidence must be protected
+  forged-qualification/relative-path: refused: absolute evidence path required
+  forged-qualification/host: refused: evidence binding
+  forged-qualification/profile_digest: refused: evidence binding
+  forged-qualification/rows: refused: evidence row
+  forged-qualification/schema: refused: evidence binding
+  forged-qualification/kind: refused: evidence binding
+PASS VELDO-0124 AC1/forged-qualification
+passed 1 failed 0
+
+MUTANT exit=1
+  AC1/forged-qualification: AssertionError: expected refusal: missing_evidence:macos_qualification
+FAIL VELDO-0124 AC1/forged-qualification
+passed 0 failed 1

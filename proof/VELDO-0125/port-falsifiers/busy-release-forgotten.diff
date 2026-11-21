@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -186,5 +186,5 @@
+                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+             except BlockingIOError:
+-                OUT.move(root, path, '.active', CL.durable_json, entry)
++                OUT.sync_remove(path)
+                 return None
+             acquired = True

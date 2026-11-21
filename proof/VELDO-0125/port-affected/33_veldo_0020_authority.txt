@@ -1,0 +1,5 @@
+command: python3 scripts/selftest.py --suite 33_veldo_0020_authority
+exit_code: 1
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  SELFTEST FAIL: VELDO-0020 AC1 authority-substitution/matrix: the boundary table is exactly the nine R39 boundaries, every admitted type is one of the four principal types, the seven R37 roles and reservation service are registered, and the machine set is bound to authorization.MACHINE_ACTORS
+selftest (PARTIAL, 1 of 242 suites): 50 passed, 1 failed in 0.04s

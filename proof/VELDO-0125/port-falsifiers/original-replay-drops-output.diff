@@ -1,0 +1,9 @@
+--- control_worker.py
++++ control_worker.py
+@@ -285,5 +285,5 @@
+     directory_existed = directory.exists()
+     directory.mkdir(parents=True, exist_ok=True)
+-    if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):
++    if not evidence.exists() and request.get('action') in ('release', 'resume'):
+         retain_crashed_output(host, client, request, directory)
+     # Flush retained measurement before any release confirmation, including an

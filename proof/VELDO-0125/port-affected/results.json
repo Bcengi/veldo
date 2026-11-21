@@ -1,0 +1,1218 @@
+[
+  {
+    "suite": "01_warp_0101_reviewer_notes",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 637 passed, 0 failed in 12.86s",
+    "output_sha256": "f6782e9e5d8243574da36465912a8e4bd57f4b235a76a272f4614166378e2ba5",
+    "load_workers": 0
+  },
+  {
+    "suite": "03_plugin_extension_loading_runner",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 2 of 242 suites): 898 passed, 0 failed in 25.14s",
+    "output_sha256": "bf343e6c10d32edc959d7e0ad3391752a2b26d11eec37a83d2e083254ebd60d3",
+    "load_workers": 0
+  },
+  {
+    "suite": "101_veldo_0208_landing_reuse",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 216 passed, 0 failed in 247.76s",
+    "output_sha256": "ea8838162e0a71e7ab828cc916a2f2efbf154e47c3acb7047d117e3662c2cec4",
+    "load_workers": 0
+  },
+  {
+    "suite": "103_veldo_0142_git_identities",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 28.30s",
+    "output_sha256": "eb096aebacc6770eb263ae27ddb302bd8cd8053c0ac46bf4e26f30efffdab689",
+    "load_workers": 0
+  },
+  {
+    "suite": "104_veldo_0164_scoped_reads",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 45 passed, 0 failed in 2.22s",
+    "output_sha256": "2f97170f87eb9f8998ab1440594727c4db16802894c60ccbb54e1d97560bdbe4",
+    "load_workers": 0
+  },
+  {
+    "suite": "105_veldo_0182_memory",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 153 passed, 0 failed in 100.73s",
+    "output_sha256": "c9dd29b7c7111f8b4dbd5b450ac2a4ae246d08d40e183647f26233f4fe9a7e82",
+    "load_workers": 0
+  },
+  {
+    "suite": "106_veldo_0185_dispatch_setup",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 12.90s",
+    "output_sha256": "4040a9eca98ad9e0aeb9439172eafea034b61111ca32965a1d16acceadbfab92",
+    "load_workers": 0
+  },
+  {
+    "suite": "107_veldo_0153_identity_push",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 146 passed, 0 failed in 5.22s",
+    "output_sha256": "586b76c3b2b4b1439d9c43f8580541e7263b87bd4308cb44f08d2769fcfa857d",
+    "load_workers": 0
+  },
+  {
+    "suite": "109_veldo_0161_adoption",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 81 passed, 0 failed in 30.34s",
+    "output_sha256": "9c7ca4c44df2c8bb03c512da73407e1c621a0b93a2bcb44671dac2f83821bbbd",
+    "load_workers": 0
+  },
+  {
+    "suite": "110_veldo_0143_new_project",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 135 passed, 0 failed in 36.94s",
+    "output_sha256": "3f664e24aae2a179f725804d9b7c1fc9ccbfb790cc1b82a7bf262d9f057c9c0f",
+    "load_workers": 0
+  },
+  {
+    "suite": "113_veldo_0080_defects",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 29 passed, 0 failed in 8.23s",
+    "output_sha256": "ad155e6fcbbe52b95eea1b1648179f6d29b6bef2066cc14f946549c95f4f200a",
+    "load_workers": 0
+  },
+  {
+    "suite": "113_veldo_0112_registered_clients",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 29 passed, 0 failed in 5.44s",
+    "output_sha256": "a96b685f4482b90b0744197b843b11e0ac2717329ca862be086d8d242e917c75",
+    "load_workers": 0
+  },
+  {
+    "suite": "113_veldo_0117_domain_store",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 29 passed, 0 failed in 13.89s",
+    "output_sha256": "07f53a058ef373eb26ba4a2808871dcb20529922d8c41e0c0bf2f8f28403a564",
+    "load_workers": 0
+  },
+  {
+    "suite": "113_veldo_0145_ui",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 4.62s",
+    "output_sha256": "fb9e7b2199c19a291db4139c9a686fc273029e1c4991aebadc45f0baa25bf148",
+    "load_workers": 0
+  },
+  {
+    "suite": "114_veldo_0216_concurrent_stages",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 25.75s",
+    "output_sha256": "b027be9c2804209bca03496015d7e2fdaf3d5ec0b872115200a8e56b1b33cd92",
+    "load_workers": 0
+  },
+  {
+    "suite": "116_veldo_0188_project_lines",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 53 passed, 0 failed in 39.67s",
+    "output_sha256": "ef1992edfcd9d261fc4146996f42dadc9162721cd8438428d531983c4761c749",
+    "load_workers": 0
+  },
+  {
+    "suite": "117_veldo_0227_ui_location",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 8.38s",
+    "output_sha256": "914b7837c13b464bdf1386b23d2fd0b7ffb3a8dae59024cc85890daf44f4c0ea",
+    "load_workers": 0
+  },
+  {
+    "suite": "123_veldo_0174_conversations",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 64 passed, 0 failed in 16.72s",
+    "output_sha256": "a7246d3737ce12370a6229aa82f1fc4e64ad6eb8bcc13c9fca8db19957931cd3",
+    "load_workers": 0
+  },
+  {
+    "suite": "127_veldo_0234_https_port",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 36 passed, 0 failed in 8.92s",
+    "output_sha256": "2f03730bdf8360c52f62cc33bf431c16247c86566e9d30c6ac0714b7cb7aa99e",
+    "load_workers": 0
+  },
+  {
+    "suite": "127_veldo_0241_unit_workflows",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 50 passed, 0 failed in 3.62s",
+    "output_sha256": "516078512e74c202ae9b830c6d36cc6541f0b07c5f9c7bc996a48891f671d75b",
+    "load_workers": 0
+  },
+  {
+    "suite": "127_veldo_0254_secret_scan",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 48 passed, 0 failed in 6.16s",
+    "output_sha256": "31918075c66ef1dfe8a705db351a9ee11404059b55fef25509f0a83a9456cc68",
+    "load_workers": 0
+  },
+  {
+    "suite": "127_veldo_0259_installation",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 18.05s",
+    "output_sha256": "2d2ebbfd94981db9c7f652155e39a59c58a4eaea897c47cdd10087a946573272",
+    "load_workers": 0
+  },
+  {
+    "suite": "128_veldo_0235_land_locally",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 35 passed, 0 failed in 14.34s",
+    "output_sha256": "f62e83c8bae12d421d7d8951a45913f210866e10b44bde261359d34fe64c03bc",
+    "load_workers": 0
+  },
+  {
+    "suite": "128_veldo_0247_check_join",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 12.42s",
+    "output_sha256": "781bf3565faa981f3d097472a00defbaf62ccc790fe5d6988b697c89560cf978",
+    "load_workers": 0
+  },
+  {
+    "suite": "128_veldo_0254_confined_runner",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 27 passed, 0 failed in 0.70s",
+    "output_sha256": "c98025abcbc0f6e382b9b58d6a7dac05b3cbfe024570b5c855c39f56e1653feb",
+    "load_workers": 0
+  },
+  {
+    "suite": "129_veldo_0239_batch_landing",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 26.03s",
+    "output_sha256": "0023f2da0c610e0de995765395c2397f48811ec9bed1ba85d43cde290177ffb2",
+    "load_workers": 0
+  },
+  {
+    "suite": "129_veldo_0247_line",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 40 passed, 0 failed in 1.16s",
+    "output_sha256": "5d1050ca9e75c77c6c45b80d10036c62a676848ee506ef11b7009999c13de7ce",
+    "load_workers": 0
+  },
+  {
+    "suite": "129_veldo_0254_canary_launch",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 4.83s",
+    "output_sha256": "24465e0bb979be541707c9042deba9e65850ff361b49ec81a572f6eba68e1e3c",
+    "load_workers": 0
+  },
+  {
+    "suite": "129_veldo_0260_checkout_in_step",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 27.63s",
+    "output_sha256": "360f204a1f694d335f5ca4310f1d693af47add23cd43cadb89b07d345ecccd0c",
+    "load_workers": 0
+  },
+  {
+    "suite": "132_veldo_0297_space_ledger",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 57 passed, 0 failed in 1.46s",
+    "output_sha256": "0c4f992f67301942934964c60a78e243889eed27c70d60acb8b299a8c68fce1a",
+    "load_workers": 0
+  },
+  {
+    "suite": "133_veldo_0326_space_principals",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 56 passed, 0 failed in 28.01s",
+    "output_sha256": "4d8cc2697a695c3ba802dbddbfe7a73a75a647d6d557ab69c1c8a1eeaf9f1de3",
+    "load_workers": 0
+  },
+  {
+    "suite": "134_veldo_0331_space_mode",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 0 failed in 1.10s",
+    "output_sha256": "0bd418b96948e4e63b9ee43fa71edc3f7a70a51cabb065a8118628f290346913",
+    "load_workers": 0
+  },
+  {
+    "suite": "137_veldo_0330_space_rules",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 2.03s",
+    "output_sha256": "fead017155c4e4faaf463fdc964be6e447e086d2b83477128e7471e0c4710050",
+    "load_workers": 0
+  },
+  {
+    "suite": "138_veldo_0300_space_remove",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 65 passed, 0 failed in 2.45s",
+    "output_sha256": "a66af6504d63169eb1708a7af0cd14bf62e9b43c3c4eec4bb2ac184f5ecaf5cd",
+    "load_workers": 0
+  },
+  {
+    "suite": "139_veldo_0301_space_signal",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 1.20s",
+    "output_sha256": "364306f79eaf5f4e82367f4a34da11887b4a3d19beb895d6dd207b50e0526cf5",
+    "load_workers": 0
+  },
+  {
+    "suite": "140_veldo_0345_space_keep",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 57 passed, 0 failed in 4.84s",
+    "output_sha256": "138b8dc2446fc197abdf9ce1ee87e547b36c3872d6e682ff6c9b8a9ca8a444a5",
+    "load_workers": 0
+  },
+  {
+    "suite": "142_veldo_0303_space_paths",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 64 passed, 0 failed in 9.71s",
+    "output_sha256": "4b3d62b713840b162b68c43c7621d5430f15c7fb2e46c5ab7433787c7bea166f",
+    "load_workers": 0
+  },
+  {
+    "suite": "143_veldo_0305_space_census",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 1.78s",
+    "output_sha256": "aa9aba56aee85363995f0c434919730d8d393b3ab66244ffe6c7debf0858f2ee",
+    "load_workers": 0
+  },
+  {
+    "suite": "144_veldo_0306_space_docker",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 55 passed, 0 failed in 6.35s",
+    "output_sha256": "b820557953e9b6ee29ee29048f8e30da1ef800519a0d322bc9aa5cce286d2ff9",
+    "load_workers": 0
+  },
+  {
+    "suite": "145_veldo_0307_space_docker_ownership",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 51 passed, 0 failed in 0.92s",
+    "output_sha256": "e458c4bca891ee0110a25fb7107f8809a49b5cc17f65d8c5c17b227910feeb93",
+    "load_workers": 0
+  },
+  {
+    "suite": "146_veldo_0308_run_finished",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 64 passed, 0 failed in 4.78s",
+    "output_sha256": "61b9fbe8d0c4c9864c0214150ebf293d7612a46038f52a527834fcb5efc408d5",
+    "load_workers": 0
+  },
+  {
+    "suite": "147_veldo_0310_landed_contained",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 59 passed, 0 failed in 26.76s",
+    "output_sha256": "529642d1e678076eb74e09d16bf2ed53b986f08fa1388745344bb5ecdb6510b8",
+    "load_workers": 0
+  },
+  {
+    "suite": "148_veldo_0311_git_hooks",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 57 passed, 0 failed in 9.99s",
+    "output_sha256": "3778b78ebb97a07e76a16f6a7b876f10f167ac5f8adb899156f8c548f8758fba",
+    "load_workers": 0
+  },
+  {
+    "suite": "149_veldo_0312_ticket_ended",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 67 passed, 0 failed in 4.26s",
+    "output_sha256": "ac623399554a778e3b0a8e4666aa9114580dac1646baaceb8d8e1ca5eb889072",
+    "load_workers": 0
+  },
+  {
+    "suite": "150_veldo_0329_hook_install",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 18.82s",
+    "output_sha256": "444b32a2be7d3fba22485a6355567c6027095e523b4e5b9974104e66d7a083ca",
+    "load_workers": 0
+  },
+  {
+    "suite": "150_veldo_0350_end_write",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 2.99s",
+    "output_sha256": "6433c8ea37e4813fb08f5b2e2ee2dc7191e3b3dca2e66c1ddc89c43d4df8a0d4",
+    "load_workers": 0
+  },
+  {
+    "suite": "151_veldo_0313_space_run",
+    "exit_code": 1,
+    "passed": false,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 59 passed, 4 failed in 176.07s",
+    "output_sha256": "e101a02ddd545961ad934cb99815282b0b7f595446874e0133b2054aea7ef828",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0302_space_creators",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 68 passed, 0 failed in 2.22s",
+    "output_sha256": "78fbd83b31121c4bf9a7bec922f121b483a288382844bd21bd566aee178d4cd2",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0309_gate_space",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 50 passed, 0 failed in 22.37s",
+    "output_sha256": "fcf827dcb9700ca883e013bf6325217da0f3111a70dd3d02f846c1de90d5056d",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0314_session_hooks",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 54 passed, 0 failed in 2.42s",
+    "output_sha256": "99ab036f495c1310182a6b9baaede71b597367b34d3d61d81e7869fd95c197df",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0323_hook_events",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 66 passed, 0 failed in 13.04s",
+    "output_sha256": "7cde1c488b191a5dc69f43a41a8333ad980add44ba19fc7a641b3b2b52e45230",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0328_images",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 43 passed, 0 failed in 0.63s",
+    "output_sha256": "871568b926539ce97c0bc8bb026b6beea27762042b95835f9c6b927431c5eadd",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0336_run_worktree",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 5.08s",
+    "output_sha256": "0d41473d96f8f98c28ef59a035b22af65da64e03f14d838ef280418739be2b99",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0337_verdict_recorded",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 3.90s",
+    "output_sha256": "8c23df0c878235c0c6f3cccc365305379470dfbc1a24b102e5cbc9f59036f208",
+    "load_workers": 0
+  },
+  {
+    "suite": "153_veldo_0341_docker_protection",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 0.60s",
+    "output_sha256": "d8ad0017e8cc7386e10791ac9b25204288df0974dd567181b0ec52f2db79b7d1",
+    "load_workers": 0
+  },
+  {
+    "suite": "154_veldo_0324_batch_sandbox",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 55 passed, 0 failed in 2.31s",
+    "output_sha256": "52fe50a91eb982573ce94ed80281c154fb977d53887f77a4ddb1aaf074124af3",
+    "load_workers": 0
+  },
+  {
+    "suite": "154_veldo_0335_released",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 58 passed, 0 failed in 2.71s",
+    "output_sha256": "1352ec9fe9d0e58f173092a2c686c3d5f7d219e63d211690e01cc983b5069f0a",
+    "load_workers": 0
+  },
+  {
+    "suite": "155_veldo_0304_space_boundary",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 77 passed, 0 failed in 6.66s",
+    "output_sha256": "530f5e34391de6d80c07f2a00d07d6c8a86e7ba687981635d5577a562c2f100d",
+    "load_workers": 0
+  },
+  {
+    "suite": "156_veldo_0315_reconcile",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 61 passed, 0 failed in 27.15s",
+    "output_sha256": "a35eff4b508537692e2688f1a13a7b5b8bdc2c26249e50c47637233efc82997c",
+    "load_workers": 0
+  },
+  {
+    "suite": "15_warp_1404_historical_analogy",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 109 passed, 0 failed in 575.04s",
+    "output_sha256": "0604b9c8c0e85582dbaf3998d3285a1456a57a476eb36100423cef6b0c196499",
+    "load_workers": 0
+  },
+  {
+    "suite": "16_warp_1403_sizing_pass",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 75 passed, 0 failed in 1.98s",
+    "output_sha256": "490834488db6a5336648b38d638ba3d2cf54187ad72ca5c202d58375bac1d5bc",
+    "load_workers": 0
+  },
+  {
+    "suite": "26_veldo_0009_install_stamp",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 58 passed, 0 failed in 0.41s",
+    "output_sha256": "df2c98d3928b610b919b1124b0587986937f9ff0107131f0387ac5b1f34ef3bd",
+    "load_workers": 0
+  },
+  {
+    "suite": "33_veldo_0020_authority",
+    "exit_code": 1,
+    "passed": false,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 50 passed, 1 failed in 0.04s",
+    "output_sha256": "a6ee75c667c54652e43b197bf8c9b9a0906d18f21364c60f15d55880693d8c68",
+    "load_workers": 0
+  },
+  {
+    "suite": "36_veldo_0023_journal",
+    "exit_code": 1,
+    "passed": false,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 1 failed in 2.11s",
+    "output_sha256": "c06394fef16537c9efc72f73863ab06ed0a2df5e1ff8e9ba5e6c59ca632b8298",
+    "load_workers": 0
+  },
+  {
+    "suite": "37_veldo_0024_replica",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 0 failed in 1.78s",
+    "output_sha256": "1fc6f1eb7467e8a2abfd97212c0354687215816d80f128cb0d5fb49420b92021",
+    "load_workers": 0
+  },
+  {
+    "suite": "38_veldo_0025_membership",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 1.91s",
+    "output_sha256": "bcd7b09878b58520e9525f40168e75f4430fe42e9c77c26ef15f03ff4bb627a1",
+    "load_workers": 0
+  },
+  {
+    "suite": "39_veldo_0026_revocation",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 0 failed in 4.36s",
+    "output_sha256": "bd1cab508503696b6cd9a5cc506dd783a856640ed1db0b9d3b7d4bcc4d27c5cb",
+    "load_workers": 0
+  },
+  {
+    "suite": "46_veldo_0029_enrollment",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 0.15s",
+    "output_sha256": "4686803943cdce9be96d29cc0d4ebba692fe2c6ef9cd7ba684e2d780a2c81e39",
+    "load_workers": 0
+  },
+  {
+    "suite": "51_parser_boundary",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 51 passed, 0 failed in 6.16s",
+    "output_sha256": "9e03a7f4c22aaff899b4e40e8f57a7649f964d83a05f28880b0d1dcfe9dd4ff1",
+    "load_workers": 0
+  },
+  {
+    "suite": "52_writer_boundary",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 38 passed, 0 failed in 8.25s",
+    "output_sha256": "fb865dda2115c7042c4adac06aebbcf5d75c770cbaa0e900f0e48ca16b924e37",
+    "load_workers": 0
+  },
+  {
+    "suite": "56_veldo_0027_signing",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 121 passed, 0 failed in 22.49s",
+    "output_sha256": "e8ff0879bceddbf70d55f6520b7b43d67c47f4d33cd8a58015595478174293c5",
+    "load_workers": 0
+  },
+  {
+    "suite": "58_veldo_0028_effects",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 78 passed, 0 failed in 76.20s",
+    "output_sha256": "2e047cdae539c0bbfa047bc22204ad3f8798796fb2d9ed405bd617ed7879f5cb",
+    "load_workers": 0
+  },
+  {
+    "suite": "58_veldo_0031_claims",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 29 passed, 0 failed in 6.13s",
+    "output_sha256": "b0bb3e3b706bc68395deb5590a7e620ae0de4b9583e2631fa7c51fe56227ad7b",
+    "load_workers": 0
+  },
+  {
+    "suite": "58_veldo_0035_snapshots",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 59 passed, 0 failed in 40.25s",
+    "output_sha256": "681ac6b0ec23fecb982d8da968229e384db8ed6e159011979fbeab2c7e8b68a0",
+    "load_workers": 0
+  },
+  {
+    "suite": "58_veldo_0036_reservations",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 36 passed, 0 failed in 0.31s",
+    "output_sha256": "8e5a918b02c278ea1ff736b6505332083fb0e0e12f6f362c18ff4fe6f30cf98b",
+    "load_workers": 0
+  },
+  {
+    "suite": "58_veldo_0046_notifications",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 34 passed, 0 failed in 1.12s",
+    "output_sha256": "f5feea618ccc1abf8e05c94c9e2b19fca3d5bf761ec9454077e48d2fb0b9efd6",
+    "load_workers": 0
+  },
+  {
+    "suite": "59_veldo_0031_review",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 32 passed, 0 failed in 3.97s",
+    "output_sha256": "8da9aa1a78b47ba4a9d411a9a685254931467bca96539eb29d2a22df7b9a4235",
+    "load_workers": 0
+  },
+  {
+    "suite": "59_veldo_0037_aliases",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 79 passed, 0 failed in 33.31s",
+    "output_sha256": "f214431638a18ec5e888e767993634fbf303c05202d3aab11922ae06fa2d557d",
+    "load_workers": 0
+  },
+  {
+    "suite": "59_veldo_0043_graph",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 10.63s",
+    "output_sha256": "a5df2a3dfb97e60dacedb67d077a65ba1159c7a06853b27193c5c07f8a488694",
+    "load_workers": 0
+  },
+  {
+    "suite": "60_veldo_0052_eligibility",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 80 passed, 0 failed in 2.70s",
+    "output_sha256": "07c791635ec62596cca6e8b1686966234cc5af9e32de970d74be660ff5bd5581",
+    "load_workers": 0
+  },
+  {
+    "suite": "60_veldo_0053_architecture",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 65 passed, 0 failed in 3.42s",
+    "output_sha256": "c4aa4eb346cd79d455a46807e8863eaff718a6ee4149e9b47444c53aea45be47",
+    "load_workers": 0
+  },
+  {
+    "suite": "60_veldo_0064_inbox",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 3.28s",
+    "output_sha256": "3ab5f6b0e7dbf45184ea7d948c5a162d1010f7d5b504bb4577d1535ba1dbdb36",
+    "load_workers": 0
+  },
+  {
+    "suite": "61_scope_covers",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 28 passed, 0 failed in 0.00s",
+    "output_sha256": "724014834760c0e72e3e6c6789d8cb50a7633e2bb3776be00fcc0ada9aa1a9cf",
+    "load_workers": 0
+  },
+  {
+    "suite": "62_veldo_0039_dispatch",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 51 passed, 0 failed in 15.34s",
+    "output_sha256": "4dc0d953fa21fd625e1a4cdb4322acdf2714fe8bc4d407d2c411388619bab6bb",
+    "load_workers": 0
+  },
+  {
+    "suite": "62_veldo_0045_runtime",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 12.40s",
+    "output_sha256": "66c4eecb62b5293e004749f286c19acf119107a344b45cf12f75a4fcde79662f",
+    "load_workers": 0
+  },
+  {
+    "suite": "62_veldo_0054_decisions",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 65 passed, 0 failed in 5.49s",
+    "output_sha256": "7a3dc7a3bd96d12061c1ddd59c2a0be85c6dd2512bba4e494960e04fbc45f615",
+    "load_workers": 0
+  },
+  {
+    "suite": "62_veldo_0065_presentations",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 68 passed, 0 failed in 10.32s",
+    "output_sha256": "4ff8e73309e8c48d2bb08ccc500e53631c5bb81fb451a891d4b155a853cf79e3",
+    "load_workers": 0
+  },
+  {
+    "suite": "63_veldo_0040_containment",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 85 passed, 0 failed in 13.33s",
+    "output_sha256": "133170333877a55a12fabdb11e5980e0dfcd04abe50b83802c878c65c9e6faf0",
+    "load_workers": 0
+  },
+  {
+    "suite": "63_veldo_0049_floor",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 22.18s",
+    "output_sha256": "3b5c57cd2634d7fd31ee30cd36ce1dd4d957532093eca81e235af9c56e446b96",
+    "load_workers": 0
+  },
+  {
+    "suite": "63_veldo_0066_attribution",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 31 passed, 0 failed in 2.19s",
+    "output_sha256": "98ca1bf6d8a12d7a7f635a082ac1efd24cb1ef64c9e4794244ec75cf7dc445b7",
+    "load_workers": 0
+  },
+  {
+    "suite": "64_veldo_0050_proof",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 40 passed, 0 failed in 18.75s",
+    "output_sha256": "42140f874dfbfe17479dd936e99ea825fac5f41b46625c393278e5c6e823d797",
+    "load_workers": 0
+  },
+  {
+    "suite": "65_veldo_0067_edges",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 35 passed, 0 failed in 6.27s",
+    "output_sha256": "9fb7fa39377140ea67b6d6843303a7d48f0dd1cd80cf1862a91e649fb1f5b431",
+    "load_workers": 0
+  },
+  {
+    "suite": "65_veldo_0132_workflow",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 0 failed in 15.85s",
+    "output_sha256": "8d5701855597484499bc29da9eb0f63118693db39826407c916cf16d528a99f9",
+    "load_workers": 0
+  },
+  {
+    "suite": "66_veldo_0042_clones",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 2.39s",
+    "output_sha256": "1f911e7dd9d45568282001377b0f7062ad5f1e3cd6007f5cc54deff66dd324a4",
+    "load_workers": 0
+  },
+  {
+    "suite": "66_veldo_0047_authority",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 56 passed, 0 failed in 16.22s",
+    "output_sha256": "d21cd15ff60638e2b36b33365ca942f82bdf9de8228000fde0a871a45f2eb0d6",
+    "load_workers": 0
+  },
+  {
+    "suite": "66_veldo_0051_events",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 7.40s",
+    "output_sha256": "dbfab3aa210f2982eec2da5d9167dba9cc997e922c1e6d35a0bce9800158c540",
+    "load_workers": 0
+  },
+  {
+    "suite": "67_veldo_0041_heartbeat",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 14.11s",
+    "output_sha256": "bb4d6e3735461c55854a4d35a6d2a17a3aa3a72a074155ce51c38125867ecb61",
+    "load_workers": 0
+  },
+  {
+    "suite": "67_veldo_0056_candidates",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 61.72s",
+    "output_sha256": "a3981dedd24dfdec48cbce9012549b241dd7433b8da58f097cbb6e618a2dcbf2",
+    "load_workers": 0
+  },
+  {
+    "suite": "67_veldo_0135_offers",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 35 passed, 0 failed in 12.63s",
+    "output_sha256": "2dd179a224a8612fa7c9c7af1c4d11a16ef3cbc10c4c9c1e0f1c78c233e78ca0",
+    "load_workers": 0
+  },
+  {
+    "suite": "68_veldo_0126_intake",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 1.68s",
+    "output_sha256": "654b8ac497d47c5b0512a369a3e03c81f78d16bd1c3276c6fd73222c0d623994",
+    "load_workers": 0
+  },
+  {
+    "suite": "68_veldo_0134_acceptance",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 53 passed, 0 failed in 2.65s",
+    "output_sha256": "a961c1ec13ad9b6cfd42b6afd6d617ba18484f63b2d380245ea364f48430b3df",
+    "load_workers": 0
+  },
+  {
+    "suite": "68_veldo_0136_hints",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 33 passed, 0 failed in 4.05s",
+    "output_sha256": "bc1c8734e93e01f30c2e019e99f36f1b4dc4079718c88e121c9b6316fb046f65",
+    "load_workers": 0
+  },
+  {
+    "suite": "69_veldo_0058_gate_output",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 42 passed, 0 failed in 39.81s",
+    "output_sha256": "94c9291bc48ce0b6077405c1550d2259dc1484e8ecd7b14b48c37b1f3ae86e28",
+    "load_workers": 0
+  },
+  {
+    "suite": "69_veldo_0068_settlement",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 34 passed, 0 failed in 7.18s",
+    "output_sha256": "fef9db6c21e6b91187af5ea74147ad8c070f572a225431fb8de504282f940d9b",
+    "load_workers": 0
+  },
+  {
+    "suite": "69_veldo_0133_dispositions",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 59 passed, 0 failed in 5.13s",
+    "output_sha256": "54bd49f6da8dcf5f648cc55cce924aa768fff8a5d99a70300f8676c85f378cdc",
+    "load_workers": 0
+  },
+  {
+    "suite": "70_veldo_0057_landing",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 57 passed, 0 failed in 16.36s",
+    "output_sha256": "db31a437fa99a23d3f5b90297d9a198edb2e3502f64fa621a3ee2204a2c43ad2",
+    "load_workers": 0
+  },
+  {
+    "suite": "70_veldo_0069_bindings",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 36 passed, 0 failed in 8.05s",
+    "output_sha256": "25f6dab15fa537675049178db65c7b0a94956a4473e0d9e0426ba4b2323c1701",
+    "load_workers": 0
+  },
+  {
+    "suite": "70_veldo_0073_activation",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 4.62s",
+    "output_sha256": "e216343b43cf03b43326f756506a0b4315a99769b75dd0c6d1904135c6fb31d4",
+    "load_workers": 0
+  },
+  {
+    "suite": "71_veldo_0076_projects",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 58 passed, 0 failed in 5.50s",
+    "output_sha256": "30b4f94357aedddb391ef770d7a20372cf5d759fb72a2bcb664ddae1bfa48786",
+    "load_workers": 0
+  },
+  {
+    "suite": "71_veldo_0130_api",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 71 passed, 0 failed in 23.80s",
+    "output_sha256": "c7b498e86efbc546ae0a7f1a659f289f36e4d1c612d8ee52696e6faaa6e42b50",
+    "load_workers": 0
+  },
+  {
+    "suite": "71_veldo_0138_channel_service",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 39 passed, 0 failed in 32.43s",
+    "output_sha256": "7953fca0031cccb0b2b5668fd3be2618223b02562d647a075602158e4f8d220f",
+    "load_workers": 0
+  },
+  {
+    "suite": "72_veldo_0075_andon",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 39 passed, 0 failed in 4.33s",
+    "output_sha256": "2d4d9eca5b342e8ce588002ccc161072689e39c7fcfeb8974961d5c250d1be49",
+    "load_workers": 0
+  },
+  {
+    "suite": "72_veldo_0077_objectives",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 2.99s",
+    "output_sha256": "c7d9e86d6d68f13441822346db2a656f260882d969de247a870d34987eaacda4",
+    "load_workers": 0
+  },
+  {
+    "suite": "72_veldo_0128_reports",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 4.25s",
+    "output_sha256": "89cebde4bc0c5aa8586fa79a6ed431fcc34947d277e439a8c1dfc06036f0c39c",
+    "load_workers": 0
+  },
+  {
+    "suite": "73_veldo_0078_backlog",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 6.47s",
+    "output_sha256": "c53bcc057a47f4437876736ba5e8a7f000548366d1bb6dcc2b1bd9f19a581a55",
+    "load_workers": 0
+  },
+  {
+    "suite": "73_veldo_0089_team",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 3.03s",
+    "output_sha256": "8f8e25335eb07c9303ef08026466cf0ce9b30309218e60f41df6220ea47da8b0",
+    "load_workers": 0
+  },
+  {
+    "suite": "73_veldo_0139_factory_setup",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 43 passed, 0 failed in 42.54s",
+    "output_sha256": "d031d5f11f31698d015d381f25c822b332aee41860c1c099eef315191e1f7bf9",
+    "load_workers": 0
+  },
+  {
+    "suite": "74_veldo_0140_standing_delegation",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 35 passed, 0 failed in 14.54s",
+    "output_sha256": "84b36344bab77002a9021dea72f6e716771f16188d0cbc0e1ccb1ac810543af2",
+    "load_workers": 0
+  },
+  {
+    "suite": "75_veldo_0062_accounts",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 50 passed, 0 failed in 38.08s",
+    "output_sha256": "b4fb3cb3c09939e0888296391100976b95b748a9d952bac1b8c94eaf4e9ada14",
+    "load_workers": 0
+  },
+  {
+    "suite": "75_veldo_0150_own_message_acceptance",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 39 passed, 0 failed in 2.15s",
+    "output_sha256": "217592daaa2a56cab03bfe1682407da3a3695868b792a252275422758189e417",
+    "load_workers": 0
+  },
+  {
+    "suite": "76_veldo_0079_grooming",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 48 passed, 0 failed in 12.80s",
+    "output_sha256": "515fe5485aed5300ad0e80c89ddc7eb0dc3d51c2ea08fad934f84c4ff483bd57",
+    "load_workers": 0
+  },
+  {
+    "suite": "77_veldo_0149_adopted_activation",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 39 passed, 0 failed in 2.46s",
+    "output_sha256": "2ada716c4e81ad04c909ab4f195b6e5c028134ef07d204228febf3c347200fd3",
+    "load_workers": 0
+  },
+  {
+    "suite": "78_veldo_0060_claude_adapter",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 63 passed, 0 failed in 25.15s",
+    "output_sha256": "20b1fc9c74e15be03ec2623bc993c7aaed28ef51ef043bbabadfc927bb2050c7",
+    "load_workers": 0
+  },
+  {
+    "suite": "78_veldo_0160_account_pool",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 60 passed, 0 failed in 27.96s",
+    "output_sha256": "7485f3251442d2c741f61cc5b8e7f2b4ddf24444343c54fffde5a23bd250a148",
+    "load_workers": 0
+  },
+  {
+    "suite": "79_veldo_0061_codex_adapter",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 47 passed, 0 failed in 16.14s",
+    "output_sha256": "e9699a26764df7a65258b34e47e69a41f0ca3c5c602c83bf273b33613d3c56e0",
+    "load_workers": 0
+  },
+  {
+    "suite": "80_veldo_0155_claude_baseline",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 45 passed, 0 failed in 15.11s",
+    "output_sha256": "fb05b9d19b4a518c7813fd0183d2b1099bea6c75ede4f639b40f2962cbf549c0",
+    "load_workers": 0
+  },
+  {
+    "suite": "81_veldo_0156_codex_baseline",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 48 passed, 0 failed in 3.35s",
+    "output_sha256": "ef573d14d9126cd838fedb30a6544580772018581f215740f61bd3cbb91719b9",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0085_decomposition",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 41 passed, 0 failed in 4.03s",
+    "output_sha256": "c1caa8ac8d7b492be642c85e19b39d5d4db34335a7e95d53e11cb5c8359801cd",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0129_worker_wiring",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 55 passed, 0 failed in 42.90s",
+    "output_sha256": "aa8d3e6c4280e880e90fad51adddf10feeb65f6e4f4cb6e3f3d2b0e4b0f37855",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0141_execution_record",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 66 passed, 0 failed in 24.67s",
+    "output_sha256": "27bbf1cf75d47fc96a8bfbe8306ce3f73e50300a2f08a7b02ada0de6a9c7fa17",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0144_mcp_catalog",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 55 passed, 0 failed in 29.75s",
+    "output_sha256": "a0de81c007794261442464a1c37070cb4a67066cb0684d15768df48d392812d2",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0165_launch_hygiene",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 19.90s",
+    "output_sha256": "8e37744f5376029a9292869df1eef95d8b9c76068bfd4a55fb88f9583b42e405",
+    "load_workers": 0
+  },
+  {
+    "suite": "82_veldo_0173_tool_registry",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 4.73s",
+    "output_sha256": "543fdadce224675e455073ee6cded2636f6613007f613db5750c3daa45fcce37",
+    "load_workers": 0
+  },
+  {
+    "suite": "83_veldo_0154_factory_loop",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 40 passed, 0 failed in 51.67s",
+    "output_sha256": "4c1b6895152c50be69f746eae4c52a9e1bf93824fa716998ed78ba92ab51718d",
+    "load_workers": 0
+  },
+  {
+    "suite": "83_veldo_0166_usage_windows",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 45 passed, 0 failed in 0.91s",
+    "output_sha256": "b371f32ed4cfa7ee20887d503125b2fd946f02738be1806cd4ac70a9c6cc6edd",
+    "load_workers": 0
+  },
+  {
+    "suite": "84_veldo_0169_project_handouts",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 53 passed, 0 failed in 13.93s",
+    "output_sha256": "56e0c4a9589d3d3ad58679808aba5daef95fa8da150425548b00a656e9c10d6c",
+    "load_workers": 0
+  },
+  {
+    "suite": "85_veldo_0158_credential_delivery",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 49 passed, 0 failed in 9.67s",
+    "output_sha256": "9050de4827657f3f597214a5a98246851f2733fd9bb0f9c17c0e3c362cb74e57",
+    "load_workers": 0
+  },
+  {
+    "suite": "85_veldo_0171_setup_api",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 44 passed, 0 failed in 10.86s",
+    "output_sha256": "e3bc757aaeccc2c1023be4b74344a1ff70ac7e5b5492630f0df1541150e83c5a",
+    "load_workers": 0
+  },
+  {
+    "suite": "86_veldo_0127_agent_configuration",
+    "exit_code": 1,
+    "passed": false,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 2 failed in 60.41s",
+    "output_sha256": "5f543faaa055842435cf3583c9d01c2ae8ec8fce64b2b967648beeb2dc9e25be",
+    "load_workers": 0
+  },
+  {
+    "suite": "86_veldo_0148_re_land",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 67.01s",
+    "output_sha256": "456d457a2bc4da80cc3499ed234621d0c37baa46e5c576dcd715f6228428292d",
+    "load_workers": 0
+  },
+  {
+    "suite": "86_veldo_0168_text",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 4.26s",
+    "output_sha256": "0928d57d431fedd0f1cbb6f32b6484bbce639d6867364d6366b82cb0500f140f",
+    "load_workers": 0
+  },
+  {
+    "suite": "86_veldo_0186_setup_assets",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 37 passed, 0 failed in 20.22s",
+    "output_sha256": "71bb682d1e0a601624059975d290d42c492f65fd7c481ec0edb114791a2702bf",
+    "load_workers": 0
+  },
+  {
+    "suite": "86_veldo_0189_engine_upgrade",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 60 passed, 0 failed in 62.53s",
+    "output_sha256": "fc863addd3b089f56950a9605446028d3cccba4f5ccb1f562b2037ee8b260587",
+    "load_workers": 0
+  },
+  {
+    "suite": "87_veldo_0127_codex_delivery",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 220 passed, 0 failed in 56.27s",
+    "output_sha256": "07baabdc1b5c28384ebe6646cec7b18e6fb4334990f41f88243b5b2b0d8d0eb5",
+    "load_workers": 0
+  },
+  {
+    "suite": "87_veldo_0170_receiver_trust",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 38 passed, 0 failed in 7.67s",
+    "output_sha256": "01cca3ac40858cde116e1d1f5e7a10d59799fa8927367bd1b8e7a0f31209262d",
+    "load_workers": 0
+  },
+  {
+    "suite": "91_veldo_0151_specialists",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 51 passed, 0 failed in 2.05s",
+    "output_sha256": "9eead12eb6a139ba4be44086c97a2edaf0258313696b3c012325d4c80fb8197d",
+    "load_workers": 0
+  },
+  {
+    "suite": "91_veldo_0167_setup_records",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 35 passed, 0 failed in 14.44s",
+    "output_sha256": "be7cb7af62013c7ce190d4670e1aaac8e0b649dff80792bc34d3a6acaefdef50",
+    "load_workers": 0
+  },
+  {
+    "suite": "92_veldo_0088_pm_cycles",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 56 passed, 0 failed in 58.78s",
+    "output_sha256": "82750f28081112b11db8963f850fef0d7e6269c8d83fd95be4845d997e268592",
+    "load_workers": 0
+  },
+  {
+    "suite": "93_veldo_0152_intake_routes",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 50 passed, 0 failed in 46.36s",
+    "output_sha256": "8974009515cf16dc185b71cc1f1a1ac78412a05e61811372d62eb972374a3f3c",
+    "load_workers": 0
+  },
+  {
+    "suite": "94_veldo_0162_configuration_routes",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 17.51s",
+    "output_sha256": "97fbe1ad48f7315a39c38b6855bfd6c024504039d47121fe5578ced0bba51692",
+    "load_workers": 0
+  },
+  {
+    "suite": "95_veldo_0203_owner_revisions",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 62 passed, 0 failed in 6.38s",
+    "output_sha256": "bc75d8df783e5516ef28054274ce1f5b0b2a0b591464b8bcb26cd65440858236",
+    "load_workers": 0
+  },
+  {
+    "suite": "96_veldo_0204_reservation_policies",
+    "exit_code": 2,
+    "passed": true,
+    "summary": "selftest (PARTIAL, 1 of 242 suites): 46 passed, 0 failed in 18.77s",
+    "output_sha256": "339bbfb366361f61c37c11882bbc8b4505ca6797f10c6a54f9bfc8e242410c9d",
+    "load_workers": 0
+  }
+]

@@ -1,0 +1,5 @@
+command: python3 scripts/selftest.py --suite 36_veldo_0023_journal
+exit_code: 1
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  SELFTEST FAIL: VELDO-0023 AC3 journal/replay-determinism: seven records of every transition kind (upsert, update, reserve, receipt, retire, effect) replay in an ISOLATED process (python -I, the replay module alone, sqlite3 never imported) into a state whose digest equals the live store's, with the head digest equal to the last record's; the replay module imports only hashlib and json and the store imports only the standard library (no execution runtime); in-process replay agrees and compare_with_live matches
+selftest (PARTIAL, 1 of 242 suites): 42 passed, 1 failed in 2.11s

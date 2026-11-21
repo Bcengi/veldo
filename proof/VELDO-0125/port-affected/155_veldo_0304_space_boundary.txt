@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 155_veldo_0304_space_boundary
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 77 passed, 0 failed in 6.66s

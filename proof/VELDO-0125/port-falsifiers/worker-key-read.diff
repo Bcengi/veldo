@@ -1,0 +1,9 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -254,5 +254,5 @@
+         raise Refused('invalid_input:protected_overlap')
+     if keys:
+-        rules.append('(deny file-read-data %s)' % _any(keys))
++        pass
+     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))
+     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))

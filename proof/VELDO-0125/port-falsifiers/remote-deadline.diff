@@ -1,0 +1,9 @@
+--- control_launch.py
++++ control_launch.py
+@@ -2286,5 +2286,5 @@
+             self.ended = True
+             return True
+-        if self.clock() >= self.ends_at:
++        if False:
+             self.stop('deadline')
+             return True

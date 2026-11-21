@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 86_veldo_0148_re_land
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 52 passed, 0 failed in 67.01s

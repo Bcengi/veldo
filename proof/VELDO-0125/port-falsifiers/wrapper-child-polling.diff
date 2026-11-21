@@ -1,0 +1,9 @@
+--- project_runner_macos_wrapper.py
++++ project_runner_macos_wrapper.py
+@@ -88,5 +88,5 @@
+         finished = threading.Event()
+         def reap():
+-            child.wait()  # Blocking waitpid, with no subprocess timeout polling.
++            child.wait(timeout=120)
+             finished.set()
+         threading.Thread(target=reap, daemon=True).start()

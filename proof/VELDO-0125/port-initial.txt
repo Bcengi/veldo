@@ -1,0 +1,21 @@
+Intermediate diagnostics, before the final port fixes; direct owning-row runner only.
+
+veldo-103.txt
+FAIL VELDO-0124 AC1/claude-sandbox-refused
+FAIL VELDO-0124 AC3/stalled-wrapper-event-or-runtime-cap
+passed 28 failed 2
+
+veldo-104.txt
+passed 7 failed 0
+
+veldo-105.txt
+passed 17 failed 0
+
+veldo-106.txt
+FAIL VELDO-0125 AC1/round11-log-correction-and-original-row
+FAIL VELDO-0125 AC3/wrapper-blocking-exit
+FAIL VELDO-0125 AC2/remote-factory-deadline
+FAIL VELDO-0125 AC2/remote-no-polling
+FAIL VELDO-0125 AC3/remote-deadline-grace
+FAIL VELDO-0125 AC3/remote-authority-end
+passed 240 failed 6

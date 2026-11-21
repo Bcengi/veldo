@@ -1,0 +1,34 @@
+{
+  "implementation_commit": "619bd957165360f6267b40d7c90af11035118c1a",
+  "base": "6b322350",
+  "date": "2026-11-21",
+  "affected": {
+    "total": 152,
+    "passed_after_rechecks": 150,
+    "remaining": [
+      "151_veldo_0313_space_run",
+      "86_veldo_0127_agent_configuration"
+    ],
+    "initial": "proof/VELDO-0125/port-affected/results.json",
+    "rechecks": "proof/VELDO-0125/port-rechecks/results.json"
+  },
+  "falsifiers": {
+    "total": 100,
+    "rejected_after_rechecks": 100,
+    "initial": "proof/VELDO-0125/port-falsifiers/results.json",
+    "rechecks": "proof/VELDO-0125/port-falsifier-rechecks/results.json",
+    "detail": "Initial deadline-removal mutant timed out; corrected row asserts escalation at simulated cap before waiting. Timeout is not counted as rejection."
+  },
+  "audit": {
+    "passed": 109,
+    "failed": 0,
+    "exit": 2,
+    "normal_bytecode_environment": true,
+    "ref": "proof/VELDO-0125/port-audit-normal.txt"
+  },
+  "loaded": "pending",
+  "baseline151": "pending",
+  "changed_mutation_checks": "pending",
+  "native_rerun": false,
+  "independent_review": false
+}

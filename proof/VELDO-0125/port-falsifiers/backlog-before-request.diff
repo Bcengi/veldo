@@ -1,0 +1,8 @@
+--- control_worker.py
++++ control_worker.py
+@@ -420,4 +420,5 @@
+     else:
+         install_resumer(config_path, config)
++        resume_pending(config)
+         try:
+             result = receive(config, json.loads(sys.stdin.readline(65536)))

@@ -1,0 +1,9 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -464,5 +464,5 @@
+                 sequence = invocation['sequence'] + 1 if data.get('spend_receipt') else 1
+                 data['spend_receipt'] = reservations.report('remote-spend/' + dispatch + '/' + str(sequence),
+-                    data['invocation'], sequence, usage or data.get('usage') or {}, final=True, now=now)
++                    data['invocation'], sequence, {}, final=True, now=now)
+         if state in ('exited', 'unknown') and usage is None:
+             usage = data.get('usage')

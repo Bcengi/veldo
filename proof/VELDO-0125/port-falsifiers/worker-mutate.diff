@@ -1,0 +1,9 @@
+--- control_service.py
++++ control_service.py
+@@ -2355,5 +2355,5 @@
+         member = AC.membership_entry(state['membership'], principal)
+         active, why = AC.active_member(member, now)
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:
+             raise Refused('not_authorized', 'worker receiver operation only')
+         key = AC.active_key(state['keyring'], principal, now) if active else None

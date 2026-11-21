@@ -1,0 +1,31 @@
+$ python3 scripts/check_git_boundary.py
+exit: 0
+Git subprocess boundary: pass
+
+$ python3 scripts/check_space_boundary.py
+exit: 0
+Space boundary: pass
+
+$ python3 scripts/check_writer_boundary.py
+exit: 0
+Document writer boundary: pass
+
+$ python3 scripts/check_parser_boundary.py
+exit: 0
+Document parser boundary: pass
+
+$ bash scripts/check_template_sync.sh
+exit: 0
+template sync: pass (335 pair(s) compared, 6 declared per-repo, 367 engine-only)
+
+$ python3 .veldo/validate.py spec specs/VELDO-0124-macos-worker-profile.md
+exit: 0
+
+$ python3 .veldo/validate.py spec specs/VELDO-0125-mac-relay-capability-routing.md
+exit: 0
+
+2026-11-21 security/source comparison at dabd1b7d:
+verify_evidence AST unchanged from 6b322350: True
+AST SHA256: 4ada13679cb57cc0c83ee7037a8e4676cdce53f6428a65027d4aecde6346ac55
+All 20 changed engine/installed module copies match byte-for-byte.
+Native roundtrip driver compiles; it now uses the existing READY=1 notification. No Mac run.

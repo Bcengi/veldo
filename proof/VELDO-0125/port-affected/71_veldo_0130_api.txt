@@ -1,0 +1,4 @@
+command: python3 scripts/selftest.py --suite 71_veldo_0130_api
+exit_code: 2
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+selftest (PARTIAL, 1 of 242 suites): 71 passed, 0 failed in 23.80s

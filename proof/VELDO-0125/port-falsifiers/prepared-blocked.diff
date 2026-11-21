@@ -1,0 +1,9 @@
+--- control_routing.py
++++ control_routing.py
+@@ -104,5 +104,5 @@
+         return check(profiles, contract)
+     except Refused as error:
+-        if error.code.startswith('blocked:'):
++        if False:
+             record_decision(dispatches, dict(state='blocked', reason=error.code,
+                 unit=contract['unit'], dispatch_id=contract['dispatch_id'], required=requirements(contract)))

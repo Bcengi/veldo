@@ -1,0 +1,8 @@
+GREEN exit=0
+PASS VELDO-0125 AC1/entity-owners
+passed 1 failed 0
+
+MUTANT exit=1
+AC1/entity-owners: AssertionError: accepted instead of entity_owned
+FAIL VELDO-0125 AC1/entity-owners
+passed 0 failed 1

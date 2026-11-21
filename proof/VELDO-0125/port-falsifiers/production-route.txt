@@ -1,0 +1,15 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/production-routing
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/production-routing: AttributeError: 'NoneType' object has no attribute 'owned'
+FAIL VELDO-0125 AC2/production-routing
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "106_veldo_0125_routing.py", line 332, in production
+  File "/tmp/v125-port-mutant-ko94wzjb/control_launch.py", line 1901, in submit
+    if launch.owned and (launch.record or {}).get('state') == 'refused':
+       ^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'owned'

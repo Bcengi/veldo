@@ -1,0 +1,9 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -101,5 +101,5 @@
+                 slot = dict(slot, state='retired', cause='interrupted_before_launch')
+                 write(path, slot)
+-            if slot and slot['state'] != 'retired':
++            if slot:
+                 live[label] = slot['state']
+         if live != indexed:

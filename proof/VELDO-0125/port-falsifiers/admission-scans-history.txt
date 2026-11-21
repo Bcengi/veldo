@@ -1,0 +1,34 @@
+GREEN exit=0
+PASS VELDO-0125 AC2/live-slot-admission-index
+passed 1 failed 0
+
+MUTANT exit=1
+AC2/live-slot-admission-index: AssertionError: admission enumerated completed slot history
+FAIL VELDO-0125 AC2/live-slot-admission-index
+passed 0 failed 1
+Traceback (most recent call last):
+  File "106_veldo_0125_routing.py", line 1269, in _v125_routing_suite
+  File "<checkout>/proof/VELDO-0125/lifecycle_checks_r12.py", line 234, in live_admission_index
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-jxuz54vf/project_runner_macos.py", line 185, in start
+    return self._start(request, binding, policy)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-jxuz54vf/project_runner_macos.py", line 202, in _start
+    if self.status(locked=True)['pending'] >= p['max_workers']:
+       ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v125-port-mutant-jxuz54vf/project_runner_macos.py", line 122, in status
+    states = [read(p)['state'] for p in self.root.glob('*/slot.json') if read(p)['state'] != 'retired']
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1096, in glob
+    for p in selector.select_from(self):
+  File "/usr/lib/python3.12/pathlib.py", line 203, in _select_from
+    with scandir(parent_path) as scandir_it:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1065, in _scandir
+    return os.scandir(self)
+           ^^^^^^^^^^^^^^^^
+  File "<checkout>/proof/VELDO-0125/lifecycle_checks_r12.py", line 228, in no_history_scan
+    assert isinstance(path, int) or Path(path) != host.root, 'admission enumerated completed slot history'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: admission enumerated completed slot history
