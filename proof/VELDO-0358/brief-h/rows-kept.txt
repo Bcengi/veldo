@@ -1,5 +1,5 @@
-start 2026-11-21T15:48:27Z load 13.51 16.28 17.94 tree ccea0423
+start 2026-11-21T16:35:30Z load 26.09 55.65 65.70 tree 09a960f6
 120_veldo_0131_factory_ui: base 40 labels (0 failed), now 42 labels (0 failed), missing [], added ['VELDO-0131 timers/profile-applied', 'VELDO-0131 wave1/no-sites']
 121_veldo_0131_factory_screens_narrow: base 28 labels (0 failed), now 31 labels (0 failed), missing [], added ['VELDO-0131 browser/hang-by-progress', 'VELDO-0131 timers/profile-applied', 'VELDO-0131 wave1/no-sites']
 124_veldo_0131_factory_reads_commands: base 34 labels (0 failed), now 36 labels (0 failed), missing [], added ['VELDO-0131 timers/profile-applied', 'VELDO-0131 wave1/no-sites']
-end 2026-11-21T15:53:42Z load 84.37 54.28 33.02 tree ccea0423
+end 2026-11-21T16:39:10Z load 20.89 36.23 55.60 tree 09a960f6
