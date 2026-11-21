@@ -472,6 +472,11 @@ else:
             staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], mods)
             check('graph/own-stage', 'the PM exchanges of the factory passes staged their runner in the fixture\'s '
                   'own graph stage [%d PM runner(s) in %s]' % (staged_pm, f['graph_stage']), staged_pm >= 1)
+            # VELDO-0358 residue: a factory pass that started two PM cycles leaves the one run() did not wait
+            # for. Its receiver is waited for and reaped through the runner's own wait, so the suite ends with
+            # no child of its own left.
+            for leftover in list(line.runner.launches.values()):
+                line.runner.wait(leftover)
         # This store truly has no factory project record, rather than merely excluding it from configuration.
         with helper.fixture(ROOT, PRODUCTION, factory_project=False) as f:
             S, conn, mods = f['S'], f['conn'], f['mods']

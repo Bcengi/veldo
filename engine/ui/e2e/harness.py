@@ -248,6 +248,17 @@ class Factory:
         self.organs_from = organs_from
         self.on_thread(self._build)
 
+    def close(self):
+        """Release what the factory started in this process: the fake bot server (its thread joined and its
+        listener closed) and the authority thread. A test process that builds a factory calls it when done."""
+        server = getattr(self, 'bot_server', None)
+        if server is not None:
+            server.shutdown()
+            self.bot_serving.join()
+            server.server_close()
+            self.bot_server = None
+        self.pool.shutdown()
+
     def on_thread(self, fn, *args, **kwargs):
         if threading.get_ident() == self.ident[0]:
             return fn(*args, **kwargs)
@@ -414,7 +425,10 @@ class Factory:
         bots = {'tick': 0, 'bots': {}, 'chats': {}, 'lock': threading.Lock()}
         self.bots = bots
         bot_server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), type('Bot', (BotApi,), {'state': bots}))
-        threading.Thread(target=bot_server.serve_forever, daemon=True).start()
+        # VELDO-0358 residue: the bot server and its thread are kept, so close() can release them.
+        self.bot_server = bot_server
+        self.bot_serving = threading.Thread(target=bot_server.serve_forever, daemon=True)
+        self.bot_serving.start()
         url = 'http://127.0.0.1:%d' % bot_server.server_address[1]
         bots['bots']['bot145'] = {'user': {'id': 8000000145, 'is_bot': True, 'first_name': 'Veldo',
                                            'username': 'veldo_e2e_bot'}, 'next': 9000, 'update_next': 720000000,

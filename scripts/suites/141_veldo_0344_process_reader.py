@@ -370,6 +370,7 @@ sys.exit(P.reader_exec())
 '''
 
     children, spawned, threads_program = [], [], []
+    serving = []  # VELDO-0358 residue: the fixture reader's accept thread and its child waiters, joined at the end
 
     def child(cwd, environ=None, **spec):
         """(the process, the ids of the threads it started). `environ`, when given, is its whole
@@ -466,11 +467,13 @@ sys.exit(P.reader_exec())
                                                stderr=subprocess.DEVNULL)
                     spawned.append(started)
                     served['last'] = started
-                    threading.Thread(target=started.wait, daemon=True).start()
+                    serving.append(threading.Thread(target=started.wait, daemon=True))
+                    serving[-1].start()
                 finally:
                     connection.close()
 
-        threading.Thread(target=serve, daemon=True).start()
+        serving.append(threading.Thread(target=serve, daemon=True))
+        serving[-1].start()
 
         def as_locked(pid, text):
             """The writer's status with the capability a suite cannot install: exactly cap_sys_ptrace,
@@ -1966,11 +1969,17 @@ int main(int argc, char **argv)
         except Exception:
             pass
         if listener is not None:
+            try:
+                listener.shutdown(socket.SHUT_RDWR)  # wakes the accept, so its thread ends
+            except OSError:
+                pass
             listener.close()
         for process in children + spawned:
             if process.poll() is None:
                 process.kill()
                 process.wait()
+        for thread in list(serving):
+            thread.join()
         for folder in closed:
             try:
                 os.chmod(str(folder), 0o755)

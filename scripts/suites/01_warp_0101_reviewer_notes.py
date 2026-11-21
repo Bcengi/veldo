@@ -619,7 +619,9 @@ try:
     expect("api failing fixture names the failure",
            any("status" in f for s in _rf["steps"] if not s["ok"] for f in s["failures"]))
 finally:
-    _httpd.shutdown()
+    _httpd.shutdown()  # serve_forever returns
+    _srv_thread.join()
+    _httpd.server_close()  # VELDO-0358 residue: the listener is closed, not left to the process
 
 # --- authorization runner (WARP-0302, B5 of PLAN-0003): the authorization
 # evaluation is exercised for allow and deny in both outcomes (the 2xx-bypass
@@ -672,7 +674,9 @@ try:
     expect("auth failing fixture names the bypass or leak",
            any("bypass" in f or "leak" in f for c in _rfa["checks"] if not c["ok"] for f in c["failures"]))
 finally:
-    _auhttpd.shutdown()
+    _auhttpd.shutdown()  # serve_forever returns
+    _authread.join()
+    _auhttpd.server_close()  # VELDO-0358 residue: the listener is closed, not left to the process
 
 # --- DB/migration runner (WARP-0303, B2 of PLAN-0003): control logic tested
 # against an in-memory sqlite database (no external dependency). The pure
@@ -871,7 +875,9 @@ try:
            any("amount" in v or "currency" in v or "internal_debug" in v
                for c in _rfi["interactions"] if not c["ok"] for v in c["violations"]))
 finally:
-    _inhttpd.shutdown()
+    _inhttpd.shutdown()  # serve_forever returns
+    _inthread.join()
+    _inhttpd.server_close()  # VELDO-0358 residue: the listener is closed, not left to the process
 
 # --- WARP-1401 (W1 of PLAN-0014): the TOE ground-truth corpus, and its honest coverage ------
 _toespec = importlib.util.spec_from_file_location("veldo_toe_corpus", ROOT / ".veldo/toe_corpus.py")
