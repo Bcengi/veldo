@@ -1,0 +1,89 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0224",
+  "commit": "24ef7002a32b7f8748c43a62389b73022ab363d0",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0224/suite224.txt",
+          "detail": "Selected diagnostic only: runs-fresh covers helper imports in all three modes, deleted declared file, broken closure, cleanup, valid fresh verdicts and a failing fresh baseline. Not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0224/mutations224.json",
+          "detail": "stale224-snapshot-verdict-kept: green baseline/no-op controls; runs-fresh false because the undeclared helper's snapshot worker exit is retained. Real coordinator and child execution with fixture-supplied syscall trace."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0224/suite224.txt",
+          "detail": "Selected diagnostic only: never-published checks earlier authenticated records, zero stale reuse/publications, cleared stale keys, unchanged old records and a clean warm-hit control. Not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0224/mutations224.json",
+          "detail": "stale224-published: green baseline/no-op controls; never-published false with concrete stale case identities published under retained stale keys."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0224/suite224.txt",
+          "detail": "Selected diagnostic only: authority-store, stale-reasons, audit-consumer and candidate-store-refused cover immutable findings, candidate identity, declaration/run binding, proposer selection and the shared audit write API. Not a canonical unit gate verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0224/mutations224.json",
+          "detail": "stale224-writes-candidate: green baseline/no-op controls; authority-store false with candidate_unchanged=false after the candidate declarations file is written."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "Canonical gate intentionally left to the lead. Requested selected diagnostics: suite224.txt has 32 passed, zero failed; affected-suites.txt has 462 passed, zero failed across nine suites. Both commands intentionally exit 2 for partial selection; neither establishes landing readiness."
+    },
+    {
+      "name": "mutation-regression",
+      "status": "passed",
+      "detail": "mutations224.json: 3/3 executed fresh and rejected. mutations217.json: 12/12 executed fresh and rejected. No invalid results or surviving workers."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "lint.txt: 1248 Python files and 40 shell files."
+    },
+    {
+      "name": "template-sync",
+      "status": "passed",
+      "detail": "template-sync.txt: 325 pairs compared."
+    },
+    {
+      "name": "personal-setup",
+      "status": "passed",
+      "detail": "personal-setup.txt: zero findings against base 7460e9a9; built-in shapes only because no local installation was found."
+    }
+  ],
+  "assumptions": [
+    "The lead queues the canonical gate; independent review and human approval remain separate owner acts.",
+    "VELDO-0218's audit implementation is out of scope; mutation_reuse.mark_stale is its tested shared write API.",
+    "The fixture boundaries and initial failed validation attempts are documented in build-notes.md."
+  ],
+  "rollback": "Revert the VELDO-0224 changes to restore the rule that stale declarations fail the stage."
+}

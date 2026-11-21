@@ -22,7 +22,8 @@ The proposer reads matching findings. mutation_reuse.mark_stale is the shared wr
 VELDO-0218's future audit; implementing that audit is out of scope. The proposer file is added
 to the footprint because AC3 explicitly requires this consumer.
 
-Validation is pending. The builder does not run the canonical gate or independent review.
+Selected validation passed on implementation commit 24ef7002a32b7f8748c43a62389b73022ab363d0.
+The builder did not run the canonical gate or independent review.
 All loaded validation is submitted through the external host-heavy wrapper. Test child waits
 are generous 300-second hang detectors; no assertion measures machine speed.
 
@@ -31,4 +32,28 @@ an external host-heavy wrapper by the operator. It writes sanitized text logs an
 mutation receipts in this proof directory, and exits nonzero if any selected check fails.
 Full mutation receipts stay in scratch; the retained summaries include named false rows,
 control failures, result sources and coordinator validation counts. This is selected validation,
-not the canonical gate. Host admission is pending as of the second implementation commit.
+not the canonical gate. Host admission retained the wrapper's three-slot limit; the final
+attempt used one-second slot polling after the earlier waiter repeatedly missed openings.
+
+Final results:
+- Suite 158: six ticket rows passed; 32 total including shared checks, zero failures.
+- Nine affected suites: 462 total passed, zero failures. Both selected selftest commands
+  returned the intentional partial-run exit 2. They are diagnostics, not a unit gate verdict.
+- Finding 224: three registered, executed fresh and rejected; green baseline/no-op controls,
+  each required row false for its specified regression. Retaining the snapshot verdict yields
+  the helper-import worker error; retaining the stale key publishes stale cases; writing the
+  candidate changes its identity. The receipt retains these concrete failure details.
+- Finding 217: twelve registered, executed fresh and rejected; no invalid results.
+- Lint and template sync passed. Personal setup reported zero findings using built-in shapes
+  (no local installation found). Both touched specifications passed structural validation.
+
+The initial failed batch is retained: suite 100 accidentally carried stale fixture marks into
+an independent snapshot test, and suite 158 called leg_runs before its module imports installed
+the scripts path in a confined mutation leg. The fixes isolate fixture marks and move that
+check after module loading. The final affected suites and mutation drives above include both fixes.
+
+Fixture boundary: the ticket suite uses the real coordinator, session, authenticated store,
+materializer, worker completion, child interpreter, helper import and tree identity checks.
+It supplies syscall trace text and controls Git/input discovery, runtime fingerprints, deadline
+metadata and launches so it also runs inside the confined mutation leg. Suite 100 separately
+exercises real traced workers. No loaded validation ran outside the external host-heavy wrapper.

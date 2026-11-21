@@ -1,0 +1,4 @@
+Command: bash scripts/check_template_sync.sh
+template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
+
+Exit: 0

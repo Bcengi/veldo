@@ -1,0 +1,4 @@
+Proof manifest schema, required evidence and acceptance-criterion coverage: passed.
+Diff whitespace: passed.
+All 15 registered falsifiers rejected on their required rows with green controls.
+Personal setup rechecked after staging the final proof: 0 findings (built-in shapes only).
