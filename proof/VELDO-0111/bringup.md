@@ -103,11 +103,14 @@ Ported at 88eb37a9. bringup-2026-11-20/results.txt:
   round 1 AC4 (a COMPLETE receipt with an empty trace after collector death) and round 3
   uncovered-state (bringup-2026-11-20/sample-falsifiers.json). AC4 is the row whose expiry probe
   the load-rule change touched.
-- Not run: the full falsifier drives, `python3 -B proof/VELDO-0111/drive.py` (four, with green
-  controls) and `proof/VELDO-0111/round3/falsifiers.py` (five). They are loaded runs and did not
-  get the host lock in this session (queued twice for two hours each behind a gate and other
-  holders). They are still owed through the lock. Both write `.json.gz` receipts beside themselves;
-  those are not to be committed.
+- The full falsifier drives, run through the host lock on 2026-11-21 in a scratch clone of 6b322350 at
+  load 22 (`bringup-2026-11-21/drives.txt`): `python3 -B proof/VELDO-0111/drive.py`, four falsifiers each
+  red on its named row and green on the original (AC1 census/process-lifetimes, AC2
+  census/listener-lifetimes, AC3 census/observer-is-outside, AC4 census/incomplete-is-not-empty), and
+  `python3 -B proof/VELDO-0111/round3/falsifiers.py`, five falsifiers each red on its row and green on
+  the original. Both exit 0. Every run was under the deadlines of the table above, on a loaded host.
+  The `.json.gz` receipts both write are not committed (6.8 MB together).
 
-`results.json`, `round3/acceptance.json` and the round records are the source branch's and carry
-its source digests; the fixture and the suite differ from them by the load-rule change above.
+`results.json`, the four `AC*.diff` files and the `round3/*-red.json` and `*-green.json` files are now
+this run's and carry the line's source digests. `round3/acceptance.json` and the round 2 records are
+still the source branch's.
