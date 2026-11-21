@@ -4,6 +4,7 @@ project activation and team acceptance go through their production commands.
 """
 import contextlib
 import copy
+import datetime
 import http.server
 import importlib.util
 import json
@@ -20,13 +21,22 @@ import time
 
 @contextlib.contextmanager
 def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True,
-            compiled_sources=False, install_modules=None):
+            compiled_sources=False, install_modules=None, role_seconds=100):
+    """`role_seconds` is each role's wall budget, which becomes its runs' dispatch deadline (a suite's timers
+    profile sets it to the wait hang bound, VELDO-0358 AC15)."""
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    # VELDO-0358: the suite runtime's wait primitive: its hang bound is the only duration this fixture names, and
+    # the wall time it hands the product as data is its stamp's.
+    WAITS = load('v152_waits', Path(ROOT) / 'scripts' / 'suites' / 'support' / 'waits.py')
+
+    def wall_now():
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
 
     def message(st, sender, chat, text, reply_to=None):
         with st['lock']:
@@ -37,7 +47,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             # members at time.time(), so a fixed date became "sent before enrollment" once the wall
             # clock passed it (1791300000, 2026-10-06 15:20 UTC). Rounded up so a message sent in the
             # enrollment's second is not dated before it; strictly increasing, as the fixed ticks were.
-            st['date'] = max(math.ceil(time.time()), st.get('date', 0) + 1)
+            st['date'] = max(math.ceil(wall_now()), st.get('date', 0) + 1)
             m = {'message_id': st['next'], 'from': dict(sender), 'chat': dict(chat), 'date': st['date'],
                  'text': text}
             if reply_to is not None and (chat['id'], reply_to) in st['messages']:
@@ -137,7 +147,8 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                 return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
             for who, path in keyfile.items():
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v89-' + who, '-f', str(path)],
-                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL, env=quiet())
+                               check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL,
+                               env=quiet())
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
             # A served integration fixture installs before declaring any store owner, so every writer and
@@ -172,7 +183,8 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
 
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
-                                      capture_output=True, check=True, timeout=20, env=quiet()).stdout.decode()
+                                      capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                      env=quiet()).stdout.decode()
 
             def journal_sign(data):
                 return sign_as('authority', data, 'veldo-journal')
@@ -199,7 +211,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             def envelope(command, principal):
                 now = CM.authority_state(S, conn)
                 return dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal=principal,
-                            request_revision=1, nonce='nonce-' + command['command_id'], expires_at=time.time() + 600,
+                            request_revision=1, nonce='nonce-' + command['command_id'], expires_at=wall_now() + 600,
                             membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                             command_digest=AC.canonical_command_digest(command))
 
@@ -210,7 +222,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                 signature = sign_as(principal, AC.canonical_envelope_bytes(env))
                 cosigned = (sign_as(enrollee, AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
                             if enrollee else None)
-                result = CM.admit(S, conn, env, command, signature, ids, time.time(), enrollee_signature=cosigned,
+                result = CM.admit(S, conn, env, command, signature, ids, wall_now(), enrollee_signature=cosigned,
                                   journal_signer=('authority', journal_sign))
                 K.publish(S, conn, projection)
                 return result
@@ -278,7 +290,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                 ids, operation='activate', project='factory', principal='olga', command_id=next_id('pc'), nonce=next_id('pn'),
                 owner='olga', charter={'purpose': 'Sell passes to travelers.'}, execution_repository=REPO,
                 authority_policy={'team_amendment': ['project_owner'], 'admission': ['admission_authority']},
-                coordination_budget={'capacity': 5, 'invocations': cycle_budget, 'wall_seconds': 500}, ticket_key_prefixes=['FAC'])))
+                coordination_budget={'capacity': 5, 'invocations': cycle_budget, 'wall_seconds': max(500, 5 * role_seconds)}, ticket_key_prefixes=['FAC'])))
 
             service = (CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
                                 requester='team-service', request_sign=lambda m: sign_as('team-service', m))
@@ -333,7 +345,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             def role(workers, resp, perms=('feature',), engines=('claude_code',), budget=None, distinct=()):
                 return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(workers), responsibilities=[resp, 'report'], expertise=['python', 'payments'],
                             proposal_permissions=list(perms), engines=list(engines),
-                            budget=dict(budget or {'capacity': 1, 'invocations': 2, 'wall_seconds': 100}),
+                            budget=dict(budget or {'capacity': 1, 'invocations': 2, 'wall_seconds': role_seconds}),
                             independence={'distinct_from': list(distinct)})
 
             def team(**roles):
