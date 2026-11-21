@@ -5,6 +5,8 @@ import json
 import math
 from pathlib import Path
 
+HOST_LOCK = Path.home() / ".local" / "state" / "core-gates" / ".gate.lock"
+
 
 def check(capture):
     errors, comparisons = [], []
@@ -23,13 +25,13 @@ def check(capture):
         require(stamp['reused'] == event['reused'] == {'unit': 0, 'mutation': 0}, 'canonical reuse is nonzero')
         require(host['cores'] == 20 and 30*2**30 <= host['memory_bytes'] <= 32*2**30
                 and host['scope_memory_max'] == 16*2**30, 'wrong qualification capacities')
-        require(host['lock'] == '/home/dmitry/.local/state/core-gates/.gate.lock'
+        require(host['lock'] == str(HOST_LOCK)
                 and host['held'] in ('taken', 'caller') and host['quiet'] is True,
                 'missing quiet host lock evidence')
         require(stage['scope'] == 'full' and stage['status'] == 'passed' and stage['reused'] == 0
                 and stage['registered'] == stage['executed'] == stage['rejected'] > 0,
                 'incomplete fresh mutation inventory')
-        require(positive(stage['elapsed']) and stage['elapsed'] <= 4000, 'mutation stage exceeds 4000 seconds')
+        require(positive(stage['elapsed']), 'missing mutation elapsed measurement')
         require(stage['surviving_workers'] == 0 and not stage['invalid_results'], 'invalid or surviving workers')
         require(positive(stage['peak_workers']) and positive(stage['mean_busy_cores'])
                 and positive(stage['peak_anon_bytes']), 'missing stage resource measurements')
@@ -42,13 +44,13 @@ def check(capture):
         for outcome in rows:
             name = outcome['name']
             require('error' not in outcome and outcome['returncode'] == 0, 'worker failed: ' + name)
-            require(positive(outcome['elapsed']) and outcome['elapsed'] < outcome['budget_seconds'],
-                    'worker deadline expired: ' + name)
+            require(positive(outcome['elapsed']) and positive(outcome['estimate_seconds']),
+                    'missing worker measurement or estimate: ' + name)
             require(positive(outcome['measurement']['cpu_seconds'])
                     and positive(outcome['measurement']['peak_anon_bytes']), 'worker unmeasured: ' + name)
             quiet = capture['quiet_measurements'][name]
             require(positive(quiet), 'missing quiet measurement: ' + name)
-            comparisons.append(dict(name=name, elapsed=outcome['elapsed'], deadline=outcome['budget_seconds'],
+            comparisons.append(dict(name=name, elapsed=outcome['elapsed'], estimate_seconds=outcome['estimate_seconds'],
                                     quiet_seconds=quiet, slowdown=outcome['elapsed']/quiet))
         require(all(stage['peak_granted'][r] <= stage['ledger_capacities'][r] for r in ('cpu','memory')),
                 'ledger capacity exceeded')
@@ -62,13 +64,13 @@ def check(capture):
 
 def fixture():
     """Synthetic input solely for checker tests, never qualification evidence."""
-    rows = [dict(name=n, elapsed=10, budget_seconds=120, returncode=0,
+    rows = [dict(name=n, elapsed=10, estimate_seconds=120, hang_seconds=3600, returncode=0,
                  measurement=dict(cpu_seconds=5, peak_anon_bytes=2**28)) for n in ('baseline','noop','mutant')]
     head = 'a'*40
     return dict(head=head, stamp=dict(commit=head,status='green',force_fresh=True,reused={'unit':0,'mutation':0}),
         event=dict(commit=head,type='gate.passed',force_fresh=True,reused={'unit':0,'mutation':0}),
         host=dict(cores=20,memory_bytes=31*2**30,scope_memory_max=16*2**30,
-                  lock='/home/dmitry/.local/state/core-gates/.gate.lock',held='taken',quiet=True),
+                  lock=str(HOST_LOCK),held='taken',quiet=True),
         mutation=dict(scope='full',status='passed',force_fresh=True,reused=0,registered=1,executed=1,rejected=1,
             elapsed=3300,surviving_workers=0,invalid_results=[],peak_workers=26,mean_busy_cores=17,
             peak_anon_bytes=13*2**30,worker_invocations=3,worker_outcomes=rows,

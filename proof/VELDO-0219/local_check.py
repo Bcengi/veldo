@@ -66,7 +66,7 @@ def main():
         capture = qualification.fixture()
         capture['mutation'].update(elapsed=elapsed,peak_workers=workers)
         result = qualification.check(capture)
-        assert result['passed'] == (elapsed<=4000)
+        assert result['passed']  # Elapsed measurements do not expire a stage (VELDO-0358).
         captures.append(dict(synthetic=True,elapsed=elapsed,workers=workers,result=result))
     Path(__file__).with_name('capture-checker-red-green.json').write_text(json.dumps(
         dict(scope='checker unit test only; no canonical timing measured',runs=captures),indent=2)+'\n')
