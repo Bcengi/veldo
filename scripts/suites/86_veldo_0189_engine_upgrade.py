@@ -42,7 +42,6 @@ def _v189_suite():
     import tarfile
     import tempfile
     import threading
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -74,15 +73,12 @@ def _v189_suite():
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
 
-    # Attribute elapsed work between observations to the row that consumes it.
-    timing_path = os.environ.get('VELDO_ROW_TIMINGS')
-    timings = {name: 0.0 for name in ROWS}
-    last_check = [time.monotonic()]
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the hang
+    # bounds; it no longer times its rows (VELDO_ROW_TIMINGS), which read the clock.
+    ROWS += ('timers/profile-applied',)
+    rows['timers/profile-applied'] = []
 
     def check(row, label, condition):
-        now = time.monotonic()
-        timings[row] += now - last_check[0]
-        last_check[0] = now
         rows[row].append((label, bool(condition)))
 
     class section:
@@ -100,13 +96,45 @@ def _v189_suite():
                     check(name, 'the section ran to its end (it raised %s: %s)' % (kind.__name__, str(value)[:300]), False)
             return True
 
+    # VELDO-0358 AC15: the timers profile. Every timers table a module this suite loads arms its timers from has
+    # every entry at the wait hang bound; so does each service its stand-in managers start (their environment),
+    # and each setup run in a process of its own (the driver). No row of this suite tests a table timer.
+    TIMERS_PROFILE = {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS}
+    tables = {}
+
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        table = getattr(module, 'TIMERS', None)
+        if table is not None:
+            table.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+            tables[id(table)] = table
         return module
 
-    started = time.monotonic()
+    def heard_ready(proc, listener, expected):
+        """The child said `expected` on its notification socket (True) or exited first (False), woken by either."""
+        if proc.poll() is not None:
+            return False
+        listener.setblocking(False)
+        said = []
+
+        def heard():
+            while True:
+                try:
+                    said.append(listener.recv(4096))
+                except BlockingIOError:
+                    return any(expected in one for one in said)
+        result = WAITS.wait('%r from %s' % (expected, proc.args[-2:]), heard, lambda: proc.poll() is not None,
+                            [WAITS.Readable(listener, drain=False, persistent=True), WAITS.Pidfd(proc)])
+        return result.done and proc.poll() is None
+
+    def exited(proc, what):
+        """The child's exit, woken by its pidfd; past the wait hang bound the row is hung, never killed."""
+        if proc.poll() is None:
+            WAITS.wait(what, lambda: proc.poll() is not None, None, [WAITS.Pidfd(proc)])
+        return proc.returncode
+
     profiler = None
     if os.environ.get('VELDO_SUITE_PROFILE'):
         import cProfile
@@ -229,7 +257,8 @@ def _v189_suite():
     def child_env():
         env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
                'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1',
-               'PYTHONPATH': str(guard_dir), 'VELDO_V189_GUARD_LOG': str(guard_log)}
+               'PYTHONPATH': str(guard_dir), 'VELDO_V189_GUARD_LOG': str(guard_log),
+               'VELDO_TIMERS_PROFILE': json.dumps(TIMERS_PROFILE)}
         if os.environ.get('XDG_RUNTIME_DIR'):
             env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
         return env
@@ -322,7 +351,7 @@ def _v189_suite():
                                             preexec_fn=child_setup)
                 self.procs[unit] = proc
                 try:
-                    ready = runtime.ready(proc, listener, b'READY=1' if kind == 'notify' else b'LISTEN')
+                    ready = heard_ready(proc, listener, b'READY=1' if kind == 'notify' else b'LISTEN')
                 finally:
                     listener.close()
                     notify.unlink()
@@ -342,11 +371,7 @@ def _v189_suite():
             if proc is not None and proc.poll() is None:
                 proc.send_signal(signal.SIGTERM)
                 runtime.wake_authority(shlex.split(self._field(unit, 'ExecStart')[0])[-1])
-                try:
-                    runtime.wait(proc, 15)
-                except subprocess.TimeoutExpired:
-                    proc.kill()
-                    runtime.wait(proc, 5)
+                exited(proc, '%s to exit on SIGTERM' % unit)
 
         def stop_all(self):
             for unit in sorted(self.procs):
@@ -356,7 +381,7 @@ def _v189_suite():
             for proc in self.procs.values():
                 if proc.poll() is None:
                     proc.kill()
-                    runtime.wait(proc, 5)
+                    exited(proc, 'a killed unit process to be reaped')
 
     class Bridge:
         """The stand-in manager reached from a setup running in a process of its own: one JSON line of
@@ -391,8 +416,12 @@ def _v189_suite():
                         conn.sendall(json.dumps(answer).encode())
 
         def close(self):
+            # VELDO-0358 (residue): a shut-down listener wakes the blocked accept, which then ends the thread.
+            with contextlib.suppress(OSError):
+                self.server.shutdown(socket.SHUT_RDWR)
             with contextlib.suppress(OSError):
                 self.server.close()
+            self.thread.join()  # its accept has been woken by the shutdown; the progress watchdog bounds the rest
 
     # The setup run in a process of its own, SIGKILLed right after its upgrade's Nth step-log line (0: never).
     # `point` is wrapped once per module, so the count is one per step-log line however often setup fetches the
@@ -401,6 +430,14 @@ def _v189_suite():
     driver.write_text(
         'import importlib.util, json, os, signal, socket, sys\n'
         'mods, kill_at, bridge, overrides, argv = sys.argv[1], int(sys.argv[2]), sys.argv[3], json.loads(sys.argv[4]), json.loads(sys.argv[5])\n'
+        # VELDO-0358 AC15: the setup's timers (the installation's table) under the suite's profile, first.
+        'table = os.path.join(os.path.realpath(mods), "timers.py")\n'
+        'if os.path.isfile(table):\n'
+        '    tspec = importlib.util.spec_from_file_location("veldo_timers:" + table, table)\n'
+        '    T = importlib.util.module_from_spec(tspec)\n'
+        '    tspec.loader.exec_module(T)\n'
+        '    sys.modules["veldo_timers:" + table] = T\n'
+        '    T.set_profile(None, hang_seconds=' + str(WAITS.WAIT_HANG_SECONDS) + ')\n'
         'spec = importlib.util.spec_from_file_location("v189_killed_setup", os.path.join(mods, "control_factory_setup.py"))\n'
         'F = importlib.util.module_from_spec(spec)\n'
         'spec.loader.exec_module(F)\n'
@@ -437,11 +474,11 @@ def _v189_suite():
 
     def keygen(path, comment):
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', comment, '-f', str(path)], check=True,
-                       capture_output=True, timeout=10, stdin=subprocess.DEVNULL)
+                       capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
 
     def sign_with(path, message, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(path), '-n', namespace], input=message,
-                              capture_output=True, check=True, timeout=10).stdout.decode()
+                              capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout.decode()
 
     def private(path, text, mode=0o600):
         fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
@@ -663,7 +700,7 @@ def _v189_suite():
             verify = trust.verifier(owner, workspace)
             try:
                 return CC.send(workspace, packet, CEN, verify, lambda data: sign_with(owner_key, data),
-                               trust.host_identity, timeout=30)
+                               trust.host_identity)
             except CC.RoutingRefused as exc:
                 return {'accepted': False, 'reason': 'routing:' + exc.reason}
 
@@ -714,7 +751,8 @@ def _v189_suite():
         if not key.is_file():
             return None
         env = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
-        done = subprocess.run(['ssh-keygen', '-y', '-f', str(key)], capture_output=True, text=True, timeout=10,
+        done = subprocess.run(['ssh-keygen', '-y', '-f', str(key)], capture_output=True, text=True,
+                              timeout=WAITS.WAIT_HANG_SECONDS,
                               stdin=subprocess.DEVNULL, env=env)
         return ' '.join(done.stdout.split()[:2]) if done.returncode == 0 and done.stdout.strip() else None
 
@@ -1053,7 +1091,7 @@ def _v189_suite():
                 engine_record.unlink()
                 proc = subprocess.run([sys.executable, '-B', str(atomic_driver), str(mods / 'control_factory_setup_engines.py'),
                                        str(fresh.root), str(fresh.home / 'bin'), json.dumps(engine_plan), point],
-                                      capture_output=True, timeout=30, env=child_env())
+                                      capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, env=child_env())
                 check(AT, point + ': stopped the real writer', proc.returncode == -signal.SIGKILL)
                 try:
                     visible = json.loads(engine_record.read_text()) if engine_record.exists() else None
@@ -1384,7 +1422,8 @@ def _v189_suite():
             """One setup in a process of its own, SIGKILLed right after its upgrade's `at`th write point."""
             done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), bridge.path,
                                    json.dumps(kill.overrides()), json.dumps(kill.argv())], env=child_env(),
-                                  capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)
+                                  capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                  stdin=subprocess.DEVNULL)
             return done.returncode
 
         def fresh_start():
@@ -1502,7 +1541,8 @@ def _v189_suite():
                 """One setup of the fresh host in a process of its own, SIGKILLed right after its `at`th write point."""
                 done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), ak_bridge.path,
                                        json.dumps(fresh.overrides()), json.dumps(fresh.argv())], env=child_env(),
-                                      capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)
+                                      capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                  stdin=subprocess.DEVNULL)
                 return done.returncode
 
             def without_signer():
@@ -2022,7 +2062,7 @@ def _v189_suite():
                                        'serve', str(config)], env=manual_env, stdin=subprocess.DEVNULL,
                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=child_setup)
             try:
-                up = runtime.ready(manual, notification, b'READY=1') and fresh.answers()
+                up = heard_ready(manual, notification, b'READY=1') and fresh.answers()
                 calls = len(fresh.manager.calls)
                 out = io.StringIO()
                 with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
@@ -2033,11 +2073,7 @@ def _v189_suite():
                 notification.close()
                 manual.send_signal(signal.SIGTERM)
                 runtime.wake_authority(config)
-                with contextlib.suppress(subprocess.TimeoutExpired):
-                    runtime.wait(manual, 15)
-                if manual.poll() is None:
-                    manual.kill()
-                    runtime.wait(manual, 5)
+                exited(manual, 'the manually started service to exit on SIGTERM')
             steps = {s.get('step'): s for s in report.get('steps') or []}
             upgrade = steps.get('engine_upgrade') or {}
             fixture_engine = {n: 'sha256:' + hashlib.sha256((fixture / n).read_bytes()).hexdigest()
@@ -2055,6 +2091,26 @@ def _v189_suite():
                   up and upgrade.get('restart') == 'not_through_unit'
                   and not any(c[0] in ('start', 'stop', 'restart') for c in ran)
                   and 'systemctl --user start %s' % fresh.unit in str(upgrade.get('next')))
+
+        # VELDO-0358 AC15: the profile reached every arming site: each timers table of this process, and the start
+        # record of every service process the suite's stand-in managers started (its effective values).
+        with section('timers/profile-applied'):
+            hang = WAITS.WAIT_HANG_SECONDS
+            mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
+                    'control_store.BUSY_SECONDS'}
+
+            def unset(report, required=mine):
+                """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
+                named = {r['name']: r['value'] for r in report or []}
+                return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in required - set(named)])
+            starts = []
+            for log in sorted(base.rglob('observations.jsonl')):
+                with contextlib.suppress(OSError):
+                    starts += [unset(json.loads(line).get('timers')) for line in log.read_text().splitlines()
+                               if '"operation": "timers"' in line]
+            profile = {'in_process': [unset(table.report(), set()) for table in tables.values()], 'services': starts}
+            check('timers/profile-applied', 'timer_unset %r' % profile, bool(tables)
+                  and all(u == [] for u in profile['in_process']) and bool(starts) and all(u == [] for u in starts))
 
         check(IA, 'no connection beyond the loopback interface was attempted [%s]' % attempts[:3],
               not attempts and not (guard_log.is_file() and guard_log.read_text().strip()))
@@ -2078,8 +2134,6 @@ def _v189_suite():
     if profiler is not None:
         profiler.disable()
         profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
-    if timing_path:
-        Path(timing_path).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started), indent=2) + '\n')
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
@@ -2090,7 +2144,6 @@ def _v189_suite():
             if not observed:
                 print('  VELDO-0189 %s detail: no check ran' % name)
         expect('VELDO-0189 ' + name, ok)
-    print('VELDO-0189 suite seconds: %.3f' % (time.monotonic() - started))
 
 
 _v189_suite()
