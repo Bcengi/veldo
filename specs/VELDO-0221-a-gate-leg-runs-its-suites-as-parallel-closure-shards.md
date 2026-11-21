@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208, VELDO-0214, VELDO-0216]
 placement: [enforcement]
-protected_paths: ["scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py", "scripts/check_first_use.py", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py"]
+protected_paths: ["scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py", "scripts/check_first_use.py", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py"]
 footprint:
   - scripts/selftest.py
   - scripts/run_scope.py
@@ -42,6 +42,9 @@ footprint:
   - proof/VELDO-0221/*
   - scripts/check_space_boundary.py
   - proof/WARP-0716/crossing-state.md
+  - scripts/gate_schedule.py
+  - engine/scripts/gate_schedule.py
+  - scripts/suites/15_warp_1404_historical_analogy*.py
 behavior_bearing: true
 observability:
   logs: Each shard prints its target suite, its closure, its private roots, its pass and fail counts and its wall time; each leg prints its shard count, its parallelism and its isolation check result with every leaked or foreign item named.
@@ -110,18 +113,29 @@ acceptance_criteria:
       shards221-check-force-fresh-only must fail suite-shards/isolation-checked.
   - id: AC4
     text: >
-      Claim: shards claim their measured CPU and anonymous memory from the gate-wide ledger, and a
-      suite that declares the systemd user manager exclusive (63_veldo_0040_containment,
-      66_veldo_0047_authority) holds an exclusive manager claim while it runs; on the qualification
-      host each confined leg of unit and integration then finishes in at most 600 seconds and each
-      unconfined leg in at most 420, against the measured 1,913, 1,795, 892 and 834 seconds. Set: a
-      fixture leg with two exclusive and three shared manager suites, and one canonical gate at the
-      landing candidate. Completeness: row suite-shards/manager-exclusive requires no overlap of an
-      exclusive shard with any manager user; the proof records every shard's wall and CPU time and
-      each leg's critical shard.
+      Claim: shards claim their measured CPU and anonymous memory from the gate-wide ledger; a leg's
+      node holds only its dispatcher's claim once its shards claim for themselves, so a leg's shards
+      run in parallel beneath the mutation stage's reserved cores; and a suite that declares the
+      systemd user manager exclusive (63_veldo_0040_containment, 66_veldo_0047_authority) holds an
+      exclusive manager claim while it runs. The time claim is a PAIRED measurement (lead decision
+      2026-11-21 under the owner's rule that no verdict may depend on machine speed, Telegram 42829;
+      see History): each leg is run as shards and then as the ordered single-namespace run, back to
+      back in one job on one host at one commit, and is judged on the ratio of the two wall times,
+      sharded over ordered, never on either time alone. The ratio is at most one third for a confined
+      leg and at most one half for an unconfined leg, which are the bounds this criterion first
+      stated in seconds (600 against 1,913 and 420 against 892) as ratios. Set: a fixture leg with
+      two exclusive and three shared manager suites; a fixture gate of the real scheduler with a
+      mutation floor of 11 of 20 cores and a leg node whose earlier claim was its whole cgroup's;
+      and one paired run of each leg at the fix-round candidate. Completeness: row
+      suite-shards/manager-exclusive requires no overlap of an exclusive shard with any manager
+      user; row suite-shards/leg-node-claims-only-its-dispatcher requires three shards held at once
+      while the mutation node holds its floor; the proof records every shard's wall and CPU time,
+      each leg's critical shard and both times of each pair.
     falsified_by: >
       Ignore the manifest's manager declarations in the shard dispatcher. Registered mutant
-      shards221-resources-ignored must fail suite-shards/manager-exclusive.
+      shards221-resources-ignored must fail suite-shards/manager-exclusive. Keep a leg node's
+      whole-cgroup claim while its shards claim: registered mutant shards221-leg-claim-counts-shards
+      must fail suite-shards/leg-node-claims-only-its-dispatcher.
 required_evidence: [unit, integration]
 rollback: Revert the shard mode; every leg runs the ordered single namespace run, as before.
 ---
@@ -182,20 +196,44 @@ The integration stage's nested run uses the same dispatcher, so its legs shard t
 budget input from VELDO-0214 becomes the 1800-second floor because the measured unit leg time falls
 far below 900 seconds.
 
-## Build notes (2026-11-21)
+## Build notes (2026-11-21, as of fix round 1)
 
 Recorded by the build, for the owner and the reviewer. The evidence and the reasons are in
 proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
 
-- AC3's unconfined check attributes what it finds: an entry at the top of the system temporary
-  directory that nothing ties to a shard is printed and not charged, because other sessions and
-  this gate's own launchers make entries there throughout a leg.
-- The instance name extends the engine's fixed unit prefix instead of preceding it, and no
-  unconfined suite of this repository is given one yet: suites 66, 85 and 117 fail with one set.
-- Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED).
-- The one measured confined leg took 678.6 seconds, over AC4's 600: suite
-  15_warp_1404_historical_analogy alone takes 634 seconds in an ordered run.
-- The build added two paths to this footprint, its last two entries, because a gate check requires
-  each edit: scripts/check_space_boundary.py (two table entries for the dispatcher's temporary
-  directory) and proof/WARP-0716/crossing-state.md (regenerated for the dispatcher's digest). The
-  shape gate refuses a diff that touches a path its specification does not declare.
+- The instance name extends the engine's fixed unit prefix instead of preceding it. It is read from
+  the shard's runtime directory, and by an installed service from its own unit's name, not from the
+  installation's configuration as AC2's text says (lead decision 9 below).
+- Three unconfined suites are given no instance name (run_scope.UNNAMED: 85_veldo_0171_setup_api,
+  86_veldo_0189_engine_upgrade, 117_veldo_0227_ui_location): each lays a host down with an older
+  engine from this repository's history, which cannot carry a name. This needs the owner's decision.
+- Suite 151_veldo_0313_space_run runs without a Landlock layer of its own (run_scope.UNLAYERED), and
+  alone: no other shard runs beside it.
+- AC3's unit check judges only this instance's units, by the leg's prefix or by reference to a
+  shard's roots; a file nothing can be tied to fails the leg's isolation check by name.
+- The build added five paths to this footprint, its last five entries. Two because a gate check
+  requires each edit: scripts/check_space_boundary.py (two table entries for the dispatcher's
+  temporary directory) and proof/WARP-0716/crossing-state.md (regenerated for the dispatcher's
+  digest). Three by the lead's decisions of 2026-11-21: scripts/gate_schedule.py and its engine
+  copy (the leg node's claim) and scripts/suites/15_warp_1404_historical_analogy*.py (the split).
+
+## History
+
+2026-11-21, fix round 1, lead decisions after the independent review (verdict FIX):
+
+- AC4 restated. Its first text bound each confined leg to 600 seconds and each unconfined leg to
+  420 on the qualification host. A whole-leg wall-time bound depends on machine speed and on what
+  else the host runs, which the owner's rule forbids (Telegram 42829). AC4 is now a paired
+  measurement: sharded against ordered, same job, same host, same commit, judged on the ratio. The
+  lead named no number; the build wrote the first text's own bounds as ratios (one third, one
+  half), and the lead confirms or changes them at landing. The criterion also gained the leg
+  node's claim (review finding F1) with its row and falsifier.
+- Builder decisions 2 to 8, 10 and 12 and the two footprint additions are kept.
+- Decision 9: the instance name is carried in the shard's runtime directory, in both legs.
+- Suite 151's Landlock exception is narrowed to running it alone. It stays the one entry of the
+  protected table, and the owner approves it at landing.
+- The rule for the top of the system temporary directory: a new entry made during a leg is charged
+  to its shard when it can be attributed; one that cannot fails the leg's isolation check with its
+  name recorded. It is never silently allowed.
+- Suite 15_warp_1404_historical_analogy is split so no one shard dominates a leg, its rows unchanged.
+- The footprint gains scripts/gate_schedule.py, its engine copy and the split suite's files.
