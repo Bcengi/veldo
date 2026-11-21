@@ -433,6 +433,52 @@ def _v206_suite_reuse():
             and (s_second['source']['e'], s_second['failed']['e'], s_second['code'])
             == (s_forced['source']['e'], s_forced['failed']['e'], s_forced['code']),
             [tell(run) for run in s_runs])
+        # THE FIX-CHECK'S P2 (fix round 2). The same shape outside the process: the unqualified d
+        # leaves a file in the home, the temporary folder, the run directory and the per-user
+        # configuration folder the gate runs with, and the qualified e fails when it finds one in
+        # its own. With those places shared, the first gate is green (e runs before d) and publishes
+        # e, the warm gate reuses that pass, and a force-fresh gate of the same tree is red. Here e's
+        # process has a home, a temporary folder and a run directory of its own, new and empty and
+        # removed after it, and no per-user folder: every gate, warm or fresh, agrees, and is green.
+        of = Fixture(base / 'outside-files')
+        places = {'HOME': of.base / 'home', 'TMPDIR': of.base / 'tmp', 'TEMP': of.base / 'tmp',
+                  'TMP': of.base / 'tmp', 'XDG_RUNTIME_DIR': of.base / 'run', 'XDG_CONFIG_HOME': of.base / 'config'}
+        for folder in places.values():
+            folder.mkdir(exist_ok=True)
+        of.environ.update({k: str(v) for k, v in places.items()})
+        ox = of.root / 'scripts/suites'
+        looked = ('import os\nimport tempfile\nPLACES = %r\n'
+                  'WHERE = [os.environ[v] for v in ("HOME", "TMPDIR", "XDG_RUNTIME_DIR", "XDG_CONFIG_HOME") if v in os.environ]\n'
+                  'WHERE.append(tempfile.gettempdir())\nWHERE.append(os.path.expanduser("~"))\n'
+                  % {k: str(v) for k, v in places.items()})
+        (ox / 'd.py').write_text(looked + 'ran("d")\nfor where in WHERE:\n'
+                                 '    open(os.path.join(where, "left-by-d"), "w").write("x")\n'
+                                 'expect("fixture d writes where the gate runs", True)\n')
+        (ox / 'e.py').write_text(
+            looked + 'ran("e")\n'
+            'expect("fixture e finds nothing another suite left outside the repository", not any('
+            'os.path.exists(os.path.join(where, "left-by-d")) for where in WHERE))\n'
+            'expect("fixture e has a home, a temporary folder and a run directory of its own, new and empty", '
+            'all(os.environ.get(v) not in (None, PLACES[v]) and os.listdir(os.environ[v]) == [] '
+            'for v in ("HOME", "TMPDIR", "TEMP", "TMP", "XDG_RUNTIME_DIR")) and "XDG_CONFIG_HOME" not in os.environ '
+            'and tempfile.gettempdir() == os.environ["TMPDIR"])\n'
+            'for where in WHERE:\n    open(os.path.join(where, "left-by-e"), "w").write("x")\n')
+        of.qualify()
+        o_first = of.cycle()
+        o_left = sorted(str(f.relative_to(of.base)) for folder in places.values() for f in folder.iterdir())
+        o_second = of.cycle()
+        o_forced = of.cycle(force='1')
+        o_runs = (o_first, o_second, o_forced)
+        row('closure', 'files-left-outside-the-repository-cannot-reach-a-qualified-suite',
+            all(run['code'] == [0] and run['failed']['e'] == 0 and run['receipt']['status'] == 'passed'
+                and not run['problems'] for run in o_runs)
+            and o_first['source']['e'] == 'fresh' and (of.store / (o_first['key']['e'] + '.json')).exists()
+            and o_second['source']['e'] == 'reused' and o_second['reason']['e'] == 'hit'
+            and o_forced['source']['e'] == 'fresh' and 'e' in o_forced['trace']
+            and o_first['key']['e'] == o_second['key']['e'] == o_forced['key']['e']
+            and o_left == ['config/left-by-d', 'home/left-by-d', 'run/left-by-d', 'tmp/left-by-d']
+            and sorted(f.name for f in (of.base / 'tmp').iterdir()) == ['left-by-d'],
+            ([tell(run) for run in o_runs], o_left))
         expect('VELDO-0206 suite-reuse/closure: a hit needs the exact closure, prerequisite state included%s'
                % ('' if all(rows['closure'].values()) else
                   ': false: ' + ', '.join(k for k, v in rows['closure'].items() if not v)),

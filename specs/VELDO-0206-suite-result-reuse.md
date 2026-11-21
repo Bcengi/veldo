@@ -75,3 +75,11 @@ scripts/verify.sh requires high-risk review and exact commit/proof-bound owner a
 and landing gates retain VELDO_GATE_FORCE_FRESH=1.
 
 2026-11-11: footprint amended by the lead: scripts/check_teeth_mutations.py for the teeth registration the ACs require, and the engine copies of touched scripts the template sync check requires (the builder stopped on it).
+
+2026-11-21, fix round 2: a qualified suite is isolated outside its process as well as inside it.
+Its process gets a HOME, TMPDIR and XDG_RUNTIME_DIR of its own, new and empty, and removed after
+it. The per-user XDG folders are unset, so they fall back under that home. No file another suite,
+an earlier gate or the host left in the gate's own places can reach it. A qualification's
+non_file_inputs "none" states that nothing outside the key can change a row, and that includes
+any file outside the repository other than its runtime paths and those private places. A path
+outside the repository that the suite's own code names is such a file.

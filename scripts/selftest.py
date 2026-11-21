@@ -300,22 +300,44 @@ def _account(kind, **payload):
             **payload).encode())
 
 
+def _private_places(scratch):
+    """The process of an isolated suite gets places of its own outside the repository: a home, a
+    temporary folder and a run directory, each new and empty, made for this one process and
+    removed after it. So no file another suite, another gate or anything else on the host left in
+    the dispatcher's HOME, TMPDIR or XDG_RUNTIME_DIR can reach it, whether the suite reads it
+    itself or a tool it runs does (git reads the home's configuration, the interpreter its user
+    site), and nothing it leaves there outlives it. The per-user XDG folders are removed, so they
+    fall back under the private home."""
+    places = {}
+    for variable, folder in (("HOME", "home"), ("TMPDIR", "tmp"), ("XDG_RUNTIME_DIR", "run")):
+        places[variable] = os.path.join(scratch, folder)
+        os.mkdir(places[variable], 0o700)
+    places["TEMP"] = places["TMP"] = places["TMPDIR"]
+    environment = {k: v for k, v in _ENVIRONMENT.items()
+                   if k not in RS.PRIVATE_PLACES and k not in RS.PRIVATE_FALLBACKS}
+    environment.update(places)
+    return environment
+
+
 def _isolate(name):
     """Run one isolated suite in its own process and return (rows it passed, rows that failed there).
 
     The process is started with what this dispatcher was started with, not with what it has
-    become, and it writes to this dispatcher's output. Its counts come back in a file of this
-    run; this waits for the process to exit and for nothing else. A process that reports nothing
-    counts as one failed row."""
+    become, except that its home, temporary folder and run directory are its own (_private_places),
+    and it writes to this dispatcher's output. Its counts come back in a file of this run; this
+    waits for the process to exit and for nothing else. A process that reports nothing counts as
+    one failed row."""
+    import shutil
     import subprocess
     import tempfile
-    _fd, _report = tempfile.mkstemp(prefix="veldo-suite-")
-    os.close(_fd)
+    _scratch = tempfile.mkdtemp(prefix="veldo-suite-")
+    _report = os.path.join(_scratch, "report.json")
     try:
         sys.stdout.flush()
         _code = subprocess.call(
             [sys.executable, *subprocess._args_from_interpreter_flags(), str(HERE / "selftest.py")],
-            cwd=_DIRECTORY, env=dict(_ENVIRONMENT, **{RS.REUSE_VARIABLE: RS.reuse_child(REUSE, name, _report)}))
+            cwd=_DIRECTORY, env=dict(_private_places(_scratch),
+                                     **{RS.REUSE_VARIABLE: RS.reuse_child(REUSE, name, _report)}))
         try:
             _counts = json.loads(Path(_report).read_text())
             if (_counts.get("suite") != name or type(_counts.get("passed")) is not int
@@ -330,10 +352,7 @@ def _isolate(name):
             return _counts["passed"], 1
         return _counts["passed"], _counts["failed"]
     finally:
-        try:
-            os.unlink(_report)
-        except OSError:
-            pass
+        shutil.rmtree(_scratch, ignore_errors=True)
 
 
 _account("begin", suites=len(RUN))
