@@ -92,6 +92,13 @@ def _veldo_0221():
         extra = options.pop("extra", {})
         drop = options.pop("drop", ())
         environ = {k: v for k, v in leg_env(leg, listed, **extra).items() if k not in drop}
+        if "HOME" not in extra:
+            # A fixture leg's own home and temporary directory, unless a row names them: run inside the
+            # ordered confined leg this suite's are the launcher's scratch, which the dispatcher would
+            # take for the scratch of the fixture leg and stand its shards' temporary directories in.
+            private = Path(tempfile.mkdtemp(prefix="leg-", dir=str(top)))
+            (private / "tmp").mkdir()
+            environ.update(HOME=str(private), TMPDIR=str(private / "tmp"))
         result = RS.run_shards(root, leg, targets, environ=environ, emit=lines.append, **options)
         return result, lines
 
