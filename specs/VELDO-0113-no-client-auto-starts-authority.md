@@ -83,3 +83,28 @@ Use the VELDO-0112 adapters unchanged. Git identity lookups or transport helpers
 Use VELDO-0111's unprivileged Linux ptrace fixture and capability receipt. On a host where that mechanism is unavailable, the census is INCOMPLETE: unavailable/no-client-starts-the-authority, unavailable/no-client-hosts-a-listener and unavailable/no-auto-start-needs-census each stand down BY NAME, never green or omitted. A successful refusal or equal socket snapshots cannot discharge these obligations. Fault-injection checks may prove that propagation is correct; they do not prove process/listener absence on the unavailable host.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## Implementation blocker observed 2026-11-21
+
+On bring-up commit `1df7ae358bae1cf44b4ab5e1571f0c6fd523aa37`, the unchanged
+VELDO-0112 inventory includes ten `in_process` cases. In particular,
+`control_dispatch:Dispatches.prepare/in_process` writes through an existing
+SQLite connection and has no endpoint-availability contract. Invoking its
+unchanged registered adapter with valid prepared arguments advances the journal
+with both an absent Unix endpoint and a socket inode left by SIGKILL. Thus AC1's
+requirement that every registered client refuses is false before adding any
+auto-start mutation. See `proof/VELDO-0113/contract-gap.txt` and its reproducible
+driver. This diagnostic is not a process/listener absence claim.
+
+Resolving this requires a decision about the in-process entries: define their
+authority-loss boundary and its refusal semantics, or explicitly revise the
+consumer set. Filtering those registrations, substituting a refusing store, or
+adding an endpoint check solely in the test would not meet the current contract.
+No such change has been made. The acceptance criteria and adapters remain intact.
+
+Separately, the VELDO-0111 probe has COMPLETE capture but INCOMPLETE qualification
+and returns all three required consumer names as STANDS DOWN with
+`census_incomplete`. The full receipt is retained under this ticket's proof.
+Its open qualification obligations are documented in `proof/VELDO-0111/OPEN.md`;
+they cannot be reported as green by this consumer. Implementation and the three
+declared falsifier registrations remain outstanding.
