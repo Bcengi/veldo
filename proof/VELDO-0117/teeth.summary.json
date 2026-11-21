@@ -1,5 +1,5 @@
 {
- "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 117 --jobs 3 --worker-log-dir <scratch> --diff-dir <scratch> --summary <scratch file>",
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 117 --jobs 3 --worker-log-dir <scratch> --diff-dir <scratch>",
  "deciding": {
   "bound": "the stage passed, every mutant registered under finding 117 was run and killed on its target row, each kill quotes a false label of that row, and no target row was red because its section raised",
   "cases": [
@@ -213,7 +213,7 @@
    }
   ],
   "counts": {
-   "elapsed": 155.37335514416918,
+   "elapsed": 172.10905101103708,
    "executed": 10,
    "registered": 10,
    "rejected": 10,
@@ -229,8 +229,8 @@
    "v117-registration-comparison-removed.diff": "407d7e56369ce82233ab9a56db3ef919b9c80a16a4a5083db9359d53af6a8407",
    "v117-registration-not-atomic.diff": "d6d9934cd8b55af74bcf6d14118d1e20419a4b575697e616800819823a89d486",
    "v117-registry-empty-at-start.diff": "e511f8418717030048588c9f411b935e114d62e1528607aa4a4e5c973589a15d",
-   "v117-service-passes-no-registry.diff": "b1937c70b9732d593babd8a10c907727c07a322fb2d897ef726d94ba5943aa06",
-   "v117-service-registry-per-installation.diff": "9d8828c24a74ecf9edff3c8110b0fbc9be0fedad56a3f96ab97bdee8b51d9983",
+   "v117-service-passes-no-registry.diff": "b5cf5b92423d0503419d14bd539e9f89666f0bc898cacf4bc3aee24d5a79fb0f",
+   "v117-service-registry-per-installation.diff": "0dc96096a0a04ada2227a319057e7766083fdc7c96850513b6d8815ac7c3b312",
    "v117-unregistered-domain-served.diff": "2839abade53ac41e518905758011a48527f1cc4a217583586d62898597cd949c"
   },
   "registered": [
@@ -250,14 +250,9 @@
  },
  "discarded": [
   {
-   "bytes": 110968,
+   "bytes": 109171,
    "name": "teeth.log",
-   "sha256": "89b349d969ba94e207285b7a487ece6ddc85b3c4e47156f1f00121532ec2889f"
-  },
-  {
-   "bytes": 2367,
-   "name": "driver.summary.json",
-   "sha256": "a3abd82ca02d388c3987da7d304b78bd30a38be9714142c150324bd68faf0f55"
+   "sha256": "b75f43a5c20d4fde29bef1bff7cab6a82b299e6c5eeebfdff8b8b7e4888636f7"
   },
   {
    "bytes": 263,
@@ -297,12 +292,12 @@
   {
    "bytes": 338,
    "name": "diffs/v117-service-passes-no-registry.diff",
-   "sha256": "b1937c70b9732d593babd8a10c907727c07a322fb2d897ef726d94ba5943aa06"
+   "sha256": "b5cf5b92423d0503419d14bd539e9f89666f0bc898cacf4bc3aee24d5a79fb0f"
   },
   {
    "bytes": 246,
    "name": "diffs/v117-service-registry-per-installation.diff",
-   "sha256": "9d8828c24a74ecf9edff3c8110b0fbc9be0fedad56a3f96ab97bdee8b51d9983"
+   "sha256": "0dc96096a0a04ada2227a319057e7766083fdc7c96850513b6d8815ac7c3b312"
   },
   {
    "bytes": 184,
@@ -367,7 +362,7 @@
   {
    "bytes": 4899,
    "name": "workers/13-stdout",
-   "sha256": "c1138e7b667becd31c43921c84590975f26830154d6695d713611d4fba45cbf1"
+   "sha256": "7d4eb30df34b2279c385b83d9cebf9ac2e0f8a8e5a8988e3afecf2fcb74a85d8"
   },
   {
    "bytes": 0,
@@ -397,7 +392,7 @@
   {
    "bytes": 3286,
    "name": "workers/16-stdout",
-   "sha256": "d7d892249465e6f9f909164587ca4b5cd434b82c4df47ef0cde0c5729fdcadb8"
+   "sha256": "1046fae95f10cb637ffa25e9a33ec23c49fc4258d573d337ce0982f798dae58a"
   },
   {
    "bytes": 0,
@@ -407,7 +402,7 @@
   {
    "bytes": 3276,
    "name": "workers/17-stdout",
-   "sha256": "e1319af3d1922737266d4824d79f59d7d021c62cfcf0f4c0f8b3b0938d775fdf"
+   "sha256": "63b5d3572df59b13d3476c1c68a5fa5901b2fe38fae554b8bcf9a55ba1c511dd"
   },
   {
    "bytes": 0,
@@ -457,7 +452,7 @@
   {
    "bytes": 2650,
    "name": "workers/6-stdout",
-   "sha256": "175621487fb097e53ac1d83e912aff8b62bc5ecfc1f3044c9a3e8f99d4718809"
+   "sha256": "10459b566a435d0a8fc567fa085cda297677ce138971cc918def87bdd1467195"
   },
   {
    "bytes": 0,
@@ -467,7 +462,7 @@
   {
    "bytes": 2650,
    "name": "workers/7-stdout",
-   "sha256": "175621487fb097e53ac1d83e912aff8b62bc5ecfc1f3044c9a3e8f99d4718809"
+   "sha256": "10459b566a435d0a8fc567fa085cda297677ce138971cc918def87bdd1467195"
   },
   {
    "bytes": 0,
@@ -487,110 +482,110 @@
   {
    "bytes": 5013,
    "name": "workers/9-stdout",
-   "sha256": "abb8e27335988549d0118012e9abb6ff4cf43cc05fd1d3677ac77676b79e4020"
+   "sha256": "3786d0ce77d745a206ba2a433734ca6a01afd8a19d45d0e628659b6c2383c787"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-0.jsonl",
-   "sha256": "1d883096131ddf1fa0bf3c09723061590e1f48719ebe40339695c19dd05e65d2"
+   "sha256": "5ee63ad57778035ed0e6c05227e995842d4f15894cc62cda7c3749671ad02ed2"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-1.jsonl",
-   "sha256": "d64c011a791da6502c88f3f57e5d9fbe126ee4e50d158f62ed79a69d64346130"
+   "sha256": "dc1d4459ac2452615dcaa3afdd378ec1993ebc05926aeab308574dfb032e231d"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-10.jsonl",
-   "sha256": "9cf1aa432d3757afcbbc2fcb092c6607bbc2f767dc1a83d9e503df11d21af0cd"
+   "sha256": "1dc8da238b38db0d8011b964cdfe0cf3d160dcf5f9a353a1d67e09277feb651e"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-11.jsonl",
-   "sha256": "988964f8505c184d7e55d0ad03c6887ff12d4d33dedccdd8ca073d25e2db2538"
+   "sha256": "defc28ea01e41e53623afae338c8fc4087b957977e71ed136799d40d0463a910"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-12.jsonl",
-   "sha256": "2dc4f914a74d667d18dff665af0bdbe9e6a27dfe383555dd4c3875724ac53b9b"
+   "sha256": "afec47c63da381a0e4d26899529e1ed4cd390b022bc9460063709574d6721fa5"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-13.jsonl",
-   "sha256": "f7f97a56dbdeb9c48416e81b95b34f6300d01b89247cd7f27e849813ea7ce122"
+   "sha256": "233eec09196c0f2366b8beb47322a4c00023b0641723756c8c99afed5338e09a"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-14.jsonl",
-   "sha256": "1dee7de2dfad3f12feae400eca7186c1b8c74657f614f2ffa7cc64d5c5fec4d5"
+   "sha256": "5927c09252e176eaf553bfd8423fefb9eead186732c4c574c96436dd1d6049cd"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-15.jsonl",
-   "sha256": "7ca498781374095bc1230ff23da2d69ba4d2d088f330d55d8f703a7dac4455dc"
+   "sha256": "30b7bfe7a5e46282d9700ce87af17a90007cc41e76355c2eb711e3e00d4f9027"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-16.jsonl",
-   "sha256": "9a7b30dfdd7d8ccb55fd032812368793082ae60786ead0d2c503ef464b357d14"
+   "sha256": "f3176bd5d6fc69b0e206df4ebcc182af01fef07ffbb3e8659eb98eb0561cc067"
   },
   {
-   "bytes": 967,
+   "bytes": 883,
    "name": "workers/ownership-17.jsonl",
-   "sha256": "d606033f531ede5c65d391972350ddacc01b7c4bde5989818c990884261c14d7"
+   "sha256": "08c72976550947ce50ed2cc3679215bbedaa979993d35b05f6913b76c9215db9"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-2.jsonl",
-   "sha256": "31620f99b715fc6b18b53f0ab0bf0ba6c8285dca974b5f5070cdf9cbc7a51017"
+   "sha256": "ede47663770075caef34710cf05f92c71035cad7f2d67ac21d214ac1ba8dec87"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-3.jsonl",
-   "sha256": "32877a38c085b0332b332ab5946a359aeaaf2549ccc68d4d0cc6e605a5bccaa4"
+   "sha256": "61fde61982e349576fa9a0f92d9d4b5759aa12ddcdf6c191400cebe9cd114b2c"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-4.jsonl",
-   "sha256": "b2a9f469877a4c4aaa2f49797e30a7ba72e2803bad32dd09170c84387fbe558a"
+   "sha256": "9a3544fabe2d62ba3ad22d223542d85a44ab1f622eef1277df33a1a64b084ed5"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-5.jsonl",
-   "sha256": "2a3b812337243f1beea8144b8625877d23d16582ccf614221445fe7f99af2c05"
+   "sha256": "f293ec36b026e145e571451ab8cb843fbac89c3a9e1ccbdd19b671b535779fb8"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-6.jsonl",
-   "sha256": "d1455013d7469c1e0985234730f8e2a2d1634f6ca881b44bcb93fd10e388a000"
+   "sha256": "53f130dd48a0c5d138375e25697234f29df6f4eee45a9ac8a90009f7086618c8"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-7.jsonl",
-   "sha256": "7ae8aa842443cd6293b5b7a50134a389324de681b01180b1a19e1633d7bcd318"
+   "sha256": "c0b06338df0ab9339579af0d2b0f63962b7ecd31ab86454f6190d18deb177272"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-8.jsonl",
-   "sha256": "20750d2fc9ba11dd9f51416a0cff90fdd611045c173043e6e8d48823375ca48e"
+   "sha256": "6bb6b205d16beb5328a9ac3f123b0d57bc309a945081dc65c1dcef4510caf529"
   },
   {
-   "bytes": 955,
+   "bytes": 871,
    "name": "workers/ownership-9.jsonl",
-   "sha256": "077dcaac9e1b9e83ac8d969857c23d8fb447c168f5c6da89601104ad0c60865a"
+   "sha256": "d6c56d6b51092e184f676b4b27c65e76a1454a55646cfc31d29a9cf0595b3db1"
   }
  ],
  "environment": {
-  "commit": "870b9e2764f06668cf8a8c2d2c62ca27ae4be645",
+  "commit": "ae17c4e837d6d61064130e4d37c0e0c5fccc39e5",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   2.46875,
-   2.80078125,
-   9.8173828125
+   3.79833984375,
+   6.77099609375,
+   13.7275390625
   ],
   "python": "3.12.3",
-  "tree": "97a799ed3f99641507f881f3642d9d59754549cd"
+  "tree": "6322098e05cefc6131d7e62fc45b2fd1d0829c8a"
  },
  "schema": "veldo.proof-summary/v1"
 }

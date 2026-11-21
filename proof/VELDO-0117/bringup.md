@@ -38,10 +38,11 @@ Ported at 10d4ba11. Each run below is one suite alone or one step of `heavy_runs
 - `heavy_summary.py red-before --base 0b767d26`: pass. On the four product modules of the line
   before this ticket all three rows are red on their named checks (red-before.summary.json).
 - `heavy_summary.py green-after --runs 3`: pass, three runs (green-after.summary.json).
-- Teeth: `v117-registration-not-atomic` run alone and killed. The step for all ten mutants is a
-  loaded run and did not get the host lock in this session (queued twice for two hours each behind
-  a gate and other holders). It is still owed: `bash proof/VELDO-0117/heavy_runs.sh` through the
-  lock. `teeth.summary.json` is the source branch's run.
+- Teeth: all ten mutants of finding 117, three workers, through the host lock on 2026-11-21 in a scratch
+  clone of ae17c4e8 at load 22: the stage passed, ten of ten killed, each on its target row with a false
+  label quoted and none because a section raised (`teeth.summary.json`, now this run's). The first slot the
+  step got ended in a second: `heavy_summary.py` passed the driver VELDO-0270's summary option, which the
+  line's driver does not have (fixed at ae17c4e8).
 - The 53 suites that name `control_service` or `control_factory_setup`, each alone at the bring-up
   head: all pass, three of them after a change this ticket made necessary (next section).
 

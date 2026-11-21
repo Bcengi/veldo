@@ -28,7 +28,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0117/heavy_runs.sh",
-     "detail": "Pending on the line, step teeth (not run through the host lock, see bringup): mutants v117-binding-comparison-removed, v117-registration-comparison-removed, v117-judgment-skips-registry and v117-unregistered-domain-served (finding 117, scripts/check_teeth_mutations.py) must turn the row red. The first three are the declared falsifier, the comparison removed at each place the authority makes it. Two more are in .veldo/control_service.py and must turn the row red on its production checks: v117-service-passes-no-registry (the service builds its authority without the registry, which removes the wiring) and v117-service-registry-per-installation (each installation keeps a registry of its own). Written to proof/VELDO-0117/teeth.summary.json with the row's false labels and each diff's sha256. Checked offline only: each anchor occurs once and each mutated module compiles. No mutant has been run. teeth.summary.json is the source branch's run and is kept as that."
+     "detail": "Ran on the line on 2026-11-21 through the host lock at ae17c4e8, load about 22 (teeth.summary.json: ten of ten killed on their target rows, none because a section raised): mutants v117-binding-comparison-removed, v117-registration-comparison-removed, v117-judgment-skips-registry and v117-unregistered-domain-served (finding 117, scripts/check_teeth_mutations.py) must turn the row red. The first three are the declared falsifier, the comparison removed at each place the authority makes it. Two more are in .veldo/control_service.py and must turn the row red on its production checks: v117-service-passes-no-registry (the service builds its authority without the registry, which removes the wiring) and v117-service-registry-per-installation (each installation keeps a registry of its own). Written to proof/VELDO-0117/teeth.summary.json with the row's false labels and each diff's sha256. Checked offline only: each anchor occurs once and each mutated module compiles. No mutant has been run. teeth.summary.json is the source branch's run and is kept as that."
     }
    ]
   },
@@ -54,7 +54,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0117/heavy_runs.sh",
-     "detail": "Pending on the line, step teeth (not run through the host lock, see bringup): mutant v117-registration-not-atomic removes the transaction around the read and the insert. It must turn the row red in the overlapped schedules, where the second attempt then gets past the first. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: both anchors occur once and the mutated module compiles. On the line the overlap check waits for a reported event, not for 3 s (see bringup.md), and v117-registration-not-atomic was run alone at 10d4ba11 through scripts/check_teeth_mutations.py --case and killed. teeth.summary.json is the source branch's run and is kept as that."
+     "detail": "Ran on the line on 2026-11-21 through the host lock at ae17c4e8, load about 22 (teeth.summary.json: ten of ten killed on their target rows, none because a section raised): mutant v117-registration-not-atomic removes the transaction around the read and the insert. It must turn the row red in the overlapped schedules, where the second attempt then gets past the first. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: both anchors occur once and the mutated module compiles. On the line the overlap check waits for a reported event, not for 3 s (see bringup.md), and v117-registration-not-atomic was run alone at 10d4ba11 through scripts/check_teeth_mutations.py --case and killed. teeth.summary.json is the source branch's run and is kept as that."
     }
    ]
   },
@@ -80,7 +80,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0117/heavy_runs.sh",
-     "detail": "Pending on the line, step teeth (not run through the host lock, see bringup): mutant v117-registry-empty-at-start empties the registry whenever an authority opens it, the declared falsifier. Mutants v117-binding-path-spelling-conflicts and v117-judge-path-spelling-refused take another spelling of the committed file for another store. Each must turn the row red. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: each anchor occurs once and each mutated module compiles. teeth.summary.json is the source branch's run and is kept as that."
+     "detail": "Ran on the line on 2026-11-21 through the host lock at ae17c4e8, load about 22 (teeth.summary.json: ten of ten killed on their target rows, none because a section raised): mutant v117-registry-empty-at-start empties the registry whenever an authority opens it, the declared falsifier. Mutants v117-binding-path-spelling-conflicts and v117-judge-path-spelling-refused take another spelling of the committed file for another store. Each must turn the row red. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: each anchor occurs once and each mutated module compiles. teeth.summary.json is the source branch's run and is kept as that."
     }
    ]
   }
@@ -94,9 +94,9 @@
   },
   {
    "name": "integration",
-   "status": "pending",
+   "status": "passed",
    "command": "bash proof/VELDO-0117/heavy_runs.sh",
-   "detail": "On the line: red-before and green-after ran at 10d4ba11 and passed (each is single runs of one suite). The teeth step (ten mutants, three workers) is a loaded run and did not get the host lock in the bring-up session: queued twice for two hours behind other holders. The lead queues: bash proof/VELDO-0117/heavy_runs.sh."
+   "detail": "On the line: red-before and green-after ran at 10d4ba11 and passed (each is single runs of one suite). The teeth step (ten mutants, three workers) ran through the host lock on 2026-11-21 in a scratch clone of ae17c4e8: the stage passed, 10 registered, 10 executed, 10 rejected, each kill quoting a false label of its target row (teeth.summary.json). Its first slot ended in a second because heavy_summary.py passed the driver a summary option the line's driver does not have; ae17c4e8 fixes that."
   },
   {
    "name": "mutation_anchors",
@@ -154,7 +154,7 @@
   "source_tip": "0bac1de043ce258b28f01b15caf55cf52a2a9700",
   "base": "0b767d26baf67e4be13eaa7d31b6d44e81699f18",
   "ported_at": "10d4ba11d546c950566f3d152f92222e5f5e9c49",
-  "not_run": "teeth step of heavy_runs.sh (ten mutants): pending the host lock; one mutant run alone and killed",
+  "not_run": "nothing: the teeth step ran on 2026-11-21 (teeth.summary.json)",
   "needs_review": "The default domain registry path and hand-written service configurations (check registry_scope); the changes to suite 85, scripts/suites/support/v174_journey.py and proof/VELDO-0204/host.py; heavy_summary.py writes its summaries itself because the line has no validate.write_proof_summary (VELDO-0270 is not on the line).",
   "deadlines": {
    "rule": "A test synchronizes on events; a bound is only a hang detector. No row of suite 113_veldo_0117_domain_store compares an elapsed time with a number, and no row's verdict changes when a bound is larger.",
@@ -180,6 +180,7 @@
      "why_not_timing": "Replaced by an event. The second authority reports `waiting` when its registration's transaction starts (a trace on the registry connection), and the first is released only after `waiting`, or with the transaction removed after the second's `checked`, was reported. No clock decides the schedule."
     }
    ]
-  }
+  },
+  "criteria_note": "The three criteria are left pending for the reviewer; every run they waited on has now passed on the line."
  }
 }
