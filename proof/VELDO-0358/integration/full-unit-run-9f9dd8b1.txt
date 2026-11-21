@@ -1,0 +1,25 @@
+# Full unit leg, one dispatcher process over every suite, through host_heavy.sh, at 9f9dd8b1 (the authority takes the opened-files record)
+queued 2026-11-21T13:06:45Z head 9f9dd8b1
+started 2026-11-21T15:02:46Z load 35.88 43.31 47.68
+end 2026-11-21T16:40:06Z load 25.46 34.68 53.94
+# lines kept: every SELFTEST FAIL/HUNG/NOT RUN line (cut at 400 characters) and the totals
+  SELFTEST FAIL: residue/66_veldo_0042_clones: thread 'Thread-13157 (serve)' alive (Thread); thread 'Thread-13158 (serve)' alive (Thread)
+  SELFTEST FAIL: residue/86_veldo_0189_engine_upgrade: thread 'Thread-14688 (serve)' alive (Thread); thread 'Thread-14689 (serve)' alive (Thread)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-7xfvk_zv/tmp-parent/veldo-agent-hgltt01o', 'pid': 3350590}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-gsra34z_', 'veldo-agent-hgltt01o']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: (the run ended without an exit status); kept privately at /tmp/v210-profile-7xfvk_zv/state-home/veldo/borrowed-logins/veldo-agent-gsra34z_; restore it with: python3 <scratch worktree>/scripts/agent_sandbox.py restore-login /tmp/v210-profile-7xfvk_zv/state-home/veldo/borrowed-logins/veldo-agent-gsra34z_
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/shell-catalog
+  SELFTEST FAIL: VELDO-0313 ac1/only-the-runs-own-items: run finished removes the run's own scratch root [deferred None]
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [{"held": true, "released": true} None]
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that read the label of each, another run's in one and none in the other: neither is this run's, so the run is over while both live, and rule 4 judged them by their files [None [] 3]
+  SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-cwd-in-scratch: its working directory is the run's scratch root, and the scratch root is not removed: the item is deferred as in use by the rule that reads what processes hold, its deferral names the worker alone, by its working directory, as the probe does on the whole table, and the folder and its file are on disk [[('deferred', 'in_use', 'o
+  SELFTEST FAIL: VELDO-0313 fix4/docker-objects-are-items: raised RuntimeError: the run's end is still asleep after 120s on processes that hold the run: [{'pid': 3879317, 'started': 293757491, 'how': 'supervisor'}, {'pid': 3892050, 'started': 293763498, 'how': 'unread'}, {'pid': 3903747, 'started': 293767858, 'how': 'unread'}, {'pid': 3906665, 'started': 293768621, 'how': 'unre ^^^^^^^^^^^^^^^^^^^
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 12582912000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+selftest: 10764 passed, 17 failed
+exit status 1
+# the one new red, VELDO-0216 concurrent-stages/shell-catalog: the suite runs a verify.sh fragment under set -u without VELDO_OPENED_RECORD ("VELDO_OPENED_RECORD: unbound variable"); fixed in the next commit, suite 114 alone green there (26 rows)

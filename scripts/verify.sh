@@ -48,7 +48,7 @@ veldo_expect_leg() {
 veldo_stage() {
   if [ -e "$VELDO_AUTHORITY/scripts/gate_unconfined.json" ]; then
     veldo_expect_leg "$1" "$2"
-    _veldo_take=(); [ "$1" != unit ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")
+    _veldo_take=(); [ "$1" != unit ] || [ -z "${VELDO_OPENED_RECORD:-}" ] || _veldo_take=(--take-opened "$VELDO_OPENED_RECORD")
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --root "$(pwd -P)" --stage "$1" \
       --record "$VELDO_LEGS_RECORD" "${_veldo_take[@]}" -- "$2"
   else veldo_candidate bash -c "$2"; fi
@@ -105,7 +105,7 @@ veldo_load_leg() {
   # The record this gate's unit stage took (above) is written beside the stamp by the authority, over
   # whatever is there, and the leg reads it. Without one the leg reads the authority's last record.
   set --
-  if [ -s "$VELDO_OPENED_RECORD" ]; then
+  if [ -s "${VELDO_OPENED_RECORD:-}" ]; then
     if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --publish-opened "$VELDO_OUT/opened_files.json" \
          --opened-part "$VELDO_OPENED_RECORD"; then
       echo "   load-proof: FAIL"; FAIL=1; VELDO_LOAD_RED=1; VELDO_LOAD_FIELD=',"load":null'
@@ -323,7 +323,7 @@ export VELDO_REUSE_RECEIPT
 VELDO_LEGS_RECORD=$(mktemp)
 VELDO_OPENED_RECORD=$(mktemp)
 VELDO_LEGS_EXPECTED=""
-trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "$VELDO_OPENED_RECORD"; veldo_space_exit' EXIT
+trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "${VELDO_OPENED_RECORD:-}"; veldo_space_exit' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
 # VELDO-0358 AC13: the load-proof leg's slot (below), the authority's own command like the mutation stage.
 CHECK_load="required:authority load-proof leg"
@@ -374,7 +374,7 @@ TODAY=$(date -u +%Y-%m-%d)
 VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
-  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "$VELDO_OPENED_RECORD"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD" "${VELDO_OPENED_RECORD:-}"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
   _veldo_stages=()
   for _veldo_name in $ORDER; do
     _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"
