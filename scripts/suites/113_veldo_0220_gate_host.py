@@ -69,7 +69,9 @@ for ancestor, _ in chain[:-1]:
             pass
 Path(os.environ['V220_PROBE']).write_text(json.dumps(out))
 if os.environ.get('V220_HOLD'):
-    Path(os.environ['V220_HOLD']).write_text(str(os.getpid()))
+    # Atomic: the suite reads the file as soon as it exists (a loaded mutation control read it empty).
+    Path(os.environ['V220_HOLD'] + '.part').write_text(str(os.getpid()))
+    os.replace(os.environ['V220_HOLD'] + '.part', os.environ['V220_HOLD'])
     deadline = time.monotonic() + 90
     while time.monotonic() < deadline:
         time.sleep(0.1)
