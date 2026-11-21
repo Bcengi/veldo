@@ -1,7 +1,6 @@
 """Per-case reuse keys; traces propose, declared snapshots enforce the inputs."""
 import json
 import os
-import uuid
 from pathlib import Path
 import importlib.util
 
@@ -103,7 +102,7 @@ class Session(M.Session):
         self.snapshots, self.declarations, self.case_digests, self.runtimes = {}, {}, {}, {}
         self.runtime_absent = {}
         self.stale = {}
-        self.gate_run = uuid.uuid4().hex
+        self.gate_run = os.urandom(16).hex()
         self.reviewed = {}
         try:
             document = json.loads(files[I.DECLARATIONS][1])
