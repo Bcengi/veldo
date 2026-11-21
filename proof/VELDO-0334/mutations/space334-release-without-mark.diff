@@ -1,5 +1,5 @@
---- .veldo/control_space.py
-+++ .veldo/control_space.py
-@@ -2393 +2393 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -2432 +2432 @@
 -        changes = self._freed_changes(set(record['needs']), but=identity)
 +        changes = {}  # defect: a released promise never marks waiters

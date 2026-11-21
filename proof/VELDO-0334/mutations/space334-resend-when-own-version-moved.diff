@@ -1,0 +1,5 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -1181 +1181 @@
+-                        and self._own_current(own)):
++                        ):  # defect: the caller's own stale version is sent again

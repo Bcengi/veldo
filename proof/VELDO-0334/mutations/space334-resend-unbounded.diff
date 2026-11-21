@@ -1,0 +1,5 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -1180 +1180 @@
+-                if (pools and refusal.code == 'stale_version' and attempts < FREEING_ATTEMPTS
++                if (pools and refusal.code == 'stale_version'  # defect: no bound on the attempts

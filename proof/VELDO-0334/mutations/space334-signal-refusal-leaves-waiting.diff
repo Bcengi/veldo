@@ -1,0 +1,6 @@
+--- a/.veldo/control_space_admission.py
++++ b/.veldo/control_space_admission.py
+@@ -112 +112,2 @@
+-        retry = None if sent['ok'] else {'reason': sent['reason'], 'detail': sent.get('detail', '')}
++        if not sent['ok']:
++            return sent  # defect: a refused retry leaves the reserved wait

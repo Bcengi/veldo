@@ -1,5 +1,5 @@
---- .veldo/control_service.py
-+++ .veldo/control_service.py
-@@ -2692 +2692 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2694 +2694 @@
 -                    self.loop.wake('space', record['seq'])
 +                    pass  # defect: mark without a space wake

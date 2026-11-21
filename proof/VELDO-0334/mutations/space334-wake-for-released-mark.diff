@@ -1,0 +1,4 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2692 +2691,0 @@
+-                        and (entry.get('data') or {}).get('state') == 'waiting'

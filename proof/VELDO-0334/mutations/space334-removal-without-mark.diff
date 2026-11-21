@@ -1,5 +1,5 @@
---- .veldo/control_space.py
-+++ .veldo/control_space.py
-@@ -2223 +2223 @@
+--- a/.veldo/control_space.py
++++ b/.veldo/control_space.py
+@@ -2262 +2262 @@
 -        changes = self._freed_changes(self._freeing_pools(OUTCOME, params))
 +        changes = {}  # defect: removed bytes never mark a waiting hold
