@@ -18,9 +18,10 @@ def _v113_run(root):
     claim = ROOT / ".veldo" / "claim.py"
     with _v113_tempfile.TemporaryDirectory(prefix='v113-source-') as temporary:
         candidate = _v113_Path(temporary)
-        for tree in ('.veldo', 'engine/.veldo'):
-            _v113_shutil.copytree(root / tree, candidate / tree,
-                                  ignore=_v113_shutil.ignore_patterns('__pycache__'))
+        helper_spec = _v113_import.spec_from_file_location('no_autostart_copy', fixture_directory / 'no_autostart.py')
+        helper = _v113_import.module_from_spec(helper_spec)
+        helper_spec.loader.exec_module(helper)
+        helper.copy_production(root, candidate)
         _v113_shutil.copy2(client, candidate / '.veldo/control_client.py')
         _v113_shutil.copy2(claim, candidate / '.veldo/claim.py')
         _v113_shutil.copytree(fixture_directory, candidate / 'scripts/fixtures',
@@ -36,12 +37,14 @@ def _v113_run(root):
 if 'expect' in globals():
     _v113_result = _v113_run(_v113_Path(ROOT))
     for _v113_name, _v113_row in _v113_result['rows'].items():
-        print('VELDO-0113 consumer ' + _v113_name + ': ' + _v113_json.dumps(_v113_row, sort_keys=True))
+        _v113_detail = {k: v for k, v in _v113_row.items() if k != 'observation_receipts'}
+        print('VELDO-0113 consumer ' + _v113_name + ': ' + _v113_json.dumps(_v113_detail, sort_keys=True))
         if _v113_name == 'unavailable/store-write-grant':
             expect('VELDO-0113 protocol unavailable/store-grant-gap-is-explicit',
                    _v113_row['status'] == 'GAP' and _v113_row['observation']['writable'])
         else:
-            expect('VELDO-0113 protocol ' + _v113_name, _v113_row['status'] != 'FAIL')
+            expect('VELDO-0113 protocol ' + _v113_name + ': ' + _v113_json.dumps(_v113_detail),
+                   _v113_row['status'] != 'FAIL')
     expect('VELDO-0113 protocol unavailable/registry-state-product-is-exact',
            _v113_result['expected'] == sorted(_v113_result['completed'])
            and len(_v113_result['completed']) == len(set(_v113_result['completed'])))
