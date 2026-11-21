@@ -51,7 +51,8 @@ table changes a cell's action, the old item gets the old action and the new item
 whose table version the registry does not hold comes back with wait), ac4/registry-untouched (calls
 change neither the registry nor the records).
 
-kinds/ledger-accepts (the Ledger's checked_lifecycle accepts LIFECYCLE, which names version 1, the nine
+kinds/ledger-accepts (the Ledger's checked_lifecycle accepts LIFECYCLE, which names the current version (2
+since VELDO-0347; the rows above read table 1, the table of section 5 as issued), the nine
 events and the ten kinds), kinds/pure (the module imports nothing and defines one function),
 kinds/canon (the engine canon equals this repository copy).
 """
@@ -159,10 +160,15 @@ def _v298_space_kinds_suite():
         K = load('v298_control_space_kinds', PRODUCTION['control_space_kinds.py'])
         PROJECT = {'type': 'project', 'id': 'orchard'}
         KIND_OF = {'worktree_review_run': 'worktree', 'worktree_station_run': 'worktree'}
+        # The table of design section 5 as issued, version 1. VELDO-0347 issued table 2 beside it, with
+        # one more row (an agent repository of a clone's form); an item keeps the table it was declared
+        # under, so this suite declares its items under table 1 and reads that table.
+        FIRST = {'version': '1', 'events': list(K.REGISTRY['tables']['1']['events']),
+                 'ends_on': {kind: list(events) for kind, events in K.REGISTRY['tables']['1']['ends_on'].items()}}
 
         def item(kind, state='due', parent=None, owner=None, branch='agent/a/T-1', lifecycle=None, **more):
             """An item record as the Ledger holds it, declared under `lifecycle` (the current table)."""
-            lifecycle = lifecycle or K.LIFECYCLE
+            lifecycle = lifecycle or FIRST
             record = {'kind': kind, 'state': state, 'parent': parent,
                       'owner': dict({'scope': dict(PROJECT), 'ticket': 'T-1'}, **(owner or {})),
                       'ends_on': {'version': lifecycle['version'], 'events': list(lifecycle['ends_on'][kind])}}
@@ -215,7 +221,7 @@ def _v298_space_kinds_suite():
                       and (want is None or (got[0]['item'], got[0]['row'], got[0]['version'])
                            == ('space:item:1', row, '1')))
 
-        table = K.REGISTRY['tables'][K.REGISTRY['version']]
+        table = K.REGISTRY['tables']['1']
         check('ac1/whole-table', 'the rows are the twelve [%s]' % sorted(table['rows']),
               sorted(table['rows']) == sorted(TABLE_ROWS))
         check('ac1/whole-table', 'the events are the nine [%s]' % (table['events'],),
@@ -511,7 +517,8 @@ def _v298_space_kinds_suite():
         SP = load('v298_control_space', PRODUCTION['control_space_kinds.py'].with_name('control_space.py'))
         accepted = SP.checked_lifecycle(K.LIFECYCLE)
         check('kinds/ledger-accepts', 'the Ledger accepts LIFECYCLE as given [%s]' % accepted.get('version'),
-              accepted == K.LIFECYCLE and accepted['version'] == '1' and tuple(accepted['events']) == EVENTS)
+              accepted == K.LIFECYCLE and accepted['version'] == K.REGISTRY['version']
+              and tuple(accepted['events']) == EVENTS)
         check('kinds/ledger-accepts', 'it names the ten kinds of the Ledger',
               set(K.LIFECYCLE['ends_on']) == set(SP.KINDS) and set(K.KINDS) == set(SP.KINDS))
         check('kinds/ledger-accepts', 'a worktree ends on the events of its three rows together [%s]'

@@ -68,6 +68,13 @@ look could not answer (reason children_not_read), and when the look finds someth
 removed nor gone and that the list does not hold in that same state (reason children_not_passed, the
 missing ones in held_by).
 
+WHICH ROW AN AGENT REPOSITORY READS (VELDO-0347). An agent repository item whose form is a worker
+clone, a batch clone or a candidate workspace reads agent_repository_clone, from table 2 on: the
+private repository is removed at run finished, the event its creator sends, after the worktrees in it
+and through the keep step. Its ends_on is the form's (the table's forms), not the kind's, so an agent
+repository with no form, or with the form agent, is never made due at run finished and reads the row
+agent_repository. An item declared under table 1 reads table 1, which has no such row.
+
 WHICH ROW A WORKTREE READS. A worktree whose owner has a run, no ticket, and which has no branch (it was
 added detached inside a run, design 6.9) reads worktree_review_run when the run's station is review and
 worktree_station_run otherwise. Every other worktree reads the row worktree.
@@ -158,13 +165,37 @@ TABLE_1 = {
                 for kind in KINDS},
 }
 
+# VELDO-0347 (design 0.1 and section 5): a worker clone, a batch clone and a candidate workspace are
+# items of the kind agent repository with their form, never scratch. The agent repository's own row
+# does nothing at run finished, the one event their creators send (the clone's teardown, the batch's
+# discard, the landing line's close and the lander's discard), so the form picks a row of its own,
+# which ends at that event. The repository is removed as a private repository: after the worktrees in
+# it, through the keep step, and an item with unique work in its work tree raises one request, as a
+# worktree does. An agent repository with no form, or the form agent, reads its own row and ends only
+# on its own events. Table 1 is not edited: the row is table 2's.
+CLONE_FORMS = ('worker_clone', 'batch_clone', 'candidate_workspace')
+CLONE = {'action': 'remove', 'after': ['worktree'], 'unique_work': 'decision_request'}
+ROWS_2 = dict(((row, dict((event, dict(cell)) for event, cell in cells.items())) for row, cells in ROWS_1.items()),
+              agent_repository_clone={'run_finished': dict(CLONE)})
+# The rows a form reads in place of its kind's own, and the rows an item with no form never reads.
+FORM_ROWS = {form: 'agent_repository_clone' for form in CLONE_FORMS}
+
+TABLE_2 = {
+    'events': list(EVENTS),
+    'rows': ROWS_2,
+    'ends_on': dict(TABLE_1['ends_on']),
+    'forms': {form: [event for event in EVENTS if event in ROWS_2[row]] for form, row in FORM_ROWS.items()},
+}
+
 # Every table this registry has issued, and the one a new item is declared under.
-REGISTRY = {'version': '1', 'tables': {'1': TABLE_1}}
+REGISTRY = {'version': '2', 'tables': {'1': TABLE_1, '2': TABLE_2}}
 
 LIFECYCLE = {'version': REGISTRY['version'],
              'events': list(REGISTRY['tables'][REGISTRY['version']]['events']),
              'ends_on': {kind: list(events)
-                         for kind, events in REGISTRY['tables'][REGISTRY['version']]['ends_on'].items()}}
+                         for kind, events in REGISTRY['tables'][REGISTRY['version']]['ends_on'].items()},
+             'forms': {form: list(events)
+                       for form, events in REGISTRY['tables'][REGISTRY['version']]['forms'].items()}}
 
 
 def due(event, items, queued=None, registry=REGISTRY, look=None):
@@ -200,11 +231,13 @@ def due(event, items, queued=None, registry=REGISTRY, look=None):
             heights[identity] = 1 + max(below) if below else 0
         return heights[identity]
 
-    def row_of(record):
+    def row_of(record, table):
         owner = record.get('owner') or {}
         run = owner.get('run')
         if record['kind'] == 'worktree' and run and not owner.get('ticket') and not record.get('branch'):
             return 'worktree_review_run' if run.get('station') == 'review' else 'worktree_station_run'
+        if record['kind'] == 'agent_repository' and record.get('form') in (table or {}).get('forms', {}):
+            return FORM_ROWS[record['form']]
         return record['kind']
 
     def answer(identity, above=()):
@@ -215,7 +248,7 @@ def due(event, items, queued=None, registry=REGISTRY, look=None):
         entry = None
         if record.get('state') == 'due' and event in (ends_on.get('events') or ()):
             table = registry['tables'].get(ends_on.get('version'))
-            row = row_of(record)
+            row = row_of(record, table)
             if table is None:
                 entry = {'item': identity, 'row': row, 'version': ends_on.get('version'), 'action': 'wait',
                          'reason': 'table_version_unknown'}

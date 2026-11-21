@@ -209,7 +209,7 @@ CARRY_OUT_REFUSED = 'space_carry_out_refused'
 
 def signal(ledger, event, subject, carry_out=None, principal=None, command_id=None, probe=None, kinds=None,
            remover=None, emitter=None, free=None, keep=None, owner_live=None, landed=(), queued=None, run=None,
-           proc=None, borrow_root=None):
+           proc=None, borrow_root=None, held=None):
     """Mark every item the event ends as due, carry out those that may be carried out, and write each
     outcome, all before returning.
 
@@ -218,7 +218,9 @@ def signal(ledger, event, subject, carry_out=None, principal=None, command_id=No
     `emitter` names the process that called (written into each outcome). `free(pool record)` and
     `keep(identity, record)` are the removers' own parameters, the reader of free space and the keep
     step; `owner_live`, `landed`, `run`, `proc` and `borrow_root` are the rules'; `queued` is the kind
-    registry's. `carry_out` is refused: a call that gives it writes nothing (above).
+    registry's. `held(sha256)` is the evidence remover's reader of the store (VELDO-0347 AC4): True
+    only when the store holds a blob with that digest; given to the remover only when given here.
+    `carry_out` is refused: a call that gives it writes nothing (above).
 
     Returns the ledger's answer with carried (the items carried out), left (the items left due),
     outcomes (one entry per carried item: item, action, outcome, and for a deferral its name and rule)
@@ -243,7 +245,7 @@ def signal(ledger, event, subject, carry_out=None, principal=None, command_id=No
         carried, left = [], left + carried
     outcomes = _carry(ledger, probe, kinds, remover, event, carried, emitter=emitter, free=free, keep=keep,
                       owner_live=owner_live, landed=landed, queued=queued, run=run, proc=proc, seq=result.get('seq'),
-                      borrow_root=borrow_root) if carried else []
+                      borrow_root=borrow_root, held=held) if carried else []
     counts = {'removed': 0, 'gone': 0, 'kept': 0, 'removing': 0, 'left': len(left), 'deferred': {}}
     for entry in outcomes:
         if entry['outcome'] == 'deferred':
@@ -284,7 +286,7 @@ def _carrier(probe, seq):
 
 
 def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=None, keep=None, owner_live=None,
-           landed=(), queued=None, run=None, proc=None, borrow_root=None, seq=None):
+           landed=(), queued=None, run=None, proc=None, borrow_root=None, seq=None, held=None):
     """Carry out the due items `carried`, in the kind registry's order, and write the outcome of each.
     Returns one entry per item, whatever raised on the way."""
     # A reconciliation view selects items; safety still sees every project and child.
@@ -293,7 +295,7 @@ def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=Non
         return inside(ledger, probe, identity, record, run)
 
     given = {'emitter': emitter, 'free': free, 'keep': keep, 'owner_live': owner_live, 'landed': landed,
-             'run': run, 'proc': proc, 'borrow_root': borrow_root, 'carrier': _carrier(probe, seq)}
+             'run': run, 'proc': proc, 'borrow_root': borrow_root, 'carrier': _carrier(probe, seq), 'held': held}
     try:
         entries = {entry['item']: entry
                    for entry in kinds.due(event, list(ledger.items().items()), queued=queued, look=look)}
@@ -392,6 +394,8 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                              owner_live=given['owner_live'], run=given['run'], proc=given['proc'],
                              borrow_root=given['borrow_root'])
             review['review_check'] = review_check
+        if given.get('held') is not None:
+            review['held'] = given['held']
         seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
                                       keep=given['keep'], run=given['run'], proc=given['proc'], **review)
         return seen['said']
@@ -458,6 +462,17 @@ APPLIES = {
 DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence', 'review_run_scratch',
               'review_run_build_output')
 HOLDS_REPOSITORIES = ('worktree', 'agent_repository')  # the kinds a nested repository is looked for in
+# VELDO-0347 (design 0.1): a repository beneath a scratch or a build output item holds it too, unless
+# it is a clean clone, read now (the probe's clean_clone).
+HOLDS_UNLESS_CLEAN = ('scratch', 'build_output', 'review_run_scratch', 'review_run_build_output')
+# The kinds whose own folder may be a git repository: every other disk kind that is one holds itself.
+OWN_REPOSITORY_KINDS = ('worktree', 'agent_repository')
+# The forms of an agent repository that are private repositories of one run (design 0.1): removed
+# through the keep step, their branches are not compared with the shared repository, and their work
+# tree is read for unique work. A worker clone of a run that has ended is saved by the keep step's
+# snapshot and is not deferred for what is in its work tree (VELDO-0347 AC3).
+CLONE_FORMS = ('worker_clone', 'batch_clone', 'candidate_workspace')
+SNAPSHOT_FORMS = ('worker_clone',)
 NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
@@ -596,11 +611,40 @@ def _rule_process_use(ledger, probe, identity, record, given):
     return None
 
 
+def _project_declares(ledger, record, key):
+    """What the project that owns the item declares under `key` in its space file."""
+    scope = (record.get('owner') or {}).get('scope') or {}
+    for project in ledger.projects:
+        if scope.get('type') == 'project' and project.get('project') == scope.get('id'):
+            return list(project.get(key) or ())
+    return []
+
+
 def _rule_unique_work(ledger, probe, identity, record, given):
     kind = record['kind']
     if kind not in ('worktree', 'agent_repository'):
         return None
     path = record['locator']['path']
+    # What the project declares as build output, and whether reconcile adopted the item, go to the
+    # probe's reading of ignored paths (VELDO-0347); named only when there is something to say.
+    declared = {key: value for key, value in (('patterns', tuple(_project_declares(ledger, record, 'build_output'))),
+                                              ('adopted', bool(record.get('adopted')))) if value}
+    if kind == 'agent_repository' and record.get('form') in CLONE_FORMS:
+        # A private repository of one run (VELDO-0347 AC3): every commit it has goes to kept refs at the
+        # keep step, so its branches are not held against the shared repository. What is in its work
+        # tree is unique work, as in a worktree, unless the keep step saves it: a worker clone's run
+        # has ended (rule 3), and its files go to the snapshot store with no request.
+        if record['form'] in SNAPSHOT_FORMS:
+            return None
+        facts = probe.unique_work(path, (), None, given['run'], **declared)
+        if facts['read'] is not True or facts['unique_work'] is None:
+            return {'unread': facts.get('said')}
+        cases = [case for case in facts['cases'] if case != 5]  # its commits are kept, not landed
+        if cases:
+            return {'cases': cases, 'form': record['form'], 'branch': facts['branch'], 'commit': facts['commit'],
+                    'modified': facts['modified'], 'staged': facts['staged'], 'untracked': facts['untracked'],
+                    'ignored': facts.get('ignored'), 'operation': facts['operation'], 'more': facts['more']}
+        return None
     if kind == 'agent_repository' or _agent_repository(ledger, record):
         shared = _scope_repository(ledger, record)
         if shared is None:
@@ -615,7 +659,7 @@ def _rule_unique_work(ledger, probe, identity, record, given):
             return {'not_across': facts['not_across'], 'more': facts['more'], 'refs': facts['refs'],
                     'stashes': facts['stashes']}
         return None
-    facts = probe.unique_work(path, given['landed'], shared, given['run'])
+    facts = probe.unique_work(path, given['landed'], shared, given['run'], **declared)
     if facts['read'] is not True or facts['unique_work'] is None:
         return {'unread': facts.get('said')}
     cases = [case for case in facts['cases']
@@ -623,7 +667,8 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     if cases:
         return {'cases': cases, 'branch': facts['branch'], 'commit': facts['commit'],
                 'modified': facts['modified'], 'staged': facts['staged'], 'untracked': facts['untracked'],
-                'operation': facts['operation'], 'unlanded': facts['unlanded'], 'more': facts['more']}
+                'ignored': facts.get('ignored'), 'operation': facts['operation'], 'unlanded': facts['unlanded'],
+                'more': facts['more']}
     return None
 
 
@@ -654,11 +699,25 @@ def inside(ledger, probe, identity, record, run=None):
         for tree in listed['worktrees']:
             if tree['there'] is not False and tree['path'] not in recorded:
                 found['path:' + tree['path']] = 'unrecorded' if tree['there'] else 'on_disk'
-    if record.get('kind') in HOLDS_REPOSITORIES and path:
+    if record.get('kind') not in OWN_REPOSITORY_KINDS and path:
+        # The look starts at the item's own folder (VELDO-0347 AC5): an item of another kind whose
+        # folder is itself a git repository holds itself.
+        own = probe.own_repository(path)
+        if own is None:
+            found['path:' + path] = 'unread'
+        elif own:
+            found['path:' + path] = 'unrecorded'
+    if record.get('kind') in HOLDS_REPOSITORIES + HOLDS_UNLESS_CLEAN and path:
         beneath = probe.nested(path, recorded)
         if not beneath['read']:
             found['path:' + path] = 'unread'
         for where in beneath['repositories']:
+            if record.get('kind') in HOLDS_UNLESS_CLEAN:
+                # A clean clone beneath scratch or build output does not hold it (design 0.1). One that
+                # cannot be read, or whose local remote cannot be read, is not clean.
+                clean = probe.clean_clone(where, run)
+                if clean.get('clean_clone') is True:
+                    continue
             found.setdefault('path:' + where, 'unrecorded')
     return found
 

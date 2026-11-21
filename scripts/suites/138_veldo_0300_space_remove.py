@@ -389,9 +389,29 @@ def _v300_space_remove_suite():
                                      'sha256': hashlib.sha256((Path(where) / name).read_bytes()).hexdigest()}
                               for name in names}}
 
+        def before_0347(probe):
+            """VELDO-0347: rule 5 refuses a worktree holding an ignored path that is work, and rule 6 holds
+            an item of another kind whose own folder is a repository; that ticket's suite proves both. The
+            rows that use this probe prove what stands behind rules 1 to 6 (the remover's own last look and
+            the keep step's save), so here the rules read the work tree as they did before that ticket:
+            case 3 without the ignored paths, and no own-folder look. The remover still reads the real one."""
+            def unique_work(path, landed=(), shared=None, run=None, **declared):
+                facts = probe.unique_work(path, landed, shared, run, **declared)
+                if facts.get('read') is not True:
+                    return facts
+                ignored = set(facts.get('ignored') or ())
+                untracked = [name for name in facts['untracked'] if name not in ignored]
+                cases = [case for case in facts['cases'] if case != 3 or untracked]
+                return dict(facts, untracked=untracked, ignored=[], cases=cases, unique_work=bool(cases))
+            return type('Probe', (), dict(vars(probe), unique_work=staticmethod(unique_work),
+                                          own_repository=staticmethod(lambda path: False)))
+
+        BEHIND = before_0347(P)
+
         def through(identity, keep=None):
-            """The removal through the whole rule chain, this remover as rule 7."""
-            return SIG.rules(L, P, identity, L.item(identity),
+            """The removal through the whole rule chain, this remover as rule 7. The rules read with
+            BEHIND (before_0347): every row that uses this proves what the remover does behind them."""
+            return SIG.rules(L, BEHIND, identity, L.item(identity),
                              tool=RM.tool(L, P, free=free, keep=keep, run=client, proc=str(PROC)),
                              owner_live=lambda owner: ENDED, run=client, proc=str(PROC),
                              borrow_root=str(temp / 'borrowed'))
@@ -1239,7 +1259,8 @@ def _v300_space_remove_suite():
         item, path = scratch('not-for-that')
         for action, record in (('stop_then_remove', L.item(item)), ('remove_tag', L.item(item)),
                                ('discard', L.item(item)), ('remove', dict(L.item(item), kind='branch')),
-                               ('remove_held', dict(L.item(item), kind='evidence'))):
+                               ('remove_held', dict(L.item(item), kind='scratch'))):
+            # remove_held on evidence has its remover since VELDO-0347 (AC4); on scratch it has none.
             answer = drive(item, action=action, record=record)
             check(ROW, 'the action %s on the kind %s has no remover and is refused' % (action, record['kind']),
                   named(answer)[:2] == (False, 'remove_refused') and 'no remover' in str(answer.get('said'))
