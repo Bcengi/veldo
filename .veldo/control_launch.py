@@ -2729,15 +2729,17 @@ class Receiver:
     def _finish(self, termination, contract, contract_digest, process, remote):
         dispatch_id = contract['dispatch_id']
         admission = _organ('control_space_admission')
-        unsuccessful = (termination['returncode'] != 0 or termination['signal'] is not None
-                        or termination['deadline_stop'])
-        if self.metering is not None:
-            self.metering.terminal.close()
-            document = self.metering.terminal.document(termination, (self.supervision or {}).get('cause'))
-            unsuccessful = unsuccessful or not document.get('complete')
-        observation = admission.classify(getattr(self, 'space', None), contract, unsuccessful,
-            getattr(getattr(self, 'space_output', None), 'found', False),
-            (getattr(self, 'space_run', None) or {}).get('worktree'))
+        observation = None
+        if (getattr(self, 'space', None) is not None and self.space['ledger'].config.get('enabled') is True
+                and getattr(getattr(self, 'space_output', None), 'found', False)):
+            unsuccessful = (termination['returncode'] != 0 or termination['signal'] is not None
+                            or termination['deadline_stop'])
+            if self.metering is not None:
+                self.metering.terminal.close()
+                document = self.metering.terminal.document(termination, (self.supervision or {}).get('cause'))
+                unsuccessful = unsuccessful or not document.get('complete')
+            observation = admission.classify(self.space, contract, unsuccessful, True,
+                (getattr(self, 'space_run', None) or {}).get('worktree'))
         self.space_failure = admission.disposition(self.conn, contract, observation) if observation else None
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
