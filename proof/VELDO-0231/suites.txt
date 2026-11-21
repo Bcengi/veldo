@@ -1,0 +1,17 @@
+VELDO-0231 suites at 9fbc8572 (worktree clean but for proof/VELDO-0231)
+  VELDO-0231 AC1 latencies (s): 0.022, 0.014, 0.016, 0.015, 0.008, 0.015, 0.008, 0.019, 0.015, 0.005
+  127_veldo_0231_run_flags                        17 passed   33.90s
+  VELDO-0127 live/claude detail: missing or stale live capture
+  SELFTEST FAIL: VELDO-0127 live/claude
+  VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   38.19s
+  123_veldo_0174_conversations                    38 passed   10.01s
+  87_veldo_0127_codex_delivery                   176 passed   56.62s
+  125_veldo_0230_engine_census                     7 passed    7.18s
+  82_veldo_0173_tool_registry                     11 passed    2.38s
+  88_veldo_0127_feature_defaults                  25 passed    9.23s
+  90_veldo_0127_feature_profile                    2 passed   11.73s
+  VELDO-0160 decision/outward-tool-asks detail: claude_code: the allowlist the reader holds is the binary's own, the lead's tools and their aliases, with no LS tool in this build [['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor', 'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'SendUserMessage', 'Skill', 'Task', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']]
+  SELFTEST FAIL: VELDO-0160 decision/outward-tool-asks
+  78_veldo_0160_account_pool                      33 passed   26.71s

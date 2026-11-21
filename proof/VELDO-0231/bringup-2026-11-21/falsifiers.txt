@@ -1,0 +1,24 @@
+python3 proof/VELDO-0231/falsify.py on the line: each falsifier applied to the checkout's module, suite 127 run, the module restored.
+== flag231-delivered-at-end: control_service.py, 'launch.ended = launch.lost = ended = True\n        self.deliver(line, launch)' -> 'launch.ended = launch.lost = ended = True' (rows AC1/at-once)
+  SELFTEST FAIL: VELDO-0231 AC1/at-once
+  127_veldo_0231_run_flags                        16 passed   36.50s
+restored: True
+== flag231-question-unmapped: control_engine_codex.py, "'request_user_input_async': ['request_user_input_async', 'request_user_input']," -> "'request_user_input_async': ['request_user_input_async']," (rows AC2/codex-launch)
+  SELFTEST FAIL: VELDO-0231 AC2/codex-launch
+  SELFTEST FAIL: VELDO-0231 AC2/decisions
+  SELFTEST FAIL: VELDO-0231 AC2/switch
+  SELFTEST FAIL: VELDO-0231 AC3/answered
+  SELFTEST FAIL: VELDO-0231 AC3/blocking
+  SELFTEST FAIL: VELDO-0231 AC4/flood
+  127_veldo_0231_run_flags                        11 passed   24.47s
+restored: True
+== flag231-question-window-dropped: control_launch.py, 'if cause is None and code is None and flags is not None and flags.expired(now):' -> 'if False:  # defect: no question window' (rows AC3/blocking)
+  SELFTEST FAIL: VELDO-0231 AC3/blocking
+  127_veldo_0231_run_flags                        16 passed   47.52s
+restored: True
+== flag231-run-window-removed: control_conversation.py, "if written and (written >= FLAG_LIMIT or at - summary['last_at'] < FLAG_WINDOW):" -> 'if False:  # defect: no per-run window' (rows AC4/flood)
+  SELFTEST FAIL: VELDO-0231 AC4/flood
+  SELFTEST FAIL: VELDO-0231 AC4/per-run-cap
+  127_veldo_0231_run_flags                        15 passed   34.53s
+restored: True
+falsify exit 0

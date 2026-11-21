@@ -1,0 +1,5 @@
+case: flag231-question-unmapped
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.381s
+baseline: rows 43, failed [], targets {'AC2/codex-launch': [True]}
+noop: rows 43, failed [], targets {'AC2/codex-launch': [True]}
+mutant: rows 43, failed ['VELDO-0231 AC2/codex-launch', 'VELDO-0231 AC2/decisions', 'VELDO-0231 AC2/switch', 'VELDO-0231 AC3/answered', 'VELDO-0231 AC3/blocking', 'VELDO-0231 AC4/flood'], targets {'AC2/codex-launch': [False]}

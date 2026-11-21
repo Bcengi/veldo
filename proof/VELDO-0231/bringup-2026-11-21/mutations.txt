@@ -1,0 +1,34 @@
+The four finding 231 cases, each alone: python3 scripts/check_teeth_mutations.py with the case option. Baseline and no-op must be green and the mutant rejected.
+
+case: flag231-delivered-at-end
+  mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=116.027s; exit 0
+  baseline: returncode 0, 48.5 s
+  noop: returncode 0, 48.6 s
+  mutant: returncode 0, 61.7 s
+case: flag231-question-unmapped (first run)
+  mutations: failed registered=1 executed=1 reused=0 rejected=0 workers=3 elapsed=93.905s; exit 1
+  error: invalid_baseline; invalid_baseline: invalid_baseline: check_teeth_mutations.py:flag231-question-unmapped: completed controls: {"baseline": {"failed_details": [], "failed_rows": ["VELDO-0231 AC1/at-once"]}, "noop": {"failed_details": [], "failed_rows": ["VELDO-0231 AC1/at-once"]}}
+  baseline: returncode 0, 54.8 s
+  noop: returncode 0, 55.3 s
+  mutant: returncode 0, 35.9 s
+case: flag231-question-window-dropped
+  mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=97.982s; exit 0
+  baseline: returncode 0, 41.3 s
+  noop: returncode 0, 41.5 s
+  mutant: returncode 0, 53.9 s
+case: flag231-run-window-removed
+  mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=87.773s; exit 0
+  baseline: returncode 0, 43.5 s
+  noop: returncode 0, 43.5 s
+  mutant: returncode 0, 41.4 s
+case: flag231-question-unmapped (second run)
+  mutations: failed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=74.337s; exit 1
+  error: driver_error; driver_error: inputs changed during stage (void: the bring-up wrote its notes into the same checkout while it ran)
+  noop: returncode 0, 41.9 s
+  baseline: returncode 0, 42.0 s
+  mutant: returncode 0, 29.6 s
+case: flag231-question-unmapped (third run, in an untouched clone of the same commit)
+  mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=82.263s; exit 0
+  noop: returncode 0, 45.2 s
+  baseline: returncode 0, 46.5 s
+  mutant: returncode 0, 31.0 s
