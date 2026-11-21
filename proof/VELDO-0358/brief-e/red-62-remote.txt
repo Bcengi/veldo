@@ -1,0 +1,3 @@
+/tmp/e358/load50b/62_veldo_0039_dispatch.17.txt:  SELFTEST FAIL: VELDO-0039 dispatch/remote-stop-holds-unit
+/tmp/e358/load50b/62_veldo_0039_dispatch.20.txt:  SELFTEST FAIL: VELDO-0039 dispatch/remote-stop-holds-unit
+/tmp/e358/load50b/62_veldo_0039_dispatch.12.txt:  SELFTEST FAIL: VELDO-0039 dispatch/remote-stop-holds-unit

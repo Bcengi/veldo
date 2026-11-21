@@ -1,0 +1,8 @@
+load: start {"cgroup": null, "cpus": [16, 17, 18, 19], "memory": {"applied": "none: no delegated scope", "high": null}, "probe": 3979465, "slots": 4, "spinners": [3979450, 3979451, 3979452, 3979453, 3979454, 3979455, 3979457, 3979458, 3979459, 3979460, 3979461, 3979462], "writers": [3979463]}
+62_veldo_0039_dispatch: 50 runs, 49 with 0 failed
+      1   SELFTEST FAIL: VELDO-0039 dispatch/owner-stop: cause {'state': 'exited', 'asked': False, 'deadline_stop': False, 'cause': 'requested', 'returncode': None, 'signal': 15}; wait held; observed {'stale'
+load: record {"applied": true, "cpus": [16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000560455, "slowdown": 7.932, "waited_ns": 6936062591}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 4, "spinners": [{"alive": true, "cpu": 16, "cpu_seconds": 81.585, "pid": 3979450}, {"alive": true, "cpu": 16, "cpu_seconds": 81.588, "pid": 3979451}, {"alive": true, "cpu": 16, "cpu_seconds": 81.589, "pid": 3979452}, {"alive": true, "cpu": 17, "cpu_seconds": 74.104, "pid": 3979453}, {"alive": true, "cpu": 17, "cpu_seconds": 74.105, "pid": 3979454}, {"alive": true, "cpu": 17, "cpu_seconds": 74.106, "pid": 3979455}, {"alive": t
+load: 4 CPUs [16, 17, 18, 19], 3 spinners per CPU: 12 of 12 alive to the end, CPU consumed 849.5s (least 63.713s)
+load: 1 writers: 1 alive to the end, bytes written [140379160576]
+load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000560455, "slowdown": 7.932, "waited_ns": 6936062591} (data, no verdict)
+exit 0

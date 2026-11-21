@@ -33,3 +33,14 @@
 
 7. Suite 63's cpu-cap fixture ('burn') still loops on the clock inside fixture text: it is the subject of the
    cpu-cap row (usage against wall time) and the census does not read clocks in strings.
+
+8. Release acts this change needs (any change to control_launch or the engine modules does): proof/VELDO-0127's
+   qualify resource fixtures (suite 126, qualify/reproduces) and its live captures (suite 86_veldo_0127,
+   live/claude and live/codex) are bound to these modules' digests. Precedents: fe9eb598 (rerun qualify on the
+   recorded engines) and f5055400 (live recapture, owner approval). Both suites are green at the base.
+
+9. The scaffold change (a48602c9) is in engine/.veldo/init_scaffold.py, which no brief lists: the engine modules
+   now load timers.py, so an adopter's installation must lay it down (suites 66_veldo_0047 and 82_veldo_0129).
+
+10. Suite 62 dispatch/owner-stop was red once in 50 at slowdown 7.9 (runs.md, red-62-owner-stop.txt). Cause not
+    established; open.
