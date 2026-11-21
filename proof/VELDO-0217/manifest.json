@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0217",
-  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "commit": "a75a05163765950264585fb90261c44c4a9603a6",
   "producer": "Claude implementation agent; not an independent reviewer",
   "criteria": [
     {
@@ -16,7 +16,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217: the AC falsifier rejected"
+          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -27,12 +27,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0217/local-tests.txt",
-          "detail": "rows review-conditions, reviewed-flag-protected; partial runs, diagnostic until the canonical gate"
+          "detail": "rows review-conditions, reviewed-flag-protected; fix round 1: gate-observation-current, review-records-protected; partial runs, diagnostic until the canonical gate"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217: the AC falsifier rejected"
+          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -48,7 +48,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217: the AC falsifier rejected"
+          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
     },
@@ -59,14 +59,22 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0217/local-tests.txt",
-          "detail": "rows non-file-refused, non-file-real-traces, absent-socket-keyed; partial runs, diagnostic until the canonical gate"
+          "detail": "rows non-file-refused, non-file-real-traces, absent-socket-keyed; fix round 1: worker-trace-refused, undeclared-absent-socket, incomplete-trace-demoted, accept-pending, accept-pending-real; partial runs, diagnostic until the canonical gate"
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0217/red-green.json",
-          "detail": "confined drive of finding 217: the AC falsifier rejected"
+          "detail": "confined drive of finding 217 (12 falsifiers, each failing exactly its row): the AC falsifiers rejected"
         }
       ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "command": "bash scripts/verify.sh",
+      "detail": "The canonical gate was not run by the builder; the lead queues it. The 0217 suite, the ten affected suites and the confined drive of finding 217 were run (local-tests.txt, red-green.json)."
     }
   ],
   "assumptions": [

@@ -2,28 +2,54 @@
   "cases": [
     {
       "baseline_failed": [],
-      "module": "scripts/case_reuse.py",
+      "module": "scripts/check_gate_mutations.py",
       "mutant_failed": [
-        "VELDO-0217 declarations/review-conditions"
+        "VELDO-0217 declarations/undeclared-absent-socket"
       ],
-      "name": "declarations217-one-trace-enough",
+      "name": "declarations217-absent-unkeyed",
       "noop_failed": [],
       "source": "fresh",
       "target_rows": [
-        "declarations/review-conditions"
+        "declarations/undeclared-absent-socket"
       ]
     },
     {
       "baseline_failed": [],
-      "module": "scripts/propose_case_inputs.py",
+      "module": "scripts/case_trace.py",
       "mutant_failed": [
-        "VELDO-0217 declarations/stale-found"
+        "VELDO-0217 declarations/accept-pending"
       ],
-      "name": "declarations217-support-dropped",
+      "name": "declarations217-accept-incomplete",
       "noop_failed": [],
       "source": "fresh",
       "target_rows": [
-        "declarations/stale-found"
+        "declarations/accept-pending"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_trace.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/non-file-refused"
+      ],
+      "name": "declarations217-bus-allowed",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/non-file-refused"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_trace.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/accept-pending"
+      ],
+      "name": "declarations217-foreign-accept-allowed",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/accept-pending"
       ]
     },
     {
@@ -41,6 +67,32 @@
     },
     {
       "baseline_failed": [],
+      "module": "scripts/check_gate_mutations.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/incomplete-trace-demoted"
+      ],
+      "name": "declarations217-incomplete-fails-stage",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/incomplete-trace-demoted"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/case_reuse.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-conditions"
+      ],
+      "name": "declarations217-one-trace-enough",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-conditions"
+      ]
+    },
+    {
+      "baseline_failed": [],
       "module": "scripts/case_reuse.py",
       "mutant_failed": [
         "VELDO-0217 declarations/review-conditions"
@@ -54,29 +106,68 @@
     },
     {
       "baseline_failed": [],
-      "module": "scripts/case_trace.py",
+      "module": "scripts/case_reuse.py",
       "mutant_failed": [
-        "VELDO-0217 declarations/non-file-refused"
+        "VELDO-0217 declarations/gate-observation-current"
       ],
-      "name": "declarations217-bus-allowed",
+      "name": "declarations217-receipt-unchecked",
       "noop_failed": [],
       "source": "fresh",
       "target_rows": [
-        "declarations/non-file-refused"
+        "declarations/gate-observation-current"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": ".veldo/policy.yaml",
+      "mutant_failed": [
+        "VELDO-0217 declarations/review-records-protected"
+      ],
+      "name": "declarations217-reviews-unprotected",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/review-records-protected"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/propose_case_inputs.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/stale-found"
+      ],
+      "name": "declarations217-support-dropped",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/stale-found"
+      ]
+    },
+    {
+      "baseline_failed": [],
+      "module": "scripts/check_gate_mutations.py",
+      "mutant_failed": [
+        "VELDO-0217 declarations/worker-trace-refused"
+      ],
+      "name": "declarations217-worker-trace-ignored",
+      "noop_failed": [],
+      "source": "fresh",
+      "target_rows": [
+        "declarations/worker-trace-refused"
       ]
     }
   ],
   "command": "python3 scripts/check_gate_mutations.py --finding 217 (through host_heavy.sh, scratch clone of the commit)",
-  "commit": "94fd75e69384660b818ff45fb8791638f853d6bc",
+  "commit": "a75a05163765950264585fb90261c44c4a9603a6",
   "legs": [
     "confined"
   ],
   "schema": "veldo.red-green/v1",
   "spec_id": "VELDO-0217",
   "stage": {
-    "executed": 5,
-    "registered": 5,
-    "rejected": 5,
+    "executed": 12,
+    "registered": 12,
+    "rejected": 12,
     "reused": 0,
     "scope": "selected",
     "status": "passed"
