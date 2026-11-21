@@ -10,7 +10,7 @@ Criteria AC10 and AC15 for these suites. Built on fb7705e1. Nothing here ran scr
 
 | Part | Where | What it does |
 | - | - | - |
-| Timers table entries (AC15) | engine modules | control_client SEND_SECONDS (send and inspect default) and SERVE_READ_SECONDS (serve_one's read and reply); control_service REPLY_SECONDS, SYSTEMCTL_SECONDS, KEYGEN_SECONDS, PRINCIPALS_SECONDS, RECONCILE_SECONDS; control_store BUSY_SECONDS; control_client_api HINT_READ_SECONDS, HINT_CLOSE_SECONDS (its authority calls take the client's default); control_factory_setup_upgrade ANSWER_SECONDS, RESTORE_SECONDS. Each is read where it is armed (`timer(name)`); a copy read alone, with no table beside it, keeps its own values |
+| Timers table entries (AC15) | engine modules | control_client SEND_SECONDS (send and inspect default) and SERVE_READ_SECONDS (serve_one's read and reply); control_service REPLY_SECONDS, SYSTEMCTL_SECONDS, KEYGEN_SECONDS, PRINCIPALS_SECONDS, RECONCILE_SECONDS; control_store BUSY_SECONDS; control_client_api HINT_READ_SECONDS, HINT_CLOSE_SECONDS (its authority calls take the client's default); control_factory_setup_upgrade ANSWER_SECONDS, RESTORE_SECONDS. Each is read where it is armed (`_timer(name)`, private: suite 113 counts control_client's public API); a copy read alone, with no table beside it, keeps its own values |
 | Profile in the service | control_service.serve | The configuration's `timers_profile`, else the manager environment's VELDO_TIMERS_PROFILE, applied before anything is armed; the start record (observation `timers`) carries the effective values |
 | Events the suites wait on | control_service | `STATUS=... channel passes N` (sd_notify) after each channel pass; `pending_wakes` in the loop status, for the idle answer |
 | Role budget by profile | proof/VELDO-0152/fixture.py | `role_seconds` (default 100, unchanged for suites 93 and 116); suite 110 passes the wait hang bound; control_workflow_cycle_pm takes the dispatch deadline from it, unchanged |
@@ -47,9 +47,12 @@ their anchors are untouched by this change except where restated above. That run
 - suites.txt: each suite alone at 5bc570a0, plus 93 and 116 (the fixture's other users) and 36 (lead item 1b).
 - loaded-runs.txt: 250 runs under the generator (slowdown 4.8, every generator alive): 249 with no failed and no
   hung row. The red: suite 83 run 9, loop/reset-timer-wake (the reset pass offered nothing). Likely cause, not
-  proven: the first run's account release refused by control_launch's ORPHAN_SECONDS (5 s, brief E's timer, design
-  4.8 names suite 83 on its path), leaving the account busy at the reset with no later wake. Brief E's event-based
-  release is being run in a scratch copy (lead item 6b). Not fixed by a bound or a retry.
-- Full unit leg: see lead item 8.
+  proven: the orphaned run's account release refused by control_launch's orphan wait, leaving the account busy at
+  the reset with no later wake (lead item 6b). Not fixed by a bound or a retry.
+- with-brief-e.txt: suite 83 with brief E's engine changes hangs at loop/receiver-death, loaded or not; the service
+  is inside brief E's orphan wait (_await_gone), which polls an empty set after the worker's exit (lead item 6b).
+- unit-leg.txt: the full unit leg at 5bc570a0, 10770 passed, 20 failed, each red attributed (lead item 8). Brief F's
+  own reds there (suite 113's census of control_client's public API) are fixed at aa7918fd; reruns.txt has the
+  suites alone after that fix and after fc1c924e (suite 83 waits for a receiver's run end only when it killed it).
 
 Items for the lead: lead-items.md.

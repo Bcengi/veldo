@@ -1,0 +1,47 @@
+Suite 83 with brief E's engine changes (lead item 6b)
+
+Tree: a scratch copy of this branch at 5bc570a0 (suite 83 identical to 5bc570a0) plus brief E's engine changes
+(control_launch, control_heartbeat, control_containment, the two engine adapters, policy_contract, init_scaffold, ...)
+as they stood on brief E's branch at 10:18 local time. Nothing below changed a file of brief E.
+
+1. Loaded: 50 runs of suite 83 under scripts/gate_load.py --slots 8 through host_heavy.sh (loaded.sh.txt shape),
+   start 2026-11-21T18:17:31Z, slowdown 5.046, 24 of 24 spinners and 2 of 2 writers alive to the end:
+   40 green; 9 hung, every one at the same wait (line 858: "a pass of instance a after 4", loop/receiver-death,
+   the pass that records the killed receiver's run end), bound 600 s since the wait began; 1 failed,
+   loop/rerun-another-account (run 34). Brief F alone at 5bc570a0 had 49 of 50 green and no hang (loaded-runs.txt).
+
+2. Not load: 8 runs at once (host_heavy.sh, no generator) with a diagnostic print before that wait: 8 of 8 hung there,
+   each after the suite had killed the receiver (killed=True, the recorded start matched, the dispatch "running").
+   Two runs alone, one at a time, with no other run of the suite: both hung at the same wait.
+
+3. Where the service is: the service of the second lone run, given a SIGUSR1 stack dump (scratch copy only), was in
+     control_launch.py _await_gone      (poll)
+     control_launch.py release_orphans
+     control_launch.py orphaned
+     control_service.py run              (the channel pass that read the dead receiver's launch pipe end)
+     control_service.py serve
+   The killed receiver's launch pipe had no writer left (end of file ready, unread). The orphaned worker was gone
+   from the process table. The service held one pidfd, of a process already reaped (fdinfo Pid: -1).
+
+4. Cause (brief E's code, read, not changed): _await_gone registers the worker's pidfd and, when it fires, unregisters
+   it ("an exit happens once") but keeps it in `fds`. The next reading, C.retirement, calls containment.alive, which
+   reads /proc/PID/stat: a killed worker that is not yet reaped (a zombie: its receiver, its parent, was killed, so it
+   is reaped later by its new parent) still has that file, so the reading says not terminated. The loop then polls
+   with nothing registered ("not fds" is false), which returns only when the remaining bound has passed. The reap
+   that follows sends the service no event. Suite 83 runs the service under the timers profile (every timer at the
+   wait hang bound), and brief E puts ORPHAN_SECONDS in the table, so the bound is the hang bound and the pass never
+   ends in time. With the production value (5 s) the same path returns 'bound' after 5 s: the release is refused,
+   the account slot stays held until release_orphans runs again, and the pass is 5 s late.
+
+5. What would close it, for brief E's owner: after the worker's pidfd has fired the worker has exited, so either take
+   the pidfd's own answer as terminated (a zombie is an exited process, whatever /proc still shows), or keep the
+   loop from polling when no descriptor is registered. Either makes the wait end on the exit event itself.
+
+6. Brief F's side (fc1c924e): the receiver-death wait now runs only when the suite killed the receiver; without a kill
+   the rows fail and name the receiver and its start, instead of a wait running to its bound. The hang above is a
+   real kill with no pass after it, and stays a hang until brief E's wait ends on the exit.
+
+7. Residue of a hung run: SELFTEST HUNG ends the process (waits.hung: before_exit hooks, then os._exit), so a hung
+   run of suite 83 leaves its two services, the receivers and the fake workers running in their transient scopes.
+   The hung scratch runs above left 38 such processes; they were stopped by hand afterwards (only those whose service
+   ran from the scratch copy). Lead item 10.
