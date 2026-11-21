@@ -5,7 +5,7 @@ The fake Claude Code and Codex are VELDO-0174's (scripts/suites/support/v174_jou
 Codex declares the two flag tools when the handoff turns tools.experimental_request_user_input on, and after its
 release a run follows the scenario in its markers directory (`scenario.json`): flags at an interval, each stamped
 with the time immediately before it is written, then printing for `after` seconds and ending normally; a
-synchronous question answered at once or never; or a flood of flags. PROBE is a fake Codex binary for the qualify
+synchronous question answered at once or never (stepped by the suite on a FIFO, `steps`); or a flood of flags. PROBE is a fake Codex binary for the qualify
 command's loopback flag probe: it speaks the Responses wire to the loopback model and prints exec JSON events.
 
 THE LOAD RULE (owner, Telegram 42829, 2026-11-20: no gate depends on machine speed). Every wait of the suites that
@@ -113,20 +113,39 @@ elif mode in ('question', 'block'):
                'tool':'request_user_input','arguments':question,'status':'in_progress'}}
     if mode == 'block':
         emit(started)
-        while True: time.sleep(1)
-    # The binary's immediate empty answer and the agent's next line, in the same write as the question: the receiver
-    # reads the engine writing on after its question in that one read (an event), so the 2 second question window
-    # the suite sets can never close on it however slow the machine is.
-    import contextlib, io
-    together = io.StringIO()
-    with contextlib.redirect_stdout(together):
-        emit(started)
-        emit({'type':'item.completed','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
-              'tool':'request_user_input','arguments':question,'result':{'answers':{}},'status':'completed'}})
-        say('No answer: continuing on my own judgment.')
-    sys.stdout.write(together.getvalue())
-    sys.stdout.flush()
-    keep(scenario.get('after', 1))
+        if not scenario.get('steps'):
+            while True: time.sleep(1)
+        # VELDO-0231 AC3 (by events): the suite writes 'e' on this FIFO once its question window has passed, and the
+        # engine writes one line on its error stream, which the receiver reads (a pass of its loop after the window,
+        # that keeps the line in the run's record) without the question being answered; then 'o', and the engine
+        # writes on, as an engine that waited past the window would. A receiver that keeps its window stops the run at
+        # the latest in the pass that read the error line, before it can read the next; one that dropped it records
+        # the question answered and the run ends normally: the defect is read from events, never from a timeout.
+        import select
+        steps = os.open(str(MARKERS / scenario['steps']), os.O_RDWR)
+        def step():
+            if not select.select([steps], [], [], scenario.get('hang', 120))[0]:
+                sys.exit(3)
+            return os.read(steps, 1)
+        step()
+        sys.stderr.write('still waiting on the question\n')
+        sys.stderr.flush()
+        step()
+        say('No answer came: going on on my own judgment.')
+    else:
+        # The binary's immediate empty answer and the agent's next line, in the same write as the question: the receiver
+        # reads the engine writing on after its question in that one read (an event), so the 2 second question window
+        # the suite sets can never close on it however slow the machine is.
+        import contextlib, io
+        together = io.StringIO()
+        with contextlib.redirect_stdout(together):
+            emit(started)
+            emit({'type':'item.completed','item':{'id':'question-1','type':'mcp_tool_call','server':'codex',
+                  'tool':'request_user_input','arguments':question,'result':{'answers':{}},'status':'completed'}})
+            say('No answer: continuing on my own judgment.')
+        sys.stdout.write(together.getvalue())
+        sys.stdout.flush()
+        keep(scenario.get('after', 1))
 '''
 
 # The qualify probe's fake Codex: one turn against the loopback model, the call it is answered with printed in

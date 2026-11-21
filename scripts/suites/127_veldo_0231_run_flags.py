@@ -85,6 +85,7 @@ def _v231_suite():
         CFG = load('v231_agent_config', mods / 'control_agent_config.py')
         HO = load('v231_handoff', mods / 'control_agent_config_handoff.py')
         Q = load('v231_qualify', mods / 'qualify.py')
+        ER = load('v231_execution_record', mods / 'control_execution_record.py')
         authority = f['authority']
         conversations = CV.Conversations(authority.S, authority.conn, domain=authority.ids['domain_uuid'],
                                          principal='authority', signer='authority', sign=authority.journal_sign,
@@ -167,7 +168,7 @@ def _v231_suite():
             return result
         conversations.flag = timed
 
-        def turn(identity, role, scenario, seconds=F.HANG_SECONDS):
+        def turn(identity, role, scenario, seconds=F.HANG_SECONDS, step=None):
             ack['path'] = None
             if scenario.get('ack'):
                 ack['path'] = markers / scenario['ack']
@@ -179,8 +180,12 @@ def _v231_suite():
             conversations.message(identity, identity + '-1', 'sha256:' + identity + '-1', owner='owner')
             started = len(commits)
             J.pass_(factory)
-            ended = F.drive(factory, lambda: (conversations.turns(identity) or [{}])[-1].get('state') == 'ended',
-                            seconds)
+
+            def done():
+                if step is not None:
+                    step(commits[started:])
+                return (conversations.turns(identity) or [{}])[-1].get('state') == 'ended'
+            ended = F.drive(factory, done, seconds)
             saved = conversations.turns(identity)[-1]
             return saved, ended, commits[started:]
 
@@ -355,11 +360,12 @@ def _v231_suite():
                          'synchronous': False}])
         check('AC3/probe-answer', 'the binary answered the synchronous question at once with no answers: recorded',
               stream['question']['immediate'] is True and stream['question']['answers'] is False
-              and stream['question']['within_seconds'] == X.IMMEDIATE_SECONDS and 'seconds' not in stream['question']
+              and stream['question']['answered_in'] == X.IMMEDIATE and 'seconds' not in stream['question']
               and stream['question']['answer'] is not None)
         blocked = probes['block']
         check('AC3/probe-answer', 'a binary that does not answer at once: the grant does not hold',
-              blocked['question']['immediate'] is False and X.flag_grant({'flag_means': blocked}) is not None)
+              blocked['question']['immediate'] is False and blocked['question']['answered_in'] is None
+              and X.flag_grant({'flag_means': blocked}) is not None)
         answering = dict(stream, question=dict(stream['question'], answers=True))
         check('AC3/probe-answer', 'a binary that answers with answers: the grant does not hold',
               X.flag_grant({'flag_means': answering}) is not None)
@@ -414,13 +420,52 @@ def _v231_suite():
               any(e.get('dispatch_id') == answered.get('dispatch_id') and e.get('outcome') == 'answered'
                   for e in launch_events))
         # The blocking engine is stopped by the receiver's question window (2 seconds, the receiver setting the
-        # suite sets): the suite waits for that stop, an event, with only a hang detector.
-        began = time.monotonic()
-        blocking, blocking_end, block_asked = turn('question-block', 'assistant_codex', {'mode': 'block'})
-        took = time.monotonic() - began
+        # suite sets), read by events, never by a timeout. The suite notes its own monotonic moment once the question
+        # is committed: the receiver read it before, so its window ends by that moment plus the window (one clock,
+        # the host's). From then on the suite steps the engine on a FIFO: 'e', and the engine writes one line on its
+        # error stream; once that line is in the run's record (the receiver's pass that read it, after the window),
+        # 'o', and the engine writes on. A receiver that keeps its window has stopped the run by the end of that pass,
+        # before it reads the engine's next line; one that dropped its window records the question answered and the
+        # run ends normally, at once. A receiver that stops the run on its own timer first ends the turn before any
+        # step. HANG_SECONDS is only the hang detector of the turn and of the engine's FIFO.
+        window = json.loads(receiver.read_text())['question_window_seconds']
+        records = Path(ER.directory(json.loads(receiver.read_text())))
+        steps = {'path': markers / 'steps.fifo', 'asked': None, 'told': None, 'record': None}
+        if steps['path'].exists():
+            steps['path'].unlink()
+        os.mkfifo(str(steps['path']), 0o600)
+
+        def tell(byte):
+            try:
+                writer = os.open(str(steps['path']), os.O_WRONLY | os.O_NONBLOCK)
+            except OSError:  # the engine has ended (stopped): nothing reads the FIFO
+                return
+            try:
+                os.write(writer, byte)
+            finally:
+                os.close(writer)
+
+        def blocked(made):
+            if steps['asked'] is None:
+                asked = next((c for c in made if c['result']['flag'] and c['result']['flag']['synchronous']), None)
+                if asked is not None:
+                    steps['asked'], steps['dispatch'] = time.monotonic(), asked['dispatch_id']
+            elif steps['told'] is None and time.monotonic() >= steps['asked'] + window:
+                steps['told'] = 'e'
+                tell(b'e')
+            elif steps['told'] == 'e':
+                record = Path(ER.path(records, steps['dispatch']))
+                kept = record.read_text().splitlines() if record.exists() else []
+                if any('"stderr"' in line and 'still waiting on the question' in line for line in kept):
+                    steps['told'] = 'o'
+                    tell(b'o')
+        blocking, blocking_end, block_asked = turn('question-block', 'assistant_codex',
+                                                   {'mode': 'block', 'steps': 'steps.fifo', 'hang': F.HANG_SECONDS},
+                                                   step=blocked)
+        took = '%s, stepped to %s' % (blocking.get('outcome'), steps['told'])
         launch_events = [e for e in events if e.get('kind') == 'flag' and e.get('operation') == 'question']
-        check('AC3/blocking', 'the blocking run is stopped and ended, not left waiting (%.1fs, %s)'
-              % (took, blocking.get('outcome')), blocking_end and blocking.get('state') == 'ended')
+        check('AC3/blocking', 'the blocking run is stopped and ended, not left waiting (%s)' % took,
+              blocking_end and blocking.get('state') == 'ended' and blocking.get('outcome') != 'completed')
         check('AC3/blocking', 'it was stopped by name, configuration_stop:wait_question',
               any(e.get('dispatch_id') == blocking.get('dispatch_id')
                   and e.get('outcome') == 'configuration_stop:wait_question' for e in launch_events))
