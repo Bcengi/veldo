@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/no_autostart.py
++++ b/scripts/fixtures/no_autostart.py
+@@ -298,7 +298,7 @@
+ 
+ 
+ def evaluate(census, receipt, plan, acknowledgements, outcome):
+-    rows = {r['name']: dict(r) for r in census.consumer_rows(receipt, 'VELDO-0113')}
++    rows = {name: dict(name=name, status='READY', reason=None) for name in ROWS}
+     effects = observed_effects(receipt, plan, acknowledgements)
+     # AC1-AC3 explicitly require stand-down on ANY incomplete receipt. Keep
+     # captured effects as diagnostics, never use them to override that boundary.

@@ -1,0 +1,3 @@
+veldo installation: none found (looked at <user-home>/.config/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)

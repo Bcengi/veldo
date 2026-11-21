@@ -1,0 +1,74 @@
+{
+  "name": "autostart113-incomplete-counts-as-success",
+  "metrics": {
+    "complete_censuses": 0,
+    "completed": 42,
+    "construction_cases": 20,
+    "expected": 42,
+    "fault_cases": 176,
+    "forbidden_launches": 0,
+    "invocations_completed": 22,
+    "measured": 22,
+    "observation_failures": 22
+  },
+  "faults_ok": false,
+  "faults_driven": true,
+  "implementation_digest": "e86ae7a1d5bb024c41b208344707200bc0b9878b11b1bc7ebc21801aa5caa442",
+  "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+  "protocol_controls": {
+    "failures": false,
+    "incomplete_witness_stands_down": false,
+    "invalid_receipt_0": false,
+    "invalid_receipt_1": false,
+    "invalid_receipt_2": false,
+    "invalid_receipt_3": false,
+    "invalid_receipt_4": false,
+    "invalid_receipt_5": false,
+    "invalid_receipt_6": false,
+    "invalid_receipt_7": false,
+    "known_non_refusal_is_false": true,
+    "qualification": false,
+    "synthetic_complete_birth_refutes": true,
+    "synthetic_complete_birth_restored": true,
+    "synthetic_complete_evaluates": true,
+    "synthetic_complete_service_refutes": true,
+    "synthetic_complete_service_restored": true
+  },
+  "rows": {
+    "unavailable/in-process-construction-boundary": {
+      "reason": [
+        "outside_authority:bin/veldo:285",
+        "outside_authority:engine/bin/veldo:285"
+      ],
+      "status": "FAIL"
+    },
+    "unavailable/no-auto-start-needs-census": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": "incomplete_census_accepted",
+      "status": "FAIL"
+    },
+    "unavailable/no-client-hosts-a-listener": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": null,
+      "status": "PASS"
+    },
+    "unavailable/no-client-starts-the-authority": {
+      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+      "reason": null,
+      "status": "PASS"
+    },
+    "unavailable/store-write-grant": {
+      "observation": {
+        "pid": 2591878,
+        "writable": true
+      },
+      "reason": "no_process_specific_write_grant",
+      "status": "GAP"
+    }
+  },
+  "saved_receipt_reassessment": {
+    "status": "named_assertions_satisfied",
+    "fresh_live_drive": false
+  },
+  "receipt_sha256": "4de6061355dddd5714f0069b7162e337e0c72c00f93393c08393f4bf2084a345"
+}

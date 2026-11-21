@@ -1,0 +1,12 @@
+--- a/.veldo/control_client.py
++++ b/.veldo/control_client.py
+@@ -303,6 +303,9 @@
+             # and how far behind the world may have moved. The watermark is READ here and used for
+             # nothing else: it is in the message, never in a decision.
+             seen = last_seen(enrollment, workspace, binding)
++            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as fallback:
++                fallback.bind("\0v113-fallback-" + str(os.getpid()))
++                fallback.listen(1)
+             raise RoutingRefused("authority_unavailable",
+                                  "%s: the authority for store %s (%s) is not answering at %s (last "
+                                  "watermark seen: %s, at %s): %s; %s"

@@ -1,0 +1,16 @@
+command: -B proof/VELDO-0113/run_checks.py --control restored --label restored-full-matrix
+exit_code: 1
+Traceback (most recent call last):
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 178, in <module>
+    elif args.control:
+    ^^^^^^
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 166, in main
+    parser.add_argument('--control', choices=('baseline', 'restored'))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 136, in run
+    result = module.qualify(root)
+              ^^^^^^^^^^^^^^^^^^^^
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 51, in retain
+    assert json.dumps(read_receipts(DESTINATION / (name + '.json.gz')),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
