@@ -1,0 +1,31 @@
+Suites alone after the full unit leg's findings (lead items 9 and 6b), on the shared host without the generator.
+First seven at aa7918fd (_timer private); then the two scaffold-line runs in a scratch copy of aa7918fd plus
+_FILES += [".veldo/timers.py"] (lead item 1); the last is suite 83 at fc1c924e (its receiver-death wait).
+
+== 113_veldo_0115_authority_store load 70.41 65.22 49.57
+selftest (PARTIAL, 1 of 239 suites): 31 passed, 0 failed in 41.03s
+== 153_veldo_0323_hook_events load 67.51 65.08 50.18
+  SELFTEST FAIL: VELDO-0323 compatibility/installed-closure
+selftest (PARTIAL, 1 of 239 suites): 66 passed, 1 failed in 86.17s
+== 66_veldo_0047_authority load 65.71 65.24 51.62
+  SELFTEST FAIL: VELDO-0047 authority/installed-assets
+selftest (PARTIAL, 1 of 239 suites): 60 passed, 1 failed in 30.99s
+== 71_veldo_0138_channel_service load 65.62 65.29 52.08
+selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 37.90s
+== 83_veldo_0154_factory_loop load 65.70 65.30 52.64
+selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 80.58s
+== 86_veldo_0189_engine_upgrade load 62.94 64.64 53.46
+selftest (PARTIAL, 1 of 239 suites): 62 passed, 0 failed in 93.96s
+== 110_veldo_0143_new_project load 63.98 64.63 54.56
+selftest (PARTIAL, 1 of 239 suites): 138 passed, 0 failed in 60.14s
+== 153_veldo_0323_hook_events (scaffold line) load 64.87 64.86 55.48
+selftest (PARTIAL, 1 of 239 suites): 67 passed, 0 failed in 81.86s
+== 66_veldo_0047_authority (scaffold line) load 69.76 66.63 56.94
+selftest (PARTIAL, 1 of 239 suites): 61 passed, 0 failed in 20.29s
+== 83_veldo_0154_factory_loop at fc1c924e
+selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 77.26s
+
+Suites 113 and 153 at the base of this branch's scratch tree (fb7705e1 content), before the fix, for comparison:
+== 113_veldo_0115_authority_store at 5bc570a0: 28 passed, 3 failed (ipc/configured-store-really-changes,
+   ipc/only-the-bound-store-changes, ipc/accepted-state-survives-reopen); at the base: 31 passed, 0 failed
+== 153_veldo_0323_hook_events at 5bc570a0: 66 passed, 1 failed (compatibility/installed-closure); at the base: 67 passed

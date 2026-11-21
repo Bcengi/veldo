@@ -1,0 +1,47 @@
+Full unit leg (python3 scripts/selftest.py, every suite in one run), in a clone of this branch at 5bc570a0, on the
+shared host without the generator (other builders' loads present). No scripts/verify.sh.
+start 2026-11-21T16:40:12Z load 24.47 34.32 53.72
+selftest: 10770 passed, 20 failed
+end 2026-11-21T18:17:17Z load 46.60 42.50 36.24
+
+Red rows, each with its cause (this document's lead items; integration.md rows for inherited ones):
+  SELFTEST FAIL: VELDO-0023 AC3 journal/replay-determinism: seven records of every transition kind (upsert, update, reserve, receipt, retire
+    -> lead item 1b (control_store imports sys; suite 36's import set; not in any brief's files)
+  SELFTEST FAIL: residue/66_veldo_0042_clones: thread 'Thread-13157 (serve)' alive (Thread); thread 'Thread-13158 (serve)' alive (Thread)
+    -> brief G's (integration.md row 73)
+  SELFTEST FAIL: VELDO-0047 authority/installed-assets
+    -> lead item 1 (scaffold _FILES lacks .veldo/timers.py; brief E's line closes it)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-.../tmp-parent/veldo-agent-oo
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.1s
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-jbxwwokk', 'veldo-agent-oo3070sg']
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: the run ended without an exit status); kept privately at /tmp/v21
+    -> inherited (integration.md row 74)
+  SELFTEST FAIL: ipc/configured-store-really-changes
+    -> BRIEF F: control_client's public timer() broke suite 113's API census; fixed at aa7918fd (lead item 9)
+  SELFTEST FAIL: ipc/only-the-bound-store-changes
+    -> BRIEF F: control_client's public timer() broke suite 113's API census; fixed at aa7918fd (lead item 9)
+  SELFTEST FAIL: ipc/accepted-state-survives-reopen
+    -> BRIEF F: control_client's public timer() broke suite 113's API census; fixed at aa7918fd (lead item 9)
+  SELFTEST FAIL: VELDO-0313 ac1/only-the-runs-own-items: run finished removes the run's own scratch root [deferred None]
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0313 fix3/handed-outside-the-tree: the end follows the worker's exit: the worker ended on the suite's word and saw th
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0313 fix3/unread-process-holds: a reader that read the label of each, another run's in one and none in the other: nei
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 0 for exit 0, and the run's hold is released an
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold an
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised relea
+    -> inherited, brief G's (integration.md row 75)
+  SELFTEST FAIL: VELDO-0323 compatibility/installed-closure
+    -> lead item 9: the same scaffold line as lead item 1
