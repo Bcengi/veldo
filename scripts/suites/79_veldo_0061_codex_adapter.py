@@ -812,7 +812,9 @@ sys.exit(payload.get('code', 0))
             if 'undelivered_grants' in written:
                 written['undelivered_grants'] = []
             # VELDO-0231: the flag probe is the qualify command's too (the writer records it as not probed, the
-            # command records what the binary's loopback run showed; suite 126 proves it reproduces).
+            # command records what the binary's loopback run showed), so `flag_means` is taken from the writer's
+            # record as the other completed fields are. No row here or elsewhere names `flag_means`: it is covered
+            # only because suite 126 compares the qualify command's whole record byte for byte.
             if 'flag_means' in written and isinstance(fresh, dict):
                 written['flag_means'] = fresh.get('flag_means')
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
