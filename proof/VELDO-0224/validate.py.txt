@@ -10,15 +10,22 @@ def clean(text):
     return text.replace(str(root), '<checkout>').replace(str(Path.home()), '<home>')
 commands = [
  ('suite224', ['python3', 'scripts/selftest.py', '--suite', '158_veldo_0224_stale_declarations']),
- ('affected-suites', ['python3', 'scripts/selftest.py', '--suite', '98_veldo_0204_mutation_receipts', '--suite', '99_veldo_0205_reuse', '--suite', '100_veldo_0207_case_reuse', '--suite', '101_veldo_0208_landing_reuse', '--suite', '104_veldo_0210_mutation_workers', '--suite', '112_veldo_0215_case_deadlines', '--suite', '115_veldo_0219_measured_admission', '--suite', '157_veldo_0217_declarations', '--suite', '158_veldo_0224_stale_declarations']),
+ # Suites without the agent sandbox run on a compute node; 99, 100 and 101 need working
+ # confinement (os.pidfd_open), so they run through the host-heavy wrapper.
+ ('affected-suites', ['python3', 'scripts/selftest.py', '--suite', '98_veldo_0204_mutation_receipts', '--suite', '104_veldo_0210_mutation_workers', '--suite', '112_veldo_0215_case_deadlines', '--suite', '115_veldo_0219_measured_admission', '--suite', '157_veldo_0217_declarations', '--suite', '158_veldo_0224_stale_declarations']),
+ ('sandbox-suites', ['python3', 'scripts/selftest.py', '--suite', '99_veldo_0205_reuse', '--suite', '100_veldo_0207_case_reuse', '--suite', '101_veldo_0208_landing_reuse']),
  ('mutations224', ['python3', 'scripts/check_gate_mutations.py', '--finding', '224', '--receipt', '/tmp/veldo-0224-mutations224.json']),
  ('mutations217', ['python3', 'scripts/check_gate_mutations.py', '--finding', '217', '--receipt', '/tmp/veldo-0224-mutations217.json']),
  ('lint', ['bash', 'scripts/check_lint.sh']),
  ('template-sync', ['bash', 'scripts/check_template_sync.sh']),
  ('personal-setup', ['python3', 'scripts/check_personal_setup.py', '--base', '7460e9a9']),
 ]
+# Optional arguments select commands by name, so each runs where it can (default: all).
+selected = set(sys.argv[1:]) or {name for name, _ in commands}
 results = []
 for name, argv in commands:
+    if name not in selected:
+        continue
     print('START', name, flush=True)
     result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     body = clean(result.stdout)
