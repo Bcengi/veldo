@@ -16675,6 +16675,16 @@ def cases():
         'return {fd for fd, events in poller.poll(seconds * 1000)}',
         'return set(select.select(fds, [], [], seconds)[0])', ['watchdog/progress-not-total'])
     result[-1]['dir'] = 'scripts'
+    add(358, 'verdict358-qualification-stage-expiry', '115_veldo_0219_measured_admission.py', 'qualification.py',
+        "positive(stage['elapsed']), 'missing mutation elapsed measurement'",
+        "positive(stage['elapsed']) and stage['elapsed'] <= 4000, 'missing mutation elapsed measurement'",
+        ['admission/qualification-capture'])
+    result[-1]['dir'] = 'proof/VELDO-0219'
+    add(358, 'verdict358-qualification-worker-expiry', '115_veldo_0219_measured_admission.py', 'qualification.py',
+        "positive(outcome['elapsed']) and positive(outcome['estimate_seconds'])",
+        "positive(outcome['elapsed']) and outcome['elapsed'] < outcome['estimate_seconds']",
+        ['admission/qualification-capture'])
+    result[-1]['dir'] = 'proof/VELDO-0219'
     # END VELDO-0358 BRIEF C
 
     return result

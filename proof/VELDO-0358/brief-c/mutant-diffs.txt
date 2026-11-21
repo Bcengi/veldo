@@ -229,3 +229,17 @@ CASE wait358-descriptor-ceiling
 @@ -52 +52 @@
 -    return {fd for fd, events in poller.poll(seconds * 1000)}
 +    return set(select.select(fds, [], [], seconds)[0])
+
+CASE verdict358-qualification-stage-expiry
+--- qualification.py
++++ qualification.py
+@@ -34 +34 @@
+-        require(positive(stage['elapsed']), 'missing mutation elapsed measurement')
++        require(positive(stage['elapsed']) and stage['elapsed'] <= 4000, 'missing mutation elapsed measurement')
+
+CASE verdict358-qualification-worker-expiry
+--- qualification.py
++++ qualification.py
+@@ -47 +47 @@
+-            require(positive(outcome['elapsed']) and positive(outcome['estimate_seconds']),
++            require(positive(outcome['elapsed']) and outcome['elapsed'] < outcome['estimate_seconds'],

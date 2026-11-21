@@ -67,6 +67,10 @@ refer to a budget that is now only an admission estimate.
 | scripts/suites/115_veldo_0219_measured_admission.py | coordinator process fixtures (exercise and stage_run) | Explicit completion events replace polling-only doubles. Receipts report estimates and control_failed; resource claims and measurement checks stay. |
 | scripts/check_teeth_mutations.py | VELDO-0358 BRIEF C block | Contains this brief's registrations together, including preserved measurement and provenance falsifiers. |
 
+| scripts/suites/115_veldo_0219_measured_admission.py | admission/qualification-capture | A stage beyond 21,600 supplied seconds and workers above their estimates pass; hung evidence, missing measurements and malformed captures remain refused. |
+| proof/VELDO-0219/qualification.py | check and fixture | Remove the 4,000-second total cutoff and elapsed-versus-budget verdict; retain resource measurements, complete outcomes, commit binding, host custody and positive measurement checks. Report estimates as data. The existing host path is constructed from the home lookup instead of a committed personal literal. |
+| proof/VELDO-0219/local_check.py | synthetic elapsed/worker comparison | Both complete synthetic captures pass regardless of elapsed time; historical recorded captures are unchanged. |
+
 Retired registrations (their target code was removed):
 
 - budget214-fixed-1800-restored: the measured nested-run budget expression is gone.
