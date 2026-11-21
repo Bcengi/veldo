@@ -307,6 +307,55 @@ def kernel_triple(fd):
                 for option in (socket.SO_DOMAIN, socket.SO_TYPE, socket.SO_PROTOCOL)]
 
 
+L2TP_IP = 115  # IPPROTO_L2TP: binds a connection id, not a port.
+# setsockopt/getsockopt operations that bind, connect or install descriptors
+# outside bind/listen/accept: SCTP bindx, connectx and peeloff (SOL_SCTP 132).
+SCTP_UNQUALIFIED = {(54, 100): 'bindx add', (54, 101): 'bindx remove', (54, 107): 'connectx (old)',
+                    (54, 110): 'connectx', (54, 111): 'connectx3', (55, 102): 'peeloff',
+                    (55, 122): 'peeloff with flags'}
+
+
+def decode_inet(family, protocol, raw):
+    """The exact local endpoint from the kernel's own sockaddr, or None."""
+    if len(raw) < 2 or struct.unpack_from('<H', raw)[0] != family:
+        return None
+    if family == socket.AF_INET and len(raw) >= 8:
+        ip = socket.inet_ntop(family, raw[4:8])
+        if protocol == L2TP_IP:
+            return dict(ip=ip, conn_id=struct.unpack_from('<I', raw, 8)[0]) if len(raw) >= 12 else None
+    elif family == socket.AF_INET6 and len(raw) >= 24:
+        ip = socket.inet_ntop(family, raw[8:24])
+        if protocol == L2TP_IP:
+            return dict(ip=ip, conn_id=struct.unpack_from('<I', raw, 28)[0]) if len(raw) >= 32 else None
+    else:
+        return None
+    return dict(ip=ip, port=struct.unpack_from('>H', raw, 2)[0])
+
+
+def fixture_address(family, protocol, conn_id):
+    """A protocol-specific bind address; None means the generic socket address."""
+    if protocol != L2TP_IP:
+        return None
+    if family == socket.AF_INET:
+        return struct.pack('<HH4sI4x', family, 0, socket.inet_pton(family, '127.0.0.1'), conn_id)
+    return struct.pack('<HHI16sII', family, 0, 0, socket.inet_pton(family, '::1'), 0, conn_id)
+
+
+def raw_name(call, fd, data=None):
+    """bind with exact bytes, or getsockname returning exact bytes."""
+    if data is not None:
+        buffer = ctypes.create_string_buffer(data, len(data))
+        ctypes.set_errno(0)
+        if LIBC.bind(fd, buffer, len(data)) != 0:
+            raise OSError(ctypes.get_errno(), 'bind')
+        return data
+    buffer, size = ctypes.create_string_buffer(128), ctypes.c_uint(128)
+    ctypes.set_errno(0)
+    if LIBC.getsockname(fd, buffer, ctypes.byref(size)) != 0:
+        raise OSError(ctypes.get_errno(), 'getsockname')
+    return buffer.raw[:min(size.value, 128)]
+
+
 def host_inventory():
     """Bounded discovery with generated safe operations and exact kernel errors.
 
@@ -347,11 +396,27 @@ def host_inventory():
                             address = ('::1', 0)
                         elif family == 16:
                             address = (0, 0)
+                        kproto = cell.get('kernel', [0, 0, protocol])[2]
+                        specific = fixture_address(family, kproto, 0x1110000 + os.getpid() % 0x10000)
+                        if specific is not None:
+                            probe['fixture'] = specific.hex()
                         for name in ('bind', 'listen') if kind in (1, 5, 6) else ('bind',):
                             try:
-                                sock.bind(address) if name == 'bind' else sock.listen(1)
-                                probe['operations'].append(dict(operation=name, result=0,
-                                                                 address=repr(sock.getsockname())))
+                                if name == 'listen':
+                                    sock.listen(1)
+                                elif specific is not None:
+                                    raw_name('bind', sock.fileno(), specific)
+                                else:
+                                    sock.bind(address)
+                                kernel = raw_name('getsockname', sock.fileno())
+                                operation = dict(operation=name, result=0, address=kernel.hex())
+                                probe['operations'].append(operation)
+                                # Qualified only if the collector's decoder names the endpoint.
+                                if family in (2, 10):
+                                    operation['decoded'] = decode_inet(family, kproto, kernel)
+                                    if operation['decoded'] is None or (specific is not None and (
+                                            not sampled_matches(family, specific, kernel, kproto))):
+                                        probe['gap'] = 'operation_configuration'
                             except OSError as exc:
                                 probe['operations'].append(dict(operation=name, result=-1, errno=exc.errno))
                                 probe['gap'] = 'operation_configuration'
@@ -416,11 +481,16 @@ def qualify(r, inventory):
                    and not reasons else 'INCOMPLETE')
 
 
-def sampled_matches(family, sample, kernel):
+def sampled_matches(family, sample, kernel, protocol=0):
     """Is the kernel's bound address one the sampled bind sockaddr requested?
 
-    Port 0 (inet) and nl_pid 0 (netlink) ask the kernel to choose.
+    Port 0 (inet) and nl_pid 0 (netlink) ask the kernel to choose. An L2TP/IP
+    connection id is never chosen by the kernel and must match exactly.
     """
+    if protocol == L2TP_IP and family in (socket.AF_INET, socket.AF_INET6):
+        span = (8, 12) if family == socket.AF_INET else (28, 32)
+        if len(sample) < span[1] or len(kernel) < span[1] or sample[span[0]:span[1]] != kernel[span[0]:span[1]]:
+            return False
     if len(sample) < 2 or len(kernel) < 2 or struct.unpack_from('<H', sample)[0] != family \
             or struct.unpack_from('<H', kernel)[0] != family:
         return False
@@ -702,6 +772,14 @@ class Collector:
                 data = b''.join(data[i:i + 4][::-1] for i in range(0, len(data), 4))
                 return dict(ip=socket.inet_ntop(family, data), port=int(port, 16),
                             sockaddr_hex=obj['address'] if isinstance(obj['address'], str) else None)
+        # Protocols without a /proc table (SCTP, UDP-Lite, SMC, L2TP/IP): the
+        # kernel's own sockaddr from the operation stop names the endpoint.
+        kernel = obj.get('kernel_sockaddr_hex')
+        decoded = kernel and decode_inet(family, (obj.get('kernel_triple') or [0, 0, obj['protocol']])[2],
+                                         bytes.fromhex(kernel))
+        if decoded:
+            return dict(decoded, sockaddr_hex=obj['address'] if isinstance(obj['address'], str) else None,
+                        source='getsockname')
         failure(self.r, 'socket_address', f'no enrichment for {obj["identity"]}')
         return obj['address']
 
@@ -847,6 +925,9 @@ class Collector:
         if nr == 317 and a[0] == 1 and a[1] & 8:
             failure(self.r, 'shared_socket_memory',
                     'seccomp user notification can install descriptors from outside scope')
+        if nr in (54, 55) and a[1] == 132 and (nr, a[2]) in SCTP_UNQUALIFIED:
+            failure(self.r, 'operation_configuration',
+                    f'SCTP {SCTP_UNQUALIFIED[nr, a[2]]} binds, connects or installs outside observed operations')
         # Decode sends even when the transport was received from outside scope.
         if nr in (46, 307):
             self.sent_rights(pid, entry, result)
@@ -871,6 +952,10 @@ class Collector:
                 return
             obj = self.register_socket(pid, result, parent['family'], parent['type'], parent['protocol'])
             if obj:
+                try:
+                    obj['kernel_sockaddr_hex'] = self.kernel_name(pid, result, obj['inode']).hex()
+                except OSError:
+                    obj['kernel_sockaddr_hex'] = None
                 obj['accepted_from'] = parent['identity']
                 obj['address'] = parent['address']
                 obj['abi'] = entry.get('abi', 'x86_64')
@@ -915,7 +1000,8 @@ class Collector:
             if nr == 49:
                 if obj['kernel_sockaddr_hex'] is not None and not sampled_matches(
                         obj['family'], bytes.fromhex(entry['address'] or ''),
-                        bytes.fromhex(obj['kernel_sockaddr_hex'])):
+                        bytes.fromhex(obj['kernel_sockaddr_hex']),
+                        (obj.get('kernel_triple') or [0, 0, obj['protocol']])[2]):
                     failure(self.r, 'shared_socket_memory', 'kernel-bound address differs from the sampled sockaddr')
                 obj["address"] = entry["address"]
                 self.event("bind", task=self.live[pid]["identity"], socket=obj["identity"],

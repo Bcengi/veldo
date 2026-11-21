@@ -126,6 +126,13 @@ except OSError as exc:
     ack(kind='unsupported',family=socket.AF_NETLINK,type=socket.SOCK_RAW,errno=exc.errno)
 '''
 
+SCTP_BINDX_PROBE = r'''
+import socket,struct
+s=socket.socket(socket.AF_INET,socket.SOCK_SEQPACKET,132)
+s.bind(('127.0.0.1',0))
+s.setsockopt(132,100,struct.pack('<H',2)+struct.pack('!H',s.getsockname()[1])+socket.inet_aton('127.0.0.2')+bytes(8))
+s.close()
+'''
 INVENTORY_PROBE = r'''
 import ctypes,json,os,socket,struct
 libc=ctypes.CDLL(None,use_errno=True)
@@ -153,11 +160,24 @@ for family in range(46):
                     address=('::1',0)
                 elif family==16:
                     address=(0,0)
+                conn=None
+                if protocol==115 and family in (2,10):
+                    # L2TP/IP binds a connection id with its own sockaddr layout.
+                    conn=0x3330000+os.getpid()%65536
+                    address=(struct.pack('<HH4sI4x',2,0,socket.inet_pton(2,'127.0.0.1'),conn) if family==2
+                             else struct.pack('<HHI16sII',10,0,0,socket.inet_pton(10,'::1'),0,conn))
                 for operation in ('bind','listen') if kind in (1,5,6) else ('bind',):
                     try:
-                        s.bind(address) if operation=='bind' else s.listen(1)
+                        if operation=='listen':
+                            s.listen(1)
+                        elif conn is not None:
+                            raw=ctypes.create_string_buffer(address,len(address))
+                            if libc.bind(fd,raw,len(address))!=0:
+                                raise OSError(ctypes.get_errno(),'bind')
+                        else:
+                            s.bind(address)
                         ack(dict(kind='operation',family=family,type=kind,protocol=protocol,
-                                 operation=operation,result=0,address=repr(s.getsockname()),
+                                 operation=operation,result=0,address=repr(s.getsockname()),conn_id=conn,
                                  inode=os.readlink('/proc/self/fd/'+str(fd))))
                     except OSError as exc:
                         ack(dict(kind='operation',family=family,type=kind,protocol=protocol,
@@ -559,6 +579,31 @@ for name in (observer,'pgrep'):
          and len(refusals) == 1 and sorted(x['identity'] for x in refusals[0]['evidence']['sockets']) == named
          and refused['status'] == 'INCOMPLETE'
          and all(row['status'] == 'STANDS DOWN' for rows in finish_rows(census, refused) for row in rows))
+
+    # operation_configuration: every available operation of the four families is
+    # qualified with its own address fixture, decoded from the kernel's sockaddr;
+    # L2TP/IP connection ids are exact; SCTP bindx/connectx/peeloff fail closed.
+    l2tp = [c for c in operations if c['protocol'] == 115 and c['result'] == 0]
+    l2tp_services = {objects[e['socket']]['inode']: e['address'] for e in inventory['events']
+                     if e['kind'] == 'service' and objects[e['socket']]['protocol'] == 115}
+    fixture = lambda conn: census.fixture_address(2, 115, conn)
+    sctp = any(c['available'] and c['protocol'] == 132 for c in capabilities['combinations'])
+    bindx = run('sctp_bindx', SCTP_BINDX_PROBE)[0] if sctp else None
+    evidence['operation_configuration'] = dict(l2tp=l2tp, l2tp_services=l2tp_services,
+        bindx_failures=bindx and bindx['failures'])
+    emit('census/protocol-specific-operations',
+         not any(p.get('gap') for p in capabilities['operation_probes'])
+         and all(o.get('decoded') for p in capabilities['operation_probes'] if p['family'] in (2, 10)
+                 for o in p['operations'])
+         and not any(f['capability'] in ('socket_address', 'operation_configuration') for f in inventory['failures'])
+         and {c['family'] for c in l2tp} == {f for f in (2, 10) if any(
+             c['available'] and c['family'] == f and c['protocol'] == 115 for c in capabilities['combinations'])}
+         and all(l2tp_services.get(c['inode'], {}).get('conn_id') == c['conn_id'] for c in l2tp)
+         and census.sampled_matches(2, fixture(7), fixture(7), 115)
+         and not census.sampled_matches(2, fixture(7), fixture(8), 115)
+         and (bindx is None or (bindx.get('root_status') == 0 and bindx['capture_status'] == 'INCOMPLETE'
+              and [f['reason'] for f in bindx['failures'] if f['capability'] == 'operation_configuration']
+              == ['SCTP bindx add binds, connects or installs outside observed operations'])))
 
     extended, acks = run('socket_extensions', EXTENDED_SOCKET_PROBE)
     accepted = [a for a in acks if a['kind'] == 'accept']

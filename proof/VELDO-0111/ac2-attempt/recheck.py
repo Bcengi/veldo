@@ -22,7 +22,7 @@ import memory_aba
 
 HERE = Path(__file__).resolve().parent
 SUITE = ROOT / 'scripts/suites/113_veldo_0111_census.py'
-NEXT = 'operation_configuration'  # first retained obligation not addressed by this run
+NEXT = 'io_uring_socket_effects'  # first retained obligation not addressed by this run
 
 
 def load(name, path):
@@ -276,6 +276,17 @@ def main():
          'census/protocol-inventory-covers-kernel'),
         ('skip-undiscovered-refusal', '    if undiscovered:\n', '    if False:\n',
          'census/undiscovered-protocol-refused'))
+    # operation_configuration: protocol-specific fixtures, kernel-sockaddr
+    # decoding, exact L2TP connection ids and SCTP bindx refusal.
+    OPERATION = 'census/protocol-specific-operations'
+    PROTOCOL += (
+        ('generic-l2tp-address', '    if protocol != L2TP_IP:\n', '    if True:\n', OPERATION),
+        ('drop-kernel-address-decoding', '        if decoded:\n', '        if False:\n', OPERATION),
+        ('ignore-sctp-bindx', '        if nr in (54, 55) and a[1] == 132',
+         '        if False and nr in (54, 55) and a[1] == 132', OPERATION),
+        ('ignore-l2tp-conn-id',
+         '    if protocol == L2TP_IP and family in (socket.AF_INET, socket.AF_INET6):\n',
+         '    if False:\n', OPERATION))
     for label, old, new, target in PROTOCOL:
         mutate(label, old, new, target)
 
