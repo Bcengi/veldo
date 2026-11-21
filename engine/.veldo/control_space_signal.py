@@ -116,9 +116,15 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
                                   empty; or the owning session's recorded process is the same live one
   4 process_use   in_use          a process, a container or git uses the path; a launcher's scratch
                                   whose lock is held or whose borrowed login is not settled
-  5 unique_work   unique_work     the five cases of a worktree; an agent repository's branches
+  5 unique_work   unique_work     the five cases of a worktree, case 3 with every ignored path that
+                                  is work (VELDO-0347); an agent repository's branches; a batch
+                                  clone's or a candidate workspace's work tree (a dead run's worker
+                                  clone is saved by the keep step instead)
   6 children      in_use          an item inside this one is there in any state but removed or gone,
-                                  or something on disk inside it is not recorded, or cannot be read
+                                  or something on disk inside it is not recorded, or cannot be read;
+                                  the item's own folder is a repository and its kind is neither
+                                  worktree nor agent repository; a repository beneath scratch or
+                                  build output that is not a clean clone (VELDO-0347)
   7 tool          remove_refused  the owning tool's remove refuses; or in_use or keep_failed, when the
                                   remover names that as its own deferral
 
@@ -164,7 +170,10 @@ uncommitted files with it. So does a registered worktree on disk that no live it
 repository git cannot list. It also looks on disk beneath a worktree and beneath an agent repository
 for git repositories nobody recorded (the probe's nested): one in a folder git ignores is no case of
 unique work, git's non-forced worktree remove takes it, and its commits exist nowhere else. Each holds
-the item, and so does a folder that could not be listed. `inside` is also the look the kind registry's
+the item, and so does a folder that could not be listed. Since VELDO-0347 (design 0.1) the look starts
+at the item's own folder: an item whose kind is neither worktree nor agent repository and whose folder
+is itself a repository holds itself, under path:<its path>. And beneath a scratch or a build output
+item a repository holds it too, unless the probe reads it as a clean clone at that moment. `inside` is also the look the kind registry's
 due is given.
 
 THE TOOL (rule 7) is the callable `tool(identity, record)` the caller gives: the remover. It is called
@@ -187,8 +196,9 @@ and by reconcile (VELDO-0315 AC6), which reads the carrier first.
 WHAT IS NOT HERE. The modules are given, not imported: the probes, the kind registry and the removers
 (with the keep step the removers are given, VELDO-0345). The owner's Confirm, which writes an item's
 confirmation, is VELDO-0320. The decision request an item with unique work raises is VELDO-0318. Review scratch uses the
-remover with a fresh rules reader (VELDO-0336). Evidence files a copy holds are VELDO-0347 (their
-action has no remover yet and is deferred as remove_refused), and the measuring of a measure cell and the
+remover with a fresh rules reader (VELDO-0336). Evidence files a copy holds are removed by the
+remover of remove_held (VELDO-0347), given the store's reader `held`; the item stays, kept, with what
+no copy holds. The measuring of a measure cell and the
 mark of a contained branch are their own tickets: here each of those items is kept, with the action
 named. Reconcile, which finishes a removing item and an item left due by a process that died, is
 VELDO-0315.
