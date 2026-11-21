@@ -125,8 +125,10 @@ acceptance_criteria:
       refused by name (invalid_input:agent_native_tools:wait_question), so on Claude Code it is never in the
       launch set (VELDO-0173) and a call of it in the stream asks under rule A as today. On Codex, where
       the asynchronous grant also delivers request_user_input, the qualify loopback probe has the model call
-      it under Veldo's launch (input closed after the prompt) and records the binary's own answer and how
-      long it took; the grant holds only when that answer is immediate and gives no answers (Codex's own
+      it under Veldo's launch (input closed after the prompt) and records the binary's own answer and
+      whether it came at once: as the call's output in the binary's very next request to the model, an event
+      of the probe, never a number of seconds; the grant holds only when that answer is immediate and gives
+      no answers (Codex's own
       instructions then tell the model to continue on its judgment). The flag instructions the handoff adds
       to a role that holds a flag means say, as one fixed text, that nobody answers questions in this run and
       that the agent continues and flags instead. Every synchronous question the receiver reads is also
@@ -228,3 +230,13 @@ end until it has read each commit. The intent ("at once", the run goes on) and t
 measured times stay in the proof as recorded data. Any real latency requirement moves to a paired A/B
 measurement (VELDO-0358's paired performance stage), never an absolute bound in the functional gate. The suite
 row AC1/at-once and the falsifier are updated to match.
+
+2026-11-21: AC3's "immediate" restated under the same rule (Telegram 42829), from the bring-up line's review
+(finding F6), in its second fix round at the lead's brief. The qualify probe called the binary's answer immediate
+only if it came within 5 seconds (`IMMEDIATE_SECONDS`), and suite 126 reproduces the record byte for byte, so on
+a loaded host both the production grant and a gate row turned on the machine's speed. "Immediate" is now the
+probe's event: the answer is the call's output in the binary's very next request to the model, with no input from
+Veldo; a binary that waits for an answer sends no such request, and the probe's run ends at its hang detector
+(120 seconds, never a verdict). The record names that event (`answered_in: next_request`) in place of the bound
+(`within_seconds: 5`). The receiver's question window (60 seconds) stays the runtime guard. The intent (the grant
+holds only on a binary that answers by itself, with no answers) is unchanged.

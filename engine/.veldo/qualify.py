@@ -379,9 +379,10 @@ def home_as_tilde(text):
     return text
 
 
-# VELDO-0231: the token the flag probe's model call carries, and how long one probe run may take.
+# VELDO-0231: the token the flag probe's model call carries, and the hang detector of one probe run (never a verdict:
+# a binary that never answers is judged by the request it never sends, and this only ends its run).
 FLAG_TOKEN = 'veldo-flag-probe-0231'
-PROBE_SECONDS = 45
+PROBE_SECONDS = 120
 
 
 def token_path(value, token, path=()):
@@ -441,8 +442,9 @@ def flag_probe(executable, qualified, H, LB, source, temp):
     """VELDO-0231 AC2, AC3: on loopback, with the input closed after the prompt as Veldo launches it, the model calls
     request_user_input_async and, in a second run, request_user_input, each carrying FLAG_TOKEN. Records the form
     in which each call reaches the exec JSON stream, and for the synchronous one the binary's own answer (the call's
-    output in its next request), how long it took as the bound it answered within (`within_seconds`, never the
-    measured time, so the same binary writes the same record), whether it was immediate and whether it gave answers.
+    output in its next request), whether that answer was immediate, by the event that it is the call's output in the
+    binary's very next request to the model (`answered_in`: X.IMMEDIATE, never a time, so the same binary writes the
+    same record on any machine), and whether it gave answers.
     The means is the asynchronous call only where its form was found; else the marked line, with that reason."""
     import copy
     X = H.X
@@ -465,23 +467,24 @@ def flag_probe(executable, qualified, H, LB, source, temp):
         forms[tool] = stream_form(result.get('stdout'), FLAG_TOKEN, tool)
         if tool == X.QUESTION_TOOL:
             requests = result.get('requests') or []
-            answered = requests[0].get('answered_at') if requests else None
-            output, seconds = None, None
-            for request in requests[1:]:
+            output, position = None, None
+            for position, request in enumerate(requests[1:], 1):
                 outputs = [i for i in request['body'].get('input') or () if isinstance(i, dict)
                            and i.get('type') == 'function_call_output' and i.get('call_id') == 'call_loopback']
                 if outputs:
                     output = outputs[0].get('output')
-                    seconds = round(request['arrived'] - answered, 3) if answered is not None else None
                     break
+            else:
+                position = None
             text_output = output if isinstance(output, str) else json.dumps(output)
             try:
                 parsed = json.loads(text_output) if output is not None else None
             except ValueError:
                 parsed = None
             answers = bool(parsed.get('answers')) if isinstance(parsed, dict) else output is None or bool(text_output)
-            immediate = seconds is not None and seconds <= X.IMMEDIATE_SECONDS
-            question = {'answer': output, 'within_seconds': X.IMMEDIATE_SECONDS if immediate else None,
+            # At once: the answer is in the binary's very next request to the model (X.IMMEDIATE), an event.
+            immediate = output is not None and position == 1
+            question = {'answer': output, 'answered_in': X.IMMEDIATE if immediate else None,
                         'answers': answers, 'immediate': immediate, 'returncode': result.get('returncode')}
     if forms[X.FLAG_TOOL] is None:
         return {'means': X.MARKED_LINE, 'forms': forms, 'question': question,

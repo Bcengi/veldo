@@ -51,10 +51,10 @@
   "means": "marked_line",
   "question": {
    "answer": "request_user_input is unavailable in Default mode",
+   "answered_in": "next_request",
    "answers": true,
    "immediate": true,
-   "returncode": 0,
-   "within_seconds": 5
+   "returncode": 0
   },
   "reason": "the asynchronous call does not reach the exec JSON stream on this binary"
  },
