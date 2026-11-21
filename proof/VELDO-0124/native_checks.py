@@ -114,8 +114,7 @@ while True:
 def setup(base, mode, engine, runtime=1.2):
     """A synthetic engine through the production admission and engine environment."""
     paths, profile, unused, facts, request = T.fixture(base)
-    profile.update(interpreter=PINNED, runtime_seconds=runtime, startup_seconds=10, heartbeat_seconds=.1,
-                   heartbeat_window_seconds=.5, stop_grace_seconds=.2, kill_grace_seconds=.2, settle_seconds=2)
+    profile.update(interpreter=PINNED, runtime_seconds=runtime, startup_seconds=10, stop_grace_seconds=.2, kill_grace_seconds=.2, settle_seconds=2)
     probe, config = paths['authority'] / 'probe.py', paths['authority'] / 'probe.json'
     probe.write_text(CHILD)
     # The harness is trusted and read only to the worker. Nothing here represents a

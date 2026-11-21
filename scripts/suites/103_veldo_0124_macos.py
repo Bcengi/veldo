@@ -65,6 +65,7 @@ def _v124_suite():
         for granted in (dirs['clone'], dirs['scratch'], dirs['login'], environment['HOME'], environment['TMPDIR']):
             assert '(subpath "%s")' % granted in lines[2], granted
         assert str(dirs['authority']) not in policy and str(host.root) not in lines[2]
+
         owner = str(dirs['owner'].resolve())
         reads = [line for line in lines if line.startswith('(deny file-read-data')]
         assert [r.split(' (require-not')[0] for r in reads] == [
@@ -92,6 +93,15 @@ def _v124_suite():
         assert P.overlaps(mac_homes + '/caf\u00e9', mac_homes + '/cafe\u0301/child')
         assert not P.overlaps('/private/var/key', '/private/var/keys')
         T.refused(lambda: P.sandbox([str(base)], [str(dirs['authority'])], str(base)), 'invalid_input:protected_overlap')
+
+    def signing_key_read(base):
+        host, osx, request, dirs = T.start(base)
+        signing_key = dirs['authority'] / 'worker-signing'
+        signing_key.write_text('synthetic private key')
+        host.profile['signing_keys'] = [str(signing_key)]
+        key_policy = host.policy(request)
+        assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in key_policy
+
 
     def run_environment(base):
         host, osx, request, dirs = T.start(base)
@@ -152,8 +162,9 @@ def _v124_suite():
         settings.write_text('{"sandbox":{"enabled":true}}')
         observations = []
         host.observe = observations.append
+        before = {p.name: p.read_bytes() for p in host.root.iterdir()}
         T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
-        assert osx.bootstraps == 0 and not list(host.root.iterdir())
+        assert osx.bootstraps == 0 and {p.name: p.read_bytes() for p in host.root.iterdir()} == before
         assert observations[-1]['refusal'] == 'unsupported_configuration:claude_bash_sandbox'
         assert json.loads(settings.read_text())['sandbox']['enabled'] is True
         host.profile['engines']['claude_code']['argv'].append('--setting-sources=')
@@ -267,6 +278,7 @@ def _v124_suite():
         (paths['login'] / 'settings.json').write_text('{"sandbox":{"enabled":true}}')
         wrapper = T.load('project_runner_macos_wrapper')
         wrapper.identity = lambda pid: dict(pid=pid)
+        wrapper.wait_file = lambda path, timeout: path.exists()
         with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(
                 wrapper, 'coalition', side_effect=AssertionError('nested Claude sandbox reached native execution')):
             assert wrapper.main(run.directory) == 125
@@ -436,13 +448,22 @@ def _v124_suite():
         osx.mode = 'ps_error'
         assert not run.retirement()['cleaned']
 
-    def heartbeat(base):
+    def stalled_wrapper(base):
         host, osx, request, paths = T.start(base, 'blocked')
         run = host.start(request)
-        osx.heartbeat = False
+        waits = []
+        original = osx.exited
+        def exited(watch, seconds):
+            if T.WRAPPER in osx.live:
+                waits.append(seconds)
+            return original(watch, seconds)
+        osx.exited = exited
         result = run.wait()
-        assert result['state'] == 'exited' and run.cause == 'heartbeat_missing'
-        assert run.steps[0]['monotonic'] <= .101 and run.steps[0]['stage'] == 'cooperative'
+        assert result['state'] == 'exited' and run.cause == 'runtime_cap'
+        assert run.steps[0]['monotonic'] == run.deadline
+        assert run.steps[0]['stage'] == 'terminate'
+        assert not osx.live
+        assert [seconds for seconds in waits if seconds] == [run.deadline]
 
     def os_contract(base):
         host, osx, request, paths = T.start(base)
@@ -465,7 +486,7 @@ def _v124_suite():
         assert M.OS.live_members([(12, 7, 2), (13, 7, M.OS.SZOMB), (14, 9, 2), (15, 7, 3)], 7) == [12, 15]
 
     tests = {'AC1/forged-qualification': T.forged_qualification, 'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
-             'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
+             'AC1/apfs-policy': paths, 'AC1/worker-signing-key-read': signing_key_read, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
              'AC1/interpreter': interpreter, 'AC1/nested-sandbox': nested, 'AC3/hard-kill-unknown': killed,
              'AC1/claude-sandbox-refused': claude_refusal, 'AC1/claude-sandbox-disabled': claude_disabled,
              'AC1/claude-settings-sources': claude_sources, 'AC1/claude-invocation': claude_invocation,
@@ -474,7 +495,7 @@ def _v124_suite():
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
              'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,
              'AC3/descendant': descendant, 'AC3/natural': natural, 'AC3/notification-lost': notification_lost,
-             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/ignoring': ignoring, 'AC3/heartbeat': heartbeat}
+             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/ignoring': ignoring, 'AC3/stalled-wrapper-event-or-runtime-cap': stalled_wrapper}
     for name, test in tests.items():
         with tempfile.TemporaryDirectory(prefix='v124-') as directory:
             try:

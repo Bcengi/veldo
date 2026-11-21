@@ -133,7 +133,7 @@ def fixture(base):
                    interpreter=executable, home=str(paths['owner']), account_roots=[str(paths['accounts'])],
                    project_roots=[str(paths['projects'])],
                    max_workers=1, runtime_seconds=0.3, stop_grace_seconds=0.1, kill_grace_seconds=0.1,
-                   settle_seconds=0.1, startup_seconds=0.2, heartbeat_seconds=0.02, heartbeat_window_seconds=0.08,
+                   settle_seconds=0.1, startup_seconds=0.2,
                    engines=engines)
     facts = dict(platform='darwin', host='fixture-mac', os_version='fixture-26.0', boot_id='fixture-boot', tools=True)
     qualification = dict(schema=P.QUALIFICATION, kind='native', host=facts['host'], os_version=facts['os_version'],
@@ -169,7 +169,7 @@ class FakeOS:
     def __init__(self, facts, mode='natural', temp=None):
         self.host_facts, self.mode, self.temp = facts, mode, temp
         self.now, self.bootstraps, self.calls = 0., 0, []
-        self.live, self.exit_event, self.directory, self.heartbeat = {}, False, None, True
+        self.live, self.exit_event, self.directory = {}, False, None
         self.returncode = None
         self.process = dict(platform='darwin', host=facts['host'], boot_id=facts['boot_id'], pid=WRAPPER, start='start')
 
@@ -193,8 +193,6 @@ class FakeOS:
         if self.now > 2:
             raise TimeoutError('fixture supervisor exceeded bound')
         if self.directory and (self.directory / 'go').exists():
-            if self.heartbeat and WRAPPER in self.live:
-                M.write(self.directory / 'heartbeat.json', dict(monotonic=self.now, dispatch_id='dispatch/test'))
             if self.mode == 'natural' and self.now >= 0.06 and ENGINE in self.live:
                 self.finish()
 
@@ -219,7 +217,15 @@ class FakeOS:
         assert process == self.process and WRAPPER in self.live
         return Watch()
 
+    def wake(self, watch):
+        pass
+
     def exited(self, watch, seconds):
+        if not self.exit_event and seconds:
+            # Model NOTE_EXIT waking early for a natural exit, otherwise its
+            # single deadline timeout. The historical fixture advanced only sleep.
+            delay = min(seconds, max(0, .06 - self.now)) if self.mode == 'natural' else seconds
+            self.sleep(delay)
         return self.exit_event
 
     def alive(self, process):

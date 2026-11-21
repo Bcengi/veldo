@@ -9,7 +9,7 @@ def _v124_control():
     import subprocess
     import tempfile
 
-    spec = importlib.util.spec_from_file_location('v124_checks_control', ROOT / 'proof/VELDO-0124/checks.py')
+    spec = importlib.util.spec_from_file_location('v124_checks_control', ROOT / 'proof/VELDO-0125/macos_event_fixture.py')
     T = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(T)
     C = T.load('project_runner_macos_control')

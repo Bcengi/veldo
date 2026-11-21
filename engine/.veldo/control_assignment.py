@@ -395,6 +395,9 @@ class Inbox:
         aid = assignment_id(self.ids['repository_uuid'], command['alias'])
         observation['assignment_id'] = aid
         state = self.membership.authority_state(self.store, self.conn)
+        member = self.AC.membership_entry(state['membership'], principal)
+        if member and 'worker_receiver' in member.get('roles', []):
+            raise Refused('not_authorized', 'worker receiver operation only')
         now = self.clock()
         key = self.AC.active_key(state['keyring'], principal, now)
         if not key:

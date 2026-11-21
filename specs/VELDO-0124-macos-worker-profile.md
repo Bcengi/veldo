@@ -112,6 +112,25 @@ not tests run by this writing revision.
 
 ## History
 
+2026-11-21, lead decision: VELDO-0125 exit events (wait_file, wait_members and
+kqueue) replace VELDO-0124 heartbeat polling. Profile schema v2 drops
+heartbeat_seconds and heartbeat_window_seconds. v1 requires explicit migration
+and new qualification for the resulting digest; the earlier round 13 legacy
+runtime compatibility decision is superseded. Tests synchronize on events;
+deadlines detect hangs, and simulated clocks drive deadline assertions (owner
+Telegram 42829). The former heartbeat test now observes a stalled live wrapper
+stopping at the runtime cap, with no recurring wake.
+
+2026-11-21, lead decision: VELDO-0124 evidence-bound qualification remains a
+security control. verify_evidence checks protected evidence-file references,
+SHA256 digests, native rows and host/OS/profile bindings. The refused Claude
+sandbox setting and the trusted wrapper's last-boundary recheck remain required.
+VELDO-0125 synthetic fixtures publish complete evidence documents and rebind
+both the document and qualification references after profile changes. They
+cannot qualify a real Mac. No security acceptance criterion is weakened.
+See proof/VELDO-0125/PORT-2026-11-21.md and proof/VELDO-0124/PORT-2026-11-21.md;
+existing native observations and outstanding Mac legs retain their recorded scope.
+
 2026-10-29: round 3 addresses fixcheck N1 and N2 with reason-specific forged
 qualification cases, five isolated verification check mutants and a neutral
 fixture identity. Scoped suite and red/green evidence is recorded in

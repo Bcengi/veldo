@@ -13,7 +13,9 @@ import plistlib
 import pwd
 import unicodedata
 
-SCHEMA = 'veldo.macos_worker_profile/v1'
+SCHEMA = 'veldo.macos_worker_profile/v2'
+LEGACY_SCHEMA = 'veldo.macos_worker_profile/v1'
+HEARTBEAT = ('heartbeat_seconds', 'heartbeat_window_seconds')
 QUALIFICATION = 'veldo.macos_worker_qualification/v1'
 ENGINES = ('claude_code', 'codex')
 NATIVE_ROWS = ('launch', 'write', 'read', 'launchd', 'keychain', 'signal', 'capacity', 'deadline', 'natural',
@@ -25,7 +27,7 @@ UNSANDBOXED = {'codex': (('--sandbox', 'danger-full-access'), ('-s', 'danger-ful
                          ('--sandbox=danger-full-access',), ('--dangerously-bypass-approvals-and-sandbox',))}
 MINIMUM_PYTHON = (3, 11)
 CAPS = ('runtime_seconds', 'stop_grace_seconds', 'kill_grace_seconds', 'settle_seconds',
-        'startup_seconds', 'heartbeat_seconds', 'heartbeat_window_seconds')
+        'startup_seconds')
 CLAUDE_MANAGED = Path('/Library/Application Support/ClaudeCode')
 CLAUDE_PREFERENCES = Path('/Library/Managed Preferences')
 CLAUDE_DOMAIN = 'com.anthropic.claudecode.plist'
@@ -220,7 +222,7 @@ def _any(paths):
     return '(require-any %s)' % ' '.join('(subpath %s)' % json.dumps(p, ensure_ascii=False) for p in paths)
 
 
-def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=()):
+def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=(), signing_keys=()):
     """Seatbelt profile for the engine and every descendant, which inherit it.
 
     writable: the run's clone, scratch, run home, run temp and its own login profile.
@@ -247,6 +249,11 @@ def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=()):
     # Writes: only the grants, /dev/null and the controlling terminal. A symlink inside a
     # grant does not grant its resolved target.
     rules.append('(deny file-write* (require-not (require-any %s (literal "/dev/null") (literal "/dev/tty"))))' % grants)
+    keys = sorted(set(canonical(p) for p in signing_keys))
+    if any(overlaps(a, b) for a in writes for b in keys):
+        raise Refused('invalid_input:protected_overlap')
+    if keys:
+        rules.append('(deny file-read-data %s)' % _any(keys))
     rules.append(unreadable('(subpath %s)' % json.dumps(home + '/.ssh')))
     rules.append(unreadable('(regex %s)' % _regex(home + '/.claude')))
     rules.append(unreadable('(regex %s)' % _regex(home + '/.codex')))
@@ -273,8 +280,8 @@ def validate(profile):
         value = profile.get(name)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise Refused('unsupported_configuration:' + name)
-    if profile['heartbeat_window_seconds'] <= profile['heartbeat_seconds']:
-        raise Refused('unsupported_configuration:heartbeat_window_seconds')
+    if any(name in profile for name in HEARTBEAT):
+        raise Refused('unsupported_configuration:removed_heartbeat_field')
     if not isinstance(profile.get('engines'), dict) or set(profile['engines']) != set(ENGINES):
         raise Refused('unsupported_configuration:engines')
     for engine in profile['engines'].values():
@@ -347,6 +354,15 @@ def verify_evidence(profile, evidence):
                     raise ValueError('evidence row')
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError) as error:
         raise Refused('missing_evidence:macos_qualification') from error
+
+
+def migrate(profile):
+    """Return v2 configuration; qualification must bind its new digest and evidence."""
+    if not isinstance(profile, dict) or profile.get('schema') not in (SCHEMA, LEGACY_SCHEMA):
+        raise Refused('unsupported_configuration:profile')
+    migrated = {key: value for key, value in profile.items() if key not in HEARTBEAT}
+    migrated['schema'] = SCHEMA
+    return validate(migrated)
 
 
 def qualify(profile, evidence, facts, engine, configuration):
