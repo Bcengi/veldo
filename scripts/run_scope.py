@@ -63,7 +63,6 @@ import json
 import os
 import re
 import selectors
-import shutil
 import signal
 import subprocess
 import sys
@@ -1238,15 +1237,6 @@ def _group_anonymous(groups):
     return totals
 
 
-def _remove(path):
-    for directory, _dirs, _files in os.walk(str(path)):
-        try:
-            os.chmod(directory, 0o700)
-        except OSError:
-            pass
-    shutil.rmtree(str(path), ignore_errors=True)
-
-
 def shard_verdict(job, leg, status):
     """Read one ended shard: its counts, and every way it failed its suite (codes of
     SHARD_FAILURES, each with the words a reader needs). Nothing here trusts the exit status alone
@@ -1335,7 +1325,14 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     exactly once. Green is failed == 0, which needs every shard to pass and the isolation check to
     hold. The keyword arguments after `environ` exist for a fixture leg: the real gate passes none.
     """
-    root = Path(root)
+    # Every shard's roots stand in one temporary directory of this leg's own, which ends with it.
+    with tempfile.TemporaryDirectory(prefix="vs-", ignore_cleanup_errors=True) as directory:
+        return _run_shards(Path(directory), Path(root), leg, targets, environ, emit, requires, manifest,
+                           places, units, describe, deadline, settle, parallel, python, tick)
+
+
+def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, places, units, describe,
+                deadline, settle, parallel, python, tick):
     environ = dict(os.environ if environ is None else environ)
     say = emit or (lambda line: print(line, flush=True))
     manifest = manifest or load_manifest(root / "scripts" / "suites" / "manifest.json")
@@ -1349,7 +1346,6 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
             names.append(name)
     claims = handed_claims(environ)
     began = time.monotonic()
-    base = Path(tempfile.mkdtemp(prefix="vs-", dir=environ.get("TMPDIR") or None))
     (base / "probe").mkdir(mode=0o700)
     jobs = []
     for index, name in enumerate(names):
@@ -1501,7 +1497,6 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
                                                "peak_anon_bytes": job["peak_anon_bytes"]}) + "\n").encode())
             except OSError:
                 pass
-        _remove(job["root"])
 
     try:
         try:
@@ -1646,7 +1641,6 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
         selector.close()
         if ledger is not None:
             ledger.close()
-        _remove(base)
 
 
 def full_scope(manifest=None):

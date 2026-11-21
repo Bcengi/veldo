@@ -60,6 +60,7 @@ CREATORS = {
     ('scripts/parser_corpus_audit.py', 'main'): 'Creates a private temporary tree for this call.',
     ('scripts/propose_case_inputs.py', 'trace_case'): 'Creates a private temporary tree for this call.',
     ('scripts/render_pdfs.py', 'main'): 'Creates a private temporary tree for this call.',
+    ('scripts/run_scope.py', 'run_shards'): 'Creates a private temporary tree for this call.',
     ('scripts/suite_equiv.py', 'main'): 'Creates a private temporary tree for this call.',
 }
 REVIEWED = {
@@ -122,6 +123,7 @@ REVIEWED = {
     ('scripts/parser_corpus_audit.py', 'main'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/propose_case_inputs.py', 'trace_case'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/render_pdfs.py', 'main'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
+    ('scripts/run_scope.py', 'run_shards'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/suite_equiv.py', 'main'): 'Lead decision class: only each mkdtemp result this call created with its own prefix.',
 }
 REMOVERS = {
