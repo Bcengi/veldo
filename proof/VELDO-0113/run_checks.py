@@ -4,11 +4,13 @@ Run through the externally supplied load wrapper. This is ticket evidence, not
 an invocation of the canonical gate or independent review.
 """
 import argparse
+import base64
 import difflib
 import gzip
 import hashlib
 import importlib.util
 import json
+import lzma
 from pathlib import Path
 import shutil
 import sys
@@ -55,8 +57,22 @@ def retain(name, result):
     return summary
 
 
-def read_receipts(path):
+def read_archive(path):
     archive = json.loads(gzip.decompress(Path(path).read_bytes()))
+    if archive.get('schema') == 'veldo.0113-compressed/v1':
+        archive = json.loads(lzma.decompress(base64.b64decode(archive['payload'])))
+    return archive
+
+
+def compressed_archive(archive):
+    raw = json.dumps(archive, sort_keys=True, separators=(',', ':')).encode()
+    envelope = dict(schema='veldo.0113-compressed/v1', encoding='lzma+base64',
+                    payload=base64.b64encode(lzma.compress(raw)).decode())
+    return gzip.compress(json.dumps(envelope, sort_keys=True).encode(), mtime=0)
+
+
+def read_receipts(path):
+    archive = read_archive(path)
     shared = archive.get('shared')
     if shared is None:
         shared = json.loads(gzip.decompress((Path(path).parent / archive['shared_file']).read_bytes()))
@@ -84,7 +100,7 @@ def compact_receipts():
             return {k: pack(v, k) for k, v in value.items()}
         return [pack(v) for v in value] if isinstance(value, list) else value
     for path in DESTINATION.glob('*.json.gz'):
-        archive = json.loads(gzip.decompress(path.read_bytes()))
+        archive = read_archive(path)
         if not isinstance(archive, dict) or not str(archive.get('schema', '')).startswith('veldo.0113-lossless-receipts/'):
             continue
         result = read_receipts(path)
@@ -93,7 +109,7 @@ def compact_receipts():
     (DESTINATION / 'shared-tables.json.gz').write_bytes(gzip.compress(
         json.dumps(shared, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
     for path, archive in archives.items():
-        path.write_bytes(gzip.compress(json.dumps(archive, sort_keys=True, separators=(',', ':')).encode(), mtime=0))
+        path.write_bytes(compressed_archive(archive))
         read_receipts(path)  # Verify every original receipt digest again after compaction.
     return sum(p.stat().st_size for p in DESTINATION.rglob('*') if p.is_file())
 
