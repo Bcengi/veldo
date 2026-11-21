@@ -434,12 +434,18 @@ if spec.get('mode') == 'hold':
             if group is None or group.cgroup is None:
                 return group.wait_empty(0) if group is not None else None
             path = CT.CGROUP / group.cgroup.lstrip('/')
+
+            def empty():
+                # A cgroup the manager removes while it is read answers ENODEV (ENOENT once gone): empty.
+                try:
+                    return WAITS.cgroup_populated(path) is not True
+                except OSError:
+                    return True
             try:
                 source = WAITS.CgroupEmpty(path)
-            except FileNotFoundError:
-                return True
-            WAITS.wait('group %s to be empty' % group.unit, lambda: WAITS.cgroup_populated(path) is not True,
-                       sources=[source])
+            except OSError:
+                return True  # already removed
+            WAITS.wait('group %s to be empty' % group.unit, empty, sources=[source])
             return True
 
         manager = CT.CGROUP / ('user.slice/user-%d.slice/user@%d.service' % (os.getuid(), os.getuid()))
@@ -489,6 +495,9 @@ if spec.get('mode') == 'hold':
                 yield
             except Exception as error:  # noqa: BLE001 - a raise reds this region's rows, never skips them
                 raised.append((labels[0], repr(error)))
+                import traceback
+                print('  VELDO-0042 %s raised %r at %s' % (labels[0], error, ' | '.join(
+                    line.strip() for line in traceback.format_exc().splitlines()[-6:])[:600]))
                 for label in labels:
                     if label not in emitted:
                         check(label, False)
