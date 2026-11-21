@@ -362,7 +362,7 @@
   "idle-polling": {
     "file": "control_worker.py",
     "before": "        resume_pending(config, drain=True)",
-    "after": "        while True:\n            resume_pending(config, drain=True)\n            time.sleep(30)",
+    "after": "        while True:\n            resume_pending(config, drain=True)\n            sleep(30)",
     "suite": "106_veldo_0125_routing",
     "row": "AC3/event-index-idle-and-history",
     "ticket": "VELDO-0125"

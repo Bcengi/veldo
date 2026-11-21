@@ -299,7 +299,7 @@ def cases(T, helper):
             wait = child.wait
             def blocking(timeout=None):
                 calls.append(timeout)
-                assert timeout is None, 'wrapper used subprocess timeout polling'
+                # Reap even for a bad API call; assert the captured call after completion.
                 return wait()
             child.wait = blocking
             return child
@@ -309,7 +309,7 @@ def cases(T, helper):
         file_waits = []
         def wait_file(path, seconds):
             file_waits.append(path.name)
-            path.write_text('{"runtime_seconds": 5}')
+            path.write_text('{"runtime_seconds": 120}')
             return True
         wrapper.wait_file = wait_file
         with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(wrapper.subprocess, 'Popen', launch):
