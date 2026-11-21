@@ -60,8 +60,8 @@ def _v177_suite():
         return None
 
     def git(*args, cwd=None, check=True):
-        done = subprocess.run(['git', *args], cwd=cwd, capture_output=True, text=True, timeout=30,
-                              stdin=subprocess.DEVNULL)
+        done = subprocess.run(['git', *args], cwd=cwd, capture_output=True, text=True,
+                              timeout=F.HANG_SECONDS, stdin=subprocess.DEVNULL)
         if check and done.returncode:
             raise RuntimeError('git %s: %s' % (' '.join(args[:2]), done.stderr[-300:]))
         return done.stdout
@@ -106,7 +106,7 @@ if ENGINE != 'codex' and scenario.get('mode') == 'work':
         ran = subprocess.run(['sh','-c','echo ran > ran.txt; cat ran.txt; pwd'],capture_output=True,text=True).stdout
         use('Bash', {'command':'echo ran > ran.txt; cat ran.txt; pwd'}, ran)
     if 'WebFetch' in tools:
-        page = urllib.request.urlopen(scenario['url'], timeout=10).read().decode()
+        page = urllib.request.urlopen(scenario['url'], timeout=120).read().decode()
         use('WebFetch', {'url':scenario['url'],'prompt':'read it'}, page)
     if own['mcp_text']:
         servers = json.loads(own['mcp_text']).get('mcpServers', {})
@@ -139,7 +139,7 @@ if ENGINE != 'codex' and scenario.get('mode') == 'project':
         for server_name, server in configured.items():
             answer = listing.run([server['command']] + list(server.get('args') or []), capture_output=True, text=True,
                                  input=json.dumps({'jsonrpc':'2.0','id':1,'method':'tools/list'}) + chr(10),
-                                 env=dict(os.environ, **(server.get('env') or {})), timeout=10)
+                                 env=dict(os.environ, **(server.get('env') or {})), timeout=120)
             for line in answer.stdout.splitlines():
                 mcp_tools += ['mcp__%s__%s' % (server_name, t['name'])
                               for t in json.loads(line).get('result', {}).get('tools', [])]
@@ -377,7 +377,7 @@ for raw in sys.stdin:
         turn_of('first', 'one')
         turn_of('second', 'one')
         J.pass_(factory)
-        both = J.eventually(lambda: len([v for v in observed(markers).values() if v.get('packet')]) >= 2, 30)
+        both = F.eventually(lambda: len([v for v in observed(markers).values() if v.get('packet')]) >= 2)
         runs = observed(markers)
         by_conversation = {}
         for dispatch, value in runs.items():
@@ -388,7 +388,7 @@ for raw in sys.stdin:
         check('AC1/isolation', 'both turns ran at once (each engine started before either was released)',
               both and a and b)
         (markers / 'release').touch()
-        F.drive(factory, lambda: ended('first') and ended('second'), 40)
+        F.drive(factory, lambda: ended('first') and ended('second'))
         workspaces = {'first': CV.workspace_of(conversations.read('first')),
                       'second': CV.workspace_of(conversations.read('second'))}
         print('  VELDO-0177 AC1 working directories:', a.get('cwd'), b.get('cwd'), 'outcomes:',
@@ -459,7 +459,7 @@ for raw in sys.stdin:
             J.pass_(factory)
         finally:
             L._organ = original
-        F.drive(factory, lambda: ended('second', 2), 30)
+        F.drive(factory, lambda: ended('second', 2))
         refused = conversations.turns('second')[1]
         check('AC1/workspace-refused', 'a turn whose contract names another conversation\'s workspace is refused '
               'by name [%s]' % refused.get('outcome'),
@@ -523,9 +523,9 @@ for raw in sys.stdin:
         conversations.open('codexed', owner='owner', role='assistant_codex', intake_digest='sha256:codexed')
         turn_of('codexed', 'one')
         J.pass_(factory)
-        J.eventually(lambda: len(set(observed(markers)) - before_runs) >= 1, 30)
+        F.eventually(lambda: len(set(observed(markers)) - before_runs) >= 1)
         (markers / 'release').touch()
-        F.drive(factory, lambda: ended('codexed'), 40)
+        F.drive(factory, lambda: ended('codexed'))
         codex_run = next((v for k, v in observed(markers).items() if k not in before_runs), {})
         cfg = codex_run.get('config') or {}
         print('  VELDO-0177 AC2 codex outcome:', [t.get('outcome') for t in conversations.turns('codexed')])
@@ -681,9 +681,9 @@ for raw in sys.stdin:
         before_runs = set(observed(markers))
         turn_of('attached', 'one')
         J.pass_(factory)
-        J.eventually(lambda: len(set(observed(markers)) - before_runs) >= 1, 30)
+        F.eventually(lambda: len(set(observed(markers)) - before_runs) >= 1)
         (markers / 'release').touch()
-        F.drive(factory, lambda: ended('attached'), 40)
+        F.drive(factory, lambda: ended('attached'))
         project_run = next((v for k, v in observed(markers).items() if k not in before_runs), {})
         did = project_run.get('work') or {}
         check('AC3/no-publication', 'the turn read the clone\'s history and committed in it [%s]' % did.get('commit'),
@@ -741,7 +741,7 @@ for raw in sys.stdin:
             value['authority'].conn.close()
         if server is not None:
             server.shutdown()
-        subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=30)
+        subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=F.HANG_SECONDS)
         if saved_path is None:
             os.environ.pop('PATH', None)
         else:

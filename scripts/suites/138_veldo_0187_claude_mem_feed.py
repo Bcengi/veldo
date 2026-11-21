@@ -333,7 +333,7 @@ for raw in sys.stdin:
     def say(f, identity, text):
         return f['conversations'].message(identity, text, 'sha256:' + identity + text, owner='owner')
 
-    def run_turn(f, factory, identity, text, count, seconds=40):
+    def run_turn(f, factory, identity, text, count, seconds=F.HANG_SECONDS):
         say(f, identity, text)
         J.pass_(factory)
         return F.drive(factory, lambda: settled(f, identity, count), seconds)
@@ -518,12 +518,12 @@ for raw in sys.stdin:
         (markers / 'hold-remember').write_text('1')
         say(f, 'remember', 'and the lighthouse logbook')
         J.pass_(factory)
-        J.eventually(lambda: len(runs_of(markers, 'remember')) >= 2, 30)
+        F.eventually(lambda: len(runs_of(markers, 'remember')) >= 2)
         running = turns(f, 'remember')[1].get('state')
         worker.start()
         (markers / 'hold-remember').unlink()
-        F.drive(factory, lambda: settled(f, 'remember', 2), 40)
-        F.drive(factory, lambda: capture(turns(f, 'remember')[1]).get('state') == 'captured', 10)
+        F.drive(factory, lambda: settled(f, 'remember', 2))
+        F.drive(factory, lambda: capture(turns(f, 'remember')[1]).get('state') == 'captured')
         first, second = turns(f, 'remember')
         received = worker.posts()
         bodies = [r['body'] or {} for r in received]
@@ -697,7 +697,7 @@ for raw in sys.stdin:
         sent_first = [(r['path'].rsplit('/', 1)[-1], r['status']) for r in worker.posts()
                       if (r['body'] or {}).get('contentSessionId') == refused_session]
         run_turn(f, factory, 'refusal', 'the accepted ferry timetable', 2)
-        F.drive(factory, lambda: capture(turns(f, 'refusal')[1]).get('state') == 'captured', 10)
+        F.drive(factory, lambda: capture(turns(f, 'refusal')[1]).get('state') == 'captured')
         refused_second = turns(f, 'refusal')[1]
         worker.refuse = None
         kept_refused = sorted(p.name for p in (refusal_directory / 'refused').glob('*.json'))

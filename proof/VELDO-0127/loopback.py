@@ -51,10 +51,11 @@ def call_item(body, tool, token):
             'status': 'completed', 'arguments': json.dumps(fill(schema, token))}
 
 
-def capture(binary, configuration, *, models=False, catalog=None, features=False, call=None, timeout=45):
+def capture(binary, configuration, *, models=False, catalog=None, features=False, call=None, timeout=120):
     """Only transport and temporary MCP/skill paths differ from the generated role input. `call` (VELDO-0231):
     (tool, token): the first model response calls that tool with the token in every free string; the requests
-    record when each arrived and when the call was answered (`answered_at`)."""
+    record when each arrived and when the call was answered (`answered_at`). `timeout` waits for the binary's exit and
+    only detects a hang (the load rule: 120 seconds or more, never a verdict)."""
     import time
     X = load('loopback_codex', ROOT / '.veldo/control_engine_codex.py')
     sys.path.insert(0, str(ROOT / 'proof/VELDO-0156'))

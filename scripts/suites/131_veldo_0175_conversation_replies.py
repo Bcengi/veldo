@@ -272,7 +272,7 @@ else:
             found = conversations.turns(identity) if identity else []
             return found[number - 1] if len(found) >= number else {}
 
-        def settle(identity, count, seconds=60):
+        def settle(identity, count, seconds=F.HANG_SECONDS):
             if not identity or len(conversations.turns(identity)) < count:
                 return False
             J.pass_(factory)

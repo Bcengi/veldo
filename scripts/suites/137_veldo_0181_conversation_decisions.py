@@ -264,7 +264,7 @@ else:
             found = conversations.turns(identity) if identity else []
             return found[number - 1] if len(found) >= number else {}
 
-        def drive(predicate, seconds=60):
+        def drive(predicate, seconds=F.HANG_SECONDS):
             J.pass_(factory)
             return F.drive(factory, predicate, seconds)
 
@@ -304,7 +304,7 @@ else:
         scenario['limit'][rerun_id] = 'once'
         scenario['remote'].append(rerun_id)
         write_scenario(scenario)
-        drive(lambda: (turn(rerun_id, 1).get('limited') or {}).get('question') is not None, 60)
+        drive(lambda: (turn(rerun_id, 1).get('limited') or {}).get('question') is not None)
         limited = turn(rerun_id, 1).get('limited') or {}
         rq = limited.get('question')
         item = CD.inbox_for(inbox, rq).read(rq) if rq else None
@@ -351,11 +351,10 @@ else:
 
         # The turn waits: nothing runs before the request settles.
         attempts_before = len(turn(rerun_id, 1).get('attempts') or [])
-        for _ in range(3):
-            J.pass_(factory)
-            time.sleep(0.2)
+        # Three passes, each forced and every run it starts read to its end (F.quiesce): an event, not a pause.
+        passed_quiet = [F.quiesce(factory) for _ in range(3)]
         check('AC1/turn-waits', 'passes before his answer run nothing: one attempt, the turn waiting, the request '
-              'pending', attempts_before == 1 and len(turn(rerun_id, 1).get('attempts') or []) == 1
+              'pending', all(passed_quiet) and attempts_before == 1 and len(turn(rerun_id, 1).get('attempts') or []) == 1
               and turn(rerun_id, 1).get('state') == 'waiting' and CD.inbox_for(inbox, rq).brief(rq).get('category') == 'pending')
 
         # AC1: an answer that replies to no presentation gets VELDO-0136's reply-to-the-request message.
@@ -388,7 +387,7 @@ else:
         scenario['reply'][out_id] = out_reply
         scenario['tool'][out_id] = out_tool
         write_scenario(scenario)
-        drive(lambda: turn(out_id, 1).get('state') == 'ended', 60)
+        drive(lambda: turn(out_id, 1).get('state') == 'ended')
         out_turn = turn(out_id, 1)
         channel_pass()
         refused = out_turn.get('refused_outputs') or []
@@ -441,7 +440,7 @@ else:
                                                                          answer_update['message']['message_id']))
         check('AC1/settles-by-reply', 'it is no turn of the conversation and nothing intake took',
               len(conversations.turns(rerun_id)) == 1 and source is None)
-        drive(lambda: turn(rerun_id, 1).get('state') == 'ended', 60)
+        drive(lambda: turn(rerun_id, 1).get('state') == 'ended')
         rerun_turn = turn(rerun_id, 1)
         accounts_used = [a.get('account') for a in rerun_turn.get('attempts') or []]
         check('AC1/settles-by-reply', 'the turn waited for it and then ran again on another account [%s]'
@@ -457,7 +456,7 @@ else:
         move_id, move_update = new_conversation('draft the quarterly letter')
         scenario['limit'][move_id] = 'all'
         write_scenario(scenario)
-        drive(lambda: bool(question_of(move_id, 1, CS.MOVE_KIND)), 90)
+        drive(lambda: bool(question_of(move_id, 1, CS.MOVE_KIND)))
         mq = question_of(move_id, 1, CS.MOVE_KIND).get('ref')
         channel_pass()
         move_receipt = (presenter.current(mq) if mq else None) or {}

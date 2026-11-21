@@ -320,7 +320,7 @@ else:
     def say(f, identity, text):
         return f['conversations'].message(identity, identity + '-' + text, 'sha256:' + identity + text, owner='owner')
 
-    def run_turn(f, factory, identity, text, count, seconds=40):
+    def run_turn(f, factory, identity, text, count, seconds=F.HANG_SECONDS):
         say(f, identity, text)
         J.pass_(factory)
         return F.drive(factory, lambda: settled(f, identity, count), seconds)
@@ -346,10 +346,10 @@ else:
         (markers / 'hold-blocker').write_text('1')
         say(f, 'blocker', 'one')
         J.pass_(factory)
-        J.eventually(lambda: runs_of(markers, 'blocker'), 20)
+        F.eventually(lambda: runs_of(markers, 'blocker'))
         run_turn(f, factory, 'remember', 'two', 2)
         (markers / 'hold-blocker').unlink()
-        F.drive(factory, lambda: settled(f, 'blocker', 1), 30)
+        F.drive(factory, lambda: settled(f, 'blocker', 1))
         second = turns(f, 'remember')[1]
         two = [r for r in runs_of(markers, 'remember') if r not in one]
         run_one = one[0] if one else {}
@@ -497,7 +497,7 @@ else:
         scenario['limit'] = {'limited': 'once'}
         (markers / 'scenario.json').write_text(json.dumps(scenario))
         conversations.open('limited', owner='owner', role='assistant', intake_digest='sha256:limited')
-        run_turn(f, factory, 'limited', 'one', 1, 60)
+        run_turn(f, factory, 'limited', 'one', 1)
         limited = turns(f, 'limited')[0]
         attempts = limited.get('attempts') or []
         limited_runs = runs_of(markers, 'limited')
@@ -525,7 +525,7 @@ else:
         say(f, 'waiting', 'one')
         J.pass_(factory)
         F.drive(factory, lambda: turns(f, 'waiting')[0].get('state') == 'ended' or any(
-            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'waiting')[0].get('questions') or [])), 60)
+            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'waiting')[0].get('questions') or [])))
         waiting = turns(f, 'waiting')[0]
         question = next((q for q in waiting.get('questions') or [] if q.get('about') == f['CS'].MOVE_KIND), {})
         codex_before = [r for r in observed(markers).values() if r.get('engine') == 'codex']
@@ -536,16 +536,18 @@ else:
               question and inbox_item and inbox_item['data']['choices'] == ['wait', 'move']
               and inbox_item['data']['owner'] == 'owner' and 'Every claude_code account is at its limit'
               in inbox_item['data']['brief'] and 'assistant_codex' in inbox_item['data']['brief'])
-        F.drive(factory, lambda: False, 2)
+        # Not a pause: the loop's next pass is forced and every run it starts read to its end (F.quiesce), so a
+        # defect that moves the turn without his answer has acted by now, however slow the machine.
+        went_quiet = F.quiesce(factory)
         check('AC2/ask', 'nothing moves before his answer: no Codex turn ran and the role is unchanged',
-              not codex_before and not [r for r in observed(markers).values() if r.get('engine') == 'codex']
+              went_quiet and not codex_before and not [r for r in observed(markers).values() if r.get('engine') == 'codex']
               and conversations.read('waiting')['role'] == 'assistant' and turns(f, 'waiting')[0]['state'] == 'waiting')
         answered = answer(f, factory, 'waiting', question['ref'], 'wait') if question else {}
         J.pass_(factory)
-        F.drive(factory, lambda: False, 1)
+        waited_quiet = F.quiesce(factory)  # the pass after his answer, and the next, with every run they start ended
         waited = turns(f, 'waiting')[0]
         check('AC2/wait', 'his wait leaves the turn waiting for the reset, on its engine',
-              answered.get('ok') and waited['state'] == 'waiting' and conversations.read('waiting')['role'] == 'assistant'
+              waited_quiet and answered.get('ok') and waited['state'] == 'waiting' and conversations.read('waiting')['role'] == 'assistant'
               and not [r for r in observed(markers).values() if r.get('engine') == 'codex']
               and [q.get('answer') for q in waited.get('questions') or [] if q.get('about') == f['CS'].MOVE_KIND] == ['wait'])
         check('AC2/wait', 'the turn waits for the reset its question named (the loop\'s reset wake)',
@@ -555,14 +557,14 @@ else:
         say(f, 'moving', 'three')
         J.pass_(factory)
         F.drive(factory, lambda: turns(f, 'moving')[2].get('state') == 'ended' or any(
-            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'moving')[2].get('questions') or [])), 60)
+            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'moving')[2].get('questions') or [])))
         asked = next((q for q in turns(f, 'moving')[2].get('questions') or [] if q.get('about') == f['CS'].MOVE_KIND), {})
         check('AC2/ask', 'the second conversation is asked too, and no Codex turn runs without a settled answer',
               asked and not [r for r in observed(markers).values() if r.get('engine') == 'codex']
               and conversations.read('moving')['role'] == 'assistant_two')
         moved = answer(f, factory, 'moving', asked['ref'], 'move') if asked else {}
         J.pass_(factory)
-        F.drive(factory, lambda: settled(f, 'moving', 3), 40)
+        F.drive(factory, lambda: settled(f, 'moving', 3))
         third = turns(f, 'moving')[2]
         codex_runs = [r for r in runs_of(markers, 'moving') if r.get('engine') == 'codex']
         check('AC2/move', 'his move sends his role change and the turn runs on Codex under AC3',
@@ -627,7 +629,7 @@ else:
         (r['markers'] / 'hold-interrupted').write_text('1')
         say(r, 'interrupted', 'two')
         J.pass_(rfactory)
-        J.eventually(lambda: len(runs_of(r['markers'], 'interrupted')) >= 2, 20)
+        F.eventually(lambda: len(runs_of(r['markers'], 'interrupted')) >= 2)
         # The first service ends while its turn runs: its authority lock goes with it, its receiver is left running.
         release_lock(factories[-1][1])
         factories[-1] = (rfactory, None)
