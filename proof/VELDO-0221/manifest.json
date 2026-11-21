@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0221",
- "commit": "150680582e73a045616dc46978bb45d800313b26",
- "tree": "2bf9104cbde4252dd48cd57b9721c2144b1b995e",
- "producer": "Claude implementation agent (build and fix round 1); not an independent reviewer",
- "produced_at": "2026-11-21T23:16:27.614741+00:00",
+ "commit": "dacb4e00a01e4aa8f714a03895d37c4cf3dc9503",
+ "tree": "0c83f8cfa6eb457e7bdf67cbe063a85ac5166595",
+ "producer": "Claude implementation agent (build, fix round 1 and fix round 2); not an independent reviewer",
+ "produced_at": "2026-11-21T23:41:57.109030+00:00",
  "rollback": "Revert the shard mode; every leg runs the ordered single namespace run, as before.",
  "criteria": [
   {
@@ -56,17 +56,17 @@
     {
      "type": "unit",
      "ref": "scripts/suites/157_veldo_0221_suite_shards.py",
-     "detail": "suite-shards/isolation-checked, with VELDO_GATE_FORCE_FRESH unset and 0: a confined leg whose dispatcher copy never stacks the layer, a layer reported in force with the probe written, the exempt shard running alone, an unconfined shard that leaves a file in the fixture's /dev/shm, one that starts and stops an engine-shaped unit without its prefix, one whose leftover unit carries its instance name, one that leaves a scope tied to it by its roots, the six unnamed suites' table, a clean leg that holds, and the real unconfined places table. suite-shards/other-sessions-units-are-not-judged. suite-shards/unattributed-entry-fails-the-leg. Also suite-shards/attribution."
+     "detail": "suite-shards/isolation-checked, with VELDO_GATE_FORCE_FRESH unset and 0: a confined leg whose dispatcher copy never stacks the layer, a layer reported in force with the probe written, the exempt shard running alone, an unconfined shard that leaves a file in the fixture's /dev/shm, one that starts and stops an engine-shaped unit without its prefix, one whose leftover unit carries its instance name, one that leaves a scope tied to it by its roots, the six unnamed suites' table, a clean leg that holds, and the real unconfined places table. suite-shards/other-sessions-units-are-not-judged. suite-shards/unattributed-entry-fails-the-leg (a strict place). The top of the temporary directory (lead decision 2026-11-21, fix round 2): suite-shards/own-temporary-entry-fails-its-shard (three shards each charged for its own entry, by its roots, its instance name and its process tree) and suite-shards/unattributed-temporary-entry-is-recorded-not-charged (an entry tied to nothing is in the leg's result and on its output, and the leg holds). Also suite-shards/attribution."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0221/falsifiers.json",
-     "detail": "shards221-check-force-fresh-only, shards221-unprefixed-unit-allowed, shards221-foreign-units-judged, shards221-orphan-entry-allowed, shards221-unlayered-beside-others: baseline and no-op green; each defective copy turns its registered row red."
+     "detail": "shards221-check-force-fresh-only, shards221-unprefixed-unit-allowed, shards221-foreign-units-judged, shards221-orphan-entry-allowed, shards221-unlayered-beside-others: baseline and no-op green; each defective copy turns its registered row red. Fix round 2: shards221-own-temporary-entry-allowed, shards221-tree-tie-dropped and shards221-unattributed-temporary-entry-charged, each rejected by its registered row."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0221/legs.md",
-     "detail": "The whole unconfined leg as shards against the real user manager, units and shared places read before, during and after."
+     "detail": "The whole unconfined leg as shards against the real user manager, units and shared places read before, during and after. Fix round 2: the whole unconfined leg as shards once more, under the revised rule for the top of the temporary directory."
     }
    ]
   },

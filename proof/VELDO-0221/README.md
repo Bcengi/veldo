@@ -1,9 +1,37 @@
 # VELDO-0221 proof: a gate leg runs its suites as isolated parallel closure shards
 
-Built on branch veldo-0221 from main at 23318512, reviewed at e48e790a (verdict FIX), and fixed in
-fix round 1 on 2026-11-21. This file says what was built, what the fix round changed for each review
-finding, and every place where the build decided something the specification does not spell out. The
-decisions are listed where a reviewer can judge them instead of finding them.
+Built on branch veldo-0221 from main at 23318512, reviewed at e48e790a (verdict FIX), fixed in
+fix round 1 on 2026-11-21, and changed once more in fix round 2 the same day, on the lead's
+decisions after round 1's evidence. This file says what is asked of the owner at landing, what was
+built, what each fix round changed, and every place where the build decided something the
+specification does not spell out. The decisions are listed where a reviewer can judge them instead
+of finding them.
+
+## For the owner at landing
+
+Three things in this change are exceptions or additions that only the owner can accept. Each is
+printed or checked by the gate, so none is hidden; each needs a yes or a no.
+
+1. **Six suites run without an instance name** (`run_scope.UNNAMED`: 85_veldo_0171_setup_api,
+   86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 106_veldo_0185_dispatch_setup,
+   117_veldo_0227_ui_location, 127_veldo_0234_https_port). Why: each of them installs an older
+   version of the engine from this repository's history and then upgrades it, and an older engine
+   cannot be told a name it never learned to read, so with a name set these suites fail (between 1
+   and 20 rows each, measured).
+2. **Suite 151_veldo_0313_space_run runs alone, without a Landlock layer of its own**
+   (`run_scope.UNLAYERED`). Why: its rows look at the open files of every process of the leg, and
+   the kernel refuses that look to any process that sits in a layer of its own, so the suite cannot
+   do its work inside one; it runs first, beside nothing, so it has no sibling to disturb.
+3. **Two new entries in the space-boundary tables** (`scripts/check_space_boundary.py`, for
+   `run_scope.RuntimeStand.__enter__` and `RuntimeStand.__exit__`). Why: an unconfined leg now makes
+   one directory of its own in the real runtime directory and removes it when it ends, and the
+   gate requires every place that creates or removes a directory to be listed with a reason; these
+   two lines are that listing, and they remove only the one directory the leg itself made.
+
+Also for the record, not for a decision: 7 rows of suite 102_veldo_0210_agent_profile_runtime fail
+only in the ORDERED confined leg. The lead judged them inherited (an order dependence that is also
+seen at the base commit and is in VELDO-0358's notes). They pass as a shard, which is how the gate
+now runs them. They do not block this ticket (`legs.md`, `open.md`).
 
 ## What was built
 
@@ -27,10 +55,10 @@ decisions are listed where a reviewer can judge them instead of finding them.
   `.veldo/control_factory_setup.py` (and the engine copies): the instance name.
 - `scripts/mutation_ownership.py` (and the engine copy): the authority unit pattern accepts a name
   with an instance.
-- `scripts/suites/157_veldo_0221_suite_shards.py` (23 rows), the manifest and the closure table.
+- `scripts/suites/157_veldo_0221_suite_shards.py` (25 rows), the manifest and the closure table.
 - `scripts/suites/15_warp_1404_historical_analogy.py` and its two new parts `_audit_b` and
   `_audit_c`: the long suite's twenty audit cases cut into three suites, no row changed.
-- `scripts/check_teeth_mutations.py`: 15 registered falsifiers, in their own block.
+- `scripts/check_teeth_mutations.py`: 18 registered falsifiers, in their own block.
 - `scripts/check_space_boundary.py`: four table entries for the dispatcher's two directories.
 
 ## Fix round 1: each review finding, what changed, its row and its falsifier
@@ -50,7 +78,7 @@ Rows are in suite 157 and are named `suite-shards/<row>`. Falsifiers are registe
 | F7: the claim store accepted any size | The ledger holds every shard claim to what it can grant (F1, second half); the leg runner's docstring no longer says the claim is the authority's alone. | leg-node-claims-only-its-dispatcher | shards221-oversized-claim-forwarded |
 | Decision 9: no unconfined suite had an instance name | The name is carried in the shard's runtime directory in both legs; an installed service reads it from its own unit's name; the installer writes nothing extra. | isolated-by-construction, production-names | shards221-unconfined-shard-unnamed |
 | Decision 11: suite 151 without a layer ran beside the others | It runs alone: first, beside nothing, and nothing starts until it ended. | isolation-checked | shards221-unlayered-beside-others |
-| Decision 1: an unattributed /tmp entry was printed and not charged | One rule for files in every place: a shard's when it can be tied to one, foreign when another account or another tree's live process holds it, otherwise the leg's isolation check fails with the entry and the suspects named. | unattributed-entry-fails-the-leg | shards221-orphan-entry-allowed |
+| Decision 1: an unattributed /tmp entry was printed and not charged | One rule for files in every place: a shard's when it can be tied to one, foreign when another account or another tree's live process holds it, otherwise the leg's isolation check fails with the entry and the suspects named. REVISED IN FIX ROUND 2 for the top of /tmp (below). | unattributed-entry-fails-the-leg | shards221-orphan-entry-allowed |
 | AC4's whole-leg time bound | Restated in the specification as a paired ratio (History). The paired runs are in `legs.md`. | (a measurement) | none, as for any measurement |
 | The long suite | `15_warp_1404_historical_analogy` split in three; the table and the slices are pinned. | long-suite-split | (the row pins the split) |
 | Found by the whole unconfined leg: nineteen suites stand their fixtures in XDG_RUNTIME_DIR, and the engine refuses a protected target beneath a temporary directory | In an unconfined leg a shard's runtime directory stands in a directory of the leg's own inside the real runtime directory, removed when the leg ends. Before: suites 78, 79, 80, 81, both 82s, 85_0158 and 129 failed nearly every row as shards. | runtime-directory-outside-the-temporary-directory | shards221-runtime-beneath-temporary |
@@ -60,8 +88,23 @@ Rows are in suite 157 and are named `suite-shards/<row>`. Falsifiers are registe
 The load-rule table of the review, item by item: the 1 second deadline is gone (F2); the shard
 deadline is a no-progress detector (F2); the 120 second timeouts on the manager's tools are 600
 second hang detectors; units are never waited for (F4); the ledger re-ask is bounded by the claim
-clamp (F1); SETTLE_S (300 seconds for a file nothing can be tied to) remains and is discussed in
-`open.md`.
+clamp (F1); SETTLE_S (300 seconds for a file nothing can be tied to) remains for the strict
+places only since fix round 2 (`open.md` item 5).
+
+## Fix round 2: the lead's decisions of 2026-11-21 and what changed
+
+| Decision | What changed | Row | Falsifier |
+|---|---|---|---|
+| The /tmp rule, revised: a new entry at the top of the system temporary directory fails a shard only when it is attributable to that shard; one that is attributable to none is recorded and shown, and does not fail the leg | `run_scope.py`: that one place carries the rule `attributed`. An entry is a shard's by its instance name, by its private roots (its text or a link's target, or a live process that carries them), or by its process tree (a process of the shard's group holds it; read whenever an entry is first seen and once more before the dispatcher ends what the suite left running). An entry tied to nothing is put in the leg's result (`recorded`) and printed as `isolation record, tied to no shard and not charged`, with the suites that ran when it appeared, and is not waited for. Every other place stays strict. | unattributed-temporary-entry-is-recorded-not-charged | shards221-unattributed-temporary-entry-charged |
+| A shard's own leaked /tmp entry still fails it | The same code: three shards each leave one entry at the top, one by each tie, and each is charged `isolation_breach`; two clean shards beside them and the leg itself are charged nothing. | own-temporary-entry-fails-its-shard | shards221-own-temporary-entry-allowed, shards221-tree-tie-dropped |
+| A strict place keeps the round 1 rule | The round 1 row now reads a strict place (the fixture's /dev/shm). | unattributed-entry-fails-the-leg | shards221-orphan-entry-allowed |
+| AC4's thresholds: at most 1/3 confined, at most 1/2 unconfined | Recorded in the specification's History as the lead's decision under 42829. Measured in round 1: 0.148 and 0.448. | (a measurement) | none |
+| Suite 102's 7 rows in the ordered confined leg are inherited | Recorded in the specification's History, `legs.md` and `open.md`. No code. | | |
+| The owner's items at landing | The section above. | | |
+
+What the revised rule cannot see is in `open.md` item 5: an entry a shard makes at the top of /tmp
+under a fixed name, that names none of its roots, with no process of its tree holding it when the
+place is read, is recorded and not charged.
 
 ## Decisions a reviewer should judge
 
@@ -94,7 +137,7 @@ words.
    With no instance configured the accepted names are exactly today's.
 3. **AC4's ratios.** The lead restated AC4 as a paired ratio and named no number. The build wrote the
    first text's own bounds as ratios: at most one third for a confined leg, one half for an
-   unconfined leg. The lead confirms or changes them.
+   unconfined leg. DECIDED in fix round 2: the lead confirmed both under 42829.
 4. **The leg dispatcher's claim is a constant** (1 core, 1 GiB), not a measurement, because the node's
    cgroup cannot separate the dispatcher from its shards. What the dispatcher really used is printed
    on every leg's summary (`the dispatcher itself: ...`); the paired runs show it in `legs.md`.
@@ -105,7 +148,8 @@ words.
    shard that ran alone when it appeared. The whole unconfined leg showed that wrong on a shared
    host: two files another session made in /tmp appeared while only suite 101 was still running,
    and it was charged with them (`legs.md`). Such a file now fails the leg's own check and is
-   charged to no suite; the suites that ran when it appeared are named beside it.
+   charged to no suite; the suites that ran when it appeared are named beside it. Since fix round
+   2 that holds in the strict places; at the top of /tmp such a file is recorded and fails nothing.
 7. **The unit check's floor.** A unit that starts and ends between two readings (2 seconds apart) is
    not seen. A unit a shard leaves that is neither engine-shaped nor refers to its roots (an empty
    slice a suite named itself) cannot be told from another session's and is not charged.
