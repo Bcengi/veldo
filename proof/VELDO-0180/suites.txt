@@ -1,0 +1,16 @@
+136_veldo_0180_conversation_projects            21 passed    3.58s | failed: 
+123_veldo_0174_conversations                    38 passed   12.81s | failed: 
+127_veldo_0231_run_flags                        17 passed   34.15s | failed: 
+128_veldo_0177_conversation_workspace           15 passed    3.16s | failed: 
+129_veldo_0177_assistant_setup                   4 passed    3.87s | failed: 
+130_veldo_0176_conversation_history             17 passed   13.76s | failed: 
+131_veldo_0175_conversation_replies             16 passed    3.54s | failed: 
+132_veldo_0175_conversation_routes              19 passed   21.27s | failed: 
+133_veldo_0178_conversation_api                 16 passed    3.12s | failed: 
+71_veldo_0130_api                               43 passed   26.68s | failed: VELDO-0130 session/forgery-refused,VELDO-0130 routes/body-actor-refused,
+93_veldo_0152_intake_routes                     24 passed   56.51s | failed: 
+110_veldo_0143_new_project                     109 passed   44.40s | failed: 
+75_veldo_0150_own_message_acceptance            13 passed    3.88s | failed: 
+86_veldo_0127_agent_configuration               26 passed   58.09s | failed: VELDO-0127 live/claude,VELDO-0127 live/codex,
+92_veldo_0088_pm_cycles                         30 passed   68.77s | failed: 
+113_veldo_0145_ui                                7 passed    6.46s | failed: 
