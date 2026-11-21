@@ -945,11 +945,16 @@ def _v347_space_work_suite():
                   'file, keep_failed [%s %s]' % (named(done, item), attempts),
                   named(done, item) == ('deferred', 'keep_failed', 'tool') and attempts == []
                   and text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\n')
+            # Straight to the remover, as rule 7 hands it: the removal recorded first, then a keep step that
+            # does save the work tree. Table 1's last look still refuses what is in it.
+            began = L.outcome(item, 'removing', {'event': 'ticket_ended'})
             answer = RM.remove(L, P, item, L.item(item), free=free, keep=KP.keeper(L, snapshot=True), run=client,
                                proc=str(PROC))
+            saved = ((L.item(item) or {}).get('kept') or {}).get('snapshots') or []
             check(ROW, 'even with a keep step that saved the file, the remover gives it no snapshot comparison '
-                  '[%s %s]' % (answer.get('deferral'), answer.get('method')),
-                  answer.get('ok') is False and answer.get('deferral') == 'keep_failed'
+                  '[%s %s %s %s]' % (began.get('ok'), answer.get('deferral'), answer.get('method'), len(saved)),
+                  began.get('ok') is True and len(saved) == 1
+                  and answer.get('ok') is False and answer.get('deferral') == 'keep_failed'
                   and answer.get('method') == 'keep_then_rename_probe_delete'
                   and text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\n')
 
@@ -1097,9 +1102,9 @@ def _v347_space_work_suite():
                   len(entry) == 1 and entry[0]['row'] == 'agent_repository_clone' and entry[0]['version'] == '2'
                   and entry[0]['action'] == 'remove')
             done = send('run_finished', {'run': 'run-9494'})
-            check(ROW, 'and it is made due and removed [%s]' % (named(done, worker),),
-                  worker in (done.get('items') or ()) and named(done, worker)[0] == 'removed'
-                  and not os.path.lexists(str(worker_path)))
+            # Made due is this row's (AC5); how the clone is then removed is AC3's rows'.
+            check(ROW, 'and it is made due at run finished [%s]' % (done.get('items'),),
+                  worker in (done.get('items') or ()))
             old = dict(L.item(worker), state='due', ends_on={'version': '1', 'events': ['run_finished']})
             check(ROW, 'an item declared under table 1 reads table 1, which has no such row',
                   [one['row'] for one in K.due('run_finished', [(worker, old)], look=lambda identity, record: {})]
