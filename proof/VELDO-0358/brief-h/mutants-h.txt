@@ -1,29 +1,14 @@
-Brief H's six falsifiers through the gate's own stage entry (scripts/check_gate_mutations.py --case ...), tree ccea0423, run directly (two invocations), host load 18.24 16.19 19.56
+start 2026-11-21T16:39:10Z load 20.89 36.23 55.60 tree 09a960f6
+exit status 0
    mutation: confined leg - every case except those of the 50 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)
-   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:d8ef688c109305753905566d4a7ec3a98d42c49e5323f3be8602adec2026e0ce), 50 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_auth
-   mutation: unconfined leg ran 2 cases, 2 rejected: 121_veldo_0131_factory_screens_narrow (2)
-mutations: passed registered=2 executed=2 reused=0 rejected=2 workers=6 elapsed=113.521s
-stage: status passed, registered 2, executed 2, rejected 2
-timers358-browser-profile-skipped: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 timers/profile-applied"}]; fresh; 49 s
-wait358-browser-watchdog-silent: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 browser/hang-by-progress"}]; fresh; 50 s
-  timers358-browser-profile-skipped: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 timers/profile-applied']
-    red for: VELDO-0131 timers/profile-applied: factory_harness.py: every effective timer is the wait hang bound (timer_unset ['e2e_harness.SENTINEL_SECONDS'])
-  wait358-browser-watchdog-silent: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 browser/hang-by-progress']
-    red for: VELDO-0131 browser/hang-by-progress: the reporter's own test ran and passed [['failed']; Error: expect(received).toContain(expected) // indexOf | Expected substring: "step \"step 101\" (long.spec.ts:111)" | Received string:    "E2E HUNG: no test or step began or ended for 3600 s (the process hang bound, counted from the last progress, never from the run's start). Last progress: began
-   mutation: confined leg - every case except those of the 50 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)
-   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:d8ef688c109305753905566d4a7ec3a98d42c49e5323f3be8602adec2026e0ce), 50 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_auth
-   mutation: unconfined leg ran 4 cases, 4 rejected: 121_veldo_0131_factory_screens_narrow (4)
-mutations: passed registered=4 executed=4 reused=0 rejected=4 workers=12 elapsed=189.044s
-stage: status passed, registered 4, executed 4, rejected 4
-wave358-browser-expectation-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 60 s
-wave358-browser-fixed-wait-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 60 s
-wave358-browser-test-limit-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 60 s
-wait358-browser-watchdog-total-time: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 browser/hang-by-progress"}]; fresh; 62 s
-  wave358-browser-expectation-restored: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 wave1/no-sites']
-    red for: VELDO-0131 wave1/no-sites: the census finds no site outside the declared exceptions in the browser tests' files and suites 120, 121 and 124 (wallclock_site ['engine/ui/playwright.config.ts:17 R3 (timeout option 10_000)'])
-  wave358-browser-fixed-wait-restored: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 wave1/no-sites']
-    red for: VELDO-0131 wave1/no-sites: the census finds no site outside the declared exceptions in the browser tests' files and suites 120, 121 and 124 (wallclock_site ['engine/ui/e2e/layout.spec.ts:662 R1 (waitForTimeout)'])
-  wave358-browser-test-limit-restored: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 wave1/no-sites']
-    red for: VELDO-0131 wave1/no-sites: the census finds no site outside the declared exceptions in the browser tests' files and suites 120, 121 and 124 (wallclock_site ['engine/ui/e2e/factory.spec.ts:280 R3 (setTimeout 600_000)'])
-  wait358-browser-watchdog-total-time: baseline failed rows [], noop failed rows [], mutant failed rows ['VELDO-0131 browser/hang-by-progress']
-    red for: VELDO-0131 browser/hang-by-progress: the reporter's own test ran and passed [['failed']; Error: the bound is armed anew at the run, the test and each step event | expect(received).toBe(expected) // Object.is equality | Expected: 202 | Received: 1]
+   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:d8ef688c109305753905566d4a7ec3a98d42c49e5323f3be8602adec2026e0ce), 50 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 133_veldo_0326_space_principals, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 117_veldo_0227_ui_location, 127_veldo_0234_https_port, 110_veldo_0143_new_project, 116_veldo_0188_project_lines, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace, 114_veldo_0220_gate_scope, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 122_veldo_0131_factory_screens_wide, 124_veldo_0131_factory_reads_commands, 128_veldo_0254_confined_runner, 129_veldo_0254_canary_launch, 152_veldo_0313_house_group
+   mutation: unconfined leg ran 6 cases, 6 rejected: 121_veldo_0131_factory_screens_narrow (6)
+mutations: passed registered=6 executed=6 reused=0 rejected=6 workers=16 elapsed=300.720s
+stage: status passed, registered 6, executed 6, rejected 6
+wait358-browser-watchdog-total-time: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 browser/hang-by-progress"}]; fresh; 66 s
+wave358-browser-test-limit-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 66 s
+wave358-browser-expectation-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 66 s
+wave358-browser-fixed-wait-restored: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 wave1/no-sites"}]; fresh; 67 s
+timers358-browser-profile-skipped: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 timers/profile-applied"}]; fresh; 51 s
+wait358-browser-watchdog-silent: rejected; kill_by assertion; kills [{"kill_by": "assertion", "row": "VELDO-0131 browser/hang-by-progress"}]; fresh; 52 s
+end 2026-11-21T16:44:11Z load 17.48 25.08 45.47 tree 09a960f6

@@ -38,4 +38,52 @@ Registered in the block "VELDO-0358 BRIEF H" of scripts/check_teeth_mutations.py
 | AC5, browser run | browser/hang-by-progress | wait358-browser-watchdog-total-time (the bound armed once) | the bound is not armed anew at each event |
 | AC5, browser run | browser/hang-by-progress | wait358-browser-watchdog-silent (the run ended with nothing in flight named) | the hung report names no step and no test |
 
-RESULTS_PLACEHOLDER
+All six are rejected by the gate's own mutation stage entry (scripts/check_gate_mutations.py; the three suites are
+of the unconfined leg, so the registry's developer entry, which confines every worker, cannot install their
+dependencies): mutants-h.txt, kill_by assertion each, controls green. What each mutant's row said, and that it is the
+stated reason, is in mutants-h-reasons.txt; the applied diffs are in mutant-diffs.txt.
+
+## Done criteria of the wave 1 briefs
+
+| Criterion | Evidence | Result |
+| - | - | - |
+| The census finds no site in its files or the files they open | row wave1/no-sites in suites 120, 121 and 124; scripts/check_wallclock.py over the checkout (checks.txt) | No site. 63 baseline entries removed (12 files), none lowered, none added; the stage passes |
+| Row labels the same set or a superset | rows-kept.txt (the mutation worker's own reading at fb7705e1 and here) | 120: 40 to 42; 121: 28 to 31; 124: 34 to 36; none missing |
+| Every registered case of its suites rejected with kill_by assertion or terminal | mutants-131.txt (finding 131, 21 cases) and mutants-h.txt | The 14 cases of suites 120, 121 and 124 and brief H's 6: rejected, assertion. The other 7 cases of finding 131 belong to suites of other briefs and read unproven on this branch |
+| Each suite fifty times under the generator, no failed and no hung row | load50.txt | LOAD_PLACEHOLDER |
+| timers/profile-applied in each suite | the three suites; affected-suites.txt | Green; the report holds the harness's sentinel only on this branch (see lead item 2) |
+
+Other runs: every browser specification, 71 passed and the screenshots specification skipped (e2e-all.txt); the
+screenshots specification on request, passed, its images restored (e2e-screens.txt); the twenty suites that drive a
+browser harness or read the mutation registry or the baseline, each alone, all green (affected-suites.txt).
+scripts/check_personal_setup.py: 0 findings (checks.txt).
+
+## For the lead
+
+1. Sites left in engine/ui/e2e and beside it, in files that are not brief H's and not in the specification's
+   footprint: decisions.spec.ts:12 (a Date.now alias; unique() replaces it), factory_harness.py:126 (time.time;
+   H.wall() replaces it), team_harness.py:80 (timeout=10; H.WAIT_HANG_SECONDS replaces it), and suite
+   122_veldo_0131_factory_screens_wide (two monotonic reads, limits of 900 and 3000 s; the conversion of suite 121
+   applies line for line). Their baseline entries stay. AC10 names "the browser fixtures, specifications and
+   configuration under engine/ui", so these four are wanted before the census is required of the whole tree.
+2. The checkout's .veldo/timers.py is not added by this brief (briefs E and F both add it, with the scaffold change
+   it needs). Suites 120, 121 and 124 lay engine/.veldo/timers.py among the harness's organs, so their timers row
+   does not depend on which brief lands first. On this branch the table has no product entry, so the row's teeth are
+   the harness's own sentinel entry (e2e_harness.SENTINEL_SECONDS, 1 s, armed by nothing); once E and F land, the
+   store's, the client's and the launch's entries appear in the same report and are held to the same bound. The
+   sentinel is registered at run time in the harness's process only; engine/.veldo/timers.py is untouched.
+3. A browser expectation that will never hold now takes the wait hang bound to say so. Ten of the fourteen
+   VELDO-0131 cases of these suites took 637 to 654 s and two took about 1,255 s (mutants-131.txt), against about a
+   minute before; the stage's 21 cases took 47 minutes. The verdicts are unchanged (assertion). A general terminal
+   condition is not sound here: the page settled signal cannot end an expectation that waits for an event stream.
+   Per test, "settled and still not shown" could be made a terminal condition where the expectation follows a read
+   the page itself made; that is a later change, test by test.
+4. The census's TypeScript rules do not read AbortSignal.timeout(n), nor a plain setTimeout used as a sleep (one
+   whose callback only resolves). Brief H's files have neither with a number of their own, but a later change could
+   add one unseen. A rule for both belongs to scripts/check_wallclock.py (brief B's file).
+5. Progress, the reporter, is the default export of e2e/fixtures.ts because the footprint names no new file under
+   engine/ui/e2e. It would read better as its own file if the footprint is widened.
+6. When the reporter ends a run it names every test and step in flight with its source line. It cannot write the
+   stacks of the worker and the browser, as the Python watchdog does for a suite process.
+7. Host: the builders' three slots were held for about 1 h 40 min before this brief's batch started, so the light
+   steps (the browser run, the six falsifiers, the row labels) were also run once directly; both runs are recorded.
