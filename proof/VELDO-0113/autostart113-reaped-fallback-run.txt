@@ -1,15 +1,13 @@
-command: -B proof/VELDO-0113/run_checks.py --case autostart113-reaped-fallback
-exit_code: 1
+Diagnostic output; original SHA-256: bb9c08deaee9bf2859ab4262614171ff5abcf11fd669911cede32227b5cdca44
+autostart113-reaped-fallback {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}
 Traceback (most recent call last):
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 160, in <module>
-    
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 151, in main
-    elif args.case:
-        ^^^^^^^^^^^^
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 120, in run
-    summary = retain(name, result)
-              ^^^^^^^^^^^^^^^^^^^^
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 49, in retain
-    assert read_receipts(DESTINATION / (name + '.json.gz')) == result
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 193, in <module>
+    main()
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 184, in main
+    run(case['name'], case, 'mutant')
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 140, in run
+    check_result(result, case if mode == 'mutant' else None)
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 153, in check_result
+    assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('autostart113-reaped-fallback', 'unavailable/no-client-starts-the-authority')

@@ -1,3 +1,2 @@
-command: bash scripts/check_lint.sh
-exit_code: 0
-lint: pass (1331 python, 44 shell, 2.88s)
+Diagnostic output; original SHA-256: 708757e4bd20bd16f61c286c369641d441dd13fe77ba073d1128d519c47faf9e
+lint: pass (1332 python, 44 shell, 3.79s)

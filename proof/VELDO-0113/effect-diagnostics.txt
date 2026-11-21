@@ -1,455 +1,50 @@
 {
-  "note": "Partial captures only; required named rows stand down, so these are not valid false-row drives.",
-  "runs": [
-    {
-      "name": "autostart113-reaped-fallback",
-      "rows": {
-        "unavailable/in-process-construction-boundary": "FAIL",
-        "unavailable/no-auto-start-needs-census": "STANDS DOWN",
-        "unavailable/no-client-hosts-a-listener": "STANDS DOWN",
-        "unavailable/no-client-starts-the-authority": "STANDS DOWN",
-        "unavailable/store-write-grant": "GAP"
-      },
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 18,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
-      },
-      "faults_ok": true,
-      "faults_driven": true,
-      "all_refused": true,
-      "births": [
-        {
-          "identity": "claim:claim/local_ipc/absent",
-          "birth": "3766389:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "claim:heartbeat/local_ipc/absent",
-          "birth": "3766318:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "claim:release/local_ipc/absent",
-          "birth": "3766328:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.claim/local_ipc/absent",
-          "birth": "3766487:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.heartbeat/local_ipc/absent",
-          "birth": "218436:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.release/local_ipc/absent",
-          "birth": "219519:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.request/local_ipc/absent",
-          "birth": "220252:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.use/local_ipc/absent",
-          "birth": "216868:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_client:send/local_ipc/absent",
-          "birth": "865483:7",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "claim:claim/local_ipc/sigkill_socket",
-          "birth": "1307372:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "claim:heartbeat/local_ipc/sigkill_socket",
-          "birth": "1307369:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "claim:release/local_ipc/sigkill_socket",
-          "birth": "1307371:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.claim/local_ipc/sigkill_socket",
-          "birth": "1307368:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
-          "birth": "1830997:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.release/local_ipc/sigkill_socket",
-          "birth": "1830967:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.request/local_ipc/sigkill_socket",
-          "birth": "1831090:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.use/local_ipc/sigkill_socket",
-          "birth": "1831104:8",
-          "exit_status": 0,
-          "reaped_before_return": true
-        },
-        {
-          "identity": "control_client:send/local_ipc/sigkill_socket",
-          "birth": "2324257:7",
-          "exit_status": 0,
-          "reaped_before_return": true
-        }
-      ],
-      "services": []
-    },
-    {
-      "name": "autostart113-transient-abstract-listener",
-      "rows": {
-        "unavailable/in-process-construction-boundary": "FAIL",
-        "unavailable/no-auto-start-needs-census": "STANDS DOWN",
-        "unavailable/no-client-hosts-a-listener": "STANDS DOWN",
-        "unavailable/no-client-starts-the-authority": "STANDS DOWN",
-        "unavailable/store-write-grant": "GAP"
-      },
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 0,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
-      },
-      "faults_ok": true,
-      "faults_driven": true,
-      "all_refused": true,
-      "births": [],
-      "services": [
-        {
-          "identity": "claim:claim/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d33373237353530",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4088962432]:2",
-            "task": "3727550:1",
-            "time_ns": 2913288573882984,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "claim:heartbeat/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d33373237353831",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4088987424]:2",
-            "task": "3727581:1",
-            "time_ns": 2913288598242404,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "claim:release/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d33373237363234",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4088984403]:2",
-            "task": "3727624:1",
-            "time_ns": 2913288633525373,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.claim/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d33373237353639",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4088984401]:2",
-            "task": "3727569:1",
-            "time_ns": 2913288597677370,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.heartbeat/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d313739383331",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4089502084]:2",
-            "task": "179831:1",
-            "time_ns": 2913369830784784,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.release/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d313830343532",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4089504843]:2",
-            "task": "180452:1",
-            "time_ns": 2913369638287325,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.request/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d313830373732",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4089500091]:2",
-            "task": "180772:1",
-            "time_ns": 2913369457888688,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.use/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d313830383232",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4089498115]:2",
-            "task": "180822:1",
-            "time_ns": 2913369951687546,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_client:send/local_ipc/absent",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d383032373035",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 31,
-            "socket": "socket:[4090006131]:2",
-            "task": "802705:1",
-            "time_ns": 2913450225606768,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "claim:claim/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31323932363638",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090436993]:2",
-            "task": "1292668:1",
-            "time_ns": 2913530900637090,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "claim:heartbeat/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31323932373036",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090447275]:2",
-            "task": "1292706:1",
-            "time_ns": 2913530846369841,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "claim:release/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31323932363435",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090447897]:2",
-            "task": "1292645:1",
-            "time_ns": 2913530844842205,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.claim/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31323932373032",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090436174]:2",
-            "task": "1292702:1",
-            "time_ns": 2913530822247148,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.heartbeat/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31383136323637",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090898547]:2",
-            "task": "1816267:1",
-            "time_ns": 2913612890824214,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.release/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31383136333639",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090894661]:2",
-            "task": "1816369:1",
-            "time_ns": 2913612910040701,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.request/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31383136353030",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090884066]:2",
-            "task": "1816500:1",
-            "time_ns": 2913612938352167,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_claim_client:Client.use/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d31383136353633",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 36,
-            "socket": "socket:[4090900604]:2",
-            "task": "1816563:1",
-            "time_ns": 2913612997430450,
-            "type": 1
-          },
-          "before_return": true
-        },
-        {
-          "identity": "control_client:send/local_ipc/sigkill_socket",
-          "event": {
-            "abi": "x86_64",
-            "address": "010000763131332d66616c6c6261636b2d32323937373238",
-            "family": 1,
-            "kind": "service",
-            "operation": "listen",
-            "sequence": 31,
-            "socket": "socket:[4091312480]:2",
-            "task": "2297728:1",
-            "time_ns": 2913693926266220,
-            "type": 1
-          },
-          "before_return": true
-        }
-      ]
+  "autostart113-incomplete-counts-as-success.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
     }
-  ]
+  },
+  "restored-full-matrix.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-cli-direct-construction.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-transient-abstract-listener.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 0,
+      "services": 18,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-reaped-fallback.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 18,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-construction-outside-authority.json.gz": {
+    "qualification": "INCOMPLETE",
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  }
 }

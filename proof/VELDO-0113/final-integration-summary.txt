@@ -1,374 +1,694 @@
 {
-  "note": "Real integrated observations, reassessed from unchanged saved JSON after fixing the writer tuple/list round-trip comparison. Original writer failures remain recorded. This reassessment is not a new live drive, and INCOMPLETE qualification is not acceptance.",
-  "runs": {
-    "autostart113-reaped-fallback": {
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 18,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
-      },
-      "faults_ok": true,
-      "faults_driven": true,
-      "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
-      "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
-      "protocol_controls": {
-        "failures": true,
-        "incomplete_witness_stands_down": true,
-        "invalid_receipt_0": true,
-        "invalid_receipt_1": true,
-        "invalid_receipt_2": true,
-        "invalid_receipt_3": true,
-        "invalid_receipt_4": true,
-        "invalid_receipt_5": true,
-        "invalid_receipt_6": true,
-        "invalid_receipt_7": true,
-        "known_non_refusal_is_false": true,
-        "qualification": true,
-        "synthetic_complete_birth_refutes": true,
-        "synthetic_complete_birth_restored": true,
-        "synthetic_complete_evaluates": true,
-        "synthetic_complete_service_refutes": true,
-        "synthetic_complete_service_restored": true
-      },
-      "rows": {
-        "unavailable/in-process-construction-boundary": {
-          "reason": [
-            "outside_authority:bin/veldo:285",
-            "outside_authority:engine/bin/veldo:285"
-          ],
-          "status": "FAIL"
-        },
-        "unavailable/no-auto-start-needs-census": {
-          "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-hosts-a-listener": {
-          "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-starts-the-authority": {
-          "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/store-write-grant": {
-          "observation": {
-            "pid": 3680076,
-            "writable": true
-          },
-          "reason": "no_process_specific_write_grant",
-          "status": "GAP"
-        }
-      },
-      "saved_receipt_reassessment": {
-        "status": "named_assertions_not_satisfied",
-        "fresh_live_drive": false,
-        "reason": "('autostart113-reaped-fallback', 'unavailable/no-client-starts-the-authority')"
-      },
-      "receipt_sha256": "743ec25c3b357865dd3a45c98c15d0a5cb82bc758ac71415325c3342ad7055da"
+  "autostart113-incomplete-counts-as-success.json.gz": {
+    "receipt_sha256": "33d5830d8664d08b18cf538c7d43ca9f7906674e1bf18c45d29fc2897196f775",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 0,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
     },
-    "autostart113-transient-abstract-listener": {
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 0,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
+    "qualification": "INCOMPLETE",
+    "faults_ok": false,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [],
+        "status": "PASS"
       },
-      "faults_ok": true,
-      "faults_driven": true,
-      "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
-      "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
-      "protocol_controls": {
-        "failures": true,
-        "incomplete_witness_stands_down": true,
-        "invalid_receipt_0": true,
-        "invalid_receipt_1": true,
-        "invalid_receipt_2": true,
-        "invalid_receipt_3": true,
-        "invalid_receipt_4": true,
-        "invalid_receipt_5": true,
-        "invalid_receipt_6": true,
-        "invalid_receipt_7": true,
-        "known_non_refusal_is_false": true,
-        "qualification": true,
-        "synthetic_complete_birth_refutes": true,
-        "synthetic_complete_birth_restored": true,
-        "synthetic_complete_evaluates": true,
-        "synthetic_complete_service_refutes": true,
-        "synthetic_complete_service_restored": true
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "incomplete_census_accepted",
+        "status": "FAIL"
       },
-      "rows": {
-        "unavailable/in-process-construction-boundary": {
-          "reason": [
-            "outside_authority:bin/veldo:285",
-            "outside_authority:engine/bin/veldo:285"
-          ],
-          "status": "FAIL"
-        },
-        "unavailable/no-auto-start-needs-census": {
-          "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-hosts-a-listener": {
-          "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-starts-the-authority": {
-          "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/store-write-grant": {
-          "observation": {
-            "pid": 3680075,
-            "writable": true
-          },
-          "reason": "no_process_specific_write_grant",
-          "status": "GAP"
-        }
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": null,
+        "status": "PASS"
       },
-      "saved_receipt_reassessment": {
-        "status": "named_assertions_not_satisfied",
-        "fresh_live_drive": false,
-        "reason": "('autostart113-transient-abstract-listener', 'unavailable/no-client-hosts-a-listener')"
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": null,
+        "status": "PASS"
       },
-      "receipt_sha256": "5b8e26f794a7d757493a1f73494975a251efc4612e4a2242a591fa17eb3bb94d"
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 2738277,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
     },
-    "autostart113-incomplete-counts-as-success": {
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 0,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
+    "construction_sites": [
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
       },
-      "faults_ok": false,
-      "faults_driven": true,
-      "implementation_digest": "e86ae7a1d5bb024c41b208344707200bc0b9878b11b1bc7ebc21801aa5caa442",
-      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-      "protocol_controls": {
-        "failures": false,
-        "incomplete_witness_stands_down": false,
-        "invalid_receipt_0": false,
-        "invalid_receipt_1": false,
-        "invalid_receipt_2": false,
-        "invalid_receipt_3": false,
-        "invalid_receipt_4": false,
-        "invalid_receipt_5": false,
-        "invalid_receipt_6": false,
-        "invalid_receipt_7": false,
-        "known_non_refusal_is_false": true,
-        "qualification": false,
-        "synthetic_complete_birth_refutes": true,
-        "synthetic_complete_birth_restored": true,
-        "synthetic_complete_evaluates": true,
-        "synthetic_complete_service_refutes": true,
-        "synthetic_complete_service_restored": true
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
       },
-      "rows": {
-        "unavailable/in-process-construction-boundary": {
-          "reason": [
-            "outside_authority:bin/veldo:285",
-            "outside_authority:engine/bin/veldo:285"
-          ],
-          "status": "FAIL"
-        },
-        "unavailable/no-auto-start-needs-census": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": "incomplete_census_accepted",
-          "status": "FAIL"
-        },
-        "unavailable/no-client-hosts-a-listener": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": null,
-          "status": "PASS"
-        },
-        "unavailable/no-client-starts-the-authority": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": null,
-          "status": "PASS"
-        },
-        "unavailable/store-write-grant": {
-          "observation": {
-            "pid": 2591878,
-            "writable": true
-          },
-          "reason": "no_process_specific_write_grant",
-          "status": "GAP"
-        }
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
       },
-      "saved_receipt_reassessment": {
-        "status": "named_assertions_satisfied",
-        "fresh_live_drive": false
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
       },
-      "receipt_sha256": "4de6061355dddd5714f0069b7162e337e0c72c00f93393c08393f4bf2084a345"
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "restored-full-matrix.json.gz": {
+    "receipt_sha256": "c5afaf2f2580e606064355004495806790a7c61050b805854d99a9df7baa952c",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 0,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
     },
-    "autostart113-construction-outside-authority": {
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 0,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
+    "qualification": "INCOMPLETE",
+    "faults_ok": true,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [],
+        "status": "PASS"
       },
-      "faults_ok": true,
-      "faults_driven": true,
-      "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
-      "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
-      "protocol_controls": {
-        "failures": true,
-        "incomplete_witness_stands_down": true,
-        "invalid_receipt_0": true,
-        "invalid_receipt_1": true,
-        "invalid_receipt_2": true,
-        "invalid_receipt_3": true,
-        "invalid_receipt_4": true,
-        "invalid_receipt_5": true,
-        "invalid_receipt_6": true,
-        "invalid_receipt_7": true,
-        "known_non_refusal_is_false": true,
-        "qualification": true,
-        "synthetic_complete_birth_refutes": true,
-        "synthetic_complete_birth_restored": true,
-        "synthetic_complete_evaluates": true,
-        "synthetic_complete_service_refutes": true,
-        "synthetic_complete_service_restored": true
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
       },
-      "rows": {
-        "unavailable/in-process-construction-boundary": {
-          "reason": [
-            "outside_authority:.veldo/claim.py:62",
-            "outside_authority:bin/veldo:285",
-            "outside_authority:engine/bin/veldo:285"
-          ],
-          "status": "FAIL"
-        },
-        "unavailable/no-auto-start-needs-census": {
-          "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-hosts-a-listener": {
-          "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-starts-the-authority": {
-          "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/store-write-grant": {
-          "observation": {
-            "pid": 2591879,
-            "writable": true
-          },
-          "reason": "no_process_specific_write_grant",
-          "status": "GAP"
-        }
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
       },
-      "saved_receipt_reassessment": {
-        "status": "named_assertions_satisfied",
-        "fresh_live_drive": false
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
       },
-      "receipt_sha256": "31499bdafaf4a529171ea43ce620fb119897bcbb020448f987cf72f62a2550a9"
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 3622962,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
     },
-    "restored-full-matrix": {
-      "metrics": {
-        "complete_censuses": 0,
-        "completed": 42,
-        "construction_cases": 20,
-        "expected": 42,
-        "fault_cases": 176,
-        "forbidden_launches": 0,
-        "invocations_completed": 22,
-        "measured": 22,
-        "observation_failures": 22
+    "construction_sites": [
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
       },
-      "faults_ok": true,
-      "faults_driven": true,
-      "implementation_digest": "119c3d68049e6ffcc854970c31647c4710f363c43209856e750020224f1e9e77",
-      "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-      "protocol_controls": {
-        "failures": true,
-        "incomplete_witness_stands_down": true,
-        "invalid_receipt_0": true,
-        "invalid_receipt_1": true,
-        "invalid_receipt_2": true,
-        "invalid_receipt_3": true,
-        "invalid_receipt_4": true,
-        "invalid_receipt_5": true,
-        "invalid_receipt_6": true,
-        "invalid_receipt_7": true,
-        "known_non_refusal_is_false": true,
-        "qualification": true,
-        "synthetic_complete_birth_refutes": true,
-        "synthetic_complete_birth_restored": true,
-        "synthetic_complete_evaluates": true,
-        "synthetic_complete_service_refutes": true,
-        "synthetic_complete_service_restored": true
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
       },
-      "rows": {
-        "unavailable/in-process-construction-boundary": {
-          "reason": [
-            "outside_authority:bin/veldo:285",
-            "outside_authority:engine/bin/veldo:285"
-          ],
-          "status": "FAIL"
-        },
-        "unavailable/no-auto-start-needs-census": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-hosts-a-listener": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/no-client-starts-the-authority": {
-          "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
-          "reason": "census_incomplete",
-          "status": "STANDS DOWN"
-        },
-        "unavailable/store-write-grant": {
-          "observation": {
-            "pid": 797506,
-            "writable": true
-          },
-          "reason": "no_process_specific_write_grant",
-          "status": "GAP"
-        }
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
       },
-      "saved_receipt_reassessment": {
-        "status": "named_assertions_not_satisfied",
-        "fresh_live_drive": false,
-        "reason": "{'unavailable/in-process-construction-boundary': {'reason': ['outside_authority:bin/veldo:285', 'outside_authority:engine/bin/veldo:285'], 'status': 'FAIL'}, 'unavailable/no-auto-start-needs-census': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/no-client-hosts-a-listener': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/no-client-starts-the-authority': {'inventory_digest': '8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e', 'observation_receipts': [{'digest': 'a0674d6715c826ff0064e1ea72c4955d8546a000e7578a961a5fdc0befc1cad8', 'identity': 'claim:claim/local_ipc/absent'}, {'digest': 'efab256f4408e918acc831e90553f1370df24d449dfbc02b710529b4883d8cdd', 'identity': 'claim:heartbeat/local_ipc/absent'}, {'digest': 'd4964c6730f7b7933c7668043ab27e495f2583a3219a6bcde8ab101610c04fd9', 'identity': 'claim:release/local_ipc/absent'}, {'digest': '1297b57c47c61e106acbbc99a6a46d9a219b39557c1c8bf10753bc666467edd2', 'identity': 'control_claim_client:Client.claim/local_ipc/absent'}, {'digest': 'b6c2424097b3bfed426f40ba6de8c4e9be695896f952f679a25126a5175c085f', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/absent'}, {'digest': 'a1cecbb7eac2ff1601130159b603a48bbff87fc7ca031fb62c7a214d70a2aaa8', 'identity': 'control_claim_client:Client.release/local_ipc/absent'}, {'digest': '58e24b45383289deb079aaf09508d9a133945cb52b4dfe7ce8031b67f90eb4ad', 'identity': 'control_claim_client:Client.request/local_ipc/absent'}, {'digest': 'e6071b180df960875b0f30353838a015aab1422b50a22bea8420f6e0593ecd22', 'identity': 'control_claim_client:Client.use/local_ipc/absent'}, {'digest': '3caa7dd6199e875ad330896e0fcf7993c136e1a6722a982b78846d338e02c62e', 'identity': 'control_client:send/local_ipc/absent'}, {'digest': '5b10e3486848e1ba3f46f179e27685008efa9ffd9a5b7b4082b7e6e767b9b36a', 'identity': 'control_relay:forward/relay/absent'}, {'digest': '4104098e388a3db0851016a562624b857717c472082524568fe43311a7be80a7', 'identity': 'control_relay:main/relay/absent'}, {'digest': '64f38e51caa0f1dafae086067ea53360125593ea8f2c1644d6d0657f35d94622', 'identity': 'claim:claim/local_ipc/sigkill_socket'}, {'digest': 'cc60364ddabf9e8352b8737e40e9b3e0dc233afb4a5042362a6bea4c98edcc28', 'identity': 'claim:heartbeat/local_ipc/sigkill_socket'}, {'digest': '57c58d7f8089059ac2d39f2cd33ac3a4ab9f7df51dc92a0df18784a382b1afa7', 'identity': 'claim:release/local_ipc/sigkill_socket'}, {'digest': '50e9f055ba6eaa6044a021824579a5b5e40d6f4cf3ead91c83aa148f6124e31b', 'identity': 'control_claim_client:Client.claim/local_ipc/sigkill_socket'}, {'digest': '86ce2e483ac0dd9dcc933b0360b5fb6ee13daaa493011aacf4f4dda49a8cad70', 'identity': 'control_claim_client:Client.heartbeat/local_ipc/sigkill_socket'}, {'digest': '0b34ae48d3b88e1fceb9197d9de8d747f8a37306444a53fd501efa4f6a76998e', 'identity': 'control_claim_client:Client.release/local_ipc/sigkill_socket'}, {'digest': '42bf077d26b764380bd2437e0f2a665bb52cd18d5a61e67a3e0ae628941dc66a', 'identity': 'control_claim_client:Client.request/local_ipc/sigkill_socket'}, {'digest': '081456cb513a3d29a5d8a1fd3346ba1d579cf682fd89226cc03bba806595e0b5', 'identity': 'control_claim_client:Client.use/local_ipc/sigkill_socket'}, {'digest': '1a7057e3ee1e7bb6a01c546a0c4e69fcbbfb7f4539197ba729443f8ad7e9923c', 'identity': 'control_client:send/local_ipc/sigkill_socket'}, {'digest': '6e439362f8edc641b064c1c2491d673e3f98d792abcc4149cae7dcc389a88b04', 'identity': 'control_relay:forward/relay/sigkill_socket'}, {'digest': 'cf16840cd75147fbf06d0ef26dddb063d11c48879f632d95a0a36cee199c9d05', 'identity': 'control_relay:main/relay/sigkill_socket'}], 'reason': 'census_incomplete', 'status': 'STANDS DOWN'}, 'unavailable/store-write-grant': {'observation': {'pid': 797506, 'writable': True}, 'reason': 'no_process_specific_write_grant', 'status': 'GAP'}}"
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
       },
-      "receipt_sha256": "f8b0db3448669189c9ae41d4399eb67cbed49893824732b3923a374b72288062"
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-cli-direct-construction.json.gz": {
+    "receipt_sha256": "a3c7f57b1267a111458210972c87f534de9e4b04fa5f2884c003e1a59299b9f2",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 0,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
+    },
+    "qualification": "INCOMPLETE",
+    "faults_ok": true,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [
+          "outside_authority:bin/veldo:307"
+        ],
+        "status": "FAIL"
+      },
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 2236861,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
+    },
+    "construction_sites": [
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "bin/veldo",
+        "line": 307,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-transient-abstract-listener.json.gz": {
+    "receipt_sha256": "494f9ae9cde0aceb71079e042d482ab70718eab97fdf1abf0ea010695d803dcb",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 0,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
+    },
+    "qualification": "INCOMPLETE",
+    "faults_ok": true,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [],
+        "status": "PASS"
+      },
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "534ad2c19ea2fb2631a005994fd87f72fd702c192e6b85180ba7491b7a9ef347",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 1059524,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
+    },
+    "construction_sites": [
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 0,
+      "services": 18,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-reaped-fallback.json.gz": {
+    "receipt_sha256": "6c163fa5903723e18bbb65c5879988062ef279c42c85552933e062bb2740fe68",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 18,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
+    },
+    "qualification": "INCOMPLETE",
+    "faults_ok": true,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [],
+        "status": "PASS"
+      },
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "d08b3d11bad08dbea5700197b4137fd3a0b31c8d470631fdb8d2260001f3a2c4",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 3452888,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
+    },
+    "construction_sites": [
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 18,
+      "services": 0,
+      "all_forbidden_births_terminal": true
+    }
+  },
+  "autostart113-construction-outside-authority.json.gz": {
+    "receipt_sha256": "f326155ce03135b72918bdbb24b3605742582fddcc5948a62894d227946d8873",
+    "metrics": {
+      "complete_censuses": 0,
+      "completed": 42,
+      "construction_cases": 20,
+      "expected": 42,
+      "fault_cases": 176,
+      "forbidden_launches": 0,
+      "invocations_completed": 22,
+      "measured": 22,
+      "observation_failures": 22
+    },
+    "qualification": "INCOMPLETE",
+    "faults_ok": true,
+    "faults_driven": true,
+    "rows": {
+      "unavailable/in-process-construction-boundary": {
+        "reason": [
+          "outside_authority:.veldo/claim.py:62"
+        ],
+        "status": "FAIL"
+      },
+      "unavailable/no-auto-start-needs-census": {
+        "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-hosts-a-listener": {
+        "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/no-client-starts-the-authority": {
+        "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279",
+        "reason": "census_incomplete",
+        "status": "STANDS DOWN"
+      },
+      "unavailable/store-write-grant": {
+        "observation": {
+          "pid": 376830,
+          "writable": true
+        },
+        "reason": "no_process_specific_write_grant",
+        "status": "GAP"
+      }
+    },
+    "construction_sites": [
+      {
+        "file": ".veldo/claim.py",
+        "line": 62,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": ".veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      },
+      {
+        "file": "engine/.veldo/control_launch.py",
+        "line": 2295,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_launch_work.py",
+        "line": 148,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3207,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service.py",
+        "line": 3939,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/control_service_api.py",
+        "line": 214,
+        "constructor": "Dispatches"
+      },
+      {
+        "file": "engine/.veldo/dispatch.py",
+        "line": 574,
+        "constructor": "Dispatcher"
+      }
+    ],
+    "effects": {
+      "births": 0,
+      "services": 0,
+      "all_forbidden_births_terminal": true
     }
   }
 }

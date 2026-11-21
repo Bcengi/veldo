@@ -1,0 +1,8 @@
+Diagnostic output projection; routine runner inventory and fixture chatter omitted.
+Original stdout SHA-256: 0e0cba57439af9b16e3362cbd734eee48053bd60f2b55d79236642ee5f380ef2
+Selected selftest only: no canonical unit or gate pass is claimed.
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmp9y8_d0mq/proof4.json: criterion AC1 passed without evidence
+VELDO-0154 suite seconds: 29.819 (the first instance's rows ended at 21.7 s, the reset came at 27.8 s)
+  83_veldo_0154_factory_loop                      14 passed   29.84s
+selftest (PARTIAL, 1 of 256 suites): 40 passed, 0 failed in 29.84s

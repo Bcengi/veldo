@@ -1,0 +1,11 @@
+Diagnostic output projection; routine runner inventory and fixture chatter omitted.
+Original stdout SHA-256: 13b3712af20ab58fd49306ca9419ab49dd502078df3f91e3f2d45602af1cff49
+Selected selftest only: no canonical unit or gate pass is claimed.
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmpdhsv50bf/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpezum1czx.json: criterion AC1 passed without evidence
+  01_warp_0101_reviewer_notes                    622 passed   15.38s
+  03_plugin_extension_loading_runner             261 passed   11.87s
+  04_run_status_reader_veldo                     254 passed    5.20s
+  06_capabilities_manifest_honesty_veldo         262 passed    9.08s
+selftest (PARTIAL, 4 of 256 suites): 1425 passed, 0 failed in 41.53s
