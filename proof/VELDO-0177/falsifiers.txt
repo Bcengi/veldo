@@ -1,0 +1,85 @@
+== ws177-shared-workspace: control_conversation.py, 1 edit(s) (rows AC1/isolation)
+   'return os.path.join(directory, WORKSPACE) if _text(directory) and os.path.isabs(directory) else None' -> 'return os.path.join(os.path.dirname(directory), WORKSPACE) if _text(directory) else None  # defect: shared'
+  VELDO-0177 AC1 working directories: /dev/shm/v177-qrle4aq_/workspace/state/conversations/workspace /dev/shm/v177-qrle4aq_/workspace/state/conversations/workspace outcomes: ['completed', 'completed']
+  VELDO-0177 AC2 first init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__alpha__echo']
+  VELDO-0177 AC2 second init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__beta__echo']
+  VELDO-0177 AC2 the turn record's tool calls: ['Bash', 'Edit', 'WebFetch']
+  VELDO-0177 AC2 codex outcome: ['completed']
+  VELDO-0177 detail: AC1/workspace-made the open command made the workspace under the conversation's directory, 0700; the open command made the workspace under the conversation's directory, 0700; each conversation's workspace is its own
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-made
+  VELDO-0177 detail: AC1/isolation the two working directories differ and neither names the other's
+  SELFTEST FAIL: VELDO-0177 AC1/isolation
+  VELDO-0177 detail: AC1/workspace-refused a turn whose contract names another conversation's workspace is refused by name [completed]; before anything is spawned: the dispatch is refused, never accepted, and no engine ran
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-refused
+  VELDO-0177 detail: AC1/observability the turns refused for a workspace mismatch are counted [0]
+  SELFTEST FAIL: VELDO-0177 AC1/observability
+  128_veldo_0177_conversation_workspace           11 passed    3.89s
+restored: True
+== ws177-receiver-unchecked: control_conversation.py, 1 edit(s) (rows AC1/workspace-refused)
+   "if own is None or (contract.get('source') or {}).get('workspace') != own:" -> "if False:  # defect: the turn's working directory is not checked"
+  VELDO-0177 AC1 working directories: /dev/shm/v177-y0gpv10i/workspace/state/conversations/a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e/workspace /dev/shm/v177-y0gpv10i/workspace/state/conversations/16367aacb67a4a017c8da8ab95682ccb390863780f7114dda0a0e0c55644c7c4/workspace outcomes: ['completed', 'completed']
+  VELDO-0177 AC2 first init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__alpha__echo']
+  VELDO-0177 AC2 second init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__beta__echo']
+  VELDO-0177 AC2 the turn record's tool calls: ['Bash', 'Edit', 'WebFetch']
+  VELDO-0177 AC2 codex outcome: ['completed']
+  VELDO-0177 detail: AC1/workspace-refused a turn whose contract names another conversation's workspace is refused by name [completed]; before anything is spawned: the dispatch is refused, never accepted, and no engine ran
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-refused
+  VELDO-0177 detail: AC1/observability the turns refused for a workspace mismatch are counted [0]; each turn's launch names its conversation, workspace, worker group, role revision, tools, servers and credential references [['first', 'second']]
+  SELFTEST FAIL: VELDO-0177 AC1/observability
+  128_veldo_0177_conversation_workspace           13 passed    3.83s
+restored: True
+== tools177-no-role-revision: control_launch.py, 1 edit(s) (rows AC2/offered-tools)
+   "bound = {'role_revision': accepted," -> 'bound = {  # defect: no role revision bound'
+  VELDO-0177 AC1 working directories: /dev/shm/v177-scw4cp9e/workspace/state/conversations/a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e/workspace /dev/shm/v177-scw4cp9e/workspace/state/conversations/16367aacb67a4a017c8da8ab95682ccb390863780f7114dda0a0e0c55644c7c4/workspace outcomes: ['completed', 'completed']
+  VELDO-0177 AC2 first init tools: None
+  VELDO-0177 AC2 second init tools: None
+  VELDO-0177 AC2 the turn record's tool calls: ['Bash', 'Edit', 'WebFetch']
+  VELDO-0177 AC2 codex outcome: ['completed']
+  VELDO-0177 detail: AC1/observability each turn's launch names its conversation, workspace, worker group, role revision, tools, servers and credential references [['first', 'second']]
+  SELFTEST FAIL: VELDO-0177 AC1/observability
+  VELDO-0177 detail: AC2/offered-tools first: WebFetch and WebSearch are in the init event; first: the init event's tools are exactly the revision's, its server's tool among them; first: the init event's servers are exactly the revision's; second: WebFetch and WebSearch are in the init event; second: the init event's tools are exactly the revision's, its server's tool among them; second: the init event's servers are exactly the revision's
+  SELFTEST FAIL: VELDO-0177 AC2/offered-tools
+  VELDO-0177 detail: AC2/codex-launch its launch: the workspace-write sandbox with network access, live web search [None None None]
+  SELFTEST FAIL: VELDO-0177 AC2/codex-launch
+  128_veldo_0177_conversation_workspace           12 passed    2.81s
+restored: True
+== clone177-push-remote: control_clone.py, 1 edit(s) (rows AC3/no-publication)
+   "return {'work': str(work), 'commit': commit, 'branch': branch}" -> "_git('-C', work, 'remote', 'add', 'origin', str(source))  # defect: the project's push remote\n    return {'work': str(work), 'commit': commit, 'branch': branch}"
+  VELDO-0177 AC1 working directories: /dev/shm/v177-_2juq5jr/workspace/state/conversations/a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e/workspace /dev/shm/v177-_2juq5jr/workspace/state/conversations/16367aacb67a4a017c8da8ab95682ccb390863780f7114dda0a0e0c55644c7c4/workspace outcomes: ['completed', 'completed']
+  VELDO-0177 AC2 first init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__alpha__echo']
+  VELDO-0177 AC2 second init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__beta__echo']
+  VELDO-0177 AC2 the turn record's tool calls: ['Bash', 'Edit', 'WebFetch']
+  VELDO-0177 AC2 codex outcome: ['completed']
+  VELDO-0177 detail: AC3/attach-clone an isolated clone: its own object store, no alternate, no worktree link
+  SELFTEST FAIL: VELDO-0177 AC3/attach-clone
+  VELDO-0177 detail: AC3/no-publication its push failed and the fixture remote's refs are unchanged [0]; the clone has no remote, no Git identity and no credential helper
+  SELFTEST FAIL: VELDO-0177 AC3/no-publication
+  128_veldo_0177_conversation_workspace           13 passed    3.90s
+restored: True
+== setup177-no-assistants: control_factory_setup_dispatch.py, 1 edit(s) (rows AC2/setup-saves)
+   "missing = [role for role in ASSISTANTS if role not in chosen['roles']]" -> 'missing = []  # defect: setup saves no assistant role'
+  VELDO-0177 setup: 0 set_up None
+  VELDO-0177 default team head 1, revision 2 roles []
+  VELDO-0177 assistant tools: []
+  VELDO-0177 assistant saves: []
+  VELDO-0177 detail: AC2/setup-saves the default team's head is revision 2: VELDO-0185's team at revision 1, and one revision adding both assistant roles to it; `assistant` is on Claude Code, granting the pinned version's in-run tools with WebSearch and WebFetch, all always; `assistant_codex` is on Codex: its workspace-write sandbox with network access and web search, all always [[] None]; each assistant role names its one capability revision
+  SELFTEST FAIL: VELDO-0177 AC2/setup-saves
+  VELDO-0177 detail: AC2/owner-signed one capability configuration revision each and one default team revision, three owner commands, each its nonce its command id
+  SELFTEST FAIL: VELDO-0177 AC2/owner-signed
+  VELDO-0177 detail: AC2/rerun-saves-nothing a second setup run answers already_set_up [set_up None]
+  SELFTEST FAIL: VELDO-0177 AC2/rerun-saves-nothing
+  VELDO-0177 detail: AC2/workers-enrolled each assistant role's worker is enrolled, as every default team worker is
+  SELFTEST FAIL: VELDO-0177 AC2/workers-enrolled
+  129_veldo_0177_assistant_setup                   0 passed    3.88s
+restored: True
+== setup177-saves-again: control_factory_setup_dispatch.py, 2 edit(s) (rows AC2/rerun-saves-nothing)
+   'if not missing:\n        return chosen, saved' -> 'if False:  # defect: the assistants are saved on every run\n        return chosen, saved'
+   "head = kind is not None and set(ASSISTANTS) <= set(((saved or {}).get('team') or {}).get('roles') or {})" -> 'head = False  # defect: the default team step always runs'
+  VELDO-0177 setup: 0 set_up None
+  VELDO-0177 default team head 2, revision 2 roles ['assistant', 'assistant_codex', 'elaboration', 'implementation', 'independent_review', 'project_manager']
+  VELDO-0177 assistant tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']
+  VELDO-0177 assistant saves: [('setup-057bcf12-configuration-assistant', 'dmitry'), ('setup-057bcf12-configuration-assistant_codex', 'dmitry'), ('setup-057bcf12-assistant-team', 'dmitry')]
+  VELDO-0177 detail: AC2/rerun-saves-nothing a second setup run answers already_set_up [set_up None]; and saves nothing again: the journal head is unchanged [['setup-057bcf12-f09bc6dd-assistant-team']]; and changes no file [(['/dev/shm/b171-xrf38s8_/state-v177/authority/control.sqlite3'], [], [])]
+  SELFTEST FAIL: VELDO-0177 AC2/rerun-saves-nothing
+  129_veldo_0177_assistant_setup                   3 passed    3.86s
+restored: True

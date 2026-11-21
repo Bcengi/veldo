@@ -1,0 +1,7 @@
+case: v174-attach-another-owners-project
+run: python3 scripts/check_gate_mutations.py with the case option naming v174-attach-another-owners-project, alone, at 46fa5a94 (its anchor moved into attach_authority, indentation only); exit 0
+baseline: failed [], targets {'AC1/project-owner': [True]}
+noop: failed [], targets {'AC1/project-owner': [True]}
+mutant: failed ['VELDO-0174 AC1/project-owner'], targets {'AC1/project-owner': [False]}
+   mutation: unconfined leg ran 0 cases, 0 rejected: none
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=57.397s

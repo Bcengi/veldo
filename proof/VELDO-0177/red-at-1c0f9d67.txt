@@ -1,0 +1,79 @@
+Suites 128 and 129 against commit 1c0f9d67 (the base before VELDO-0177): its .veldo, these two suites and their registrations copied in.
+  VELDO-0177 detail: AC1/workspace-made journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-made
+  VELDO-0177 detail: AC1/isolation journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/isolation
+  VELDO-0177 detail: AC1/contained journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/contained
+  VELDO-0177 detail: AC1/credentials journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/credentials
+  VELDO-0177 detail: AC1/launch-guards journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/launch-guards
+  VELDO-0177 detail: AC1/workspace-refused journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-refused
+  VELDO-0177 detail: AC1/observability journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC1/observability
+  VELDO-0177 detail: AC2/offered-tools journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC2/offered-tools
+  VELDO-0177 detail: AC2/codex-launch journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC2/codex-launch
+  VELDO-0177 detail: AC2/turn-record journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC2/turn-record
+  VELDO-0177 detail: AC3/attach-clone journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC3/attach-clone
+  VELDO-0177 detail: AC3/scope journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC3/scope
+  VELDO-0177 detail: AC3/no-publication journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC3/no-publication
+  VELDO-0177 detail: AC3/attach-again journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC3/attach-again
+  VELDO-0177 detail: AC3/observability journey completes: AttributeError: module 'v177_setup_dispatch' has no attribute 'assistant_definition'
+  SELFTEST FAIL: VELDO-0177 AC3/observability
+  128_veldo_0177_conversation_workspace            0 passed    1.03s
+selftest (PARTIAL, 1 of 191 suites): 26 passed, 15 failed in 1.03s
+  VELDO-0177 setup: 0 set_up None
+  VELDO-0177 default team head 1, revision 2 roles []
+  VELDO-0177 assistant tools: []
+  VELDO-0177 assistant saves: []
+  VELDO-0177 detail: AC2/setup-saves the default team's head is revision 2: VELDO-0185's team at revision 1, and one revision adding both assistant roles to it; `assistant` is on Claude Code, granting the pinned version's in-run tools with WebSearch and WebFetch, all always; `assistant_codex` is on Codex: its workspace-write sandbox with network access and web search, all always [[] None]; each assistant role names its one capability revision
+  SELFTEST FAIL: VELDO-0177 AC2/setup-saves
+  VELDO-0177 detail: AC2/owner-signed one capability configuration revision each and one default team revision, three owner commands, each its nonce its command id
+  SELFTEST FAIL: VELDO-0177 AC2/owner-signed
+  VELDO-0177 detail: AC2/workers-enrolled each assistant role's worker is enrolled, as every default team worker is
+  SELFTEST FAIL: VELDO-0177 AC2/workers-enrolled
+  129_veldo_0177_assistant_setup                   1 passed    4.43s
+selftest (PARTIAL, 1 of 191 suites): 27 passed, 3 failed in 4.43s
+
+Suite 128 against 1c0f9d67 with only the new control_factory_setup_dispatch.py copied in (the suite builds its roles with setup's assistant_definition):
+  VELDO-0177 detail: AC1/workspace-made the open command made the workspace under the conversation's directory, 0700; the open command made the workspace under the conversation's directory, 0700; journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-made
+  VELDO-0177 detail: AC1/isolation journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/isolation
+  VELDO-0177 detail: AC1/contained journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/contained
+  VELDO-0177 detail: AC1/credentials journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/credentials
+  VELDO-0177 detail: AC1/launch-guards journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/launch-guards
+  VELDO-0177 detail: AC1/workspace-refused journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/workspace-refused
+  VELDO-0177 detail: AC1/observability journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC1/observability
+  VELDO-0177 detail: AC2/offered-tools journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC2/offered-tools
+  VELDO-0177 detail: AC2/codex-launch journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC2/codex-launch
+  VELDO-0177 detail: AC2/turn-record journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC2/turn-record
+  VELDO-0177 detail: AC3/attach-clone journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC3/attach-clone
+  VELDO-0177 detail: AC3/scope journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC3/scope
+  VELDO-0177 detail: AC3/no-publication journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC3/no-publication
+  VELDO-0177 detail: AC3/attach-again journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC3/attach-again
+  VELDO-0177 detail: AC3/observability journey completes: AttributeError: module 'v177_conversation' has no attribute 'workspace_of'
+  SELFTEST FAIL: VELDO-0177 AC3/observability
+  128_veldo_0177_conversation_workspace            0 passed    1.03s
+selftest (PARTIAL, 1 of 191 suites): 26 passed, 15 failed in 1.03s

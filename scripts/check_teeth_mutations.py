@@ -10636,12 +10636,12 @@ def cases():
     # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
     S174 = '123_veldo_0174_conversations.py'
     add(174, 'v174-attach-outside-current-scope', S174, 'control_conversation.py',
-        "            if not CM.scope_covers(member.get('scope'), [project]):\n"
-        "                raise Refused('missing_authority:project')\n",
+        "    if not CM.scope_covers(member.get('scope'), [project]):\n"
+        "        raise Refused('missing_authority:project')\n",
         '', ['AC1/project-scope'], ())
     add(174, 'v174-attach-another-owners-project', S174, 'control_conversation.py',
-        "            if target['data'].get('owner') != record.get('owner'):\n"
-        "                raise Refused('missing_authority:project')\n",
+        "    if target['data'].get('owner') != record.get('owner'):\n"
+        "        raise Refused('missing_authority:project')\n",
         '', ['AC1/project-owner'], ())
     add(174, 'v174-record-memory-only', S174, 'control_conversation.py',
         "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
@@ -12206,6 +12206,45 @@ def cases():
     add(231, 'flag231-run-window-removed', suite231, 'control_conversation.py',
         "    if written and (written >= FLAG_LIMIT or at - summary['last_at'] < FLAG_WINDOW):\n",
         "    if False:  # defect: no per-run window\n", ['AC4/flood'])
+    # VELDO-0177: a conversation's own workspace, its role's tools and servers, and an attached project's clone; each
+    # spec falsifier as one exact edit, and the guards they imply.
+    suite177, setup177 = '128_veldo_0177_conversation_workspace.py', '129_veldo_0177_assistant_setup.py'
+    add(177, 'ws177-shared-workspace', suite177, 'control_conversation.py',
+        "    return os.path.join(directory, WORKSPACE) if _text(directory) and os.path.isabs(directory) else None\n",
+        "    return os.path.join(os.path.dirname(directory), WORKSPACE) if _text(directory) else None  # defect: shared\n",
+        ['AC1/isolation'])
+    add(177, 'ws177-receiver-unchecked', suite177, 'control_conversation.py',
+        "    if own is None or (contract.get('source') or {}).get('workspace') != own:\n",
+        "    if False:  # defect: the turn's working directory is not checked\n", ['AC1/workspace-refused'])
+    add(177, 'attach177-reads-first', suite177, 'control_conversation.py',
+        "        if authorized:\n            try:\n                repository, path = project_source(",
+        "        if current is not None and _text(project) and type(version) is int"
+        " and version == current.get('version'):  # defect: the repository is read before authority\n"
+        "            try:\n                repository, path = project_source(", ['AC3/scope'])
+    add(177, 'attach177-closed-reads', suite177, 'control_conversation.py',
+        "                if current.get('owner') != owner or current.get('status') != 'open':\n",
+        "                if current.get('owner') != owner:  # defect: a closed conversation's attach reads on\n",
+        ['AC3/scope'])
+    add(177, 'attach177-other-caller-reads', suite177, 'control_conversation.py',
+        "                if current.get('owner') != owner or current.get('status') != 'open':\n",
+        "                if current.get('status') != 'open':  # defect: another caller's attach reads on\n",
+        ['AC3/scope'])
+    add(177, 'tools177-no-role-revision', suite177, 'control_launch.py',
+        "            bound = {'role_revision': accepted,\n",
+        "            bound = {  # defect: no role revision bound\n", ['AC2/offered-tools'])
+    add(177, 'clone177-push-remote', suite177, 'control_clone.py',
+        "    return {'work': str(work), 'commit': commit, 'branch': branch}\n",
+        "    _git('-C', work, 'remote', 'add', 'origin', str(source))  # defect: the project's push remote\n"
+        "    return {'work': str(work), 'commit': commit, 'branch': branch}\n", ['AC3/no-publication'])
+    add(177, 'setup177-no-assistants', setup177, 'control_factory_setup_dispatch.py',
+        "    missing = [role for role in ASSISTANTS if role not in chosen['roles']]\n",
+        "    missing = []  # defect: setup saves no assistant role\n", ['AC2/setup-saves'])
+    add(177, 'setup177-saves-again', setup177, 'control_factory_setup_dispatch.py',
+        "    if not missing:\n        return chosen, saved\n",
+        "    if False:  # defect: the assistants are saved on every run\n        return chosen, saved\n",
+        ['AC2/rerun-saves-nothing'],
+        also=[("    head = kind is not None and set(ASSISTANTS) <= set(((saved or {}).get('team') or {}).get('roles') or {})\n",
+               "    head = False  # defect: the default team step always runs\n")])
 
     # VELDO-0234: setup can put the API on its own tailnet HTTPS port beside another app's mapping of the root.
     port234 = '127_veldo_0234_https_port.py'
