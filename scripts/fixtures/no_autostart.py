@@ -6,6 +6,7 @@ no executable name, address, or successful refusal exempts a birth or service.
 """
 import ast
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 import errno
 import hashlib
 import hmac
@@ -158,6 +159,10 @@ class Arguments:
         self.client = self.client_module.Client(config['workspace'], 'worker', sign, verify,
                                                 'fixture-host', timeout=HANG)
         self.client.generations['unit'] = 1
+        # main has no timeout argument; enlarge its underlying forward default
+        # without replacing the adapter, transport call or connection handler.
+        relay = runtime.load_client_module('control_relay')
+        relay.forward.__wrapped__.__defaults__ = (HANG,)
         self.output, self.error = io.BytesIO(), io.StringIO()
 
     def arguments(self, entry, transport):
@@ -200,6 +205,21 @@ with open({ack!r}, 'a') as sink:
     sink.write(json.dumps(dict(pid=os.getpid(), parent=os.getppid(), argv=sys.argv[1:], time_ns=time.monotonic_ns())) + '\\n')
 os.execve({git!r}, [{git!r}, *sys.argv[1:]], os.environ)
 '''
+
+
+@contextmanager
+def hang_bounds():
+    """Enlarge inherited subprocess hang bounds, preserving calls and results."""
+    original = subprocess.run
+    def run(*args, **kwargs):
+        if kwargs.get('timeout') is not None:
+            kwargs['timeout'] = max(HANG, kwargs['timeout'])
+        return original(*args, **kwargs)
+    subprocess.run = run
+    try:
+        yield
+    finally:
+        subprocess.run = original
 
 
 def invoke(root, config):
@@ -433,6 +453,11 @@ def protocol_controls(census):
 
 
 def qualify(root, faults=('facilities', 'finalize')):
+    with hang_bounds():
+        return _qualify(root, faults)
+
+
+def _qualify(root, faults):
     census = load(root / 'scripts/fixtures/lifecycle_census.py', 'autostart_census')
     controls = protocol_controls(census)
     with tempfile.TemporaryDirectory(prefix='v113-') as temporary:
