@@ -16,8 +16,8 @@ them.
   line from the target suites' counts; a bare run and a selector keep the ordered run. The shard
   side reports a Landlock layer record (confined leg), a target mark and a verdict.
 - `scripts/agent_sandbox.py` (and the engine copy): `write_layer`, the stacked Landlock layer a
-  confined shard applies to itself, and `--inherit`, by which the gate profile's command keeps the
-  leg runner's two descriptors.
+  confined shard applies to itself; `--inherit`, by which the gate profile's command keeps the
+  leg runner's two descriptors; and the broker's hold of a shard's `bind` to the shard's roots.
 - `scripts/gate_legs.py` (and the engine copy): `ShardClaims`, the leg's side of the gate ledger;
   the per-suite shard measurements in the leg-time store; the three variables a leg is handed.
 - `scripts/check_first_use.py`: hands the leg's descriptors to its nested dispatcher.
@@ -80,10 +80,40 @@ them.
    candidates of exactly those two shapes through the real leg runner (101, 111, 14).
 7. **The Landlock layer lives in `agent_sandbox.py`.** VELDO-0208's row
    profiles/one-network-rule-everywhere allows a Landlock or seccomp rule in that module only.
-8. **Shard roots are short sibling directories.** A suite binds local sockets beneath its temporary
-   directory and a socket path holds under 108 bytes. A directory level per shard and one per root
-   put suite 24's path 3 bytes over; the layout built adds 13 bytes to the leg's own temporary
-   directory and leaves that path 2 bytes to spare.
+8. **A confined shard's temporary directory is no longer than the leg's.** A suite binds local
+   sockets beneath its temporary directory and a socket path holds under 108 bytes. Measured in the
+   confined leg: with 18 bytes added suite 24's path was 3 over, and with 13 added suites 156 and
+   113 failed too. So in the gate's confined leg, whose temporary directory is `tmp` in the
+   launcher's scratch, a shard's temporary directory is a three-character sibling of it. Those
+   directories are not removed by the dispatcher; the launcher removes its scratch at the leg's end.
+9. **No unconfined suite of this repository gets an instance name yet.** AC2 says each shard's
+   fixtures set the engine's prefix to the shard's name. Measured against the real user manager,
+   suites 66, 85 and 117 fail when an instance is configured in their shard: their own fixtures
+   hand their subprocesses a configuration root of their own, so the installer and the tool it
+   starts disagree on the unit's name, and suite 66 pins the installation's exact file set. The
+   suites are outside this ticket. So the dispatcher sets the name in every shard of a confined
+   leg, and in an unconfined leg only for a suite whose manifest entry declares `"instance": true`;
+   none does. The unconfined leg's units keep today's names and stay apart on the one manager as
+   they do in the mutation stage: by each installation's own service id and by the manifest's
+   manager declarations. The engine capability, the dispatcher's side and the mutation ownership
+   pattern are built and driven by rows; turning it on for a suite is one manifest key once that
+   suite's fixtures carry the name.
+10. **A shard's runtime directory links three things, not two.** The manager's two sockets, as the
+   specification says, and the manager's runtime unit directory (`systemd/user`): suite 66 writes
+   its unit files there through XDG_RUNTIME_DIR, and with no link the one manager never found its
+   service. That directory is read strictly by the isolation check.
+11. **One shard runs without a Landlock layer of its own.** `run_scope.UNLAYERED` names
+   `151_veldo_0313_space_run`: its rows judge what every process of the leg's tree holds, and a
+   process in a Landlock domain of its own is refused the dispatcher's and every other shard's, so
+   the run it tests never ends (15 rows failed). In the leg's own domain it reads them, as in the
+   ordered run. The table is in the protected dispatcher module, every leg prints what it exempted
+   and why, and a row pins the table to this one entry. AC2 and AC3 say every shard; this is one
+   short of that and needs the owner's decision.
+12. **The broker holds a shard's bind to the shard's roots.** Suite 101's row
+   confined-stage/unit-bind-outside-scratch-refused binds beside its HOME and requires a refusal;
+   in a shard that path is inside the leg's scratch, which the broker serves. The broker now finds
+   the caller's shard by ancestry and narrows the bind to that shard's roots (`open.md` item 6 says
+   what this does not cover).
 
 ## Two edits outside the declared footprint
 
@@ -96,6 +126,14 @@ Both were forced by a gate check, and both are named here so that nobody finds t
 - `proof/WARP-0716/crossing-state.md`: regenerated with `scripts/suite_survey.py --emit-report`.
   It carries the digest of `scripts/selftest.py`, and `scripts/check_generated.sh` is red when it
   is stale. Earlier dispatcher changes regenerated it the same way.
+
+## The falsifiers
+
+`falsifiers.json` and `mutations.txt`: `python3 scripts/check_teeth_mutations.py --finding 221`,
+4 registered, 4 executed, 4 rejected, baseline and no-op green. Three defects turn only their own
+row red. `shards221-shared-tmpdir` turns its row red and five more: with every shard given the
+leg's temporary directory, each confined shard's layer grants the directory the probe stands in,
+so every confined fixture leg of the suite is a breach, which is the same defect seen again.
 
 ## What is not proven here
 
