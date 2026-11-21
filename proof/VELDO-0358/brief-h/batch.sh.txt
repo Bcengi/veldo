@@ -58,3 +58,8 @@ load)
     python3 scripts/gate_load.py --slots 4 --write-dir "$S/load" -- python3 "$OUT/loaded_runs.py.txt" "$WT" "$S/load-out" 50 4
     echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/load50.txt" ;;
 esac; done
+# Appended while the first load step ran (README, "Loaded runs"): fifty more runs of suite 120 alone, on the tree
+# that carries the ac2/metadata-only fix, in the same hold of the host slot.
+{ stamp start; mkdir -p "$S/loadb" "$S/loadb-out"
+  python3 scripts/gate_load.py --slots 4 --write-dir "$S/loadb" -- python3 "$OUT/loaded_runs.py.txt" "$WT" "$S/loadb-out" 50 4 120_veldo_0131_factory_ui
+  echo "exit status $?"; stamp end; } 2>&1 | clean > "$OUT/load50b.txt"
