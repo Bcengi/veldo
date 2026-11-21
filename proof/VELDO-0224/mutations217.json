@@ -97,20 +97,38 @@
   "surviving_workers": 0,
   "results": [
     {
-      "name": "declarations217-support-dropped",
+      "name": "declarations217-receipt-unchecked",
       "rows": [
-        "declarations/stale-found"
+        "declarations/gate-observation-current"
       ],
       "source": "fresh",
       "baseline_failed": [],
       "noop_failed": [],
       "mutant_failed": [
-        "VELDO-0217 declarations/stale-found"
+        "VELDO-0217 declarations/gate-observation-current"
       ],
       "mutant_details": [
         [
-          "VELDO-0217 declarations/stale-found",
-          "[] {'check_teeth_mutations.py:effects-worker-scope': (['input_changed:scripts/suites/s0_fixture.py'], []), 'check_teeth_mutations.py:message-speaker-is-edge': (['input_changed:scripts/suites/s1_fixture.py'], []), 'check_teeth_mutations.py:account-codex-old-tables': (['input_changed:scripts/suites/s2_fixture.py'], []), 'check_teeth_mutations.py:limit-unreported': (['input_changed:scripts/suites/s3_fixture.py'], []), 'check_teeth_mutations.py:codex-baseline-user-config-loaded': (['input_changed:scripts/suites/s4_fixture.py'], []), 'check_teeth_mutations.py:worker129-build-unwired': (['input_changed:scripts/suites/s5_fixture.py'], []), 'check_teeth_mutations.py:receiver148-placement-wait-unbounded': (['input_changed:scripts/suites/s6_fixture.py'], [])}"
+          "VELDO-0217 declarations/gate-observation-current",
+          "{'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)} {'current': None, 'earlier': None, 'failed': None, 'none': None}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-bus-allowed",
+      "rows": [
+        "declarations/non-file-refused"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/non-file-refused"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/non-file-refused",
+          "{'remote': ['network_peer'], 'bus': [], 'runtime-socket': ['host_socket'], 'host-loopback': ['unbound_loopback'], 'loopback-only': []} {'remote': 'network_peer', 'bus': 'miss', 'runtime-socket': 'host_socket', 'host-loopback': 'unbound_loopback', 'loopback-only': 'miss'} passed"
         ]
       ]
     },
@@ -133,20 +151,20 @@
       ]
     },
     {
-      "name": "declarations217-foreign-accept-allowed",
+      "name": "declarations217-support-dropped",
       "rows": [
-        "declarations/accept-pending"
+        "declarations/stale-found"
       ],
       "source": "fresh",
       "baseline_failed": [],
       "noop_failed": [],
       "mutant_failed": [
-        "VELDO-0217 declarations/accept-pending"
+        "VELDO-0217 declarations/stale-found"
       ],
       "mutant_details": [
         [
-          "VELDO-0217 declarations/accept-pending",
-          "{'waiting': [], 'pending-connect': ['network_peer'], 'foreign-accept': [], 'pending-file': 'IncompleteTrace: incomplete file-read trace'}"
+          "VELDO-0217 declarations/stale-found",
+          "[] {'check_teeth_mutations.py:effects-worker-scope': (['input_changed:scripts/suites/s0_fixture.py'], []), 'check_teeth_mutations.py:message-speaker-is-edge': (['input_changed:scripts/suites/s1_fixture.py'], []), 'check_teeth_mutations.py:account-codex-old-tables': (['input_changed:scripts/suites/s2_fixture.py'], []), 'check_teeth_mutations.py:limit-unreported': (['input_changed:scripts/suites/s3_fixture.py'], []), 'check_teeth_mutations.py:codex-baseline-user-config-loaded': (['input_changed:scripts/suites/s4_fixture.py'], []), 'check_teeth_mutations.py:worker129-build-unwired': (['input_changed:scripts/suites/s5_fixture.py'], []), 'check_teeth_mutations.py:receiver148-placement-wait-unbounded': (['input_changed:scripts/suites/s6_fixture.py'], [])}"
         ]
       ]
     },
@@ -169,20 +187,38 @@
       ]
     },
     {
-      "name": "declarations217-bus-allowed",
+      "name": "declarations217-foreign-accept-allowed",
       "rows": [
-        "declarations/non-file-refused"
+        "declarations/accept-pending"
       ],
       "source": "fresh",
       "baseline_failed": [],
       "noop_failed": [],
       "mutant_failed": [
-        "VELDO-0217 declarations/non-file-refused"
+        "VELDO-0217 declarations/accept-pending"
       ],
       "mutant_details": [
         [
-          "VELDO-0217 declarations/non-file-refused",
-          "{'remote': ['network_peer'], 'bus': [], 'runtime-socket': ['host_socket'], 'host-loopback': ['unbound_loopback'], 'loopback-only': []} {'remote': 'network_peer', 'bus': 'miss', 'runtime-socket': 'host_socket', 'host-loopback': 'unbound_loopback', 'loopback-only': 'miss'} passed"
+          "VELDO-0217 declarations/accept-pending",
+          "{'waiting': [], 'pending-connect': ['network_peer'], 'foreign-accept': [], 'pending-file': 'IncompleteTrace: incomplete file-read trace'}"
+        ]
+      ]
+    },
+    {
+      "name": "declarations217-incomplete-fails-stage",
+      "rows": [
+        "declarations/incomplete-trace-demoted"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0217 declarations/incomplete-trace-demoted"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0217 declarations/incomplete-trace-demoted",
+          "{'incomplete': 'miss', 'clean-beside': 'miss'} {'incomplete': False, 'clean-beside': False} failed incomplete file-read trace"
         ]
       ]
     },
@@ -241,42 +277,6 @@
       ]
     },
     {
-      "name": "declarations217-incomplete-fails-stage",
-      "rows": [
-        "declarations/incomplete-trace-demoted"
-      ],
-      "source": "fresh",
-      "baseline_failed": [],
-      "noop_failed": [],
-      "mutant_failed": [
-        "VELDO-0217 declarations/incomplete-trace-demoted"
-      ],
-      "mutant_details": [
-        [
-          "VELDO-0217 declarations/incomplete-trace-demoted",
-          "{'incomplete': 'miss', 'clean-beside': 'miss'} {'incomplete': False, 'clean-beside': False} failed incomplete file-read trace"
-        ]
-      ]
-    },
-    {
-      "name": "declarations217-proof-skipped",
-      "rows": [
-        "declarations/review-conditions"
-      ],
-      "source": "fresh",
-      "baseline_failed": [],
-      "noop_failed": [],
-      "mutant_failed": [
-        "VELDO-0217 declarations/review-conditions"
-      ],
-      "mutant_details": [
-        [
-          "VELDO-0217 declarations/review-conditions",
-          "{'sensitivity-unproved': 'miss'} keyed=['passes', 'sensitivity-unproved']"
-        ]
-      ]
-    },
-    {
       "name": "declarations217-absent-unkeyed",
       "rows": [
         "declarations/undeclared-absent-socket"
@@ -295,20 +295,20 @@
       ]
     },
     {
-      "name": "declarations217-receipt-unchecked",
+      "name": "declarations217-proof-skipped",
       "rows": [
-        "declarations/gate-observation-current"
+        "declarations/review-conditions"
       ],
       "source": "fresh",
       "baseline_failed": [],
       "noop_failed": [],
       "mutant_failed": [
-        "VELDO-0217 declarations/gate-observation-current"
+        "VELDO-0217 declarations/review-conditions"
       ],
       "mutant_details": [
         [
-          "VELDO-0217 declarations/gate-observation-current",
-          "{'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)} {'current': None, 'earlier': None, 'failed': None, 'none': None}"
+          "VELDO-0217 declarations/review-conditions",
+          "{'sensitivity-unproved': 'miss'} keyed=['passes', 'sensitivity-unproved']"
         ]
       ]
     }

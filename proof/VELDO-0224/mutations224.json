@@ -2,10 +2,10 @@
   "status": "passed",
   "error": null,
   "detail": null,
-  "registered": 3,
-  "executed": 3,
+  "registered": 6,
+  "executed": 6,
   "reused": 0,
-  "rejected": 3,
+  "rejected": 6,
   "case_receipts": [
     {
       "identity": "check_teeth_mutations.py:stale224-snapshot-verdict-kept",
@@ -27,6 +27,27 @@
       "reason": "unknown_closure",
       "source": "fresh",
       "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-store-unavailable-fails",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-prior-mark-ignored",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:stale224-unreadable-marks-reused",
+      "key": null,
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
     }
   ],
   "invalid_results": [],
@@ -44,7 +65,10 @@
       "mutant_failed": [
         "VELDO-0224 stale-declarations/runs-fresh",
         "VELDO-0224 stale-declarations/never-published",
-        "VELDO-0224 stale-declarations/authority-store"
+        "VELDO-0224 stale-declarations/authority-store",
+        "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+        "VELDO-0224 stale-declarations/prior-mark-denies-reuse",
+        "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse"
       ],
       "mutant_details": [
         [
@@ -53,11 +77,59 @@
         ],
         [
           "VELDO-0224 stale-declarations/never-published",
-          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'reused': 0, 'clean_hit': False, 'published': [], 'stale_keys': {'check_teeth_mutations.py:import-baseline': None, 'check_teeth_mutations.py:import-noop': 'c6f63f29742881c04a84979b4c8d166e28a728b4bf48dd7773ef154cf6696005', 'check_teeth_mutations.py:import-mutant': '587d99ab98e12e36976325e3d784d7176b979093799a5968336e6e10dabd6af2', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'reused': 0, 'clean_hit': False, 'published': [], 'stale_keys': {'check_teeth_mutations.py:import-baseline': None, 'check_teeth_mutations.py:import-noop': '8928e51a46fc19bde91801888479ead3388f3267e9abc7e862899ce727ec0ca8', 'check_teeth_mutations.py:import-mutant': '9329921252c0c2898d744c6de77255f4c9571ec106c4525815907f8de1bfa11b', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
         ],
         [
           "VELDO-0224 stale-declarations/authority-store",
-          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'candidate_unchanged': True, 'stored': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline']}"
+          "{'states': \"[('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3), ('failed', 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 3)]\", 'candidate_unchanged': True, 'stored': ['check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline']}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+          "{'status': 'failed', 'error': 'driver_error', 'detail': 'driver_error: check_teeth_mutations.py:import-baseline:baseline: worker exit 1', 'unpersisted': 3}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/prior-mark-denies-reuse",
+          "{'warm_hit': True, 'status': 'failed', 'reused': 0, 'clean': [{'identity': 'check_teeth_mutations.py:clean', 'key': None, 'source': 'pending', 'reason': 'declaration_stale', 'validated': False}], 'marks': 1}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse",
+          "{'control': False, 'hit': False, 'reason': 'reuse_unavailable'}"
+        ]
+      ]
+    },
+    {
+      "name": "stale224-store-unavailable-fails",
+      "rows": [
+        "stale-declarations/store-unavailable-runs-fresh"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/store-unavailable-runs-fresh"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+          "{'status': 'failed', 'error': 'driver_error', 'detail': 'authority stale store unavailable', 'unpersisted': 0}"
+        ]
+      ]
+    },
+    {
+      "name": "stale224-unreadable-marks-reused",
+      "rows": [
+        "stale-declarations/unreadable-marks-deny-reuse"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse",
+          "{'control': True, 'hit': True, 'reason': 'hit'}"
         ]
       ]
     },
@@ -70,12 +142,17 @@
       "baseline_failed": [],
       "noop_failed": [],
       "mutant_failed": [
-        "VELDO-0224 stale-declarations/never-published"
+        "VELDO-0224 stale-declarations/never-published",
+        "VELDO-0224 stale-declarations/store-unavailable-runs-fresh"
       ],
       "mutant_details": [
         [
           "VELDO-0224 stale-declarations/never-published",
-          "{'states': '[(\\'passed\\', None, 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'passed\\', None, 5)]', 'reused': 0, 'clean_hit': True, 'published': ['check_teeth_mutations.py:import-noop', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:clean'], 'stale_keys': {'check_teeth_mutations.py:import-baseline': 'f06a6cbb4b06c0901a80095534d7ac2b8b2c9e20015a2b14633de81898c17069', 'check_teeth_mutations.py:import-noop': 'c6f63f29742881c04a84979b4c8d166e28a728b4bf48dd7773ef154cf6696005', 'check_teeth_mutations.py:import-mutant': '587d99ab98e12e36976325e3d784d7176b979093799a5968336e6e10dabd6af2', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+          "{'states': '[(\\'passed\\', None, 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'passed\\', None, 5)]', 'reused': 0, 'clean_hit': True, 'published': ['check_teeth_mutations.py:clean', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-noop'], 'stale_keys': {'check_teeth_mutations.py:import-baseline': 'e914b92a419d62ea4a7e9edb1215df4fab14f6803fe7037d40760bb6661b3b1a', 'check_teeth_mutations.py:import-noop': '8928e51a46fc19bde91801888479ead3388f3267e9abc7e862899ce727ec0ca8', 'check_teeth_mutations.py:import-mutant': '9329921252c0c2898d744c6de77255f4c9571ec106c4525815907f8de1bfa11b', 'check_teeth_mutations.py:deleted': None, 'check_teeth_mutations.py:closure': None}}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+          "{'status': 'passed', 'error': None, 'detail': None, 'unpersisted': 5}"
         ]
       ]
     },
@@ -90,7 +167,10 @@
       "mutant_failed": [
         "VELDO-0224 stale-declarations/runs-fresh",
         "VELDO-0224 stale-declarations/never-published",
-        "VELDO-0224 stale-declarations/authority-store"
+        "VELDO-0224 stale-declarations/authority-store",
+        "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+        "VELDO-0224 stale-declarations/prior-mark-denies-reuse",
+        "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse"
       ],
       "mutant_details": [
         [
@@ -103,7 +183,37 @@
         ],
         [
           "VELDO-0224 stale-declarations/authority-store",
-          "{'states': '[(\\'failed\\', \\'driver_error: inputs changed during stage\\', 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'failed\\', \\'driver_error: inputs changed during stage\\', 5)]', 'candidate_unchanged': False, 'stored': ['check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:closure', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-noop'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:import-noop']}"
+          "{'states': '[(\\'failed\\', \\'driver_error: inputs changed during stage\\', 5), (\\'failed\\', \\'invalid_baseline: invalid_baseline: check_teeth_mutations.py:deleted: completed controls: {\"baseline\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}, \"noop\": {\"failed_details\": [], \"failed_rows\": [\"fixture target\"]}}\\', 5), (\\'failed\\', \\'driver_error: inputs changed during stage\\', 5)]', 'candidate_unchanged': False, 'stored': ['check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:closure', 'check_teeth_mutations.py:import-noop', 'check_teeth_mutations.py:deleted'], 'selected': ['check_teeth_mutations.py:closure', 'check_teeth_mutations.py:deleted', 'check_teeth_mutations.py:import-baseline', 'check_teeth_mutations.py:import-mutant', 'check_teeth_mutations.py:import-noop']}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/store-unavailable-runs-fresh",
+          "{'status': 'failed', 'error': 'driver_error', 'detail': 'driver_error: inputs changed during stage', 'unpersisted': 5}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/prior-mark-denies-reuse",
+          "{'warm_hit': True, 'status': 'failed', 'reused': 0, 'clean': [{'identity': 'check_teeth_mutations.py:clean', 'key': None, 'source': 'fresh', 'reason': 'declaration_stale', 'validated': True}], 'marks': 1}"
+        ],
+        [
+          "VELDO-0224 stale-declarations/unreadable-marks-deny-reuse",
+          "{'control': False, 'hit': False, 'reason': 'reuse_unavailable'}"
+        ]
+      ]
+    },
+    {
+      "name": "stale224-prior-mark-ignored",
+      "rows": [
+        "stale-declarations/prior-mark-denies-reuse"
+      ],
+      "source": "fresh",
+      "baseline_failed": [],
+      "noop_failed": [],
+      "mutant_failed": [
+        "VELDO-0224 stale-declarations/prior-mark-denies-reuse"
+      ],
+      "mutant_details": [
+        [
+          "VELDO-0224 stale-declarations/prior-mark-denies-reuse",
+          "{'warm_hit': True, 'status': 'passed', 'reused': 1, 'clean': [{'identity': 'check_teeth_mutations.py:clean', 'key': '2375940f29e78eae63bccc5ff02a47be3a8b32e13c9e913e85633f6a7cb00ca9', 'source': 'reused', 'reason': 'hit', 'validated': True}], 'marks': 1}"
         ]
       ]
     }
