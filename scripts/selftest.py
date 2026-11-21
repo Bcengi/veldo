@@ -298,9 +298,10 @@ SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial and SHARD is None:
     print(SCOPE.banner(), flush=True)
 
-if SHARD is not None and LEG == "confined":
+if SHARD is not None and LEG == "confined" and SUITE_VALUES[0] not in RS.UNLAYERED:
     # In a confined leg the shard stacks its own Landlock layer on the leg's domain before any
     # suite code runs, and reports whether it holds: the dispatcher reddens a shard that does not.
+    # The few suites run_scope.UNLAYERED names, each with its reason, stack none.
     _in_force, _refused, _detail = RS.confine_shard(SHARD_ROOT_VALUES[0], RS.shard_launcher(HERE.parent))
     SHARD.send(event="layer", in_force=_in_force, refused=_refused, detail=_detail)
 

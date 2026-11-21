@@ -581,6 +581,20 @@ SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "dead
 SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
                ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
 SHARD_PROBES = "p"
+# THE SHARDS THAT RUN WITHOUT A LANDLOCK LAYER OF THEIR OWN, each with its reason. This table is the
+# only way out of the layer, it lives in this protected file, every leg prints what it exempted, and
+# an entry is a reviewed decision, never a convenience. A shard named here still has its own roots,
+# its own result pipe and the broker's hold on its binds, and still runs inside the leg's domain;
+# what it loses is the kernel's refusal of a write to another shard's roots.
+UNLAYERED = {
+    "151_veldo_0313_space_run":
+        "its rows judge what every process of the leg's tree holds: the space probe reads each "
+        "process's working directory and open files, and a process in a Landlock domain of its own "
+        "is refused the dispatcher's and every other shard's, so each of them counts as an unread "
+        "process that may hold the run's folders and the run never ends. In the leg's own domain "
+        "it reads them, as it did in the ordered run",
+}
+
 # The two arguments a shard interpreter is started with. The gate launcher's broker knows a shard by
 # them (scripts/agent_sandbox.py Broker._shard_roots) and holds its binds to its roots.
 SHARD_ARGUMENTS = ("--shard", "--shard-root")
@@ -1136,7 +1150,9 @@ def shard_verdict(job, leg, status):
         if code != expected:
             failures.append(("exit_status", "it exited %d where its verdict means %d" % (code, expected)))
     layer = None
-    if leg == "confined":
+    if leg == "confined" and job["name"] in UNLAYERED:
+        layer = {"exempt": True}
+    elif leg == "confined":
         layer = next((r for r in records if r.get("event") == "layer"), None)
         target_at = events.index("target") if "target" in events else len(events)
         problem = None
@@ -1351,7 +1367,9 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                "" if job["roots"]["TMPDIR"] == str(job["root"]) else " and " + job["roots"]["TMPDIR"], result["passed"],
                result["failed"], wall, cpu, job["peak_anon_bytes"] >> 20,
                "; Landlock layer in force" if result["layer"] and result["layer"].get("in_force") is True
-               and result["layer"].get("refused") is True else ""))
+               and result["layer"].get("refused") is True
+               else "; NO Landlock layer of its own (exempt in run_scope.UNLAYERED)"
+               if result["layer"] and result["layer"].get("exempt") else ""))
         for line in relay(job, result):
             say(line)
         if metrics is not None and result["verdict"] and not result["failures"] and not result["failed"]:
@@ -1490,6 +1508,9 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                "%s %.1fs" % (critical["name"], critical["wall_seconds"]) if critical else "none", wall))
         for line in unattributed:
             say("   isolation note, not charged: %s" % line)
+        for job in jobs:
+            if leg == "confined" and job["name"] in UNLAYERED:
+                say("   shard %s ran without a Landlock layer of its own: %s" % (job["name"], UNLAYERED[job["name"]]))
         return {"passed": passed, "failed": failed, "targets": names, "charged": charged,
                 "breaches": isolation, "unattributed": unattributed, "events": events,
                 "parallelism": parallelism, "wall_seconds": wall,

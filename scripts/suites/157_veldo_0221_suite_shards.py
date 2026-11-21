@@ -414,6 +414,23 @@ def _veldo_0221():
         ran = through_dispatcher(lying, leg_env("confined", "none_listed"))
         if not (ran.returncode == 1 and "its probe outside its roots was written" in ran.stdout):
             checked.append("a written probe: exit %d, %r" % (ran.returncode, ran.stdout.splitlines()[-3:]))
+        # The only shards without a layer of their own are the ones the protected table names, each
+        # with its reason, and the leg says so: such a shard is not charged, and writes where the
+        # leg's domain lets it, while its neighbour is still confined to its roots.
+        beside = top / "beside-the-roots"
+        beside.mkdir()
+        writes = ('target = Path(os.environ["V221_BESIDE"]) / suite_file().stem\n'
+                  'try:\n    target.write_text("x")\n    wrote = True\nexcept PermissionError:\n    wrote = False\n'
+                  'print("V221-BESIDE %s %s" % (suite_file().stem, wrote), flush=True)\nexpect("ran", True)\n')
+        exempt = tree(top / "exempt", {"151_veldo_0313_space_run": writes, "02_layered": writes})
+        result, lines = shards(exempt, "confined", ["151_veldo_0313_space_run", "02_layered"],
+                               extra={"V221_BESIDE": str(beside)})
+        wrote = dict(line.split()[1:3] for line in lines if line.startswith("V221-BESIDE "))
+        if not (sorted(RS.UNLAYERED) == ["151_veldo_0313_space_run"] and all(len(r) > 80 for r in RS.UNLAYERED.values())
+                and result["failed"] == 0 and wrote == {"151_veldo_0313_space_run": "True", "02_layered": "False"}
+                and any("NO Landlock layer of its own" in line and "151_veldo_0313_space_run" in line for line in lines)
+                and any("ran without a Landlock layer of its own" in line for line in lines)):
+            checked.append("the exempt shard: %r %r %r" % (wrote, result["charged"], sorted(RS.UNLAYERED)))
         # An unconfined shard that leaves a file in /dev/shm, and one that starts a unit without its
         # prefix. The fixture's own directory and unit list stand for the two: the gate runs this
         # suite inside its confinement, where the real ones are out of reach.
