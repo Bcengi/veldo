@@ -213,10 +213,10 @@ class Session(M.Session):
                     self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
                     continue
                 try:
-                    directory_now = store_directory()
+                    store_directory()
                 except (KeyError, TypeError, ValueError, OSError, RuntimeError) as error:
                     raise Unavailable('store configuration: ' + str(error)) from error
-                if not sensitivity_proved(directory_now, self.case_digests[name]):
+                if not sensitivity_proved(store_directory(), self.case_digests[name]):
                     self.reasons[name] = 'sensitivity_unproved'
                     continue
                 self.snapshots[name], self.declarations[name], self.runtimes[name] = chosen, declaration, runtime
