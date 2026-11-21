@@ -209,6 +209,24 @@ class Conversing:
 
     # -- the owner's command making the conversation a project's work (VELDO-0180) ------------------------------
 
+    def _point_plan(self, conversion, pid):
+        """VELDO-0180's pointing of the conversation at the project its owner's command made it the work of, planned in
+        intake's routing transaction: (conversation entity id, planned changes). Moving the conversation's work into a
+        project is a project handout (VELDO-0187), so the Gate's one project check is asked first: an existing project
+        must pass it; a new one is not in the store yet, which the conversation organ's own check requires."""
+        refusals, _read = CV.project_problems(self.conn, conversion['project'])
+        if conversion['route'] == 'existing_project' and refusals:
+            raise self.route_refused(refusals[0], conversion['project'])
+        cid = CV.conversation_id(conversion['conversation'])
+        try:
+            planned = CV.transition(self.conn, {'operation': CV.POINT, 'conversation': conversion['conversation'],
+                                                'principal': conversion['owner'], 'project': conversion['project'],
+                                                'route': conversion['route'], 'proposal': pid,
+                                                'command': conversion['command']}, {cid: self._entity(cid)})
+        except CV.Refused as error:
+            raise self.route_refused(error.code, error.detail) from None
+        return cid, planned
+
     def _conversion(self, row, principal, version, name, objective, identity, command_key, command_route):
         """The conversion block of the owner's command on conversation `row`: its route (a project the store records
         by name or id, else a new project of that name), project, objective (his words, else the conversation's first

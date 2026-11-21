@@ -1038,6 +1038,20 @@ class Gate:
             read[owner] = (member or {}).get('version', 0)
         return self._project_problems(data.get('project'), record, member), read
 
+    def project_named_problems(self, name):
+        """VELDO-0187: project_problems for a boundary that names the project itself rather than a unit of it (a
+        conversation attaching a project, which clones it, or pointed at the project its owner's command made it the
+        work of): the same one check over that project's record and its owner's membership, read in one read
+        transaction, with {entity id: version} of what it was decided from."""
+        with self._reading():
+            record = self._entity('project:' + str(name))
+            owner = self._project_owner(record)
+            member = self._entity(owner) if owner is not None else None
+        read = {'project:' + str(name): (record or {}).get('version', 0)}
+        if owner is not None:
+            read[owner] = (member or {}).get('version', 0)
+        return self._project_problems(name, record, member), read
+
     def _project_owner(self, record):
         value = (record or {}).get('value') or {}
         data = value.get('data')

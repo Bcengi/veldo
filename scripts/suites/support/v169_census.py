@@ -32,6 +32,28 @@ helper of the same class or module that makes it unconditionally, in a statement
 build in its block or an enclosing one (not inside a branch beside it) on every path through its
 function. Where the parameters are built at the write itself, or are not resolved, the write's own
 function must. Nothing is classified from a list of writers or of receiver names.
+
+The conversation organ (VELDO-0187, the lead's ruling). A `transition` reached through a name the
+module binds to control_conversation itself (`CV = _organ('control_conversation')`, read from the
+syntax tree, never from the name) is that organ's, not the claim organ's. What it can write is read
+from its own declarations: PROJECT_OPERATIONS are the operations that hand a project's data to a
+conversation's runs or move its work into a project; every other operation writes the
+conversation's own records (its turns, messages and decision presentations). So:
+- in control_conversation.transition every return a project operation can reach must be preceded by
+  the Gate's project check, and every return an owner operation (OWNER_OPERATIONS) can reach by the
+  membership check `_member` (VELDO-0174's owner check) on every path; each missing one is refused;
+- a call of it elsewhere is classified by the operation its parameters carry (a constant of the
+  organ): a project operation is a handout and needs the project check before it, as a claim
+  handout does; any other is conversation-scoped (VELDO-0174's owner checks in the organ, VELDO-0181's
+  for a decision presentation); an operation not resolved is refused;
+- a registration of it is accepted only under the organ's own OPERATION, and is classified by every
+  operation whose parameters the registering class or function builds; none visible is refused;
+- every parameters build outside the organ naming a project operation of it needs the project check.
+
+Dynamic access whose names resolve to constants and include no writer is recorded; a module whose
+scope is neither a claim's nor a project's (NON_PROJECT_SCOPES: memory and host setup) has each such
+access recorded with that scope and its reason. That table labels a resolved access and never
+excuses an unresolved one; an entry whose module has no resolved access is refused as stale.
 """
 import ast
 
@@ -40,6 +62,22 @@ ORGAN = 'transition'
 CONSTRUCTOR = 'issue_station_contract'
 CHECK = 'project_problems'
 DYNAMIC = ('getattr', 'attrgetter', 'methodcaller')
+CONVERSATION_MODULE = 'control_conversation'
+OWNER_CHECK = '_member'
+CONVERSATION_SCOPED = 'conversation-scoped'
+CONVERSATION_REASON = ('it writes only the conversation\'s own records (%s), under the owner and service membership '
+                       'checks control_conversation.transition makes (VELDO-0174) and, for a decision presentation, '
+                       'the request owner\'s own settlement (VELDO-0181); no project data is handed out')
+# Modules whose resolved dynamic access is recorded with the scope it is in (a label, never an exemption).
+NON_PROJECT_SCOPES = {
+    'control_memory_kb': ('memory-scoped', "memory_kb's store functions (FUNCTIONS), called inside the one store "
+                          "server that holds the owner's memory store (VELDO-0183): no claim, station contract or "
+                          "project record"),
+    'control_factory_setup_memory': ('host-scoped', "the host's `veldo memory kb` command line inputs (KB_INPUTS) "
+                                     "read from its parsed arguments (VELDO-0183): no claim, station contract or "
+                                     "project record"),
+}
+LOADERS = ('_organ', 'organ', '_renderer_module', 'import_module')
 NOVALUE = object()
 DEPTH = 6
 
@@ -199,6 +237,21 @@ class Census:
     def __init__(self, sources):
         self.modules = {stem: parsed(stem, text) for stem, text in sorted(sources.items())}
         self.failures, self.records = [], []
+        conversation = self.modules.get(CONVERSATION_MODULE)
+        declared = {name: conversation.constants.get(name, NOVALUE) if conversation else NOVALUE
+                    for name in ('PROJECT_OPERATIONS', 'OWNER_OPERATIONS', 'OPERATION')}
+        self.project_operations = declared['PROJECT_OPERATIONS']
+        self.owner_operations = declared['OWNER_OPERATIONS']
+        self.conversation_operation = declared['OPERATION']
+        if conversation is not None and not (
+                isinstance(self.project_operations, tuple) and self.project_operations
+                and all(isinstance(v, str) for v in self.project_operations)
+                and isinstance(self.owner_operations, tuple) and isinstance(self.conversation_operation, str)):
+            self.fail(CONVERSATION_MODULE, None, 0, 'the conversation organ does not declare its PROJECT_OPERATIONS, '
+                      'OWNER_OPERATIONS and OPERATION as constants')
+            self.project_operations, self.owner_operations, self.conversation_operation = (), (), None
+        if conversation is None:
+            self.project_operations, self.owner_operations, self.conversation_operation = (), (), None
         organ = self.modules.get(ORGAN_MODULE)
         fn = next((n for n in (organ.tree.body if organ else ()) if isinstance(n, ast.FunctionDef) and n.name == ORGAN), None)
         if (fn is None or fn.args.vararg or fn.args.kwarg or fn.args.defaults or fn.args.kwonlyargs
@@ -230,7 +283,8 @@ class Census:
         for module in self.modules.values():
             # What a module contributes depends only on its own source and on what the organ and the
             # station contract writer declare, so an unchanged module is not read twice.
-            key = (module.stem, module.source, self.signature, self.handouts, self.kind, frozenset(kinds))
+            key = (module.stem, module.source, self.signature, self.handouts, self.kind, frozenset(kinds),
+                   self.project_operations, self.owner_operations, self.conversation_operation)
             if key not in _SCANNED:
                 records, failures = self.records, self.failures
                 self.records, self.failures = [], []
@@ -241,11 +295,18 @@ class Census:
             for failure in _SCANNED[key][1]:
                 if failure not in self.failures:
                     self.failures.append(failure)
+        for stem in sorted(NON_PROJECT_SCOPES):
+            if stem in self.modules and not any(r['module'] == stem and r['writer'] in DYNAMIC for r in self.records):
+                self.fail(stem, None, 0, 'is labelled %s but has no resolved dynamic access: the label is stale'
+                          % NON_PROJECT_SCOPES[stem][0])
         return self
 
     def scan(self, module, kinds):
         self.dynamic(module)
         self.claim_bypass(module)
+        self.conversation_builds(module)
+        if module.stem == CONVERSATION_MODULE:
+            self.conversation_organ(module)
         if module.stem != ORGAN_MODULE and ORGAN in module.defined:
             fn = next(n for n in module.tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == ORGAN)
             self.records.append(dict(module=module.stem, function=ORGAN, line=fn.lineno, writer='defined',
@@ -296,6 +357,10 @@ class Census:
         where = module.name_of(fn)
         if isinstance(ref, ast.Attribute) and not isinstance(ref.ctx, ast.Load):
             self.fail(module.stem, where, ref.lineno, 'rebinds an attribute named %s' % name)
+            return []
+        if name == ORGAN and isinstance(ref, ast.Attribute) and module.stem != CONVERSATION_MODULE \
+                and self.module_of(module, fn, ref.value) == CONVERSATION_MODULE:
+            self.conversation_site(module, fn, ref)
             return []
         own = self.own_method(module, fn, ref, name)
         if own is not None:
@@ -612,24 +677,32 @@ class Census:
 
     # The check.
 
-    def obtains(self, module, fn, depth=0, seen=()):
-        """Whether calling `fn` makes the Gate's project check unconditionally before it returns."""
+    def obtains(self, module, fn, depth=0, seen=(), check=CHECK):
+        """Whether calling `fn` makes the check (the Gate's project check) unconditionally before it returns."""
         if fn is None or depth > DEPTH or fn in seen or isinstance(fn, ast.Lambda):
             return False
-        for stmt in fn.body:
-            if self.simple_obtains(module, fn, stmt, depth, seen + (fn,)):
+        return self.block_obtains(module, fn, fn.body, depth, seen + (fn,), check)
+
+    def block_obtains(self, module, fn, block, depth, seen, check):
+        for stmt in block:
+            if self.simple_obtains(module, fn, stmt, depth, seen, check):
                 return True
             if any(isinstance(n, ast.Return) for n in ast.walk(stmt)):
                 return False
         return False
 
-    def simple_obtains(self, module, fn, stmt, depth, seen):
+    def simple_obtains(self, module, fn, stmt, depth, seen, check=CHECK):
+        if check != CHECK and isinstance(stmt, ast.If) and stmt.orelse:
+            # The membership check alone (the conversation organ's owner gate): an if/else that makes it in
+            # both branches makes it on every path. The project check never counts a branch.
+            return (self.block_obtains(module, fn, stmt.body, depth, seen, check)
+                    and self.block_obtains(module, fn, stmt.orelse, depth, seen, check))
         if isinstance(stmt, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.FunctionDef,
                              ast.AsyncFunctionDef, ast.ClassDef, ast.Match)):
             return False
         if isinstance(stmt, (ast.With, ast.AsyncWith)):
-            return any(self.simple_obtains(module, fn, s, depth, seen) for s in stmt.body)
-        return any(self.is_check(module, fn, call, depth, seen) for call in ast.walk(stmt)
+            return any(self.simple_obtains(module, fn, s, depth, seen, check) for s in stmt.body)
+        return any(self.is_check(module, fn, call, depth, seen, check) for call in ast.walk(stmt)
                    if isinstance(call, ast.Call) and not self.deferred(module, call, stmt))
 
     @staticmethod
@@ -641,9 +714,9 @@ class Census:
                 return True
         return False
 
-    def is_check(self, module, fn, call, depth, seen):
+    def is_check(self, module, fn, call, depth, seen, check=CHECK):
         name = callee(call)
-        if name == CHECK:
+        if name == check:
             return True
         helper = None
         if isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name) and call.func.value.id == 'self':
@@ -652,7 +725,7 @@ class Census:
                 helper = module.functions.get(module.qualname(cls) + '.' + call.func.attr)
         elif isinstance(call.func, ast.Name):
             helper = module.functions.get(call.func.id)
-        return helper is not None and self.obtains(module, helper, depth + 1, seen)
+        return helper is not None and self.obtains(module, helper, depth + 1, seen, check)
 
     def require(self, module, fn, node, what):
         """Refuse unless the Gate's project check is made before `node` on every path through `fn`."""
@@ -660,7 +733,7 @@ class Census:
             self.fail(module.stem, module.name_of(fn), node.lineno,
                       '%s hands out work without asking the Gate\'s project check before it' % what)
 
-    def dominated(self, module, fn, node):
+    def dominated(self, module, fn, node, check=CHECK):
         if fn is None or isinstance(fn, ast.Lambda):
             return False
         stmt = module.statement(node)
@@ -668,20 +741,21 @@ class Census:
         if isinstance(node, ast.Call):
             for arg in list(node.args) + [k.value for k in node.keywords]:
                 for call in ast.walk(arg):
-                    if isinstance(call, ast.Call) and self.is_check(module, fn, call, 0, ()) \
+                    if isinstance(call, ast.Call) and self.is_check(module, fn, call, 0, (), check) \
                             and not self.deferred(module, call, stmt):
                         return True
         current = stmt
         while current is not fn and current in module.parents:
             parent = module.parents[current]
             if isinstance(parent, (ast.If, ast.While)) and current in parent.body + parent.orelse:
-                if any(isinstance(c, ast.Call) and self.is_check(module, fn, c, 0, ()) for c in ast.walk(parent.test)):
+                if any(isinstance(c, ast.Call) and self.is_check(module, fn, c, 0, (), check)
+                       for c in ast.walk(parent.test)):
                     return True
             for field in ('body', 'orelse', 'finalbody'):
                 block = getattr(parent, field, None)
                 if isinstance(block, list) and current in block:
                     for earlier in block[:block.index(current)]:
-                        if self.simple_obtains(module, fn, earlier, 0, ()):
+                        if self.simple_obtains(module, fn, earlier, 0, (), check):
                             return True
             current = parent
         return False
@@ -768,6 +842,15 @@ class Census:
             if names is None or any(self.may_be(names, t) for t in tracked):
                 self.fail(module.stem, module.name_of(fn), node.lineno,
                           '%s(%s) may name a claim or station contract writer: not resolved' % (name, ast.unparse(argument)))
+            elif module.stem in NON_PROJECT_SCOPES:
+                scope, why = NON_PROJECT_SCOPES[module.stem]
+                shown_names = sorted(names) if not isinstance(names, tuple) else [names[1] + '*']
+                record = dict(module=module.stem, function=module.name_of(fn), line=node.lineno, writer=name,
+                              classification=scope, names=shown_names,
+                              reason='%s(%s) names only %s: %s' % (name, ast.unparse(argument), ', '.join(shown_names), why))
+                if not any(r.get('line') == node.lineno and r['module'] == module.stem and r['writer'] == name
+                           for r in self.records):
+                    self.records.append(record)
 
     @staticmethod
     def may_be(names, target):
@@ -851,6 +934,215 @@ class Census:
                 if inner is not None:
                     return (i,) + inner
         return None
+
+
+    # The conversation organ (VELDO-0187).
+
+    def module_of(self, module, fn, expr, depth=0):
+        """The engine module `expr` is bound to, read from its bindings (a loader call with the module's name,
+        an import, or an attribute of a module so bound), or None."""
+        if depth > DEPTH:
+            return None
+        if isinstance(expr, ast.Call):
+            name = callee(expr)
+            if name in LOADERS and expr.args and isinstance(expr.args[0], ast.Constant) \
+                    and expr.args[0].value in self.modules:
+                return expr.args[0].value
+            return None
+        if isinstance(expr, ast.Attribute):
+            owner = self.module_of(module, fn, expr.value, depth + 1)
+            target = self.modules.get(owner)
+            if target is None:
+                return None
+            values = [n.value for n in target.tree.body if isinstance(n, ast.Assign)
+                      and any(isinstance(t, ast.Name) and t.id == expr.attr for t in n.targets)]
+            found = {self.module_of(target, None, v, depth + 1) for v in values}
+            return found.pop() if len(found) == 1 else None
+        if not isinstance(expr, ast.Name):
+            return None
+        scope = fn
+        while scope is not None:
+            if expr.id in params_of(scope) if not isinstance(scope, ast.Lambda) else False:
+                return None
+            values = [n.value for n in ast.walk(scope) if isinstance(n, ast.Assign)
+                      and any(isinstance(t, ast.Name) and t.id == expr.id for t in n.targets)]
+            if values:
+                found = {self.module_of(module, scope, v, depth + 1) for v in values}
+                return found.pop() if len(found) == 1 else None
+            scope = module.enclosing(scope)
+        values = [n.value for n in module.tree.body if isinstance(n, ast.Assign)
+                  and any(isinstance(t, ast.Name) and t.id == expr.id for t in n.targets)]
+        if values:
+            found = {self.module_of(module, None, v, depth + 1) for v in values}
+            return found.pop() if len(found) == 1 else None
+        for node in module.nodes:
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if (alias.asname or alias.name) == expr.id and alias.name in self.modules:
+                        return alias.name
+        return None
+
+    def conversation_constant(self, module, fn, expr):
+        """The string an organ constant `expr` holds (CV.NAME through a binding of the organ, or a literal)."""
+        if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
+            return expr.value
+        if isinstance(expr, ast.Name) and module.stem == CONVERSATION_MODULE:
+            value = module.constants.get(expr.id, NOVALUE)
+            return value if isinstance(value, str) else None
+        if isinstance(expr, ast.Attribute) and self.module_of(module, fn, expr.value) == CONVERSATION_MODULE:
+            value = self.modules[CONVERSATION_MODULE].constants.get(expr.attr, NOVALUE)
+            return value if isinstance(value, str) else None
+        return None
+
+    def names_organ(self, module, fn, expr):
+        return (isinstance(expr, ast.Attribute) and self.module_of(module, fn, expr.value) == CONVERSATION_MODULE) or \
+            (isinstance(expr, ast.Name) and module.stem == CONVERSATION_MODULE and expr.id in module.constants)
+
+    def operation_builds(self, module, scope, every=False):
+        """Every parameters build under `scope` naming a conversation operation: [(node, fn, operation or None)].
+        With `every`, also each build whose operation is neither the organ's constant nor a literal (None: not
+        resolved), and each literal that is one of the organ's operation names."""
+        found = []
+        for node in ast.walk(scope):
+            if isinstance(node, ast.Dict):
+                value = next((v for k, v in zip(node.keys, node.values)
+                              if isinstance(k, ast.Constant) and k.value == 'operation'), None)
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'dict':
+                value = next((k.value for k in node.keywords if k.arg == 'operation'), None)
+            else:
+                continue
+            if value is None:
+                continue
+            fn = module.enclosing(node)
+            if self.names_organ(module, fn, value):
+                found.append((node, fn, self.conversation_constant(module, fn, value)))
+            elif every and isinstance(value, ast.Constant):
+                organ = self.modules.get(CONVERSATION_MODULE)
+                if organ is not None and value.value in organ.constants.values():
+                    found.append((node, fn, value.value))
+            elif every:
+                found.append((node, fn, None))
+        return found
+
+    def conversation_record(self, module, fn, node, operations, how):
+        project = sorted(set(operations) & set(self.project_operations))
+        scoped = sorted(set(operations) - set(self.project_operations))
+        record = dict(module=module.stem, function=module.name_of(fn), line=node.lineno, writer=ORGAN,
+                      organ=CONVERSATION_MODULE, actions=sorted(set(operations)), how=how)
+        if project:
+            self.records.append(dict(record, classification='handout', reason=(
+                'its operation can be %s, which hands a project\'s data to a run or moves work into a project: '
+                'it asks the Gate\'s project check first' % ', '.join(project))))
+        else:
+            self.records.append(dict(record, classification=CONVERSATION_SCOPED,
+                                     reason=CONVERSATION_REASON % ', '.join(scoped)))
+
+    def conversation_site(self, module, fn, ref):
+        """A reference to the conversation organ's transition outside it: a call or a registration."""
+        where = module.name_of(fn)
+        parent = module.parents.get(ref)
+        if not self.project_operations:
+            self.fail(module.stem, where, ref.lineno, 'reaches the conversation organ, whose operations are not declared')
+            return
+        if isinstance(parent, ast.Call) and parent.func is ref:
+            if not self.binds(parent):
+                self.fail(module.stem, where, ref.lineno, 'calls the conversation organ with arguments that cannot be resolved')
+                return
+            params = self.argument(parent, self.signature.index('params') if 'params' in self.signature else 1, 'params')
+            if isinstance(params, ast.Name) and fn is not None:
+                built = [n.value for n in ast.walk(fn) if isinstance(n, ast.Assign) and len(n.targets) == 1
+                         and isinstance(n.targets[0], ast.Name) and n.targets[0].id == params.id]
+            else:
+                built = [params]
+            operations = set()
+            for value in built:
+                ops = [self.conversation_constant(module, fn, v) for k, v in zip(value.keys, value.values)
+                       if isinstance(k, ast.Constant) and k.value == 'operation'] if isinstance(value, ast.Dict) else [None]
+                if len(ops) != 1 or ops[0] is None:
+                    self.fail(module.stem, where, parent.lineno,
+                              'the conversation operation it writes is not resolved, so it may hand out a project')
+                    return
+                operations.add(ops[0])
+            if not built:
+                self.fail(module.stem, where, parent.lineno, 'the conversation operation it writes is not resolved')
+                return
+            self.conversation_record(module, fn, parent, operations, 'call')
+            if set(operations) & set(self.project_operations):
+                self.require(module, fn, parent, 'the conversation project write')
+            return
+        registered = isinstance(parent, ast.Dict) and any(
+            v is ref and isinstance(k, ast.Constant) and k.value in ('transition', 'transaction_transition')
+            for k, v in zip(parent.keys, parent.values))
+        assign = module.parents.get(parent) if registered else None
+        target = assign.targets[0] if isinstance(assign, ast.Assign) and len(assign.targets) == 1 else None
+        if not (isinstance(target, ast.Subscript) and isinstance(target.value, ast.Attribute)
+                and target.value.attr == 'command_registry'
+                and self.conversation_constant(module, fn, target.slice) == self.conversation_operation):
+            self.fail(module.stem, where, ref.lineno, 'registers %s bare: what it is called with is not visible here' % ORGAN)
+            return
+        cls = module.cls_of(fn) if fn is not None and not isinstance(fn, ast.Lambda) else None
+        scope = cls if cls is not None else fn if fn is not None else module.tree
+        builds = [(node, at, op) for node, at, op in self.operation_builds(module, scope, every=True)
+                  if op != self.conversation_operation]
+        if not builds:
+            self.fail(module.stem, where, ref.lineno, 'registers the conversation organ with no build of its '
+                      'parameters visible here')
+            return
+        unresolved = [(node, at) for node, at, op in builds if op is None]
+        for node, at in unresolved:
+            self.fail(module.stem, module.name_of(at), node.lineno, 'builds parameters for the conversation organ '
+                      'registered here with an operation not resolved, so it may hand out a project')
+        if unresolved:
+            return
+        self.conversation_record(module, fn, ref, {op for _, _, op in builds}, 'registration')
+
+    def conversation_builds(self, module):
+        """Every parameters build outside the organ naming a project operation of it asks the project check (inside
+        the organ the parameters reach its transition, whose own check conversation_organ requires)."""
+        if not self.project_operations or module.stem == CONVERSATION_MODULE:
+            return
+        for node, fn, op in self.operation_builds(module, module.tree):
+            if op in self.project_operations:
+                self.require(module, fn, node, 'the conversation project parameters it builds')
+
+    def conversation_organ(self, module):
+        """control_conversation.transition: each return a project operation reaches asks the Gate's project check,
+        and each one an owner operation reaches the owner gate, on every path."""
+        fn = next((n for n in module.tree.body if isinstance(n, ast.FunctionDef) and n.name == ORGAN), None)
+        if fn is None or not self.project_operations:
+            self.fail(module.stem, None, 0, 'the conversation organ\'s transition is not found')
+            return
+        params = params_of(fn)[1] if len(params_of(fn)) > 1 else 'params'
+        forms = [ast.dump(ast.Subscript(value=ast.Name(id=params, ctx=ast.Load()), slice=ast.Constant(value='operation'),
+                                        ctx=ast.Load())),
+                 ast.dump(ast.Call(func=ast.Attribute(value=ast.Name(id=params, ctx=ast.Load()), attr='get', ctx=ast.Load()),
+                                   args=[ast.Constant(value='operation')], keywords=[]))]
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Assign) and len(node.targets) == 1:
+                target, value = node.targets[0], node.value
+                pairs = list(zip(target.elts, value.elts)) if isinstance(target, ast.Tuple) and isinstance(value, ast.Tuple) \
+                    and len(target.elts) == len(value.elts) else [(target, value)]
+                for t, v in pairs:
+                    if isinstance(t, ast.Name) and self.strip(v) in forms:
+                        forms.append(ast.dump(ast.Name(id=t.id, ctx=ast.Load())))
+        returns = [n for n in ast.walk(fn) if isinstance(n, ast.Return) and module.enclosing(n) is fn]
+        checked = 0
+        for ret in returns:
+            values = self.narrow(module, fn, ret, forms, All())
+            if hands_out(values, self.project_operations):
+                acts = shown(restrict(values, allowed=self.project_operations))
+                self.records.append(dict(module=module.stem, function=module.name_of(fn), line=ret.lineno, writer=ORGAN,
+                                         organ=CONVERSATION_MODULE, actions=acts, how='organ',
+                                         classification='handout', reason=(
+                                             'the conversation organ writes %s here: it asks the Gate\'s project '
+                                             'check inside the write transaction first' % ', '.join(acts))))
+                self.require(module, fn, ret, 'the conversation organ\'s project operation')
+                checked += 1
+            if hands_out(values, self.owner_operations) and not self.dominated(module, fn, ret, check=OWNER_CHECK):
+                self.fail(module.stem, module.name_of(fn), ret.lineno,
+                          'an owner operation writes without the conversation owner\'s membership check before it')
+        if not checked:
+            self.fail(module.stem, module.name_of(fn), fn.lineno, 'no return of a project operation is found')
 
 
 def census(sources):

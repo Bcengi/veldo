@@ -58,7 +58,7 @@ def _v180_suite():
     }
     ROWS = ('AC1/telegram-existing', 'AC1/objective-accepted', 'AC1/api-route', 'AC1/new-project-named-identity',
             'AC1/plain-words', 'AC1/asks-only-without-identity', 'AC1/name-from-command', 'AC1/not-owner',
-            'AC1/no-name', 'AC1/out-of-scope', 'AC1/injected-route', 'AC1/observability',
+            'AC1/no-name', 'AC1/out-of-scope', 'AC1/injected-route', 'AC1/project-check', 'AC1/observability',
             'AC2/binding', 'AC2/history', 'AC2/snapshot', 'AC2/context', 'AC2/pm-run', 'AC2/first-build',
             'AC2/snapshot-mismatch', 'AC2/stays-open', 'AC2/observability')
     rows = {name: [] for name in ROWS}
@@ -599,6 +599,72 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         logged = json.dumps([e for e in observations if e.get('kind') == 'conversation_project'])
         check('AC1/observability', 'never their content', 'FIRST-TURN-MARK' not in logged
               and 'REPLY-ONE-MARK' not in logged and 'Google Ads' not in logged and 'audit the ads' not in logged)
+
+        # ---- AC1 (VELDO-0187 fix round 3, review finding F5): the Gate's project check on the pointing ------------
+        # Moving a conversation's work into a project is a project handout: a paused project refuses it at intake's
+        # plan and in the conversation organ, and a new project's pointing refuses a name the store now holds.
+        # The owner's own project, activated and then paused by his signed commands (the project lifecycle's own).
+        authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
+                                                    'scope': [project, 'factory', 'paused-yard']})
+
+        def project_command(operation, **fields):
+            body = dict(authority.ids, operation=operation, project='paused-yard', principal='owner',
+                        command_id='v187-%s-paused-yard' % operation, nonce='v187-%s-paused-yard' % operation, **fields)
+            done = projects.apply({'command': body, 'signature': authority.sign_as('owner', S.canonical_bytes(body))})
+            if not done.get('ok'):
+                raise RuntimeError('%s of paused-yard: %s' % (operation, done.get('reason')))
+        project_command('activate', owner='owner', charter={'purpose': 'Fixture', 'exclusions': []},
+                        execution_repository=repository, authority_policy={'grooming': ['project_owner']},
+                        coordination_budget={'capacity': 4, 'invocations': 20, 'wall_seconds': 300,
+                                             'owner_minutes': 10})
+        project_command('pause', reason='A fixture pause.',
+                        project_version=CV._row(authority.conn, 'project:paused-yard')['version'])
+        before_check = made()
+        talk_id = CV.conversation_id(talk)
+        talk_before = CV._row(authority.conn, talk_id)
+
+        def organ_point(name, route):
+            try:
+                CV.transition(authority.conn, {'operation': CV.POINT, 'conversation': talk, 'principal': 'owner',
+                                               'project': name, 'route': route, 'proposal': 'intake_proposal:v187',
+                                               'command': 'v187-command'}, {talk_id: CV._row(authority.conn, talk_id)})
+                return None
+            except CV.Refused as error:
+                return error.code
+
+        def intake_point(name, route):
+            try:
+                intake._point_plan({'conversation': talk, 'owner': 'owner', 'project': name, 'route': route,
+                                    'command': 'v187-command'}, 'intake_proposal:v187')
+                return None
+            except Exception as error:  # noqa: BLE001
+                return getattr(error, 'code', None) or getattr(error, 'reason', None) or type(error).__name__
+        pointed = {'organ-paused': organ_point('paused-yard', 'existing_project'),
+                   'intake-paused': intake_point('paused-yard', 'existing_project'),
+                   'organ-active': organ_point(project, 'existing_project'),
+                   'intake-active': intake_point(project, 'existing_project'),
+                   'organ-new-exists': organ_point('factory', 'new_project'),
+                   'intake-new-exists': intake_point('factory', 'new_project'),
+                   'organ-new-paused': organ_point('paused-yard', 'new_project'),
+                   'organ-new': organ_point('never-recorded-yard', 'new_project')}
+        print('  VELDO-0187 project check on the pointing:', pointed)
+        check('AC1/project-check', 'a pointing at an existing paused project is refused in the conversation organ by the '
+              'Gate\'s project check, by name [%s]' % pointed['organ-paused'],
+              pointed['organ-paused'] == 'project_not_active:PAUSED')
+        check('AC1/project-check', 'and at intake\'s plan of it [%s]' % pointed['intake-paused'],
+              pointed['intake-paused'] == 'project_not_active:PAUSED')
+        check('AC1/project-check', 'the same pointing at his active project is planned by both',
+              pointed['organ-active'] is None and pointed['intake-active'] is None)
+        check('AC1/project-check', 'a new-project pointing whose name the store now holds is refused as stale, in the '
+              'organ and through intake, whatever that project\'s state [%s]' % pointed['organ-new-exists'],
+              pointed['organ-new-exists'] == pointed['intake-new-exists'] == pointed['organ-new-paused']
+              == 'stale_subject:project_exists')
+        check('AC1/project-check', 'a new-project pointing at a name the store does not hold is planned',
+              pointed['organ-new'] is None)
+        check('AC1/project-check', 'the refusals wrote nothing: the conversation and everything a conversion makes are '
+              'unchanged', CV._row(authority.conn, talk_id) == talk_before
+              and {k: v for k, v in made().items() if k != 'projects'}
+              == {k: v for k, v in before_check.items() if k != 'projects'})
 
         # ---- AC2: the objective binds the conversation's history and workspace snapshot ---------------------------
         bound = objective.get('conversation') or {}

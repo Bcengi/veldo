@@ -64,10 +64,14 @@ def parts(reply, stats=None):
 
 
 def status_line(sequence, outcome, limited=False):
-    """The one status line of a turn that ended, or stopped, with no result text: its outcome and what happens next."""
+    """The one status line of a turn that ended, or stopped, with no result text: its outcome and what happens next,
+    as the one Telegram message that shows it (VELDO-0168: escaped once, here; it is sent as it is returned)."""
     if limited:
-        return 'Turn %d stopped at an account limit (account_limit) with no reply yet. %s' % (sequence, NEXT['account_limit'])
-    return 'Turn %d ended %s with no reply. %s' % (sequence, outcome, NEXT.get(outcome, DEFAULT_NEXT))
+        line = 'Turn %d stopped at an account limit (account_limit) with no reply yet. %s' % (sequence, NEXT['account_limit'])
+    else:
+        line = 'Turn %d ended %s with no reply. %s' % (sequence, outcome, NEXT.get(outcome, DEFAULT_NEXT))
+    text = TEXT.message(line, free_text=False)
+    return text
 
 
 def telegram_source(conn, turn):

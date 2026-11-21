@@ -13,7 +13,9 @@ through intake. Telegram messages reach intake through the production VELDO-0066
 by the API edge's real key. A conversation's sent messages are its reply parts as the production delivery
 (control_conversation_channel.Replies) sends and records them, for a turn this suite ends with a reply (suite 131
 runs turns on fake engines). Attaching a project clones its local fixture repository. No real Telegram service,
-token, engine or network beyond loopback. Writes only temporary fixtures.
+token, engine or network beyond loopback. Writes only temporary fixtures. At its end, before the fake's directory is
+removed, VELDO-0172's read-back (compare_formats.conform_fake) drives that same fake once more and compares its lines
+with the capture; the suite builds no Codex executable, so only Claude Code's lines are read back.
 """
 
 
@@ -40,7 +42,7 @@ def _v175_routes_suite():
             'AC2/route-input', 'AC2/conversation-refused', 'AC2/observability',
             'AC4/slash-role', 'AC4/slash-attach', 'AC4/attach-initial-branch', 'AC4/slash-close', 'AC4/plain-words', 'AC4/plain-none-is-a-turn',
             'AC4/reads-only-his-words', 'AC4/other-member', 'AC4/no-reply', 'AC4/unknown-name', 'AC4/observability',
-            'AC1/closed-before-reading')
+            'AC1/closed-before-reading', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(name, label, condition):
@@ -57,9 +59,15 @@ def _v175_routes_suite():
             expect('VELDO-0175 ' + name, False)
         return
     fake_formats = load('v175p_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    conform_formats = load('v175p_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
     helper = load('v175p_fixture', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/fixture.py')
     fake_directory = tempfile.TemporaryDirectory(prefix='v175p-fake-')
     fake_base = Path(fake_directory.name)
+    fake_capture = (['teardown not reached'], [])
+
+    def fake_engine(name):
+        # The PM's run is Claude Code's alone: no Codex executable is generated, so none is read back.
+        return (fake_base / 'claude').read_text() if name == 'claude' else ''
     try:
         with helper.fixture(ROOT, PRODUCTION, cycle_budget=200) as f:
             S, conn, base, mods = (f[k] for k in ('S', 'conn', 'base', 'mods'))
@@ -178,6 +186,8 @@ if sys.argv[1:3] == ['login', 'status']:
     sys.exit(0)
 if '--input-format' in sys.argv:
     opening = json.loads(sys.stdin.readline())
+    if opening['type'] != 'control_request':
+        raise ValueError('expected initialize')
     emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
           'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
     packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
@@ -553,7 +563,15 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
         for name in ROWS:
             check(name, 'journey completes: %s: %s' % (type(error).__name__, str(error)[:300]), False)
     finally:
+        base = fake_base
+        L = load('v175p_format_launch', ROOT / '.veldo/control_launch.py')
+        fake_capture = conform_formats.conform_fake(locals(), '0175_conversation_routes')
+        check('format/fake-lines', 'the generated CLI lines conform to the capture %s' % (fake_capture[0][:4],),
+              not fake_capture[0] and bool(fake_capture[1]))
         fake_directory.cleanup()
+    for line in conform_formats.describe('0175_conversation_routes', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0175_conversation_routes', bool(fake_capture[1]) and not fake_capture[0])
     for name in ROWS:
         failed = [label for label, ok in rows[name] if not ok] or ([] if rows[name] else ['journey did not reach row'])
         if failed:

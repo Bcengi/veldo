@@ -356,6 +356,9 @@ BS = _organ('control_batch_service', lazy=True)
 SPACE_SIGNAL = _organ('control_space_signal', lazy=True)
 SPACE_CONSUMER = _organ('control_space_consumer', lazy=True)
 SPACE_RECONCILE = _organ('control_space_reconcile', lazy=True)
+# The factory PM's cycles, read for each unit's next station: loaded once, since VELDO-0175 made its own imports
+# (intake and its conversations) a module tree that costs about 0.2 s to load each time.
+PM = _organ('control_workflow_cycle_pm', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -3497,7 +3500,7 @@ class Line:
             return 'stop', self.offer(report, unit, 'build', role, revision=last['evidence'], payload=payload,
                                       follows=last['dispatch_id'], workflow=workflow)
         if build is None:
-            pm = _organ('control_workflow_cycle_pm')
+            pm = PM
             assignment = pm.assigned(self.service.conn, unit)
             try:
                 role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
@@ -3533,7 +3536,7 @@ class Line:
             return 'port', 'done'
         build = state['build']
         holder = ((build['contract']['input']['context'] or {}).get('holder')) if build else None
-        pm = _organ('control_workflow_cycle_pm')
+        pm = PM
         assignment = pm.assigned(self.service.conn, unit) if state['anchor'] is None else None
         try:
             reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
@@ -3977,6 +3980,11 @@ class ConversationLine:
     def run(self, report, ended):
         """Settle ended turns, then offer at most the first waiting turn of each conversation."""
         self.activate()
+        # VELDO-0187 AC3: every claude-mem feed a worker did not take is sent, in turn order, on the next pass.
+        try:
+            self.conversations.feed_pending()
+        except (CV.Refused, OSError, ValueError) as error:
+            report['faults'].append({'kind': 'claude_mem_feed', 'reason': getattr(error, 'code', type(error).__name__)})
         report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}

@@ -1,0 +1,31 @@
+Suites run alone after VELDO-0187's change (python3 scripts/selftest.py with the suite option, systemd-run scope; exit 2 is a PARTIAL run's green):
+138_veldo_0187_claude_mem_feed: selftest (PARTIAL, 1 of 202 suites): 39 passed, 0 failed in 3.74s
+123_veldo_0174_conversations: selftest (PARTIAL, 1 of 202 suites): 64 passed, 0 failed in 10.61s
+127_veldo_0231_run_flags: selftest (PARTIAL, 1 of 202 suites): 43 passed, 0 failed in 33.98s
+128_veldo_0177_conversation_workspace: selftest (PARTIAL, 1 of 202 suites): 41 passed, 0 failed in 3.11s
+129_veldo_0177_assistant_setup: selftest (PARTIAL, 1 of 202 suites): 30 passed, 0 failed in 3.35s
+130_veldo_0176_conversation_history: selftest (PARTIAL, 1 of 202 suites): 43 passed, 0 failed in 13.51s
+130_veldo_0183_memory_servers: selftest (PARTIAL, 1 of 202 suites): 43 passed, 0 failed in 26.93s
+131_veldo_0175_conversation_replies: selftest (PARTIAL, 1 of 202 suites): 42 passed, 0 failed in 3.37s
+131_veldo_0184_file_memory: selftest (PARTIAL, 1 of 202 suites): 42 passed, 0 failed in 43.86s
+132_veldo_0175_conversation_routes: selftest (PARTIAL, 1 of 202 suites): 45 passed, 0 failed in 19.80s
+133_veldo_0178_conversation_api: selftest (PARTIAL, 1 of 202 suites): 42 passed, 0 failed in 3.10s
+136_veldo_0180_conversation_projects: selftest (PARTIAL, 1 of 202 suites): 47 passed, 0 failed in 3.19s
+137_veldo_0181_conversation_decisions: selftest (PARTIAL, 1 of 202 suites): 45 passed, 0 failed in 6.09s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 202 suites): 46 passed, 0 failed in 12.96s
+93_veldo_0152_intake_routes: selftest (PARTIAL, 1 of 202 suites): 50 passed, 0 failed in 47.65s
+71_veldo_0130_api: selftest (PARTIAL, 1 of 202 suites): 71 passed, 0 failed in 23.48s
+71_veldo_0138_channel_service: selftest (PARTIAL, 1 of 202 suites): 39 passed, 0 failed in 31.42s
+73_veldo_0139_factory_setup: selftest (PARTIAL, 1 of 202 suites): 43 passed, 0 failed in 26.92s
+91_veldo_0167_setup_records: selftest (PARTIAL, 1 of 202 suites): 35 passed, 0 failed in 14.90s
+85_veldo_0171_setup_api: selftest (PARTIAL, 1 of 202 suites): 44 passed, 0 failed in 10.43s
+86_veldo_0148_re_land: selftest (PARTIAL, 1 of 202 suites): 52 passed, 0 failed in 63.04s
+95_veldo_0203_owner_revisions: selftest (PARTIAL, 1 of 202 suites): 62 passed, 0 failed in 5.87s
+125_veldo_0230_engine_census: selftest (PARTIAL, 1 of 202 suites): 33 passed, 0 failed in 7.56s
+86_veldo_0186_setup_assets: selftest (PARTIAL, 1 of 202 suites): 36 passed, 1 failed in 15.82s
+  SELFTEST FAIL: VELDO-0186 runtime/assets
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 202 suites): 39 passed, 1 failed in 51.54s
+  SELFTEST FAIL: VELDO-0154 loop/owner-stop-asked-on-wake
+
+86_veldo_0186_setup_assets runtime/assets: see OPEN.md item 2 (its closed asset list; green with the one name added, run alone, then reverted).
+83_veldo_0154_factory_loop loop/owner-stop-asked-on-wake: red alone at 1f416231 and at 2cdc1dd3 before this change, green at f747c7a6 (see OPEN.md item 3).

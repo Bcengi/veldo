@@ -226,7 +226,7 @@ def _tar_add(tar, name, data, mode=0o600):
 def snapshot(record):
     """The conversation workspace's snapshot: its regular files (the attached clones aside), and for each attached
     clone its local commits as a Git bundle against the trunk commit it was taken at. (bytes, manifest)."""
-    CV, GP = _organ('control_conversation'), _organ('git_process')
+    CV, _git_process = _organ('control_conversation'), _organ('git_process')
     workspace = CV.workspace_of(record)
     files, clones = [], []
     entries = []
@@ -250,13 +250,13 @@ def snapshot(record):
         entry = {'project': attached.get('project'), 'clone': os.path.relpath(clone, workspace) if clone and workspace
                  else None, 'commit': commit, 'commits': 0, 'bundle': None}
         if clone and os.path.isdir(clone):
-            count = GP.run(['git', '-C', clone, 'rev-list', '--count', '--all', '^' + commit], capture_output=True,
+            count = _git_process.run(['git', '-C', clone, 'rev-list', '--count', '--all', '^' + commit], capture_output=True,
                            text=True)
             entry['commits'] = int(count.stdout.strip() or 0) if count.returncode == 0 else 0
             if entry['commits']:
                 with tempfile.TemporaryDirectory() as scratch:
                     target = os.path.join(scratch, 'clone.bundle')
-                    made = GP.run(['git', '-C', clone, 'bundle', 'create', target, '--all', '^' + commit],
+                    made = _git_process.run(['git', '-C', clone, 'bundle', 'create', target, '--all', '^' + commit],
                                   capture_output=True)
                     if made.returncode == 0:
                         data = Path(target).read_bytes()
