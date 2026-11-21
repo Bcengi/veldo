@@ -28,6 +28,15 @@ HERE = Path(__file__).resolve().parent
 GRAPH = HERE / 'gate_graph.json'
 CHANNEL = 'VELDO_GATE_LEDGER_FD'
 NAME = re.compile(r'^[a-z][a-z0-9_]*(?:\.(?:confined|unconfined))?$')
+# VELDO-0221: WHAT A LEG NODE HOLDS ONCE ITS DISPATCHER RUNS ITS SUITES AS SHARDS. A leg node's cgroup
+# holds every shard, and every shard claims for itself on this ledger, so a node that kept its
+# whole-cgroup claim would count its shards twice: behind the mutation floor the shards of every gate
+# after the first would then fit one at a time. So at a leg node's FIRST shard request its own claim
+# shrinks to this, the dispatcher's (one interpreter that waits on its shards, and the launcher
+# around it), and a node that dispatched records this as its own claim, never its cgroup's total.
+# A leg whose tree cannot be cut into shards never asks, keeps its whole claim and records its
+# cgroup as before. The mutation node is not a leg: it hands off to its graph's coordinator claim.
+LEG_DISPATCHER = dict(cpu=1.0, memory=2**30)
 
 
 class Refused(ValueError):
@@ -222,6 +231,31 @@ class Ledger:
         self.held[name] = replacement
         self.event('handoff', name, 'cpu,memory,manager', claim)
 
+    def dispatcher(self, name, claim):
+        """VELDO-0221: shrink a leg node's own claim to its dispatcher's; never grows it."""
+        prior = self.held[name]
+        self.held[name] = dict(prior, **{r: min(prior[r], claim[r]) for r in ('cpu', 'memory')})
+        self.event('dispatcher', name, 'cpu,memory', dict(self.held[name]))
+        return self.held[name]
+
+    def shard_claim(self, name, claim, dispatchers):
+        """VELDO-0221: a leg shard's claim, held to what this ledger can always grant one shard: the
+        capacity less the mutation floor while it is reserved and less every leg's dispatcher. A
+        larger measured claim would otherwise wait for ever or be refused as exceeding capacity, and
+        the measurement comes from a process of the candidate's. No room at all is a refusal."""
+        validate_claim(claim)
+        fitted = dict(claim)
+        for r in ('cpu', 'memory'):
+            room = self.capacity[r] - (self.floor.get(r, 0) if self.mutation_pending else 0) \
+                - dispatchers * LEG_DISPATCHER[r]
+            if room <= 0:
+                raise Refused('invalid_resource_requirement: no %s is left for a shard beside the '
+                              'mutation floor and %d leg dispatcher(s)' % (r, dispatchers))
+            fitted[r] = min(claim[r], room)
+        if fitted != claim:
+            self.event('clamp', name, 'cpu,memory', fitted)
+        return fitted
+
     def release(self, name):
         if name not in self.held:
             raise Refused('unknown claimant ' + name)
@@ -289,7 +323,8 @@ def startup_estimate(estimate):
 def node_claim(node, measured, capacity):
     if measured:
         demand = dict(cpu=measured['cpu_rate'], memory=measured['peak_anon_bytes'])
-        source = 'authority anonymous-memory measurement'
+        source = 'leg dispatcher claim; its shards claim for themselves' if measured.get('dispatcher') is True \
+            else 'authority anonymous-memory measurement'
     elif 'estimate' in node:
         demand = startup_estimate(node['estimate'])
         source = 'recorded startup estimate: ' + node['estimate']['source']
@@ -525,6 +560,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             coordinator_claims[name] = overhead
     if 'mutation' not in required:
         ledger.mutation_pending = False
+    # VELDO-0221: the nodes whose command is a leg, which may dispatch its suites as shards.
+    leg_nodes = {name for name, (stage, leg) in required.items() if leg and stage != 'mutation'}
     unchanged = guard_factory(root)
     pending = list(required)
     # Start mutation first so its floor cannot deadlock an unmeasured first run.
@@ -621,7 +658,16 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                         elif request['operation'] == 'acquire':
                             if 'coordinator' in graph['nodes'][name] and not item['handed_off']:
                                 raise Refused('worker admission requires coordinator handoff')
-                            granted = ledger.acquire(claimant, request['claim'], mutation=name == 'mutation')
+                            child_claim = request['claim']
+                            if name in leg_nodes:
+                                # VELDO-0221: from its first shard request the leg node holds only its
+                                # dispatcher's claim (see LEG_DISPATCHER), and a shard's claim is held
+                                # to what can always be granted.
+                                if not item['handed_off']:
+                                    item['dispatcher'] = ledger.dispatcher(name, LEG_DISPATCHER)
+                                    item['handed_off'] = True
+                                child_claim = ledger.shard_claim(claimant, child_claim, len(leg_nodes))
+                            granted = ledger.acquire(claimant, child_claim, mutation=name == 'mutation')
                             if granted:
                                 item['children'].add(claimant)
                         elif request['operation'] == 'release' and claimant in item['children']:
@@ -668,6 +714,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 results[name] = result
                 if result['verdict'] == 'pass' and measurement_store is None:
                     try:
+                        if name in leg_nodes and item['handed_off']:
+                            # The cgroup held every shard, and each shard claimed for itself: what
+                            # this node needs next time is its dispatcher's claim.
+                            metrics = dict(metrics, dispatcher=True, peak_anon_bytes=item['dispatcher']['memory'],
+                                           cpu_seconds=item['dispatcher']['cpu'] * elapsed)
                         legs.record_resources(store, key, name, elapsed, metrics)
                     except OSError as error:
                         print('node %s: resource measurement not stored: %s' % (name, error), flush=True)
