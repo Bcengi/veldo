@@ -20,6 +20,7 @@ ancestor of this run's own.
 
 def _v47_suite():
     import contextlib
+    import datetime
     import importlib.util
     import json
     import os
@@ -32,7 +33,27 @@ def _v47_suite():
     import subprocess
     import sys
     import tempfile
-    import time
+    import types
+
+    # VELDO-0358: this suite blocks only through the wait primitive (WAITS) and names no duration but the hang
+    # bounds. The wall time it hands the product as data is the support module's stamp.
+    def wall_now():
+        """The wall time now, as data (a record's time, a deadline the product judges): the support stamp's."""
+        return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
+
+    # VELDO-0358 AC15: the timers profile. Every timers table this suite's process loads (the suite's copy and the
+    # installed one) has every entry at the wait hang bound, and so does the service (its configuration's
+    # timers_profile). No row of this suite tests a table timer, so none is excepted.
+    TIMERS_PROFILE = {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS}
+    tables = {}
+
+    def profiled(module):
+        """Select the profile in the timers table `module` arms its timers from, when it has one."""
+        table = getattr(module, 'TIMERS', None)
+        if table is not None:
+            table.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+            tables[id(table)] = table
+        return module
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -55,7 +76,7 @@ def _v47_suite():
     unit_dir = Path(tools['XDG_RUNTIME_DIR']) / 'systemd' / 'user'
 
     def systemctl(*args):
-        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=30,
+        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
                               env=tools, stdin=subprocess.DEVNULL)
 
     def show(unit):
@@ -95,8 +116,8 @@ def _v47_suite():
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
-        CS = load('v47_service', mods / 'control_service.py')
-        CC = load('v47_client', mods / 'control_client.py')
+        CS = profiled(load('v47_service', mods / 'control_service.py'))
+        CC = profiled(load('v47_client', mods / 'control_client.py'))
         CCL = load('v47_claim_client', mods / 'control_claim_client.py')
         E = load('v47_enrollment', mods / 'control_enrollment.py')
         S = load('v47_store', mods / 'control_store.py')
@@ -114,13 +135,13 @@ def _v47_suite():
         public = {}
         for who in ('owner', 'member', 'intruder', 'scoped', 'worker'):
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / who)], check=True,
-                           capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                           capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
             public[who] = (private / (who + '.pub')).read_text().strip()
 
         def signer(who, namespace):
             def sign(data):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(private / who), '-n', namespace],
-                                      input=data, capture_output=True, check=True, timeout=20,
+                                      input=data, capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS,
                                       stdin=None).stdout.decode()
             return sign
 
@@ -265,7 +286,7 @@ def _v47_suite():
             """The configured store read through a connection of this suite's own, never the service's."""
             if not store_path.exists():
                 return []
-            conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=10)
+            conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=WAITS.WAIT_HANG_SECONDS)
             try:
                 return conn.execute(sql, params).fetchall()
             finally:
@@ -341,8 +362,7 @@ def _v47_suite():
 
         def send(workspace, payload, sign=None, seen_at=None):
             try:
-                return {'answer': CC.send(str(workspace), payload, E, verify, sign or member_sign, HOST, timeout=10,
-                                          seen_at=seen_at)}
+                return {'answer': CC.send(str(workspace), payload, E, verify, sign or member_sign, HOST, seen_at=seen_at)}
             except CC.RoutingRefused as error:
                 return {'refused': error.reason, 'coordinates': dict(error.coordinates), 'message': error.message}
 
@@ -350,7 +370,7 @@ def _v47_suite():
             """A request written straight to a socket, for coordinates no client would build."""
             try:
                 with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as conn:
-                    conn.settimeout(10)
+                    conn.settimeout(WAITS.WAIT_HANG_SECONDS)
                     conn.connect(str(address))
                     conn.sendall(json.dumps(request).encode())
                     conn.shutdown(socket.SHUT_WR)
@@ -366,11 +386,12 @@ def _v47_suite():
 
         def inspect(now=None):
             try:
-                return CC.inspect(str(A), E, verify, member_sign, HOST, now=now, timeout=10)
+                return CC.inspect(str(A), E, verify, member_sign, HOST, now=now)
             except CC.RoutingRefused as error:
                 return {'refused': error.reason}
 
-        worker_client = CCL.Client(str(A), 'worker', signer('worker', AC.SIGNATURE_NAMESPACE), verify, HOST, timeout=10)
+        worker_client = CCL.Client(str(A), 'worker', signer('worker', AC.SIGNATURE_NAMESPACE), verify, HOST,
+                                   timeout=WAITS.WAIT_HANG_SECONDS)
 
         def claim(operation='claim'):
             try:
@@ -390,11 +411,10 @@ def _v47_suite():
                 and coordinates.get('last_watermark') == watermark and watermark is not None
 
         socket_path = CC.socket_path_for(bind_a)
-        report, seconds, children = {}, [], []
+        report, children = {}, []
         # What later regions read from earlier ones, so a region that raised leaves them empty, never unbound.
         recorded, receiver_path, home_dir = {}, base / 'no-receiver.json', base / 'nowhere'
         launches, connections = [], []
-        started_at = time.monotonic()
         precondition = C.qualify(PROFILE)
         if not precondition.get('qualified'):
             expect('VELDO-0047 STOOD DOWN by name - the systemd user manager, cgroup v2 or systemd-run is not '
@@ -491,7 +511,8 @@ def _v47_suite():
                     runs = []
                     if safe:
                         for step in steps:
-                            ran = subprocess.run(step[1:], capture_output=True, text=True, timeout=20, stdin=subprocess.DEVNULL)
+                            ran = subprocess.run(step[1:], capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                                 stdin=subprocess.DEVNULL)
                             runs.append(ran.returncode)
                     after = (os.lstat(str(ancestor)).st_mode, os.lstat(str(ancestor)).st_uid)
                     guided[name] = {'refused': result.get('refused'), 'named': [str(n) for n in named],
@@ -552,6 +573,10 @@ def _v47_suite():
                 unit = report.get('unit')
                 home_dir = Path(report.get('home') or base / 'nowhere')
                 config_path = Path(report.get('config') or base / 'nowhere.json')
+                if config_path.is_file():
+                    # VELDO-0358 AC15: the service runs under this suite's timers profile, before it is started.
+                    config_path.write_text(json.dumps(dict(json.loads(config_path.read_text()),
+                                                           timers_profile=TIMERS_PROFILE)))
                 before_start = show(unit)
                 try:
                     config = json.loads(config_path.read_text())
@@ -670,22 +695,31 @@ def _v47_suite():
                 lock_inode = os.stat(str(lock)).st_ino if lock.exists() else None
                 socket_inode = os.stat(socket_path).st_ino if os.path.exists(socket_path) else None
                 holders_before = flock_holders(lock)
+                # VELDO-0358: the second instance is given a notify socket of this suite's own. Its exit is the
+                # refusal; its READY=1 (it took the lock and serves) is the evidence it will never refuse.
+                notified = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                notified.bind(str(base / 'second-notify.sock'))
+                notified.setblocking(False)
+                said = []
+
+                def serving():
+                    while True:
+                        try:
+                            said.append(notified.recv(4096))
+                        except BlockingIOError:
+                            return any(b'READY=1' in s for s in said)
                 second = subprocess.Popen([os.path.realpath(sys.executable), '-B', str(home_dir / 'bin' / 'control_service.py'),
                                            'serve', str(config_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                          stdin=subprocess.DEVNULL, env=tools)
+                                          stdin=subprocess.DEVNULL, env=dict(tools, NOTIFY_SOCKET=str(base / 'second-notify.sock')))
                 children.append(second)
-                try:
-                    code = second.wait(timeout=8)
-                except subprocess.TimeoutExpired:
-                    code = 'still running'
+                ended = WAITS.wait('the second instance to refuse and exit', lambda: second.poll() is not None, serving,
+                                   [WAITS.Pidfd(second), WAITS.Readable(notified, drain=False, persistent=True)])
+                code = second.returncode if ended.done else 'still running'
                 holders_during = flock_holders(lock)
                 if code == 'still running':
-                    second.terminate()
-                    with contextlib.suppress(subprocess.TimeoutExpired):
-                        second.wait(timeout=3)
-                    if second.poll() is None:
-                        second.kill()
-                        second.wait(timeout=5)
+                    second.kill()
+                    second.wait()  # killed: it ends
+                notified.close()
                 err = second.stderr.read().decode('utf-8', 'replace')
                 second.stdout.close()
                 second.stderr.close()
@@ -709,6 +743,46 @@ def _v47_suite():
                       and after.get('ActiveState') == 'active' and int(after.get('MainPID') or 0) == pid
                       and live.get('stale') is False,
                       detail=dict(observed['lock'], first_state=after.get('ActiveState'), live=live, stderr=err[-300:]))
+
+            # VELDO-0358 AC15: the profile reached every arming site this suite crosses, read where each value is
+            # used: every timers table of this process, the running service's start record (its effective values,
+            # written before it served), and the timeout the client's send actually armed on its socket.
+            with region('timers/profile-applied'):
+                hang = WAITS.WAIT_HANG_SECONDS
+                mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS',
+                        'control_client.SERVE_READ_SECONDS', 'control_store.BUSY_SECONDS'}
+
+                def unset(report):
+                    """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
+                    named = {r['name']: r['value'] for r in report or []}
+                    return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in mine - set(named)])
+
+                class Armed(socket.socket):
+                    """A client socket that records each timeout it is given."""
+                    values = []
+
+                    def settimeout(self, value):
+                        Armed.values.append(value)
+                        super().settimeout(value)
+                real_socket = CC.socket
+                CC.socket = types.SimpleNamespace(**{n: getattr(socket, n) for n in dir(socket) if not n.startswith('__')})
+                CC.socket.socket = Armed
+                try:
+                    probe = inspect()
+                finally:
+                    CC.socket = real_socket
+                log = home_dir / 'state' / 'observations.jsonl'
+                starts = [json.loads(line) for line in (log.read_text().splitlines() if log.is_file() else [])
+                          if '"operation": "timers"' in line]
+                profile = {'in_process': [unset(table.report()) for table in tables.values()],
+                           'service': [unset(start.get('timers')) for start in starts],
+                           'client_send_armed': list(Armed.values), 'probe_stale': probe.get('stale')}
+                observed['timers'] = profile
+                check('timers/profile-applied',
+                      bool(tables) and all(u == [] for u in profile['in_process']) and bool(starts)
+                      and all(u == [] for u in profile['service']) and Armed.values == [hang]
+                      and probe.get('stale') is False,
+                      detail='timer_unset %r' % profile)
 
             # AC2, declared falsifier: a signed mutation through production IPC changes the configured
             # store itself, read back through a connection of this suite's own
@@ -816,15 +890,26 @@ def _v47_suite():
                 third = command(entity='note:3', data={'v': 3})
                 accepted = send(A, packet(third), seen_at='live-3').get('answer') or {}
                 watermark = accepted.get('watermark')
-                pid = int(show(unit).get('MainPID') or 0)
+                shown = show(unit)
+                pid = int(shown.get('MainPID') or 0)
                 killed = False
+                # VELDO-0358: no window. The user manager decides a restart when the unit leaves active and
+                # deactivating (a restart shows as activating, auto-restart, at once), and it removes the unit's
+                # group when it settles, so the state is read again on the group's removal and the main process's
+                # exit, never after a span of time.
+                group = Path('/sys/fs/cgroup') / systemctl('show', '-p', 'ControlGroup', '--value', unit).stdout.strip().lstrip('/') \
+                    if unit else None
                 if pid:
+                    exited = WAITS.Pidfd(pid)
                     os.kill(pid, signal.SIGKILL)
                     killed = True
-                end = time.monotonic() + 5
-                while time.monotonic() < end and show(unit).get('ActiveState') in ('active', 'deactivating'):
-                    time.sleep(0.05)
-                time.sleep(1.5)  # longer than any restart delay a unit would carry
+                    settled = []
+
+                    def left_active():
+                        settled[:] = [show(unit)]
+                        return settled[0].get('ActiveState') not in ('active', 'deactivating'), settled[0]
+                    WAITS.wait('%s to settle after its main process was killed' % unit, left_active, None,
+                               [exited] + ([WAITS.PathAppears(group)] if group is not None else []))
                 crashed = show(unit)
                 clone_control = Path(E.git_common_dir(str(A))) / 'veldo' / 'control'
                 listing = snapshot(store_path.parent, clone_control)
@@ -915,7 +1000,7 @@ def _v47_suite():
                                                 authorize=lambda conn, command: True, signer='runner', sign=journal_sign)
                 for scope, subject in (('account', ACCOUNT), ('project', 'p47'), ('unit', LAUNCH_UNIT)):
                     reservations.configure('policy/' + subject, scope, subject,
-                                           dict(capacity=5, invocations=50, wall_seconds=10 ** 5), now=time.time())
+                                           dict(capacity=5, invocations=50, wall_seconds=10 ** 5), now=wall_now())
                 put(LAUNCH_UNIT, 'execution_unit', dict(state='READY', repository_uuid=REPOSITORY,
                                                         backlog_item_uuid='backlog:' + LAUNCH_UNIT, requirements=[],
                                                         eligible_holders=[HOLDER], project='p47',
@@ -942,7 +1027,7 @@ def _v47_suite():
                 # An installed receiver that cannot even be loaded, or a launch that cannot be submitted, is the
                 # finding, recorded by name, never a raise.
                 try:
-                    IL = load('v47_installed_receiver', installed_receiver)
+                    IL = profiled(load('v47_installed_receiver', installed_receiver))
                 except Exception as error:  # noqa: BLE001
                     errors['load'] = '%s: %s' % (type(error).__name__, str(error)[:300])
                 if IL is not None:
@@ -951,15 +1036,14 @@ def _v47_suite():
                                                      principal='runner', signer='runner', sign=journal_sign)
                         gate = EL.Gate(S, launch_reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(A))
                         runner = IL.Runner(gate, reservations, dispatches,
-                                           lambda contract: IL.invoke(receiver_config_path, contract, dispatches,
-                                                                      accept_seconds=20),
+                                           lambda contract: IL.invoke(receiver_config_path, contract, dispatches),
                                            account=ACCOUNT)
                         launch = runner.submit(LAUNCH_UNIT, 'build', holder=HOLDER, source=str(A), revision='HEAD',
                                                payload={}, adapter='engine', configuration={'tools': ['Read'], 'model': 'm'},
-                                               deadline=time.time() + 60)
+                                               deadline=wall_now() + 3600)
                         launches.append(launch)
                         result, refusal, group = launch.result, launch.refusal, dict(launch.group or {})
-                        record = runner.wait(launch, timeout=30) if result == 'accepted' else (launch.record or {})
+                        record = runner.wait(launch, timeout=WAITS.WAIT_HANG_SECONDS) if result == 'accepted' else (launch.record or {})
                     except Exception as error:  # noqa: BLE001
                         errors['launch'] = '%s: %s' % (type(error).__name__, str(error)[:300])
                 record = record or {}
@@ -1048,13 +1132,13 @@ def _v47_suite():
                 with contextlib.suppress(Exception):
                     if child.poll() is None:
                         child.kill()
-                    child.wait(timeout=5)
+                    child.wait()  # killed above, or already ended
             for launch in launches:
                 with contextlib.suppress(Exception):
                     if launch.child is not None:
                         if launch.child.poll() is None:
                             launch.child.kill()
-                        launch.child.wait(timeout=10)
+                        launch.child.wait()  # killed above, or already ended
                         for pipe in (launch.child.stdin, launch.child.stdout):
                             if pipe is not None:
                                 pipe.close()
@@ -1088,15 +1172,12 @@ def _v47_suite():
                         systemctl('daemon-reload')
                 with contextlib.suppress(Exception):
                     systemctl('reset-failed', unit)
-            seconds.append(time.monotonic() - started_at)
         for first_label in regions:
             check('ran/' + first_label, first_label not in {label for label, _ in raised})
         observed['raised'] = raised
-        observed['seconds'] = round(seconds[0], 3) if seconds else None
         globals()['_V47_OBSERVED'] = observed
 
 
-_v47_started = __import__('time').monotonic()
 # The operator's session. In production a client runs where XDG_RUNTIME_DIR names the owner's user
 # manager, so a client that tried to start the authority itself would succeed there; the gate's mutation
 # stage runs this suite without one, which would make that defect fail silently and pass. The suite's own
@@ -1110,4 +1191,3 @@ finally:
         __import__('os').environ.pop('XDG_RUNTIME_DIR', None)
     else:
         __import__('os').environ['XDG_RUNTIME_DIR'] = _v47_session
-_V47_SECONDS = __import__('time').monotonic() - _v47_started
