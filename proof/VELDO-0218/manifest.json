@@ -72,17 +72,17 @@
     {
       "name": "lint",
       "status": "passed",
-      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
+      "detail": "static-checks.txt: 1251 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     },
     {
       "name": "template-sync",
       "status": "passed",
-      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
+      "detail": "static-checks.txt: 1251 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     },
     {
       "name": "personal-setup",
       "status": "passed",
-      "detail": "static-checks.txt: 1250 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
+      "detail": "static-checks.txt: 1251 Python files, 40 shell files, 325 template pairs, zero personal-setup findings; spec/proof validation and index freshness passed."
     },
     {
       "name": "landing-fixture-replay",
