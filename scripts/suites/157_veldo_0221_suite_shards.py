@@ -9,6 +9,7 @@
 
 
 def _veldo_0221():
+    import errno
     import hashlib
     import importlib.util
     import shutil
@@ -233,8 +234,8 @@ def _veldo_0221():
             'unit = CC.service_unit(binding)\n'
             'print("V221-NAMES %s %s" % (suite_file().stem, json.dumps({"authority": unit, '
             '"api": "veldo-api-" + unit[len(CC.SERVICE_BASE):], "slice": C.DEFAULT_SLICE, '
-            '"scope": C.unit_name("dispatch-1"), "instance": CC.instance_name(), '
-            '"same_rule": CC.instance_name() == C.instance_name()})), flush=True)\n')
+            '"scope": C.unit_name("dispatch-1"), "instance": C.instance_name(), '
+            '"same_rule": CC.SERVICE_PREFIX == CC.SERVICE_BASE + C.instance_part()})), flush=True)\n')
         writer = (
             'import json\n'
             'roots = {v: os.environ[v] for v in ("HOME", "TMPDIR", "XDG_CONFIG_HOME", "XDG_DATA_HOME", '
@@ -347,7 +348,7 @@ def _veldo_0221():
             'unit = CC.service_unit({"domain_uuid": "d" * 8, "store_uuid": "s" * 8})\n'
             'print(json.dumps({"authority": unit, "api": "veldo-api-" + unit[len(CC.SERVICE_BASE):], '
             '"prefix": CC.SERVICE_PREFIX, "slice": C.DEFAULT_SLICE, "scope": C.unit_name("dispatch-1"), '
-            '"scope_prefix": C.UNIT_PREFIX, "instance": [CC.instance_name(), C.instance_name()]}))\n')
+            '"scope_prefix": C.UNIT_PREFIX, "instance": [C.instance_name(), C.instance_part()]}))\n')
 
         def engine_says(environment, directory=ROOT / ".veldo"):
             answer = subprocess.run([sys.executable, "-c", probe, str(directory)], capture_output=True, text=True,
@@ -657,6 +658,36 @@ def _veldo_0221():
             os.close(read_end)
             os.close(write_end)
         AS = load(ROOT / "scripts" / "agent_sandbox.py", "v221_agent_sandbox")
+        # The launcher's broker refuses a shard's bind outside the shard's own roots: it finds the
+        # caller's shard by ancestry and reads the roots the dispatcher started that shard with.
+        broker = AS.Broker.__new__(AS.Broker)
+        shard_like = ('import os, sys, subprocess\n'
+                      'child = subprocess.Popen([sys.executable, "-c", "import sys; print(\'up\', flush=True); sys.stdin.read()"],\n'
+                      '                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, env={"PATH": os.environ["PATH"]})\n'
+                      'child.stdout.readline()\nprint(child.pid, flush=True)\nsys.stdin.read()\nchild.stdin.close()\nchild.wait()\n')
+        shard_roots = {name.decode(): str(top / "broker" / name.decode().lower()) for name in AS.Broker.SHARD_ROOT_VARIABLES}
+        process = subprocess.Popen([sys.executable, "-c", shard_like, "--suite", "x", "--shard", "9", "--shard-root", "r"],
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, env=dict(plain, **shard_roots))
+        try:
+            grandchild = int(process.stdout.readline())
+            narrowed = broker._shard_roots(grandchild)
+            verdicts = []
+            for target in (shard_roots["TMPDIR"] + "/a/sock", str(top / "broker" / "sock"), shard_roots["HOME"] + "x/sock"):
+                try:
+                    broker._within_shard(grandchild, b"\x01\x00" + target.encode() + b"\0")
+                    verdicts.append("allowed")
+                except OSError as error:
+                    verdicts.append(error.errno)
+            unsharded = (broker._shard_roots(os.getpid()), broker._within_shard(os.getpid(), b"\x01\x00/anywhere\0"))
+        finally:
+            process.stdin.close()
+            process.wait()
+        expect("VELDO-0221 AC2 suite-shards/broker-binds-within-the-shard: %r %r %r" % (narrowed, verdicts, unsharded),
+               sorted(narrowed or []) == sorted(value.encode() for value in shard_roots.values())
+               and verdicts == ["allowed", errno.EACCES, errno.EACCES] and unsharded == (None, None)
+               and sorted(name.decode() for name in AS.Broker.SHARD_ROOT_VARIABLES)
+               == sorted(variable for variable, _leaf in RS.SHARD_ROOTS)
+               and "--shard" in RS.SHARD_ARGUMENTS and "--shard-root" in RS.SHARD_ARGUMENTS)
         refusals = []
         with open(top / "a-regular-file", "w") as regular:
             for profile, descriptor in (("agent", regular.fileno()), ("gate", regular.fileno()), ("gate", 1)):

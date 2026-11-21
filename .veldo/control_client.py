@@ -104,7 +104,8 @@ def socket_path_for(binding):
 # the containment module has no instance. The name EXTENDS the fixed prefix
 # (veldo-authority-<instance>-<service id>), so whatever is cut from a unit's name after the fixed
 # prefix still carries it.
-def instance_name():
+# Both helpers are private: the public functions of this module are a census (VELDO-0115).
+def _instance_name():
     """The configured instance name, or the empty string when none is configured."""
     if not _RegistryPath(__file__).with_name("control_containment.py").is_file():
         return ""
@@ -115,16 +116,16 @@ def instance_name():
     return module.instance_name()
 
 
-def instance_part(name=None):
+def _instance_part():
     """What follows the engine's fixed prefix in a name it creates: `<instance>-`, or nothing."""
-    name = instance_name() if name is None else name
+    name = _instance_name()
     return name + "-" if name else ""
 
 
 # The fixed part of an authority unit's name, and the prefix this engine's units carry: the fixed
 # part alone in every production installation.
 SERVICE_BASE = "veldo-authority-"
-SERVICE_PREFIX = SERVICE_BASE + instance_part()
+SERVICE_PREFIX = SERVICE_BASE + _instance_part()
 UNAVAILABLE_CODE = "AUTHORITY_UNAVAILABLE"
 
 
