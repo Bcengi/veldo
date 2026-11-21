@@ -1,1 +1,1 @@
-template sync: pass (325 pair(s) compared, 6 declared per-repo, 367 engine-only)
+template sync: pass (325 pair(s) compared, 6 declared per-repo, 368 engine-only)

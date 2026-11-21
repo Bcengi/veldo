@@ -331,6 +331,8 @@ def _v215_case_deadlines():
         # Replace only the launch command; production Workers.run/finish/check_worker execute.
         home = scratch / 'real'
         home.mkdir()
+        blocked_script = home / 'blocking_child.py'
+        blocked_script.write_text('import os\nr,w=os.pipe()\nprint("blocking read",flush=True)\nos.read(r,1)\n')
         real_popen, real_load = subprocess.Popen, gate.load
         pool = gate.SuiteResources({'suites': [{'file': 'sample.py'}], 'resource_capacities': {}})
         hang_clock = [0]
@@ -341,8 +343,7 @@ def _v215_case_deadlines():
             if workers.progress[name][1] == 'blocking read':
                 hang_clock[0] += 3
         def launch(argv, **kwargs):
-            return real_popen([sys.executable, '-X', 'faulthandler', '-c',
-                'import os; r,w=os.pipe(); print("blocking read",flush=True); os.read(r,1)'], **kwargs)
+            return real_popen([sys.executable, '-X', 'faulthandler', str(blocked_script)], **kwargs)
         def loader(p):
             if Path(p).name == 'mutation_ownership.py':
                 return types.SimpleNamespace(cleanup=lambda *a: {})
@@ -358,7 +359,8 @@ def _v215_case_deadlines():
         row('real-hang-reaped', error == 'control_failed' and workers.invocations == 1
             and not workers.active and workers.outcomes[0]['returncode'] == -6
             and workers.outcomes[0]['hang_seconds'] == 3
-            and 'Current thread' in workers.outcomes[0].get('stderr_tail', ''))
+            and 'Current thread' in workers.outcomes[0].get('stderr_tail', '')
+            and 'blocking_child.py", line 4' in workers.outcomes[0].get('stack_dump', ''))
 
         observer = gate.load(ROOT / "scripts" / "mutation_observer.py")
         clock = [0]
@@ -390,7 +392,8 @@ def _v215_case_deadlines():
             and heavy.returncode == 0 and heavy_lines == [str(i).encode() for i in range(10)]
             and heavy_clock[0] == 10
             and long_stage['status'] == 'passed' and long_stage['elapsed'] > 21600
-            and error == 'control_failed' and 'Current thread' in workers.outcomes[0].get('stderr_tail', ''))
+            and error == 'control_failed' and 'Current thread' in workers.outcomes[0].get('stderr_tail', '')
+            and 'blocking_child.py", line 4' in workers.outcomes[0].get('stack_dump', ''))
 
         outcomes = []
         for kind in ('assertion', 'terminal', 'hung', 'not_run', 'control', 'unproven'):
