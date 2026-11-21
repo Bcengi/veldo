@@ -1,0 +1,9 @@
+Final scoped checks, 2026-11-21
+python3 scripts/check_personal_setup.py --base 6b322350: exit 0, 0 findings.
+No local installation found; the scanner ran its built-in shapes.
+Both proof manifests validate; independent fix-validation review evidence is not applicable.
+Generated suite-requires check after the final inventory edits: passed.
+Git diff whitespace check: passed.
+Recorded artifact and source digests: all matched.
+Temporary unchanged-base worktree and generated proof bytecode caches removed.
+No canonical gate, independent review, Mac rerun or new native qualification.

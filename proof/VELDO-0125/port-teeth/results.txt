@@ -1,0 +1,9 @@
+Stable-tree coordinator run at 2bf3431a, through external host_heavy.sh.
+Existing declared legs: ownership cases confined; suites 67 and 83 unconfined by the protected list.
+Force fresh: true. Baseline and unchanged-copy controls all green.
+owners37-different-owner-adds: rejected on owners/different-owner/kinds, owners/different-owner/prefixes
+owners37-bound-command-added: rejected on owners/bound-elsewhere/kinds, owners/bound-elsewhere/prefixes
+retire-no-sweep-on-wait: rejected on retirement/live-descendant
+owners-may-name-generic-commands: rejected on aliases/owned-by-code-not-name
+loop154-periodic-pass: rejected on loop/no-other-timer
+registered=5 executed=5 rejected=5 status=passed surviving_workers=0

@@ -1,0 +1,9 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1933,5 +1933 @@
+-        self.launches.pop(launch.dispatch_id, None)
+-        # A local group ending can complete another local obligation. Remote events settle only
+-        # their own reservation and never cause an unrelated Linux cleanup sweep.
+-        if not getattr(launch, 'remote', False):
+-            self.sweep()
++        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement

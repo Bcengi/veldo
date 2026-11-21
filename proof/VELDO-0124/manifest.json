@@ -135,6 +135,14 @@
         "proof/VELDO-0124/round3-2026-10-29/supervised-runs.json"
       ],
       "detail": "The final suite 104 log is complete: 7 owning rows, 33 total checks passed, zero failed, partial exit 2. The original runner completed all three authorized commands under the shared gate lock; supervised rerun metadata is retained separately."
+    },
+    {
+      "name": "event_port_falsifiers",
+      "status": "passed",
+      "detail": "All 17 VELDO-0124 named controls reject, including evidence-file digest and wrapper recheck; the initial deadline mutant timeout is retained separately and not counted. The corrected assertion rejects the same mutant.",
+      "evidence": [
+        "proof/VELDO-0125/port-results.json"
+      ]
     }
   ],
   "rollback": "Disable new Mac launches; preserve accepted records, reservations, unresolved charge exposure, profile revisions and unknown slots. No automatic retry or recovery.",
@@ -284,7 +292,7 @@
       "Exit events replace heartbeat polling; profile v2 needs new qualification.",
       "Protected evidence verification and Claude sandbox admission/wrapper checks remain required."
     ],
-    "status": "scoped_results_recorded_mutation_recheck_pending",
+    "status": "scoped_verification_complete_with_recorded_limits",
     "ref": "proof/VELDO-0124/PORT-2026-11-21.md",
     "native_rerun": false,
     "historical_manifest": "6b322350:proof/VELDO-0124/manifest.json",

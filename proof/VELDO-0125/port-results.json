@@ -10,7 +10,9 @@
       "86_veldo_0127_agent_configuration"
     ],
     "initial": "proof/VELDO-0125/port-affected/results.json",
-    "rechecks": "proof/VELDO-0125/port-rechecks/results.json"
+    "rechecks": "proof/VELDO-0125/port-rechecks/results.json",
+    "space_recheck": "proof/VELDO-0125/port-space-recheck/results.json",
+    "live_binding_comparison": "proof/VELDO-0125/port-live-binding-comparison.txt"
   },
   "falsifiers": {
     "total": 100,
@@ -48,7 +50,11 @@
     "original_four_failures_reproduced": true
   },
   "changed_mutation_checks": {
-    "status": "stable_tree_rerun_pending",
+    "status": "passed",
+    "registered": 5,
+    "executed": 5,
+    "rejected": 5,
+    "ref": "proof/VELDO-0125/port-teeth/results.json",
     "initial": "proof/VELDO-0125/port-teeth-initial.txt",
     "invalidated": "proof/VELDO-0125/port-teeth-invalidated.txt"
   },
@@ -70,5 +76,6 @@
     "exit": 1,
     "ref": "proof/VELDO-0125/port-space-recheck/results.json",
     "detail": "Back-to-back with base, with varying process-observation failures. No suite-151 assertion changed."
-  }
+  },
+  "status": "scoped_verification_complete_with_recorded_limits"
 }

@@ -41,7 +41,10 @@
     {
       "name": "unit",
       "status": "pending",
-      "detail": "Quiet and eight-CPU-worker loaded suites 103/104/105/106 pass with 56/33/44/272 assertions, zero failures. 150/152 affected suites pass; original suite-151 failures reproduce at base, and VELDO-0127 captures are stale at base and port. 100/100 ticket falsifiers rejected after one assertion correction. Five changed existing mutation checks await a stable-tree rerun after proof edits invalidated their otherwise complete observations. Scoped evidence only."
+      "detail": "Quiet and eight-CPU-worker loaded suites 103/104/105/106 pass with 56/33/44/272 assertions, zero failures. 150/152 affected suites pass; original suite-151 failures reproduce at base, and VELDO-0127 captures are stale at base and port. 100/100 ticket falsifiers reject after one assertion correction. Five changed existing mutation checks also pass a fresh stable-tree coordinator run. Scoped evidence only; native qualification, independent review and full accepted verification remain pending.",
+      "evidence": [
+        "proof/VELDO-0125/port-results.json"
+      ]
     },
     {
       "name": "integration",
@@ -52,6 +55,14 @@
       "name": "independent_review",
       "status": "not_run",
       "detail": "Implementation agent does not approve its own changes."
+    },
+    {
+      "name": "changed_mutation_anchors",
+      "status": "passed",
+      "detail": "Five fresh named rejections with green baseline/unchanged-copy controls, existing declared legs, immutable input tree and zero surviving workers.",
+      "evidence": [
+        "proof/VELDO-0125/port-teeth/results.json"
+      ]
     }
   ],
   "rollback": "Disable new Mac dispatches while retaining accepted bindings, reservations, pending deliveries, protected evidence, unknown charge exposure and local slots. No execution retry or automatic qualification.",
@@ -61,7 +72,8 @@
     "branch": "veldo-0125-port",
     "decisions": "Both specs History, 2026-11-21 lead decision",
     "native_rerun": false,
-    "results": "proof/VELDO-0125/port-results.json"
+    "results": "proof/VELDO-0125/port-results.json",
+    "status": "scoped_verification_complete_with_recorded_limits"
   },
   "source_digests": {
     "engine/.veldo/authority_contract.py": "sha256:f38c6aae25e365b5410873f802c4fcab009a16a995bb38e0c2e6bc6474811c56",
@@ -98,7 +110,7 @@
     "scripts/suites/requires.json": "sha256:c58e9d156bb46a7ee01bea437e4fb3c95e8b34e6b8abd21e0b3b7d5d57516926"
   },
   "artifact_digests": {
-    "proof/VELDO-0125/PORT-2026-11-21.md": "sha256:378427af3c551010e86c84d9b257bf31f793f18331f3f450cef9a8d0fc63c9ab",
+    "proof/VELDO-0125/PORT-2026-11-21.md": "sha256:ef3d8c4c058d0e1d911f4e459d493fd4af9c02e1ab9f010acbe304d02052468c",
     "proof/VELDO-0125/README.md": "sha256:7aabf9bf489dad19e88ea352627dc1558a54a8e63244f19f7613789855c52b43",
     "proof/VELDO-0125/b2-crash-events/README.md": "sha256:de778d5ee5f9e370828141345ab9c8e7111252e802b15750647c49b8ad2c6f70",
     "proof/VELDO-0125/b2-crash-events/final-results.md": "sha256:7f2ca4b0f02e659c57a7bd6c835be507f25d5c6fe701d1602aac598c59fc9012",
@@ -516,6 +528,7 @@
     "proof/VELDO-0125/port-falsifiers/wrapper-go-polling.diff": "sha256:2868003d42dd39b7236ed14a7ab7b9b6277f793229f217961ee292fe31fc705e",
     "proof/VELDO-0125/port-falsifiers/wrapper-go-polling.txt": "sha256:8fb35ab68d979348637704683d82a4a24c92be4753a2e591e2a206cdd4587ff5",
     "proof/VELDO-0125/port-falsifiers.json": "sha256:5151640b06c0cb76719dc74d80311a739a6e5ca1a10da80b19fd7520c9b22ca8",
+    "proof/VELDO-0125/port-final-checks.txt": "sha256:ad644d210599d4a4315256a23f5753d5e3c3cec5723936b254f9ebb61e2613ff",
     "proof/VELDO-0125/port-initial.txt": "sha256:5f704bb5eff1f9f88f24e4b5b658f31eb51a4e83302c13f9f701855e4fb46030",
     "proof/VELDO-0125/port-live-binding-comparison.txt": "sha256:20aaf6aa4f166812f639e8dcb3608ae50b76ced2b7aee8beb1d46160ab358f20",
     "proof/VELDO-0125/port-loaded/103_veldo_0124_macos.txt": "sha256:8ff4e92806719ccdfcc3ad0508d918fae01610d1de3ddba69fe3d8dd0b4449f6",
@@ -531,10 +544,17 @@
     "proof/VELDO-0125/port-rechecks/33_veldo_0020_authority.txt": "sha256:f9c3bcc6c59645431d9bde9a714e1e6745e48f5b0d93993be45a6d9f22b62298",
     "proof/VELDO-0125/port-rechecks/36_veldo_0023_journal.txt": "sha256:9fea752085b51d00571902fc356121211ba997ef715b81c6ac1b94e0942f49dc",
     "proof/VELDO-0125/port-rechecks/results.json": "sha256:64ddd907539761bc7b30880b26d838c395f37f6cda3643159a3ef8fe186d4d5e",
-    "proof/VELDO-0125/port-results.json": "sha256:db2194c87eb8b4350649dc244df4823531251f56edc31b202a0bad29bf5f3795",
+    "proof/VELDO-0125/port-results.json": "sha256:ae2a2b3b98e012eca1fcb5b0be5d0113461501967e4bb3f1b04f96380e31d639",
     "proof/VELDO-0125/port-space-recheck/151_veldo_0313_space_run.txt": "sha256:3a3975c3fedfc8ec3411110ae431b87811b09a8732fa6777d8a86d2057254699",
     "proof/VELDO-0125/port-space-recheck/results.json": "sha256:c7a5c039574f492d0386276b9423bfcaf14a8ce3ad2bec17898c6cf1a9934c5c",
     "proof/VELDO-0125/port-static.txt": "sha256:8a89e94e9f8dcb1ad7ffa3371b97ee8bebe8f06b7fd88d9c8e059a4666433984",
+    "proof/VELDO-0125/port-teeth/loop154-periodic-pass.diff": "sha256:be4ec5fcab8be1f7334de8963749aebe75bed7d1a0cd030ddbcba07962f89a11",
+    "proof/VELDO-0125/port-teeth/owners-may-name-generic-commands.diff": "sha256:8cc80da036dfe634efc625382565e58b1104898f6ced68dc0b6656de2560ea7d",
+    "proof/VELDO-0125/port-teeth/owners37-bound-command-added.diff": "sha256:b632ceef162abf6d1fb6fc5a5a0e465c035714e95037296c9097441ff7d242b5",
+    "proof/VELDO-0125/port-teeth/owners37-different-owner-adds.diff": "sha256:cf822a67e31fcec19bb11ef806e5e01088324f97c09b47611f463a6dbec176ed",
+    "proof/VELDO-0125/port-teeth/results.json": "sha256:7aa6f29238cf4724f2f3b7a6c328bac2c60c1199ccc7fdc33861c785c6e86d9a",
+    "proof/VELDO-0125/port-teeth/results.txt": "sha256:ce106e38a60411f1d1f09b51a4e0e13a163f789f2f3264997f35f2a9bf2e869a",
+    "proof/VELDO-0125/port-teeth/retire-no-sweep-on-wait.diff": "sha256:95227848599cdc87d79a4ed4b6ae6ac26f97b1f082e0e7942a2ad1da2193e904",
     "proof/VELDO-0125/port-teeth-initial.txt": "sha256:3dde98d3f10b78458ed54525aabc5793ec0dc0e814981b31ec5bbbd0c99ec65e",
     "proof/VELDO-0125/port-teeth-invalidated.txt": "sha256:381fe834d456e1eeb21186bf5c8919394b2d9f201ae75bde8b569ad159523d10",
     "proof/VELDO-0125/port_falsifiers.py": "sha256:3b3af0eec0cea3564b5a3bd55d11fa5e20f2e325e3f085499aec9212788088dd",
