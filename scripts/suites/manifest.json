@@ -98,6 +98,24 @@
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, so the set difference against shared.py's bindings is empty; its one extra import (shutil) is local and prefixed. Driven: `python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
   },
   {
+   "name": "15_warp_1404_historical_analogy_audit_b",
+   "file": "15_warp_1404_historical_analogy_audit_b.py",
+   "requires": [
+    "15_warp_1404_historical_analogy_audit_b"
+   ],
+   "regions": "none - split from 15_warp_1404_historical_analogy by VELDO-0221: eight of its twenty WARP-1404 AC5 AUDIT cases, two rows each, unchanged",
+   "requires_note": "Declares its closure as ITSELF ALONE, like the suite it was split from: it carries its own copy of the preparation its loop reads, and its free names are Path, ROOT, expect, json, os, subprocess, sys, tempfile and tmpfile."
+  },
+  {
+   "name": "15_warp_1404_historical_analogy_audit_c",
+   "file": "15_warp_1404_historical_analogy_audit_c.py",
+   "requires": [
+    "15_warp_1404_historical_analogy_audit_c"
+   ],
+   "regions": "none - split from 15_warp_1404_historical_analogy by VELDO-0221: eight of its twenty WARP-1404 AC5 AUDIT cases, two rows each, unchanged",
+   "requires_note": "Declares its closure as ITSELF ALONE, like the suite it was split from: it carries its own copy of the preparation its loop reads, and its free names are Path, ROOT, expect, json, os, subprocess, sys, tempfile and tmpfile."
+  },
+  {
    "name": "15_warp_1405_reconciliation",
    "file": "15_warp_1405_reconciliation.py",
    "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
