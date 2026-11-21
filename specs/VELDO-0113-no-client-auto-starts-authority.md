@@ -152,3 +152,8 @@ in the History and ticket proof.
   corrected. Required AC1/AC2 red/green evidence remains unavailable until the
   shared observer supplies complete qualification. No replacement observer or
   qualification exemption is introduced here.
+
+- 2026-11-21: Follow the VELDO-0111 AC4 consumer obligation by enumerating all
+  eight observer faults for each external registry/state case (176 drives).
+  Verify each intended failure's phase, category and capability separately from
+  stand-down propagation. Earlier two-fault observations are partial diagnostics.

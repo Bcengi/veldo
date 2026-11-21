@@ -33,10 +33,18 @@ forbidden. The endpoint fixture is already dead and outside that scope.
 The three named consumer rows carry distinct PASS, FAIL or STANDS DOWN statuses.
 An INCOMPLETE receipt always leaves these rows STANDS DOWN, even when the
 observer captured a suspicious birth or service. Such effects remain diagnostics;
-only a COMPLETE receipt permits the named row to pass or fail. Missing facilities and interrupted finalization are driven for every
+only a COMPLETE receipt permits the named row to pass or fail. Missing facilities
+and all interrupted-observer faults from VELDO-0111 are driven for every
 external registry/state case; all three names must remain STANDS DOWN with
 census_incomplete and zero PASS rows. The suite separately asserts this protocol;
 a passing protocol assertion is not a green absence claim.
+
+The default integration enumerates all eight entries of `census.FAULTS`, giving
+176 fault cases across the 22 external invocations. It checks the requested
+state, category and capability, including the lost-event counter. Loss and
+collector-death drives declare a fixture child before the call so those faults
+also fire for childless relays; that child is used only in fault-injected runs.
+Earlier two-fault drives remain diagnostics, not full-matrix qualification.
 
 The construction census includes both module trees, both CLI directories and
 operational scripts, excluding test harnesses. It recursively finds Python files
@@ -75,7 +83,9 @@ success, and an extra Dispatches construction in claim.py. The standard suite
 anchors support production and fixture copies. `run_checks.py` retains the exact
 diffs and full case receipts, and checks the named false rows and restoration.
 Full red/green acceptance evidence cannot be claimed while the construction
-baseline is false and VELDO-0111 never supplies a COMPLETE receipt. The process
+baseline is false and VELDO-0111 never supplies a COMPLETE receipt.
+`proof/VELDO-0111/OPEN.md` identifies implementation gaps, including the
+non-exhaustive protocol inventory; this is not merely a host permission issue. The process
 and listener falsifiers must stand down on this host under the literal contract;
 a captured effect alone cannot substitute for the required false consumer row.
 The initial evaluator allowed that substitution; it was corrected after the
