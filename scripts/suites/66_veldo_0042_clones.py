@@ -32,7 +32,13 @@ def _v42_suite():
     import sys
     import tempfile
     import threading
-    import time
+
+    # VELDO-0358: the one duration this suite names. Every child call, wait and join here ends on its event;
+    # the wait hang bound is the only bound, and a wait that reaches it makes its row hung.
+    WAIT_HANG_SECONDS = WAITS.WAIT_HANG_SECONDS
+    # A dispatch deadline the product is given and never reaches in this suite: a fixed far date, not a
+    # reading of the clock (2100-01-01T00:00:00Z).
+    FAR_DEADLINE = 4102444800.0
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -63,7 +69,7 @@ def _v42_suite():
     runtime = tools['XDG_RUNTIME_DIR'] if os.path.isdir(tools['XDG_RUNTIME_DIR']) else None
 
     def systemctl(*args):
-        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=20,
+        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=WAIT_HANG_SECONDS,
                               env=tools, stdin=subprocess.DEVNULL)
 
     with tempfile.TemporaryDirectory(prefix='v42-', dir=runtime) as directory:
@@ -79,6 +85,16 @@ def _v42_suite():
         D = load('v42_dispatch', mods / 'control_dispatch.py')
         SIG = load('v42_signer', mods / 'control_signer.py')
         CT = load('v42_containment', mods / 'control_containment.py')
+        # VELDO-0358 AC15: the timers profile. Every entry of the timers table of the installed copy is at the
+        # wait hang bound in this process (no row of this suite tests a table timer, so none is excepted). The
+        # table is the one every module of the copy shares (timers.py beside them, under its own key).
+        if not (mods / 'timers.py').is_file():
+            shutil.copyfile(ROOT / 'engine' / '.veldo' / 'timers.py', mods / 'timers.py')
+        timers_key = 'veldo_timers:' + os.path.realpath(str(mods / 'timers.py'))
+        if timers_key not in sys.modules:
+            sys.modules[timers_key] = load(timers_key, mods / 'timers.py')
+        TIMERS = sys.modules[timers_key]
+        TIMERS.set_profile(None, hang_seconds=WAIT_HANG_SECONDS)
         _git_process = load('v42_git', mods / 'git_process.py')
         DOMAIN, REPO = 'domain-42', 'repository-42'
 
@@ -95,7 +111,7 @@ def _v42_suite():
         for made in (specs, logs, signals, engine_run):
             made.mkdir(mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
 
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
@@ -114,7 +130,7 @@ def _v42_suite():
 
         def git(*args, repo=None, want=True):
             command = (['-C', str(repo)] if repo else []) + list(args)
-            result = _git_process.run(['git'] + command, capture_output=True, text=True, timeout=60,
+            result = _git_process.run(['git'] + command, capture_output=True, text=True, timeout=WAIT_HANG_SECONDS,
                                       stdin=subprocess.DEVNULL)
             if want and result.returncode:
                 raise RuntimeError('git %s: %s' % (args[0], result.stderr.strip()))
@@ -126,7 +142,7 @@ def _v42_suite():
                 (Path(path) / name).write_text(content)
             git('add', '-A', repo=path)
             _git_process.run(['git', '-C', str(path), 'commit', '-q', '-m', message], check=True, capture_output=True,
-                             timeout=60, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
+                             timeout=WAIT_HANG_SECONDS, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
             return git('rev-parse', 'HEAD', repo=path), git('rev-parse', 'HEAD^{tree}', repo=path)
 
         # The source repository: the ACCEPTED commit, then a LATER commit its HEAD points at. A clone
@@ -137,7 +153,7 @@ def _v42_suite():
         (src / 'later-only').write_text('later\n')
         git('add', '-A', repo=src)
         _git_process.run(['git', '-C', str(src), 'commit', '-q', '-m', 'later'], check=True, capture_output=True,
-                         timeout=60, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
+                         timeout=WAIT_HANG_SECONDS, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
         head_commit = git('rev-parse', 'HEAD', repo=src)
         src_head_before = (src / '.git' / 'HEAD').read_text()
 
@@ -165,7 +181,7 @@ def _v42_suite():
                     'input': {'context': {}, 'payload': {'attachments': attachments if attachments is not None else ATTACH},
                               'payload_digest': 'sha256:x'},
                     'capability': {'adapter': 'engine', 'configuration': {}}, 'reservation': {}, 'claim': None,
-                    'deadline': time.time() + 120, 'authority_generation': 1}
+                    'deadline': FAR_DEADLINE, 'authority_generation': 1}
 
         def set_state(dispatch_id, state_name, process=None, unit='VELDO-9401', commit=accept_commit, tree=accept_tree,
                       repository=REPO, attachments=None):
@@ -218,7 +234,7 @@ def _v42_suite():
         # directory (TMPDIR), then exits, holds until its release signal exists, or leaves a child
         # reading the clone behind in its group and exits ('orphan').
         probe = base / 'probe.py'
-        probe.write_text(r'''import importlib.util, json, multiprocessing, os, subprocess, sys, tempfile, time
+        probe.write_text(r'''import importlib.util, json, multiprocessing, os, subprocess, sys, tempfile
 spec = json.loads(open(sys.argv[1]).read())
 loader = importlib.util.spec_from_file_location('probe_git', os.path.join(spec['mods'], 'git_process.py'))
 _git_process = importlib.util.module_from_spec(loader)
@@ -261,7 +277,7 @@ def mkstemp(directory):
 
 
 def git(*args):
-    result = _git_process.run(['git'] + list(args), capture_output=True, text=True, timeout=30,
+    result = _git_process.run(['git'] + list(args), capture_output=True, text=True,
                               stdin=subprocess.DEVNULL)
     return 'rc:%d' % result.returncode if result.returncode else 'ok:' + result.stdout.strip()
 
@@ -302,13 +318,13 @@ with open(temporary, 'w') as handle:
     handle.write(json.dumps(result))
 os.replace(temporary, os.path.join(os.environ['TMPDIR'], spec['result']))
 if spec.get('mode') == 'orphan':
-    subprocess.Popen([sys.executable, '-c', 'import os, sys, time\n'
-                      'while not os.path.exists(sys.argv[1]):\n'
-                      '    open("a").read()\n    time.sleep(0.02)\n', spec['release']],
-                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # The child reads the clone and then holds the probe's latch (its standard input, whose only write end
+    # the test holds): it lives until the test releases it or the test's process ends.
+    subprocess.Popen([sys.executable, '-c', 'import sys\nopen("a").read()\nsys.stdin.buffer.read()\n'],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     sys.exit(0)
-while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
-    time.sleep(0.02)
+if spec.get('mode') == 'hold':
+    sys.stdin.buffer.read()  # the latch: end of file when the test releases it or its process ends
 ''')
 
         # A real VELDO-0040 containment scope in this run's own slice. The stand-in for the receiver's
@@ -350,7 +366,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 env.update(NO_PROXY='', no_proxy='')
             return env
 
-        def launch(dispatch_id, argv, *, grouped, proxy=None, tag='run', path_first=None):
+        def launch(dispatch_id, argv, *, grouped, proxy=None, tag='run', path_first=None, stdin=subprocess.DEVNULL):
             """Start `argv` through the clone adapter as `dispatch_id`; in a real containment scope when
             `grouped`. Returns (popen, group or None)."""
             env = engine_env(dispatch_id, proxy, path_first)
@@ -365,7 +381,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
             else:
                 env['XDG_RUNTIME_DIR'] = str(engine_run)
             out = open(logs / ('%s.%s.out' % (dispatch_id.replace('/', '_'), tag)), 'w')
-            proc = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT, env=env,
+            proc = subprocess.Popen(command, stdin=stdin, stdout=out, stderr=subprocess.STDOUT, env=env,
                                     start_new_session=True)
             out.close()
             started.append(proc)
@@ -384,32 +400,78 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
             release = signals / ('release-' + name)
             (specs / name).write_text(json.dumps({'attempts': attempts, 'result': name, 'mode': mode,
                                                   'release': str(release), 'mods': str(mods)}))
-            proc, group = launch(dispatch_id, [sys.executable, '-B', str(probe), str(specs / name)], grouped=grouped,
-                                 tag=tag)
+            # A probe that holds blocks on its standard input: a latch whose only write end the test keeps until
+            # release() (VELDO-0358, C3), so it never outlives the test.
+            latch = None
+            if mode in ('hold', 'orphan'):
+                latch, held = os.pipe()
+                latches[release_name(dispatch_id, tag)] = held
+            try:
+                proc, group = launch(dispatch_id, [sys.executable, '-B', str(probe), str(specs / name)],
+                                     grouped=grouped, tag=tag, stdin=latch if latch is not None else subprocess.DEVNULL)
+            finally:
+                if latch is not None:
+                    os.close(latch)
             marker = scratch / name
-            end = time.time() + 30
-            while not marker.exists() and proc.poll() is None and time.time() < end:
-                time.sleep(0.02)
+            # The probe's result appears (renamed into place), or the probe ends without one: its pidfd.
+            WAITS.wait('the result of probe %s' % name, marker.exists,
+                       lambda: (proc.poll() is not None and not marker.exists(), {'exit': proc.poll()}),
+                       [WAITS.PathAppears(marker), WAITS.Pidfd(proc)])
             result = json.loads(marker.read_text()) if marker.exists() else {'missing': True, 'rc': proc.poll()}
             if mode == 'exit':
-                proc.wait(timeout=30)
+                exited(proc, 'probe %s' % name)
             return result, proc, group
 
-        def in_scope(group, proc, seconds=10):
-            """Wait for the process to be in its scope, then read the group back as the receiver does."""
+        def exited(proc, what):
+            """Wait for a process this suite started to exit, on its pidfd, and reap it."""
+            if proc.poll() is None:
+                WAITS.wait('%s to exit' % what, lambda: proc.poll() is not None, sources=[WAITS.Pidfd(proc)])
+            return proc.wait()
+
+        def emptied(group):
+            """Wait for a contained group's cgroup to be empty (cgroup.events), and say so: True once the kernel
+            shows it empty or gone."""
+            if group is None or group.cgroup is None:
+                return group.wait_empty(0) if group is not None else None
+            path = CT.CGROUP / group.cgroup.lstrip('/')
+            try:
+                source = WAITS.CgroupEmpty(path)
+            except FileNotFoundError:
+                return True
+            WAITS.wait('group %s to be empty' % group.unit, lambda: WAITS.cgroup_populated(path) is not True,
+                       sources=[source])
+            return True
+
+        manager = CT.CGROUP / ('user.slice/user-%d.slice/user@%d.service' % (os.getuid(), os.getuid()))
+
+        def in_scope(group, proc):
+            """Wait for the process to be in its scope, then read the group back as the receiver does. The
+            manager makes the scope's cgroup and writes the process into it: both are events on the scope's
+            cgroup.procs (its creation, then the manager's write). A process that ends first is not in it."""
             if group is None or proc is None:
                 return False
-            end = time.time() + seconds
-            while time.time() < end and not str(CT.cgroup_of(proc.pid) or '').endswith('/' + group.unit):
-                if proc.poll() is not None:
-                    return False
-                time.sleep(0.02)
+            procs = manager / group.slice / group.unit / 'cgroup.procs'
+
+            def placed():
+                return str(CT.cgroup_of(proc.pid) or '').endswith('/' + group.unit)
+            result = WAITS.wait('process %d in scope %s' % (proc.pid, group.unit), placed,
+                                lambda: proc.poll() is not None and not placed(),
+                                [WAITS.PathAppears(procs, modify=True), WAITS.Pidfd(proc)])
+            if not result.done:
+                return False
             with contextlib.suppress(Exception):
                 group.attach(proc.pid)
             return group.cgroup is not None
 
+        latches = {}  # a holding probe's latch: the write end of its standard input, by release name
+
+        def release_name(dispatch_id, tag):
+            return '%s.%s' % (dispatch_id.replace('/', '_'), tag)
+
         def release(dispatch_id, tag='probe'):
-            (signals / ('release-%s.%s.json' % (dispatch_id.replace('/', '_'), tag))).write_text('go')
+            held = latches.pop(release_name(dispatch_id, tag), None)
+            if held is not None:
+                os.close(held)
 
         def refused(value):
             return str(value).startswith('refused:13')
@@ -548,49 +610,67 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     listener = socket.socket()
                     listener.bind(('127.0.0.1', 0))
                     listener.listen(16)
+                    # Each request line the listener records is also a byte on this pipe: the wait below wakes on
+                    # it (VELDO-0358: the engine's own request is the event, not an interval).
+                    heard, told = os.pipe()
 
-                    def serve(server=listener, lines=seen):
-                        while True:
-                            try:
-                                connection, _ = server.accept()
-                            except OSError:
-                                return
-                            with contextlib.suppress(OSError):
-                                connection.settimeout(2)
-                                first = connection.recv(4096).split(b'\r\n', 1)[0].decode('latin-1')
-                                lines.append(' '.join(first.split(' ')[:2]))
-                            connection.close()
+                    def serve(server=listener, lines=seen, told=told):
+                        try:
+                            while True:
+                                try:
+                                    connection, _ = server.accept()
+                                except OSError:
+                                    return  # the listener was shut down
+                                with contextlib.suppress(OSError):
+                                    first = connection.recv(4096).split(b'\r\n', 1)[0].decode('latin-1')
+                                    lines.append(' '.join(first.split(' ')[:2]))
+                                    os.write(told, b'.')
+                                connection.close()
+                        finally:
+                            os.close(told)
 
-                    threading.Thread(target=serve, daemon=True).start()
+                    server = threading.Thread(target=serve, name='v42-listener-' + name, daemon=True)
+                    server.start()
                     state_dir = home / ('.' + name)
                     before = {str(p) for p in state_dir.rglob('*') if p.is_file()}
-                    begun = time.time()
                     proc, group = (None, None) if handle_a is None else launch(
                         'dispatch/VELDO-9401/aaaa', [found] + engine['argv'][1:], grouped=True,
                         proxy='http://127.0.0.1:%d' % listener.getsockname()[1], tag=name,
                         path_first=os.path.dirname(found))
                     scoped = in_scope(group, proc)
-                    while proc is not None and time.time() < begun + 25:
+
+                    def far_enough(engine=engine):
+                        """The engine ended, or (for one that keeps going) it made its network request and wrote
+                        the state its row reads."""
+                        if proc.poll() is not None:
+                            return True
                         wrote = sorted({str(p) for p in state_dir.rglob('*') if p.is_file()} - before)
                         network = [line for line in seen if line.startswith(engine['network'])]
-                        if proc.poll() is not None or (engine['until'] and network and any(
-                                os.path.relpath(w, home).startswith(engine['until']) for w in wrote)):
-                            break
-                        time.sleep(0.05)
+                        return bool(engine['until'] and network and any(
+                            os.path.relpath(w, home).startswith(engine['until']) for w in wrote))
+                    if proc is not None:
+                        WAITS.wait('engine %s to end or reach its network step' % name, far_enough,
+                                   sources=[WAITS.Pidfd(proc), WAITS.Readable(heard)])
                     if proc is not None and proc.poll() is None:
                         if group is not None and scoped:
                             group.kill()
                         with contextlib.suppress(OSError):
                             os.killpg(proc.pid, signal.SIGKILL)
-                        proc.wait(timeout=10)
+                    if proc is not None:
+                        exited(proc, 'engine %s' % name)
                     if group is not None and scoped:
-                        group.wait_empty(10)
+                        emptied(group)
                     wrote = sorted({str(p) for p in state_dir.rglob('*') if p.is_file()} - before)
+                    # The listener goes with its thread: shut down, which wakes its accept, then joined.
+                    with contextlib.suppress(OSError):
+                        listener.shutdown(socket.SHUT_RDWR)
                     listener.close()
+                    server.join()
+                    os.close(heard)
                     text = (logs / ('dispatch_VELDO-9401_aaaa.%s.out' % name)).read_text(errors='replace') \
                         if proc is not None else ''
                     engines[name] = {'installed': True, 'rc': proc.returncode if proc else None, 'scoped': scoped,
-                                     'seconds': round(time.time() - begun, 2), 'requests': seen[:8],
+                                     'requests': seen[:8],
                                      'state_written': [os.path.relpath(w, home) for w in wrote],
                                      'permission_denied': 'permission denied' in text.lower(),
                                      'initialize_failed': 'failed to initialize' in text.lower(),
@@ -673,7 +753,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 # the objects the live clones reach.
                 for cache in sorted(caches_root.glob('*.git')):
                     _git_process.run(['git', '-C', str(cache), 'gc', '--prune=now', '-q'], capture_output=True,
-                                     timeout=60, stdin=subprocess.DEVNULL)
+                                     timeout=WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
                 observed['pins_survive_gc'] = {
                     'accept_after_gc': readable(work_a, accept_commit), 'att_after_gc': readable(work_a, att_commit),
                     'head_after_gc_a': clone_head(work_a), 'head_after_gc_b': clone_head(work_b)}
@@ -728,8 +808,8 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 empty = []
                 for proc, group in ((w_proc, w_group), (c_proc, c_group)):
                     if proc is not None:
-                        proc.wait(timeout=30)
-                    empty.append(group.wait_empty(10) if group is not None else None)
+                        exited(proc, 'held probe %d' % proc.pid)
+                    empty.append(emptied(group) if group is not None else None)
                 # VELDO-0303 (review): the worker's probe left a file in no commit in the work tree. That is
                 # work, so the first teardown after every user ended leaves the clone whole, with its pins;
                 # the clone goes once the file is gone, after its commits are on kept refs.
@@ -772,7 +852,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 result_g, g_proc, g_group = run_probe(worker_g, handle_g, [], mode='orphan', grouped=True)
                 g_problems = contained(g_group, g_proc)
                 if g_proc is not None:
-                    g_proc.wait(timeout=30)
+                    exited(g_proc, 'orphaning probe')
                 members = g_group.members() if g_group is not None else []
                 if g_proc is not None and g_group is not None:
                     C.record_group(worker_g, g_group.report())
@@ -787,8 +867,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 pins_populated = len(C._pins_held(handle_g.env_id)) if handle_g else 0
                 child_reads = readable(work_g, accept_commit) and bool(members)
                 release(worker_g)
-                emptied_at = time.time()
-                empty_g = g_group.wait_empty(10) if g_group is not None else None
+                empty_g = emptied(g_group) if g_group is not None else None
                 retired_g = 'no-clone'
                 if handle_g is not None:
                     # VELDO-0303 (review): the file the worker's probe left in no commit is work, and a clone
@@ -817,7 +896,7 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     'attach_problems': g_problems, 'members_after_worker_exit': len(members),
                     'refused_while_populated': refused_populated, 'pins_while_populated': pins_populated,
                     'child_reads': child_reads, 'group_empty': empty_g,
-                    'empty_seconds': round(time.time() - emptied_at, 3), 'retired': retired_g,
+                    'retired': retired_g,
                     'pins_after': len(pins_g_after), 'unknown_group_refused': refused_unknown,
                     'unknown_group_users': [
                         {k: u.get(k) for k in ('dispatch_id', 'ended', 'group_unknown', 'entrances')}
@@ -831,6 +910,75 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                       and handle_k is not None and result_k.get('reads_clone') == 'accepted'
                       and refused_unknown == 'clone_in_use' and (clones_root / handle_k.env_id).exists())
 
+            # VELDO-0358 AC15: the profile reached every table entry this suite crosses: each effective value is
+            # the wait hang bound, and the containment module's two, when it reads them from the table, are there.
+            with region('timers/profile-applied'):
+                report = TIMERS.report()
+                named = {entry['name']: entry['value'] for entry in report}
+                crossed = ({'control_containment.SETTLE_SECONDS', 'control_containment.TOOL_SECONDS'}
+                           if getattr(CT, 'TIMERS', None) is TIMERS else set())
+                unset = sorted([name for name, value in named.items() if value != WAIT_HANG_SECONDS]
+                               + [name + ':absent' for name in crossed - set(named)])
+                observed['timers'] = {'profile': TIMERS._PROFILE, 'entries': len(report), 'unset': unset}
+                check('timers/profile-applied', TIMERS._PROFILE == (None, WAIT_HANG_SECONDS) and not unset)
+
+            # VELDO-0358 AC10: the census over brief G's files finds no site outside the declared exceptions:
+            # the two suites, the port holder and the mutation tool's ownership module, each read through its
+            # literal anchor (the mutation driver substitutes a registered mutant of it there). Suite 151 holds
+            # the same row, so a mutant of this suite's own file is read there.
+            with region('wave1/no-sites'):
+                census = load('v42_census', ROOT / 'scripts' / 'check_wallclock.py')
+                files = {'scripts/suites/151_veldo_0313_space_run.py': ROOT / "scripts/suites" / "151_veldo_0313_space_run.py",
+                         'scripts/suites/66_veldo_0042_clones.py': ROOT / "scripts/suites" / "66_veldo_0042_clones.py",
+                         'scripts/suites/support/v171_tailscale.py': ROOT / "scripts/suites/support" / "v171_tailscale.py",
+                         'scripts/mutation_ownership.py': ROOT / "scripts" / "mutation_ownership.py"}
+                found = []
+                for rel, path in files.items():
+                    found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
+                excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+                counts, first_site = census.counted(found)
+                over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1],
+                                                       first_site[k]['form'], k[3])
+                              for k, n in counts.items() if n > excepted.get(k, 0))
+                observed['no_sites'] = over
+                check('wave1/no-sites', not over)
+
+            # VELDO-0358 C11: the port the Tailscale stand-in's free_port() gives a suite's API stays bound until
+            # the suite gives it back: no other bind takes it (a bind without SO_REUSEADDR is refused), the server's
+            # own bind and listen on it succeed, and once given back it is free.
+            with region('wave1/port-held'):
+                TS = load('v42_tailscale', ROOT / "scripts/suites/support" / "v171_tailscale.py")
+                port = TS.free_port()
+                other = socket.socket()
+                try:
+                    other.bind(('127.0.0.1', port))
+                    taken = True
+                except OSError:
+                    taken = False
+                finally:
+                    other.close()
+                server = socket.socket()
+                server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    server.bind(('127.0.0.1', port))
+                    server.listen(1)
+                    served = True
+                except OSError:
+                    served = False
+                finally:
+                    server.close()
+                TS.release_ports()
+                after = socket.socket()
+                try:
+                    after.bind(('127.0.0.1', port))
+                    free_after = True
+                except OSError:
+                    free_after = False
+                finally:
+                    after.close()
+                observed['port_held'] = {'taken_by_another_bind': taken, 'served': served, 'free_after': free_after}
+                check('wave1/port-held', not taken and served and free_after)
+
             with region('clone/installed-assets'):
                 scaffold = load('v42_scaffold', mods / 'init_scaffold.py')
                 observed['installed'] = {'clone': '.veldo/control_clone.py' in scaffold._FILES,
@@ -838,11 +986,14 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 check('clone/installed-assets', '.veldo/control_clone.py' in scaffold._FILES
                       and '.veldo/env_provision.py' in scaffold._FILES)
         finally:
+            for held in latches.values():
+                os.close(held)  # every probe still holding is released
+            latches.clear()
             for proc in started:
                 with contextlib.suppress(Exception):
                     if proc.poll() is None:
                         os.killpg(proc.pid, signal.SIGKILL)
-                    proc.wait(timeout=10)
+                    proc.wait()  # killed above, or already ended
             for group in groups:
                 with contextlib.suppress(Exception):
                     group.kill()
@@ -859,12 +1010,11 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     'list-units', '--all', '--plain', '--no-legend', slice_name, *made_units).stdout.splitlines()
                     if line.split()]
             writer.close()
+            TIMERS.reset_profile()
         for first_label in regions:
             check('ran/' + first_label, first_label not in {label for label, _ in raised})
         observed['raised'] = raised
         globals()['_V42_OBSERVED'] = observed
 
 
-_v42_started = __import__('time').monotonic()
 _v42_suite()
-_V42_SECONDS = __import__('time').monotonic() - _v42_started
