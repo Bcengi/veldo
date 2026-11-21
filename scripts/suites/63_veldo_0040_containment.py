@@ -907,15 +907,19 @@ sys.exit(payload.get('code', 0))
                                              timestamps=group.timestamps, show_seconds=show_seconds))
             observed['conclude_settles'] = settling
             observed['conclude_reset_budget'] = reset_budget
+            # VELDO-0358: every time here is the fake manager's supplied clock. The settling rows conclude on their
+            # second reading, with the result read (so inside the budget) and some of the clock spent; the budget rows
+            # spend exactly the budget, never more, and reset only when the show left time for it (the first of the
+            # two budgets above leaves 0.01 s, the second none).
             check('containment/conclude-settles', all(
                 row['result'] == 'timeout' and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
-                and row['calls'] == 2 and 0 < row['elapsed'] <= C.SETTLE_SECONDS
+                and row['calls'] == 2 and row['elapsed'] > 0
                 and row['resets'] == ([row['timestamps']] if row['state'] == 'failed' else [])
                 and row['error'] is None for row in settling) and all(
-                row['result'] == 'timeout' and row['elapsed'] <= C.SETTLE_SECONDS
+                row['result'] == 'timeout' and row['elapsed'] == C.SETTLE_SECONDS
                 and row['timestamps'] == dict(zip(stamp_names, (100, 200, 300)))
-                and len(row['resets']) == (row['show_seconds'] < C.SETTLE_SECONDS)
-                for row in reset_budget), dict(settling=settling, reset_budget=reset_budget))
+                for row in reset_budget) and [len(row['resets']) for row in reset_budget] == [1, 0],
+                dict(settling=settling, reset_budget=reset_budget))
 
         with region('containment/conclude-unknown'):
             unreadable = [reap_sequence([item]) for item in (
@@ -925,7 +929,7 @@ sys.exit(payload.get('code', 0))
             check('containment/conclude-unknown', all(
                 row['supervision']['result'] == 'unknown' and row['supervision']['cause'] == 'unknown'
                 and row['supervision']['scope_timestamps'] == {} and row['inferred'] == 'exit'
-                and not row['termination']['deadline_stop'] and row['elapsed'] <= C.SETTLE_SECONDS
+                and not row['termination']['deadline_stop'] and row['elapsed'] == C.SETTLE_SECONDS  # supplied clock
                 for row in unreadable))
 
         started, made = {}, []
@@ -1367,6 +1371,30 @@ sys.exit(payload.get('code', 0))
                 observed['timers'] = {'timer_unset': unset, 'absent': {w: sorted(needed - n) for w, n in names.items()}}
                 check('timers/profile-applied', all(not v for v in unset.values())
                       and all(needed <= n for n in names.values()), observed['timers'])
+
+            # VELDO-0358 AC10, AC15: the same census row as suite 62's (brief E's files, each suite read through its
+            # literal anchor, the engine modules from this suite's installed copies), so a registered mutant of suite
+            # 62's own file is read here.
+            with region('wave1/no-sites'):
+                census = load('v40_census', ROOT / 'scripts' / 'check_wallclock.py')
+                suites = {'62_veldo_0039_dispatch.py': ROOT / "scripts/suites" / "62_veldo_0039_dispatch.py",
+                          '63_veldo_0040_containment.py': ROOT / "scripts/suites" / "63_veldo_0040_containment.py",
+                          '78_veldo_0060_claude_adapter.py': ROOT / "scripts/suites" / "78_veldo_0060_claude_adapter.py",
+                          '106_veldo_0185_dispatch_setup.py': ROOT / "scripts/suites" / "106_veldo_0185_dispatch_setup.py"}
+                found = []
+                for name, path in suites.items():
+                    found += census.Python('scripts/suites/' + name, Path(path).read_text(), census.RULES).scan()
+                for name in ('control_launch.py', 'control_containment.py', 'control_heartbeat.py',
+                             'control_engine_claude.py', 'control_engine_codex.py', 'policy_contract.py'):
+                    found += census.Python('engine/.veldo/' + name, (mods / name).read_text(), ('R3',),
+                                           engine=True).scan()
+                excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
+                counts, first_site = census.counted(found)
+                over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1],
+                                                       first_site[k]['form'], k[3])
+                              for k, n in counts.items() if n > excepted.get(k, 0))
+                observed['no_sites'] = over
+                check('wave1/no-sites', not over, {'sites outside the declared exceptions': over[:20]})
 
             with region('containment/observations', 'containment/installed-assets'):
                 seen_codes = [str(r['refusal']) for r in observed.get('unqualified', {}).values()]
