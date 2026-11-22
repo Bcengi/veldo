@@ -1,0 +1,65 @@
+# The full mutation stage at 9e3acdd1 (python3 -I -S scripts/check_gate_mutations.py --root <scratch worktree> --receipt <file>),
+# through host_heavy.sh, VELDO_GATE_FORCE_FRESH=1, bound to five CPUs (ten workers).
+queued 2026-11-22T02:38:05Z head 9e3acdd1
+started 2026-11-22T02:38:05Z
+end 2026-11-22T07:16:11Z
+status: failed
+scope: full
+error: worker_cleanup_error
+detail: worker_cleanup_error: check_teeth_mutations.py:loop154-pipe-not-polled: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+registered: 3665
+executed: 723
+rejected: 650
+surviving_workers: 0
+worker_invocations: 1975
+parallel_workers: 10
+elapsed: 16685.962595860008
+kill_by of the rejected cases: {'unproven': 574, 'assertion': 76}
+invalid results (73):
+  control_failed: check_teeth_mutations.py:opened358-candidate-record-read: completed controls: {"baseline": {"failed_details": [], "failed_rows": [], "hung_rows": []}, "noop": {"failed_details": [["VELDO-0358 load/level-by-construction", "the canary alone is not green: 1 'canary: red\\n'"]], "failed_rows": ["VELDO-0358 load/level-by-construction"], "hung_rows": []}}
+  control_failed: check_teeth_mutations.py:opened358-unit-not-taken: completed controls: {"baseline": {"failed_details": [], "failed_rows": [], "hung_rows": []}, "noop": {"failed_details": [["VELDO-0358 load/level-by-construction", "the canary alone is not green: 1 'canary: red\\n'"]], "failed_rows": ["VELDO-0358 load/level-by-construction"], "hung_rows": []}}
+  control_failed: check_teeth_mutations.py:load358-red-not-blocking: completed controls: {"baseline": {"failed_details": [], "failed_rows": [], "hung_rows": []}, "noop": {"failed_details": [["VELDO-0358 load/level-by-construction", "the canary alone is not green: 1 'canary: red\\n'"]], "failed_rows": ["VELDO-0358 load/level-by-construction"], "hung_rows": []}}
+  control_failed: check_teeth_mutations.py:receiver148-release-deadline-not-finite: completed controls: {"baseline": {"failed_details": [], "failed_rows": [], "hung_rows": []}, "noop": {"failed_details": [], "failed_rows": ["VELDO-0148 receiver/pre-release-budget"], "hung_rows": []}}
+  mutation_survived: check_teeth_mutations.py:reland148-landed-rebuilt
+  check_teeth_mutations.py:loop154-pipe-not-polled: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+  check_teeth_mutations.py:loop154-ask-reruns: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+  stage stopped before worker completed
+  check_teeth_mutations.py:loop154-eof-ignored: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+  check_teeth_mutations.py:loop154-orphan-not-stopped: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+  check_teeth_mutations.py:loop154-account-slot-kept: ownership ledger names resources outside this worker: ["directory", "<scratch>"]
+  stage stopped before worker completed
+  stage stopped before worker completed
+  stage stopped before worker completed
+  stage stopped before worker completed
+  control_failed, 58 cases of suite 86_veldo_0127 (role127-*): baseline and no-op red at VELDO-0127 live/claude and live/codex (the captures are bound to the engine modules' digests)
+rejected cases by suite and kill_by:
+  103_veldo_0142_git_identities.py: {'unproven': 10}
+  109_veldo_0161_adoption.py: {'unproven': 52}
+  110_veldo_0143_new_project.py: {'unproven': 61}
+  116_veldo_0188_project_lines.py: {'unproven': 6}
+  118_veldo_0159_mcp_credential_form.py: {'unproven': 2}
+  119_veldo_0163_role_team_form.py: {'unproven': 3}
+  120_veldo_0131_factory_ui.py: {'assertion': 4}
+  121_veldo_0131_factory_screens_narrow.py: {'assertion': 6}
+  124_veldo_0131_factory_reads_commands.py: {'assertion': 9}
+  129_veldo_0239_batch_landing.py: {'unproven': 1}
+  129_veldo_0260_checkout_in_step.py: {'unproven': 7}
+  133_veldo_0326_space_principals.py: {'unproven': 19}
+  153_veldo_0309_gate_space.py: {'unproven': 20}
+  160_veldo_0358_load_leg.py: {'unproven': 7}
+  58_veldo_0028_effects.py: {'unproven': 71}
+  58_veldo_0035_snapshots.py: {'unproven': 1}
+  58_veldo_0036_reservations.py: {'unproven': 20}
+  59_veldo_0037_aliases.py: {'unproven': 66}
+  67_veldo_0056_candidates.py: {'unproven': 25}
+  69_veldo_0058_gate_output.py: {'unproven': 19}
+  71_veldo_0130_api.py: {'unproven': 62}
+  73_veldo_0139_factory_setup.py: {'unproven': 24}
+  75_veldo_0062_accounts.py: {'unproven': 11}
+  82_veldo_0129_worker_wiring.py: {'unproven': 14}
+  83_veldo_0154_factory_loop.py: {'assertion': 7}
+  86_veldo_0148_re_land.py: {'unproven': 28}
+  86_veldo_0189_engine_upgrade.py: {'assertion': 50}
+  87_veldo_0127_codex_delivery.py: {'unproven': 10}
+  92_veldo_0088_pm_cycles.py: {'unproven': 20}
+  93_veldo_0152_intake_routes.py: {'unproven': 15}

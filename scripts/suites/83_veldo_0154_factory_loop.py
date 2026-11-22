@@ -49,7 +49,6 @@ def _v154_suite():
     import json
     import os
     from pathlib import Path
-    import select
     import shutil
     import signal
     import socket
@@ -259,52 +258,6 @@ sys.exit(chosen['code'])
                 self.calls.append(list(args))
                 return 0, '', ''
 
-        class ReceiverExits(WAITS.Source):
-            """The exit of the receiver of each run a store names, each on its pidfd, behind one descriptor (an
-            epoll set), so a receiver that starts while a wait sleeps is followed from the store change that names
-            it. An exit is the kernel's event; nothing here reads a clock."""
-
-            def __init__(self):
-                self.set = select.epoll()
-                self.fds, self.known, self.exited = {}, set(), set()
-
-            def fileno(self):
-                return self.set.fileno()
-
-            def follow(self, dispatch_id, identity):
-                if dispatch_id in self.known or self.set.closed:
-                    return
-                self.known.add(dispatch_id)
-                try:
-                    fd = os.pidfd_open(identity['pid'])
-                except OSError:
-                    self.exited.add(dispatch_id)
-                    return
-                fields = proc_stat(identity['pid'])
-                if not fields or fields[19] != identity.get('start') or fields[0] == 'Z':
-                    os.close(fd)  # gone already, or the pid names another process now
-                    self.exited.add(dispatch_id)
-                    return
-                self.fds[fd] = dispatch_id
-                self.set.register(fd, select.EPOLLIN)
-
-            def fired(self):
-                for fd, _event in self.set.poll(0):
-                    self.set.unregister(fd)
-                    os.close(fd)
-                    self.exited.add(self.fds.pop(fd))
-                return True
-
-            def close(self):
-                for fd in list(self.fds):
-                    os.close(fd)
-                self.fds.clear()
-                if not self.set.closed:
-                    self.set.close()
-
-            def describe(self):
-                return 'receiver exits (%d followed, %d exited)' % (len(self.fds), len(self.exited))
-
         class Instance:
             """One enrolled clone and the installed authority service over a store of its own, with the owner's
             projects, his Codex accounts and the units. Two run side by side: the reset row's minute passes in
@@ -314,9 +267,6 @@ sys.exit(chosen['code'])
             def __init__(self, tag, accounts, units, paused=None):
                 self.tag, self.accounts, self.proc, self.pid = tag, tuple(accounts), None, None
                 self.idle_at = None  # the last pass at which the service answered idle
-                # Wave 1 integration: the receivers' exits the current wait follows, the runs the service was seen
-                # to have let go after their receiver's exit, and what it answered about those it still holds.
-                self.exits, self.heard, self.deaf_at = None, set(), [None, 0, None]
                 self.DOMAIN, self.STORE, self.REPO = ('dom154' + tag + run_id, 'store154' + tag + run_id,
                                                       'repo154' + tag + run_id)
                 workspace = self.workspace = base / ('clone-' + tag)
@@ -536,57 +486,11 @@ sys.exit(chosen['code'])
                 found = [WAITS.PathAppears(self.observations, modify=True), WAITS.Store(self.store_path)] + list(more)
                 if self.live():
                     found.append(WAITS.Pidfd(self.proc))
-                self.exits = ReceiverExits()
-                found.append(self.exits)
                 return found
 
-            def deaf(self):
-                """The service holds a run whose receiver has exited and does not hear its end: asked twice after
-                that exit, the second request sent once the first was answered, it still lists the run as
-                running, with no wake collected and no pass since. A service that polls its launch pipes cannot
-                answer so: the lap that answers the first request also reads the ended pipe and runs its pass
-                before the next lap takes the second. So the pass a wait is for never comes, and the wait ends
-                impossible on that evidence where it would otherwise run to the hang bound (the registered mutant
-                that stops polling the pipes did). Each state (the last logged pass, the runs concerned) is asked
-                at most twice: an answer is itself a logged request and wakes the wait again."""
-                exits = self.exits
-                # No run has ended before the service's first pass (a pass starts every run), and until then the
-                # service may still be creating its store: it is not read here before that.
-                if exits is None or not self.last_pass():
-                    return False
-                for record in self.dispatches():
-                    receiver = record.get('receiver')
-                    if isinstance(receiver, dict) and isinstance(receiver.get('pid'), int):
-                        exits.follow(record.get('dispatch_id'), receiver)
-                ended = sorted(exits.exited - self.heard)
-                if not ended:
-                    return False
-                logged = self.last_pass()
-                state = (logged, tuple(ended))
-                if self.deaf_at[0] != state:
-                    self.deaf_at = [state, 0, None]
-                if self.deaf_at[2] is not None:
-                    return self.deaf_at[2]
-                status = self.send({'operation': 'inspect', 'entity_ids': []})
-                loop = ((status or {}).get('result') or status or {}).get('loop') or {}
-                if loop.get('available') is not True:
-                    self.deaf_at[2] = False  # no answer about its loop: no evidence either way
-                    return False
-                held = [d for d in ended if d in (loop.get('running') or [])]
-                self.heard.update(d for d in ended if d not in held)
-                if not held:
-                    return False
-                if loop.get('passes') != logged or loop.get('pending_wakes') != 0:
-                    self.deaf_at[2] = False  # a pass came or is collected: its log line asks again
-                    return False
-                self.deaf_at[1] += 1
-                self.deaf_at[2] = True if self.deaf_at[1] >= 2 else None
-                return self.deaf_at[2] is True
-
             def idle(self):
-                """The service's idle answer: no run in flight, no timer due within any wait, no wake pending, and
-                every pass it ran logged. Nothing more happens in it until this suite acts, so a pass not yet logged
-                never comes.
+                """The service's idle answer: no run in flight, no timer, no wake pending, and every pass it ran
+                logged. Nothing more happens in it until this suite acts, so a pass not yet logged never comes.
                 Asked once per logged pass (an answer is itself a logged request, so asking again on that wake
                 would wake the wait again)."""
                 logged = self.last_pass()
@@ -594,15 +498,8 @@ sys.exit(chosen['code'])
                     return self.idle_at[1]
                 status = self.send({'operation': 'inspect', 'entity_ids': []})
                 loop = ((status or {}).get('result') or status or {}).get('loop') or {}
-                # Its timer: none, or (wave 1 integration) one further away than any wait may last. A pass that only
-                # that timer can start cannot end this wait, which would otherwise run to the hang bound: the
-                # service says when it next acts by itself, and that is a lower bound on a duration, never an upper.
-                timer = loop.get('timer')
-                far_timer = isinstance(timer, (int, float)) and timer - wall_now() > WAITS.WAIT_HANG_SECONDS
-                # An orphan whose release is still pending is no reason to wait: its release is tried again inside a
-                # pass (Runner.release_orphans) and starts none, so with nothing else to come it stays as it is.
                 quiet = (loop.get('available') is True and loop.get('passes') == logged and loop.get('running') == []
-                         and (timer is None or far_timer) and loop.get('pending_wakes') == 0)
+                         and loop.get('orphans') == [] and loop.get('timer') is None and loop.get('pending_wakes') == 0)
                 self.idle_at = (logged, quiet)
                 return quiet
 
@@ -617,7 +514,7 @@ sys.exit(chosen['code'])
                     return bool(found), (found or [None])[0]
                 self.idle_at = None
                 result = WAITS.wait('a pass of instance %s after %d' % (self.tag, after), done,
-                                    lambda: not self.live() or self.idle() or self.deaf(), self.sources(), _depth=2)
+                                    lambda: not self.live() or self.idle(), self.sources(), _depth=2)
                 return found[0] if result.done else None
 
             def wait_until(self, predicate, more=()):
@@ -625,7 +522,7 @@ sys.exit(chosen['code'])
                 answered idle without it or has ended."""
                 self.idle_at = None
                 return WAITS.wait('a state of instance %s' % self.tag, predicate,
-                                  lambda: not self.live() or (not predicate() and (self.idle() or self.deaf())),
+                                  lambda: not self.live() or (not predicate() and self.idle()),
                                   self.sources(*more), _depth=2).done
 
             def send(self, payload):
@@ -1161,8 +1058,7 @@ sys.exit(chosen['code'])
                 return seen['settled'].get('state') not in D.STOPPABLE
 
             WAITS.wait('the stopped dispatch %s' % sid, stopped,
-                       lambda: (not A.live() or any('journal' in p['sources'] for p in passes() if p['pass'] > mark)
-                                or A.deaf()),
+                       lambda: not A.live() or any('journal' in p['sources'] for p in passes() if p['pass'] > mark),
                        A.sources())
             settled = seen['settled']
             wait_pass(lambda p: 'journal' in p['sources'], mark)
