@@ -1,0 +1,647 @@
+{
+  "commit": "4c6e5d249ed471236c0719b5121330884381151b",
+  "passed": false,
+  "results": [
+    {
+      "case": "store359-guard-skipped",
+      "failed_details": [
+        [
+          "v359 layout/mounts",
+          "NOT RUN actual bind namespace: {'not_run': 'Permission denied', 'errno': 13}"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/mounts"
+      ],
+      "mode": "baseline",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": false,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/enforce-fail": [
+          true
+        ],
+        "launch/guard-default": [
+          true
+        ],
+        "launch/receiver-memory": [
+          true
+        ]
+      },
+      "tested_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9"
+    },
+    {
+      "case": "store359-guard-skipped",
+      "failed_details": [
+        [
+          "v359 layout/mounts",
+          "NOT RUN actual bind namespace: {'not_run': 'Permission denied', 'errno': 13}"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/mounts"
+      ],
+      "mode": "noop",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": false,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/enforce-fail": [
+          true
+        ],
+        "launch/guard-default": [
+          true
+        ],
+        "launch/receiver-memory": [
+          true
+        ]
+      },
+      "tested_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9"
+    },
+    {
+      "case": "store359-role-sandbox-wins",
+      "failed_details": [
+        [
+          "v359 layout/mounts",
+          "NOT RUN actual bind namespace: {'not_run': 'Permission denied', 'errno': 13}"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/mounts"
+      ],
+      "mode": "noop",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": false,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "d43424337db8e568cfb387d989315c9fed95e3965965908773bc0e7c38db368c",
+      "targets": {
+        "launch/engines": [
+          true
+        ]
+      },
+      "tested_sha256": "d43424337db8e568cfb387d989315c9fed95e3965965908773bc0e7c38db368c"
+    },
+    {
+      "case": "store359-guard-skipped",
+      "failed_details": [
+        [
+          "v359 launch/guard-default",
+          "project/parent/custom.sqlite3/read; project/parent/custom.sqlite3/write; project/parent/custom.sqlite3-wal/read; project/parent/custom.sqlite3-wal/write; project/parent/custom.sqlite3-shm/read; project/parent/custom.sqlite3-shm/write; project/parent/custom.sqlite3-journal/read; project/parent/custom.sqlite3-journal/write; project/parent/authority.lock/read; project/parent/authority.lock/write; project/parent/create/file; project/parent/create/dir; project/parent/create/link; project/parent/create/socket; project/parent/truncate-ro; project/parent/truncate; project/parent/unlink; project/parent/rename; project/parent/link; project/parent/store-move; project/parent/store-replace; project/parent/store-exchange; project/parent/store-exchange-in; project/parent/ancestor; project/parent/outside-link; project/parent/marker-create; project/parent/marker-link; project/parent/marker-rename; project/parent/parent-move; project/parent/socket-link; project/parent/socket-rename; project/child/custom.sqlite3/read; project/child/custom.sqlite3/write; project/child/custom.sqlite3-wal/read; project/child/custom.sqlite3-wal/write; project/child/custom.sqlite3-shm/read; project/child/custom.sqlite3-shm/write; project/child/custom.sqlite3-journal/read; project/child/custom.sqlite3-journal/write; project/child/authority.lock/read; project/child/authority.lock/write; project/child/create/file; project/child/create/dir; project/child/create/link; project/child/create/socket; project/child/truncate-ro; project/child/truncate; project/child/unlink; project/child/rename; project/child/link; project/child/store-move; project/child/store-replace; project/child/store-exchange; project/child/store-exchange-in; project/child/ancestor; project/child/outside-link; project/child/marker-create; project/child/marker-link; project/child/marker-rename; project/child/parent-move; project/child/socket-link; project/child/socket-rename; conversation/parent/custom.sqlite3/read; conversation/parent/custom.sqlite3/write; conversation/parent/custom.sqlite3-wal/read; conversation/parent/custom.sqlite3-wal/write; conversation/parent/custom.sqlite3-shm/read; conversation/parent/custom.sqlite3-shm/write; conversation/parent/custom.sqlite3-journal/read; conversation/parent/custom.sqlite3-journal/write; conversation/parent/authority.lock/read; conversation/parent/authority.lock/write; conversation/parent/create/file; conversation/parent/create/dir; conversation/parent/create/link; conversation/parent/create/socket; conversation/parent/truncate-ro; conversation/parent/truncate; conversation/parent/unlink; conversation/parent/rename; conversation/parent/link; conversation/parent/store-move; conversation/parent/store-replace; conversation/parent/store-exchange; conversation/parent/store-exchange-in; conversation/parent/ancestor; conversation/parent/outside-link; conversation/parent/marker-create; conversation/parent/marker-link; conversation/parent/marker-rename; conversation/parent/parent-move; conversation/parent/socket-link; conversation/parent/socket-rename; conversation/child/custom.sqlite3/read; conversation/child/custom.sqlite3/write; conversation/child/custom.sqlite3-wal/read; conversation/child/custom.sqlite3-wal/write; conversation/child/custom.sqlite3-shm/read; conversation/child/custom.sqlite3-shm/write; conversation/child/custom.sqlite3-journal/read; conversation/child/custom.sqlite3-journal/write; conversation/child/authority.lock/read; conversation/child/authority.lock/write; conversation/child/create/file; conversation/child/create/dir; conversation/child/create/link; conversation/child/create/socket; conversation/child/truncate-ro; conversation/child/truncate; conversation/child/unlink; conversation/child/rename; conversation/child/link; conversation/child/store-move; conversation/child/store-replace; conversation/child/store-exchange; conversation/child/store-exchange-in; conversation/child/ancestor; conversation/child/outside-link; conversation/child/marker-create; conversation/child/marker-link; conversation/child/marker-rename; conversation/child/parent-move; conversation/child/socket-link; conversation/child/socket-rename; workflow/parent/custom.sqlite3/read; workflow/parent/custom.sqlite3/write; workflow/parent/custom.sqlite3-wal/read; workflow/parent/custom.sqlite3-wal/write; workflow/parent/custom.sqlite3-shm/read; workflow/parent/custom.sqlite3-shm/write; workflow/parent/custom.sqlite3-journal/read; workflow/parent/custom.sqlite3-journal/write; workflow/parent/authority.lock/read; workflow/parent/authority.lock/write; workflow/parent/create/file; workflow/parent/create/dir; workflow/parent/create/link; workflow/parent/create/socket; workflow/parent/truncate-ro; workflow/parent/truncate; workflow/parent/unlink; workflow/parent/rename; workflow/parent/link; workflow/parent/store-move; workflow/parent/store-replace; workflow/parent/store-exchange; workflow/parent/store-exchange-in; workflow/parent/ancestor; workflow/parent/outside-link; workflow/parent/marker-create; workflow/parent/marker-link; workflow/parent/marker-rename; workflow/parent/parent-move; workflow/parent/socket-link; workflow/parent/socket-rename; workflow/child/custom.sqlite3/read; workflow/child/custom.sqlite3/write; workflow/child/custom.sqlite3-wal/read; workflow/child/custom.sqlite3-wal/write; workflow/child/custom.sqlite3-shm/read; workflow/child/custom.sqlite3-shm/write; workflow/child/custom.sqlite3-journal/read; workflow/child/custom.sqlite3-journal/write; workflow/child/authority.lock/read; workflow/child/authority.lock/write; workflow/child/create/file; workflow/child/create/dir; workflow/child/create/link; workflow/child/create/socket; workflow/child/truncate-ro; workflow/child/truncate; workflow/child/unlink; workflow/child/rename; workflow/child/link; workflow/child/store-move; workflow/child/store-replace; workflow/child/store-exchange; workflow/child/store-exchange-in; workflow/child/ancestor; workflow/child/outside-link; workflow/child/marker-create; workflow/child/marker-link; workflow/child/marker-rename; workflow/child/parent-move; workflow/child/socket-link; workflow/child/socket-rename; direct/socket-unlink/False; descendant/socket-unlink/False"
+        ],
+        [
+          "v359 launch/enforce-fail",
+          "probe named, no payload; create named, no payload; add named, no payload; restrict named, no payload"
+        ],
+        [
+          "v359 launch/receiver-memory",
+          "fd guarded denial with successful control; mem guarded denial with successful control; process_vm_readv guarded denial with successful control; process_vm_writev guarded denial with successful control; pidfd_getfd guarded denial with successful control"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/guard-default",
+        "v359 launch/enforce-fail",
+        "v359 launch/receiver-memory"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/enforce-fail": false,
+        "launch/guard-default": false,
+        "launch/receiver-memory": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/enforce-fail": [
+          false
+        ],
+        "launch/guard-default": [
+          false
+        ],
+        "launch/receiver-memory": [
+          false
+        ]
+      },
+      "tested_sha256": "cd70dc80e9f01101aa0dacaa8f41b5cdfa2ee6c8943a0511e6a174e51f0d50dd"
+    },
+    {
+      "case": "store359-write-only-guard",
+      "failed_details": [
+        [
+          "v359 launch/guard-read",
+          "read-only flock denied before flock"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/guard-read"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/guard-read": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/guard-read": [
+          false
+        ]
+      },
+      "tested_sha256": "7c72793388fe016a103f9cf386a98ebeddead9e32779d2b1f930fd1c1158c30e"
+    },
+    {
+      "case": "store359-fd-check-skipped",
+      "failed_details": [
+        [
+          "v359 launch/descriptors-leaked",
+          "raised DatabaseError('file is not a database')"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/descriptors-leaked"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/descriptors-leaked": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/descriptors-leaked": [
+          false
+        ]
+      },
+      "tested_sha256": "9d39732cd2e409e33b48cac4ec5a8827abe320e9747b7413fc1b825bca16595c"
+    },
+    {
+      "case": "store359-fd-check-late",
+      "failed_details": [
+        [
+          "v359 launch/descriptors-early",
+          "stdout bytes unchanged; stdout durable audit outcome; stdout final audit record; stdout unreported only for forbidden setup; raised DatabaseError('file is not a database')"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/descriptors-early"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/descriptors-early": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/descriptors-early": [
+          false
+        ]
+      },
+      "tested_sha256": "74e65e714f1ee68688d1928490251a2370b7b50229feb870ac3f82164d83e469"
+    },
+    {
+      "case": "store359-audit-late-reader-only",
+      "failed_details": [
+        [
+          "v359 launch/descriptors-early",
+          "stdout durable audit outcome; stdout final audit record; stdout unreported only for forbidden setup; stderr durable audit outcome; stderr final audit record; stderr unreported only for forbidden setup; stdin durable audit outcome; stdin final audit record; stdin unreported only for forbidden setup; setup durable audit outcome; setup final audit record; setup unreported only for forbidden setup"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/descriptors-early"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/descriptors-early": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/descriptors-early": [
+          false
+        ]
+      },
+      "tested_sha256": "18484591648476c448bfb03d453c8c16d5b281eb3a1515a2e6eba1f7abba6a66"
+    },
+    {
+      "case": "store359-ack-early",
+      "failed_details": [
+        [
+          "v359 launch/ack",
+          "project pending at acceptance then applied; conversation pending at acceptance then applied; workflow pending at acceptance then applied; probe never applied; create never applied; add never applied; restrict never applied"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/ack"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/ack": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/ack": [
+          false
+        ]
+      },
+      "tested_sha256": "b9287e9e320dd770dc64be9d27ae4736e584a6efaa9e49a2a9acf9849993e1af"
+    },
+    {
+      "case": "store359-low-abi-accepted",
+      "failed_details": [
+        [
+          "v359 launch/abi",
+          "abi_below_3False; abi_below_3True; actual launch low ABI 1; actual launch low ABI 2"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/abi"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/abi": [
+          false
+        ]
+      },
+      "tested_sha256": "9330f9792a17d362f7f5408146140ace075b05e7bc36afeaecd5ca18f1576a8e"
+    },
+    {
+      "case": "store359-risky-floor-skipped",
+      "failed_details": [
+        [
+          "v359 launch/abi",
+          "risky floor 3; risky floor 4; risky floor 5; risky platform; actual risky launch low ABI 3; actual risky launch low ABI 4; actual risky launch low ABI 5"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/abi"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/abi": [
+          false
+        ]
+      },
+      "tested_sha256": "1f487070d106ed29e301841c1df705c1723cd2689ca30b9c647293a82c4cb7e8"
+    },
+    {
+      "case": "store359-socket-exception-removed",
+      "failed_details": [
+        [
+          "v359 layout/entries",
+          "normal bound socket; raised JSONDecodeError('Expecting value: line 1 column 1 (char 0)'); stale authority socket actual launch; raised JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/entries"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "layout/entries": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "layout/entries": [
+          false
+        ]
+      },
+      "tested_sha256": "ac9cdee17deb3c0b0baef47927a8a28fe3f712f7107189040c73b17d6a4ff509"
+    },
+    {
+      "case": "store359-special-entries-allowed",
+      "failed_details": [
+        [
+          "v359 layout/entries",
+          "fifo; socket; nested-socket"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/entries"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "layout/entries": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "layout/entries": [
+          false
+        ]
+      },
+      "tested_sha256": "0dd176e235ab6f9bdd2b66f15fb22c023879f09e48eaa373e08b56e4bdf0e903"
+    },
+    {
+      "case": "store359-links-allowed",
+      "failed_details": [
+        [
+          "v359 layout/entries",
+          "hardlink; external hardlink custom.sqlite3; external hardlink custom.sqlite3-wal; external hardlink authority.lock"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/entries"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "layout/entries": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "layout/entries": [
+          false
+        ]
+      },
+      "tested_sha256": "0db90d73aaeb80ed9eb4a2d405b1e5ffa580c8111115b3b5bf4b93e6e480623f"
+    },
+    {
+      "case": "store359-file-binds-allowed",
+      "mode": "mutant",
+      "passed": false,
+      "reason": "unmutated target row incomplete on this host",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "store359-placement-skipped",
+      "failed_details": [
+        [
+          "v359 layout/placement",
+          "actual fallback"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/placement"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "layout/placement": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "layout/placement": [
+          false
+        ]
+      },
+      "tested_sha256": "4283ebb8d993270097b20a5b2bc1eaeb8ddb9ce117815aaa6ec78440fb6ff084"
+    },
+    {
+      "case": "store359-guard-before-runner",
+      "failed_details": [
+        [
+          "v359 launch/risky-real",
+          "raised JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-real"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/risky-real": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/risky-real": [
+          false
+        ]
+      },
+      "tested_sha256": "a1da8fb00e2d5178acb8ee80dc02e118d2266a161e7aa993336cfebfc7b6b16b"
+    },
+    {
+      "case": "store359-precondition-skipped",
+      "failed_details": [
+        [
+          "v359 launch/risky-census",
+          "read-root refused before acceptance; read-link refused before acceptance; configuration refused before acceptance; general-seed refused before acceptance; client-seed refused before acceptance; credential refused before acceptance; unresolvable root before acceptance"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-census"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/risky-census": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/risky-census": [
+          false
+        ]
+      },
+      "tested_sha256": "d708fede6ca86d926649ca404d94306c3383b25ebb2b13ccc099e6cdec679a58"
+    },
+    {
+      "case": "store359-census-prefilter",
+      "failed_details": [
+        [
+          "v359 launch/risky-census",
+          "post-exclusion broad root accepted"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-census"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/risky-census": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/risky-census": [
+          false
+        ]
+      },
+      "tested_sha256": "db65dce0d045d55f96e4c3402bc92be24bcfd39432cc018bb61b00c7b9a1a1a5"
+    },
+    {
+      "case": "store359-census-places-as-grants",
+      "failed_details": [
+        [
+          "v359 launch/risky-census",
+          "None both-way parity; claude both-way parity; codex both-way parity; unused place not a grant; claude state created parity; codex state created parity"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-census"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/risky-census": false,
+        "rejected": true
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "launch/risky-census": [
+          false
+        ]
+      },
+      "tested_sha256": "d6a803585a64ba5201f47cdaa8e97cee42419c5f647dc14a1aea2677da6410c9"
+    },
+    {
+      "case": "store359-role-sandbox-wins",
+      "failed_details": [
+        [
+          "v359 launch/engines",
+          "on sampled setting wins; on generated setting"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/engines"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/engines": false,
+        "rejected": true
+      },
+      "source_sha256": "d43424337db8e568cfb387d989315c9fed95e3965965908773bc0e7c38db368c",
+      "targets": {
+        "launch/engines": [
+          false
+        ]
+      },
+      "tested_sha256": "781bd82e8afd6c0817a2f2c1bb00969d1a2cf10fdc5fa88ee2ba20b1f63b01cf"
+    },
+    {
+      "case": "store359-switch-outside",
+      "failed_details": [
+        [
+          "v359 switch/run-cannot-flip",
+          "write the sampled marker path refused; next actual launch stays guarded; raised RuntimeError(\"read-root: {'state': 'on', 'path': '/var/lib/veldo/v359-b2-u1n5i5vk/work/store-guard.off', 'preflight': {'kernel': {'platform': 'x86_64', 'abi': 8, 'reason': None}, 'risky_floor': 'passed', 'directory': '/var/lib/veldo/v359-b2-u1n5i5vk/state/authority', 'entries': 'passed', 'mounts': 'passed', 'runs': '/var/lib/veldo/v359-b2-u1n5i5vk/runs', 'placement': 'passed'}, 'directory': '/var/lib/veldo/v359-b2-u1n5i5vk/state/authority', 'outcome': 'refused', 'reason': 'confined_runner_unavailable:store_reachable', 'element_path': '/var/lib/veldo/v359-b2-u1n5i5vk/state'}\")"
+        ]
+      ],
+      "failed_rows": [
+        "v359 switch/run-cannot-flip"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "rejected": true,
+        "switch/run-cannot-flip": false
+      },
+      "source_sha256": "e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9",
+      "targets": {
+        "switch/run-cannot-flip": [
+          false
+        ]
+      },
+      "tested_sha256": "9331009a3e542e5e1eaecf1b40f07331ecc55e96acd922d4884b55fb39768219"
+    }
+  ],
+  "suite_sha256": "897c653e70298c0ccc039962e43ea5d81d0e85ce18888392e217f77f830d7bdb"
+}

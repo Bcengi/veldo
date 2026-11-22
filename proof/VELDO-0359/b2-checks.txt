@@ -1,0 +1,59 @@
+VELDO-0359 B2 partial build checks
+Date: 2026-11-22
+Source commit: 4c6e5d249ed471236c0719b5121330884381151b
+Fixtures only; no real store, no live engine; no verification/landing claim.
+
+Portable route: remote_run.sh --share --out <output> pc2 <worktree> 4c6e5d249ed471236c0719b5121330884381151b -- python3 -B scripts/selftest.py --suite 157_veldo_0359_run_query
+Host route: host_heavy.sh python3 -B scripts/selftest.py --suite 158_veldo_0359_store_guard
+Mutation route: host_heavy.sh python3 -B proof/VELDO-0359/b2-mutation-controls.py <receipt.txt>
+No loaded runs. Events synchronize payloads; fixture hang detectors are at least 120 seconds.
+
+pc2 suite 157
+157_veldo_0359_run_query                         6 passed   13.21s
+selftest (PARTIAL, 1 of 238 suites): 32 passed, 0 failed in 13.21s
+
+host suite 158
+NOT RUN layout/entries device: errno=1
+SELFTEST FAIL: v359 layout/mounts: NOT RUN actual bind namespace: {'not_run': 'Permission denied', 'errno': 13}
+158_veldo_0359_store_guard                      19 passed   35.01s
+selftest (PARTIAL, 1 of 238 suites): 45 passed, 1 failed in 35.01s
+
+Suite 157 exit 2 is the deliberate partial-run exit (zero failed assertions).
+Suite 158 exit 1: real namespace/bind fixture NOT RUN, EACCES writing setgroups.
+Device creation: NOT RUN, EPERM. No missing facility counted as evidence.
+Suite 158 query/journey also runs suite 157 with VELDO_0359_GUARDED_JOURNEY=1:
+32 assertions pass there under the real Landlock ruleset; no direct client store opens.
+B2 mutation results: see b2-mutation-results.txt; baseline/module no-ops retain the mount-row failure.
+The NOT RUN mount mutant is not counted as a mutation kill.
+
+Personal setup: 0 findings; no installed setup found, built-in shapes checked only.
+template sync: pass (326 pair(s) compared, 6 declared per-repo, 367 engine-only)
+Generated requires.json: exact match to run_scope --emit-requires (238 suites).
+Document parser boundary: pass. Document writer boundary: pass. Git subprocess boundary: pass.
+Whitespace diff check: pass.
+
+Unchanged from B2 base: scripts/gate_unconfined.json
+Unchanged from B2 base: scripts/agent_sandbox.py
+Unchanged from B2 base: scripts/agent_sandbox.json
+abi() unchanged from B2 base: .veldo/control_clone.py
+abi() unchanged from B2 base: engine/.veldo/control_clone.py
+
+SHA256 of implementation, ticket fixtures and reproduction inputs:
+d43424337db8e568cfb387d989315c9fed95e3965965908773bc0e7c38db368c  .veldo/control_agent_config_handoff.py
+af338b8620a9220a944166ddb4c35ea03edf665e45fe4cb37de1c5e4bdfa7f77  .veldo/control_clone.py
+e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9  .veldo/control_launch.py
+d43424337db8e568cfb387d989315c9fed95e3965965908773bc0e7c38db368c  engine/.veldo/control_agent_config_handoff.py
+af338b8620a9220a944166ddb4c35ea03edf665e45fe4cb37de1c5e4bdfa7f77  engine/.veldo/control_clone.py
+e857e8dc3023a47ad4cc2c30177c33c539c124fe1c65eedf1161fbc5fe0bd4e9  engine/.veldo/control_launch.py
+943a66e75cdff839b0a42a064e9fa043f80cf5e1b3e79fb2694200e8e181c9b5  proof/VELDO-0359/b1-mutation-controls.py
+c90308ccef6fa0990fa8f50c972b9d532e17fdb3e4d3d58d1a3a29b8fa573441  proof/VELDO-0359/b2-gate-unconfined-proposal.txt
+f9a1401cca50f0ca14cfb351ca5931ef49e536c99afb80f5687ebcc8396bdf0d  proof/VELDO-0359/b2-mutation-controls.py
+507c6d9409db060f17e046a544b76e16c20d1d12599c51729f7310cfc1f8dff4  scripts/check_teeth_mutations.py
+cac07303a2f0f35df539dd3844fd4f4e6188c6afd45a8c1b4c5ce98631d41c5f  scripts/suites/157_veldo_0359_run_query.py
+897c653e70298c0ccc039962e43ea5d81d0e85ce18888392e217f77f830d7bdb  scripts/suites/158_veldo_0359_store_guard.py
+7825a7b554421d85671f36a65cf40795041aff766953ed2759ffdf1e865944a9  scripts/suites/manifest.json
+91c3b01db25baa22cc0969bdde7b3cadd4bd5d5ac5a24ecb328a628297f57ae9  scripts/suites/requires.json
+3108b85f69976420bd6e5a8203f0c5cd69d159ad8990418810381c7b38e3b376  specs/VELDO-0254-credentials-never-enter-runs-and-a-secret-scan-reports-leaked-ones.md
+
+Not run by owner instruction: full unit leg, full mutation stage, full verification script.
+Wider gate work and independent review/owner landing decisions are listed in b2-results.md.
