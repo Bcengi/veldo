@@ -95,3 +95,9 @@ template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
 docs hygiene: pass
 personal setup: 0 finding(s)
 remote_run[pc2 97a24067615d 04:23:44]: rc=0 in 44s (run rr20261122042300-b41a)
+
+v258-canary2: host_heavy; source commit ab91e46e2; rc=2 (selected suite)
+raw_sha256=257fd7c615f1bca1975e3cfccb2fcb78a55e22e34e01bdfa6d0f3b22a6025423
+VELDO-0172 fake/capture:0254_canary_launch: 8 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:result/success', 'claude:system/init', 'codex:item.completed', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
+  129_veldo_0254_canary_launch                     7 passed    5.34s
+selftest (PARTIAL, 1 of 238 suites): 33 passed, 0 failed in 5.34s
