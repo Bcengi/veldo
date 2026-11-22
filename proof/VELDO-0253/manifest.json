@@ -19,6 +19,11 @@
           "type": "integration",
           "ref": "scripts/check_teeth_mutations.py",
           "detail": "Finding 253 case install253-partial-commit must reject row ac1/whole-commit. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0253/registered-workers.json",
+          "detail": "Selected registered-worker red/green diagnostic at its recorded commit. The corresponding criterion row turns false only under the stated registered defect; baseline and no-op are green. This is not a confined mutation-stage or aggregate-unit receipt."
         }
       ]
     },
@@ -35,6 +40,11 @@
           "type": "integration",
           "ref": "scripts/check_teeth_mutations.py",
           "detail": "Finding 253 case install253-tool-not-widening must reject row ac2/widening-waits. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0253/registered-workers.json",
+          "detail": "Selected registered-worker red/green diagnostic at its recorded commit. The corresponding criterion row turns false only under the stated registered defect; baseline and no-op are green. This is not a confined mutation-stage or aggregate-unit receipt."
         }
       ]
     },
@@ -51,6 +61,11 @@
           "type": "integration",
           "ref": "scripts/check_teeth_mutations.py",
           "detail": "Finding 253 case install253-store-save must reject row ac3/one-source. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0253/registered-workers.json",
+          "detail": "Selected registered-worker red/green diagnostic at its recorded commit. The corresponding criterion row turns false only under the stated registered defect; baseline and no-op are green. This is not a confined mutation-stage or aggregate-unit receipt."
         }
       ]
     },
@@ -67,6 +82,11 @@
           "type": "integration",
           "ref": "scripts/check_teeth_mutations.py",
           "detail": "Finding 253 case install253-pin-from-git must reject row ac4/pinned-survives. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0253/registered-workers.json",
+          "detail": "Selected registered-worker red/green diagnostic at its recorded commit. The corresponding criterion row turns false only under the stated registered defect; baseline and no-op are green. This is not a confined mutation-stage or aggregate-unit receipt."
         }
       ]
     }
