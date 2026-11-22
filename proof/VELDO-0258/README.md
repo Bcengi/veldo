@@ -25,7 +25,7 @@ HTTP/socket/Git call conventions, not arbitrary dynamically synthesized Python.
 ## Registered mutation checks
 
 `scripts/check_teeth_mutations.py:10474` registers finding 258 for the confined
-gate driver. Every case carries its production siblings and targets an observed
+gate driver. Every case runs with its production dependencies and targets an observed
 row, rather than a source-text assertion.
 
 | Registered case | Deliberately broken behavior | Required red row |
@@ -36,10 +36,12 @@ row, rather than a source-text assertion.
 | `outside258-registered-only-scan` | Inspect registered modules only. | `ac3/planted-call` |
 | `outside258-no-service-binding` | Remove the process-binding check. | `ac3/service-required/tracker` |
 | `outside258-malformed-site-accepted` | Skip site URL validation. | `ac2/malformed-whole` |
+| `outside258-effect-observer-dropped` | Discard the real executor child's call observations. | `effects/publication-call-observed` (suite 58) |
+| `outside258-commit-read-after-call` | Read the accepted commit after an in-flight configuration change. | `observability/commit-pinned` |
 
 `diagnose_mutations.py` uses the registered materializer and worker in fresh
 subprocesses. `mutation-diagnostic.txt` records baseline/no-op green and the
-intended mutant red for all six cases on pc2. This diagnostic does not replace
+intended mutant red for all eight cases on pc2. This diagnostic does not replace
 the confined mutation driver. Its subprocess deadlines are generous hang
 detectors; the rows synchronize on completed operations and never assert speed.
 
@@ -58,7 +60,9 @@ the parsed reference name for env/file references, never a literal payload.
 Service observations use its durable log. Effect children append safe observations
 beside their private store; service inspection reads these durable effect counters
 separately from live process counters. Effect replies retain their replay semantics. Tracker mirroring carries its unit context;
-effect transport carries accepted-store commit and dispatch provenance.
+effect transport carries accepted-store commit and dispatch provenance. Commit
+and dispatch are pinned before the call; a fixture HTTP handler changes the
+commit during a request to falsify reading provenance only on completion.
 
 Tracker CLI operations now submit owner-signed service requests, including
 previews. Site/email/event-file overrides cannot choose service authority.
