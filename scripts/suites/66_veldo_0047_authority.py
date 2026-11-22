@@ -568,7 +568,10 @@ def _v47_suite():
                 # The architecture validator the receiver's recheck runs from its own directory
                 # (control_eligibility.ValidatorSnapshot), by the files the eligibility module declares.
                 validator = {name for _role, name in EL.VALIDATOR_ROLES}
-                installed = sorted(p.name for p in bin_dir.iterdir() if p.name != 'runtime') if bin_dir.is_dir() else []
+                # VELDO-0253: the installation schema and template are runtime assets installed beside runtime/;
+                # every top-level folder the runtime_assets record names holds assets, not closure modules.
+                asset_dirs = {'runtime'} | {n.split('/', 1)[0] for n in (config.get('runtime_assets') or {}) if '/' in n}
+                installed = sorted(p.name for p in bin_dir.iterdir() if p.name not in asset_dirs) if bin_dir.is_dir() else []
                 copies = bool(closure) and installed == closure and all(
                     (bin_dir / n).read_bytes() == (mods / n).read_bytes()
                     and recorded[n] == 'sha256:' + __import__('hashlib').sha256((bin_dir / n).read_bytes()).hexdigest()
@@ -579,7 +582,7 @@ def _v47_suite():
                     and runtime[n] == 'sha256:' + __import__('hashlib').sha256((bin_dir / n).read_bytes()).hexdigest()
                     and mode(bin_dir / n) == '0o400' for n in runtime)
                 copies = copies and sorted(runtime) == sorted(
-                    str(p.relative_to(bin_dir)) for p in (bin_dir / 'runtime').rglob('*') if p.is_file())
+                    str(p.relative_to(bin_dir)) for d in sorted(asset_dirs) for p in (bin_dir / d).rglob('*') if p.is_file())
                 executable = str(bin_dir / 'control_service.py')
                 exec_start = '%s -B %s serve %s' % (os.path.realpath(sys.executable), executable, config_path)
                 started = CS.start(unit) if unit else {}
