@@ -480,6 +480,7 @@ def channel_migration(plan, home, engine):
         if plan['token_file'].startswith('keychain:') or bot != legacy:
             raise _differs(path)
         imported = True
+        engine.setdefault('channel_migration', []).append(path)
         # Retain any top-level keys the ordinary engine upgrade already adds.
         pending = next((json.loads(body) for kind, target, body, mode in engine['writes']
                         if target == path), held)
@@ -1550,7 +1551,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
-    import_channel = channel_migration(plan, home, engine)
+    channel_migration(plan, home, engine)
     if adoption['due'] and engine['state'] == 'current':
         # The service reads its enrollment signers when it starts, so laying the adoption signer's restarts it once.
         engine['restart_due'] = True
@@ -1609,8 +1610,6 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             for path, _expected, _own, state, text, _added in record_plan['files']:
                 if path in (api['service_config'], api['installed_service_config']) and state == 'upgrade':
                     engine['writes'].insert(0, ('configuration', path, text, 0o600))
-        if import_channel:
-            import_channel_credential(plan)
         upgraded = upgrade_engine(plan, engine, runner, running, adoption)
         if released:
             lock = take_lock(root, create=False)
@@ -1895,6 +1894,16 @@ def upgrade_engine(plan, engine, runner, running, adoption):
     """Carry out the inspected upgrade; its step of setup's answer."""
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
     def prepare():
+        if engine.get('channel_migration'):
+            # Persist the originals before either configuration changes. A later setup
+            # may have to restore the older engine after this setup was interrupted.
+            recovery = UP.recovery(engine['log'])
+            backups = list(recovery['backups'])
+            for path in engine['channel_migration']:
+                if not any(saved[0] == path for saved in backups):
+                    backups.append((path, Path(path).read_text(), stat.S_IMODE(os.lstat(path).st_mode)))
+            UP.point(engine['log'], {'point': 'prepared', 'active': recovery['active'], 'backups': backups})
+            import_channel_credential(plan)
         engines = organ('control_factory_setup_engines')
         report = dict(engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
                                      lambda point: UP.point(engine['log'], point)) or {})
