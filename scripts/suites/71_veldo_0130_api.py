@@ -2969,6 +2969,9 @@ def _v130_service_checks(base):
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     _v130_shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
+    # VELDO-0253: the service ships the installation schema and template beside the modules.
+    for asset in ('installation_schema', 'installation_template'):
+        _v130_shutil.copytree(ROOT / '.veldo' / asset, mods / asset)
     for source in sorted((ROOT / '.veldo').glob('*.py')):
         _v130_shutil.copyfile(source, mods / source.name)
     _v130_shutil.copyfile(ROOT / '.veldo' / 'services' / 'veldo-authority.service', mods / 'services' / 'veldo-authority.service')

@@ -57,6 +57,7 @@ footprint:
   - "engine/ui/src/features/workflow/**"
   - "docs/installation.md"
   - "scripts/suites/*_veldo_0253_*.py"
+  - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/suites/support/setup_runtime.py"
@@ -351,3 +352,9 @@ does not name these explicitly; they are classified as widening because each alt
 pending the owner's ruling. Removing a project file that declares bindings is widening (its work falls
 back to the default workflow); removing one with no bindings stays narrowing, as the open question
 above drafts it.
+
+2026-11-22: footprint adds scripts/suites/71_veldo_0130_api.py. Its service fixture copied only the
+Python modules, and since this spec the service install requires the shipped installation schema and
+template (missing_evidence:runtime_asset). The fixture now copies those two directories as well. It
+changes no assertion. The host run that found this is recorded in the proof; the owner approves this
+together with the footprint item above.
