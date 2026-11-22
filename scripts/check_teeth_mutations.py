@@ -5003,7 +5003,7 @@ def cases():
                'install/assets')
     # AC1 (declared falsifier): the doorbell sends because its token resolves.
     activation('doorbell-token-resolves-sends', 'request_doorbell.py',
-               '        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id) as resp:\n',
+               '        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id, caller="doorbell") as resp:\n',
                '        with urllib.request.urlopen(req, timeout=30) as resp:  # defect: a resolving token sends\n',
                'activation/no-implicit')
     activation('ungated-edge-reaches-any-origin', 'control_channel_projection.py',
@@ -5661,8 +5661,8 @@ def cases():
     factory('module-not-scaffolded', '    ".veldo/control_factory_setup.py",\n', '', 'install/assets',
             module='init_scaffold.py')
     # AC2 (declared falsifier): a copy of the token is written into the state root and configured.
-    factory('token-copied', "'token_file': plan['token_file']},",
-            "'token_file': _private(os.path.join(host, 'bot-token'), Path(plan['token_file']).read_text())},"
+    factory('token-copied', "'token_ref': channel_reference(plan)},",
+            "'token_ref': (_private(os.path.join(host, 'bot-token'), Path(plan['token_file']).read_text()) and channel_reference(plan))},"
             "  # defect: the token is copied", 'token/never-copied')
     factory('edge-key-outside-protected',
             "                  'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),\n",

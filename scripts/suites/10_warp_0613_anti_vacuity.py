@@ -1088,9 +1088,8 @@ expect("WARP-0618 AC engine-sync: capabilities.yaml byte-identical across all 6 
        (ROOT / ".veldo/capabilities.yaml").read_bytes() == (ROOT / "engine/.veldo/capabilities.yaml").read_bytes())
 expect("WARP-0618 AC: the tracker_request_doorbell capability is declared mechanical, repo-only, home .veldo/request_doorbell.py",
        bool(re.search(r"(?m)^\s{2}tracker_request_doorbell:\s*\{status:\s*mechanical,\s*home:\s*\.veldo/request_doorbell\.py,\s*scope:\s*repo-only\b", (ROOT / ".veldo/capabilities.yaml").read_text())))
-expect("WARP-0618 AC: request_doorbell.py is REPO-ONLY like the tracker family (not synced to engine or packs)",
-       not (ROOT / "engine/.veldo/request_doorbell.py").exists()
-       and not (ROOT / "engine/.veldo/request_doorbell.py").exists())
+expect("VELDO-0258: the service doorbell ships byte-identically in the engine",
+       (ROOT / "engine/.veldo/request_doorbell.py").read_bytes() == (ROOT / ".veldo/request_doorbell.py").read_bytes())
 
 # --- the authorization module for the human-decision surface (veldo.authorization/v1, WARP-0616, W6 of
 # PLAN-0016): the PURE functions that decide whether a veldo.request/v1 human decision is authorized - who

@@ -282,41 +282,46 @@ with tempfile.TemporaryDirectory() as _ted:
     (_wired_b / ".veldo" / "trackers.json").write_text(json.dumps(_cfg_b))
     _unwired = Path(_ted) / "unwired"; _unwired.mkdir()  # no .veldo/trackers.json
 
-    # SPEC contract
-    _s_ok = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo: repo-a\nrequired_evidence: [unit]")
-    _s_unknown = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo: repo-zzz\nrequired_evidence: [unit]")
-    _s_empty = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo:\nrequired_evidence: [unit]")
-    expect("spec absent tracker_repo passes (single-repo default)",
-           V.check_spec(tmpfile(_ted, "s_absent.md", GOOD_SPEC), repo_root=_wired) == 0)
-    expect("spec resolvable tracker_repo passes (config declares it)",
-           V.check_spec(tmpfile(_ted, "s_ok.md", _s_ok), repo_root=_wired) == 0)
-    expect("spec unresolvable tracker_repo fails by name (unknown repo)",
-           V.check_spec(tmpfile(_ted, "s_unknown.md", _s_unknown), repo_root=_wired) > 0)
-    expect("spec empty tracker_repo fails (must be a non-empty string)",
-           V.check_spec(tmpfile(_ted, "s_empty.md", _s_empty), repo_root=_wired) > 0)
-    expect("spec present tracker_repo passes when no config is wired (allowed-not-enforced)",
-           V.check_spec(tmpfile(_ted, "s_nocfg.md", _s_ok), repo_root=_unwired) == 0)
-    expect("spec tracker_repo non-tautology: same value passes with a declaring config, fails with a config that omits it",
-           V.check_spec(tmpfile(_ted, "s_nt_a.md", _s_ok), repo_root=_wired) == 0
-           and V.check_spec(tmpfile(_ted, "s_nt_b.md", _s_ok), repo_root=_wired_b) > 0)
-
-    # PLAN contract (same rule, parsed by the plan front-matter parser)
-    _p_ok = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-a\n")
-    _p_unknown = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-zzz\n")
-    _p_list = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: [repo-a, repo-b]\n")
-    expect("plan absent tracker_repo passes (single-repo default)",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-absent.md", GOOD_PLAN), repo_root=_wired) == 0)
-    expect("plan resolvable tracker_repo passes (config declares it)",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-ok.md", _p_ok), repo_root=_wired) == 0)
-    expect("plan unresolvable tracker_repo fails by name (unknown repo)",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-unknown.md", _p_unknown), repo_root=_wired) > 0)
-    expect("plan non-string tracker_repo fails (must be a non-empty string)",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-list.md", _p_list), repo_root=_wired) > 0)
-    expect("plan present tracker_repo passes when no config is wired (allowed-not-enforced)",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-nocfg.md", _p_ok), repo_root=_unwired) == 0)
-    expect("plan tracker_repo non-tautology: same value passes with a declaring config, fails with a config that omits it",
-           V.check_plan(tmpfile(_ted, "PLAN-9002-nt-a.md", _p_ok), repo_root=_wired) == 0
-           and V.check_plan(tmpfile(_ted, "PLAN-9002-nt-b.md", _p_ok), repo_root=_wired_b) > 0)
+    # Routing is supplied by the accepted loader snapshot; this pure validator fixture
+    # selects the snapshot explicitly. Suite 158 drives the real Git acceptance path.
+    from unittest.mock import patch as _routing_patch
+    with _routing_patch.object(V._TRACKER, 'load_tracker_config',
+            side_effect=lambda repo_root=None: {str(_wired): _cfg, str(_wired_b): _cfg_b}.get(str(repo_root), {})):
+        # SPEC contract
+        _s_ok = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo: repo-a\nrequired_evidence: [unit]")
+        _s_unknown = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo: repo-zzz\nrequired_evidence: [unit]")
+        _s_empty = GOOD_SPEC.replace("required_evidence: [unit]", "tracker_repo:\nrequired_evidence: [unit]")
+        expect("spec absent tracker_repo passes (single-repo default)",
+               V.check_spec(tmpfile(_ted, "s_absent.md", GOOD_SPEC), repo_root=_wired) == 0)
+        expect("spec resolvable tracker_repo passes (config declares it)",
+               V.check_spec(tmpfile(_ted, "s_ok.md", _s_ok), repo_root=_wired) == 0)
+        expect("spec unresolvable tracker_repo fails by name (unknown repo)",
+               V.check_spec(tmpfile(_ted, "s_unknown.md", _s_unknown), repo_root=_wired) > 0)
+        expect("spec empty tracker_repo fails (must be a non-empty string)",
+               V.check_spec(tmpfile(_ted, "s_empty.md", _s_empty), repo_root=_wired) > 0)
+        expect("spec present tracker_repo passes when no config is wired (allowed-not-enforced)",
+               V.check_spec(tmpfile(_ted, "s_nocfg.md", _s_ok), repo_root=_unwired) == 0)
+        expect("spec tracker_repo non-tautology: same value passes with a declaring config, fails with a config that omits it",
+               V.check_spec(tmpfile(_ted, "s_nt_a.md", _s_ok), repo_root=_wired) == 0
+               and V.check_spec(tmpfile(_ted, "s_nt_b.md", _s_ok), repo_root=_wired_b) > 0)
+    
+        # PLAN contract (same rule, parsed by the plan front-matter parser)
+        _p_ok = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-a\n")
+        _p_unknown = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-zzz\n")
+        _p_list = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: [repo-a, repo-b]\n")
+        expect("plan absent tracker_repo passes (single-repo default)",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-absent.md", GOOD_PLAN), repo_root=_wired) == 0)
+        expect("plan resolvable tracker_repo passes (config declares it)",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-ok.md", _p_ok), repo_root=_wired) == 0)
+        expect("plan unresolvable tracker_repo fails by name (unknown repo)",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-unknown.md", _p_unknown), repo_root=_wired) > 0)
+        expect("plan non-string tracker_repo fails (must be a non-empty string)",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-list.md", _p_list), repo_root=_wired) > 0)
+        expect("plan present tracker_repo passes when no config is wired (allowed-not-enforced)",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-nocfg.md", _p_ok), repo_root=_unwired) == 0)
+        expect("plan tracker_repo non-tautology: same value passes with a declaring config, fails with a config that omits it",
+               V.check_plan(tmpfile(_ted, "PLAN-9002-nt-a.md", _p_ok), repo_root=_wired) == 0
+               and V.check_plan(tmpfile(_ted, "PLAN-9002-nt-b.md", _p_ok), repo_root=_wired_b) > 0)
 
 # --- event-driven one-way spec mirror (WARP-0605, W5 of PLAN-0006): a projection that turns spec
 # lifecycle events into a tracker status + closing comment on the spec's child, one-directionally.

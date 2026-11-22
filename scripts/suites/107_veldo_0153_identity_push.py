@@ -788,7 +788,8 @@ def _v153_hermetic(installed):
 import tempfile as _v153_tempfile
 from pathlib import Path as _v153_Path
 __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v153_evidence_rows)
-with _v153_tempfile.TemporaryDirectory(prefix='modules153-') as _v153_directory:
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), \
+        _v153_tempfile.TemporaryDirectory(prefix='modules153-') as _v153_directory:
     _v153_installed = _v153_install(_v153_Path(_v153_directory) / 'installed')
     _v153_refusal_rows(_v153_installed)
     _v153_hermetic(_v153_installed)

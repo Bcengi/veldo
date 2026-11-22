@@ -96,12 +96,12 @@ expect("both capabilities.yaml copies are byte-identical (the repo-only marker l
 expect("capabilities manifest marks the known dogfood entries repo-only (at least the tracker+pack family)",
        _ch_caps.count("scope: repo-only") >= 15)
 
-# TEETH 1: un-marking a repo-only dogfood entry (tracker_request_doorbell, home .veldo/request_doorbell.py, which does
+# TEETH 1: un-marking a repo-only dogfood entry (tracker_conformance, home .veldo/tracker_conformance.py, which does
 # NOT land in the shipped engine) makes the honesty check name it as an over-claim.
-_ch_unmarked = _ch_caps.replace("home: .veldo/request_doorbell.py, scope: repo-only,", "home: .veldo/request_doorbell.py,", 1)
+_ch_unmarked = _ch_caps.replace("home: .veldo/tracker_conformance.py, scope: repo-only,", "home: .veldo/tracker_conformance.py,", 1)
 expect("TEETH: un-marking a dogfood entry turns the honesty check RED",
        _ch_unmarked != _ch_caps
-       and any("tracker_request_doorbell" in f and "does not ship" in f for f in _caps_honesty_findings(_ch_unmarked)))
+       and any("tracker_conformance" in f and "does not ship" in f for f in _caps_honesty_findings(_ch_unmarked)))
 
 # TEETH 2: pointing a SHIPPED entry's home at a missing file turns it RED (metrics_dashboard ships and
 # is not repo-only; its home .veldo/dashboard.py appears once).
@@ -1402,10 +1402,10 @@ expect("AC5: supervisor.py ships in the engine (its home resolves for the honest
 # build machinery, so it is NOT in the shipped engine set an adopter's pack lays (a pack that did not
 # lay it fails loud in bin/veldo rather than importing a missing module).
 _rc_mir = _route904(["mirror", "--dry-run"])
-expect("AC2: veldo mirror routes to the tracker mirror runner (one reconcile pass, no network, rc 0)",
-       _rc_mir[0] == 0 and "veldo mirror" in (_rc_mir[1] + _rc_mir[2]))
-expect("AC2: the tracker mirror runner is repo-only (not in the shipped engine set) yet present in the repo",
-       ".veldo/tracker_mirror_runner.py" not in _CH_ENGINE and (ROOT / ".veldo/tracker_mirror_runner.py").exists())
+expect("AC2: veldo mirror routes to the service command and refuses an unsigned request",
+       _rc_mir[0] == 2 and "unavailable_service:tracker_command" in (_rc_mir[1] + _rc_mir[2]))
+expect("AC2: the service tracker mirror runner ships in the engine",
+       ".veldo/tracker_mirror_runner.py" in _CH_ENGINE and (ROOT / ".veldo/tracker_mirror_runner.py").exists())
 
 # --- architecture contract (WARP-1101, W1 of PLAN-0011): the intended shape of a
 # system becomes a versioned, human-approved artifact (.veldo/architecture.yaml,
