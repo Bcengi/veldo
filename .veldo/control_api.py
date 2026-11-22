@@ -113,6 +113,7 @@ W = organ('control_api_webauthn')
 CR = organ('control_api_credentials')
 AS = organ('control_api_assertion')
 MO = organ('control_api_models')
+INSTALLATION = organ('installation')
 # VELDO-0145: the UI's page and built assets, served from this same origin outside /api/.
 UI = organ('control_api_ui')
 AC = CR.AC
@@ -228,7 +229,7 @@ class Refused(Exception):
 
 def error_class(code):
     head = str(code).split(':', 1)[0]
-    return head if head in STATUS else 'unknown_outcome'
+    return head if head in STATUS else INSTALLATION.ERROR_CLASSES.get(head, 'unknown_outcome')
 
 
 def _pattern(path):

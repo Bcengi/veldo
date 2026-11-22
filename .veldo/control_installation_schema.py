@@ -178,7 +178,7 @@ def validate(files, *, secret_exists, resolve=None):
         except Exception as error:
             problems.append(('installation_invalid:%s:space:' % I.SETTINGS_FILE) + getattr(error, 'code', 'schema'))
     records = {path: body for path, body in files.items() if path.startswith('records/') and path != 'records/digests.json'}
-    if records:
+    if records or 'records/digests.json' in files:
         try:
             inventory = decode(files['records/digests.json'])
             actual = {path: 'sha256:' + hashlib.sha256(body).hexdigest() for path, body in records.items()}
@@ -243,6 +243,20 @@ def widening(previous, current):
                     add(path, key, kind)
             elif mode == 'changed' and b is not None:
                 add(path, key, kind)
+            elif mode == 'role_grants' and b is not None:
+                prior = a or {}
+                if (prior.get('engine') != b.get('engine') or any(
+                        item not in prior.get(field, []) for field in ('native_tools', 'mcp', 'skills')
+                        for item in b.get(field, []))):
+                    add(path, key, kind)
+            elif mode == 'team_grants' and b is not None:
+                prior = (a or {}).get('roles', {})
+                for role, entry in b.get('roles', {}).items():
+                    held = prior.get(role, {})
+                    if (role not in prior or any(item not in held.get(field, [])
+                            for field in ('workers', 'engines', 'proposal_permissions') for item in entry.get(field, []))
+                            or entry.get('capability_configuration') != held.get('capability_configuration')):
+                        add(path, key + '.roles.' + role, kind)
         if path not in previous and kind in ('project', 'service', 'schedule'):
             add(path, '$', 'new_' + kind)
         if kind in ('schedule', 'tools_snapshot', 'openapi'):

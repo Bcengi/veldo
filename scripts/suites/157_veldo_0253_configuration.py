@@ -29,7 +29,7 @@ def _v253_suite():
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
             'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents',
-            'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale')
+            'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale', 'ac1/approval-validation')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -166,6 +166,20 @@ def _v253_suite():
             check('ac2/classification', all(C.V.widening({}, {path: value}) for path, value in kinds)
                   and C.V.widening({'connectors/x.yaml': connector},
                                   {'connectors/x.yaml': dict(connector, allowed_tools=[])}) == [])
+            unsafe = WU.shipped()
+            next(edge for edge in unsafe['transitions'] if edge['id'] == 'gated')['to'] = 'land'
+            parent = repo.head()
+            _, errors_in_tree = loader.validate(dict(repo.snapshot()['files'], **{
+                'workflows/code.json': WF.canonical(unsafe), 'workflows/code.layout.json': b'{}'}))
+            try:
+                workflows.save({'definition': unsafe}, principal='owner', base=0,
+                               base_commit=loader.accepted_commit, command_id='unsafe-workflow')
+                refusal = None
+            except Exception as error:
+                refusal = getattr(error, 'code', None)
+            check('ac1/approval-validation', refusal == 'invalid_input:missing_owner_approval:land'
+                  and any(p.endswith(':invalid_input:missing_owner_approval:land') for p in errors_in_tree)
+                  and repo.head() == parent == loader.accepted_commit)
             definition = {'schema': 'veldo.workflow/v1', 'id': 'example', 'entry': 'build', 'terminal': ['done'],
                 'nodes': {'build': {'kind': 'build', 'config': {}}, 'done': {'kind': 'end', 'config': {}}},
                 'transitions': [{'id': 'built', 'from': 'build', 'port': 'done', 'to': 'done'}],
