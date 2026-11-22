@@ -183,10 +183,62 @@ def _v359_query_suite():
 
         operations = set()
 
+        def guarded_answer(fn):
+            """B2 host leg: the journey's client computation under the real store ruleset.
+
+            The parent retains its independent direct reader and serving thread. The child drops
+            every inherited non-protocol descriptor, audits, then confines before calling the client.
+            This optional mode is never used by the portable B1 pc2 leg.
+            """
+            import pickle
+            import select
+            receive, send = os.pipe()
+            pid = os.fork()
+            if pid == 0:
+                try:
+                    for name in os.listdir('/proc/self/fd'):
+                        fd = int(name)
+                        if fd > 2 and fd != send:
+                            with contextlib.suppress(OSError):
+                                os.close(fd)
+                    assert L.guard_audit(str(db.parent), send) == (True, True)
+                    assert L.guard_install(str(db.parent)) is None
+                    answer = {'value': fn(), 'events': remote_events, 'opens': client_opens}
+                except BaseException as error:
+                    answer = {'error': repr(error)}
+                data = pickle.dumps(answer)
+                while data:
+                    data = data[os.write(send, data):]
+                os._exit(0)
+            os.close(send)
+            data = b''
+            deadline = time.monotonic() + HANG
+            try:
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0 or not select.select([receive], [], [], remaining)[0]:
+                        raise TimeoutError('guarded query fixture hung')
+                    block = os.read(receive, 65536)
+                    if not block:
+                        break
+                    data += block
+            finally:
+                os.close(receive)
+                with contextlib.suppress(ProcessLookupError):
+                    os.kill(pid, signal.SIGKILL)
+                os.waitpid(pid, 0)
+            answer = pickle.loads(data)
+            if 'error' in answer:
+                raise RuntimeError(answer['error'])
+            remote_events[:] = answer['events']
+            client_opens[:] = answer['opens']
+            return answer['value']
+
         def compare(label, fn):
             direct_events.clear()
             remote_events.clear()
-            a, b = fn(direct), fn(remote)
+            a = fn(direct)
+            b = guarded_answer(lambda: fn(remote)) if os.environ.get('VELDO_0359_GUARDED_JOURNEY') == '1' else fn(remote)
             operations.update(e.get('operation') for e in remote_events)
             check('query/journey', label, stable(a) == stable(b) and stable(direct_events) == stable(remote_events))
             return b
