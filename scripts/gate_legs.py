@@ -839,10 +839,10 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     run = str(record)
 
     def leg_run(leg, runner):
-        measured = (prior.get(leg) if prior is not None else measurement(times, digest, leg, run)) if stage == BUDGETED_STAGE else None
+        handed = (prior.get(leg) if prior is not None else measurement(times, digest, leg, run)) if stage == BUDGETED_STAGE else None
         if stage == BUDGETED_STAGE:
             print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
-                  % (leg, measured['seconds'], measured['fresh'], measured['at']) if measured
+                  % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
                   else 'no unit %s leg measurement recorded' % leg), flush=True)
         # VELDO-0221: the leg's shard dispatcher asks this runner for each shard's claim on the gate
         # ledger, with the claims the last passing unit leg measured, and in the unit stage reports
