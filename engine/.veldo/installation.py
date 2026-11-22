@@ -509,10 +509,9 @@ class Repository:
         for name, body in files.items():
             path = Path(self.folder) / name
             path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-            if not path.exists():
-                with path.open('xb') as handle:
-                    handle.write(body)
-                path.chmod(0o600)
+            path.write_bytes(body)
+            path.chmod(0o600)
+        self.git('read-tree', self.head())
 
     @classmethod
     def create(cls, folder, branch='main'):
@@ -524,6 +523,9 @@ class Repository:
         result = _git_process.run(['git', 'init', '-b', branch, str(folder)], capture_output=True, timeout=120)
         if result.returncode:
             raise InstallationError('installation_unreadable:init')
+        exclude = folder / '.git' / 'info' / 'exclude'
+        with exclude.open('a') as handle:
+            handle.write('\n/keys/\n')
         return cls(folder, branch)
 
 
