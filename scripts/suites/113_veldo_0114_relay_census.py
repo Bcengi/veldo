@@ -46,11 +46,15 @@ import threading as _v114_threading
 from pathlib import Path as _v114_Path
 
 if __name__ == "__main__":
-    ROOT = _v114_Path(__file__).resolve().parents[2]
     _v114_direct_rows = []
 
     def expect(name, condition):
         _v114_direct_rows.append([name.split(":", 1)[0], bool(condition)])
+
+# The repository root: the dispatcher's shared ROOT, or this file's own when it runs directly. A
+# module-level ROOT bound here as well would make ROOT ambiguous to scripts/suite_attr_check.py,
+# which then checks no reference at all (suite 01's anti-vacuity row).
+_v114_ROOT = ROOT if __name__ != "__main__" else _v114_Path(__file__).resolve().parents[2]
 
 # A hang detector only, never a pass condition and never a measure of this host (load rule).
 _v114_HANG = 300
@@ -65,9 +69,9 @@ def _v114_load(name, path):
     return module
 
 
-LC114 = _v114_load("v114_lifecycle_census", ROOT / "scripts" / "fixtures" / "lifecycle_census.py")
+LC114 = _v114_load("v114_lifecycle_census", _v114_ROOT / "scripts" / "fixtures" / "lifecycle_census.py")
 _v114_ROWS = tuple(LC114.CONSUMERS["VELDO-0114"])
-_v114_RELAY_SOURCE = (ROOT / ".veldo" / "control_relay.py").read_text()
+_v114_RELAY_SOURCE = (_v114_ROOT / ".veldo" / "control_relay.py").read_text()
 _v114_FORWARD = "        answer = forward(address, payload)\n"
 _v114_CONNECT = "    conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)\n"
 
@@ -76,7 +80,7 @@ def _v114_relay_copy(tag, anchor=None, insert=""):
     """A directory holding a relay (with one insertion before an exact anchor) and its registry."""
     directory = _v114_tmp / ("relay_" + tag)
     directory.mkdir()
-    _v114_shutil.copy2(ROOT / ".veldo" / "control_client_registry.py", directory / "control_client_registry.py")
+    _v114_shutil.copy2(_v114_ROOT / ".veldo" / "control_client_registry.py", directory / "control_client_registry.py")
     source = _v114_RELAY_SOURCE
     if anchor is not None:
         if source.count(anchor) != 1:
@@ -299,8 +303,8 @@ _v114_authority = None
 _v114_applied = []
 if _v114_have_git:
     # The production authority modules, loaded in place: they are the endpoint, never under test here.
-    EN114 = _v114_load("v114_enroll", ROOT / ".veldo" / "control_enrollment.py")
-    CC114 = _v114_load("v114_client", ROOT / ".veldo" / "control_client.py")
+    EN114 = _v114_load("v114_enroll", _v114_ROOT / ".veldo" / "control_enrollment.py")
+    CC114 = _v114_load("v114_client", _v114_ROOT / ".veldo" / "control_client.py")
     _v114_repo = _v114_tmp / "repo"
     _v114_repo.mkdir()
     _v114_genv = dict(_v114_os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t",
@@ -637,7 +641,7 @@ _v114_evidence["exchange_outcomes"] = dict(_v114_exchange_ok)
 # (48_veldo_0108_relay, rows "census"), in a fresh interpreter with the three variables gate_legs.py
 # sets, the dispatcher's own leg_runs and a recording expect. A row counts as run when it is asserted
 # or printed STANDS DOWN by name, so the row holds whether or not this host completes the census.
-_v114_S48 = ROOT / "scripts/suites" / "48_veldo_0108_relay.py"
+_v114_S48 = _v114_ROOT / "scripts/suites" / "48_veldo_0108_relay.py"
 _v114_S48_CENSUS = "relay/one-endpoint-one-judgement"
 _v114_S48_CONFINED = (
     "relay/usage-has-zero-stdout", "relay/oversized-request-has-zero-stdout",
@@ -669,7 +673,7 @@ def _v114_s48_leg(leg):
                VELDO_GATE_DECLARATION="sha256:" + "0" * 64)
     try:
         done = _v114_sp.run([_v114_sys.executable, "-B", "-c", _v114_LEG_DRIVER,
-                             str(ROOT / "scripts" / "suites" / "shared.py"), str(_v114_S48)],
+                             str(_v114_ROOT / "scripts" / "suites" / "shared.py"), str(_v114_S48)],
                             capture_output=True, text=True, env=env, timeout=_v114_HANG)
         record = _v114_json.loads(done.stdout.strip().splitlines()[-1])
     except (OSError, ValueError, IndexError, _v114_sp.TimeoutExpired) as error:
