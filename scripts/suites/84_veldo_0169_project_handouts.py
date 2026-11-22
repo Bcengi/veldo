@@ -164,6 +164,8 @@ def _v169_suite():
             '    def take(self, conn, params, before):\n        write = self.inbox.claims.transition\n        return write(conn, params, before)\n')
         yield 'dynamic-getattr', 'Fast.take', lambda: fast(
             '    def take(self, name, conn, params, before):\n        return getattr(self.inbox.claims, name)(conn, params, before)\n')
+        yield 'dynamic-call-inside-callable', 'Fast.take', lambda: fast(
+            '    def take(self, name, conn, params, before):\n        return callable(getattr(self.inbox.claims, name)(conn, params, before))\n')
         yield 'bare-registration', 'Fast.attach', lambda: fast(
             "    def attach(self, conn):\n        conn.command_registry['fast'] = {'transaction_transition': self.inbox.claims.transition}\n")
         yield 'hand-built-claim', 'Fast.take', lambda: fast(
@@ -248,6 +250,9 @@ def _v169_suite():
               % (sum(r['classification'] == 'handout' for r in conversation),
                  sum(r['classification'] == 'conversation-scoped' for r in conversation)),
               conversation and all(r['classification'] in ('handout', 'conversation-scoped') for r in conversation))
+        _, introspection_failures = CEN.census(dict(sources, control_introspection=
+            'def inspect_method(instance, name):\n    return callable(getattr(instance, name, None))\n'))
+        check('census/writers', 'callability introspection does not invoke or export a writer', not introspection_failures)
         for name, function, build in planted(sources):
             try:
                 change = build()

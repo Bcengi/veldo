@@ -175,8 +175,10 @@ else:
             os.environ['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path=' + str(base / 'absent-bus')
             tree = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
             H = load('v144_fixture', tree / 'scripts/suites/support/v73_authority.py')
+            channel_token = os.urandom(12).hex()
             fixture = H.build(base / 'authority-fixture', mods, 5590144, 'http://127.0.0.1:9',
-                              os.urandom(12).hex(), scope='activation-repository')
+                              channel_token, scope='activation-repository')
+            channel_items = set(fake.glob('item-*'))
             A = fixture
             CS = load('v144_service', mods / 'control_service.py')
             API = load('v144_api', mods / 'control_api.py')
@@ -367,7 +369,7 @@ for name in paths:
                 buffered = [stream.getvalue() for stream in (sys.stdout, sys.stderr) if hasattr(stream, 'getvalue')]
                 outputs = [v.encode() if isinstance(v, str) else v for v in process_outputs + buffered if v]
                 return (done.returncode == 0 and all(v.encode() not in out for v in candidates for out in outputs)
-                        and all(out in [b''] + [v.encode() for v in candidates] for out in lookup_outputs))
+                        and all(out in [b'', channel_token.encode()] + [v.encode() for v in candidates] for out in lookup_outputs))
 
             commandline_checks = []
 
@@ -422,7 +424,7 @@ for name in paths:
                     later, failure = resolve(ref)
                     check('credential/replace-delete', 'deletion clears the keystore item and runtime resolution refuses',
                           valid_write and gone[0] == 200 and later is None and failure == 'SecretError'
-                          and not list(fake.glob('item-*')))
+                          and set(fake.glob('item-*')) == channel_items)
                     check('credential/deleted-state', 'deleted record carries a tombstone',
                           any(d.get('id') == 'atlassian' and d.get('deleted') is True for d in data_of('credential')))
                 commandline_checks.append(commandlines_safe())

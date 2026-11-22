@@ -838,6 +838,13 @@ class Census:
             if argument is None:
                 self.fail(module.stem, module.name_of(fn), node.lineno, '%s names no attribute that can be resolved' % name)
                 continue
+            parent = module.parents.get(node)
+            if (name == 'getattr' and isinstance(parent, ast.Call)
+                    and isinstance(parent.func, ast.Name) and parent.func.id == 'callable'
+                    and parent.args == [node] and not parent.keywords):
+                # A boolean introspection result neither invokes nor exports the fetched method.
+                # An invocation inside callable (or any other use) still reaches the check below.
+                continue
             names = self.attribute_names(module, fn, argument, 0)
             if names is None or any(self.may_be(names, t) for t in tracked):
                 self.fail(module.stem, module.name_of(fn), node.lineno,

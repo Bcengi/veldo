@@ -222,7 +222,7 @@ def validate(files, *, secret_exists, resolve=None):
                 if any(not site.get(key) for key in required):
                     raise ValueError('missing_authentication_reference')
         except (ValueError, TypeError, KeyError, AttributeError):
-            problems.append('installation_invalid:installation.yaml:tracker_routing:routing')
+            problems.append('installation_invalid:%s:tracker_routing:routing' % I.SETTINGS_FILE)
     records = {path: body for path, body in files.items() if path.startswith('records/') and path != 'records/digests.json'}
     if records or 'records/digests.json' in files:
         try:
