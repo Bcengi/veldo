@@ -16409,10 +16409,17 @@ def cases():
         "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    before_file, seen = None, {}\n",
         "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    before_file, seen = None, {}\n",
         ['safety/keep-failure'])
-    add(324, 'space324-nested-repository-deleted', '154_veldo_0324_batch_sandbox.py', 'control_space_remove.py',
+    # The folder remover's walk stops on a repository beneath a sandbox's scratch. Since VELDO-0347 rule 6
+    # defers a scratch whose repository it can SEE (deferred in_use, before any remover runs), so suite 154's
+    # safety/sandbox-repository no longer reaches this walk and cannot judge the defect. Where rule 6 cannot
+    # see, the walk is the only protection: a folder the confined run shut, in its own scratch, is not held at
+    # rule 6 (0347's one exception) and is opened by the remover, whose walk must stop on the unpushed clone in
+    # it. Suite 161's ac2/sandbox-scratch drives exactly that, so the falsifier is judged there (combine cand-1122).
+    add(324, 'space324-nested-repository-deleted', '161_veldo_0347_space_work.py', 'control_space_remove.py',
         "        if own is not None and ('.git' in names or GIT_FOLDER <= names):",
         "        if False and ('.git' in names or GIT_FOLDER <= names):",
-        ['safety/sandbox-repository'])
+        ['ac2/sandbox-scratch'])
+    result[-1]['siblings'] = True  # suite 161 loads the space modules beside each other, as space347's cases
     add(324, 'space324-declaration-skipped', '154_veldo_0324_batch_sandbox.py', 'agent_sandbox.py',
         "                with creator.item('scratch', scratch, parent=parent_item):",
         "                with __import__('contextlib').nullcontext():",

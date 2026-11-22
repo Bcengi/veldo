@@ -1,0 +1,5 @@
+run: space324-nested-repository-deleted, the mutant applied by hand in a scratch copy at 25440abf (both copies of control_space_remove.py), suites run through host_heavy
+154_veldo_0324_batch_sandbox with the mutant: selftest (PARTIAL, 1 of 265 suites): 55 passed, 0 failed in 2.36s
+161_veldo_0347_space_work with the mutant: selftest (PARTIAL, 1 of 265 suites): 50 passed, 1 failed in 2.57s
+  SELFTEST FAIL: VELDO-0347 ac2/sandbox-scratch: with an unpushed clone in it, the folder remover opens it and its walk stops on the clone before anything is deleted [('removed', None, None) None]
+re-anchored case through check_gate_mutations.py --case: mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=9.047s
