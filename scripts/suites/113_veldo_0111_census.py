@@ -312,6 +312,59 @@ else:
     os.close(fd)
 '''
 
+CLOSE_RANGE_PROBE = r'''
+import array, ctypes, json, os, socket, subprocess, sys, threading
+libc=ctypes.CDLL(None,use_errno=True)
+libc.syscall.restype=ctypes.c_long
+def close_range(first,last,flags):
+    return libc.syscall(436,ctypes.c_uint(first),ctypes.c_uint(last),ctypes.c_uint(flags))
+def ack(**v):
+    os.write(1,(json.dumps(v)+'\n').encode())
+def inode(fd):
+    return os.readlink('/proc/self/fd/%d'%fd)
+def listener(family=socket.AF_INET,address=('127.0.0.1',0)):
+    s=socket.socket(family,socket.SOCK_STREAM); s.bind(address); s.listen(); return s
+mode=sys.argv[1]
+if mode=='subprocess':
+    # Python's subprocess closes inherited descriptors with close_range.
+    s=listener()
+    out=subprocess.run(['git','--version'],capture_output=True,check=True).stdout.decode()
+    ack(inode=inode(s.fileno()),git=out.startswith('git version')); s.close()
+elif mode=='only':
+    tcp=listener(); port=tcp.getsockname()[1]; name='\0v111-close-range-%d'%os.getpid()
+    unix=listener(socket.AF_UNIX,name)
+    fds=sorted((tcp.detach(),unix.detach())); inodes=[inode(fd) for fd in fds]
+    assert fds[1]-fds[0]==1
+    result=close_range(fds[0],fds[1],0)
+    gone=[]
+    for fd in fds:
+        try: os.fstat(fd); gone.append(False)
+        except OSError: gone.append(True)
+    # Only a released listener frees its port and abstract name.
+    again=[listener(address=('127.0.0.1',port)),listener(socket.AF_UNIX,name)]
+    for s in again: s.close()
+    ack(result=result,inodes=inodes,gone=gone,rebound=True)
+elif mode=='cloexec':
+    s=listener(); fd=s.detach(); link=inode(fd)
+    result=close_range(fd,fd,4)
+    import fcntl
+    ack(result=result,inode=link,cloexec=bool(fcntl.fcntl(fd,fcntl.F_GETFD)&1),
+        open_until_exec=inode(fd)==link)
+    os.execv(sys.executable,[sys.executable,'-B','-c',
+        'import json,os,sys\ntry:\n os.fstat(int(sys.argv[1])); gone=False\nexcept OSError: gone=True\n'
+        'os.write(1,(json.dumps(dict(after_exec_gone=gone))+chr(10)).encode())',str(fd)])
+elif mode=='escaped':
+    s=listener(); d=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
+    sent=d.sendmsg([b'x'],[(socket.SOL_SOCKET,socket.SCM_RIGHTS,array.array('i',[s.fileno()]))],0,'\0'+sys.argv[2])
+    link=inode(s.fileno()); s.detach(); d.detach()
+    ack(sent=sent,inode=link,result=close_range(3,0xffffffff,0)); os._exit(0)
+elif mode=='shared':
+    out={}
+    t=threading.Thread(target=lambda: out.update(result=close_range(1000,1000,0))); t.start(); t.join()
+    ack(**out)
+'''
+
+
 ESCAPE_PROBE = r'''
 import ctypes, json, os, signal, sys
 libc=ctypes.CDLL(None,use_errno=True)
@@ -1027,6 +1080,89 @@ s.close()
              row['status'] == 'STANDS DOWN' and row['reason'] == 'census_incomplete'
              for rows in r['consumer_rows'].values() for row in rows)
              for r in (shared['thread'], shared['seccomp'])))
+    # close_range closes (or marks close-on-exec) every descriptor in its range
+    # and is accounted exactly like close; release is still proven only by the
+    # file-release observer, so an SCM_RIGHTS reference queued outside remains an
+    # escaped_reference. CLOEXEC closes nothing until exec. Unknown flags and a
+    # shared descriptor table are refused by name.
+    outside = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    outside_name = 'v111-close-range-outside-%d' % os.getpid()  # abstract; argv cannot carry NUL
+    outside.bind('\0' + outside_name)
+    ranged = {mode: run('close_range_' + mode, CLOSE_RANGE_PROBE, mode, *extra) for mode, *extra in (
+        ('subprocess',), ('only',), ('cloexec',), ('escaped', outside_name), ('shared',))}
+    received = []
+    try:
+        _, fds, _, _ = socket.recv_fds(outside, 16, 4, socket.MSG_DONTWAIT)
+        for fd in fds:
+            with socket.socket(fileno=fd) as got:
+                received.append((os.readlink('/proc/self/fd/%d' % got.fileno()),
+                                 got.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN)))
+    except BlockingIOError:
+        pass
+    finally:
+        outside.close()
+
+    def closes(r, link, syscall=None):
+        return [e for e in r['events'] if e['kind'] == 'close' and e.get('inode') == link
+                and (syscall is None or e.get('syscall') == syscall)]
+    sub, sub_acks = ranged['subprocess']
+    subprocess_ok = (complete_capture(sub) and bool(sub_acks) and sub_acks[0]['git']
+                     and len(closes(sub, sub_acks[0]['inode'], 436)) >= 1
+                     and len(closes(sub, sub_acks[0]['inode'], 3)) == 1)
+    only, only_acks = ranged['only']
+    owned = {o['inode']: o for o in only['sockets']}
+    services = [e for e in only['events'] if e['kind'] == 'service']
+    only_ok = (complete_capture(only) and bool(only_acks) and only_acks[0]['result'] == 0
+               and only_acks[0]['gone'] == [True, True] and only_acks[0]['rebound']
+               and all(link in owned and [e['sequence'] for e in closes(only, link)]
+                       == owned[link].get('descriptor_closes') and len(closes(only, link, 436)) == 1
+                       and (owned[link].get('closed') or {}).get('released') is True
+                       and any(objects_of(only)[e['socket']]['inode'] == link
+                               and e['sequence'] < closes(only, link)[0]['sequence'] for e in services)
+                       for link in only_acks[0]['inodes']))
+    marked, marked_acks = ranged['cloexec']
+    exec_seq = [e['sequence'] for e in marked['events'] if e['kind'] == 'exec']
+    link = marked_acks[0]['inode'] if marked_acks else None
+    marks = [e['sequence'] for e in marked['events'] if e['kind'] == 'close_on_exec_marked'
+             and e['inode'] == link]
+    cloexec_ok = (complete_capture(marked) and len(marked_acks) == 2 and marked_acks[0]['result'] == 0
+                  and marked_acks[0]['cloexec'] and marked_acks[0]['open_until_exec']
+                  and marked_acks[1] == dict(after_exec_gone=True) and len(exec_seq) == 2
+                  and len(marks) == 1 and exec_seq[0] < marks[0] < exec_seq[1]
+                  and not closes(marked, link, 436)
+                  and [e['cause'] for e in closes(marked, link) if e['sequence'] > exec_seq[1]]
+                  == ['close_on_exec'] and len(closes(marked, link)) == 1
+                  and any((o.get('closed') or {}).get('released') for o in marked['sockets'] if o['inode'] == link))
+    escaped, escaped_acks = ranged['escaped']
+    gone_listener = [o for o in escaped['sockets'] if escaped_acks and o['inode'] == escaped_acks[0]['inode']]
+    escape_reasons = sorted(f['reason'] for f in escaped['failures'] if f['capability'] == 'escaped_reference')
+    sends = [e for e in escaped['events'] if e['kind'] == 'descriptor_send']
+    escaped_ok = (escaped.get('root_status') == 0 and escaped['capture_status'] == 'INCOMPLETE'
+                  and bool(escaped_acks) and escaped_acks[0]['result'] == 0 and len(gone_listener) == 1
+                  and len(sends) == 1 and len(closes(escaped, gone_listener[0]['inode'], 436)) == 1
+                  and gone_listener[0]['closed'] is None
+                  and escape_reasons == sorted([
+                      'SCM_RIGHTS send %d has no exclusively measured receiver' % sends[0]['sequence'],
+                      '%s file is still referenced after descendant drain' % gone_listener[0]['identity']])
+                  and {f['capability'] for f in escaped['failures']} == {'escaped_reference'}
+                  and received == [(gone_listener[0]['inode'], 1)])
+    threaded, threaded_acks = ranged['shared']
+    shared_ok = (threaded.get('root_status') == 0 and threaded['capture_status'] == 'INCOMPLETE'
+                 and threaded_acks == [dict(result=0)]
+                 and [f['reason'] for f in threaded['failures']] == [
+                     'close_range ran while another live task shared its descriptor table'])
+    unit = census.Collector(dict(identity='close-range-flags', argv=['probe']))
+    unit.r['state'] = 'collecting'
+    unit.birth(os.getpid())
+    unit.syscall_exit(os.getpid(), dict(nr=436, args=[3, 9, 8, 0, 0, 0], abi='x86_64', fds={},
+                                        files_shared=[]), 0)
+    flags_ok = [(f['capability'], f['reason']) for f in unit.r['failures']] == [
+        ('descriptor_operation', 'close_range flags 0x8 are not qualified')]
+    evidence['close_range'] = dict(subprocess=subprocess_ok, only=only_ok, cloexec=cloexec_ok,
+                                   escaped=escaped_ok, shared=shared_ok, flags=flags_ok,
+                                   received=received)
+    emit('census/close-range-accounted',
+         subprocess_ok and only_ok and cloexec_ok and escaped_ok and shared_ok and flags_ok)
     evidence.update(run_round3_checks(census, emit))
     return evidence
 

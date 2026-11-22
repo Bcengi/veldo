@@ -151,3 +151,16 @@ open a port" case, and its launch and IPC policy belongs to the consumer
 tickets (VELDO-0113, VELDO-0114), not to this census. On a host whose Yama
 scope is 0 (or without Yama), (ii) does not hold, and the census's io_uring
 claim covers only rings whose descriptor the scope could hold.
+
+### Follow-up, 2026-11-22: close_range
+
+VELDO-0113 found that the collector refused close_range(2), which Python's
+subprocess issues before every exec, so most client runs ended INCOMPLETE.
+close_range is now accounted exactly like close on every descriptor in its
+range, read from the kernel table at the entry and exit stops. Release is still
+proven only by the file-release observer, so an SCM_RIGHTS reference already
+queued outside the scope remains `escaped_reference`. CLOSE_RANGE_CLOEXEC
+closes nothing until exec; exec then accounts each close-on-exec socket it
+closed. Flags outside UNSHARE|CLOEXEC, and a descriptor table shared with
+another live task, are refused as named `descriptor_operation`. Row:
+`census/close-range-accounted`.

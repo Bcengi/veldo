@@ -54,7 +54,7 @@ I386_SYSCALLS = {
     5: 2, 6: 3, 41: 32, 63: 33, 55: 72, 221: 72, 330: 292, 359: 41, 360: 53, 361: 49,
     362: 42, 363: 50, 364: 288, 365: 55, 366: 54, 367: 51, 368: 52, 369: 44, 370: 46,
     371: 45, 372: 47, 373: 48, 337: 299, 417: 299, 345: 307, 120: 56, 435: 435, 354: 317,
-    295: 257, 437: 437, 438: 438, 436: 436, 425: 425, 426: 426, 427: 427}
+    295: 257, 437: 437, 438: 438, 436: 436, 425: 425, 426: 426, 427: 427, 11: 59, 358: 322}
 I386_SOCKETCALL_ONLY = frozenset((43,))
 # Message layouts: (msghdr stride for sendmmsg, msghdr size, control pointer and
 # length format/offset, cmsghdr header format, cmsg alignment).
@@ -62,6 +62,9 @@ MESSAGE_LAYOUTS = {
     'x86_64': dict(stride=64, size=56, control='<QQ', offset=32, header='<Qii', align=8),
     'i386': dict(stride=32, size=28, control='<II', offset=16, header='<Iii', align=4),
 }
+# close_range(2) flags the collector can account for exactly. Any other flag
+# accepted by a future kernel is refused by name.
+CLOSE_RANGE_UNSHARE, CLOSE_RANGE_CLOEXEC = 2, 4
 # Native socket syscalls (socketcall is normalized to these numbers).
 SOCKET_CALLS = frozenset((41, 42, 43, 44, 45, 46, 47, 49, 50, 53, 288, 299, 307))
 
@@ -688,7 +691,7 @@ class Collector:
         finally:
             os.close(dup)
 
-    def sharers(self, pid):
+    def sharers(self, pid, kinds=(2, 1)):
         """Live measured tasks sharing pid's descriptor table or address space.
 
         Only such a task (or a seccomp listener, refused separately) can swap a
@@ -698,7 +701,7 @@ class Collector:
         for other in self.live:
             if other == pid:
                 continue
-            for kind in (2, 1):  # KCMP_FILES, KCMP_VM
+            for kind in kinds:  # KCMP_FILES, KCMP_VM
                 ctypes.set_errno(0)
                 value = LIBC.syscall(312, pid, other, kind, 0, 0)
                 if value < 0:
@@ -930,6 +933,11 @@ class Collector:
                 entry['sharers'] = self.sharers(pid)
             if nr in (47, 53, 299):
                 entry['fds'] = self.fd_table(pid)
+            if nr in (59, 322, 436):
+                # close_range and exec close descriptors that are gone at the
+                # exit stop; read the table while no other task can change it.
+                entry['fds'] = self.fd_table(pid)
+                entry['files_shared'] = self.sharers(pid, (2,))
             if nr in (49, 42):
                 entry["address"] = self.memory(pid, args[1], args[2]).hex() if args[1] else None
             if nr in (3, 32, 33, 42, 43, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
@@ -956,6 +964,63 @@ class Collector:
             self.syscall_exit(pid, entry, result)
         else:
             raise ValueError(f"unexpected syscall stop {op}")
+
+    def descriptor_closed(self, pid, fd, link, syscall, **values):
+        """Account one descriptor close of a socket exactly like close(2)."""
+        obj = self.sockets.get(link)
+        closed = self.event('close', task=self.live[pid]['identity'], inode=link,
+                            socket=obj['identity'] if obj else None, fd=fd, syscall=syscall, **values)
+        if obj:
+            obj.setdefault('descriptor_closes', []).append(closed)
+
+    def close_range(self, pid, entry):
+        """A successful close_range(first, last, flags) closes, or marks
+        close-on-exec, every open descriptor in [first, last].
+
+        The range is read from the kernel table at the entry stop and checked
+        against the table at the exit stop. Each socket closed is accounted as a
+        close; release itself is still proven only by the file-release observer,
+        so a reference queued elsewhere (SCM_RIGHTS) stays an escaped_reference.
+        CLOSE_RANGE_CLOEXEC closes nothing until exec. Refused by name: flags
+        outside UNSHARE|CLOEXEC, and a table another live task shares, whose
+        contents can change between the entry stop and the kernel's close.
+        """
+        first, last, flags = (value & 0xffffffff for value in entry['args'][:3])
+        if flags & ~(CLOSE_RANGE_UNSHARE | CLOSE_RANGE_CLOEXEC):
+            failure(self.r, 'descriptor_operation', f'close_range flags {flags:#x} are not qualified')
+            return
+        if entry.get('files_shared'):
+            failure(self.r, 'descriptor_operation',
+                    'close_range ran while another live task shared its descriptor table')
+            return
+        before, after = entry['fds'], self.fd_table(pid)
+        in_range = sorted(fd for fd in before if first <= fd <= last)
+        if flags & CLOSE_RANGE_CLOEXEC:
+            if any(after.get(fd) != before[fd] for fd in in_range):
+                failure(self.r, 'descriptor_race', 'close_range CLOEXEC changed descriptors in its range')
+                return
+            for fd in in_range:
+                if before[fd].startswith('socket:['):
+                    obj = self.sockets.get(before[fd])
+                    self.event('close_on_exec_marked', task=self.live[pid]['identity'], inode=before[fd],
+                               socket=obj['identity'] if obj else None, fd=fd, syscall=436)
+            return
+        survivors = sorted(fd for fd in after if first <= fd <= last)
+        if survivors:
+            failure(self.r, 'descriptor_race', f'close_range left descriptors {survivors} open')
+            return
+        for fd in in_range:
+            if before[fd].startswith('socket:['):
+                self.descriptor_closed(pid, fd, before[fd], 436, flags=flags)
+
+    def exec_closes(self, pid, entry):
+        """A successful exec closes every close-on-exec descriptor."""
+        if not entry or entry['nr'] not in (59, 322) or entry.get('files_shared'):
+            return
+        after = self.fd_table(pid)
+        for fd, link in sorted(entry['fds'].items()):
+            if link.startswith('socket:[') and after.get(fd) != link:
+                self.descriptor_closed(pid, fd, link, entry['nr'], cause='close_on_exec')
 
     def syscall_exit(self, pid, entry, result):
         nr, a = entry["nr"], entry["args"]
@@ -1085,10 +1150,12 @@ class Collector:
         elif nr == 3 and entry.get("inode"):
             obj = self.sockets.get(entry["inode"])
             closed = self.event("close", task=self.live[pid]["identity"], inode=entry["inode"],
-                                socket=obj["identity"] if obj else None, fd=a[0])
+                                socket=obj["identity"] if obj else None, fd=a[0], syscall=3)
             if obj:
                 obj.setdefault('descriptor_closes', []).append(closed)
-        elif nr in (436, 438):
+        elif nr == 436:
+            self.close_range(pid, entry)
+        elif nr == 438:
             failure(self.r, "descriptor_operation", f"unqualified syscall {nr}")
 
     def run(self):
@@ -1182,6 +1249,7 @@ class Collector:
                     message = ctypes.c_ulong()
                     ptrace(0x4201, pid, 0, ctypes.byref(message))
                     former = message.value
+                    execve = self.pending.get(former) or self.pending.get(pid)
                     if former != pid:
                         displaced = self.live.pop(pid, None)
                         task = self.live.pop(former)
@@ -1192,6 +1260,7 @@ class Collector:
                         self.pending.pop(former, None)
                     task = self.live[pid]
                     task["execs"].append(self.event("exec", identity=task["identity"], former_tid=former, pid=pid))
+                    self.exec_closes(pid, execve)
                     self.pending.pop(pid, None)
                 elif event == 6:
                     self.live[pid]["comm"] = comm(pid)
