@@ -206,6 +206,10 @@ def validate(files, *, secret_exists, resolve=None):
             organ('tracker')._validate(routing)
             if any(r['tracker'] not in routing.get('trackers', {}) for r in routing.get('repos', [])):
                 raise ValueError('unknown_tracker')
+            for site in routing.get('trackers', {}).values():
+                required = ('client_id_ref', 'client_secret_ref') if site.get('auth') == 'oauth-client-credentials' else ('token_ref', 'email')
+                if any(not site.get(key) for key in required):
+                    raise ValueError('missing_authentication_reference')
         except (ValueError, TypeError, KeyError, AttributeError):
             problems.append('installation_invalid:installation.yaml:tracker_routing:routing')
     records = {path: body for path, body in files.items() if path.startswith('records/') and path != 'records/digests.json'}

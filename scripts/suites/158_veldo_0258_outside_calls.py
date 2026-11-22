@@ -20,6 +20,7 @@ def _v258_suite():
     import sys
     import tempfile
     import threading
+    from types import SimpleNamespace
     from unittest.mock import patch
 
     PRODUCTION = {
@@ -88,8 +89,11 @@ def _v258_suite():
                     basic = base64.b64encode(('owner@example.com:' + value).encode()).decode()
                     if header in ('Bearer ' + value, 'Basic ' + basic) or ('/bot' + value + '/') in self.path:
                         authenticated.append(caller)
-                reply = json.dumps({'ok': True, 'result': {'message_id': 1, 'date': 1, 'chat': {'id': 123}, 'text': 'Notice'}, 'body_bytes': len(body)}).encode()
-                self.send_response(200)
+                failed = self.path == '/failure'
+                reply = (values['tracker'].encode() if failed else json.dumps({'ok': True,
+                         'result': {'message_id': 1, 'date': 1, 'chat': {'id': 123}, 'text': 'Notice'},
+                         'body_bytes': len(body)}).encode())
+                self.send_response(401 if failed else 200)
                 self.send_header('Content-Length', str(len(reply)))
                 self.end_headers()
                 self.wfile.write(reply)
@@ -138,8 +142,16 @@ def _v258_suite():
                           'installation_commit', 'dispatch_id'} <= set(row)
                           and row['installation_commit'] == 'a' * 40
                           for row in observed if 'operation' in row))
+                    code = refusal(lambda: RN.build_live_adapter(entry('keychain:tracker'))._request('GET', '/failure'))
+                    check('observability/failed-body-private', code == 'unavailable_service:control_plane_call:tracker'
+                          and values['tracker'] not in json.dumps(observed))
+                    check('observability/counts', CP.metrics()['calls'].get('tracker:failed', 0) >= 1
+                          and all(CP.metrics()['credential_refusals'].get(scheme, 0) >= len(constructors)
+                                  for scheme in ('env', 'file', 'literal')))
                 # Exec cannot inherit the memory binding; a run marker refuses even an existing service binding.
                 for caller, construct in constructors.items():
+                    check('ac3/service-required/' + caller, refusal(lambda: construct('keychain:' + caller))
+                          == 'unauthorized:control_plane_service:' + caller)
                     with patch.dict(os.environ, VELDO_DISPATCH_ID='dispatch/fixture'):
                         check('ac3/run-refused/' + caller, refusal(lambda: construct('keychain:' + caller))
                               == 'unauthorized:control_plane_run:' + caller)
@@ -154,6 +166,11 @@ def _v258_suite():
                                           text=True, timeout=120).stdout.strip()
                 git('init', '-q', '--initial-branch=main', work)
                 git('init', '-q', '--bare', remote)
+                gate_called = root / 'gate-called'
+                gate_hook = work / '.git/hooks/pre-push'
+                gate_hook.write_text('#!' + sys.executable + '\nfrom pathlib import Path\nPath('
+                                     + repr(str(gate_called)) + ').touch()\nraise SystemExit(1)\n')
+                gate_hook.chmod(0o700)
                 git('-C', work, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.com',
                     'commit', '-q', '--allow-empty', '-m', 'Fixture landing')
                 tip = git('-C', work, 'rev-parse', 'HEAD')
@@ -163,11 +180,13 @@ def _v258_suite():
                     return ['-c', 'protocol.file.allow=always']
                 with patch.object(P._git_process, 'identity_transport', return_value=transport), \
                         patch.object(transport, 'options', side_effect=fixture_options), \
-                        CP.service('a' * 40, observed.append):
+                        CP.service('a' * 40, observed.append, dispatch='fixture-landing'):
                     landed = P.push(dict(path=str(work), default_branch='main', remote=str(remote),
                                          base_commit='', scaffold_commit=tip), record)
                 check('ac3/landing-outside-gate', landed == tip
-                      and git('--git-dir', remote, 'rev-parse', 'refs/heads/main') == tip)
+                      and git('--git-dir', remote, 'rev-parse', 'refs/heads/main') == tip and not gate_called.exists())
+                check('observability/landing-dispatch', any(row.get('caller') == 'landing_push'
+                      and row.get('dispatch_id') == 'fixture-landing' for row in observed))
 
                 # Real loader, Git object tree and signed SQLite record; malformed routing refuses whole.
                 S = load('v258_store', mods / 'control_store.py')
@@ -199,6 +218,27 @@ def _v258_suite():
                     with CP.service(lambda: loader.accepted_commit, observed.append):
                         RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/accepted-site')
                         DB.TelegramSink.from_installation().send('Accepted target', None)
+                        # Real command signatures and runtime routing. Only the authority's
+                        # membership projection is a fixture; the command judge and preview run.
+                        TS = load('v258_tracker_service', mods / 'control_tracker_service.py')
+                        membership = TS.organ('control_membership')
+                        authority = dict(membership=[dict(principal='owner', principal_type='person',
+                                                          roles=['project_owner'], scope=['fixture'])],
+                                         keyring=[dict(principal='owner', public_key=Path(str(private) + '.pub').read_text().strip())])
+                        command = dict(operation='tracker_call', domain_uuid='fixture', store_uuid='fixture',
+                                       repository_uuid='fixture', principal='owner', command_id='preview', expires_at=1300,
+                                       parameters=dict(action='mirror', tracker='fixture', dry_run=True))
+                        packet = dict(command=command, signature=SIG.sign_bytes(private, S.canonical_bytes(command), 'veldo-command'))
+                        service = SimpleNamespace(conn=conn, domain='fixture', store='fixture', repositories={'fixture': [str(work)]})
+                        organ = TS.organ
+                        with patch.object(TS, 'organ', side_effect=lambda name: membership if name == 'control_membership' else organ(name)), \
+                                patch.object(membership, 'authority_state', return_value=authority), \
+                                patch.object(TS.time, 'time', return_value=1000):
+                            check('ac3/signed-service-command', TS.execute(service, packet, 'fixture')['ok'])
+                            packet['command'] = dict(command, parameters=dict(action='init', tracker='fixture', dry_run=False))
+                            check('ac3/tampered-command-refused', TS.execute(service, packet, 'fixture') ==
+                                  {'ok': False, 'reason': 'unauthorized:tracker_call'})
+                    check('observability/effect-provenance', CP.effect_commit({'store': str(root / 'store.sqlite3')}) == first)
                     bad = json.loads(json.dumps(settings))
                     bad['tracker_routing']['trackers']['fixture']['base_url'] = 'malformed site'
                     second = repo.commit({'installation.yaml': json.dumps(bad).encode()}, first, identity, 'Bad routing')
@@ -207,8 +247,15 @@ def _v258_suite():
                     check('ac2/malformed-whole', rejected['outcome'] == 'refused'
                           and any(p.startswith('installation_invalid:') for p in rejected['problems'])
                           and loader.accepted_commit == first and TR.load_tracker_config() == routing)
+                    before = len(authenticated)
+                    with CP.service(lambda: loader.accepted_commit, observed.append):
+                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/previous-still-live')
+                    check('ac2/previous-still-live', len(authenticated) == before + 1
+                          and observed[-1]['installation_commit'] == first)
                 finally:
                     conn.close()
+                check('ac1/no-canary-in-store', all(value.encode() not in (root / 'store.sqlite3').read_bytes()
+                      for value in values.values()))
                 check('ac2/template-no-site', not json.loads((ROOT / 'engine/.veldo/trackers.json').read_text())['trackers'])
                 problems = SC.findings(ROOT / 'engine/.veldo')
                 print('VELDO-0258 register findings:', problems)

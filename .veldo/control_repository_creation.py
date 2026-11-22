@@ -146,7 +146,7 @@ def token(identity):
     """The identity's API token from the keystore, as a secretref handle's value; refused by name."""
     outside = organ('control_plane_calls')
     outside.reference('provisioner', identity.get('api_token'))
-    outside.not_run('provisioner')
+    outside.require_service('provisioner')
     try:
         return outside.credential('provisioner', identity['api_token'])
     except Exception as error:  # noqa: BLE001 - the reason is the keystore's code, never the value
