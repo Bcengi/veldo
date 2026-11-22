@@ -58,6 +58,9 @@ class Loader:
 
     def validate(self, files):
         config, problems = V.validate(files, secret_exists=self.secret_exists, resolve=WF._resolver(self.conn))
+        branch = config.get(I.SETTINGS_FILE, {}).get('git', {}).get('branch')
+        if branch is not None and branch != self.repo.branch:
+            problems.append('installation_invalid:%s:git.branch:configured_branch' % I.SETTINGS_FILE)
         if not problems:
             preview = {'commit': 'preview', 'blobs': {path: 'preview' for path in files}}
             try:
