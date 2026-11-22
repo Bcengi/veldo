@@ -756,8 +756,9 @@ L.main()
               seen['flood'] == 3000 and seen['off_thread'] == [])
         check('query/lifecycle', 'each request logged to a file, counts once on the pipe',
               flood_lines.count('hello ok') >= 3000 and (launch.query_counts or {}).get('hello:ok', 0) >= 3000
-              and len(launch.messages) < 40 and sum(1 for m in launch.messages if m.get('event') == 'run_query_end') == 1
-              and not any(m.get('event') == 'run_query' for m in launch.messages))
+              and len(launch.messages) < 40 and [m.get('event') for m in launch.query_notices] ==
+              ['store_guard', 'run_query_created', 'run_query_end']
+              and not any(m.get('event') in L.QUERY_NOTICES for m in launch.messages))
         check('query/scope', 'launch scan: the query variable is own, the acceptance is not added [%s]' % scan_probe['own'],
               scan_probe['own'] == ['VELDO_RUN_QUERY'])
         # A file the run drops in its endpoint directory: cleanup leaves it and says so, the production
