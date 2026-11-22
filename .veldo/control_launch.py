@@ -860,6 +860,12 @@ def guard_census_failure(error):
     return 'runner'
 
 
+# VELDO-0359 B2 with the line's installation closure (VELDO-0253/0258, cand-1122 combine): guard_census loads the
+# configured runner (agent_sandbox.py) by the path it is given, a file outside every installed directory by
+# design, so the closure reads it as no module of this installation's own.
+EXTERNAL_LOADERS = ("guard_census",)
+
+
 def guard_census(program, configuration, worktree, client, directory, scratch=None):
     """Read-only model of the runner's post-exclusion grants; no state or scratch preparation.
 

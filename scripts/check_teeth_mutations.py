@@ -14624,9 +14624,11 @@ def cases():
                 ['f4/clone-being-made-keeps-its-pin'])
     finished308('space308-refusal-reported-before-the-space-end', 'control_launch.py',
                 "                                   expected_state='prepared')\n"
+                "            guard_refusal_record(self, contract)\n"
                 "            self._space_end(dispatch_id, contract)\n"
                 "            self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,\n",
                 "                                   expected_state='prepared')\n"
+                "            guard_refusal_record(self, contract)\n"
                 "            self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,\n",
                 ['f5/refused-before-spawn'])
     finished308('space308-spawn-failure-reported-before-the-space-end', 'control_launch.py',
@@ -17501,10 +17503,10 @@ def cases():
         ['unavailable/no-auto-start-needs-census'])
     result[-1]['fixture'] = True
     add(113, 'autostart113-construction-outside-authority', suite113, 'claim.py',
-        'STALE_AFTER_SECONDS = 90',
+        "STALE_AFTER_SECONDS = _contract('STALE_AFTER_SECONDS', 90)",
         'def outside_authority_constructor():\n'
         '    return _CLIENTS.load_client_module("control_dispatch").Dispatches(None, None)\n\n'
-        'STALE_AFTER_SECONDS = 90',
+        "STALE_AFTER_SECONDS = _contract('STALE_AFTER_SECONDS', 90)",
         ['unavailable/in-process-construction-boundary'])
     add(113, 'autostart113-cli-direct-construction', suite113, 'veldo',
         '    if dispatcher is None:\n',
@@ -18066,8 +18068,8 @@ def cases():
             '    _veldo_take=()  # defect: the unit stage takes no opened-files record\n',
             ['leg/record-taken-by-the-authority'])
     load358('opened358-tree-drops-ledger', 'agent_sandbox.py',
-            '            inherit = (args.keep_fd,)\n',
-            '            inherit = ()  # defect: the gate tree does not keep the authority\'s ledger\n',
+            '            inherit.append(args.keep_fd)\n',
+            '            pass  # defect: the gate tree does not keep the authority\'s ledger\n',
             ['leg/record-taken-by-the-authority'])
     load358('opened358-load-reads-unpublished', 'gate_schedule.py',
             "            load_module('gate_legs').publish_opened(target, parts)\n",
@@ -18242,8 +18244,8 @@ def cases():
         'if False:', ['timers/table-profile'])
     result[-1]['dir'] = 'engine/.veldo'
     add(358, 'firstuse358-total-budget', '111_veldo_0214_first_use_budget.py', 'check_first_use.py',
-        'env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=launcher_fds())',
-        'env=_child_env(), timeout=PROCESS_HANG_SECONDS, pass_fds=launcher_fds())', ['first-use-budget/measured-budget-used'])
+        'env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))',
+        'env=_child_env(), timeout=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))', ['first-use-budget/measured-budget-used'])
     result[-1]['dir'] = 'scripts'
     add(358, 'verdict358-unproven-lost', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
         'if baselined(case, dict(mutant, opened_files=opened), baseline):',
