@@ -2001,6 +2001,8 @@ class Launch:
         self.query_identity = None
         self.query_counts = None
         self.query_left = None  # why the run's query endpoint directory was left, when it was
+        self.query_notices = []  # the receiver's store guard and query endpoint lines, apart from `messages`
+        self.store_guard = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -2062,14 +2064,20 @@ class Launch:
             message = json.loads(line)
         except ValueError:
             return {}
+        if isinstance(message, dict) and message.get('event') in QUERY_NOTICES:
+            # VELDO-0359: kept apart, so the launch's message trace is what it was before the query endpoint.
+            self.query_notices.append(message)
+            if message['event'] == 'run_query_end':
+                self.query_counts = message.get('counts')
+                self.query_left = message.get('left') or self.query_left
+            elif message['event'] == 'run_query_created':
+                self.query_identity = message.get('identity')
+            else:
+                self.store_guard = message.get('store_guard')
+            return message
         self.messages.append(message)
         if not isinstance(message, dict):
             return {}
-        if message.get('event') == 'run_query_end':
-            self.query_counts = message.get('counts')
-            self.query_left = message.get('left') or self.query_left
-        if message.get('event') == 'run_query_created':
-            self.query_identity = message.get('identity')
         if isinstance(message.get('group'), dict):
             self.group = message['group']
         if message.get('supervision') is not None:
@@ -4065,6 +4073,7 @@ END_UNRECORDED_REASON = 'outcome_unknown:end_unrecorded'
 # What Launch.start records for a receiver that exited END_UNRECORDED before its dispatch's record reached
 # running: launch evidence missing as for every receiver that ended there, and why.
 EVIDENCE_UNRECORDED_REASON = 'launch_evidence_missing:end_unrecorded'
+QUERY_NOTICES = ('store_guard', 'run_query_created', 'run_query_end')  # VELDO-0359, see Launch._take
 RECEIVER_EXIT_SECONDS = 2  # how long a receiver whose output has ended is given to exit by itself
 
 
