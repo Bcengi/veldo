@@ -68,6 +68,7 @@ import argparse
 import importlib.util
 import json
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 
 
@@ -235,101 +236,102 @@ def mirror_events(events, spec_index, config, adapter):
         by_spec[sid].append(ev)
 
     for sid in order:
-        meta = spec_index.get(sid)
-        if not meta:
-            result["skipped"][sid] = "no spec metadata (spec not found in the repository index)"
-            continue
-        tracker_repo = meta.get("tracker_repo")
-        if not config or not tracker_repo:
-            result["skipped"][sid] = "not wired for mirroring (no tracker_repo or no tracker config)"
-            continue
-        try:
-            tracker_for_repo(tracker_repo, config)  # reuse WARP-0601: confirm a known tracker/project
-        except TrackerRoutingError as e:
-            result["skipped"][sid] = "unroutable tracker_repo: %s" % e
-            continue
-        identity = _child_identity(meta)
-        if identity is None:
-            result["skipped"][sid] = "no plan, so no epic to place the child under"
-            continue
-        epic_key, child_key = identity
-        status_map = resolve_status_map(config, tracker_repo)
-
-        # Events in time order (stable on equal timestamps); collapse exact-duplicate event ids
-        # (at-least-once delivery can double-deliver one event within a batch).
-        seen = set()
-        evs = []
-        for ev in sorted(by_spec[sid], key=lambda e: e.get("at", "")):
-            eid = ev.get("id") or "%s:%s:%s" % (sid, ev.get("type"), ev.get("at"))
-            if eid in seen:
-                result["events_deduped"] += 1
+        with adapter.trace(sid) if hasattr(adapter, 'trace') else nullcontext():
+            meta = spec_index.get(sid)
+            if not meta:
+                result["skipped"][sid] = "no spec metadata (spec not found in the repository index)"
                 continue
-            seen.add(eid)
-            evs.append(ev)
-        result["events_processed"] += len(evs)
-
-        # Ensure the child exists (idempotent upsert); status is reconciled below, never here.
-        child_id = adapter.create_or_update_child(epic_key, child_key, title=meta.get("title"))
-
-        # RECONCILE the status: the latest event whose VELDO status is mapped is the desired status.
-        # An unmapped latest status never drags the child backward and never invents a transition
-        # (NG4); it leaves the last mapped status standing. set_status is a no-op when unchanged.
-        desired = None
-        for ev in evs:
-            ws = EVENT_STATUS[ev["type"]]
-            if ws in status_map:
-                desired = status_map[ws]
-        if desired is not None and adapter.set_status(child_id, desired):
-            result["transitions"] += 1
-
-        # Annotate each VELDO status that occurred but has NO tracker mapping, as a keyed comment
-        # (visible to a human, at most once per status under replay). Never a transition.
-        annotated = set()
-        for ev in evs:
-            ws = EVENT_STATUS[ev["type"]]
-            if ws in status_map or ws in annotated:
+            tracker_repo = meta.get("tracker_repo")
+            if not config or not tracker_repo:
+                result["skipped"][sid] = "not wired for mirroring (no tracker_repo or no tracker config)"
                 continue
-            annotated.add(ws)
-            note = "VELDO status: %s (no tracker status mapped)" % ws
-            if adapter.comment(child_id, note, key="%s:veldostatus:%s" % (sid, ws)):
-                result["comments"] += 1
-                result["unmapped"] += 1
+            try:
+                tracker_for_repo(tracker_repo, config)  # reuse WARP-0601: confirm a known tracker/project
+            except TrackerRoutingError as e:
+                result["skipped"][sid] = "unroutable tracker_repo: %s" % e
+                continue
+            identity = _child_identity(meta)
+            if identity is None:
+                result["skipped"][sid] = "no plan, so no epic to place the child under"
+                continue
+            epic_key, child_key = identity
+            status_map = resolve_status_map(config, tracker_repo)
 
-        # The closing comment: posted once if the spec shipped, keyed so replay never re-posts it.
-        shipped = [ev for ev in evs if ev["type"] == "spec.shipped"]
-        if shipped:
-            commit = shipped[-1].get("commit")
-            text = "Shipped in the repository" + (" at %s" % commit if commit else "")
-            if adapter.comment(child_id, text, key="%s:shipped" % sid):
-                result["comments"] += 1
-                result["closing_comments"] += 1
+            # Events in time order (stable on equal timestamps); collapse exact-duplicate event ids
+            # (at-least-once delivery can double-deliver one event within a batch).
+            seen = set()
+            evs = []
+            for ev in sorted(by_spec[sid], key=lambda e: e.get("at", "")):
+                eid = ev.get("id") or "%s:%s:%s" % (sid, ev.get("type"), ev.get("at"))
+                if eid in seen:
+                    result["events_deduped"] += 1
+                    continue
+                seen.add(eid)
+                evs.append(ev)
+            result["events_processed"] += len(evs)
 
-        # The READY-TO-TEST handoff: only when the spec has entered review after a build. At this one
-        # transition the mirror SHOWS the work (artifact links, keyed so at most once) and HANDS the
-        # ticket over (reassign away from the Agent to the reviewer). An earlier point never reaches
-        # here, so the fleet keeps the ticket while it works. Both writes are idempotent - the links by
-        # comment key, the reassign by target assignee - so replay adds no duplicate.
-        if any(ev["type"] == READY_TO_TEST_EVENT for ev in evs):
-            commit, pr, proof = _artifact_links(evs)
-            parts = []
-            if commit:
-                parts.append("commit %s" % commit)
-            if pr:
-                parts.append("pull request %s" % pr)
-            if proof:
-                parts.append("proof %s" % proof)
-            if parts and adapter.comment(child_id, "Ready to test. Artifacts: %s." % "; ".join(parts),
-                                         key="%s:artifacts" % sid):
-                result["comments"] += 1
-                result["artifact_comments"] += 1
-            # Reassign away from the single Agent user to the configured reviewer (default: the ticket's
-            # reporter). Guarded so it never assigns TO the Agent and never invents an assignee.
-            reviewer = resolve_reviewer(config, tracker_repo, meta.get("reporter"))
-            agent = config.get("agent") if config else None
-            if reviewer and reviewer != agent and adapter.assign(child_id, reviewer):
-                result["reassignments"] += 1
+            # Ensure the child exists (idempotent upsert); status is reconciled below, never here.
+            child_id = adapter.create_or_update_child(epic_key, child_key, title=meta.get("title"))
 
-        result["mirrored"].append(sid)
+            # RECONCILE the status: the latest event whose VELDO status is mapped is the desired status.
+            # An unmapped latest status never drags the child backward and never invents a transition
+            # (NG4); it leaves the last mapped status standing. set_status is a no-op when unchanged.
+            desired = None
+            for ev in evs:
+                ws = EVENT_STATUS[ev["type"]]
+                if ws in status_map:
+                    desired = status_map[ws]
+            if desired is not None and adapter.set_status(child_id, desired):
+                result["transitions"] += 1
+
+            # Annotate each VELDO status that occurred but has NO tracker mapping, as a keyed comment
+            # (visible to a human, at most once per status under replay). Never a transition.
+            annotated = set()
+            for ev in evs:
+                ws = EVENT_STATUS[ev["type"]]
+                if ws in status_map or ws in annotated:
+                    continue
+                annotated.add(ws)
+                note = "VELDO status: %s (no tracker status mapped)" % ws
+                if adapter.comment(child_id, note, key="%s:veldostatus:%s" % (sid, ws)):
+                    result["comments"] += 1
+                    result["unmapped"] += 1
+
+            # The closing comment: posted once if the spec shipped, keyed so replay never re-posts it.
+            shipped = [ev for ev in evs if ev["type"] == "spec.shipped"]
+            if shipped:
+                commit = shipped[-1].get("commit")
+                text = "Shipped in the repository" + (" at %s" % commit if commit else "")
+                if adapter.comment(child_id, text, key="%s:shipped" % sid):
+                    result["comments"] += 1
+                    result["closing_comments"] += 1
+
+            # The READY-TO-TEST handoff: only when the spec has entered review after a build. At this one
+            # transition the mirror SHOWS the work (artifact links, keyed so at most once) and HANDS the
+            # ticket over (reassign away from the Agent to the reviewer). An earlier point never reaches
+            # here, so the fleet keeps the ticket while it works. Both writes are idempotent - the links by
+            # comment key, the reassign by target assignee - so replay adds no duplicate.
+            if any(ev["type"] == READY_TO_TEST_EVENT for ev in evs):
+                commit, pr, proof = _artifact_links(evs)
+                parts = []
+                if commit:
+                    parts.append("commit %s" % commit)
+                if pr:
+                    parts.append("pull request %s" % pr)
+                if proof:
+                    parts.append("proof %s" % proof)
+                if parts and adapter.comment(child_id, "Ready to test. Artifacts: %s." % "; ".join(parts),
+                                             key="%s:artifacts" % sid):
+                    result["comments"] += 1
+                    result["artifact_comments"] += 1
+                # Reassign away from the single Agent user to the configured reviewer (default: the ticket's
+                # reporter). Guarded so it never assigns TO the Agent and never invents an assignee.
+                reviewer = resolve_reviewer(config, tracker_repo, meta.get("reporter"))
+                agent = config.get("agent") if config else None
+                if reviewer and reviewer != agent and adapter.assign(child_id, reviewer):
+                    result["reassignments"] += 1
+
+            result["mirrored"].append(sid)
 
     return result
 
@@ -376,58 +378,58 @@ def mirror_plan_events(events, plan_index, config, adapter):
         plans_seen.append(pid)
 
     for pid in plans_seen:
-        meta = plan_index.get(pid)
-        if not meta:
-            result["skipped"][pid] = "no plan metadata (plan not found in the repository index)"
-            continue
-        tracker_repo = meta.get("tracker_repo")
-        if not config or not tracker_repo:
-            result["skipped"][pid] = "not wired for mirroring (no tracker_repo or no tracker config)"
-            continue
-        try:
-            tracker_for_repo(tracker_repo, config)  # reuse WARP-0601: enforce a known tracker on epics
-        except TrackerRoutingError as e:
-            result["skipped"][pid] = "unroutable tracker_repo: %s" % e
-            continue
-        status_map = resolve_status_map(config, tracker_repo)
-        work_items = [w for w in (meta.get("work") or []) if w.get("item")]
+        with adapter.trace(pid) if hasattr(adapter, 'trace') else nullcontext():
+            meta = plan_index.get(pid)
+            if not meta:
+                result["skipped"][pid] = "no plan metadata (plan not found in the repository index)"
+                continue
+            tracker_repo = meta.get("tracker_repo")
+            if not config or not tracker_repo:
+                result["skipped"][pid] = "not wired for mirroring (no tracker_repo or no tracker config)"
+                continue
+            try:
+                tracker_for_repo(tracker_repo, config)  # reuse WARP-0601: enforce a known tracker on epics
+            except TrackerRoutingError as e:
+                result["skipped"][pid] = "unroutable tracker_repo: %s" % e
+                continue
+            status_map = resolve_status_map(config, tracker_repo)
+            work_items = [w for w in (meta.get("work") or []) if w.get("item")]
 
-        # EPIC: upsert keyed by plan id (never forks), recording the routing target in its fields so
-        # the epic is identifiable as this repo's (a real adapter maps this onto the config's routing
-        # mechanism when it writes the live tracker). Status set separately so a real move is counted.
-        epic_id = adapter.create_or_update_epic(pid, title=meta.get("title"),
-                                                fields={"veldo_repo": tracker_repo})
-        epic_ws = _epic_veldo_status(work_items)
-        if epic_ws in status_map:
-            if adapter.set_status(epic_id, status_map[epic_ws]):
-                result["epic_transitions"] += 1
-        else:
-            note = "VELDO epic status: %s (no tracker status mapped)" % epic_ws
-            if adapter.comment(epic_id, note, key="%s:epicstatus:%s" % (pid, epic_ws)):
-                result["comments"] += 1
-                result["unmapped"] += 1
+            # EPIC: upsert keyed by plan id (never forks), recording the routing target in its fields so
+            # the epic is identifiable as this repo's (a real adapter maps this onto the config's routing
+            # mechanism when it writes the live tracker). Status set separately so a real move is counted.
+            epic_id = adapter.create_or_update_epic(pid, title=meta.get("title"),
+                                                    fields={"veldo_repo": tracker_repo})
+            epic_ws = _epic_veldo_status(work_items)
+            if epic_ws in status_map:
+                if adapter.set_status(epic_id, status_map[epic_ws]):
+                    result["epic_transitions"] += 1
+            else:
+                note = "VELDO epic status: %s (no tracker status mapped)" % epic_ws
+                if adapter.comment(epic_id, note, key="%s:epicstatus:%s" % (pid, epic_ws)):
+                    result["comments"] += 1
+                    result["unmapped"] += 1
 
-        # CHILDREN: one per work item from the DAG, so the whole structure exists (even not-yet-
-        # started items). Each child's status is its spec's current status through the same map; an
-        # early-lifecycle spec (draft/unstarted) simply gets no status - not an invented transition.
-        for w in work_items:
-            child_id = adapter.create_or_update_child(pid, w["item"], title=w.get("title"))
-            result["children"] += 1
-            sw = SPEC_STATUS_TO_VELDO.get(w.get("spec_status"))
-            if sw and sw in status_map:
-                if adapter.set_status(child_id, status_map[sw]):
-                    result["child_transitions"] += 1
+            # CHILDREN: one per work item from the DAG, so the whole structure exists (even not-yet-
+            # started items). Each child's status is its spec's current status through the same map; an
+            # early-lifecycle spec (draft/unstarted) simply gets no status - not an invented transition.
+            for w in work_items:
+                child_id = adapter.create_or_update_child(pid, w["item"], title=w.get("title"))
+                result["children"] += 1
+                sw = SPEC_STATUS_TO_VELDO.get(w.get("spec_status"))
+                if sw and sw in status_map:
+                    if adapter.set_status(child_id, status_map[sw]):
+                        result["child_transitions"] += 1
 
-        result["epics"].append(pid)
+            result["epics"].append(pid)
 
     return result
 
 
 # --- reading the repository (the source of truth) into a spec index ---------
 def _load_validate():
-    """Lazy-load validate.py only when reading real spec files; the core mirror_events is pure and
-    needs no filesystem, so the gate exercises it without this import."""
-    path = Path(__file__).resolve().parent / "validate.py"
+    """Load the shared syntax reader beside the installed service, independent of repository layout."""
+    path = Path(__file__).resolve().parent / "yamlish.py"
     spec = importlib.util.spec_from_file_location("veldo_validate", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
