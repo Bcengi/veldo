@@ -509,6 +509,24 @@ class Repository:
     def publish(self, commit, parent):
         self.git('update-ref', self.ref, commit, parent or '0' * len(commit))
 
+    def follow(self, parent, commit):
+        """After Veldo publishes `commit` over `parent`, bring a clean checkout of the branch along, so a
+        later `git commit -a` by the owner cannot silently revert the save. A checkout that is not on the
+        branch, not at `parent`, or has any tracked change is left exactly as it is (answer False)."""
+        try:
+            if self.git('symbolic-ref', '-q', 'HEAD').strip() != self.ref or self.head() != commit:
+                return False
+            # HEAD follows the branch reference, so it already names `commit`; a clean checkout's index
+            # and files still hold `parent` (both checks exit non-zero, and refuse, on any difference).
+            self.git('diff-index', '--quiet', '--cached', parent, '--')
+            self.git('update-index', '-q', '--refresh')
+            self.git('diff-files', '--quiet')
+            # A two-tree merge moves exactly the changed paths and refuses on any conflict.
+            self.git('read-tree', '-m', '-u', parent, commit)
+            return True
+        except InstallationError:
+            return False
+
     def send(self, commit, remote):
         """Send exactly the accepted commit, without force. A refusal keeps it live locally."""
         if remote is None:

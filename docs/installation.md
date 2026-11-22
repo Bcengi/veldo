@@ -41,6 +41,36 @@ Changes that widen authority wait for an ordinary signed owner decision naming t
 the digest of its widening list. A later commit makes the earlier pending decision stale. Narrowing
 changes need no new decision. Git authorship records provenance and grants no authority.
 
+These changes wait for the owner's decision (the schema's `widening` and `deletion` sections):
+
+- installation: a new or changed account or channel chat, a new port, a new approver, a changed owner
+  role, a new or changed remote, a changed bot token reference, a new or changed tracker, host or
+  tailnet name, a changed publisher identity, a raised inbound file cap;
+- projects: a new project; a changed, added or removed workflow binding, account, landing
+  destination, remote, repository, trunk, render command or renumber hook; a new or changed deploy
+  target; deleting a project file that declares bindings (its work falls back to the default);
+- connectors: a tool added to the allowed list, a never rule removed, a changed, added or removed
+  command, argument list or environment;
+- memory: a new or changed server or store, a changed history sink or manifest;
+- roles and teams: a capability granted, a role added to a team;
+- services: a new service, a changed base URL, credential reference or location, grants, OpenAPI
+  file or tools snapshot, a new route or read override, a never rule removed, a raised body limit;
+- schedules: a new or changed schedule;
+- workflows: a new outward or paid step, a new role or tool reference, and deleting an installation
+  file that overrides a product default (the product's own definition runs again).
+
+Everything else applies as soon as the commit is valid, because it only reduces authority: removing a
+tool from an allowed list, adding a never rule, removing a port, account, channel, approver or
+deploy target, lowering a limit, and deleting a connector, service, schedule, role, team, memory
+server or a project file with no bindings. Metadata such as labels and display names also applies
+directly.
+
+Every cross reference is checked: a project's account, workflow bindings and deploy target services,
+a schedule's workflow and project, a memory server's service and a store's server, a team's roles, a
+connector's allowed tools and a service's documents. A reference to something the tree does not hold
+refuses the whole commit with `installation_invalid:<path>:<key>:unknown_reference`, and the last
+good configuration stays live.
+
 Veldo sends commits it makes to the declared remote after local acceptance, without force. A refused
 send reports `installation_push_failed` and keeps the accepted commit live locally.
 
@@ -101,6 +131,12 @@ The schema discriminator is required; an action needing another absent key refus
 Validation reports `installation_invalid:<path>:<key>:<reason>`, `installation_unknown_file:<path>`,
 `installation_secret_inline:<path>:<key>` or `installation_secret_missing:<name>`. Credentials use
 `{secret: <name>}`. Validation checks keystore metadata only; credentials are resolved at use time.
+A plain value under a key that names a credential (any key containing `token`, `password`, `secret`,
+`credential`, `api_key`, `private_key` or `access_key`, or ending in `key`) is refused as
+`installation_secret_inline`, never stored. Connectors hold no credential at all: their environment
+takes plain strings only, so a credential a local tool server needs belongs to an outside service.
+Before Veldo itself commits a tree (setup's import, a canvas save) it also scans the files it never
+reads, such as `notes/` and `research/`, and refuses the commit if one holds a credential.
 
 ## Workflow saves and pins
 
@@ -108,6 +144,12 @@ A canvas save names its base version and accepted configuration commit. It valid
 whole tree, builds a Git commit with the editor's declared identity, and publishes the branch with a
 compare-and-swap. A moved branch refuses `stale_version`. A widening save returns its pending commit;
 the owner's signed save names that commit and carries its ordinary signed settlement answer.
+
+Veldo builds its commits from Git objects, not from the working copy. When the checkout is on the
+configured branch and clean, a save also moves the checkout's files and index to the new commit, so a
+later `git commit -a` keeps the save. A checkout with uncommitted edits is never touched; bring it up
+to date with `git status` and `git checkout` before committing, or a commit made from the stale index
+can undo a save.
 
 The loader records immutable canonical definition copies by digest. A layout-only commit updates the
 layout without allocating a definition version. Existing runs retain their pinned version and digest

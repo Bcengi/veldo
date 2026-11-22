@@ -23,6 +23,12 @@ WF = organ('control_workflow')
 I = organ('installation')
 IDENT = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
 SECRET_FIELD = re.compile(r'^(token|password|passwd|credential|api_key|access_token|refresh_token|client_secret)$', re.I)
+# A free-form key that names a credential (DB_PASSWORD, GITHUB_TOKEN, SSH_KEY...). Declared fields are
+# matched exactly by SECRET_FIELD; keys an installation chooses itself are matched by this substring rule.
+CREDENTIAL_KEY = re.compile(r'(token|passw|passphrase|secret|credential|api_?key|private_?key|access_?key'
+                            r'|(^|[_.-])key$)', re.I)
+# A product default an installation file of the same id overrides; deleting the file changes what runs.
+PRODUCT_DEFAULTS = {'workflow': ('code',)}
 SECRET_VALUES = tuple(re.compile(pattern) for _, pattern in organ('secret_scan').FORMATS)
 
 
@@ -102,6 +108,11 @@ def check(value, rule, definitions, path, key, problems):
                 valid_key = isinstance(field, str) and re.fullmatch(rule.get('key_pattern', IDENT.pattern), field)
                 if not valid_key or ('key_pattern' not in rule and '..' in field):
                     problems.append('installation_invalid:%s:%s:identifier' % (path, at))
+                if (not path.endswith(('.openapi.json', '.tools.json')) and isinstance(field, str)
+                        and CREDENTIAL_KEY.search(field) and not isinstance(entry, (dict, list))):
+                    # A plain value under a credential-named key: refused, never configuration.
+                    problems.append('installation_secret_inline:%s:%s' % (path, at))
+                    continue
                 check(entry, rule['values'], definitions, path, at, problems)
             else:
                 problems.append('installation_invalid:%s:%s:unknown_key' % (path, at))
@@ -196,6 +207,24 @@ def validate(files, *, secret_exists, resolve=None):
             for kind, binding in value.get('workflows', {}).items():
                 if 'workflows/%s.json' % binding['workflow'] not in config and binding['workflow'] != 'code':
                     problems.append('installation_invalid:%s:workflows.%s:unknown_reference' % (path, kind))
+            for name, target in value.get('deploy_targets', {}).items():
+                if 'service' in target and 'services/%s.yaml' % target['service'] not in config:
+                    problems.append('installation_invalid:%s:deploy_targets.%s.service:unknown_reference' % (path, name))
+        elif path.startswith('schedules/'):
+            if 'workflow' in value and value['workflow'] not in PRODUCT_DEFAULTS['workflow'] \
+                    and 'workflows/%s.json' % value['workflow'] not in config:
+                problems.append('installation_invalid:%s:workflow:unknown_reference' % path)
+            if 'project' in value and 'projects/%s.yaml' % value['project'] not in config:
+                problems.append('installation_invalid:%s:project:unknown_reference' % path)
+        elif path.startswith('memory/'):
+            servers = {name for other, manifest in config.items() if other.startswith('memory/')
+                       for name in manifest.get('servers', {})}
+            for name, server in value.get('servers', {}).items():
+                if 'service' in server and 'services/%s.yaml' % server['service'] not in config:
+                    problems.append('installation_invalid:%s:servers.%s.service:unknown_reference' % (path, name))
+            for name, store in value.get('stores', {}).items():
+                if 'server' in store and store['server'] not in servers:
+                    problems.append('installation_invalid:%s:stores.%s.server:unknown_reference' % (path, name))
         elif path.startswith('connectors/'):
             if set(value.get('allowed_tools', [])) - set(value.get('tools', [])):
                 problems.append('installation_invalid:%s:allowed_tools:unknown_reference' % path)
@@ -215,6 +244,20 @@ def validate(files, *, secret_exists, resolve=None):
                 if 'roles/%s.yaml' % role not in config:
                     problems.append('installation_invalid:%s:roles:unknown_reference' % path)
     return config, sorted(set(problems))
+
+
+def unread_secrets(files):
+    """Credential-format values in files the loader never reads (ignored, history, check-only). Checked
+    before Veldo itself commits and sends a tree, so a credential lying in notes/ is never committed by Veldo."""
+    declared, problems = schema(), []
+    for path, body in sorted(files.items()):
+        entry = next((entry for entry in declared['paths'] if fnmatch.fnmatchcase(path, entry['pattern'])), {})
+        if not (entry.get('ignored') or entry.get('history') or entry.get('check_only')):
+            continue
+        text = body.decode('utf-8', 'replace') if isinstance(body, bytes) else str(body)
+        if any(pattern.search(text) for pattern in SECRET_VALUES):
+            problems.append('installation_secret_inline:%s:$' % path)
+    return problems
 
 
 def widening(previous, current):
@@ -244,8 +287,14 @@ def widening(previous, current):
             elif mode == 'removed':
                 if any(item not in (b or []) for item in (a or [])):
                     add(path, key, kind)
-            elif mode == 'changed' and b is not None:
+            elif mode == 'changed':
+                # Removing the key changes authority as much as editing it: a removed binding falls back to
+                # the default workflow, a removed argument or environment variable changes the process.
                 add(path, key, kind)
+            elif mode == 'raised' and b is not None and (a is None or b > a):
+                add(path, key, kind)
+            elif mode == 'receiver_limits' and (b or {}).get('inbound_file_cap', 0) > (a or {}).get('inbound_file_cap', 0):
+                add(path, key + '.inbound_file_cap', kind)
             elif mode == 'owner_role' and b is not None:
                 if (a or {}).get('role_id') != b.get('role_id'):
                     add(path, key + '.role_id', kind)
@@ -300,4 +349,17 @@ def widening(previous, current):
                 for name, ref in refs.items():
                     if old.get('references', {}).get(category, {}).get(name) != ref:
                         add(path, 'references.' + category + '.' + name, 'workflow_reference')
+    rules = declared.get('deletion', {})
+    for path, old in sorted(previous.items()):
+        if path in current:
+            continue
+        # Deleting a file narrows (the connector, service, schedule, role or team is gone), except where
+        # the deletion changes what runs: a project's bindings fall back to the default workflow, and a
+        # removed override of a product default brings the product's own definition back.
+        entry = next(e for e in declared['paths'] if fnmatch.fnmatchcase(path, e['pattern']))
+        rule = rules.get(entry.get('kind'))
+        if rule == 'bindings' and old.get('workflows'):
+            add(path, 'workflows', 'project')
+        elif rule == 'product_default' and Path(path).stem in PRODUCT_DEFAULTS.get(entry.get('kind'), ()):
+            add(path, '$', 'workflow_binding')
     return sorted(found, key=lambda item: (item['key'], item['kind']))

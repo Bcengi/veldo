@@ -1471,14 +1471,24 @@
       "channels": "channel_authority",
       "approvers": "added",
       "owner": "owner_role",
-      "git": "git_remote"
+      "git": "git_remote",
+      "bot": "changed",
+      "trackers": "added",
+      "hosts": "added",
+      "tailnet_names": "added",
+      "publisher": "changed",
+      "receiver": "receiver_limits"
     },
     "project": {
       "workflows": "changed",
       "render_command": "changed",
       "deploy_targets": "added",
       "renumber_hook": "changed",
-      "account": "changed"
+      "account": "changed",
+      "landing_destination": "changed",
+      "remote": "changed",
+      "repository": "changed",
+      "trunk": "changed"
     },
     "connector": {
       "allowed_tools": "added",
@@ -1505,7 +1515,18 @@
       "tools_snapshot": "changed",
       "grants": "changed",
       "openapi": "changed",
-      "never": "removed"
+      "never": "removed",
+      "body_limit": "raised"
+    },
+    "memory": {
+      "servers": "added",
+      "stores": "added",
+      "session_history_sink": "changed",
+      "manifest": "changed"
     }
+  },
+  "deletion": {
+    "project": "bindings",
+    "workflow": "product_default"
   }
 }
