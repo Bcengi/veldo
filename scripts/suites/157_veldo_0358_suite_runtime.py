@@ -823,3 +823,35 @@ expect("watchdog/hung-tree-ended: %r" % (_v358_f9,),
        and _v358_f9["orderly"].get("rc") not in (None, 0) and _v358_f9["orderly"]["hung"] == []
        and _v358_f9["orderly"]["reaped"] == [] and _v358_f9["orderly"]["named"] == []
        and _v358_f9["orderly"]["said"] == 0)
+
+
+# ------------------------------ wave 1: the rows a suite declares and states at its end are named when it hangs
+
+_v358_DECLARED = '''import os
+import waits
+BROWSER = ("fx/first", "fx/second")
+ROWS = BROWSER
+ROWS = ROWS + ("fx/third",)
+expect("FX-1 " + ROWS[0] + ": stated before the hang", True)
+_r, _w = os.pipe()
+waits.wait("an end nobody makes", lambda: False, sources=[waits.Readable(_r)], hang_bound_for_test=2)
+for _row in ROWS[1:]:
+    expect("FX-1 " + _row, True)
+'''
+
+
+def _v358_declared():
+    with _v358_tempfile.TemporaryDirectory(prefix="v358-declared-") as d:
+        base = _v358_tree(_v358_Path(d) / "repo", {"fx_declared": _v358_DECLARED, "fx_later": _v358_LATER})
+        hang_dir = _v358_Path(d) / "hang"
+        hang_dir.mkdir()
+        run = _v358_run(base, ["fx_declared", "fx_later"], VELDO_HANG_DIR=str(hang_dir))
+        return {"rc": run.returncode,
+                "hung": [line.split(":", 1)[0] for line in _v358_lines(run.stdout, "SELFTEST HUNG")],
+                "not_run": [line.split("SELFTEST NOT RUN ", 1)[1] for line in _v358_lines(run.stdout, "SELFTEST NOT RUN")]}
+
+
+_v358_f10 = _v358_declared()
+expect("waits/declared-rows-not-run: %r" % (_v358_f10,),
+       _v358_f10 == {"rc": 1, "hung": ["SELFTEST HUNG an end nobody makes"],
+                     "not_run": ["fx/second", "fx/third", "fx/later-suite-row"]})

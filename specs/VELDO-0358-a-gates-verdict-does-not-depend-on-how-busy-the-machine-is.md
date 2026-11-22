@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208, VELDO-0215, VELDO-0220]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/selftest.py", "scripts/gate_candidate.py", "engine/scripts/gate_candidate.py", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py"]
+protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_observer.py", "engine/scripts/mutation_observer.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/check_wallclock.py", "engine/scripts/check_wallclock.py", "scripts/gate_load.py", "engine/scripts/gate_load.py", "scripts/suites/wallclock.json", "scripts/suites/wallclock_baseline.json", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/selftest.py", "scripts/gate_candidate.py", "engine/scripts/gate_candidate.py", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/check_first_use.py", "scripts/suites/shared.py"]
 footprint:
   - scripts/suites/support/waits.py
   - scripts/suites/support/holders.py
@@ -117,6 +117,33 @@ footprint:
   - proof/VELDO-0219/round2/check.py
   - proof/VELDO-0219/round3/check.py
   - proof/VELDO-0358/*/*
+  - .veldo/claim.py
+  - .veldo/control_client.py
+  - .veldo/control_client_api.py
+  - .veldo/control_containment.py
+  - .veldo/control_engine_claude.py
+  - .veldo/control_engine_codex.py
+  - .veldo/control_factory_setup_upgrade.py
+  - .veldo/control_heartbeat.py
+  - .veldo/control_launch.py
+  - .veldo/control_service.py
+  - .veldo/control_store.py
+  - .veldo/init_scaffold.py
+  - .veldo/policy_contract.py
+  - .veldo/timers.py
+  - bin/veldo
+  - engine/.veldo/claim.py
+  - engine/.veldo/init_scaffold.py
+  - engine/ui/e2e/decisions.spec.ts
+  - engine/ui/e2e/factory_harness.py
+  - engine/ui/e2e/team_harness.py
+  - proof/VELDO-0172/compare_formats.py
+  - scripts/suites/122_veldo_0131_factory_screens_wide.py
+  - scripts/suites/36_veldo_0023_journal.py
+  - scripts/suites/85_veldo_0171_setup_api.py
+  - scripts/suites/86_veldo_0168_text.py
+  - scripts/suites/support/setup_runtime.py
+  - scripts/suites/support/v73_authority.py
 behavior_bearing: true
 observability:
   logs: >
@@ -540,3 +567,11 @@ A finding inside this section is fixed before landing. A real defect under norma
 - 2026-11-20: revision 2 after independent validation (CHANGES): multiset baseline that shrinks without
   approval, progress-based hang bounds with no total bound, wave 1 product timers in scope (AC15), census
   rule by closed positional table and observed scope, kill_by, load by construction.
+- 2026-11-21: wave 1 integration. Footprint: bin/veldo (the canon's synced copy, changed with engine/bin/veldo),
+  the synced .veldo copies of the engine modules of section 4.8, the scaffold that lays down timers.py, the
+  files suites 78 and 106 open that brief E converted, the browser files and suite 122 the lead converted,
+  suite 36 (its allowed imports) and suite 86_veldo_0168. Under the Notes' rule for a product timer outside the
+  design's section 4.8: the claim's liveness window (engine/.veldo/claim.py, STALE_AFTER_SECONDS) is an entry
+  of the timers table; it was the cause of the loaded red of suite 83's loop/reset-timer-wake
+  (proof/VELDO-0358/integration-wave1.md). protected_paths now also names scripts/check_first_use.py and
+  scripts/suites/shared.py, which wave 0 changed.
