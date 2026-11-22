@@ -12,6 +12,7 @@ def _v258_suite():
     import importlib.util
     import io
     import json
+    import multiprocessing
     import os
     from pathlib import Path
     import secrets
@@ -157,6 +158,26 @@ def _v258_suite():
                     with patch.dict(os.environ, VELDO_DISPATCH_ID='dispatch/fixture'):
                         check('ac3/run-refused/' + caller, refusal(lambda: construct('keychain:' + caller))
                               == 'unauthorized:control_plane_run:' + caller)
+                # A child inherits memory on fork, but not the parent's process authority.
+                context = multiprocessing.get_context('fork')
+                parent_pipe, child_pipe = context.Pipe(duplex=False)
+                def child_attempt():
+                    parent_pipe.close()
+                    child_pipe.send(refusal(lambda: CP.credential('tracker', 'keychain:tracker')))
+                    child_pipe.close()
+                with CP.service('a' * 40, observed.append):
+                    child = context.Process(target=child_attempt)
+                    child.start()
+                    child_pipe.close()
+                    child.join(timeout=120)
+                    ended = not child.is_alive()
+                    if not ended:
+                        child.terminate()
+                        child.join(timeout=120)
+                    code = parent_pipe.recv() if ended and parent_pipe.poll() else None
+                    parent_pipe.close()
+                    check('ac3/fork-does-not-inherit', ended and child.exitcode == 0
+                          and code == 'unauthorized:control_plane_service:tracker')
 
                 # Real Git transport into a disposable bare remote. The fixture substitutes only
                 # the approved GitHub URL's wire, after resolving the real keystore reference.
