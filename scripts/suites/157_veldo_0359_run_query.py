@@ -304,6 +304,12 @@ def _v359_query_suite():
             if event.get('schema') == Q.SCHEMA:
                 planted = dict(event, private_body={'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'})
                 check('query/scope', 'frozen event including approved metadata', Q._event(planted) == event)
+        for key in ('accepted', 'artifact'):
+            malformed = json.loads(json.dumps(before))
+            malformed['architecture'][key] = {}
+            with patch.object(Q, '_exchange', return_value={'answer': malformed, 'events': []}):
+                check('query/scope', 'incomplete architecture ' + key,
+                      stopped(lambda: remote.decide('selection', 'VELDO-9359')) == 'unavailable_service:run_query')
         for malformed in ({}, {'answer': dict.fromkeys(Q.FACTS, 'false'), 'events': []},
                           {'answer': dict(dict.fromkeys(Q.FACTS, False), extra='body'), 'events': []},
                           {'answer': dict.fromkeys(Q.FACTS, False), 'events': [{'operation': 'build'}]}):
