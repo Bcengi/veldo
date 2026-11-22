@@ -109,11 +109,21 @@ F9: the original sequential fixture is unchanged; every new row runs on its own 
 store, and an exception in one new row fails only that row.
 
 Fix-round transcripts: `fix-ticket-pc2.txt`, `fix-bindings-pc2.txt`, `fix-workers-pc2.txt`
-(registered worker diagnostic for all sixteen cases), and `fix-host.txt` for the host-only suites and
-the confined coordinator, recorded only once they have run.
+(registered worker diagnostic for all sixteen cases), and the `fix-host-*.txt` transcripts for the host-only suites and
+the confined coordinator.
 
 Fix-round pc2 results at 0d3adb5ac9b5 (diagnostics, not a gate pass): suite 157 has 36 rows passed and
 0 failed. Suites 127_0241 and 157 have 86 passed and 0 failed. The registered worker diagnostic passes
 all sixteen cases: baselines and no-ops are green at 62 observations, and each mutant turns its target
-row false. Each of the twelve new mutants fails only its own row. The host-only suites and the
-confined coordinator were queued behind full builder slots when this was recorded; no host result is claimed.
+row false. Each of the twelve new mutants fails only its own row. 
+Host results (host_heavy.sh, an immutable clone, diagnostics, not a gate pass):
+- At 0d3adb5ac9b5 the confined coordinator (`check_gate_mutations.py --finding 253`) passed. It
+  registered 16 cases, executed 16, rejected 16 and had no surviving workers
+  (`fix-host-mutations.txt`). Suites 73, 85 and 127_0259 had 81 passed and 0 failed (`fix-host-setup.txt`).
+- The first run of suite 71 at 0d3adb5ac9b5 stopped at service install with
+  `missing_evidence:runtime_asset:installation_schema/schema.json` (`fix-host-api-first.txt`). The cause
+  was the suite's fixture, which copied only `.veldo/*.py` and so lacked the assets this spec ships. The
+  gap dates from the original build, not this round. b0112c68a289 makes the fixture copy the
+  installation schema and template and changes no assertion. Suite 65 did not report in that run.
+- At b0112c68a289, suite 65 had 42 passed and 0 failed (`fix-host-workflow.txt`), and suite 71 had 71
+  passed and 0 failed (`fix-host-api.txt`).
