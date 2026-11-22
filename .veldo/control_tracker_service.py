@@ -73,7 +73,7 @@ def execute(service, packet, repository):
         return {'ok': True, 'summary': summary}
     except Exception as error:
         # A remote body is never a command result or an observation.
-        return {'ok': False, 'reason': getattr(error, 'code', 'unavailable_service:tracker_call')}
+        return {'ok': False, 'reason': getattr(error, 'code', 'unavailable_service:tracker_call:' + type(error).__name__)}
 
 
 def cli(action, args):

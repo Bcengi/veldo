@@ -113,9 +113,9 @@ def _v258_suite():
                     'tracker': lambda ref: RN.build_live_adapter(entry(ref)),
                     'tracker_init': lambda ref: JI.build_live_provisioner(entry(ref)),
                     'doorbell': lambda ref: DB.TelegramSink(123, ref),
-                    'provisioner': lambda ref: CR.GitHub(origin, CR.token({'api_token': ref})),
+                    'provisioner': lambda ref: CR.GitHub(origin, CR.token({'api_token': ref}), timeout=120),
                     'owner_channel': lambda ref: IN.organ('control_channel_projection').TelegramEdge(
-                        origin, IN.service_token({'bot_api': {'token_ref': ref}})),
+                        origin, IN.service_token({'bot_api': {'token_ref': ref}}), timeout=120),
                 }
                 with CP.service('a' * 40, observed.append):
                     for caller, construct in constructors.items():
@@ -178,7 +178,8 @@ def _v258_suite():
                 def fixture_options(identity, destination):
                     check('ac3/landing-keystore', transport.credential(identity) == values['landing_push'])
                     return ['-c', 'protocol.file.allow=always']
-                with patch.object(P._git_process, 'identity_transport', return_value=transport), \
+                with patch.object(P, 'STEP_SECONDS', 120), \
+                        patch.object(P._git_process, 'identity_transport', return_value=transport), \
                         patch.object(transport, 'options', side_effect=fixture_options), \
                         CP.service('a' * 40, observed.append, dispatch='fixture-landing'):
                     landed = P.push(dict(path=str(work), default_branch='main', remote=str(remote),
@@ -234,7 +235,9 @@ def _v258_suite():
                         with patch.object(TS, 'organ', side_effect=lambda name: membership if name == 'control_membership' else organ(name)), \
                                 patch.object(membership, 'authority_state', return_value=authority), \
                                 patch.object(TS.time, 'time', return_value=1000):
-                            check('ac3/signed-service-command', TS.execute(service, packet, 'fixture')['ok'])
+                            answer = TS.execute(service, packet, 'fixture')
+                            print('VELDO-0258 signed command:', answer)
+                            check('ac3/signed-service-command', answer['ok'])
                             packet['command'] = dict(command, parameters=dict(action='init', tracker='fixture', dry_run=False))
                             check('ac3/tampered-command-refused', TS.execute(service, packet, 'fixture') ==
                                   {'ok': False, 'reason': 'unauthorized:tracker_call'})

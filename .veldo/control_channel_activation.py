@@ -428,6 +428,7 @@ class Gate:
 
     def open(self, request, timeout, operation, origin, chat=None):
         """Admit, then perform the exchange through the gate's own transport and record it."""
+        organ('control_plane_calls').require_service('owner_channel')
         record = self.admit(operation, origin, chat)
         if origin_of(request.full_url) != record['origin']:
             self._refuse(operation, 'stale_configuration')
