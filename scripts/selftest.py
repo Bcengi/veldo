@@ -312,25 +312,37 @@ def _account(kind, **payload):
             **payload).encode())
 
 
+def _shard_account(name, kind, **payload):
+    """One line of the account of a qualified suite's shard, as the process of an isolated suite
+    writes its own: the shard is that process (VELDO-0206 under VELDO-0221)."""
+    sys.stdout.flush()
+    os.write(sys.stdout.fileno(), RS.reuse_line(REUSE["nonce"], kind, leg=LEG, isolated=name,
+                                                scope="isolated", **payload).encode())
+
+
 # THE LEG AS SHARDS (VELDO-0221). Only a whole leg is cut into shards: a selector inside a leg, and
 # a tree with no closure table, keep the ordered run. The aggregate line is composed here from the
 # target suites' counts through the one full scope, and the exit status is that scope's.
-# A suite reuse plan (VELDO-0206) needs the dispatcher's account of every suite it ran. A leg cut into
-# shards gives it: one fresh result per target, with that shard's own counts. A plan that this run
-# honors by isolating or leaving out suites keeps the ordered run, whose isolated processes are the
-# form the authority's settlement checks for them.
+# SUITE REUSE OPERATES PER SHARD (VELDO-0206 with VELDO-0221, lead decision of the cand-1122 combine).
+# The shard is the unit of execution. A shard is a fresh interpreter of this dispatcher with a HOME,
+# TMPDIR and runtime directory of its own, started before any suite has run here, which runs its
+# target's prerequisite closure in manifest order and nothing else: the isolation a qualified suite
+# needs. So in a sharded leg the plan's isolated suites run as shards and 0206's own per-suite
+# process (_isolate) is not used. A suite the plan lets this run leave out (its key, which holds its
+# whole prerequisite closure, is unchanged and the authority holds a passing record under it) is not
+# started at all; every other suite runs fresh as a shard. The account names every suite exactly
+# once: a reused suite by a reused result; a qualified suite's shard as an isolated run (begin, one
+# result per member of its closure in order, end), which is the form the authority settles and
+# publishes; any other shard by one fresh result with its target's counts.
 _SHARDED = bool(LEG and SHARD is None and SELECTOR is None)
 _REUSE_SAID = False
+_plan_isolated, _plan_reusable = set(), set()
 if _SHARDED and REUSE and CHILD is None:
     _plan_isolated, _plan_reusable, _plan_why = RS.reuse_honored(
         REUSE, HERE.parent, SELECTOR, ENV_ORDER, LEG, LISTED, ORDER, RS.output_identity(sys.stdout))
     if _plan_why:
         print("selftest reuse: %s; every suite runs fresh" % _plan_why, flush=True)
         _REUSE_SAID = True
-    if _plan_isolated:
-        print("selftest leg %s: the suite reuse plan isolates %d suite(s) of this leg, so the leg keeps the "
-              "ordered run with their own processes instead of shards" % (LEG, len(_plan_isolated)), flush=True)
-        _SHARDED = False
 if _SHARDED:
     try:
         _closures = RS.load_requires(SUITES / "requires.json")
@@ -346,23 +358,57 @@ if _SHARDED:
               "shards; running the ordered single-namespace run", flush=True)
     else:
         SCOPE = RS.RunScope(None, [s["name"] for s in RUN], ORDER)
+        # The plan's rule for this leg's suites, as in the ordered run: (ordinary, qualified and run,
+        # qualified and left out). One that a suite outside the plan needs, or a closure not on
+        # record, makes no suite qualified or left out at all.
+        _, _shard_isolated, _left_out = RS.reuse_execution(
+            [s["name"] for s in RUN], _closures, _plan_isolated, _plan_reusable)
+        _shard_isolated = set(_shard_isolated) | set(_left_out)
         _account("begin", suites=len(RUN))
-        try:
-            _leg = RS.run_shards(HERE.parent, LEG, [s["name"] for s in RUN], requires=_closures,
-                                 manifest=MANIFEST)
-        except RS.LegRefused as e:
-            print("selftest leg %s: %s" % (LEG, e))
-            _account("end", exit=2, passed=0, failed=0)
-            sys.exit(2)
-        except RS.ShardsStopped as e:
-            print("selftest leg %s: stopped by signal %d; every shard was ended" % (LEG, e.number))
-            _account("end", exit=128 + e.number, passed=0, failed=0)
-            sys.exit(128 + e.number)
+        _targets = [s["name"] for s in RUN if s["name"] not in _left_out]
+        _leg = {"passed": 0, "failed": 0, "shards": [], "charged": {}}
+        if _targets:
+            try:
+                _leg = RS.run_shards(HERE.parent, LEG, _targets, requires=_closures, manifest=MANIFEST)
+            except RS.LegRefused as e:
+                print("selftest leg %s: %s" % (LEG, e))
+                _account("end", exit=2, passed=0, failed=0)
+                sys.exit(2)
+            except RS.ShardsStopped as e:
+                print("selftest leg %s: stopped by signal %d; every shard was ended" % (LEG, e.number))
+                _account("end", exit=128 + e.number, passed=0, failed=0)
+                sys.exit(128 + e.number)
         _by_target = {j["name"]: j for j in _leg["shards"]}
         for _s in RUN:
-            _j = _by_target.get(_s["name"])
-            if _j is not None:
-                _account("result", suite=_s["name"], source="fresh", passed=_j["passed"], failed=_j["failed"])
+            _name = _s["name"]
+            if _name in _left_out:
+                # Not started: the authority holds this suite's passing record under its present key.
+                _account("result", suite=_name, source="reused", passed=REUSE["reuse"][_name], failed=0)
+                continue
+            _j = _by_target.get(_name)
+            if _j is None:
+                continue
+            if REUSE and CHILD is None and _name in _shard_isolated:
+                # A qualified suite's shard is its isolated run. Every failure the dispatcher charged
+                # to it (no verdict, its layer, a breach) and every breach of the leg tied to no shard
+                # counts against it, so a shard that did not hold is never a passing observation.
+                _held = not _j["charges"] and not _leg["charged"].get(RS.LEG_OWNER)
+                _members = _j["suites"] or []
+                _shard_account(_name, "begin", suites=len(_j["closure"] or []))
+                for _member, _mp, _mf in _members:
+                    _shard_account(_name, "result", suite=_member, source="fresh", passed=_mp, failed=_mf)
+                _bad = sum(_mf for _m, _mp, _mf in _members) + (0 if _held else 1)
+                _shard_account(_name, "end", exit=1 if _bad or not _members else 0, passed=_j["passed"],
+                               failed=_bad)
+                continue
+            _account("result", suite=_name, source="fresh", passed=_j["passed"],
+                     failed=_j["failed"] + _j["charges"])
+        if _left_out:
+            # A reused suite is never described as run: its rows are not in the aggregate line.
+            print("selftest reuse: %d of %d suites of this leg left out on authenticated passing records (%d rows "
+                  "not run again); %d ran fresh as shards, %d of them qualified"
+                  % (len(_left_out), len(RUN), sum(REUSE["reuse"][n] for n in _left_out), len(_targets),
+                     len([n for n in _targets if n in _shard_isolated])), flush=True)
         print(SCOPE.aggregate_line(_leg["passed"], _leg["failed"]), flush=True)
         _account("end", exit=SCOPE.exit_code(_leg["failed"]), passed=_leg["passed"], failed=_leg["failed"])
         sys.exit(SCOPE.exit_code(_leg["failed"]))
@@ -472,6 +518,7 @@ shared.SCOPE = SCOPE
 
 T0 = time.monotonic()
 PER_SUITE = []
+_SUITE_COUNTS = []  # [name, passed, failed] of every suite this process ran, in order
 _LEG_FLOOR = shared.PASS + shared.FAIL
 _OWN = (0, 0)
 _TARGET = SUITE_VALUES[0] if SHARD is not None else None
@@ -503,6 +550,7 @@ for _s in RUN:
         print(_mark, flush=True)
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
+    _SUITE_COUNTS.append([_s["name"], shared.PASS - _before, shared.FAIL - _failed])
     _account("result", suite=_s["name"], source="fresh", passed=shared.PASS - _before,
              failed=shared.FAIL - _failed)
     if _s["name"] == CHILD:
@@ -516,7 +564,7 @@ if SHARD is not None:
     sys.stdout.flush()
     SHARD.send(event="verdict", suite=_TARGET, passed=_counts[0], failed=_counts[1], rows=_ROWS,
                prerequisite_failed=shared.FAIL - _counts[1], leg=LEG,
-               closure=[s["name"] for s in RUN], seconds=time.monotonic() - T0)
+               closure=[s["name"] for s in RUN], seconds=time.monotonic() - T0, suites=_SUITE_COUNTS)
     sys.exit(SCOPE.exit_code(shared.FAIL))
 
 # The rows the isolated suites asserted in their own processes are this run's rows.

@@ -17645,6 +17645,28 @@ def cases():
              "    environment.update(places)\n",
              "    environment = dict(_ENVIRONMENT)  # defect: the gate's home, temporary folder and run directory\n",
              ['closure', 'closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite'])
+    # Reuse under sharding (VELDO-0206 with VELDO-0221, the cand-1122 combine's lead decision): the
+    # shard is the unit of execution, a qualified suite's shard is its isolated run, and a shard whose
+    # key is unchanged is not started. One defect for each half of that, against the rows that drive it.
+    sharded206 = 'receipts/sharded-leg-runs-qualified-suites-as-shards-and-reuses-unchanged-ones'
+    reuse206('suite206-sharded-reused-shard-started', 'selftest.py',
+             '        _targets = [s["name"] for s in RUN if s["name"] not in _left_out]\n',
+             '        _targets = [s["name"] for s in RUN]  # defect: a suite left out on its record is started anyway\n',
+             ['receipts', sharded206])
+    reuse206('suite206-sharded-qualified-shard-settled-as-shared', 'selftest.py',
+             '            if REUSE and CHILD is None and _name in _shard_isolated:\n',
+             '            if False:  # defect: a qualified suite\'s shard is accounted as an ordinary shard\n',
+             ['receipts', sharded206, 'receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass'])
+    reuse206('suite206-sharded-shard-failure-published', 'selftest.py',
+             '                    _shard_account(_name, "result", suite=_member, source="fresh", passed=_mp, failed=_mf)\n'
+             '                _bad = sum(_mf for _m, _mp, _mf in _members) + (0 if _held else 1)\n',
+             '                    _shard_account(_name, "result", suite=_member, source="fresh", passed=_mp, failed=0)\n'
+             '                _bad = 0  # defect: a qualified shard\'s failed rows are dropped from its isolated run\n',
+             ['receipts', 'receipts/sharded-qualified-shard-failure-is-red-and-not-stored'])
+    reuse206('suite206-sharded-reused-suite-unaccounted', 'selftest.py',
+             '                _account("result", suite=_name, source="reused", passed=REUSE["reuse"][_name], failed=0)\n',
+             '                pass  # defect: a suite left out on its record is not accounted for\n',
+             ['receipts', sharded206, 'receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass'])
     # VELDO-0221: a gate leg runs its suites as isolated parallel closure shards. One defect for each
     # criterion's falsifier, each in the shard machinery of scripts/run_scope.py.
     suite221 = '157_veldo_0221_suite_shards.py'

@@ -83,3 +83,21 @@ an earlier gate or the host left in the gate's own places can reach it. A qualif
 non_file_inputs "none" states that nothing outside the key can change a row, and that includes
 any file outside the repository other than its runtime paths and those private places. A path
 outside the repository that the suite's own code names is such a file.
+
+2026-11-22, landing candidate cand-1122, lead decision with VELDO-0221: the shard is the unit of
+execution, and reuse operates per shard. In a gate leg cut into shards, each shard is a fresh
+interpreter with a HOME, TMPDIR and runtime directory of its own, which runs its target's
+prerequisite closure and nothing else: the isolation this specification requires of a qualified
+suite. So in a sharded leg a qualified suite runs as its shard, and this specification's own
+per-suite process is not started; the shard is settled as the suite's isolated run (one result per
+closure member, in order) and published as one. A qualified suite whose key, which holds its whole
+prerequisite closure, is unchanged and has an authenticated passing record is not started at all;
+every other suite runs fresh as a shard. Every suite is accounted for exactly once, reused or run;
+the authority-only qualifications and the rule that an unaccounted suite turns the gate red are
+unchanged. A failure the shard dispatcher charges to a qualified shard, or a breach of its leg tied
+to no shard, counts against that shard, so it is never published. Outside a sharded leg (no leg, a
+selector, a tree with no closure table or no launcher) the ordered run with this specification's own
+per-suite process is unchanged. Rows receipts/sharded-leg-runs-qualified-suites-as-shards-and-reuses-unchanged-ones
+and receipts/sharded-qualified-shard-failure-is-red-and-not-stored; falsifiers
+suite206-sharded-reused-shard-started, suite206-sharded-qualified-shard-settled-as-shared,
+suite206-sharded-shard-failure-published and suite206-sharded-reused-suite-unaccounted.

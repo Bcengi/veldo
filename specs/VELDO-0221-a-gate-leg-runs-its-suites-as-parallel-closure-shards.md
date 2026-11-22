@@ -276,3 +276,10 @@ proof/VELDO-0221/README.md and proof/VELDO-0221/open.md.
 - For the owner at landing: the six suites of run_scope.UNNAMED, suite 151 running alone without a
   Landlock layer of its own, and the two further space-boundary entries. They are listed in
   proof/VELDO-0221/README.md under "For the owner at landing".
+
+2026-11-22, landing candidate cand-1122, lead decision with VELDO-0206: suite result reuse operates
+per shard. A shard's verdict also carries the counts of every suite of its closure, and the leg's
+result carries each shard's charged failures, so the dispatcher can settle a qualified suite's shard
+as VELDO-0206's isolated run. A suite the reuse plan leaves out is not started as a shard; every
+other suite of the leg is a target exactly once, as before. AC1 to AC4, the isolation check and the
+paired ratios of AC4 are unchanged. The rows and falsifiers are VELDO-0206's (its spec, same date).

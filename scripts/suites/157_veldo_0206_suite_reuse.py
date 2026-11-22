@@ -65,7 +65,9 @@ def _v206_suite_reuse():
             (self.tools / 'tool').write_text('tool v1\n')
             for relative, source in SOURCES.items():
                 shutil.copyfile(source, self.root / relative)
-            for relative in ('.veldo/reuse_evidence.py', 'scripts/mutation_reuse.py', 'scripts/gate_legs.py'):
+            # The real launcher: a confined leg's shards take their Landlock layer from it (VELDO-0221).
+            for relative in ('.veldo/reuse_evidence.py', 'scripts/mutation_reuse.py', 'scripts/gate_legs.py',
+                             'scripts/agent_sandbox.py'):
                 shutil.copyfile(ROOT / relative, self.root / relative)
             self.G = load(self.root / 'scripts/gate_reuse.py', 'v206_gate_reuse_%d' % id(self))
             for relative in self.G.E.AUTHORITY_FILES:
@@ -79,7 +81,10 @@ def _v206_suite_reuse():
                 'OUTSIDE = Path(%r)\nPASS = 0\nFAIL = 0\nSCOPE = None\n\n\n'
                 'def expect(name, condition):\n    global PASS, FAIL\n    if condition:\n        PASS += 1\n'
                 '    else:\n        FAIL += 1\n        print("  SELFTEST FAIL: " + name)\n\n\n'
-                'def ran(name):\n    with open(OUTSIDE / "trace", "a") as stream:\n        stream.write(name + "\\n")\n\n\n'
+                'def ran(name):\n    try:\n        with open(OUTSIDE / "trace", "a") as stream:\n'
+                '            stream.write(name + "\\n")\n'
+                '    except PermissionError:  # a confined shard: its Landlock layer grants only its roots\n'
+                '        print("fixture ran: " + name, flush=True)\n\n\n'
                 'def report():\n    print(SCOPE.aggregate_line(PASS, FAIL))\n    return SCOPE.exit_code(FAIL)\n'
                 % str(self.outside))
             bodies = {
@@ -206,12 +211,16 @@ def _v206_suite_reuse():
             receipt, problems = self.settle(state, env, texts, status or honest)
             return {'state': state, 'value': json.loads(value), 'done': done, 'code': [d.returncode for d in done],
                     'out': '\n'.join(d.stdout for d in done), 'receipt': receipt, 'problems': problems,
-                    'trace': (self.outside / 'trace').read_text().split(),
+                    'trace': (self.outside / 'trace').read_text().split() + printed(texts),
                     'source': {r['suite']: r['source'] for r in receipt['results']},
                     'reason': {r['suite']: r['reason'] for r in receipt['results']},
                     'isolated': sorted(r['suite'] for r in receipt['results'] if r['isolated']),
                     'failed': {r['suite']: r['failed'] for r in receipt['results']},
                     'key': {r['suite']: r['key'] for r in receipt['results']}}
+
+    def printed(texts):
+        """What confined shards ran, as they said it on their output (their layer refuses the trace file)."""
+        return [name for text in texts for name in re.findall(r'^fixture ran: ([a-z])$', text, re.M)]
 
     def tell(run):
         return {k: run[k] for k in ('code', 'trace', 'source', 'reason', 'problems')}, run['out'][-600:]
@@ -580,7 +589,7 @@ def _v206_suite_reuse():
         outside_trace = (fx.outside / 'trace').read_text().split()
         (fx.outside / 'trace').write_text('')
         listed_leg = fx.dispatch(value, env, leg=leg('confined', 'c:rows'), state=state)
-        listed_trace = (fx.outside / 'trace').read_text().split()
+        listed_trace = (fx.outside / 'trace').read_text().split() + printed([listed_leg.stdout])
         (fx.outside / 'trace').write_text('')
         malformed = fx.dispatch(json.dumps(dict(json.loads(value), reuse={'c': 0})), env, state=state)
         malformed_trace = (fx.outside / 'trace').read_text().split()
@@ -612,7 +621,7 @@ def _v206_suite_reuse():
             and after_reordered['source'] == warm_sources
             and elsewhere_trace == list(ORDER) and 'the plan is for another root' in elsewhere.stdout
             and outside_trace == ['c'] and 'the unconfined leg is never reused' in outside_leg.stdout
-            and listed_trace == list(ORDER) and 'does not own' in listed_leg.stdout
+            and sorted(listed_trace) == sorted(ORDER + ('a',)) and 'does not own' in listed_leg.stdout
             and malformed_trace == list(ORDER) and 'is not a suite plan' in malformed.stdout
             and 'selftest-suite-reuse' not in malformed.stdout and inherited.returncode == 0,
             (reordered['trace'], elsewhere_trace, outside_trace, listed_trace, malformed_trace))
@@ -901,6 +910,76 @@ def _v206_suite_reuse():
         legs_cold = fx.cycle(legs=both)
         legs_warm = fx.cycle(legs=both)
         one_leg = fx.cycle(legs=both[:1])
+
+        # REUSE UNDER SHARDING (VELDO-0206 with VELDO-0221, the combine's lead decision): in a gate
+        # leg the shard is the unit of execution. A qualified suite runs as a shard, whose own HOME,
+        # TMPDIR and runtime directory are the isolation 0206 asks for, and 0206's own per-suite
+        # process is not started; its shard is settled as its isolated run and published. A shard
+        # whose key (its whole prerequisite closure) is unchanged is not started at all; any other
+        # runs fresh as a shard; every suite is accounted for exactly once.
+        def shard_targets(run):
+            return sorted(re.findall(r'^selftest shard \S+ ([a-z]): closure', run['out'], re.M))
+
+        def isolated_runs(run):
+            """{suite: [closure members it reported]} from the isolated-run account lines."""
+            runs = {}
+            for owner, member in re.findall(r'selftest-suite-reuse \S+ result (\{.*"isolated": "([a-z])".*\})',
+                                            run['out']):
+                runs.setdefault(member, []).append(json.loads(owner)['suite'])
+            return runs
+
+        def once(run):
+            """Every suite accounted for exactly once: reused or run, none twice, none missing."""
+            return (run['receipt']['executed'] + run['receipt']['reused'] == len(ORDER)
+                    and run['receipt']['not_run'] == 0 and not any('twice' in p for p in run['problems']))
+
+        b_was, a_was = (fx.root / 'data/b.txt').read_bytes(), (fx.root / 'data/a.txt').read_bytes()
+        (fx.root / 'data/b.txt').write_text('b, its shard misses\n')
+        legs_b = fx.cycle(legs=both)
+        (fx.root / 'data/b.txt').write_bytes(b_was)
+        (fx.root / 'data/a.txt').write_text('a, a prerequisite of b\n')
+        legs_a = fx.cycle(legs=both)
+        (fx.root / 'data/a.txt').write_bytes(a_was)
+        legs_back = fx.cycle(legs=both)
+        sharded = {
+            'cold-runs-each-suite-as-a-shard': shard_targets(legs_cold) == ['a', 'b', 'c', 'd', 'e', 't'],
+            'cold-starts-no-0206-process': 'selftest isolated' not in legs_cold['out'],
+            'cold-settles-qualified-shards-as-isolated-runs': legs_cold['isolated'] == sorted(QUALIFIED)
+            and isolated_runs(legs_cold) == {'a': ['a'], 'b': ['a', 'b'], 'c': ['c'], 'e': ['e'], 't': ['t']},
+            'cold-publishes-and-accounts-once': legs_cold['receipt']['published'] == 5 and once(legs_cold),
+            'warm-starts-only-the-unqualified-shard': shard_targets(legs_warm) == ['d']
+            and legs_warm['reason'] == dict({n: 'hit' for n in QUALIFIED}, d='unqualified')
+            and 'left out on authenticated passing records' in legs_warm['out'] and once(legs_warm),
+            'changed-input-runs-its-shard-with-its-closure': shard_targets(legs_b) == ['b', 'd']
+            and sorted(legs_b['trace']) == ['a', 'b', 'd'] and isolated_runs(legs_b) == {'b': ['a', 'b']},
+            'changed-input-reuses-the-rest': legs_b['source'] == dict(warm_sources, b='fresh')
+            and legs_b['isolated'] == ['b'] and legs_b['receipt']['published'] == 1 and once(legs_b)
+            and legs_b['receipt']['status'] == 'passed' and not legs_b['problems'] and legs_b['code'] == [0, 0],
+            'changed-prerequisite-runs-the-dependent-shard': shard_targets(legs_a) == ['a', 'b', 'd']
+            and sorted(legs_a['trace']) == ['a', 'a', 'b', 'd']
+            and legs_a['source'] == dict(warm_sources, a='fresh', b='fresh') and legs_a['isolated'] == ['a', 'b']
+            and legs_a['receipt']['status'] == 'passed' and not legs_a['problems'],
+            'restored-inputs-hit-again': legs_back['source'] == warm_sources and shard_targets(legs_back) == ['d']
+            and legs_back['receipt']['status'] == 'passed',
+        }
+        row('receipts', 'sharded-leg-runs-qualified-suites-as-shards-and-reuses-unchanged-ones',
+            all(sharded.values()),
+            ((tell(legs_cold), tell(legs_warm), tell(legs_b), tell(legs_a), tell(legs_back)),
+             [k for k, v in sharded.items() if not v]))
+        # A qualified shard that fails is red and is never published, beside shards that pass.
+        new_store('legs-red')
+        (fx.outside / 'e-fails').write_text('')
+        legs_red = fx.cycle(legs=both)
+        (fx.outside / 'e-fails').unlink()
+        legs_after_red = fx.cycle(legs=both)
+        row('receipts', 'sharded-qualified-shard-failure-is-red-and-not-stored',
+            legs_red['code'][0] == 1 and legs_red['receipt']['status'] == 'failed'
+            and legs_red['failed']['e'] >= 1 and legs_red['isolated'] == sorted(QUALIFIED)
+            and legs_red['receipt']['published'] == 4
+            and 'published' not in [r for r in legs_red['receipt']['results'] if r['suite'] == 'e'][0]
+            and legs_after_red['source'] == dict(warm_sources, e='fresh') and shard_targets(legs_after_red) == ['d', 'e']
+            and legs_after_red['receipt']['published'] == 1 and legs_after_red['receipt']['status'] == 'passed',
+            (tell(legs_red), legs_red['receipt']['published'], tell(legs_after_red)))
         listing.unlink()
         row('receipts', 'both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass',
             counts(legs_cold['receipt']) == (6, 6, 0, 0, 5, 5) and legs_cold['receipt']['legs'] == ['confined', 'unconfined']

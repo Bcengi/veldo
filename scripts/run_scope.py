@@ -1591,8 +1591,15 @@ def shard_verdict(job, leg, status):
         if problem:
             failures.append((ISOLATION_BREACH, problem))
     mark = next((r.get("mark") for r in records if r.get("event") == "target"), None)
+    # What the shard ran, suite by suite, for a suite reuse settlement (VELDO-0206): [name, passed,
+    # failed] in its order. Anything but that form is no account, and the shard is no observation.
+    suites = verdict.get("suites") if verdict is not None else None
+    if not (isinstance(suites, list) and all(
+            isinstance(s, list) and len(s) == 3 and isinstance(s[0], str)
+            and all(type(n) is int and n >= 0 for n in s[1:]) for s in suites)):
+        suites = None
     return {"passed": passed, "failed": failed, "rows": rows, "failures": failures, "mark": mark,
-            "verdict": verdict is not None, "layer": layer}
+            "verdict": verdict is not None, "layer": layer, "suites": suites}
 
 
 def relay(job, result):
@@ -2065,7 +2072,9 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
                 "shards": [{k: j.get(k) for k in ("name", "index", "closure", "wall_seconds", "cpu_seconds",
                                                     "peak_anon_bytes", "roots", "linked", "claim", "instance")}
                            | {"passed": j["result"]["passed"] if "result" in j else 0,
-                              "failed": j["result"]["failed"] if "result" in j else 0}
+                              "failed": j["result"]["failed"] if "result" in j else 0,
+                              "suites": j["result"]["suites"] if "result" in j else None,
+                              "charges": len(charged.get(j["name"], []))}
                            for j in jobs]}
     finally:
         for number, handler in previous.items():
