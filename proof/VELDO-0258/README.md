@@ -140,3 +140,9 @@ a stopped-host restart flag prevented identity provisioning, and two historical
 assertions still required byte-identical file-based channel configuration. The
 flag now applies only when the installed engine is current; the assertions verify
 the exact credential import and retain their other invariants. Final reruns follow.
+
+The host API suite now passes all 45 rows (71 including prerequisites). Its first
+host run reached the service fixture and found that fixture lacked the installation
+schema assets; it now copies both installation asset directories alongside runtime.
+The final code commit `78554645e` passes lint, template synchronization, generated
+files, docs hygiene and personal-setup checks (zero findings) on the Mac.

@@ -472,3 +472,31 @@ generated: pass (proof/WARP-0712/split-plan.md)
 generated: pass (scripts/suites/requires.json)
 generated: pass
 personal setup: 0 finding(s)
+
+v258-host-api-final
+code_commit=78554645e
+raw_sha256=f9e4c3071fdcab340b3ac805094093f2306cf73eec965479123bbacb5eda5ecf
+VELDO-0130 row: service/install passed
+VELDO-0130 row: service/socket-path passed
+VELDO-0130 row: service/edge-signed-requests passed
+VELDO-0130 row: service/host-revocation-closes-stream passed
+VELDO-0130 row: service/in-process-refused passed
+VELDO-0130 row: service/restart-reconciles passed
+VELDO-0130 row: service/down-at-registration passed
+VELDO-0130 row: service/connect-sets-cursor passed
+  71_veldo_0130_api                               45 passed   24.02s
+selftest (PARTIAL, 1 of 238 suites): 71 passed, 0 failed in 24.02s
+
+v258-code-hygiene
+code_commit=78554645e
+raw_sha256=03917ca744cacbd2d6d1db09ecb2b45d43b2d1c01d7ec3af737e6ae26644ee0d
+lint: pass (1274 python, 40 shell, 3.39s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+generated: pass (specs/index.md)
+generated: pass (proof/WARP-0716/crossing-state.md)
+generated: pass (proof/WARP-0712/order-dependence.md)
+generated: pass (proof/WARP-0712/split-plan.md)
+generated: pass (scripts/suites/requires.json)
+generated: pass
+docs hygiene: pass
+personal setup: 0 finding(s)
