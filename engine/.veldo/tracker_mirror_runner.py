@@ -24,7 +24,7 @@ the repository (the source of truth, via build_spec_index / build_plan_index), a
 
 THE LIVE EDGE IS REFERENCE. build_live_adapter() constructs the JiraCloudAdapter from the tracker
 connection block in accepted installation tracker_routing (kind jira-cloud: base_url, token_ref, optional email). The
-token is a SECRET REFERENCE resolved from the environment or a secrets store, never a raw credential,
+token is a SECRET REFERENCE resolved only from the keystore, never a raw credential,
 and the adapter FAILS CLOSED (TrackerAdapterError) when no token resolves. This live path needs a real
 Jira, so it is NEVER run in the gate; the FakeTracker path is what the gate runs, the same honesty as
 the other reference adapters. The live JiraCloud assign write is completed here (WARP-1005), and live
