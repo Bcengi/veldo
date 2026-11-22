@@ -109,8 +109,9 @@ control_service, control_client, control_client_api, control_store and control_f
 
 Every heavy run went through the external host-heavy wrapper (outside the repository), each from its own
 detached worktree of the named commit, so later edits could not disturb it. The tree was frozen at 9e3acdd1
-for them; the one change made after it (1f0120c6, a path in suite 151's census row) was found by the unit
-leg and is covered by its own runs below.
+for them. Two things changed after it: a path in suite 151's census row (1f0120c6), found by the unit leg and
+covered by its own runs below; and terminal conditions in suite 83 (5342fa22) that were withdrawn again
+(4486b1bf), so suite 83 is byte for byte the file of 9e3acdd1.
 
 | Run | Where | Result |
 | - | - | - |
@@ -195,9 +196,10 @@ BLOCKERS FOR THE GATE:
    profile (brief E's item 4).
 6. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
    the user manager itself starts for a suite (systemctl start of an installed unit) is no descendant and is
-   not ended by it. A descendant another account owns is named as not ended. A heavy child that is ended by
-   run_heavy after its second bound is killed alone unless it is a dispatcher (then its keeper ends its tree
-   on the first signal).
+   not ended by it. A descendant another account owns is named as not ended. A heavy child that run_heavy ends
+   after its second bound is killed alone unless it is a dispatcher (then its keeper ends its tree on the first
+   signal). A mutation worker runs a suite with no dispatcher and so with no keeper: its coordinator reaps the
+   worker's unit, and a hung suite's directory under /dev/shm stops an unmetered stage (section 5).
 7. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
    the mutation stage long, as the stage's time below shows. A design follow-up for wave 2.
 8. In production nobody was found to renew the claim of a unit that waits with no run (section 3).

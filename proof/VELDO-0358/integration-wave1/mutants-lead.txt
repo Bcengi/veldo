@@ -34,3 +34,15 @@ DIFF (proves the mutant landed):
 +            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in () and re.finditer(  # defect
 mutant rc 0 rows 31 failed ['VELDO-0358 census/each-rule'] targets {'census/each-rule': [False]}
    detail VELDO-0358 census/each-rule {'missed': ['scripts/fx/position_abort_signal.spec.ts'], 'spurious': [], 'counted': [17, 18], 'exit': 1, 'baselined': [0, 17], 'computed': [1, 'wallclock: scope: the opened-files record of 1 suite(s), 0 changed file(s); 2 file(s) read, 1 with a site\nwallclock: sites: 1 (R1 1, R2 0, R3 0, R4 0); by class: S1 1; excepted by the authority: 0\nwallclock: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule: R1 0, R2 0, R3 0, R4 0\nwallclock: wallclock_site R1 (call time.sleep) proof/FX-0001/loaded.py:5 in pace: 1 site(s), the authority allows 0: time.sleep(1)\nwallclock: RED (1 wallclock_site, 0 baseline_stale)\n'], 'changed': [1, 'ck: baseline: 0 entry(ies), 0 site(s) in 0 file(s); by rule:
+====================================================================================================
+CASE opened358-cached-module-unclaimed targets ['record/cached-module-is-its-source']
+baseline rc 0 rows 37 failed [] targets {'record/cached-module-is-its-source': [True]}
+noop rc 0 rows 37 failed [] targets {'record/cached-module-is-its-source': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -295 +295 @@
+-            if os.path.basename(cache) != "__pycache__" or not os.path.isfile(_REPO + rel):
++            if True:  # defect: a module read from its cache is no file of the suite's
+mutant rc 0 rows 37 failed ['record/cached-module-is-its-source'] targets {'record/cached-module-is-its-source': [False]}
+   detail record/cached-module-is-its-source {'rc': 2, 'compiled': '__pycache__', 'read_from_cache': True, 'claims': ['scripts/suites/fx_cached.py'], 'cache_paths': []}

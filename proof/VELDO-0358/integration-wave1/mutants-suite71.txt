@@ -1,0 +1,14 @@
+# Suite 71's four cases the group stage did not judge. owner-command-unrouted hung in the group stage (its line is the first below) and stopped it; the other three, driven alone through their own worker, hang too.
+CASE owner-command-unrouted (group stage): SELFTEST HUNG rid1 presented: wait rid1 presented at <stage>/input/scripts/suites/71_veldo_0138_channel_service.py:107; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: store(<scratch>/a/authority/control.sqlite3), pidfd(27479); stacks: <stage>/19/veldo-hang-17270.txt 
+CASE probe-on-the-real-bot targets ['qualification/recorded-by-service']
+baseline rc 0 rows 41 failed [] targets {'qualification/recorded-by-service': [True]}
+noop rc 0 rows 41 failed [] targets {'qualification/recorded-by-service': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG rid2 settled: wait rid2 settled at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/71_veldo_0138_channel_service.py:456; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: store(<scratch>/a/authority/control.sqlite3), pidfd(239207); stacks: /tmp/veldo-hang-232683.txt
+CASE resume-drops-backlog targets ['command/stop-keeps-pending']
+baseline rc 0 rows 41 failed [] targets {'command/stop-keeps-pending': [True]}
+noop rc 0 rows 41 failed [] targets {'command/stop-keeps-pending': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG rid4 settled: wait rid4 settled at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/71_veldo_0138_channel_service.py:456; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: store(<scratch>/a/authority/control.sqlite3), pidfd(251239); stacks: /tmp/veldo-hang-232809.txt
+CASE service-skips-open-ingress targets ['served/settlement']
+baseline rc 0 rows 41 failed [] targets {'served/settlement': [True]}
+noop rc 0 rows 41 failed [] targets {'served/settlement': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG rid5 presented: wait rid5 presented at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/71_veldo_0138_channel_service.py:456; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: store(<scratch>/a/authority/control.sqlite3), pidfd(238375); stacks: /tmp/veldo-hang-232542.txt
