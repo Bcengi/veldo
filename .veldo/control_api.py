@@ -823,7 +823,8 @@ class ControlApi:
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
                 'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency',
-                'item', 'removed', 'deferred', 'discard_required')
+                'item', 'removed', 'deferred', 'discard_required', 'commit', 'configuration_commit', 'reason',
+                'push_refusal')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod

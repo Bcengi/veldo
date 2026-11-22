@@ -55,7 +55,16 @@ class Loader:
         return (WF._entity_row(self.conn, self.status_id) or {}).get('data', {})
 
     def validate(self, files):
-        return V.validate(files, secret_exists=self.secret_exists, resolve=WF._resolver(self.conn))
+        config, problems = V.validate(files, secret_exists=self.secret_exists, resolve=WF._resolver(self.conn))
+        if not problems:
+            preview = {'commit': 'preview', 'blobs': {path: 'preview' for path in files}}
+            try:
+                writes = WF.installation_revisions(self.conn, self.domain, self.workflow_repository, preview,
+                                                   config, 'validation', self.clock())
+                self.bindings(config, writes)
+            except Refused as error:
+                problems.extend(error.codes)
+        return config, problems
 
     def recheck(self):
         pending = self.pending
@@ -171,8 +180,11 @@ class Loader:
                     dd = head['definition_digest']
                     definition = config.get('workflows/%s.json' % workflow)
                 else:
-                    _, revision = WF.verified_revision(self.store, self.conn, self.domain,
-                                                       self.workflow_repository, workflow, version)
+                    try:
+                        _, revision = WF.verified_revision(self.store, self.conn, self.domain,
+                                                           self.workflow_repository, workflow, version)
+                    except Refused:
+                        raise Refused('installation_invalid:%s:workflows.%s:unknown_revision' % (path, kind)) from None
                     definition, dd = revision['definition'], revision['definition_digest']
                 if definition is None or organ('control_workflow_unit').unit_problems(definition):
                     raise Refused('installation_invalid:%s:workflows.%s:not_unit_workflow' % (path, kind))

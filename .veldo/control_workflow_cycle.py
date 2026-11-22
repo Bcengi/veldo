@@ -187,6 +187,7 @@ def _record_transition(conn, params, before):
         if held is None or (held['version'], held['digest']) != (reference.get('version'), reference.get('digest')):
             raise Refused('missing_evidence:snapshot', 'the snapshot reference is not the accepted record')
         record = {'schema': SCHEMA, 'domain': domain, 'repository': repository, 'cycle': cycle, 'workflow': workflow,
+                  'configuration_commit': _organ('installation').configuration_commit(conn),
                   'subject': subject, 'snapshot': {k: reference[k] for k in ('id', 'version', 'digest')},
                   'binding': {'id': workflow, 'version': version, 'digest': data['definition_digest'],
                               'revision': row['id'], 'entity_digest': row['digest']},

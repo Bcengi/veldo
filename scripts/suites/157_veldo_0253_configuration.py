@@ -28,7 +28,7 @@ def _v253_suite():
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
-            'ac1/setup-import', 'ac4/migrated-pins')
+            'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -277,6 +277,25 @@ def _v253_suite():
             result = loader.reconcile()
             check('ac2/signed-settlement', settled['outcome'] != 'refused' and result['outcome'] == 'accepted'
                   and loader.accepted_commit == signed_commit and bool(loader.record()['decision']))
+            owner_definition = WU.shipped()
+            owner_base = loader.accepted_commit
+            waiting = workflows.save({'definition': owner_definition}, principal='owner', base=0,
+                                     base_commit=owner_base, command_id='owner-proposal')
+            proposal = loader.status()['proposal']
+            request = A.assignment_id('repository', loader.decisions.alias(proposal))
+            presenter.present(request)
+            receipt = presenter.current(request)
+            body = dict(body, answer_id='owner-save-answer', request_id=request,
+                request_version=receipt['request_version'], presentation_id=receipt['presentation_id'],
+                presentation_digest=receipt['brief_digest'], presentation_version=receipt['presentation_version'])
+            save_command = dict(configuration_commit=waiting['commit'], operation='save_workflow', principal='owner')
+            approval = {'command': save_command, 'signature': command_sign('owner', S.canonical_bytes(save_command)),
+                        'answer': {'answer': body, 'signature': command_sign('api-edge', S.canonical_bytes(body))}}
+            saved = workflows.save({'definition': owner_definition}, principal='owner', base=0,
+                base_commit=owner_base, command_id='owner-signed-save', approval=approval)
+            check('ac3/signed-owner-save', waiting['outcome'] == 'waiting' and saved['outcome'] == 'accepted'
+                  and saved['commit'] == waiting['commit'] == loader.accepted_commit
+                  and workflows.load('code')['version'] == 1 and bool(loader.record()['decision']))
         except Exception as error:
             errors.append(type(error).__name__ + ': ' + str(error))
         finally:

@@ -20,7 +20,7 @@ I = organ('installation')
 def export(conn, settings, files=None):
     """Declared kinds from live records. Never export runs, pauses, conversations or occurrences."""
     files = dict(files or {})
-    files['installation.yaml'] = WF.canonical(settings)
+    settings = json.loads(json.dumps(settings))
     for eid, kind, raw in conn.execute('SELECT id, kind, data FROM entities ORDER BY id'):
         data = json.loads(raw)
         if kind == WF.HEAD_KIND and not data.get('deleted'):
@@ -57,6 +57,10 @@ def export(conn, settings, files=None):
             files['teams/%s.yaml' % name] = WF.canonical({'id': name, 'configuration': data['team']})
         elif kind == 'memory_store' and eid == 'memory:head':
             files['memory/manifest.yaml'] = WF.canonical({'manifest': organ('control_memory').manifest_of(data['definition'])})
+        elif kind == 'account':
+            settings.setdefault('accounts', {})[data['id']] = {
+                key: data[key] for key in ('label', 'provider', 'profiles', 'concurrency') if key in data}
+    files['installation.yaml'] = WF.canonical(settings)
     return files
 
 

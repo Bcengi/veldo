@@ -78,12 +78,21 @@ the `answer` command here refuses it as `settlement_required`, so it never reach
 without its settlement, typed effect and receipt. A request without terms is answered here.
 """
 import hashlib
+import importlib.util
 import json
 import math
 import re
 import sqlite3
 import time
 from datetime import datetime
+from pathlib import Path
+
+
+def _organ(name):
+    spec = importlib.util.spec_from_file_location('assignment_' + name, Path(__file__).with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 SCHEMA = 'veldo.assignment/v1'
 ENTITY_KIND = 'assignment'
@@ -685,6 +694,7 @@ class Inbox:
                  'to cancel the unit, backlog to return it to the backlog for an ordinary claim, or other with your '
                  'instruction for the project manager.' % (unit, aid, data['request_version'], how))
         question = dict(kind=DISPOSITION_KIND, owner=addressee, scope=list(data['scope']), deadline=data['deadline'],
+                        configuration_commit=_organ('installation').configuration_commit(self.conn),
                         budget=dict(data['budget']), brief=brief, choices=list(DISPOSITION_CHOICES),
                         subject={'kind': DISPOSITION_KIND, 'ref': aid, 'digest': self.store.digest_of(data)},
                         unit_id=unit, schema=SCHEMA, alias=alias, actor_kind='person', state='OFFERED',
@@ -884,6 +894,7 @@ class Inbox:
             data = dict(content, schema=SCHEMA, alias=params['alias'], actor_kind='person', state='OFFERED',
                         requested_by=principal, request_version=1, answer=None, disposition=None,
                         domain_uuid=self.ids['domain_uuid'], repository_uuid=self.ids['repository_uuid'])
+            data['configuration_commit'] = _organ('installation').configuration_commit(self.conn)
             changes = {aid: {'kind': ENTITY_KIND, 'data': data}}
             if 'release' in params:
                 changes.update(self.claims.transition(self.conn, params['release'], before))

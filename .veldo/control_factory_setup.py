@@ -725,6 +725,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 details['installation_repository'] = installation_import(S, conn, plan, ids, installed,
                     git_identities, workspace_identity, installation_remote, port, https_port,
                     (journal_principal, journal_sign), installation_keystore)
+                runner.run(['daemon-reload'])
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:

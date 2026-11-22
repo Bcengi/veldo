@@ -917,7 +917,8 @@ def editor_problem(conn, principal, repository, now):
 
 def _save_transition(conn, params, before):
     """THE SAVE: an authorized editor's new immutable revision of a validated definition."""
-    if getattr(conn, 'installation_loader', None) is not None:
+    if (getattr(conn, 'installation_loader', None) is not None
+            or _organ('installation').configuration_commit(conn) is not None):
         raise Refused('installation_managed')
     domain, repository, workflow = params.get('domain'), params.get('repository'), params.get('workflow')
     if not all(type(v) is str and v for v in (domain, repository)) or not _identifier(workflow):
@@ -1077,7 +1078,7 @@ class Workflows:
         self.counts = {'accepted': 0, 'refused': 0}
         # VELDO-0241: refused saves by each problem they named.
         self.refusals = {}
-        commands = (SAVE, RECORD) if getattr(conn, 'installation_loader', None) else (SAVE,)
+        commands = (SAVE, RECORD)
         store.declare_owners(conn, OWNER, kinds={REVISION_KIND: commands, HEAD_KIND: commands}, module=__file__)
         conn.command_registry[SAVE] = {'transaction_transition': _save_transition, 'writes': WRITES}
 

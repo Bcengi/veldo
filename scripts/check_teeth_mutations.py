@@ -10485,7 +10485,8 @@ def cases():
         "        if loader is not None:\n            return loader.save(document, principal=principal, base=base, command_id=command_id,\n",
         "        if False:\n            return loader.save(document, principal=principal, base=base, command_id=command_id,\n",
         ['ac3/one-source'], also=[(
-            "    if getattr(conn, 'installation_loader', None) is not None:\n        raise Refused('installation_managed')\n",
+            "    if (getattr(conn, 'installation_loader', None) is not None\n"
+            "            or _organ('installation').configuration_commit(conn) is not None):\n        raise Refused('installation_managed')\n",
             "    if False:\n        raise Refused('installation_managed')\n")])
     add(253, 'install253-pin-from-git', install253, 'control_workflow.py',
         "        body = content['data'].get('canonical', '').encode('ascii')\n",
