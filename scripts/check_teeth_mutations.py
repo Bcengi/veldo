@@ -10511,6 +10511,12 @@ def cases():
         "observe=None, dispatch=accepted.get('dispatch_id'))",
         ['effects/publication-call-observed'])
 
+    add(258, 'outside258-commit-read-after-call', outside258, 'control_plane_calls.py',
+        "installation_commit=commit, dispatch_id=dispatch, unit_id=unit)",
+        "installation_commit=state.commit() if callable(state.commit) else state.commit, dispatch_id=dispatch, unit_id=unit)",
+        ['observability/commit-pinned'])
+    result[-1]['siblings'] = True
+
     # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.
     install253 = '157_veldo_0253_configuration.py'
     add(253, 'install253-partial-commit', install253, 'control_installation_config.py',
