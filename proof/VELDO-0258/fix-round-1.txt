@@ -1,0 +1,60 @@
+VELDO-0258 fix round 1: developer runs (not gate evidence). Commit c7517fef9 unless noted.
+
+## Mutation diagnostic, pc2, c7517fef9: rc=0, 45 of 45 baseline/no-op/mutant runs matched (15 cases)
+raw_sha256=0a223b68690fd1d470ebc6c31d258514ece86666f550cdb67bd7ac3d56914717
+outside258-env-resolver: mutant red ['ac1/refuses/tracker/env'], matched True
+outside258-product-routing: mutant red ['ac2/accepted-site'], matched True
+outside258-literal-in-refusal: mutant red ['ac1/no-canary-in-observations'], matched True
+outside258-registered-only-scan: mutant red ['ac3/planted-call'], matched True
+outside258-no-service-binding: mutant red ['ac3/service-required/tracker'], matched True
+outside258-malformed-site-accepted: mutant red ['ac2/malformed-whole'], matched True
+outside258-effect-observer-dropped: mutant red ['effects/publication-call-observed'], matched True
+outside258-commit-read-after-call: mutant red ['observability/commit-pinned'], matched True
+outside258-oauth-self-unit: mutant red ['ac1/oauth-end-to-end'], matched True
+outside258-git-wrapper-unseen: mutant red ['ac3/planted-git-wrapper'], matched True
+outside258-reasonless-exemption: mutant red ['ac3/exemption-needs-reason'], matched True
+outside258-outside-git-unbound: mutant red ['ac3/outside-git-service-required'], matched True
+outside258-tracker-cli-unnamed: mutant red ['ac3/cli-init-unsigned-named'], matched True
+outside258-init-preview-mirrors: mutant red ['ac3/signed-init-preview'], matched True
+outside258-snapshot-preview-bootstraps: mutant red ['ac3/signed-snapshot-preview'], matched True
+
+## pc2 suites
+158_veldo_0258_outside_calls: (1 of 238 suites: 117 passed, 0 failed in 56.43s
+09_action_whitelist_warp_1205: (8 of 238 suites: 2485 passed, 2 failed in 109.08s
+(d9e5ed7e7) 05_tracker_routing_resolver_veldo: (1 of 238 suites: 277 passed, 0 failed in 0.77s
+(d9e5ed7e7) 06_capabilities_manifest_honesty_veldo: (4 of 238 suites: 1412 passed, 2 failed in 85.61s
+(d9e5ed7e7) 103_veldo_0142_git_identities: (1 of 238 suites: 49 passed, 0 failed in 58.68s
+(d9e5ed7e7) 107_veldo_0153_identity_push: (1 of 238 suites: 146 passed, 0 failed in 8.89s
+(d9e5ed7e7) 13_warp_0623_codified_live: (12 of 238 suites: 3534 passed, 2 failed in 177.80s
+(d9e5ed7e7) 154_veldo_0324_batch_sandbox: (1 of 238 suites: 55 passed, 0 failed in 3.45s
+(d9e5ed7e7) 157_veldo_0253_configuration: (1 of 238 suites: 52 passed, 0 failed in 3.91s
+(d9e5ed7e7) 37_veldo_0024_replica: (1 of 238 suites: 42 passed, 0 failed in 1.70s
+(d9e5ed7e7) 58_veldo_0028_effects: (1 of 238 suites: 79 passed, 0 failed in 61.52s
+(d9e5ed7e7) 82_veldo_0144_mcp_catalog: (1 of 238 suites: 55 passed, 0 failed in 51.64s
+(d9e5ed7e7) 84_veldo_0169_project_handouts: (1 of 238 suites: 53 passed, 0 failed in 26.00s
+The only pc2 failures above are suite 03's two init-scaffold rows inside the 06/09/13 closures, failing identically at c65fcc2c (review baseline).
+
+## pc2 environment failures, identical at base c65fcc2c (same failing rows)
+70_veldo_0057_landing: HEAD d9e5ed7e7 (1 of 238 suites: 35 passed, 22 failed in 17.43s; base (1 of 237 suites: 35 passed, 22 failed in 18.01s
+128_veldo_0235_land_locally: HEAD d9e5ed7e7 (1 of 238 suites: 30 passed, 5 failed in 15.22s; base (1 of 237 suites: 30 passed, 5 failed in 15.49s
+129_veldo_0239_batch_landing: HEAD (1 of 238 suites: 26 passed, 23 failed in 33.22s; base (1 of 237 suites: 26 passed, 23 failed in 29.24s
+
+## Host (host_heavy)
+70_veldo_0057_landing (c7517fef9): (1 of 238 suites: 57 passed, 0 failed in 16.86s
+128_veldo_0235_land_locally (c7517fef9): (1 of 238 suites: 35 passed, 0 failed in 15.00s
+129_veldo_0239_batch_landing (c7517fef9): (1 of 238 suites: 49 passed, 0 failed in 25.90s
+(d9e5ed7e7) 129_veldo_0254_canary_launch: (1 of 238 suites: 33 passed, 0 failed in 4.89s
+(d9e5ed7e7) 70_veldo_0073_activation: (1 of 238 suites: 37 passed, 0 failed in 4.12s
+(d9e5ed7e7) 71_veldo_0138_channel_service: (1 of 238 suites: 39 passed, 0 failed in 32.70s
+(d9e5ed7e7) 73_veldo_0139_factory_setup: (1 of 238 suites: 43 passed, 0 failed in 45.53s
+(d9e5ed7e7) 71_veldo_0130_api: (1 of 238 suites: 71 passed, 0 failed in 23.87s
+(d9e5ed7e7) 127_veldo_0234_https_port: (1 of 238 suites: 36 passed, 0 failed in 9.43s
+(d9e5ed7e7) 85_veldo_0171_setup_api: (1 of 238 suites: 44 passed, 0 failed in 10.91s
+(d9e5ed7e7) 86_veldo_0189_engine_upgrade: (1 of 238 suites: 60 passed, 0 failed in 69.61s
+(d9e5ed7e7) 127_veldo_0259_installation: (1 of 238 suites: 46 passed, 0 failed in 16.99s
+(d9e5ed7e7) 86_veldo_0168_text: (1 of 238 suites: 51 passed, 1 failed in 4.38s
+(d9e5ed7e7) 86_veldo_0148_re_land: (1 of 238 suites: 39 passed, 13 failed in 59.51s
+Host base comparison (c65fcc2c): 86_veldo_0148_re_land 39 passed, 13 failed and 86_veldo_0168_text 51 passed, 1 failed, the same rows as HEAD; all others 0 failed.
+
+Before this round, 70_0057, 129_0239 and 128_0235 failed on the host at the parent 4823c6d30 (21, 23 and 3 failed) and passed at c65fcc2c; running them in the service fixture restores 0 failed.
+pc2 cannot qualify the worker profile (unavailable_service:profile:user_manager), so 127_0234, 85_0171 and 86_0189 run on the host only.
