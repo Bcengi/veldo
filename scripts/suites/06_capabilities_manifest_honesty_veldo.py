@@ -1396,11 +1396,8 @@ expect("AC5: veldo supervisor install with no schedule fails loud by name, touch
 expect("AC5: supervisor.py ships in the engine (its home resolves for the honesty check, not repo-only)",
        ".veldo/supervisor.py" in _CH_ENGINE)
 
-# AC2 (WARP-1005): bin/veldo routes `mirror` to the opt-in, off-by-default live mirror runner. It runs
-# ONE reconcile pass on demand and creates no timer/daemon/auto-start; with no tracker config wired it
-# is a clean no-op (nothing to do), which proves the route reaches the runner. The runner is repo-only
-# build machinery, so it is NOT in the shipped engine set an adopter's pack lays (a pack that did not
-# lay it fails loud in bin/veldo rather than importing a missing module).
+# AC2 (WARP-1005), updated by VELDO-0258: mirror submits a signed service command.
+# The service dependencies ship, and an unsigned preview has no authority to run it.
 _rc_mir = _route904(["mirror", "--dry-run"])
 expect("AC2: veldo mirror routes to the service command and refuses an unsigned request",
        _rc_mir[0] == 2 and "unavailable_service:tracker_command" in (_rc_mir[1] + _rc_mir[2]))
