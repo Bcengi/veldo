@@ -1,0 +1,13 @@
+Check transcript.
+Raw SHA-256: a7a5ccf98696dd9e481429339b3bf1b0097c7e2dafec9b0c5a6a21e53bc1629d
+Home roots redacted; remote cleanup after command exit omitted.
+
+[remote_run pc2 03:14:37] run rr20261122031435-d433 selected node pc2 (Linux-x86_64)
+[remote_run pc2 03:14:38] setup 1s; eee64ef9fba279a022d1571043b117e6c3b6a7c6 in <home>/remote-run/runs/rr20261122031435-d433/work; python 3.12.13, node 22.22.0
+[remote_run pc2 03:14:38] command: bash -c bash\ scripts/check_lint.sh\ \&\&\ bash\ scripts/check_template_sync.sh\ \&\&\ python3\ -B\ scripts/check_personal_setup.py\ --base\ 199d0b6f 
+lint: pass (1259 python, 40 shell, 4.71s)
+template sync: pass (333 pair(s) compared, 6 declared per-repo, 367 engine-only)
+veldo installation: none found (looked at <home>/remote-run/cache/veldo<home>/veldo/installation, the documented default under the configuration root)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+[remote_run pc2 03:14:44] command exit 0 after 6s

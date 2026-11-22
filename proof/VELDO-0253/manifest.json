@@ -1,0 +1,108 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0253",
+  "commit": "eee64ef9fba279a022d1571043b117e6c3b6a7c6",
+  "tree": "a5524b9430f21d1104984a0a88d5ddcb0c4fbd07",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-22T03:17:29.896352+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0253_configuration.py",
+          "detail": "Committed-tree validation, metadata-only secret lookup, OS notification, setup/import, whole-commit refusal. Source mapping only; no aggregate unit pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "scripts/check_teeth_mutations.py",
+          "detail": "Finding 253 case install253-partial-commit must reject row ac1/whole-commit. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0253_configuration.py",
+          "detail": "Schema-marked widening, exact signed settlement, stale superseded decisions and recorded provenance. Source mapping only; no aggregate unit pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "scripts/check_teeth_mutations.py",
+          "detail": "Finding 253 case install253-tool-not-widening must reject row ac2/widening-waits. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0253_configuration.py",
+          "detail": "Git object construction and branch compare-and-swap, signed owner save, stale refusal and no detached store writer. Source mapping only; no aggregate unit pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "scripts/check_teeth_mutations.py",
+          "detail": "Finding 253 case install253-store-save must reject row ac3/one-source. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/157_veldo_0253_configuration.py",
+          "detail": "Content addressed canonical copies, erased-history pins, migrated versions, layout-only records and installation bindings. Source mapping only; no aggregate unit pass is claimed."
+        },
+        {
+          "type": "integration",
+          "ref": "scripts/check_teeth_mutations.py",
+          "detail": "Finding 253 case install253-pin-from-git must reject row ac4/pinned-survives. Git, SQLite and signatures are real; selected mutation receipt is separately versioned. Independent review and the lead gate remain pending."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed",
+      "ref": "proof/VELDO-0253/static-checks.txt"
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "ref": "proof/VELDO-0253/static-checks.txt"
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "ref": "proof/VELDO-0253/static-checks.txt",
+      "findings": 0
+    },
+    {
+      "name": "ui_typecheck",
+      "status": "passed",
+      "ref": "proof/VELDO-0253/ui-typecheck.txt"
+    },
+    {
+      "name": "unit",
+      "status": "not_run",
+      "reason": "Aggregate unit verification belongs to the lead gate. Partial selftests are diagnostic only and are not cited as evidence by this manifest."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "The build instruction reserves the canonical gate for the lead."
+    }
+  ],
+  "rollback": "Revert the implementation. Keep the installation repository and accepted records/content copies. No automatic rollback or deletion is performed."
+}
