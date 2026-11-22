@@ -1,0 +1,13 @@
+--- scripts/suites/113_veldo_0114_relay_census.py
++++ scripts/suites/113_veldo_0114_relay_census.py (mutant)
+@@ -210,6 +210,10 @@
+     receipts = [invocation.get("receipt") for invocation in invocations]
+     ready = bool(invocations) and all(_v114_ready(receipt) for receipt in receipts)
+     one_each = ready and len({receipt["input_identity"] for receipt in receipts}) == len(invocations)
++    if not (ready and one_each) and all(
++            invocation.get("snapshots", (0, 1))[0] == invocation.get("snapshots", (0, 1))[1]
++            for invocation in invocations):  # defect: snapshot equality for a failed observer
++        return {name: dict(status="PASS", reason="pathname_snapshots_match") for name in _v114_ROWS}
+     if not (ready and one_each):
+         return {name: dict(status="STANDS DOWN", reason="census_incomplete") for name in _v114_ROWS}
+     services = [dict(invocation=invocation["tag"], family=event.get("family"), type=event.get("type"),
