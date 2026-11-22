@@ -1,5 +1,40 @@
 # VELDO-0113 implementation and evidence
 
+Rebased onto the completed and reviewed VELDO-0111 (`bb0686b3`) on 2026-11-22.
+Acceptance remains incomplete: the absence rows still stand down, now for a
+narrower, named dependency gap (below). No canonical gate, independent review or
+owner approval is claimed here.
+
+## Rerun on the COMPLETE VELDO-0111 (2026-11-22)
+
+Host qualification is now COMPLETE (`gaps=[]`, x86_64 and i386). The restored
+full matrix completes all 42 cases, 22 external refusals and 176 fault drives
+(`faults_ok` true). Four relay receipts are COMPLETE. The other 18 external
+receipts are capture-INCOMPLETE with one failure each:
+`observation_incomplete` / `descriptor_operation` / `unqualified syscall 436`.
+Syscall 436 is `close_range`. CPython 3.12 `subprocess` (close_fds) issues it in
+the forked child before exec, so every client that runs its declared Git
+identity lookups hits it. `scripts/fixtures/lifecycle_census.py` fails closed on
+436 and 438 by design. Qualifying `close_range` is VELDO-0111 observer work; this
+consumer supplies no qualification and adds no exemption (lead decisions 1, 2).
+So `no-client-starts-the-authority`, `no-client-hosts-a-listener` and
+`no-auto-start-needs-census` STAND DOWN with `census_incomplete`. Construction is
+PASS with no exemption. The store-write grant is GAP (`no_process_specific_write_grant`).
+
+One consumer correction: fault drives previously also required INCOMPLETE host
+qualification. On a qualified host, six faults break capture only. The check now
+requires an INCOMPLETE receipt and stand-down on every fault drive. It does not
+require an unqualified host.
+
+Falsifiers, run directly and unconfined. See `ptrace-mutation-cases.txt`, which
+also lists the five ptrace cases for the owner's landing decision:
+incomplete-as-success, claim.py construction and CLI construction are red for
+their stated reasons. The reaped-fallback and transient-listener mutants are
+captured in 18 receipts (births and service events) but stand down because
+those receipts are INCOMPLETE. They remain blocked on `close_range`.
+
+## Earlier record (before the rebase)
+
 The CLI construction gap is fixed under lead decision 2 (2026-11-21). Acceptance
 remains incomplete pending VELDO-0111's COMPLETE qualification. No canonical gate,
 independent review or owner approval is claimed here.

@@ -1,13 +1,13 @@
-Diagnostic output; original SHA-256: c96cb1363a13c22f62c2ed0953c9b5824cba2280adc5a8ca26adbc50fef55a9a
+Diagnostic output; original SHA-256: ffaf769d2bd2b292b2585097a30e6263a74036831e6872d4af89cadc6770621a
 autostart113-transient-abstract-listener {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}
 Traceback (most recent call last):
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 193, in <module>
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 231, in <module>
     main()
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 184, in main
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 222, in main
     run(case['name'], case, 'mutant')
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 140, in run
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 160, in run
     check_result(result, case if mode == 'mutant' else None)
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 153, in check_result
+  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 173, in check_result
     assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: ('autostart113-transient-abstract-listener', 'unavailable/no-client-hosts-a-listener')

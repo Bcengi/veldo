@@ -144,7 +144,10 @@ def scan_lines(items, installation_rules, dispositions=frozenset()):
 
 def _git(root, *args):
     _git_process = _load('git_process.py')
-    done = _git_process.run(['git', '-C', str(root), *args], capture_output=True, text=True, timeout=120)
+    # Proof archives are binary and diffs here are forced --text: decode with replacement so a
+    # binary added line is still scanned as text instead of refusing the whole check.
+    done = _git_process.run(['git', '-C', str(root), *args], capture_output=True, text=True,
+                            errors='replace', timeout=120)
     return done.stdout if done.returncode == 0 else None
 
 

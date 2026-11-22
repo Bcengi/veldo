@@ -174,3 +174,13 @@ in the History and ticket proof.
   ticket. VELDO-0111's incomplete AC2 qualification remains a separate dependency
   blocker; rows requiring COMPLETE receipts stay blocked. Re-run the four
   previously invalid-baseline mutation cases after fixing the CLI boundary.
+
+- 2026-11-22: Rebased onto completed VELDO-0111 (`bb0686b3`, reviewed PASS).
+  Host qualification is COMPLETE. The 18 Git-launching external cases are still
+  capture-INCOMPLETE on `close_range` (syscall 436, issued by CPython subprocess),
+  which the VELDO-0111 observer fails closed on. The three absence rows therefore
+  still stand down, and their fallback and listener falsifiers cannot turn red.
+  This needs VELDO-0111 observer work, not a consumer exemption. Construction
+  PASS without exemption; store-write grant GAP. The five ptrace mutation cases
+  are listed for the owner in `proof/VELDO-0113/ptrace-mutation-cases.txt`;
+  `scripts/gate_unconfined.json` is unchanged.
