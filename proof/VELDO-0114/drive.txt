@@ -1,0 +1,9 @@
+v114-ipv4-listener-before-forwarding detected {'relay/no-listener-during-call': [False]}
+v114-endpoint-helper-forked detected {'relay/no-second-process': [False]}
+v114-snapshot-fallback detected {'relay/listener-proof-needs-census': [False], 'relay/stand-down-is-not-green': [False]}
+all detected
+
+real	9m43.650s
+user	0m28.198s
+sys	0m14.995s
+rc=0

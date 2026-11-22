@@ -1,0 +1,212 @@
+{
+ "all_detected": true,
+ "baseline_error": null,
+ "baseline_rows": [
+  [
+   "good spec accepted",
+   true
+  ],
+  [
+   "spec without criteria rejected",
+   true
+  ],
+  [
+   "unknown evidence kind rejected",
+   true
+  ],
+  [
+   "bad status rejected",
+   true
+  ],
+  [
+   "invented proof criterion rejected",
+   true
+  ],
+  [
+   "missing proof criterion rejected",
+   true
+  ],
+  [
+   "absent required evidence rejected",
+   true
+  ],
+  [
+   "passed-without-evidence rejected",
+   true
+  ],
+  [
+   "bad verdict value rejected",
+   true
+  ],
+  [
+   "good plan accepted",
+   true
+  ],
+  [
+   "plan dependency cycle rejected",
+   true
+  ],
+  [
+   "dangling dependency rejected",
+   true
+  ],
+  [
+   "unknown outcome ref rejected",
+   true
+  ],
+  [
+   "unknown feature ref rejected",
+   true
+  ],
+  [
+   "undeclared depends_on rejected",
+   true
+  ],
+  [
+   "ready without approval rejected",
+   true
+  ],
+  [
+   "decision without blocks rejected",
+   true
+  ],
+  [
+   "decision blocking unknown spec rejected",
+   true
+  ],
+  [
+   "duplicate work spec rejected",
+   true
+  ],
+  [
+   "bad release mode rejected",
+   true
+  ],
+  [
+   "mirror mismatch rejected",
+   true
+  ],
+  [
+   "correct mirror accepted",
+   true
+  ],
+  [
+   "spec binding to wrong plan rejected",
+   true
+  ],
+  [
+   "spec claiming missing work item rejected",
+   true
+  ],
+  [
+   "spec plan without work rejected",
+   true
+  ],
+  [
+   "correct spec binding accepted",
+   true
+  ],
+  [
+   "VELDO-0114 AC3 relay/stand-down-is-not-green",
+   true
+  ],
+  [
+   "VELDO-0114 AC1 relay/no-listener-during-call",
+   true
+  ],
+  [
+   "VELDO-0114 AC2 relay/no-second-process",
+   true
+  ],
+  [
+   "VELDO-0114 AC3 relay/listener-proof-needs-census",
+   true
+  ]
+ ],
+ "cases": [
+  {
+   "baseline_targets": {
+    "relay/no-listener-during-call": [
+     true
+    ]
+   },
+   "case": "v114-ipv4-listener-before-forwarding",
+   "detected": true,
+   "module": "control_relay.py",
+   "mutant_error": null,
+   "mutant_failed_rows": [
+    "VELDO-0114 AC1 relay/no-listener-during-call"
+   ],
+   "mutant_targets": {
+    "relay/no-listener-during-call": [
+     false
+    ]
+   },
+   "new_digest": "fe35c733698ffbfa85572d274978cdb04466b8ca53bd32cf275dc3b7af13c085",
+   "noop_equals_baseline": true,
+   "old_digest": "9ae3253e9fffc0e49abb258daf565406a9757b129bfe3a21072ae09b276903a5",
+   "rows": [
+    "relay/no-listener-during-call"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "relay/no-second-process": [
+     true
+    ]
+   },
+   "case": "v114-endpoint-helper-forked",
+   "detected": true,
+   "module": "control_relay.py",
+   "mutant_error": null,
+   "mutant_failed_rows": [
+    "VELDO-0114 AC2 relay/no-second-process"
+   ],
+   "mutant_targets": {
+    "relay/no-second-process": [
+     false
+    ]
+   },
+   "new_digest": "bacb07a156109a236ab5fbe88fef28d3e62c2b5f364da2ee0a8012f7ec769b9d",
+   "noop_equals_baseline": true,
+   "old_digest": "9ae3253e9fffc0e49abb258daf565406a9757b129bfe3a21072ae09b276903a5",
+   "rows": [
+    "relay/no-second-process"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "relay/listener-proof-needs-census": [
+     true
+    ],
+    "relay/stand-down-is-not-green": [
+     true
+    ]
+   },
+   "case": "v114-snapshot-fallback",
+   "detected": true,
+   "module": "113_veldo_0114_relay_census.py",
+   "mutant_error": null,
+   "mutant_failed_rows": [
+    "VELDO-0114 AC3 relay/stand-down-is-not-green",
+    "VELDO-0114 AC3 relay/listener-proof-needs-census"
+   ],
+   "mutant_targets": {
+    "relay/listener-proof-needs-census": [
+     false
+    ],
+    "relay/stand-down-is-not-green": [
+     false
+    ]
+   },
+   "new_digest": "373aadd9aed587cc46ca8b865db1d3d398f9626cebe0d2921db29a7075de90bc",
+   "noop_equals_baseline": true,
+   "old_digest": "fa89aadb4a23fe440f567e4121ad356f536b90d12dc915059b0650923cb5b6f9",
+   "rows": [
+    "relay/listener-proof-needs-census",
+    "relay/stand-down-is-not-green"
+   ]
+  }
+ ],
+ "schema": "veldo.v114-drive/v1"
+}

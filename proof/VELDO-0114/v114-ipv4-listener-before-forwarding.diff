@@ -1,0 +1,11 @@
+--- .veldo/control_relay.py
++++ .veldo/control_relay.py (mutant)
+@@ -129,6 +129,8 @@
+         print("relay: %s" % e, file=stderr)
+         return EXIT_TOO_LARGE
+     try:
++        _l = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
++        _l.bind(("127.0.0.1", 0)); _l.listen(1); _l.close()  # defect: a transient listener
+         answer = forward(address, payload)
+     except OSError as e:
+         # The authority is not answering. The relay says so and says nothing else: what a client does
