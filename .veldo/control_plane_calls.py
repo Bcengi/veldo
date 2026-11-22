@@ -27,6 +27,7 @@ state = sys.modules.setdefault('_veldo_control_plane', ModuleType('_veldo_contro
 if not hasattr(state, 'pid'):
     state.pid, state.observe, state.commit = None, None, None
     state.calls, state.refusals = {}, {}
+    state.dispatch = None
 
 
 class Refused(ValueError):
@@ -41,15 +42,15 @@ def not_run(caller):
 
 
 @contextlib.contextmanager
-def service(commit, observe=None):
+def service(commit, observe=None, dispatch=None):
     """Bind the trusted service's lifetime, without an inheritable credential or flag."""
     not_run('service')
-    previous = state.pid, state.commit, state.observe
-    state.pid, state.commit, state.observe = os.getpid(), commit, observe
+    previous = state.pid, state.commit, state.observe, state.dispatch
+    state.pid, state.commit, state.observe, state.dispatch = os.getpid(), commit, observe, dispatch
     try:
         yield
     finally:
-        state.pid, state.commit, state.observe = previous
+        state.pid, state.commit, state.observe, state.dispatch = previous
 
 
 def require_service(caller):
@@ -67,13 +68,17 @@ def emit(event):
 
 def reference(caller, ref):
     """Refuse without printing a possible literal. Only a parsed reference has a name."""
-    match = re.fullmatch(r'([a-z]+):([A-Za-z0-9_][A-Za-z0-9_./-]*)', ref) if isinstance(ref, str) else None
-    scheme = match[1] if match else 'literal'
+    match = re.fullmatch(r'([a-z]+):([A-Za-z0-9_./-]+)', ref) if isinstance(ref, str) else None
+    prefix = re.match(r'([a-z]+):', ref) if isinstance(ref, str) else None
+    scheme = prefix[1] if prefix else 'literal'
     if scheme != 'keychain':
         state.refusals[scheme] = state.refusals.get(scheme, 0) + 1
         emit(dict(caller=caller, scheme=scheme, name=match[2] if match else None, result='refused'))
         raise Refused('invalid_input:control_plane_credential:%s:%s' % (caller, scheme))
-    return organ('secretref').wire(ref)
+    try:
+        return organ('secretref').wire(ref)
+    except ValueError:
+        raise Refused('invalid_input:control_plane_credential:' + caller + ':keychain') from None
 
 
 def credential(caller, ref, resolver=None):
@@ -107,7 +112,7 @@ def outside(caller, destination, operation, dispatch=None):
         commit = state.commit() if callable(state.commit) else state.commit
         emit(dict(caller=caller, host=urlsplit(destination).hostname, operation=operation,
                   result=result, latency=time.monotonic() - started,
-                  installation_commit=commit, dispatch_id=dispatch))
+                  installation_commit=commit, dispatch_id=dispatch or state.dispatch))
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):

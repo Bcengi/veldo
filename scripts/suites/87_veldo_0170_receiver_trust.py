@@ -464,7 +464,7 @@ def _v170_settle(load, mods, conn, ids, root, repo, url, token, bot, chat, H, F,
     settlement.settle(request)
 
 
-_v170_rows = _v170_suite()
+_v170_rows = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v170_suite)
 for _v170_name, _v170_checks in _v170_rows.items():
     for _v170_label, _v170_ok in _v170_checks:
         if not _v170_ok:
