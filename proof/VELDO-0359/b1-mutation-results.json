@@ -1,0 +1,181 @@
+{
+  "commit": "1cb5bcf1b1b36d613cbb242d2cad36e89ab897d7",
+  "passed": true,
+  "results": [
+    {
+      "case": "store359-events-dropped",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "baseline",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/journey": [
+          true
+        ]
+      },
+      "tested_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8"
+    },
+    {
+      "case": "store359-events-dropped",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/journey": [
+          true
+        ]
+      },
+      "tested_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8"
+    },
+    {
+      "case": "store359-switch-ignored",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "source_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+      "targets": {
+        "switch/off": [
+          true
+        ]
+      },
+      "tested_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694"
+    },
+    {
+      "case": "store359-events-dropped",
+      "failed_details": [
+        [
+          "v359 query/journey",
+          "station selection; station claim; station direct_execution; station build; station review; station publication; station provider_request; missing dependency held; missing unit held; inline decision references; build admission; committed change and stale ticket; plan run-check; frontier claimable and offers; executor context and ticket; valid coordination; coordination stale ticket; missing cycle; frontier with stored handoff; frontier with stored returned"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/journey"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/journey": [
+          false
+        ]
+      },
+      "tested_sha256": "8bbde221f1090f5e93444f5c550c13f71fef3daddbaa8ee937bb84cfa40bbe70"
+    },
+    {
+      "case": "store359-query-any-unit",
+      "failed_details": [
+        [
+          "v359 query/scope",
+          "work scope foreign; work scope foreign; work scope foreign; work scope foreign; work scope member; work scope member; work scope member; work scope member; work scope cycle; work scope cycle; work scope cycle; work scope cycle; coordination scope foreign-cycle; coordination scope VELDO-9359; second cannot query first"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/scope"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/scope": [
+          false
+        ]
+      },
+      "tested_sha256": "ae7fd948741c7babc79629a8b947bf01ba5cf4a577dca80a8204da0e13c01599"
+    },
+    {
+      "case": "store359-query-fallback",
+      "failed_details": [
+        [
+          "v359 query/journey",
+          "unset query falsifier reaches refused direct open"
+        ],
+        [
+          "v359 query/scope",
+          "no attempted fallback"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/journey",
+        "v359 query/scope"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/scope": [
+          false
+        ]
+      },
+      "tested_sha256": "cf6cb8d705872b9af33b53ead21557910ead58dc32524e05da72210e8680684c"
+    },
+    {
+      "case": "store359-query-leak",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "run endpoint removed; bind cleanup; listen cleanup; connection cleanup; ready cleanup"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "5751488ff82b643c773c854f7af01c9b19a8d3cd414b97ceea2a45f92d4d1d60"
+    },
+    {
+      "case": "store359-query-startup-sweep",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "A survives B startup; A answers after listen; leftover does not affect next launch"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "b9eaef090a9edacfc1b1bf7951f17f35378a4b5f9f69bef2017abb102f8887d9"
+    },
+    {
+      "case": "store359-switch-ignored",
+      "failed_details": [
+        [
+          "v359 switch/off",
+          "marker restores direct reads and removes inherited variable"
+        ]
+      ],
+      "failed_rows": [
+        "v359 switch/off"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+      "targets": {
+        "switch/off": [
+          false
+        ]
+      },
+      "tested_sha256": "9dd975856e0b10a3bf0c4bc404bf468e6d5c46d5d48fdec867621022405cf8db"
+    }
+  ],
+  "schema": "veldo.b1_query_controls/v1",
+  "suite_sha256": "d850ba9aa2fe1e1223de12d0e10561516194b7c892bb1a7451a3e29b7c8114e9"
+}

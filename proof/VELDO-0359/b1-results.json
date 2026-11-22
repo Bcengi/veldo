@@ -1,0 +1,103 @@
+{
+  "baseline_hygiene_failures": [
+    "strip/claude",
+    "strip/codex",
+    "mcp/prefixed-tools",
+    "evidence/empty",
+    "evidence/completeness",
+    "evidence/outside-scan",
+    "format/fake-lines"
+  ],
+  "checks": {
+    "diff_whitespace": "pass",
+    "generated": "pass",
+    "git_boundary": "pass",
+    "parser_boundary": "pass",
+    "personal_setup_findings": 0,
+    "template_sync": "pass",
+    "writer_boundary": "pass"
+  },
+  "full_verification": false,
+  "mutation_controls": {
+    "baseline_passed": 1,
+    "commit": "1cb5bcf1b",
+    "exit": 0,
+    "mutants_killed": 6,
+    "noop_passed": 2,
+    "report": "b1-mutation-results.json",
+    "run": "rr20261122132741-25ca",
+    "runner": "pc2 remote_run --share",
+    "seconds": 110
+  },
+  "other_limits": [
+    "Broad pc2 starter-scaffold prerequisite: two unresolved failed rows.",
+    "Additional dispatch/offers/receiver-trust host selection has no completed result.",
+    "Full mutation coordinator has no completed result; registered raw workers run with portable baseline/no-op controls instead."
+  ],
+  "runs": [
+    {
+      "commit": "1cb5bcf1b",
+      "exit": 2,
+      "failed": 0,
+      "partial": true,
+      "passed": 31,
+      "runner": "pc2 remote_run --share",
+      "seconds": 24.55,
+      "suite": "157_veldo_0359_run_query"
+    },
+    {
+      "commit": "921cfa9e1",
+      "exit": 2,
+      "failed": 0,
+      "partial": true,
+      "passed": 135,
+      "runner": "pc2 remote_run --share",
+      "seconds": 57.98,
+      "suites": [
+        "60_veldo_0052_eligibility",
+        "62_veldo_0054_decisions",
+        "150_veldo_0350_end_write",
+        "157_veldo_0359_run_query"
+      ]
+    },
+    {
+      "commit": "1cb5bcf1b",
+      "exit": 2,
+      "failed": 0,
+      "partial": true,
+      "passed": 56,
+      "runner": "host_heavy",
+      "seconds": 59.49,
+      "suite": "92_veldo_0088_pm_cycles"
+    },
+    {
+      "commit": "994599e4d",
+      "exit": 1,
+      "failed": 7,
+      "partial": true,
+      "passed": 42,
+      "runner": "pc2 remote_run --share",
+      "seconds": 10.01,
+      "suite": "82_veldo_0165_launch_hygiene"
+    }
+  ],
+  "schema": "veldo.b1_observations/v1",
+  "scope": "B1 fixtures only; no live engine or real store",
+  "source_commit": "1cb5bcf1b1b36d613cbb242d2cad36e89ab897d7",
+  "source_sha256": {
+    ".veldo/control_eligibility.py": "294df76808cdb66549588f2e74fd0c86f9f74fe65f8387bd35dc9f53a03b3bed",
+    ".veldo/control_launch.py": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+    ".veldo/control_run_query.py": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+    ".veldo/frontier.py": "dfae88f67a2128991aeafdaedd21c3d4d1fdd3f8aff34b94aa7efca5e8da6980",
+    ".veldo/init_scaffold.py": "ad12226f9a81ffa684990fb7663a14f8c30dec37faec3577471314f06d50e652",
+    ".veldo/runstatus.py": "a787087c42fc38c41372b9233d2790377f0b3f76bdc1a693a675972dcd7c5608",
+    "engine/.veldo/control_eligibility.py": "294df76808cdb66549588f2e74fd0c86f9f74fe65f8387bd35dc9f53a03b3bed",
+    "engine/.veldo/control_launch.py": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+    "engine/.veldo/control_run_query.py": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+    "engine/.veldo/frontier.py": "dfae88f67a2128991aeafdaedd21c3d4d1fdd3f8aff34b94aa7efca5e8da6980",
+    "engine/.veldo/init_scaffold.py": "ad12226f9a81ffa684990fb7663a14f8c30dec37faec3577471314f06d50e652",
+    "engine/.veldo/runstatus.py": "a787087c42fc38c41372b9233d2790377f0b3f76bdc1a693a675972dcd7c5608",
+    "scripts/check_teeth_mutations.py": "af62d8653a174a6bc515d8e84a6631b1a58ee9fefaa734ebc054fdc105017513",
+    "scripts/suites/157_veldo_0359_run_query.py": "d850ba9aa2fe1e1223de12d0e10561516194b7c892bb1a7451a3e29b7c8114e9"
+  }
+}
