@@ -211,7 +211,11 @@ def _v114_judge(invocations, comparison=None):
     ready = bool(invocations) and all(_v114_ready(receipt) for receipt in receipts)
     one_each = ready and len({receipt["input_identity"] for receipt in receipts}) == len(invocations)
     if not (ready and one_each):
-        return {name: dict(status="STANDS DOWN", reason="census_incomplete") for name in _v114_ROWS}
+        rows = {name: dict(status="STANDS DOWN", reason="census_incomplete") for name in _v114_ROWS}
+        if comparison is False:
+            # The comparison needs no census: falsified, it is red whatever the census shows.
+            rows["relay/one-endpoint-one-judgement"] = dict(status="FAIL", reason="comparison_failed")
+        return rows
     services = [dict(invocation=invocation["tag"], family=event.get("family"), type=event.get("type"),
                      operation=event.get("operation"), address=event.get("address"))
                 for invocation in invocations for event in invocation["receipt"]["events"]
@@ -509,7 +513,8 @@ _v114_contract = []
 for _v114_fault, _v114_inv in _v114_fault_results:
     _v114_r = _v114_inv["receipt"]
     _v114_capability = LC114.FAULTS[_v114_fault][2]
-    _v114_verdicts = _v114_judge([_v114_inv], comparison=True)
+    _v114_case_set = [_v114_inv]
+    _v114_verdicts = _v114_judge(_v114_case_set, comparison=True)
     _v114_contract.append(dict(
         case="fault-" + _v114_fault,
         # The drive counts only when the receipt really is incomplete; which capability failed is
@@ -523,6 +528,8 @@ for _v114_fault, _v114_inv in _v114_fault_results:
         qualification=_v114_relay_qualification(_v114_verdicts),
         stood_down=[name for name, v in _v114_verdicts.items()
                     if v["status"] == "STANDS DOWN" and v["reason"] == "census_incomplete"],
+        failed_comparison_red=_v114_judge(_v114_case_set, comparison=False)[
+            "relay/one-endpoint-one-judgement"] == dict(status="FAIL", reason="comparison_failed"),
         green=[name for name, v in _v114_verdicts.items() if v["status"] == "PASS"]))
 _v114_evidence["faults"] = [dict(_v114_record(inv), fault=fault) for fault, inv in _v114_fault_results]
 # A complete receipt beside a missing one, and an invocation with no receipt at all.
@@ -534,13 +541,16 @@ if _v114_complete:
     _v114_sets += [("mixed-set", _v114_complete + [dict(_v114_fault_results[0][1], tag="mixed-incomplete")]),
                    ("shared-receipt", _v114_complete + [dict(_v114_complete[0], tag="reused")])]
 for _v114_case, _v114_set in _v114_sets:
-    _v114_verdicts = _v114_judge(_v114_set, comparison=True)
+    _v114_case_set = _v114_set
+    _v114_verdicts = _v114_judge(_v114_case_set, comparison=True)
     _v114_contract.append(dict(
         case=_v114_case, injected=bool(_v114_set), snapshots_equal=all(
             inv["snapshots"][0] == inv["snapshots"][1] for inv in _v114_set),
         qualification=_v114_relay_qualification(_v114_verdicts),
         stood_down=[name for name, v in _v114_verdicts.items()
                     if v["status"] == "STANDS DOWN" and v["reason"] == "census_incomplete"],
+        failed_comparison_red=_v114_judge(_v114_case_set, comparison=False)[
+            "relay/one-endpoint-one-judgement"] == dict(status="FAIL", reason="comparison_failed"),
         green=[name for name, v in _v114_verdicts.items() if v["status"] == "PASS"]))
 _v114_evidence["contract"] = _v114_contract
 _v114_contract_ok = (
@@ -548,7 +558,8 @@ _v114_contract_ok = (
         "relay/one-endpoint-one-judgement", "relay/no-listener-during-call",
         "relay/no-second-process", "relay/listener-proof-needs-census")
     and all(c["injected"] and c["snapshots_equal"] and c["qualification"] == "INCOMPLETE"
-            and c["stood_down"] == list(_v114_ROWS) and not c["green"] for c in _v114_contract))
+            and c["stood_down"] == list(_v114_ROWS) and not c["green"]
+            and c["failed_comparison_red"] for c in _v114_contract))
 
 expect("VELDO-0114 AC3 relay/stand-down-is-not-green: every VELDO-0111 fault (unavailable facilities, "
        "denied ptrace, unsupported ABI, a corrupt or lost event stream, a killed collector, drain expiry "
@@ -556,7 +567,9 @@ expect("VELDO-0114 AC3 relay/stand-down-is-not-green: every VELDO-0111 fault (un
        "receipt beside an incomplete one and one receipt shared by two invocations each leave all four "
        "VELDO-0114 rows STANDS DOWN with census_incomplete and none green, with qualification "
        "INCOMPLETE, even though the fixture's pathname snapshots match and the composite's comparison "
-       "is supplied as true. This needs no qualified host: it checks propagation, not absence",
+       "is supplied as true; supplied as false, the composite is FAIL with comparison_failed in every case, "
+       "because a standing-down census withholds a pass and never hides a falsified comparison. "
+       "This needs no qualified host: it checks propagation, not absence",
        _v114_contract_ok)
 
 # ---- the live rows ---------------------------------------------------------------------------------
