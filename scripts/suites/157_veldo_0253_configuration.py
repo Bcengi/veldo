@@ -206,7 +206,7 @@ def _v253_suite():
                 legacy = WF.Workflows(S, migration, domain='domain', repository='repository', signer='setup', sign=sign)
                 legacy.save({'definition': definition}, principal='owner', base=0)
                 legacy.save({'definition': edited}, principal='owner', base=1)
-                before = legacy.versions('example')
+                before = legacy.history('example')
                 imported = setup.create(S, migration, root / 'imported', settings=dict(settings, git={'branch': 'main'}),
                     identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
                     secret_exists=lambda name: False, observe=events.append)
@@ -214,7 +214,7 @@ def _v253_suite():
                     identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
                     secret_exists=lambda name: False, observe=events.append)
                 check('ac1/setup-import', imported['outcome'] == 'accepted' and repeated['outcome'] == 'already_done'
-                      and imported['commit'] == repeated['commit'] and legacy.versions('example') == before)
+                      and imported['commit'] == repeated['commit'] and legacy.history('example') == before)
                 check('ac4/migrated-pins', WU.pinned(S, migration, 'domain', 'repository', pinned) == definition
                       and WF._entity_row(migration, 'workflow-definition:' + WF.definition_digest(definition)) is not None)
             finally:
