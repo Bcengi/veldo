@@ -2324,13 +2324,14 @@ class Service:
         new-project pass due (VELDO-0143)."""
         if self.watermark() > before:
             self.space_pass()
-            loader = getattr(self, 'installation_loader', None)
-            if loader is not None and loader.status().get('outcome') == 'waiting':
-                loader.reconcile()
             self.projects_due = True
             consumer = getattr(self, 'space_consumer', None)
             if consumer is not None and consume:
                 consumer.advance()
+            # VELDO-0253: a loader waiting for an owner decision looks again when the journal advances.
+            loader = getattr(self, 'installation_loader', None)
+            if loader is not None and loader.status().get('outcome') == 'waiting':
+                loader.reconcile()
         if self.loop is not None and self.watermark() > before:
             self.loop.wake('journal')
         if self.api is None or self.watermark() <= before:

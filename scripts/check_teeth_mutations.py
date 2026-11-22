@@ -4117,15 +4117,16 @@ def cases():
              '    problem = None  # defect: the editor is not judged\n', 'authorized-editor')
     workflow('workflow-editor-role-ignored', "            or not set(entry.get('roles') or []) & set(EDITOR_ROLES)\n", '',
              'authorized-editor')
+    # VELDO-0253 rewrote the anchored lines; the case anchors on the new ones, same defect (combine).
     workflow('workflow-revision-kinds-unowned',
-             '        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE,), HEAD_KIND: (SAVE,)}, module=__file__)\n',
+             '        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: commands, HEAD_KIND: commands}, module=__file__)\n',
              '        pass  # defect: nothing declares who alone writes workflow revisions\n', 'revisions-immutable')
     workflow('workflow-stale-base-accepted', "    if params.get('base') != current:\n",
              '    if False:  # defect: an edit that did not see the head is accepted\n', 'revisions-immutable')
+    # VELDO-0253 rewrote the anchored lines; the case anchors on the new ones, same defect (combine).
     workflow('workflow-load-returns-head',
-             '            if version is None:\n                version = head_version(self.conn, self.domain, self.repository, workflow)\n',
-             '            if True:  # defect: an earlier revision cannot be read back\n'
-             '                version = head_version(self.conn, self.domain, self.repository, workflow)\n',
+             '            at_head = version is None\n            if at_head:\n',
+             '            at_head = True  # defect: an earlier revision cannot be read back\n            if at_head:\n',
              'revisions-immutable')
     workflow('workflow-layout-reaches-runner', "    text = WF.canonical(revision['definition']).decode()\n",
              "    text = WF.canonical(dict(revision['definition'], layout=revision['layout'])).decode()  # defect: the layout reaches execution\n",
@@ -4141,10 +4142,10 @@ def cases():
              'edit-without-execution')
     workflow('workflow-load-activates-runtime',
              '            row, data = verified_revision(self.store, self.conn, self.domain, self.repository, workflow, version)\n'
-             '        except (Refused, sqlite3.Error) as error:\n',
+             '            if at_head and head and head[\'data\'].get(\'layout_record\'):\n',
              '            row, data = verified_revision(self.store, self.conn, self.domain, self.repository, workflow, version)\n'
              "            _organ('control_runtime').activation()  # defect: loading asks the graph runtime\n"
-             '        except (Refused, sqlite3.Error) as error:\n',
+             '            if at_head and head and head[\'data\'].get(\'layout_record\'):\n',
              'edit-without-execution')
     # AC2, declared: an active cycle reads the canvas's current revision instead of its binding.
     workflow('workflow-cycle-reads-canvas-head',
@@ -5374,13 +5375,14 @@ def cases():
     api('query-actor-accepted', API130, "        problem = body_problem(route, body)\n        if problem:",
         "        problem = body_problem(route, body) if write else None  # defect: a query is not judged\n        if problem:",
         ['routes/body-actor-refused'])
+    # VELDO-0253 rewrote the anchored lines; the case anchors on the new ones, same defect (combine).
     api('save-base-ignored', AU130,
-        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])",
+        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'],\n",
         "            saved = self.workflows.save(document, principal=a['principal'], base=WF.head_version("
-        "self.conn, self.workflows.domain, self.workflows.repository, p['workflow']))  # defect", ['actions/workflow-save'])
+        "self.conn, self.workflows.domain, self.workflows.repository, p['workflow']),  # defect\n", ['actions/workflow-save'])
     api('save-speaker-is-edge', AU130,
-        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])",
-        "            saved = self.workflows.save(document, principal=self.edge, base=p['base'])  # defect",
+        "            saved = self.workflows.save(document, principal=a['principal'], base=p['base'],\n",
+        "            saved = self.workflows.save(document, principal=self.edge, base=p['base'],  # defect\n",
         ['actions/workflow-save'])
     api('save-definition-id-unchecked', AU130,
         "        if definition.get('id') != p['workflow']:\n"
@@ -8428,9 +8430,11 @@ def cases():
         "        self._run('store', name, value)",
         "        if self.get('keychain', name) is None:\n            self._run('store', name, value)",
         ['credential/replace-delete'], ())
+    # VELDO-0253 added contains(), whose gdbus check repeats `if done.returncode:`; the case anchors
+    # on _run's own check (the one that names a locked keystore), same defect (combine).
     add(144, 'mcp144-locked-success', '82_veldo_0144_mcp_catalog.py', 'control_credential_keystore.py',
-        '        if done.returncode:\n',
-        "        if done.returncode and b'locked' not in done.stderr.lower():\n",
+        "        if done.returncode:\n            if action == 'lookup'",
+        "        if done.returncode and b'locked' not in done.stderr.lower():\n            if action == 'lookup'",
         ['credential/keystore-refusals'], ())
     add(144, 'mcp144-read-back-allowed', '82_veldo_0144_mcp_catalog.py', 'control_api.py',
         "        raise Refused('unauthorized:credential_read_back', 'credentials are write-only')",
@@ -17185,9 +17189,10 @@ def cases():
     add(315, 'space315-no-worker-start', '156_veldo_0315_reconcile.py', 'control_service.py',
         '            service.space_worker_start(reconcile=service.space_received_reconcile)\n', '',
         ['space315/ac7/serve-order'])
+    # VELDO-0253 closes its installation watch between the two anchored lines (combine).
     add(315, 'space315-no-worker-stop', '156_veldo_0315_reconcile.py', 'control_service.py',
-        "                notify('STOPPING=1')\n                service.space_stop()\n",
-        "                notify('STOPPING=1')\n", ['space315/ac7/serve-order'])
+        "                    installation_watch.close()\n                service.space_stop()\n",
+        "                    installation_watch.close()\n", ['space315/ac7/serve-order'])
     add(315, 'space315-no-received-hook', '156_veldo_0315_reconcile.py', 'control_space_consumer.py',
         '        self.reconcile = reconcile\n', '        self.reconcile = None\n', ['space315/ac7/received-hook'])
     add(315, 'space315-docker-no-event-retry', '156_veldo_0315_reconcile.py', 'control_service.py',
