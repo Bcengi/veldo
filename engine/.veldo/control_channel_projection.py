@@ -60,7 +60,7 @@ VELDO-0073. The bot token is supplied by the caller's custody and never logged o
 Standard library only.
 """
 import hashlib
-import contextlib
+import sys
 import importlib.util
 from pathlib import Path
 import http.client
@@ -159,12 +159,53 @@ def bot_opener(*handlers):
     return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)
 
 
-@contextlib.contextmanager
+class _ObservedResponse:
+    """Keep eager open/refusal semantics and finish the observation after the body is consumed."""
+    def __init__(self, response, scope):
+        self.response, self.scope, self.finished = response, scope, False
+        self.error = (None, None, None)
+
+    def __getattr__(self, name):
+        return getattr(self.response, name)
+
+    def read(self, *args):
+        try:
+            return self.response.read(*args)
+        except BaseException:
+            self.error = sys.exc_info()
+            raise
+
+    def finish(self, error):
+        if not self.finished:
+            self.finished = True
+            self.scope.__exit__(*error)
+
+    def close(self):
+        try:
+            self.response.close()
+        finally:
+            self.finish(self.error)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *error):
+        try:
+            self.response.close()
+        finally:
+            self.finish(error if error[0] else self.error)
+
+
 def gated_open(activation, base_url, request, timeout, operation, chat=None, *, caller='owner_channel'):
     outside = _renderer_module('control_plane_calls')
-    with outside.outside(caller, base_url, operation):
-        with _activated_open(activation, base_url, request, timeout, operation, chat) as response:
-            yield response
+    scope = outside.outside(caller, base_url, operation)
+    scope.__enter__()
+    try:
+        response = _activated_open(activation, base_url, request, timeout, operation, chat)
+    except BaseException:
+        scope.__exit__(*sys.exc_info())
+        raise
+    return _ObservedResponse(response, scope)
 
 
 def _activated_open(activation, base_url, request, timeout, operation, chat=None):
