@@ -9,5 +9,5 @@
 +            for invocation in invocations):  # defect: snapshot equality for a failed observer
 +        return {name: dict(status="PASS", reason="pathname_snapshots_match") for name in _v114_ROWS}
      if not (ready and one_each):
-         return {name: dict(status="STANDS DOWN", reason="census_incomplete") for name in _v114_ROWS}
-     services = [dict(invocation=invocation["tag"], family=event.get("family"), type=event.get("type"),
+         rows = {name: dict(status="STANDS DOWN", reason="census_incomplete") for name in _v114_ROWS}
+         if comparison is False:

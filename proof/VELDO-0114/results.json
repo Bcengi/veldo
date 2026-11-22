@@ -1,128 +1,283 @@
 {
  "all_detected": true,
- "baseline_error": null,
- "baseline_rows": [
-  [
-   "good spec accepted",
-   true
+ "baseline_error": {
+  "113_veldo_0114_relay_census.py": null,
+  "48_veldo_0108_relay.py": null
+ },
+ "baseline_rows": {
+  "113_veldo_0114_relay_census.py": [
+   [
+    "good spec accepted",
+    true
+   ],
+   [
+    "spec without criteria rejected",
+    true
+   ],
+   [
+    "unknown evidence kind rejected",
+    true
+   ],
+   [
+    "bad status rejected",
+    true
+   ],
+   [
+    "invented proof criterion rejected",
+    true
+   ],
+   [
+    "missing proof criterion rejected",
+    true
+   ],
+   [
+    "absent required evidence rejected",
+    true
+   ],
+   [
+    "passed-without-evidence rejected",
+    true
+   ],
+   [
+    "bad verdict value rejected",
+    true
+   ],
+   [
+    "good plan accepted",
+    true
+   ],
+   [
+    "plan dependency cycle rejected",
+    true
+   ],
+   [
+    "dangling dependency rejected",
+    true
+   ],
+   [
+    "unknown outcome ref rejected",
+    true
+   ],
+   [
+    "unknown feature ref rejected",
+    true
+   ],
+   [
+    "undeclared depends_on rejected",
+    true
+   ],
+   [
+    "ready without approval rejected",
+    true
+   ],
+   [
+    "decision without blocks rejected",
+    true
+   ],
+   [
+    "decision blocking unknown spec rejected",
+    true
+   ],
+   [
+    "duplicate work spec rejected",
+    true
+   ],
+   [
+    "bad release mode rejected",
+    true
+   ],
+   [
+    "mirror mismatch rejected",
+    true
+   ],
+   [
+    "correct mirror accepted",
+    true
+   ],
+   [
+    "spec binding to wrong plan rejected",
+    true
+   ],
+   [
+    "spec claiming missing work item rejected",
+    true
+   ],
+   [
+    "spec plan without work rejected",
+    true
+   ],
+   [
+    "correct spec binding accepted",
+    true
+   ],
+   [
+    "VELDO-0114 AC3 relay/stand-down-is-not-green",
+    true
+   ],
+   [
+    "VELDO-0114 AC1 relay/no-listener-during-call",
+    true
+   ],
+   [
+    "VELDO-0114 AC2 relay/no-second-process",
+    true
+   ],
+   [
+    "VELDO-0114 AC3 relay/listener-proof-needs-census",
+    true
+   ]
   ],
-  [
-   "spec without criteria rejected",
-   true
-  ],
-  [
-   "unknown evidence kind rejected",
-   true
-  ],
-  [
-   "bad status rejected",
-   true
-  ],
-  [
-   "invented proof criterion rejected",
-   true
-  ],
-  [
-   "missing proof criterion rejected",
-   true
-  ],
-  [
-   "absent required evidence rejected",
-   true
-  ],
-  [
-   "passed-without-evidence rejected",
-   true
-  ],
-  [
-   "bad verdict value rejected",
-   true
-  ],
-  [
-   "good plan accepted",
-   true
-  ],
-  [
-   "plan dependency cycle rejected",
-   true
-  ],
-  [
-   "dangling dependency rejected",
-   true
-  ],
-  [
-   "unknown outcome ref rejected",
-   true
-  ],
-  [
-   "unknown feature ref rejected",
-   true
-  ],
-  [
-   "undeclared depends_on rejected",
-   true
-  ],
-  [
-   "ready without approval rejected",
-   true
-  ],
-  [
-   "decision without blocks rejected",
-   true
-  ],
-  [
-   "decision blocking unknown spec rejected",
-   true
-  ],
-  [
-   "duplicate work spec rejected",
-   true
-  ],
-  [
-   "bad release mode rejected",
-   true
-  ],
-  [
-   "mirror mismatch rejected",
-   true
-  ],
-  [
-   "correct mirror accepted",
-   true
-  ],
-  [
-   "spec binding to wrong plan rejected",
-   true
-  ],
-  [
-   "spec claiming missing work item rejected",
-   true
-  ],
-  [
-   "spec plan without work rejected",
-   true
-  ],
-  [
-   "correct spec binding accepted",
-   true
-  ],
-  [
-   "VELDO-0114 AC3 relay/stand-down-is-not-green",
-   true
-  ],
-  [
-   "VELDO-0114 AC1 relay/no-listener-during-call",
-   true
-  ],
-  [
-   "VELDO-0114 AC2 relay/no-second-process",
-   true
-  ],
-  [
-   "VELDO-0114 AC3 relay/listener-proof-needs-census",
-   true
+  "48_veldo_0108_relay.py": [
+   [
+    "good spec accepted",
+    true
+   ],
+   [
+    "spec without criteria rejected",
+    true
+   ],
+   [
+    "unknown evidence kind rejected",
+    true
+   ],
+   [
+    "bad status rejected",
+    true
+   ],
+   [
+    "invented proof criterion rejected",
+    true
+   ],
+   [
+    "missing proof criterion rejected",
+    true
+   ],
+   [
+    "absent required evidence rejected",
+    true
+   ],
+   [
+    "passed-without-evidence rejected",
+    true
+   ],
+   [
+    "bad verdict value rejected",
+    true
+   ],
+   [
+    "good plan accepted",
+    true
+   ],
+   [
+    "plan dependency cycle rejected",
+    true
+   ],
+   [
+    "dangling dependency rejected",
+    true
+   ],
+   [
+    "unknown outcome ref rejected",
+    true
+   ],
+   [
+    "unknown feature ref rejected",
+    true
+   ],
+   [
+    "undeclared depends_on rejected",
+    true
+   ],
+   [
+    "ready without approval rejected",
+    true
+   ],
+   [
+    "decision without blocks rejected",
+    true
+   ],
+   [
+    "decision blocking unknown spec rejected",
+    true
+   ],
+   [
+    "duplicate work spec rejected",
+    true
+   ],
+   [
+    "bad release mode rejected",
+    true
+   ],
+   [
+    "mirror mismatch rejected",
+    true
+   ],
+   [
+    "correct mirror accepted",
+    true
+   ],
+   [
+    "spec binding to wrong plan rejected",
+    true
+   ],
+   [
+    "spec claiming missing work item rejected",
+    true
+   ],
+   [
+    "spec plan without work rejected",
+    true
+   ],
+   [
+    "correct spec binding accepted",
+    true
+   ],
+   [
+    "VELDO-0108 relay/usage-has-zero-stdout",
+    true
+   ],
+   [
+    "VELDO-0108 relay/oversized-request-has-zero-stdout",
+    true
+   ],
+   [
+    "VELDO-0108 relay/oversized-response-has-zero-stdout",
+    true
+   ],
+   [
+    "relay/exact-limit-request-is-carried",
+    true
+   ],
+   [
+    "relay/exact-limit-response-is-carried",
+    true
+   ],
+   [
+    "VELDO-0108 AC1 relay/the-authority-judges-not-the-relay",
+    true
+   ],
+   [
+    "VELDO-0108 AC2 relay/ssh-is-transport-not-authority",
+    true
+   ],
+   [
+    "VELDO-0108 AC3 relay/one-endpoint-one-judgement",
+    true
+   ],
+   [
+    "VELDO-0114 relay/stand-down-never-hides-a-failed-comparison",
+    true
+   ],
+   [
+    "VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered",
+    true
+   ],
+   [
+    "VELDO-0108 control relay/copying-is-not-what-changes-it",
+    true
+   ]
   ]
- ],
+ },
  "cases": [
   {
    "baseline_targets": {
@@ -147,7 +302,8 @@
    "old_digest": "9ae3253e9fffc0e49abb258daf565406a9757b129bfe3a21072ae09b276903a5",
    "rows": [
     "relay/no-listener-during-call"
-   ]
+   ],
+   "suite": "113_veldo_0114_relay_census.py"
   },
   {
    "baseline_targets": {
@@ -172,7 +328,8 @@
    "old_digest": "9ae3253e9fffc0e49abb258daf565406a9757b129bfe3a21072ae09b276903a5",
    "rows": [
     "relay/no-second-process"
-   ]
+   ],
+   "suite": "113_veldo_0114_relay_census.py"
   },
   {
    "baseline_targets": {
@@ -199,13 +356,40 @@
      false
     ]
    },
-   "new_digest": "373aadd9aed587cc46ca8b865db1d3d398f9626cebe0d2921db29a7075de90bc",
+   "new_digest": "ad55ce01a611dba9d39e042519bc8d421fdd8ea9866ee29ae17d21662b56a9f8",
    "noop_equals_baseline": true,
-   "old_digest": "fa89aadb4a23fe440f567e4121ad356f536b90d12dc915059b0650923cb5b6f9",
+   "old_digest": "8d2705a594f2635cefb7ad6aa860eaeb560a7e300e196b92ddb49aebe126f9cd",
    "rows": [
     "relay/listener-proof-needs-census",
     "relay/stand-down-is-not-green"
-   ]
+   ],
+   "suite": "113_veldo_0114_relay_census.py"
+  },
+  {
+   "baseline_targets": {
+    "relay/stand-down-never-hides-a-failed-comparison": [
+     true
+    ]
+   },
+   "case": "v114-stand-down-hides-failed-comparison",
+   "detected": true,
+   "module": "48_veldo_0108_relay.py",
+   "mutant_error": null,
+   "mutant_failed_rows": [
+    "VELDO-0114 relay/stand-down-never-hides-a-failed-comparison"
+   ],
+   "mutant_targets": {
+    "relay/stand-down-never-hides-a-failed-comparison": [
+     false
+    ]
+   },
+   "new_digest": "589fc0a1b45368cbd6c98e60354803d9eb30e7ac189576c811ed1cff50d72d1b",
+   "noop_equals_baseline": true,
+   "old_digest": "082583c606045e9e2087f039d86406f2de39b37f32ea43eadaa84f3a94d131c4",
+   "rows": [
+    "relay/stand-down-never-hides-a-failed-comparison"
+   ],
+   "suite": "48_veldo_0108_relay.py"
   }
  ],
  "schema": "veldo.v114-drive/v1"

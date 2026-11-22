@@ -2,7 +2,7 @@
 """Drive VELDO-0114's registered teeth cases (finding 114) outside the gate's confinement.
 
 The census needs ptrace, which the confined mutation worker refuses, so this runs the registry's
-own materialize() and worker() directly: a baseline of the original suite, then per case a no-op
+own materialize() and worker() directly: a baseline of each original suite, then per case a no-op
 copy and the mutant, each in a fresh interpreter. A case counts only when the baseline target is
 [True], the no-op rows equal the baseline and the mutant's target rows are exactly [False] in an
 otherwise completed run. A crash, missing row or timeout is an invalid drive, never a detection.
@@ -45,8 +45,11 @@ def main():
     cases = [c for c in T.cases() if c['finding'] == 114]
     results = []
     with tempfile.TemporaryDirectory(prefix='v114-drive-') as scratch:
-        baseline = run(cases[0])
+        baselines = {}
         for case in cases:
+            if case['suite'] not in baselines:
+                baselines[case['suite']] = run(case)
+            baseline = baselines[case['suite']]
             m = T.materialize(case, 'baseline', None)
             before = m['source'].read_text()
             (OUT / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
@@ -62,16 +65,17 @@ def main():
                        and all(v == [True] for v in targets(baseline, case).values())
                        and all(v == [False] for v in targets(mutant_rows, case).values())
                        and mutant_rows.get('count') == baseline.get('count'))
-            results.append(dict(case=case['name'], module=case['module'], rows=case['rows'],
+            results.append(dict(case=case['name'], suite=case['suite'], module=case['module'], rows=case['rows'],
                                 old_digest=broken['old_digest'], new_digest=broken['new_digest'],
                                 baseline_targets=targets(baseline, case),
                                 noop_equals_baseline=noop_rows.get('observations') == honest,
                                 mutant_targets=targets(mutant_rows, case),
                                 mutant_failed_rows=mutant_rows.get('failed_rows'),
                                 mutant_error=mutant_rows.get('error'), detected=verdict))
-    record = dict(schema='veldo.v114-drive/v1', baseline_rows=baseline.get('observations'),
-                  baseline_error=baseline.get('error'), cases=results,
-                  all_detected=all(r['detected'] for r in results) and len(results) == 3)
+    record = dict(schema='veldo.v114-drive/v1',
+                  baseline_rows={k: b.get('observations') for k, b in baselines.items()},
+                  baseline_error={k: b.get('error') for k, b in baselines.items()}, cases=results,
+                  all_detected=all(r['detected'] for r in results) and len(results) == 4)
     (OUT / 'results.json').write_text(json.dumps(record, indent=1, sort_keys=True) + '\n')
     for r in results:
         print(r['case'], 'detected' if r['detected'] else 'NOT DETECTED', r['mutant_targets'])
