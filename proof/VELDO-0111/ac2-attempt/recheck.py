@@ -313,6 +313,8 @@ def main():
          '        elif nr == 436:\n            pass  # ignore close_range\n', CLOSE),
         ('cloexec-closes-now', '        if flags & CLOSE_RANGE_CLOEXEC:\n', '        if False:\n', CLOSE),
         ('ignore-exec-closes', '                    self.exec_closes(pid, execve)\n', '', CLOSE),
+        ('skip-shared-exec-closes', "        if not entry or entry['nr'] not in (59, 322):\n",
+         "        if not entry or entry['nr'] not in (59, 322) or entry.get('files_shared'):\n", CLOSE),
         ('allow-unknown-close-range-flags',
          '        if flags & ~(CLOSE_RANGE_UNSHARE | CLOSE_RANGE_CLOEXEC):\n', '        if False:\n', CLOSE),
         ('ignore-shared-close-range', "        if entry.get('files_shared'):\n", '        if False:\n', CLOSE))

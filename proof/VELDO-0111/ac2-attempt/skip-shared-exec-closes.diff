@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -1024 +1024 @@
+-        if not entry or entry['nr'] not in (59, 322):
++        if not entry or entry['nr'] not in (59, 322) or entry.get('files_shared'):
