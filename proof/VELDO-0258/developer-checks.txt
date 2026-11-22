@@ -500,3 +500,13 @@ generated: pass (scripts/suites/requires.json)
 generated: pass
 docs hygiene: pass
 personal setup: 0 finding(s)
+
+v258-host-migration-final2
+checkout=5f1b2e7e4
+code_commit=78554645e
+raw_sha256=89bb4172e65e65abec9a6b7953b2d623d71b9bfa6469654dde0b0afede485ca5
+  86_veldo_0189_engine_upgrade                    34 passed   74.11s
+  106_veldo_0185_dispatch_setup                   20 passed   13.97s
+  127_veldo_0234_https_port                       10 passed    9.97s
+selftest (PARTIAL, 3 of 238 suites): 90 passed, 0 failed in 98.05s
+exit=2 (successful selected run; not aggregate evidence)
