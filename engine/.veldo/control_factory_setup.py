@@ -488,7 +488,7 @@ def channel_migration(plan, home, engine):
         engine['writes'] = [entry for entry in engine['writes'] if entry[1] != path]
         engine['writes'].insert(0, ('configuration', path,
                                    json.dumps(pending, indent=1, sort_keys=True) + '\n', 0o600))
-    if imported:
+    if imported and engine['state'] == 'current':
         engine['restart_due'] = True
     return imported
 
