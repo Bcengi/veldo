@@ -406,3 +406,19 @@ Lead decisions applied; B1's scope and its "Do not" list are unchanged.
 - Found in this round's own run of suite 63: the store guard sample and the query endpoint's
   creation and count lines had entered Launch.messages, which containment/observations reads as
   accepted, running, exited. Launch._take now keeps those three in Launch.query_notices.
+
+## B2 build (2026-11-22)
+
+The guard is implemented for local agent runs in both product trees. The one sampled switch
+controls preflight, wrapper enforcement and Codex's override. Risky runs retain their single
+existing layer, with a read-only post-exclusion grant/copy census before acceptance. The
+descriptor audit reports only on a validated setup pipe and has a pre-identity receiver path.
+The VELDO-0254 AC3 exception is now also present in that specification.
+
+The owner limited this build to fixtures, ticket suites and B2's own registered mutants.
+No live engine/store, full unit leg, full mutation stage or full verification script was run.
+Suite 158 records missing real mount and device facilities as NOT RUN, and fails its mount
+row; those cases do not become evidence through component tests. The protected gate file
+was not edited: b2-gate-unconfined-proposal.txt holds the proposed entry for the owner's
+landing decision. b2-results.md describes the build and its incomplete exit; b2-checks.txt
+and b2-mutation-results.txt bind the partial observations to source.
