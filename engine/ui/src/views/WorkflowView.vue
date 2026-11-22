@@ -85,7 +85,12 @@ async function save() {
   saving.value = true
   refusal.value = null
   try {
-    const answer = await saveWorkflow(doc.value.workflow, doc.value.version, draft.value.definition, draft.value.layout)
+    const answer = await saveWorkflow(doc.value.workflow, doc.value.version, draft.value.definition, draft.value.layout,
+      doc.value.configuration_commit)
+    if (answer.outcome === 'waiting') {
+      announce.value = 'Saved to the installation repository. Waiting for owner approval.'
+      return
+    }
     saved.value = answer.version
     await load.run()
     saved.value = answer.version
@@ -202,4 +207,3 @@ const label = (id: string) => `${id} (${KINDS[draft.value?.definition.nodes[id]?
     </StatePanel>
   </section>
 </template>
-

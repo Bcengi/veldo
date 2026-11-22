@@ -5,6 +5,7 @@ and discarded, including on failure. get implements secretref's runtime store se
 """
 import os
 import subprocess
+import re
 
 
 class Refused(Exception):
@@ -48,3 +49,18 @@ class SecretService:
         if scheme != 'keychain':
             raise Refused('invalid_input:keystore_scheme')
         return self._run('lookup', name)
+
+    def contains(self, name):
+        """Search attributes only. SearchItems returns object paths and never secret bytes."""
+        if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', name):
+            return False
+        attributes = "{'application': 'veldo', 'credential': '%s'}" % name
+        try:
+            done = subprocess.run(['gdbus', 'call', '--session', '--dest', 'org.freedesktop.secrets',
+                '--object-path', '/org/freedesktop/secrets', '--method',
+                'org.freedesktop.Secret.Service.SearchItems', attributes], capture_output=True, timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            raise Refused('unavailable_service:keystore_unreachable') from None
+        if done.returncode:
+            raise Refused('unavailable_service:keystore_unreachable')
+        return b'/org/freedesktop/secrets/' in done.stdout

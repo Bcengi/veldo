@@ -113,7 +113,9 @@ def shape_problems(a):
     spec = OPERATIONS.get(a['operation'])
     if spec is None:
         problems.append('the operation is one of %s' % ', '.join(sorted(OPERATIONS)))
-    elif not isinstance(a['parameters'], dict) or set(a['parameters']) != set(spec['parameters']):
+    elif not isinstance(a['parameters'], dict) or (set(a['parameters']) != set(spec['parameters']) and not (
+            a['operation'] == 'save_workflow' and set(spec['parameters']) <= set(a['parameters'])
+            and set(a['parameters']) <= set(spec['parameters']) | {'base_commit', 'approval'})):
         problems.append('the parameters are exactly %s' % ', '.join(spec['parameters']))
     if not isinstance(a['expected_versions'], dict):
         problems.append('the expected versions are a mapping')

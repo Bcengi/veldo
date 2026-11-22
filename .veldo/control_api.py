@@ -180,7 +180,7 @@ ROUTES = (
     Route('reads.workflow', 'GET', '/api/v1/domains/{domain}/workflow', 'configuration', True, ('workflow',),
           ('version',), None),
     Route('workflows.save', 'POST', '/api/v1/domains/{domain}/workflows/save', 'configuration', True,
-          ('workflow', 'base', 'definition'), ('layout',), 'save_workflow'),
+          ('workflow', 'base', 'definition'), ('layout', 'base_commit', 'approval'), 'save_workflow'),
     Route('mcp.save', 'POST', '/api/v1/domains/{domain}/mcp/catalog/save', 'configuration', True,
           ('definition', 'base'), (), 'save_mcp_server'),
     Route('mcp.read', 'GET', '/api/v1/domains/{domain}/mcp/catalog', 'configuration', True,

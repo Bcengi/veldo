@@ -1,0 +1,821 @@
+{
+  "schema": "veldo.installation/v1",
+  "paths": [
+    {
+      "pattern": "installation.yaml",
+      "kind": "installation"
+    },
+    {
+      "pattern": "projects/*.yaml",
+      "kind": "project"
+    },
+    {
+      "pattern": "roles/*.yaml",
+      "kind": "role"
+    },
+    {
+      "pattern": "teams/*.yaml",
+      "kind": "team"
+    },
+    {
+      "pattern": "services/*.yaml",
+      "kind": "service"
+    },
+    {
+      "pattern": "connectors/*.yaml",
+      "kind": "connector"
+    },
+    {
+      "pattern": "schedules/*.yaml",
+      "kind": "schedule"
+    },
+    {
+      "pattern": "memory/*.yaml",
+      "kind": "memory"
+    },
+    {
+      "pattern": "decisions/*.yaml",
+      "kind": "decisions"
+    },
+    {
+      "pattern": "services/*.openapi.json",
+      "kind": "openapi"
+    },
+    {
+      "pattern": "services/*.tools.json",
+      "kind": "tools_snapshot"
+    },
+    {
+      "pattern": "workflows/*.layout.json",
+      "kind": "layout"
+    },
+    {
+      "pattern": "workflows/*.json",
+      "kind": "workflow"
+    },
+    {
+      "pattern": "patterns/*.yaml",
+      "check_only": true
+    },
+    {
+      "pattern": "records/*",
+      "history": true
+    },
+    {
+      "pattern": "research/*",
+      "ignored": true
+    },
+    {
+      "pattern": "notes/*",
+      "ignored": true
+    }
+  ],
+  "definitions": {
+    "text": {
+      "type": "string"
+    },
+    "identifier": {
+      "type": "string",
+      "identifier": true
+    },
+    "secret": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string",
+          "identifier": true
+        }
+      },
+      "required": [
+        "secret"
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "signing_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    "channel": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "chat": {
+          "type": "string"
+        },
+        "token": "secret",
+        "inbound_file_cap": {
+          "type": "integer"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "binary": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "token": "secret"
+      },
+      "required": []
+    },
+    "tracker": {
+      "type": "object",
+      "properties": {
+        "site": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "token": "secret"
+      },
+      "required": []
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "workflow": {
+          "type": "string",
+          "identifier": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "workflow"
+      ]
+    },
+    "deploy": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string",
+          "identifier": true
+        },
+        "route": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "account": {
+          "type": "string",
+          "identifier": true
+        },
+        "landing_destination": {
+          "type": "string",
+          "enum": [
+            "land_and_push",
+            "land_locally"
+          ]
+        },
+        "remote": {
+          "type": "string"
+        },
+        "trunk": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "workflows": {
+          "type": "object",
+          "values": "binding"
+        },
+        "render_command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deploy_targets": {
+          "type": "object",
+          "values": "deploy"
+        },
+        "spend_checklist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "renumber_hook": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "label": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "integer"
+        },
+        "digest": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "label": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "route": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "read": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    },
+    "grant": {
+      "type": "object",
+      "properties": {
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authorization_endpoint": {
+          "type": "string"
+        },
+        "token_endpoint": {
+          "type": "string"
+        },
+        "revocation_endpoint": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "client_secret": "secret",
+        "redirect_uri": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "enum": [
+            "veldo.outside_service/v1"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "base_url": {
+          "type": "string"
+        },
+        "credential": "secret",
+        "credential_location": {
+          "type": "string"
+        },
+        "body_limit": {
+          "type": "integer"
+        },
+        "routes": {
+          "type": "array",
+          "items": "route"
+        },
+        "read_overrides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "never": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "openapi": {
+          "type": "string"
+        },
+        "tools_snapshot": {
+          "type": "string"
+        },
+        "grants": {
+          "type": "object",
+          "values": "grant"
+        }
+      },
+      "required": [
+        "schema",
+        "base_url"
+      ]
+    },
+    "connector": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "command": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stdio"
+          ]
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "never": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "environment": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "command",
+        "tools",
+        "allowed_tools"
+      ]
+    },
+    "schedule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "identifier": true
+        },
+        "when": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "workflow": {
+          "type": "string",
+          "identifier": true
+        },
+        "project": {
+          "type": "string",
+          "identifier": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "when"
+      ]
+    },
+    "memory_server": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service": {
+          "type": "string",
+          "identifier": true
+        }
+      },
+      "required": []
+    },
+    "memory_store": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "type": "string",
+          "identifier": true
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "memory": {
+      "type": "object",
+      "properties": {
+        "stores": {
+          "type": "object",
+          "values": "memory_store"
+        },
+        "servers": {
+          "type": "object",
+          "values": "memory_server"
+        },
+        "session_history_sink": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "quote"
+      ]
+    },
+    "decisions": {
+      "type": "object",
+      "properties": {
+        "decisions": {
+          "type": "object",
+          "values": "decision"
+        }
+      },
+      "required": [
+        "decisions"
+      ]
+    },
+    "tools_snapshot": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "identifier": true
+              },
+              "description": {
+                "type": "string"
+              },
+              "input_schema": {
+                "type": "object",
+                "values": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": []
+          }
+        }
+      },
+      "required": [
+        "tools"
+      ]
+    },
+    "openapi": {
+      "type": "object",
+      "properties": {
+        "openapi": {
+          "type": "string"
+        },
+        "info": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "paths": {
+          "type": "object",
+          "values": {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "post": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        }
+      },
+      "required": [
+        "openapi",
+        "info",
+        "paths"
+      ]
+    },
+    "installation": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "enum": [
+            "veldo.installation/v1"
+          ]
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "display_name": {
+              "type": "string"
+            },
+            "role_id": {
+              "type": "string",
+              "identifier": true
+            }
+          },
+          "required": [
+            "display_name",
+            "role_id"
+          ]
+        },
+        "approvers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "git_identities": {
+          "type": "object",
+          "values": "identity"
+        },
+        "git": {
+          "type": "object",
+          "properties": {
+            "remote": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "branch"
+          ]
+        },
+        "hosts": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          }
+        },
+        "tailnet_names": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          }
+        },
+        "ports": {
+          "type": "object",
+          "values": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          }
+        },
+        "channels": {
+          "type": "object",
+          "values": "channel"
+        },
+        "bot": {
+          "type": "object",
+          "properties": {
+            "token": "secret",
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "accounts": {
+          "type": "object",
+          "values": "account"
+        },
+        "trackers": {
+          "type": "object",
+          "values": "tracker"
+        },
+        "publisher": "identity",
+        "receiver": {
+          "type": "object",
+          "properties": {
+            "question_window": {
+              "type": "integer"
+            },
+            "inbound_file_cap": {
+              "type": "integer"
+            }
+          },
+          "required": []
+        },
+        "space": {}
+      },
+      "required": [
+        "schema"
+      ]
+    }
+  },
+  "widening": {
+    "installation": {
+      "accounts": "added",
+      "ports": "added",
+      "channels": "added",
+      "approvers": "added",
+      "owner": "changed",
+      "git_identities": "added"
+    },
+    "project": {
+      "workflows": "changed",
+      "render_command": "changed",
+      "deploy_targets": "changed",
+      "renumber_hook": "changed",
+      "account": "changed"
+    },
+    "connector": {
+      "allowed_tools": "added",
+      "never": "removed",
+      "command": "changed",
+      "args": "changed",
+      "environment": "changed"
+    },
+    "role": {
+      "capabilities": "added",
+      "tools": "added"
+    },
+    "team": {
+      "roles": "added"
+    },
+    "service": {
+      "base_url": "changed",
+      "credential": "changed",
+      "credential_location": "changed",
+      "routes": "changed",
+      "read_overrides": "changed",
+      "tools_snapshot": "changed",
+      "grants": "changed",
+      "openapi": "changed",
+      "never": "removed"
+    }
+  }
+}

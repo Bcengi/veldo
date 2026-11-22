@@ -64,6 +64,10 @@ REVISION_SCHEMA = 'veldo.workflow_revision/v1'
 REVISION_KIND = 'workflow_revision'
 HEAD_KIND = 'workflow_head'
 SAVE = 'save_workflow_revision'
+RECORD = 'record_workflow_revision'
+CONTENT_KIND = 'workflow_definition'
+INSTALLATION_KIND = 'installation_configuration'
+LAYOUT_KIND = 'workflow_layout'
 OWNER = 'VELDO-0132 workflow revisions'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 
@@ -913,6 +917,8 @@ def editor_problem(conn, principal, repository, now):
 
 def _save_transition(conn, params, before):
     """THE SAVE: an authorized editor's new immutable revision of a validated definition."""
+    if getattr(conn, 'installation_loader', None) is not None:
+        raise Refused('installation_managed')
     domain, repository, workflow = params.get('domain'), params.get('repository'), params.get('workflow')
     if not all(type(v) is str and v for v in (domain, repository)) or not _identifier(workflow):
         raise Refused('invalid_input', 'domain, repository and workflow are named')
@@ -962,12 +968,79 @@ def verified_revision(store, conn, domain, repository, workflow, version):
     data = row['data']
     if store.digest_of({'kind': row['kind'], 'data': data, 'version': row['version']}) != row['digest']:
         raise Refused('missing_evidence:revision_digest', rid)
+    if 'source' in data:
+        content = _entity_row(conn, 'workflow-definition:' + data['definition_digest'])
+        if content is None or content['kind'] != CONTENT_KIND:
+            raise Refused('missing_evidence:definition_copy', rid)
+        body = content['data'].get('canonical', '').encode('ascii')
+        if digest(body) != data['definition_digest']:
+            raise Refused('missing_evidence:definition_digest', rid)
+        data = dict(data, definition=json.loads(body))
     if ((data.get('schema'), data.get('domain'), data.get('repository'), data.get('workflow'), data.get('version'))
             != (REVISION_SCHEMA, domain, repository, workflow, version)
             or definition_digest(data.get('definition')) != data.get('definition_digest')
             or digest(canonical(data.get('layout'))) != data.get('layout_digest')):
         raise Refused('missing_evidence:revision_identity', rid)
     return dict(row, id=rid), data
+
+
+def _record_installation(conn, params, before):
+    """Only the loader's staged, validated transaction can record accepted definitions."""
+    loader = getattr(conn, 'installation_loader', None)
+    if loader is None or loader.pending is None or params != loader.pending['parameters']:
+        raise Refused('installation_managed')
+    loader.recheck()
+    return loader.pending['changes']
+
+
+def attach_installation(store, conn, loader):
+    conn.installation_loader = loader
+    store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE, RECORD), HEAD_KIND: (SAVE, RECORD),
+                         CONTENT_KIND: (RECORD,), INSTALLATION_KIND: (RECORD,), LAYOUT_KIND: (RECORD,)}, module=__file__)
+    conn.command_registry[RECORD] = {'transaction_transition': _record_installation, 'writes': WRITES}
+
+
+def installation_revisions(conn, domain, repository, snapshot, config, principal, now):
+    """Changes for an accepted tree; immutable definition copies and revision provenance."""
+    changes = {}
+    for path, definition in sorted(config.items()):
+        if not path.startswith('workflows/') or not path.endswith('.json') or path.endswith('.layout.json'):
+            continue
+        workflow = definition['id']
+        hid = head_id(domain, repository, workflow)
+        head = _entity_row(conn, hid)
+        prior = head['data'] if head else {}
+        dd = definition_digest(definition)
+        cid = 'workflow-definition:' + dd
+        if _entity_row(conn, cid) is None:
+            changes[cid] = {'kind': CONTENT_KIND, 'data': {'canonical': canonical(definition).decode('ascii'),
+                             'source': {'commit': snapshot['commit'], 'path': path, 'blob': snapshot['blobs'][path]}}}
+        layout = config.get(path[:-5] + '.layout.json', {})
+        ld = digest(canonical(layout))
+        version = prior.get('version', 0)
+        if prior.get('definition_digest') != dd:
+            version += 1
+            rid = revision_id(domain, repository, workflow, version)
+            if _entity_row(conn, rid):
+                raise Refused('workflow_immutable', rid)
+            record = {'schema': REVISION_SCHEMA, 'domain': domain, 'repository': repository, 'workflow': workflow,
+                      'version': version, 'definition_digest': dd, 'layout': layout, 'layout_digest': ld,
+                      'source': {'commit': snapshot['commit'], 'path': path, 'blob': snapshot['blobs'][path]},
+                      'previous': {'version': prior['version'], 'revision': prior['revision'], 'digest': prior['digest']}
+                      if head else None, 'saved': {'principal': principal, 'at': now}}
+            changes[rid] = {'kind': REVISION_KIND, 'data': record}
+            prior = {'workflow': workflow, 'domain': domain, 'repository': repository, 'version': version,
+                     'revision': rid, 'definition_digest': dd, 'digest': definition_digest(record)}
+        lid = 'workflow-layout:' + json.dumps([domain, repository, workflow, snapshot['commit']], separators=(',', ':'))
+        changes[lid] = {'kind': LAYOUT_KIND, 'data': {'layout': layout, 'layout_digest': ld, 'commit': snapshot['commit']}}
+        changes[hid] = {'kind': HEAD_KIND, 'data': dict(prior, commit=snapshot['commit'], layout_record=lid, deleted=False)}
+    prefix = 'workflow-head:'
+    for eid, text in conn.execute('SELECT id, data FROM entities WHERE kind=?', (HEAD_KIND,)):
+        head = json.loads(text)
+        if eid.startswith(prefix) and head.get('domain') == domain and head.get('repository') == repository:
+            if 'workflows/%s.json' % head['workflow'] not in config and not head.get('deleted'):
+                changes[eid] = {'kind': HEAD_KIND, 'data': dict(head, deleted=True, commit=snapshot['commit'])}
+    return changes
 
 
 def head_version(conn, domain, repository, workflow):
@@ -991,7 +1064,8 @@ class Workflows:
         self.counts = {'accepted': 0, 'refused': 0}
         # VELDO-0241: refused saves by each problem they named.
         self.refusals = {}
-        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE,), HEAD_KIND: (SAVE,)}, module=__file__)
+        commands = (SAVE, RECORD) if getattr(conn, 'installation_loader', None) else (SAVE,)
+        store.declare_owners(conn, OWNER, kinds={REVISION_KIND: commands, HEAD_KIND: commands}, module=__file__)
         conn.command_registry[SAVE] = {'transaction_transition': _save_transition, 'writes': WRITES}
 
     def _event(self, operation, workflow, **fields):
@@ -1005,7 +1079,7 @@ class Workflows:
             self.refusals[code] = self.refusals.get(code, 0) + 1
         self.observe(dict(event, outcome='refused', refusal=error.code, refusals=codes, taxonomy=taxonomy(error.code)))
 
-    def save(self, document, *, principal, base):
+    def save(self, document, *, principal, base, command_id=None, base_commit=None, approval=None):
         """Commit the canvas document {definition, layout} as the next revision after `base`; returns
         {workflow, version, revision, definition_digest, layout_digest, seq} or raises Refused."""
         document = document if type(document) is dict else {}
@@ -1017,6 +1091,10 @@ class Workflows:
             error = Refused((shape or ['invalid_input'])[0], 'a document {definition, layout} and a base version', shape)
             self._refused(event, error)
             raise error
+        loader = getattr(self.conn, 'installation_loader', None)
+        if loader is not None:
+            return loader.save(document, principal=principal, base=base, command_id=command_id,
+                               base_commit=base_commit, approval=approval)
         hid = head_id(self.domain, self.repository, workflow)
         current = head_version(self.conn, self.domain, self.repository, workflow)
         version = current + 1
@@ -1057,11 +1135,19 @@ class Workflows:
         try:
             if not _identifier(workflow):
                 raise Refused('invalid_input', 'a workflow identifier')
-            if version is None:
+            at_head = version is None
+            if at_head:
                 version = head_version(self.conn, self.domain, self.repository, workflow)
+                head = _entity_row(self.conn, head_id(self.domain, self.repository, workflow))
+                if head and head['data'].get('deleted'):
+                    raise Refused('missing_workflow', workflow)
             if not _count(version):
                 raise Refused('missing_workflow', workflow)
             row, data = verified_revision(self.store, self.conn, self.domain, self.repository, workflow, version)
+            if at_head and head and head['data'].get('layout_record'):
+                layout = _entity_row(self.conn, head['data']['layout_record'])
+                if layout:
+                    data = dict(data, **{key: layout['data'][key] for key in ('layout', 'layout_digest')})
         except (Refused, sqlite3.Error) as error:
             if not isinstance(error, Refused):
                 error = Refused('unavailable_service:store', type(error).__name__)
@@ -1073,7 +1159,9 @@ class Workflows:
         return {'workflow': workflow, 'version': version, 'revision': row['id'], 'entity_digest': row['digest'],
                 'definition': data['definition'], 'layout': data['layout'],
                 'definition_digest': data['definition_digest'], 'layout_digest': data['layout_digest'],
-                'previous': data['previous'], 'saved': data['saved']}
+                'previous': data['previous'], 'saved': data['saved'], 'source': data.get('source'),
+                'configuration_commit': getattr(self.conn, 'installation_loader', None).accepted_commit
+                if getattr(self.conn, 'installation_loader', None) else None}
 
     def history(self, workflow):
         """Every stored version of a workflow, oldest first, each {version, revision, definition_digest}."""

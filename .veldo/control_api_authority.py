@@ -679,13 +679,15 @@ class ApiAuthority:
         document = {'definition': p['definition']} if p['layout'] is None else {'definition': p['definition'],
                                                                                   'layout': p['layout']}
         try:
-            saved = self.workflows.save(document, principal=a['principal'], base=p['base'])
+            saved = self.workflows.save(document, principal=a['principal'], base=p['base'],
+                                        command_id=a['request_id'], base_commit=p.get('base_commit'),
+                                        approval=p.get('approval'))
         except Exception as error:  # noqa: BLE001 - VELDO-0132's named refusal (its own Refused class)
             if not isinstance(getattr(error, 'code', None), str):
                 raise
             klass, head = _class_of(error.code), error.code.split(':', 1)[0]
             return {'outcome': 'refused', 'reason': error.code if CLASSES.get(head) == klass else '%s:%s' % (klass, error.code)}
-        return dict(saved, outcome='saved')
+        return dict(saved, outcome=saved.get('outcome', 'saved'))
 
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""

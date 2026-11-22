@@ -810,6 +810,12 @@ def runtime_assets(members):
             assets[name] = (source / name).read_bytes()
         except OSError:
             raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None
+    if 'control_installation_schema.py' in members:
+        for name in ('installation_schema/schema.json', 'installation_template/installation.yaml'):
+            try:
+                assets[name] = (HERE / name).read_bytes()
+            except OSError:
+                raise Refused('missing_evidence:runtime_asset:' + name) from None
     return assets
 
 
@@ -2248,6 +2254,9 @@ class Service:
         (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
         new-project pass due (VELDO-0143)."""
         if self.watermark() > before:
+            loader = getattr(self, 'installation_loader', None)
+            if loader is not None and loader.status().get('outcome') == 'waiting':
+                loader.reconcile()
             self.projects_due = True
             consumer = getattr(self, 'space_consumer', None)
             if consumer is not None and consume:
@@ -2279,6 +2288,10 @@ class Service:
     def installation_status(self):
         """The installation folder and revision this service loaded (VELDO-0259), read once through the one
         reader, which prints its resolution line."""
+        loader = getattr(self, 'installation_loader', None)
+        if loader is not None:
+            return {'folder': loader.repo.folder, 'how': 'environment', 'revision': loader.accepted_commit,
+                    'metrics': loader.metrics()}
         loaded = getattr(self, 'installation_loaded', None)
         if loaded is None:
             loaded = _organ('installation').trace()
@@ -4450,10 +4463,11 @@ def serve(config_path):
             # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
             # adoption could not reach a running service is taken on.
             service.take_on()
-            service.space_start()
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
+            service.installation_loader, installation_watch = _organ('control_installation_service').start(service, S)
+            service.space_start()
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,
                                      service.verify, config['host_identity'], service.apply,
                                      watermark=service.watermark,
@@ -4502,6 +4516,8 @@ def serve(config_path):
                     pipes = {**pipes, **dockers}
                     spaces = service.space_pipes()
                     pipes = {**pipes, **spaces}
+                    if installation_watch is not None:
+                        pipes[installation_watch.fileno()] = 'installation'
                     wait = ACCEPT_SECONDS
                     if service.loop is not None and service.loop.timer is not None:
                         wait = max(0.0, min(wait, service.loop.timer - time.time()))
@@ -4527,7 +4543,12 @@ def serve(config_path):
                     if space_listener is not None and space_listener in ready:
                         service.space_packet(space_listener)
                     for fd in ready:
-                        if fd in spaces:
+                        if installation_watch is not None and fd == installation_watch.fileno():
+                            installation_watch.consume()
+                            before = service.watermark()
+                            service.installation_loader.reconcile()
+                            service.hint_after(before)
+                        elif fd in spaces:
                             service.space_readable(fd)
                         elif fd in dockers:
                             service.docker_readable(fd)
@@ -4554,6 +4575,8 @@ def serve(config_path):
                         service.new_project_pass()
             finally:
                 notify('STOPPING=1')
+                if installation_watch is not None:
+                    installation_watch.close()
                 service.space_stop()
                 listener.close()
                 if space_listener is not None:

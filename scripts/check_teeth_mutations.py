@@ -10468,6 +10468,30 @@ def cases():
             # control_project also loads eligibility and its transitive organs beside itself.
             case['siblings'] = True
 
+    # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.
+    install253 = '157_veldo_0253_configuration.py'
+    add(253, 'install253-partial-commit', install253, 'control_installation_config.py',
+        "            if problems:\n                return self._event(commit, previous, 'refused', problems)\n",
+        "            if problems:\n"
+        "                partial = dict(self.record(), configuration=config)\n"
+        "                self.conn.execute('UPDATE entities SET data=? WHERE id=?', (json.dumps(partial), self.identity))\n"
+        "                return self._event(commit, previous, 'refused', problems)\n",
+        ['ac1/whole-commit'])
+    add(253, 'install253-tool-not-widening', install253, 'control_installation_schema.py',
+        "                if changed:\n                    add(path, key, kind)\n",
+        "                if changed and key != 'allowed_tools':\n                    add(path, key, kind)\n",
+        ['ac2/widening-waits'])
+    add(253, 'install253-store-save', install253, 'control_workflow.py',
+        "        if loader is not None:\n            return loader.save(document, principal=principal, base=base, command_id=command_id,\n",
+        "        if False:\n            return loader.save(document, principal=principal, base=base, command_id=command_id,\n",
+        ['ac3/one-source'], also=[(
+            "    if getattr(conn, 'installation_loader', None) is not None:\n        raise Refused('installation_managed')\n",
+            "    if False:\n        raise Refused('installation_managed')\n")])
+    add(253, 'install253-pin-from-git', install253, 'control_workflow.py',
+        "        body = content['data'].get('canonical', '').encode('ascii')\n",
+        "        body = conn.installation_loader.repo.git('show', data['source']['commit'] + ':' + data['source']['path']).encode('ascii')\n",
+        ['ac4/pinned-survives'])
+
     # VELDO-0241: each criterion's declared falsifier, against the suite 127 row it names.
     def unit_workflow(name, module, old, new, row):
         add(241, name, '127_veldo_0241_unit_workflows.py', module, old, new, [row])
