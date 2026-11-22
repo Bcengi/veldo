@@ -37,7 +37,7 @@ def _v359_guard_suite():
              'launch/enforce-fail', 'launch/descriptors-early', 'launch/descriptors-leaked',
              'launch/ack', 'launch/receiver-memory', 'launch/abi', 'layout/entries',
              'layout/mounts', 'layout/placement', 'launch/risky-real', 'launch/risky-census',
-             'launch/engines', 'switch/off', 'switch/run-cannot-flip', 'switch/transitions', 'paths/canon')
+             'launch/engines', 'query/journey', 'switch/off', 'switch/run-cannot-flip', 'switch/transitions', 'paths/canon')
     selected = set(os.environ.get('VELDO_0359_ROWS', '').split(',')) - {''}
     rows = {name: [] for name in names if not selected or name in selected}
     def check(row, label, value):
@@ -835,6 +835,11 @@ print(json.dumps({'results': results}))
                 wake.connect(str(store / 'authority.sock'))
             thread.join(HANG)
             listener.close()
+        if needed('query/journey'):
+            with section('query/journey'):
+                environment = dict(os.environ, VELDO_0359_GUARDED_JOURNEY='1')
+                tested = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'), '--suite', '157_veldo_0359_run_query'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=HANG)
+                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and '32 passed, 0 failed' in tested.stdout)
         for name in PRODUCTION:
             check('paths/canon', name, (ROOT / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes())
     for row, checks in rows.items():

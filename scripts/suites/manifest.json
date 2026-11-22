@@ -2184,7 +2184,7 @@
     "157_veldo_0359_run_query"
    ],
    "regions": "VELDO-0359 B1: query/journey, query/scope, query/lifecycle, query half of switch/off. Fix round 1: query/cost (floor entries, requests and entry gates load no module again; a frontier pass over a direct gate loads none), and rows for a file dropped in the endpoint directory, a Runner that is not reading the launch pipe, removal by the receiver before its end is recorded, an invalid marker at launch, the launch scan's own list and a conversation receiver's raw client.",
-   "requires_note": "Only ROOT, expect and fast_temp. Signed fixture bindings, SQLite, sockets and child processes; no sandbox, pidfd, systemd or live engine."
+   "requires_note": "Only ROOT, expect and fast_temp. Signed fixture bindings, SQLite, sockets and child processes; no sandbox, pidfd, systemd or live engine. The optional VELDO_0359_GUARDED_JOURNEY mode is exercised only by B2 on the host; it runs differential client computations under the real ruleset."
   },
   {
    "name": "158_veldo_0359_store_guard",
@@ -2192,7 +2192,7 @@
    "requires": [
     "158_veldo_0359_store_guard"
    ],
-   "regions": "VELDO-0359 B2: guard, descriptors, acknowledgement, probe, layout, risky census, engine configuration and switch rows.",
+   "regions": "VELDO-0359 B2: guard, descriptors, acknowledgement, probe, layout, risky census, engine configuration and switch rows. Includes the B1 differential journey under the real ruleset; actual bind namespaces fail as NOT RUN when the host cannot provide them.",
    "requires_note": "ROOT and expect. Fixture-only production wrappers with Landlock, systemd and pidfds. No live engine.",
    "resources": {
     "systemd_user_manager": 1
