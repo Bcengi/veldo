@@ -1,0 +1,80 @@
+{
+  "ticket-diagnostic": {
+    "run": "rr20261122031401-243d",
+    "raw_sha256": "1ff859981b8a0370831f2c31942e0c168781b3440623ae6addfd1e39df47db21",
+    "raw_bytes": 12108,
+    "transcript_lines": 46
+  },
+  "bindings-diagnostic": {
+    "run": "rr20261122030853-c9e5",
+    "raw_sha256": "18241b8f444a000fb4837abfe16eafd16ac96672cb42cfab3f2d432aee48aeab",
+    "raw_bytes": 12246,
+    "transcript_lines": 47
+  },
+  "setup-diagnostic": {
+    "run": "rr20261122031153-bb4a",
+    "raw_sha256": "d3d707f017ca96e4ae4fa84aa05a2085853fc3eb6937bb84ff71bc47dfc5abf0",
+    "raw_bytes": 164715,
+    "transcript_lines": 47
+  },
+  "static-checks": {
+    "run": "rr20261122031435-d433",
+    "raw_sha256": "a7a5ccf98696dd9e481429339b3bf1b0097c7e2dafec9b0c5a6a21e53bc1629d",
+    "raw_bytes": 912,
+    "transcript_lines": 9
+  },
+  "ui-typecheck": {
+    "run": "rr20261122030917-8adf",
+    "raw_sha256": "f6125ac8fcb67218587551aed9265a5606ec9a246215bb1011e063e55cecf168",
+    "raw_bytes": 2365,
+    "transcript_lines": 45
+  },
+  "workflow-pc2": {
+    "run": "rr20261122022755-19cc",
+    "raw_sha256": "ab936e9736fff3a9a03cff5b6f7b5c15d907690cde95c73ea1d52d29db908d41",
+    "raw_bytes": 12569,
+    "transcript_lines": 53
+  },
+  "workflow-parent-pc2": {
+    "run": "rr20261122022821-bd4b",
+    "raw_sha256": "c5803b2b4cbf1460b9832dc0f03700fcb8c74839a18202785726f32ddcf0dd74",
+    "raw_bytes": 12539,
+    "transcript_lines": 53
+  },
+  "api-pc2": {
+    "run": "rr20261122024521-36d6",
+    "raw_sha256": "44172197cb1051055c31e7a7247c0e3541418a843b457ae0692b47b88150e236",
+    "raw_bytes": 15050,
+    "transcript_lines": 95
+  },
+  "api-parent-pc2": {
+    "run": "rr20261122024607-a6c7",
+    "raw_sha256": "ccf317292d36831088ab3b8078d46919615839e66c48cb71096f4bd6bd59bf14",
+    "raw_bytes": 14828,
+    "transcript_lines": 95
+  },
+  "setup-api-pc2": {
+    "run": "rr20261122024934-4fe4",
+    "raw_sha256": "c3584a262161ce551f867b1bc3c1f36b3b0ab4f24f6f2e050632e8d7855e0447",
+    "raw_bytes": 24163,
+    "transcript_lines": 132
+  },
+  "setup-api-parent-pc2": {
+    "run": "rr20261122025243-faa1",
+    "raw_sha256": "415d31f7f8120d07a54d558266c614bc36ffa27e3210a66d659a1be26b431015",
+    "raw_bytes": 24133,
+    "transcript_lines": 132
+  },
+  "reader-pc2": {
+    "run": "rr20261122025552-5aaf",
+    "raw_sha256": "fe0f21cfd970d927ce3c07db637e126b4f4811cb6e7ecdf788d469adab304a93",
+    "raw_bytes": 13381,
+    "transcript_lines": 55
+  },
+  "reader-parent-pc2": {
+    "run": "rr20261122025049-87cf",
+    "raw_sha256": "2e5ebb6b353fbe92ef4c715fc356a2e850a96e7961c7c2ed2edfddf363de944f",
+    "raw_bytes": 13216,
+    "transcript_lines": 54
+  }
+}
