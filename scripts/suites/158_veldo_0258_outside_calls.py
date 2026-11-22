@@ -121,7 +121,9 @@ def _v258_suite():
                     for caller, construct in constructors.items():
                         instance = construct('keychain:' + caller)
                         if caller in ('tracker', 'tracker_init'):
-                            instance._request('GET', '/fixture')
+                            with instance.trace('VELDO-0258'):
+                                instance._request('GET', '/fixture')
+                            check('observability/unit/' + caller, observed[-1].get('unit_id') == 'VELDO-0258')
                         elif caller == 'doorbell':
                             instance.ORIGIN = origin
                             instance.send('Notice', None)
@@ -217,7 +219,8 @@ def _v258_suite():
                     check('ac2/accepted-site', accepted['outcome'] == 'accepted'
                           and TR.load_tracker_config(repo_root=str(root), path=str(mods / 'trackers.json')) == routing)
                     with CP.service(lambda: loader.accepted_commit, observed.append):
-                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/accepted-site')
+                        check('ac2/accepted-route-authenticates', refusal(lambda: RN.build_live_adapter(
+                            TR.load_tracker_config())._request('GET', '/accepted-site')) is None)
                         DB.TelegramSink.from_installation().send('Accepted target', None)
                         # Real command signatures and runtime routing. Only the authority's
                         # membership projection is a fixture; the command judge and preview run.
@@ -252,20 +255,25 @@ def _v258_suite():
                           and loader.accepted_commit == first and TR.load_tracker_config() == routing)
                     before = len(authenticated)
                     with CP.service(lambda: loader.accepted_commit, observed.append):
-                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/previous-still-live')
-                    check('ac2/previous-still-live', len(authenticated) == before + 1
+                        code = refusal(lambda: RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/previous-still-live'))
+                    check('ac2/previous-still-live', code is None and len(authenticated) == before + 1
                           and observed[-1]['installation_commit'] == first)
                 finally:
                     conn.close()
                 check('ac1/no-canary-in-store', all(value.encode() not in (root / 'store.sqlite3').read_bytes()
                       for value in values.values()))
                 check('ac2/template-no-site', not json.loads((ROOT / 'engine/.veldo/trackers.json').read_text())['trackers'])
-                problems = SC.findings(ROOT / 'engine/.veldo')
+                problems = SC.findings(ROOT / 'engine')
                 print('VELDO-0258 register findings:', problems)
                 check('ac3/register', problems == [])
                 planted = mods / 'unregistered.py'
                 planted.write_text('from urllib.request import urlopen as send\ndef planted():\n    send("https://example.com")\n')
                 check('ac3/planted-call', 'control_plane_call_unregistered:unregistered.py' in SC.findings(mods))
+                tree = root / 'engine-scan'
+                shutil.copytree(mods, tree / '.veldo')
+                (tree / 'scripts').mkdir()
+                shutil.copyfile(planted, tree / 'scripts/unregistered.py')
+                check('ac3/planted-script', 'control_plane_call_unregistered:scripts/unregistered.py' in SC.findings(tree))
                 check('ac1/no-canary-in-records', all(value not in json.dumps(observed) for value in values.values()))
         finally:
             server.shutdown()

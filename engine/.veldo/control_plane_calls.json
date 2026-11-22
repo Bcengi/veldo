@@ -31,5 +31,20 @@
       "http",
       "get"
     ]
+  },
+  "project_calls": {
+    "scripts/runners/api/veldo_api_runner.py": [
+      "do_request"
+    ],
+    "scripts/runners/auth/veldo_auth_runner.py": [
+      "do_request"
+    ],
+    "scripts/runners/integration/veldo_integration_runner.py": [
+      "do_request"
+    ],
+    "scripts/runners/mobile/veldo_ios_runner.py": [
+      "_bridge_get",
+      "_bridge_post"
+    ]
   }
 }
