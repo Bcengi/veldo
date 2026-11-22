@@ -1,0 +1,6 @@
+Proposed suites entry; owner approval required at landing. Protected file unchanged.
+
+{
+  "suite": "158_veldo_0359_store_guard",
+  "reason": "Fixture receiver launches use the systemd user manager, pidfds, Landlock and the namespace helper; nested gate confinement cannot exercise this boundary."
+}

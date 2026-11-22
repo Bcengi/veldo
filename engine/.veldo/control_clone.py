@@ -85,6 +85,7 @@ provisioning or retirement and recovery from concurrent garbage collection are R
 the Mac's worker profile is VELDO-0124. Standard library only (ctypes for Landlock).
 """
 import ctypes
+import errno
 from contextlib import contextmanager
 import hashlib
 import importlib.util
@@ -224,6 +225,22 @@ def abi():
         return 0
     version = libc.syscall(ctypes.c_long(create), None, ctypes.c_size_t(0), ctypes.c_uint32(CREATE_RULESET_VERSION))
     return version if version > 0 else 0
+
+
+def store_guard_probe():
+    """Structured launch probe; abi's historical zero-on-failure contract stays unchanged."""
+    machine = platform.machine()
+    result = {'platform': machine, 'abi': 0, 'reason': None}
+    if sys.platform != 'linux' or machine not in SYSCALLS:
+        return dict(result, reason='unsupported_platform')
+    libc, (create, _, _) = _libc()
+    version = libc.syscall(ctypes.c_long(create), None, ctypes.c_size_t(0),
+                           ctypes.c_uint32(CREATE_RULESET_VERSION))
+    if version < 0:
+        reason = {errno.EOPNOTSUPP: 'landlock_disabled', errno.ENOSYS: 'syscall_missing',
+                  errno.EPERM: 'syscall_blocked'}.get(ctypes.get_errno(), 'syscall_blocked')
+        return dict(result, reason=reason)
+    return dict(result, abi=int(version), reason='abi_below_3' if version < 3 else None)
 
 
 def _chain(targets):
