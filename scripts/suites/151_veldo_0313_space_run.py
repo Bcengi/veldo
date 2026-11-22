@@ -1192,31 +1192,37 @@ def _v313_space_run_suite():
             # is written before the handler returns: reading it and then /proc can race a later
             # SystemExit in that same handler. Capture registration before any command is started;
             # the empty command identity is the same state the supervisor keeps after its exit.
-            handlers, original_handlers = {}, CLI._space_handlers
-            class Registered(Exception):
-                pass
-            def capture_handlers(given):
-                handlers.update(given)
-                raise Registered()
-            report_read, report_write = os.pipe()
-            try:
-                CLI._space_handlers = capture_handlers
-                try:
-                    CLI.space_supervise(['--report', str(report_write), '--control', '0', '--', 'true'])
-                except Registered:
-                    pass
-                for number in (signal.SIGTERM, signal.SIGHUP):
-                    returned = False
-                    try:
-                        handlers[number](number, None)
-                        returned = True
-                    except SystemExit:
-                        pass
-                    check(row, 'the stop handler returns after every instruction with no command to signal', returned)
-            finally:
-                CLI._space_handlers = original_handlers
-                os.close(report_write)
-                os.close(report_read)
+            # space_supervise makes its process a subreaper. Keep that startup side effect in
+            # a child, so this probe cannot adopt children belonging to the suite's later rows.
+            probe = (
+                'import importlib.machinery, importlib.util, json, os, signal, sys\n'
+                'loader = importlib.machinery.SourceFileLoader("stop_probe", sys.argv[1])\n'
+                'spec = importlib.util.spec_from_loader("stop_probe", loader)\n'
+                'V = importlib.util.module_from_spec(spec)\n'
+                'loader.exec_module(V)\n'
+                'handlers = {}\n'
+                'class Registered(Exception): pass\n'
+                'def capture(given):\n'
+                '    handlers.update(given)\n'
+                '    raise Registered()\n'
+                'V._space_handlers = capture\n'
+                'returned = []\n'
+                'with open(os.devnull, "wb") as report:\n'
+                '    try:\n'
+                '        V.space_supervise(["--report", str(report.fileno()), "--control", "0", "--", "true"])\n'
+                '    except Registered: pass\n'
+                '    for number in (signal.SIGTERM, signal.SIGHUP):\n'
+                '        try:\n'
+                '            handlers[number](number, None)\n'
+                '            returned.append(True)\n'
+                '        except SystemExit:\n'
+                '            returned.append(False)\n'
+                'print(json.dumps(returned))\n')
+            probed = subprocess.run([sys.executable, '-B', '-c', probe, str(PRODUCTION['veldo'])],
+                                    capture_output=True, text=True, env=dict(BASE))
+            returned = json.loads(probed.stdout) if probed.returncode == 0 else []
+            check(row, 'both stop handlers return after every instruction with no command to signal [%s, %s]'
+                       % (returned, probed.stderr[-300:]), returned == [True, True])
             W17, _ = worktree(ORCHARD, 'w-stop-after')
             late, latch = temp / 'late-stop-after.json', temp / 'latch-stop-after'
             wiring = space()
