@@ -645,26 +645,35 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         # frames are in order, so what a frame reached is all that came before it. Opening fills one frame
         # (`always`); the close is seen on his stream as the frame that carries it; on the colleague's, everything
         # the close delivered him comes before the frame of a later command of his own, his second conversation's
-        # opening (a barrier, never a pause).
-        def frames_of(answer, until):
-            got = []
-            while answer[0] == 200 and not until(got):
+        # opening (a barrier, never a pause). A frame also carries the journal position its stream has reached,
+        # records its reader may not see included, so each wait ends at the latest when the stream has passed its
+        # command's journal entry: what the stream carried by then is all it will carry of it. A defect that hides
+        # the close from his stream is then read from the frames, at once, and never waits out the hang detector.
+        def frames_of(answer, until, through):
+            got, reached = [], [0]
+            while answer[0] == 200 and not until(got) and reached[0] < through:
                 kind, frame = answer[1].next(F.HANG_SECONDS)
                 if kind != 'frame':
                     break
                 got += frame.get('events') or []
+                reached[0] = max(reached[0], frame.get('cursor') or 0)
             return got
+
+        def journal_head():
+            return authority.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
         for opened_stream in (owner_stream, other_stream):
             if opened_stream[0] == 200:
                 kind, _frame = opened_stream[1].next(F.HANG_SECONDS)
                 while kind == 'frame':
                     kind, _frame = opened_stream[1].next(0)
         closed_call = call('POST', 'conversations/close', {'conversation': talk, 'version': 3})
+        closed_at = journal_head()
         barrier_call = call('POST', 'conversations/open', {'role': 'assistant'}, who='colleague')
+        barrier_at = journal_head()
         barrier = CV.conversation_id((barrier_call[1] or {}).get('conversation') or '')
         live_owner = frames_of(owner_stream, lambda got: closed_call[0] != 200
-                               or CV.conversation_id(talk or '') in ids_in(got))
-        live_other = frames_of(other_stream, lambda got: barrier_call[0] != 200 or barrier in ids_in(got))
+                               or CV.conversation_id(talk or '') in ids_in(got), closed_at)
+        live_other = frames_of(other_stream, lambda got: barrier_call[0] != 200 or barrier in ids_in(got), barrier_at)
         check('AC1/commands', 'conversations.close closes it on its version [%s %s]'
               % (closed_call[0], refusal(closed_call)), closed_call[0] == 200
               and closed_call[1].get('outcome') == 'closed' and (conversations.read(talk) or {}).get('status') == 'closed')

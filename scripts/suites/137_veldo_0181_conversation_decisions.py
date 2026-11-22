@@ -440,7 +440,10 @@ else:
                                                                          answer_update['message']['message_id']))
         check('AC1/settles-by-reply', 'it is no turn of the conversation and nothing intake took',
               len(conversations.turns(rerun_id)) == 1 and source is None)
-        drive(lambda: turn(rerun_id, 1).get('state') == 'ended')
+        # The turn runs again only after its request settles (AC1/turn-waits). So with no settlement there is nothing
+        # to wait for: the wait ends when the loop is quiet (no run in flight, nothing waking it), an event, and the
+        # rows below read a defect that kept his reply from settling at once, never at the hang detector.
+        drive(lambda: turn(rerun_id, 1).get('state') == 'ended' or (not settled_records(rq) and F.quiet(factory)))
         rerun_turn = turn(rerun_id, 1)
         accounts_used = [a.get('account') for a in rerun_turn.get('attempts') or []]
         check('AC1/settles-by-reply', 'the turn waited for it and then ran again on another account [%s]'
