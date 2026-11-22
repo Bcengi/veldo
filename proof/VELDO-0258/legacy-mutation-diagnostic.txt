@@ -1,0 +1,23 @@
+Developer diagnostic: legacy projection mutation dependency, compared on pc2.
+Parent baseline and no-op pass. Before the dependency fix the new no-op fails.
+After including control_plane_calls.py, baseline/no-op pass and the correlation mutant fails.
+
+v258-legacy-parent
+raw_sha256=c72e4d7f889a7d984aca49375b03114a7aecdfa046cbdd3f123660c63ab65499
+{"mode": "baseline", "targets": {"projection/correlation": [true]}, "failed_rows": [], "matched": true}
+{"mode": "noop", "targets": {"projection/correlation": [true]}, "failed_rows": [], "matched": true}
+remote_run[pc2 c65fcc2c7427 05:34:00]: rc=0 in 14s (run rr20261122053346-68e4)
+
+v258-legacy-red
+raw_sha256=22cd5c073dd697ef32769be55abf52f53f210051620711bb67258959261ddb32
+{"case": "projection-discard-message-id", "mode": "baseline", "targets": {"projection/correlation": [true]}, "failed_rows": [], "matched": true}
+{"case": "projection-discard-message-id", "mode": "noop", "targets": {"projection/correlation": [false]}, "failed_rows": ["VELDO-0064 inbox/states-and-authority", "VELDO-0064 projection/correlation", "VELDO-0064 projection/send-outcomes", "VELDO-0064 projection/intent-before-send", "VELDO-0064 projection/echo-mismatch-kept", "VELDO-0064 projection/owner-enrolled-chat", "VELDO-0064 projection/returned-chat-checked", "VELDO-0064 projection/only-telegram-refusal-retried", "VELDO-0064 projection/protocol-error-unknown"], "matched": false}
+{"case": "projection-discard-message-id", "mode": "mutant", "targets": {"projection/correlation": [false]}, "failed_rows": ["VELDO-0064 inbox/states-and-authority", "VELDO-0064 projection/correlation", "VELDO-0064 projection/send-outcomes", "VELDO-0064 projection/intent-before-send", "VELDO-0064 projection/echo-mismatch-kept", "VELDO-0064 projection/owner-enrolled-chat", "VELDO-0064 projection/returned-chat-checked", "VELDO-0064 projection/only-telegram-refusal-retried", "VELDO-0064 projection/protocol-error-unknown"], "matched": true}
+remote_run[pc2 e7a950640d33 05:32:10]: rc=1 in 19s (run rr20261122053151-86c6)
+
+v258-legacy-green
+raw_sha256=ab61347aff10412da839e14c523b79a3a48ebb53cae3f6d2641173d6b98b1e6a
+{"case": "projection-discard-message-id", "mode": "baseline", "targets": {"projection/correlation": [true]}, "failed_rows": [], "matched": true}
+{"case": "projection-discard-message-id", "mode": "noop", "targets": {"projection/correlation": [true]}, "failed_rows": [], "matched": true}
+{"case": "projection-discard-message-id", "mode": "mutant", "targets": {"projection/correlation": [false]}, "failed_rows": ["VELDO-0064 inbox/states-and-authority", "VELDO-0064 projection/correlation", "VELDO-0064 projection/intent-before-send", "VELDO-0064 projection/echo-mismatch-kept", "VELDO-0064 projection/returned-chat-checked"], "matched": true}
+remote_run[pc2 bc56919be788 05:33:12]: rc=0 in 19s (run rr20261122053253-ee02)
