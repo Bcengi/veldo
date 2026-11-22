@@ -250,6 +250,7 @@ def _v253_suite():
             check('ac1/last-good-reader', gone and accepted_reader.settings() == restarted.live['installation.yaml']
                   and C.I.load(environ={C.I.ENVIRONMENT: repo.folder}, stream=io.StringIO()).settings()
                   == restarted.live['installation.yaml'])
+            loader = restarted
             setup = load('v253_setup', mods / 'control_installation_setup.py')
             migration = S.open_store(root / 'migration' / 'authority.sqlite3')
             try:
