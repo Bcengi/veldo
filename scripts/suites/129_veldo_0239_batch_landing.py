@@ -923,4 +923,5 @@ def _v239_suite():
     print('VELDO-0239 suite seconds: %.3f' % (time.monotonic() - started))
 
 
-_v239_suite()
+# VELDO-0258: the landing's outside Git transport is the service's call; this suite plays the service.
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v239_suite)

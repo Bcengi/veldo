@@ -416,7 +416,9 @@ print(json.dumps(result))
         _v28_threading.Thread(target=server.serve_forever, kwargs={'poll_interval': 0.05}, daemon=True).start()
         try:
             url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], bare.name)
-            reachable = git('-C', str(clone), 'ls-remote', url, 'refs/heads/main').split()[:1] == [old]
+            # The fixture reads its own loopback remote; outside the boundary, as the operator would.
+            reachable = _v28_sp.run(['git', '-C', str(clone), 'ls-remote', url, 'refs/heads/main'], check=True,
+                                    capture_output=True, text=True, timeout=120).stdout.split()[:1] == [old]
             # The factory is given the identity's remote (VELDO-0153); the wire carries the identity
             # push to this smart-HTTP server, so git's HTTP transport still does the publishing.
             result = publish('smart-http', clone, wire.remote('smart-http', url))
@@ -618,7 +620,10 @@ print(json.dumps(result))
             url = 'http://127.0.0.1:%d/%s' % (server.server_address[1], bare.name)
             # Control: the server refuses a client without the operator's credential helper, and
             # accepts plain git that has it.
-            unauthenticated = G.run(['git', 'ls-remote', url], capture_output=True, text=True, timeout=20).returncode != 0
+            unauthenticated = _v28_sp.run(['git', 'ls-remote', url], capture_output=True, text=True, timeout=20,
+                                          env=dict({k: v for k, v in _v28_os.environ.items() if not k.startswith('GIT_')},
+                                                   GIT_CONFIG_GLOBAL=_v28_os.devnull, GIT_CONFIG_NOSYSTEM='1',
+                                                   GIT_TERMINAL_PROMPT='0')).returncode != 0
             helped = operator_home('global-credential-helper', '[credential]\n\thelper = %s\n' % helper)
             authenticated = _v28_sp.run(['git', 'ls-remote', url], capture_output=True, text=True, timeout=20,
                                         env=dict({k: v for k, v in _v28_os.environ.items() if not k.startswith('GIT_')},

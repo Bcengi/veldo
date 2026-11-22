@@ -475,6 +475,11 @@ def _v258_suite():
                       and refusal(lambda: git('--git-dir', outside_remote, 'rev-parse', 'refs/heads/main')) is not None)
                 check('ac3/outside-git-remote-name', refusal(lambda: push_to('outside', caller='landing_push'))
                       == 'unauthorized:control_plane_service:landing_push')
+                # A remote whose fetch URL is local but whose push URL is off the host is outside for a push.
+                git('-C', outside_work, 'remote', 'add', 'mirror', str(outside_remote))
+                git('-C', outside_work, 'config', 'remote.mirror.pushurl', 'https://git.example.com/fixture/pushed.git')
+                check('ac3/outside-git-push-url', refusal(lambda: push_to('mirror'))
+                      == 'unauthorized:control_plane_service:git_transport')
                 with patch.dict(os.environ, VELDO_DISPATCH_ID='dispatch/fixture'):
                     check('ac3/outside-git-run-refused', refusal(lambda: push_to(outside_url))
                           == 'unauthorized:control_plane_run:git_transport')

@@ -1270,6 +1270,7 @@ with tempfile.TemporaryDirectory() as _jid:
            == (2, "invalid_input:tracker_command:owner_identity"))
     # VELDO-0258: a signed request from an unenrolled repository is refused by name, never skipped.
     _jid2 = Path(_jid) / "empty"; _jid2.mkdir()
+    subprocess.run(["git", "init", "-q", str(_jid2)], check=True, capture_output=True, timeout=120)
     expect("jira init AC5 tracker-cli/init-unenrolled-named: an unenrolled repo refuses by name instead of silently skipping the service",
            _v258_cli("_cli", ["--dry-run", "--repo-root", str(_jid2), "--principal", "owner",
                                "--key", str(Path(_jid) / "absent-key")])
@@ -1409,6 +1410,7 @@ with tempfile.TemporaryDirectory() as _jsd:
            _v258_cli("main", ["snapshot", "--dry-run", "--repo-root", _jsd])
            == (2, "invalid_input:tracker_command:owner_identity"))
     _jsd2 = Path(_jsd) / "empty"; _jsd2.mkdir()
+    subprocess.run(["git", "init", "-q", str(_jsd2)], check=True, capture_output=True, timeout=120)
     expect("jira snapshot AC6 tracker-cli/snapshot-unenrolled-named: an unenrolled repo refuses by name instead of silently skipping the service",
            _v258_cli("main", ["snapshot", "--dry-run", "--repo-root", str(_jsd2), "--principal", "owner",
                                "--key", str(Path(_jsd) / "absent-key")])
