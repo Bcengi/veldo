@@ -10468,6 +10468,26 @@ def cases():
             # control_project also loads eligibility and its transitive organs beside itself.
             case['siblings'] = True
 
+    # VELDO-0258: the three declared falsifiers, with the production organs beside the mutant.
+    outside258 = '158_veldo_0258_outside_calls.py'
+    add(258, 'outside258-env-resolver', outside258, 'control_plane_calls.py',
+        "    reference(caller, ref)\n    not_run(caller)\n",
+        "    if caller == 'tracker' and ref.startswith('env:'):\n        return os.environ[ref[4:]]\n"
+        "    reference(caller, ref)\n    not_run(caller)\n",
+        ['ac1/refuses/tracker/env'])
+    result[-1]['siblings'] = True
+    add(258, 'outside258-product-routing', outside258, 'tracker.py',
+        "    data = outside.settings('tracker_routing')\n",
+        "    import json\n    return json.loads(Path(path or default_config_path(repo_root)).read_text())\n"
+        "    data = outside.settings('tracker_routing')\n",
+        ['ac2/accepted-site'])
+    result[-1]['siblings'] = True
+    add(258, 'outside258-registered-only-scan', outside258, 'control_plane_scan.py',
+        "    for path in sorted(engine.rglob('*.py')):\n",
+        "    for path in sorted(engine / name for name in listed):\n",
+        ['ac3/planted-call'])
+    result[-1]['siblings'] = True
+
     # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.
     install253 = '157_veldo_0253_configuration.py'
     add(253, 'install253-partial-commit', install253, 'control_installation_config.py',

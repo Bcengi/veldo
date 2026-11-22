@@ -401,27 +401,11 @@ def _cli(argv=None):
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")
     ap.add_argument("--dry-run", action="store_true", dest="dry_run",
                     help="reconcile over an in-memory FakeTracker (no network, no token): preview only")
+    ap.add_argument('--principal', help='owner principal signing the service command')
+    ap.add_argument('--key', help='owner signing key')
+    ap.add_argument('--host-trust')
     args = ap.parse_args(list(argv) if argv is not None else None)
-
-    config = load_tracker_config(repo_root=args.repo_root)
-    if not config:
-        print("veldo mirror: no tracker config (.veldo/trackers.json); mirroring is not wired for this "
-              "repo, nothing to do")
-        return 0
-    try:
-        if args.dry_run:
-            adapter = FakeTracker()
-        else:
-            adapter = build_live_adapter(config, tracker_id=args.tracker, email=args.email)
-        result = run_from_repo(adapter, config=config, repo_root=args.repo_root,
-                               events_path=args.events_path)
-    except (MirrorRunnerError,) + _ADAPTER_ERRORS as ex:
-        sys.stderr.write("veldo mirror: %s\n" % ex)
-        return 2
-    header = "veldo mirror (dry-run preview, no network)" if args.dry_run else "veldo mirror (live pass)"
-    print(header)
-    print(json.dumps(_summary(result), indent=2, sort_keys=True))
-    return 0
+    return _load_tracker_service().cli('mirror', args)
 
 
 def selfcheck():
@@ -481,6 +465,15 @@ def main(argv=None):
         return _cli(rest)
     return 2
 
+
+
+def _load_tracker_service():
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location('tracker_service', Path(__file__).with_name('control_tracker_service.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -88,7 +88,7 @@ def _v258_suite():
                     basic = base64.b64encode(('owner@example.com:' + value).encode()).decode()
                     if header in ('Bearer ' + value, 'Basic ' + basic) or ('/bot' + value + '/') in self.path:
                         authenticated.append(caller)
-                reply = json.dumps({'ok': True, 'result': {'message_id': 1}, 'body_bytes': len(body)}).encode()
+                reply = json.dumps({'ok': True, 'result': {'message_id': 1, 'date': 1, 'chat': {'id': 123}, 'text': 'Notice'}, 'body_bytes': len(body)}).encode()
                 self.send_response(200)
                 self.send_header('Content-Length', str(len(reply)))
                 self.end_headers()
@@ -144,6 +144,31 @@ def _v258_suite():
                         check('ac3/run-refused/' + caller, refusal(lambda: construct('keychain:' + caller))
                               == 'unauthorized:control_plane_run:' + caller)
 
+                # Real Git transport into a disposable bare remote. The fixture substitutes only
+                # the approved GitHub URL's wire, after resolving the real keystore reference.
+                P = load('v258_provisioner', mods / 'control_repository_provisioner.py')
+                transport = P._git_process.identity_transport()
+                work, remote = root / 'work', root / 'remote.git'
+                def git(*args):
+                    return subprocess.run(['git', *map(str, args)], check=True, capture_output=True,
+                                          text=True, timeout=120).stdout.strip()
+                git('init', '-q', '--initial-branch=main', work)
+                git('init', '-q', '--bare', remote)
+                git('-C', work, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.com',
+                    'commit', '-q', '--allow-empty', '-m', 'Fixture landing')
+                tip = git('-C', work, 'rev-parse', 'HEAD')
+                record = {'push_credential': {'kind': 'token', 'reference': 'keychain:landing_push'}}
+                def fixture_options(identity, destination):
+                    check('ac3/landing-keystore', transport.credential(identity) == values['landing_push'])
+                    return ['-c', 'protocol.file.allow=always']
+                with patch.object(P._git_process, 'identity_transport', return_value=transport), \
+                        patch.object(transport, 'options', side_effect=fixture_options), \
+                        CP.service('a' * 40, observed.append):
+                    landed = P.push(dict(path=str(work), default_branch='main', remote=str(remote),
+                                         base_commit='', scaffold_commit=tip), record)
+                check('ac3/landing-outside-gate', landed == tip
+                      and git('--git-dir', remote, 'rev-parse', 'refs/heads/main') == tip)
+
                 # Real loader, Git object tree and signed SQLite record; malformed routing refuses whole.
                 S = load('v258_store', mods / 'control_store.py')
                 SIG = load('v258_signer', mods / 'control_signer.py')
@@ -185,7 +210,9 @@ def _v258_suite():
                 finally:
                     conn.close()
                 check('ac2/template-no-site', not json.loads((ROOT / 'engine/.veldo/trackers.json').read_text())['trackers'])
-                check('ac3/register', SC.findings(ROOT / 'engine/.veldo') == [])
+                problems = SC.findings(ROOT / 'engine/.veldo')
+                print('VELDO-0258 register findings:', problems)
+                check('ac3/register', problems == [])
                 planted = mods / 'unregistered.py'
                 planted.write_text('from urllib.request import urlopen as send\ndef planted():\n    send("https://example.com")\n')
                 check('ac3/planted-call', 'control_plane_call_unregistered:unregistered.py' in SC.findings(mods))

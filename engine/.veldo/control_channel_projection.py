@@ -60,6 +60,7 @@ VELDO-0073. The bot token is supplied by the caller's custody and never logged o
 Standard library only.
 """
 import hashlib
+import contextlib
 import importlib.util
 from pathlib import Path
 import http.client
@@ -158,11 +159,12 @@ def bot_opener(*handlers):
     return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), *handlers)
 
 
-def gated_open(activation, base_url, request, timeout, operation, chat=None):
+@contextlib.contextmanager
+def gated_open(activation, base_url, request, timeout, operation, chat=None, *, caller='owner_channel'):
     outside = _renderer_module('control_plane_calls')
-    outside.require_service('owner_channel')
-    with outside.outside('owner_channel', base_url, operation):
-        return _activated_open(activation, base_url, request, timeout, operation, chat)
+    with outside.outside(caller, base_url, operation):
+        with _activated_open(activation, base_url, request, timeout, operation, chat) as response:
+            yield response
 
 
 def _activated_open(activation, base_url, request, timeout, operation, chat=None):
