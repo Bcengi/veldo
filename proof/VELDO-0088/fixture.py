@@ -96,6 +96,9 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
         for source in sorted((ROOT / '.veldo').glob('*.py')):
             shutil.copyfile(source, mods / source.name)
         shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
+        # VELDO-0253: the service ships the installation schema and template beside the modules.
+        for asset in ('installation_schema', 'installation_template'):
+            shutil.copytree(ROOT / '.veldo' / asset, mods / asset)
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)

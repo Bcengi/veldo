@@ -953,6 +953,11 @@ def _v315_suite():
                     (service, 'space_start', start_once), (service, 'space_worker_start', start_worker),
                     (SV.CH, 'open_channel', lambda *args: (None, None)),
                     (SV.SA, 'open_api', lambda *args: (None, None)), (SV, 'open_loop', lambda *args: (None, None)),
+                    # VELDO-0253's installation loader is not this row's subject: the fixture's installation
+                    # folder is a plain folder, not a committed installation repository, so the loader
+                    # starts as it does where no installation is configured.
+                    (SV, '_organ', lambda name, real=SV._organ, **kw: types.SimpleNamespace(start=lambda *a: (None, None))
+                     if name == 'control_installation_service' else real(name, **kw)),
                     (SV.signal, 'signal', lambda sig, handler: handlers.update({sig: handler})),
                     (SV, 'notify', lambda *args: None), (SV.CC, 'serve_one', dispatch),
                     (SV.CC.Authority, 'judge', judged),

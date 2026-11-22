@@ -34,7 +34,7 @@
     "reads.spend": {"method": "GET", "path": "/api/v1/domains/{domain}/spend", "required": [], "optional": []},
     "reads.configuration": {"method": "GET", "path": "/api/v1/domains/{domain}/configuration", "required": [], "optional": []},
     "reads.workflow": {"method": "GET", "path": "/api/v1/domains/{domain}/workflow", "required": ["workflow"], "optional": ["version"]},
-    "workflows.save": {"method": "POST", "path": "/api/v1/domains/{domain}/workflows/save", "required": ["workflow", "base", "definition"], "optional": ["layout"]},
+    "workflows.save": {"method": "POST", "path": "/api/v1/domains/{domain}/workflows/save", "required": ["workflow", "base", "definition"], "optional": ["layout", "base_commit", "approval"]},
     "backlog.reprioritize": {"method": "POST", "path": "/api/v1/domains/{domain}/backlog/reprioritize", "required": ["item", "item_version", "rank"], "optional": []},
     "workers.stop": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/stop", "required": ["dispatch", "dispatch_version"], "optional": []},
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},

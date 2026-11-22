@@ -507,6 +507,7 @@ def _v304_suite():
                  {'notify': lambda message: None, 'listener': SimpleNamespace(close=lambda: closed.append(True)),
                   'service': SimpleNamespace(channel=None, space_stop=lambda: None), 'contextlib': contextlib, 'os': os,
                   'space_listener': None,  # VELDO-0323's space socket, absent here (assembly)
+                  'installation_watch': None,  # VELDO-0253's installation watch, absent here (assembly)
                   'config': {'socket': str(path)}, 'socket_identity': (path.stat().st_dev, path.stat().st_ino),
                   'close_socket': namespace['close_socket']})
             assert closed == [True] and path.read_bytes() == b'work now at the socket path\n'
