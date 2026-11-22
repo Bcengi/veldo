@@ -15601,9 +15601,11 @@ def cases():
     add(333, 'space333-synced-copy-still-ages', suite333, 'gate_legs.py', time333, aged333,
         ['ac3/canon', 'ac3/no-clock-or-file-time'])
     result[-1]['dir'] = 'scripts'
+    # The resource reader's own age bound (VELDO-0221's shard-claims reader keeps one of its own, so the
+    # anchor names the resource reader's condition and the constant stays).
     add(333, 'space333-read-bound-dropped', suite333, 'gate_legs.py',
-        'RESOURCE_READ_MAX_AGE_DAYS = 30\n', '', ['ac4/read-age-bound'],
-        also=[(' or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:', ':')])
+        "item.get('node') != node or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:",
+        "item.get('node') != node:", ['ac4/read-age-bound'])
     result[-1]['dir'] = 'scripts'
     # Review of VELDO-0333: the two defects its first rows let through. A removal by age that
     # reads the file's time and the clock through interfaces the suite does not replace, and a
