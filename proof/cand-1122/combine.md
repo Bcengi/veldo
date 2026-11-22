@@ -101,7 +101,8 @@ Conflicts:
   - the shard's own Landlock layer, target mark and verdict are 0221's, unchanged; 0206's isolated
     child, banner and LEG_RAN_NOTHING rule are unchanged.
   This is a design decision for the review: reuse and shards do not yet compose (a planned
-  isolated suite turns its leg ordered).
+  isolated suite turns its leg ordered). Superseded by ac35f22b (section 2a): reuse operates per
+  shard, and the ordered-run fallback is gone.
 - manifest/requires; `check_teeth_mutations.py` (0347 and 0221 case blocks; kept both);
   `proof/WARP-0716/crossing-state.md` (generated).
 
@@ -124,6 +125,57 @@ Each is its own commit, each confirmed by the suites and falsifiers named in sec
 
 5b882e51 named the wrong cause (a missing installation); f5074f54 reverts it and fixes the cause.
 
+## 2a. Combine fixes, round 2 (open items 1, 2 and 4 of the first record)
+
+| Commit | Item | Fix |
+| - | - | - |
+| ac35f22b | 1: 0206 x 0221 | Lead decision: the shard is the unit of execution and reuse operates per shard (below) |
+| c72d7bdc | 2: space324-nested-repository-deleted | The case's row moves to suite 161 ac2/sandbox-scratch; code unchanged (below) |
+| f0568050 | 4: three bring-up falsifiers | Each long wait ends on an event that also shows the defect (below) |
+
+**Item 1 (ac35f22b).** In a gate leg cut into shards, a qualified suite runs as its 0221 shard
+(own HOME, TMPDIR and runtime directory, its prerequisite closure and nothing else), which is the
+isolation 0206 requires, so 0206's per-suite process (`_isolate`) is not started there. A
+qualified suite whose key (its whole closure) is unchanged and has an authenticated passing record
+is not started at all; every other suite runs fresh as a shard. The leg dispatcher's account names
+every suite once: a reused result, a qualified shard as its isolated run (begin, one result per
+closure member in order, end: the form the authority settles and publishes), or an ordinary shard
+with its target's counts. A shard verdict now carries its closure's per-suite counts and the leg
+result each shard's charged failures; a charge against a qualified shard, or an isolation breach
+of the leg tied to no shard, counts against it, so it is never published. Authority-only
+qualifications, the red rule for an unaccounted suite, 0221's AC1 to AC4 and the AC4 paired ratios
+are unchanged; outside a sharded leg (no leg, a selector, no closure table, no launcher) the
+ordered run with `_isolate` is unchanged. Suite 157_0206's fixture now carries the real launcher,
+so its confined leg really shards under a Landlock layer; a confined shard, whose layer refuses
+the fixture's outside trace file, reports its trace on its output, and the listed-leg trace is
+compared as the multiset of every shard's closure. New rows
+receipts/sharded-leg-runs-qualified-suites-as-shards-and-reuses-unchanged-ones and
+receipts/sharded-qualified-shard-failure-is-red-and-not-stored; new falsifiers
+suite206-sharded-reused-shard-started, suite206-sharded-qualified-shard-settled-as-shared,
+suite206-sharded-shard-failure-published, suite206-sharded-reused-suite-unaccounted. Both specs
+record the decision (2026-11-22 notes). Equivalence stated for the review: a record published from
+the ordered isolated run can hit in a sharded leg and the reverse; the two differ in that a shard's
+runtime directory links the user manager's sockets, which a qualified suite's non_file_inputs
+"none" already excludes.
+
+**Item 2 (c72d7bdc): re-anchored, no code hole.** The mutant disables the folder remover's walk
+stop on a repository. VELDO-0347 rule 6 now defers a scratch whose repository it can see before
+any remover runs, so suite 154's safety/sandbox-repository never reaches the walk (mutant applied:
+154 is 55/55 green). The walk is still the only stop where rule 6 cannot see: a folder the
+confined run shut in its own scratch (0347's one exception), which the remover opens. Suite 161's
+ac2/sandbox-scratch drives that, and with the mutant it is red: the scratch holding an unpushed
+clone in a shut folder is removed. Case name, finding, module and defect unchanged; its row is
+161 ac2/sandbox-scratch. Evidence: `runs/v0324anchor.txt`.
+
+**Item 4 (f0568050).** Found by running each mutant with the fake engines' hang detector shortened
+and a stack printed at each expiry: one wait each. feed178: the owner's live stream waited for a
+close the defect hides from him; a frame carries the journal position its stream reached, so each
+live wait in 133_0178 AC1/events also ends when its stream passed its command's journal entry.
+publish181 and reply181: both waited for the re-run turn, which only a settlement can start; the
+wait in 137_0181 now ends when the turn ends, or when the request is unsettled and the loop is
+quiet. Mutants now red in 3.3 s, 8.8 s and 11.6 s with the real 120 s detector; in the stage each
+was rejected on its rows with full output.
+
 ## 3. Suite and falsifier results
 
 Logs: `runs/<run>.txt` (one per run, row names and counts; pc2 reds were run again on this host,
@@ -143,6 +195,7 @@ commit. The rest ran through host_heavy. Falsifiers: `scripts/check_gate_mutatio
 | 0224 | 5b4446d6, 8ce09b1e | 158 36/36 after 8ce09b1e; 8 others green | 224: 6/6 after the fix; 217: 14/14 |
 | 0218 | 0b0976c1 | 159_0218 and 9 others green (158 as above) | 218+215: 22/22 |
 | 0221 | 1871c20f | 157_0221 51/51; 25 others green; 157_0206 5 rows red (open item 1); 151 as on main | 221+333: 24/24; 206: 33 unjudged (157_0206 baseline red) |
+| Round 2 (section 2a) | f0568050 | 157_0206 94/94, 157_0221 51/51, 133_0178 42/42, 137_0181 45/45 (`runs/v1122fix.txt`) | 206+221+333: 61/61; 347+330+302+324: 58/58; bring-up 12 findings: 78/78, none by deadline |
 | Fix checks | 64af93ab, 18f880dc, f5074f54 | 133_0326 56/56, 157_0316, 158_0334, 132, 139, 153_0323, 155, 66_0047, 109_0161 81/81, 116_0188 53/53, 159, 62, 83, 127, 82_0129, 102_0210 green | 326+334: 34/34; 317: 15/15 |
 
 ## 4. The full unit leg (once)
@@ -154,7 +207,13 @@ at every checkpoint when run alone; 12 (151_0313) red on main too (6 there); 5 (
 2 (86 live/claude, live/codex) and 1 (126 qualify/reproduces) are stale captures and fixtures (open
 item 3).
 
+Again at f0568050 (`unit-leg-2.txt`): 11018 passed, 17 failed. All 17 are items the lead holds:
+2 (86 live/claude, live/codex) and 1 (126 qualify/reproduces) open item 3, and 14 (151_0313) open
+item 5. 157_0206 is green in the full leg.
+
 ## 5. Open items for the lead
+
+Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the first record's.
 
 1. VELDO-0206 x VELDO-0221 do not compose yet. Suite 157_0206's leg rows expect an ordered leg in
    one namespace (trace order, a prerequisite run once); 0221 runs every leg of a tree with a closure
@@ -175,8 +234,8 @@ item 3).
    the gate's confinement.
 6. The 0334 admission retry signals with the caller's keywords, so on that path the evidence remover
    has no `held` reader or `landing` (section 1.5); it keeps evidence.
-7. Reviews: the selftest integration (1.10), the four re-anchored cases (a72dd21e), the 333 case
-   (1871c20f), and the six fixes of section 2.
+7. Reviews: the selftest integration (1.10, now ac35f22b), the four re-anchored cases (a72dd21e),
+   the 333 case (1871c20f), the six fixes of section 2, and the three of section 2a.
 
 ## 6. Protected paths this candidate changes against main 23318512
 

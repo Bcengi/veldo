@@ -1,0 +1,15 @@
+run: combine fixes round 2 at f0568050 (items 1 to 3); host = host_heavy.sh, mut = scripts/check_gate_mutations.py from the work tree
+  host 157_veldo_0206_suite_reuse 94 passed, 0 failed in 20.89s
+  host 157_veldo_0221_suite_shards 51 passed, 0 failed in 4.82s
+  host 133_veldo_0178_conversation_api 42 passed, 0 failed in 3.37s
+  host 137_veldo_0181_conversation_decisions 45 passed, 0 failed in 10.39s
+  mut  finding 206 alone, before the 324 and bring-up commits: mutations: passed registered=37 executed=37 reused=0 rejected=37 workers=45 elapsed=103.031s
+  mut  findings 206,221,333: mutations: passed registered=61 executed=61 reused=0 rejected=61 workers=77 elapsed=132.599s
+  mut  findings 347,330,302,324: mutations: passed registered=58 executed=58 reused=0 rejected=58 workers=96 elapsed=94.413s
+  mut  bring-up findings 117,175,176,177,178,179,180,181,183,184,187,231: mutations: passed registered=78 executed=78 reused=0 rejected=78 workers=164 elapsed=548.127s
+       mutation: unconfined leg ran 26 cases, 26 rejected: 128_veldo_0177_conversation_workspace (8), 129_veldo_0177_assistant_setup (2), 130_veldo_0183_memory_servers (7), 134_veldo_0179_conversation_screens (3), 135_veldo_0179_conversation_layout (1), 138_veldo_0187_claude_mem_feed (5)
+  the three cases of open item 4, mutant jobs (rejected on rows, full output, no deadline):
+    job 101: ['VELDO-0178 AC1/other-member', 'VELDO-0178 AC1/events']
+    job 108: ['VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/unclear-settles-by-reply', 'VELDO-0181 AC1/unclear-settled-once', 'VELDO-0181 AC1/unclear-never-a-turn', 'VELDO-0181 AC1/unclear-bare-project', 'VELDO-0181 AC1/unclear-bare-ambiguous', 'VELDO-0181 AC1/unclear-ticket-key', 'VELDO-0181 AC1/unclear-free-text', 'VELDO-0181 AC1/observability']
+    job 110: ['VELDO-0181 AC1/rerun-presented', 'VELDO-0181 AC1/no-presentation-hint', 'VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/move-presented', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/observability']
+  scratch study (mutant applied by hand, real 120 s hang detector): feed178 40 passed, 2 failed in 3.33s, publish181 39 passed, 6 failed in 8.81s, reply181 35 passed, 10 failed in 11.61s

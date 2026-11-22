@@ -1,0 +1,22 @@
+Full unit leg: python3 -B scripts/selftest.py through host_heavy.sh, clone at f0568050, 2026-11-22.
+selftest: 11018 passed, 17 failed
+== unit rc 1
+
+Failed rows (row name only):
+VELDO-0127 live/claude
+VELDO-0127 live/codex
+VELDO-0230 qualify/reproduces
+VELDO-0313 ac1/declared-started-ended
+VELDO-0313 ac1/unread-group-sends-nothing
+VELDO-0313 fix2/returns-at-the-commands-exit
+VELDO-0313 fix2/captured-output-ends-at-return
+VELDO-0313 supervise/report-loss-end-is-made
+VELDO-0313 supervise/stop-after-the-command-ends-nothing
+VELDO-0313 supervise/stop-after-the-command-end-is-made
+VELDO-0313 fix3/handed-outside-the-tree
+VELDO-0313 fix3/unread-process-holds
+VELDO-0313 fix3/rule-3-reads-the-kernel
+VELDO-0313 fix4/docker-objects-are-items
+VELDO-0313 ac2/command-status
+VELDO-0313 ac2/act-waits-75
+VELDO-0313 ac2/report-starts
