@@ -1096,8 +1096,11 @@ def _veldo_0221():
                                     "VELDO_GATE_SHARD_LEDGER_FD") if k in bare_env]
                and passed_on == [[write_end], [], []]
                and refusals == ["only the gate profile inherits a descriptor",
-                                "an inherited descriptor must be a pipe or a socket above the standard three",
-                                "an inherited descriptor must be a pipe or a socket above the standard three"])
+                                # VELDO-0358 widened the refusal with its opened-files ledger.
+                                "an inherited descriptor must be a pipe or a socket above the standard three, "
+                                "or the append-only opened-files ledger",
+                                "an inherited descriptor must be a pipe or a socket above the standard three, "
+                                "or the append-only opened-files ledger"])
 
 
         # ==== F1: a leg node claims only its dispatcher, so its shards run in parallel beneath the
