@@ -81,3 +81,39 @@ The canonical verification command was not run, as instructed. No approval is as
 
 The queued host request is recorded in `host-request.json`; it leaves its immutable checkout and raw
 results under the named temporary output pattern. Those future results are not claimed by this bundle.
+
+## Fix round 1 (review FIX, F1-F9)
+
+The criteria and the amendment are unchanged. Each finding has a row in suite 157 and a registered
+falsifier for finding 253; the twelve new cases join the four criterion cases.
+
+| Finding | Fix | Row | Falsifier |
+| --- | --- | --- | --- |
+| F1 | A removed `changed` field widens; deleting a project file with bindings, or an override of a product default, widens | ac2/binding-removed, ac2/connector-removal | install253-removal-not-widening, install253-deleted-binding-narrows |
+| F1 | Narrowing still applies directly (the spec's allowed list) | ac2/narrowing-direct | install253-deletion-widens |
+| F2 | Memory servers, stores, sink and manifest are classified | ac2/memory-server | install253-memory-unclassified |
+| F2, F3 | Memory, schedule and deploy target references are checked; the last good configuration stays | ac1/cross-references | install253-memory-references, install253-schedule-references, install253-deploy-references |
+| F4 | A project's remote, landing destination, repository and trunk widen (owner ruling requested in the spec History) | ac2/project-remote | install253-project-remote |
+| probe | Bot token reference, trackers, raised inbound file cap and body limit widen | ac2/other-widening | install253-bot-not-widening |
+| F5 | A plain value under a credential-named key is refused and never stored or told | ac1/plain-credential | install253-plain-credential |
+| F6 | Setup's import refuses a credential in an unread file before committing or sending | ac1/unread-secret-import | install253-unread-import |
+| F7 | A clean checkout follows a save; a dirty one is untouched | ac3/working-copy-follows | install253-checkout-left-behind |
+
+Which is which: docs/installation.md lists every change that waits for the owner and every change
+that applies directly. Only narrowing (removing a tool, adding a never rule, removing a port and the
+like, lowering a limit, deleting a file whose removal only takes authority away) and metadata apply
+without a decision.
+
+F8 is recorded in the spec History for the owner (the footprint widening and the F4 classification).
+F9: the original sequential fixture is unchanged; every new row runs on its own installation and
+store, and an exception in one new row fails only that row.
+
+Fix-round transcripts: `fix-ticket-pc2.txt`, `fix-bindings-pc2.txt`, `fix-workers-pc2.txt`
+(registered worker diagnostic for all sixteen cases), and `fix-host.txt` for the host-only suites and
+the confined coordinator, recorded only once they have run.
+
+Fix-round pc2 results at 0d3adb5ac9b5 (diagnostics, not a gate pass): suite 157 has 36 rows passed and
+0 failed. Suites 127_0241 and 157 have 86 passed and 0 failed. The registered worker diagnostic passes
+all sixteen cases: baselines and no-ops are green at 62 observations, and each mutant turns its target
+row false. Each of the twelve new mutants fails only its own row. The host-only suites and the
+confined coordinator were queued behind full builder slots when this was recorded; no host result is claimed.
