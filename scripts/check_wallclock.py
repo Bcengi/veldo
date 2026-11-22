@@ -14,7 +14,8 @@ file where it is one; TypeScript and shell are read on their text.
                setTimeout whose callback rejects or fails; a sleep command in a shell script
   R2 clock     a call that resolves to a wall or monotonic clock
   R3 timeout   a timeout other than zero, None or a named hang constant, given as the keyword
-               timeout or at a position of the closed table POSITIONS below. The process constant
+               timeout or at a position of the closed table POSITIONS below (in TypeScript: the
+               timeout option, the Playwright setters and AbortSignal.timeout). The process constant
                is accepted only on a call whose command is a heavy child
   R4 bound     an upper bound, against a number, on a value named or derived as a duration
 
@@ -532,6 +533,8 @@ def scan_script(rel, text, rules):
             values = [('timeout option', m.group(1)) for m in re.finditer(r'\btimeout\s*:\s*([^,}\n]+)', line)]
             values += [(m.group(1), m.group(2)) for m in re.finditer(
                 r'\.(setTimeout|setDefaultTimeout|setDefaultNavigationTimeout|setSlow)\s*\(\s*([^)\n]*)\)', line)]
+            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in re.finditer(
+                r'\bAbortSignal\s*\.\s*timeout\s*\(\s*([^)\n]*)\)', line)]
             for form, value in values:
                 value = value.strip().rstrip(';').strip()
                 if value in ('0', 'undefined') or SCRIPT_HANG.match(value):

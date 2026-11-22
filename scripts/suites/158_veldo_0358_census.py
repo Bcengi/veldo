@@ -122,6 +122,10 @@ def _v358_census():
             'scripts/fx/position_unknown_receiver.py': (
                 'def finish(worker):\n    worker.join(5)\n',
                 'R3', ('method.join argument 0 5', ':2 in finish')),
+            # A signal that aborts after a number of milliseconds is a timeout (wave 1 integration, lead).
+            'scripts/fx/position_abort_signal.spec.ts': (
+                "export const answered = (url: string) => fetch(url, { signal: AbortSignal.timeout(5000) })\n",
+                'R3', ('AbortSignal.timeout argument 0 5000', ':1 in')),
             # A short bound under the hang constant's name is no hang bound (integration, lead).
             'scripts/fx/rule_timeout_renamed.py': (
                 'import subprocess\nWAIT_HANG_SECONDS = 5\n\n\ndef child():\n'
@@ -143,6 +147,9 @@ def _v358_census():
                 '    threading.Event().wait()\n'
                 '    slow_enough = elapsed >= 2\n'
                 '    return ", ".join(parts), os.path.join(a, b), d.get(k), d.get(k, 5), slow_enough\n'),
+            'scripts/fx/allowed_abort_signal.spec.ts': (
+                "import { WAIT_HANG_MS } from './fixtures'\n"
+                "export const answered = (url: string) => fetch(url, { signal: AbortSignal.timeout(WAIT_HANG_MS) })\n"),
             # The hang constant defined in the file that uses it, at the contract's value (integration, lead).
             'scripts/fx/allowed_own_constant.py': (
                 'import subprocess\nWAIT_HANG_SECONDS = 600\n\n\ndef child():\n'

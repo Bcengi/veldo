@@ -40,7 +40,6 @@ import json
 import os
 from pathlib import Path
 import sys
-import time
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -123,7 +122,7 @@ class FactoryUi(T.TeamFactory):
         self._factory_seed()
 
     def _factory_seed(self):
-        now = time.time()
+        now = H.wall()  # a record's time, as data (VELDO-0358)
         ids = self.ids
         objectives = {
             'objective:a1': ('project-a', 'ACTIVE', 'Parse every customer file the old importer accepted, with no silent drops.',

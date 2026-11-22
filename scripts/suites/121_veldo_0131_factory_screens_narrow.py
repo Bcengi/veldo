@@ -81,10 +81,15 @@ def _v131_screens_narrow():
         'e2e/screens.spec.ts': ROOT / "engine/ui/e2e" / "screens.spec.ts",
         'e2e/run.spec.ts': ROOT / "engine/ui/e2e" / "run.spec.ts",
         'e2e/harness.py': ROOT / "engine/ui/e2e" / "harness.py",
+        # Wave 1 integration: the files beside them that no brief owned, converted by the lead.
+        'e2e/decisions.spec.ts': ROOT / "engine/ui/e2e" / "decisions.spec.ts",
+        'e2e/factory_harness.py': ROOT / "engine/ui/e2e" / "factory_harness.py",
+        'e2e/team_harness.py': ROOT / "engine/ui/e2e" / "team_harness.py",
     }
     SUITES = {
         '120_veldo_0131_factory_ui.py': ROOT / "scripts/suites" / "120_veldo_0131_factory_ui.py",
         '121_veldo_0131_factory_screens_narrow.py': ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py",
+        '122_veldo_0131_factory_screens_wide.py': ROOT / "scripts/suites" / "122_veldo_0131_factory_screens_wide.py",
         '124_veldo_0131_factory_reads_commands.py': ROOT / "scripts/suites" / "124_veldo_0131_factory_reads_commands.py",
     }
     WAVE = ('timers/profile-applied', 'wave1/no-sites')
@@ -228,7 +233,7 @@ test('browser/hang-by-progress: the run is bounded from its last test or step ev
             check('wave1/no-sites', 'the census could be run (%s: %s)' % (type(error).__name__, error), False)
             return
         check('wave1/no-sites', 'the census finds no site outside the declared exceptions in the browser tests\' '
-              'files and suites 120, 121 and 124 (wallclock_site %s)' % over[:8], not over)
+              'files and suites 120, 121, 122 and 124 (wallclock_site %s)' % over[:8], not over)
 
     def timers_row(path):
         """timers/profile-applied: what each harness of the browser run said of the product's timers."""

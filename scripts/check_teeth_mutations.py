@@ -18425,6 +18425,17 @@ def cases():
             "    subreaper = _LIBC.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0\n",
             "    subreaper = False  # defect: orphans go to the user manager, out of the keeper's reach\n",
             ['watchdog/hung-tree-ended'], 'scripts/suites/support')
+    # The census stops reading AbortSignal.timeout(n) (brief H's finding 4).
+    lead358('wall358-abort-signal-ignored', '158_veldo_0358_census.py', 'check_wallclock.py',
+            "            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in re.finditer(\n",
+            "            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in () and re.finditer(  # defect\n",
+            ['census/each-rule'], 'scripts')
+    # AC10 for the browser files no brief owned: the team harness's ten second tool bound, restored. Suite 121's
+    # census row reads that file through its literal anchor.
+    lead358('wave358-harness-bound-restored', '121_veldo_0131_factory_screens_narrow.py', 'team_harness.py',
+            "                           check=True, capture_output=True, timeout=H.WAIT_HANG_SECONDS)\n",
+            "                           check=True, capture_output=True, timeout=10)  # defect: the bound restored\n",
+            ['wave1/no-sites'], 'engine/ui/e2e')
     # ==== end of VELDO-0358 wave 1 integration ====
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
