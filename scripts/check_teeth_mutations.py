@@ -9128,8 +9128,9 @@ def cases():
             "                'unwatched': getattr(self, 'unwatched', []),\n",
             "", ['loop/review-offered'])
     loop154('loop358-orphan-stop-record-false', 'control_launch.py',
+            "            self.observe({'operation': 'orphan_wait', 'dispatch_id': dispatch_id,\n"
             "                          'stop_issued': entry.get('stop_issued', False)})\n",
-            "                          'stop_issued': False})\n", ['loop/receiver-death'])
+            "", ['loop/receiver-death'])
     loop154('loop154-eof-ignored', 'control_launch.py',
             "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
             "            if not chunk:\n                return False  # defect: the receiver's death is not an end\n",
