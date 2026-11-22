@@ -577,8 +577,9 @@ for name in (observer,'pgrep'):
             results.append([row['name'] for row in rows] == names and all(
                 row['status'] == 'STANDS DOWN' and row['reason'] == 'census_incomplete' for row in rows))
         if fault == 'collector_death':
-            results.append(r['supervision']['collector_status'] == 9 and
-                           len(r['supervision']['adopted_terminal_waits']) >= 2)
+            supervision = r.get('supervision') or {}
+            results.append(supervision.get('collector_status') == 9 and
+                           len(supervision.get('adopted_terminal_waits', [])) >= 2)
     # The root never returns on its own, so expiry does not depend on how fast this host is.
     hanging, _ = run('deadline', 'import signal\nwhile True: signal.pause()', deadline=.05)
     results.append(hanging['status'] == 'INCOMPLETE' and hanging['capture_status'] == 'INCOMPLETE')
