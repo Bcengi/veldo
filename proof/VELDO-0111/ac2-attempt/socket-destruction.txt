@@ -8,15 +8,15 @@
       "passed": true,
       "acknowledgement": {
         "family": 1,
-        "address": "\u0000v111-held-2256175",
-        "inode": "socket:[4265686927]",
+        "address": "\u0000v111-held-1797851",
+        "inode": "socket:[131536526]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/1",
-        "input_digest": "f379d2486a9f72c60b9327a26ebeb508cf931824fb03ad13a11563e0300b55ea",
-        "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+        "input_digest": "87bfc0dd7e7196d770e5474a6b6a8d7130f1cd394843ddb4138c2a1b5ba244f3",
+        "implementation_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -30,25 +30,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2972513018680091,
+            "time_ns": 3012105824078547,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2972513891128196,
+            "time_ns": 3012106668365088,
             "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2972513891130152,
+            "time_ns": 3012106668367125,
             "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "2256175:1",
-            "pid": 2256175,
-            "current_tid": 2256175,
+            "identity": "1797851:1",
+            "pid": 1797851,
+            "current_tid": 1797851,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -69,7 +69,7 @@
           },
           {
             "capability": "escaped_reference",
-            "reason": "socket:[4265686927]:1 file is still referenced after descendant drain",
+            "reason": "socket:[131536526]:1 file is still referenced after descendant drain",
             "category": "lifecycle_violation",
             "state": "drained"
           }
@@ -140,12 +140,12 @@
         }
       },
       "socket": {
-        "identity": "socket:[4265686927]:1",
-        "inode": "socket:[4265686927]",
+        "identity": "socket:[131536526]:1",
+        "inode": "socket:[131536526]",
         "family": 1,
         "type": 1,
         "protocol": 0,
-        "address": "010000763131312d68656c642d32323536313735",
+        "address": "010000763131312d68656c642d31373937383531",
         "created": 3,
         "closed": null,
         "references": [],
@@ -156,7 +156,7 @@
         ],
         "release_observer": "epoll_file_release",
         "abi": "x86_64",
-        "kernel_sockaddr_hex": "010000763131312d68656c642d32323536313735",
+        "kernel_sockaddr_hex": "010000763131312d68656c642d31373937383531",
         "exported": true,
         "escaped_references": [
           7
@@ -169,33 +169,34 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2972513871083789,
+          "time_ns": 3012106648334072,
           "kind": "bind",
-          "task": "2256175:1",
-          "socket": "socket:[4265686927]:1",
+          "task": "1797851:1",
+          "socket": "socket:[131536526]:1",
           "family": 1,
-          "address": "010000763131312d68656c642d32323536313735"
+          "address": "010000763131312d68656c642d31373937383531"
         },
         {
           "sequence": 5,
-          "time_ns": 2972513872412235,
+          "time_ns": 3012106649503063,
           "kind": "service",
-          "task": "2256175:1",
-          "socket": "socket:[4265686927]:1",
+          "task": "1797851:1",
+          "socket": "socket:[131536526]:1",
           "family": 1,
           "type": 1,
           "operation": "listen",
-          "address": "010000763131312d68656c642d32323536313735",
+          "address": "010000763131312d68656c642d31373937383531",
           "abi": "x86_64"
         },
         {
           "sequence": 9,
-          "time_ns": 2972513883557343,
+          "time_ns": 3012106660237849,
           "kind": "close",
-          "task": "2256175:1",
-          "inode": "socket:[4265686927]",
-          "socket": "socket:[4265686927]:1",
-          "fd": 3
+          "task": "1797851:1",
+          "inode": "socket:[131536526]",
+          "socket": "socket:[131536526]:1",
+          "fd": 3,
+          "syscall": 3
         }
       ],
       "escape_failures": [
@@ -207,7 +208,7 @@
         },
         {
           "capability": "escaped_reference",
-          "reason": "socket:[4265686927]:1 file is still referenced after descendant drain",
+          "reason": "socket:[131536526]:1 file is still referenced after descendant drain",
           "category": "lifecycle_violation",
           "state": "drained"
         }
@@ -218,10 +219,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2972513926620968,
-        "queued_live_ns": 2972513926681019,
-        "holder_live_ns": 2972513926749270,
-        "external_release_ack_ns": 2972513926751522,
+        "census_returned_ns": 3012106708252265,
+        "queued_live_ns": 3012106708318950,
+        "holder_live_ns": 3012106708391934,
+        "external_release_ack_ns": 3012106708394610,
         "exact_destruction_observed": false
       }
     },
@@ -232,16 +233,16 @@
         "family": 2,
         "address": [
           "127.0.0.1",
-          36943
+          50895
         ],
-        "inode": "socket:[4265730472]",
+        "inode": "socket:[131598952]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/2",
-        "input_digest": "7895f1759334ac0e7ae1d62425923785eb23ff998742e84f48b11423f13d59ca",
-        "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+        "input_digest": "200bd9034e00e3c5fbabe53d40b5329c1d67ed667dea9266e6136ac8d9b96292",
+        "implementation_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -255,25 +256,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2972518390027057,
+            "time_ns": 3012111730937007,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2972519295194716,
+            "time_ns": 3012112574219139,
             "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2972519295196346,
+            "time_ns": 3012112574221578,
             "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "2262494:1",
-            "pid": 2262494,
-            "current_tid": 2262494,
+            "identity": "1811856:1",
+            "pid": 1811856,
+            "current_tid": 1811856,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -294,7 +295,7 @@
           },
           {
             "capability": "escaped_reference",
-            "reason": "socket:[4265730472]:1 file is still referenced after descendant drain",
+            "reason": "socket:[131598952]:1 file is still referenced after descendant drain",
             "category": "lifecycle_violation",
             "state": "drained"
           }
@@ -365,8 +366,8 @@
         }
       },
       "socket": {
-        "identity": "socket:[4265730472]:1",
-        "inode": "socket:[4265730472]",
+        "identity": "socket:[131598952]:1",
+        "inode": "socket:[131598952]",
         "family": 2,
         "type": 1,
         "protocol": 0,
@@ -381,7 +382,7 @@
         ],
         "release_observer": "epoll_file_release",
         "abi": "x86_64",
-        "kernel_sockaddr_hex": "0200904f7f0000010000000000000000",
+        "kernel_sockaddr_hex": "0200c6cf7f0000010000000000000000",
         "exported": true,
         "escaped_references": [
           7
@@ -394,37 +395,38 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2972519273976782,
+          "time_ns": 3012112553553567,
           "kind": "bind",
-          "task": "2262494:1",
-          "socket": "socket:[4265730472]:1",
+          "task": "1811856:1",
+          "socket": "socket:[131598952]:1",
           "family": 2,
           "address": "020000007f0000010000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2972519276464854,
+          "time_ns": 3012112555832551,
           "kind": "service",
-          "task": "2262494:1",
-          "socket": "socket:[4265730472]:1",
+          "task": "1811856:1",
+          "socket": "socket:[131598952]:1",
           "family": 2,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "127.0.0.1",
-            "port": 36943,
+            "port": 50895,
             "sockaddr_hex": "020000007f0000010000000000000000"
           },
           "abi": "x86_64"
         },
         {
           "sequence": 9,
-          "time_ns": 2972519287264860,
+          "time_ns": 3012112566268338,
           "kind": "close",
-          "task": "2262494:1",
-          "inode": "socket:[4265730472]",
-          "socket": "socket:[4265730472]:1",
-          "fd": 3
+          "task": "1811856:1",
+          "inode": "socket:[131598952]",
+          "socket": "socket:[131598952]:1",
+          "fd": 3,
+          "syscall": 3
         }
       ],
       "escape_failures": [
@@ -436,7 +438,7 @@
         },
         {
           "capability": "escaped_reference",
-          "reason": "socket:[4265730472]:1 file is still referenced after descendant drain",
+          "reason": "socket:[131598952]:1 file is still referenced after descendant drain",
           "category": "lifecycle_violation",
           "state": "drained"
         }
@@ -447,10 +449,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2972519332928929,
-        "queued_live_ns": 2972519333085273,
-        "holder_live_ns": 2972519333161152,
-        "external_release_ack_ns": 2972519333166026,
+        "census_returned_ns": 3012112615010468,
+        "queued_live_ns": 3012112615208330,
+        "holder_live_ns": 3012112615288190,
+        "external_release_ack_ns": 3012112615293180,
         "exact_destruction_observed": false
       }
     },
@@ -461,18 +463,18 @@
         "family": 10,
         "address": [
           "::1",
-          60693,
+          41661,
           0,
           0
         ],
-        "inode": "socket:[4265681540]",
+        "inode": "socket:[131662894]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/10",
-        "input_digest": "500cf6005425203d103055b7872975a78558860313c08693cf9b47e4f3ddd32d",
-        "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+        "input_digest": "c0cfe5c9e51198c16653389026a497a1b7f201a8ac6b6f02e7b8cc52f18b0d04",
+        "implementation_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -486,25 +488,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2972524032881277,
+            "time_ns": 3012117706170730,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2972524867844925,
+            "time_ns": 3012118554453236,
             "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2972524867846226,
+            "time_ns": 3012118554455367,
             "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "2268983:1",
-            "pid": 2268983,
-            "current_tid": 2268983,
+            "identity": "1826615:1",
+            "pid": 1826615,
+            "current_tid": 1826615,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -525,7 +527,7 @@
           },
           {
             "capability": "escaped_reference",
-            "reason": "socket:[4265681540]:1 file is still referenced after descendant drain",
+            "reason": "socket:[131662894]:1 file is still referenced after descendant drain",
             "category": "lifecycle_violation",
             "state": "drained"
           }
@@ -596,8 +598,8 @@
         }
       },
       "socket": {
-        "identity": "socket:[4265681540]:1",
-        "inode": "socket:[4265681540]",
+        "identity": "socket:[131662894]:1",
+        "inode": "socket:[131662894]",
         "family": 10,
         "type": 1,
         "protocol": 0,
@@ -612,7 +614,7 @@
         ],
         "release_observer": "epoll_file_release",
         "abi": "x86_64",
-        "kernel_sockaddr_hex": "0a00ed15000000000000000000000000000000000000000100000000",
+        "kernel_sockaddr_hex": "0a00a2bd000000000000000000000000000000000000000100000000",
         "exported": true,
         "escaped_references": [
           7
@@ -625,37 +627,38 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2972524848665624,
+          "time_ns": 3012118534257139,
           "kind": "bind",
-          "task": "2268983:1",
-          "socket": "socket:[4265681540]:1",
+          "task": "1826615:1",
+          "socket": "socket:[131662894]:1",
           "family": 10,
           "address": "0a000000000000000000000000000000000000000000000100000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2972524850416598,
+          "time_ns": 3012118536095498,
           "kind": "service",
-          "task": "2268983:1",
-          "socket": "socket:[4265681540]:1",
+          "task": "1826615:1",
+          "socket": "socket:[131662894]:1",
           "family": 10,
           "type": 1,
           "operation": "listen",
           "address": {
             "ip": "::1",
-            "port": 60693,
+            "port": 41661,
             "sockaddr_hex": "0a000000000000000000000000000000000000000000000100000000"
           },
           "abi": "x86_64"
         },
         {
           "sequence": 9,
-          "time_ns": 2972524860503284,
+          "time_ns": 3012118546576494,
           "kind": "close",
-          "task": "2268983:1",
-          "inode": "socket:[4265681540]",
-          "socket": "socket:[4265681540]:1",
-          "fd": 3
+          "task": "1826615:1",
+          "inode": "socket:[131662894]",
+          "socket": "socket:[131662894]:1",
+          "fd": 3,
+          "syscall": 3
         }
       ],
       "escape_failures": [
@@ -667,7 +670,7 @@
         },
         {
           "capability": "escaped_reference",
-          "reason": "socket:[4265681540]:1 file is still referenced after descendant drain",
+          "reason": "socket:[131662894]:1 file is still referenced after descendant drain",
           "category": "lifecycle_violation",
           "state": "drained"
         }
@@ -678,10 +681,10 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2972524903378905,
-        "queued_live_ns": 2972524903530228,
-        "holder_live_ns": 2972524903605800,
-        "external_release_ack_ns": 2972524903610902,
+        "census_returned_ns": 3012118591154051,
+        "queued_live_ns": 3012118591330267,
+        "holder_live_ns": 3012118591404963,
+        "external_release_ack_ns": 3012118591410199,
         "exact_destruction_observed": false
       }
     },
@@ -691,17 +694,17 @@
       "acknowledgement": {
         "family": 16,
         "address": [
-          2275474,
+          1841556,
           0
         ],
-        "inode": "socket:[4265731054]",
+        "inode": "socket:[131691742]",
         "local_close_acknowledged": true
       },
       "receipt": {
         "schema": "veldo.lifecycle-census/1",
         "input_identity": "VELDO-0111/external-reference/16",
-        "input_digest": "8660fd0716c72418ce7fecc6812b1a4261028fbd62b6db9e82fb454af850cb4d",
-        "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+        "input_digest": "0aac3b1f9d0aec63495b222a103e8bd4d03e52ddc767da2b5ea26fff50374f2a",
+        "implementation_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
         "fixture_version": "veldo.lifecycle-census/1",
         "host": {
           "kernel": "7.0.0-38-generic",
@@ -715,25 +718,25 @@
         "barriers": [
           {
             "name": "armed_before_exec",
-            "time_ns": 2972529509740073,
+            "time_ns": 3012123617231940,
             "sequence": 1
           },
           {
             "name": "call_returned",
-            "time_ns": 2972530348820530,
+            "time_ns": 3012124464896922,
             "sequence": 11
           },
           {
             "name": "descendants_drained",
-            "time_ns": 2972530348822068,
+            "time_ns": 3012124464899168,
             "sequence": 11
           }
         ],
         "processes": [
           {
-            "identity": "2275474:1",
-            "pid": 2275474,
-            "current_tid": 2275474,
+            "identity": "1841556:1",
+            "pid": 1841556,
+            "current_tid": 1841556,
             "parent": null,
             "root": true,
             "operation": "root",
@@ -754,7 +757,7 @@
           },
           {
             "capability": "escaped_reference",
-            "reason": "socket:[4265731054]:1 file is still referenced after descendant drain",
+            "reason": "socket:[131691742]:1 file is still referenced after descendant drain",
             "category": "lifecycle_violation",
             "state": "drained"
           }
@@ -825,12 +828,12 @@
         }
       },
       "socket": {
-        "identity": "socket:[4265731054]:1",
-        "inode": "socket:[4265731054]",
+        "identity": "socket:[131691742]:1",
+        "inode": "socket:[131691742]",
         "family": 16,
         "type": 3,
         "protocol": 2,
-        "address": "1000e19a0000000000000000",
+        "address": "1000df470000000000000000",
         "created": 3,
         "closed": null,
         "references": [],
@@ -841,7 +844,7 @@
         ],
         "release_observer": "epoll_file_release",
         "abi": "x86_64",
-        "kernel_sockaddr_hex": "1000000092b8220000000000",
+        "kernel_sockaddr_hex": "1000000094191c0000000000",
         "exported": true,
         "escaped_references": [
           7
@@ -854,33 +857,34 @@
       "service_and_close_events": [
         {
           "sequence": 4,
-          "time_ns": 2972530331920361,
+          "time_ns": 3012124446675310,
           "kind": "bind",
-          "task": "2275474:1",
-          "socket": "socket:[4265731054]:1",
+          "task": "1841556:1",
+          "socket": "socket:[131691742]:1",
           "family": 16,
-          "address": "1000e19a0000000000000000"
+          "address": "1000df470000000000000000"
         },
         {
           "sequence": 5,
-          "time_ns": 2972530331931669,
+          "time_ns": 3012124446684144,
           "kind": "service",
-          "task": "2275474:1",
-          "socket": "socket:[4265731054]:1",
+          "task": "1841556:1",
+          "socket": "socket:[131691742]:1",
           "family": 16,
           "type": 3,
           "operation": "bind",
-          "address": "1000e19a0000000000000000",
+          "address": "1000df470000000000000000",
           "abi": "x86_64"
         },
         {
           "sequence": 9,
-          "time_ns": 2972530342082353,
+          "time_ns": 3012124457461705,
           "kind": "close",
-          "task": "2275474:1",
-          "inode": "socket:[4265731054]",
-          "socket": "socket:[4265731054]:1",
-          "fd": 3
+          "task": "1841556:1",
+          "inode": "socket:[131691742]",
+          "socket": "socket:[131691742]:1",
+          "fd": 3,
+          "syscall": 3
         }
       ],
       "escape_failures": [
@@ -892,7 +896,7 @@
         },
         {
           "capability": "escaped_reference",
-          "reason": "socket:[4265731054]:1 file is still referenced after descendant drain",
+          "reason": "socket:[131691742]:1 file is still referenced after descendant drain",
           "category": "lifecycle_violation",
           "state": "drained"
         }
@@ -903,13 +907,13 @@
         "receiver_outside_scope": true,
         "queued_socket_live_after_drain": true,
         "held_socket_live_after_drain": true,
-        "census_returned_ns": 2972530400403428,
-        "queued_live_ns": 2972530400480300,
-        "holder_live_ns": 2972530400527036,
-        "external_release_ack_ns": 2972530400532274,
+        "census_returned_ns": 3012124502413352,
+        "queued_live_ns": 3012124502481821,
+        "holder_live_ns": 3012124502528755,
+        "external_release_ack_ns": 3012124502533967,
         "exact_destruction_observed": false
       }
     }
   ],
-  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca"
+  "source_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a"
 }

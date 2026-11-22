@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -756,0 +757,2 @@
+@@ -759,0 +760,2 @@
 +        if obj['family'] == socket.AF_INET6:
 +            return

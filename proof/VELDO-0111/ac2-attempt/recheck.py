@@ -48,7 +48,7 @@ def main():
     suite = load('suite111_recheck', SUITE)
     original = SOURCE.read_text()
     records = []
-    report = dict(base='b36e4781', status='INCOMPLETE', next_obligation=NEXT,
+    report = dict(base='bb0686b3', status='INCOMPLETE', next_obligation=NEXT,
                   scope='VELDO-0111 only; regressions are not AC2 qualification',
                   source_digest=sha(SOURCE), suite_digest=sha(SUITE),
                   recheck_digest=sha(Path(__file__)),
@@ -302,6 +302,20 @@ def main():
         ('drop-compat-socketcall-messages', '16:(46,3), 17:(47,3), 18:(288,4), 19:(299,5), 20:(307,4)}',
          '18:(288,4)}', COMPAT),
         ('compat-aliases-native', 'I386_SYSCALLS.get(nr, -1 - nr)', 'I386_SYSCALLS.get(nr, nr)', COMPAT))
+    # close_range (found by VELDO-0113): accounted like close on every
+    # descriptor in its range; CLOEXEC waits for exec; untrackable forms refused.
+    CLOSE = 'census/close-range-accounted'
+    PROTOCOL += (
+        ('refuse-close-range', '        elif nr == 436:\n            self.close_range(pid, entry)\n',
+         "        elif nr == 436:\n            failure(self.r, 'descriptor_operation', 'unqualified syscall 436')\n",
+         CLOSE),
+        ('ignore-close-range', '        elif nr == 436:\n            self.close_range(pid, entry)\n',
+         '        elif nr == 436:\n            pass  # ignore close_range\n', CLOSE),
+        ('cloexec-closes-now', '        if flags & CLOSE_RANGE_CLOEXEC:\n', '        if False:\n', CLOSE),
+        ('ignore-exec-closes', '                    self.exec_closes(pid, execve)\n', '', CLOSE),
+        ('allow-unknown-close-range-flags',
+         '        if flags & ~(CLOSE_RANGE_UNSHARE | CLOSE_RANGE_CLOEXEC):\n', '        if False:\n', CLOSE),
+        ('ignore-shared-close-range', "        if entry.get('files_shared'):\n", '        if False:\n', CLOSE))
     for label, old, new, target in PROTOCOL:
         mutate(label, old, new, target)
 

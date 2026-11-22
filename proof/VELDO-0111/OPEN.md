@@ -6,6 +6,29 @@ The owner approved the two acceptance amendments in Telegram 37442, answering
 Telegram 37440 item 1. They are applied under "Amendment, 2026-10-28" in the
 specification. Neither approval waives the obligations inside those families.
 
+## Follow-up, 2026-11-22: close_range
+
+VELDO-0113 found the observer refused close_range, which Python's subprocess
+issues before every exec (18 of its 22 client runs INCOMPLETE). close_range is
+now accounted like close on every descriptor in its range, from the kernel
+table at entry and exit stops; release is still proven only by the
+file-release observer, so a reference queued elsewhere by SCM_RIGHTS stays
+`escaped_reference`; CLOSE_RANGE_CLOEXEC closes nothing until exec, and exec
+now accounts the close-on-exec sockets it closes. Refused by name
+(`descriptor_operation`): unknown flags and a descriptor table shared with
+another live task. Row `census/close-range-accounted`; six mutants
+(`refuse-close-range`, `ignore-close-range`, `cloexec-closes-now`,
+`ignore-exec-closes`, `allow-unknown-close-range-flags`,
+`ignore-shared-close-range`) each redden it. Recheck: 23/23 baseline and final
+control, no qualification gaps ([ac2-attempt](ac2-attempt/README.md)). Not yet
+independently reviewed. VELDO-0113 must re-run its client matrix against this
+collector.
+
+Observed while building the row, not changed here: a census whose root fails
+before exec (an argv with a NUL byte made execvpe raise in the root child) did
+not return within several minutes. The suite no longer passes such an argv;
+the collector's handling of a pre-exec root failure is worth its own look.
+
 ## Continuation, 2026-11-21
 
 The lead's 2026-11-21 restatement supersedes the previous external-reference

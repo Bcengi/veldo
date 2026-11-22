@@ -1,8 +1,8 @@
 {
   "row": "census/escape-detected-despite-control-aba",
   "passed": true,
-  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
-  "instrumented_digest": "949b93cd0829fb309335db37f95ad74e5bab65071bb92bd720f2dbc6ee96f7be",
+  "source_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
+  "instrumented_digest": "289a1bd9f2cd340bb94c9f06f23683415f1e2e43d70a8a7b884f2afbe23e65bb",
   "scheduling_only_instrumentation": true,
   "external_writer_is_ancestor": true,
   "unmodified_credentials_control": {
@@ -17,20 +17,20 @@
   "samples": [
     {
       "sequence": 7,
-      "time_ns": 2972739286842005,
+      "time_ns": 3012354951535408,
       "kind": "witness_sample",
       "phase": "entry",
-      "sample": "1c000000000000000100000002000000a6772600e8030000e803000000000000",
+      "sample": "1c000000000000000100000002000000f9d82300e8030000e803000000000000",
       "entry_descriptors": [
         []
       ]
     },
     {
       "sequence": 8,
-      "time_ns": 2972739287651374,
+      "time_ns": 3012354952180071,
       "kind": "witness_sample",
       "phase": "exit",
-      "sample": "1c000000000000000100000002000000a6772600e8030000e803000000000000",
+      "sample": "1c000000000000000100000002000000f9d82300e8030000e803000000000000",
       "entry_descriptors": [
         []
       ]
@@ -49,10 +49,10 @@
     }
   ],
   "acknowledgement": {
-    "inode": "socket:[4266409355]",
+    "inode": "socket:[133172305]",
     "address": [
       "127.0.0.1",
-      48191
+      45143
     ]
   },
   "receipt": {
@@ -62,25 +62,25 @@
     "barriers": [
       {
         "name": "armed_before_exec",
-        "time_ns": 2972738446593374,
+        "time_ns": 3012354125741382,
         "sequence": 1
       },
       {
         "name": "call_returned",
-        "time_ns": 2972739300598529,
+        "time_ns": 3012354965557923,
         "sequence": 12
       },
       {
         "name": "descendants_drained",
-        "time_ns": 2972739300602068,
+        "time_ns": 3012354965560204,
         "sequence": 12
       }
     ],
     "processes": [
       {
-        "identity": "2520998:1",
-        "pid": 2520998,
-        "current_tid": 2520998,
+        "identity": "2349305:1",
+        "pid": 2349305,
+        "current_tid": 2349305,
         "parent": null,
         "root": true,
         "operation": "root",
@@ -95,7 +95,7 @@
     "failures": [
       {
         "capability": "escaped_reference",
-        "reason": "socket:[4266409355]:1 file is still referenced after descendant drain",
+        "reason": "socket:[133172305]:1 file is still referenced after descendant drain",
         "category": "lifecycle_violation",
         "state": "drained"
       }

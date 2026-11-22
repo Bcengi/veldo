@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -970 +970 @@
+@@ -1035 +1035 @@
 -        if nr in (2, 257, 437, 438):  # open, openat, openat2, pidfd_getfd
 +        if False:

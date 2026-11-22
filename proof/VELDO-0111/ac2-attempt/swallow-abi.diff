@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -895 +895 @@
+@@ -898 +898 @@
 -            arch = 0
 +            arch = struct.unpack_from("<I", raw, 4)[0]

@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -906 +906 @@
+@@ -909 +909 @@
 -                self.refuse_rings(pid, self.fd_table(pid).items(), 'inherited')
 +                pass

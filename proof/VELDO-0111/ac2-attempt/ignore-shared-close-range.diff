@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -992 +992 @@
+-        if entry.get('files_shared'):
++        if False:

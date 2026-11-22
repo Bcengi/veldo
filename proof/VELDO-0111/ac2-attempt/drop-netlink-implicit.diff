@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -1065 +1065 @@
+@@ -1130 +1130 @@
 -                elif obj['family'] == socket.AF_NETLINK and obj.get('kernel_sockaddr_hex'):
 +                elif False:  # netlink implicit address undecoded

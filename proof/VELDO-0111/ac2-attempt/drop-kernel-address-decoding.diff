@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -815 +815 @@
+@@ -818 +818 @@
 -        if decoded:
 +        if False:

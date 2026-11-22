@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -945 +945 @@
+@@ -953 +953 @@
 -            if flags & 0x800000:
 +            if False: # swallow escape attempt

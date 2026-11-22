@@ -1,6 +1,6 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -888,0 +889,12 @@
+@@ -891,0 +892,12 @@
 +    def witness_phase(self, pid, entry, phase):
 +        message = self.memory(pid, entry['args'][1], 56)
 +        pointer, length = struct.unpack_from('<QQ', message, 32)
@@ -13,9 +13,9 @@
 +        self.event('witness_sample', phase=phase, sample=sample,
 +                   entry_descriptors=entry.get('sent_controls'))
 +
-@@ -940,0 +953,2 @@
+@@ -948,0 +961,2 @@
 +            if nr == 46:
 +                self.witness_phase(pid, entry, 'entry')
-@@ -961,0 +976,2 @@
+@@ -1026,0 +1041,2 @@
 +        if nr == 46 and result >= 0:
 +            self.witness_phase(pid, entry, 'exit')

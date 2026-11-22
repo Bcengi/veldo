@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -509 +509 @@
+@@ -512 +512 @@
 -    if protocol == L2TP_IP and family in (socket.AF_INET, socket.AF_INET6):
 +    if False:

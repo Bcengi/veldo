@@ -1,6 +1,6 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -1216,0 +1217,3 @@
+@@ -1285,0 +1286,3 @@
 +            dropped = {p['identity'] for p in r['processes'] if not p['root'] and p.get('comm') == r['observer']['comm']}
 +            r['processes'] = [p for p in r['processes'] if p['identity'] not in dropped]
 +            r['events'] = [e for e in r['events'] if e.get('identity') not in dropped]

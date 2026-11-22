@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -998 +998 @@
+-        if flags & CLOSE_RANGE_CLOEXEC:
++        if False:

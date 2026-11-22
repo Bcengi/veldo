@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -981 +981 @@
+@@ -1046 +1046 @@
 -            self.sent_rights(pid, entry, result)
 +            pass  # ignore SCM_RIGHTS sends

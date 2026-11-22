@@ -1,6 +1,6 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -888,0 +889,9 @@
+@@ -891,0 +892,9 @@
 +    def witness(self, pid, nr, phase, args):
 +        plan = json.loads(os.environ['VELDO_0111_WITNESS_PLAN'])
 +        if nr not in plan.get(phase, []):
@@ -10,7 +10,7 @@
 +            channel.sendall((json.dumps(dict(phase=phase, nr=nr, pid=pid, args=list(args))) + '\n').encode())
 +            assert channel.recv(1) == b'A'
 +
-@@ -940,0 +950 @@
+@@ -948,0 +958 @@
 +            self.witness(pid, nr, 'entry', args)
-@@ -961,0 +972 @@
+@@ -1026,0 +1037 @@
 +        self.witness(pid, nr, 'exit', a)

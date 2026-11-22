@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -920 +920 @@
+@@ -923 +923 @@
 -                         16:(46,3), 17:(47,3), 18:(288,4), 19:(299,5), 20:(307,4)}
 +                         18:(288,4)}
