@@ -568,6 +568,9 @@ print(json.dumps(out))
             # runtime assets) carries the scan's formats, and its command, run-end and landing scans work there.
             if (ROOT / '.veldo' / 'runtime').is_dir() and not (mods / 'runtime').exists():
                 shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
+                # VELDO-0253: the service ships the installation schema and template beside the modules.
+                for asset in ('installation_schema', 'installation_template'):
+                    shutil.copytree(ROOT / '.veldo' / asset, mods / asset)
             CS = load('v254_service', mods / 'control_service.py')
             members = CS.closure()
             installed = base / 'service' / 'bin'

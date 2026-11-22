@@ -88,6 +88,9 @@ def _v142_suite():
             if source.is_file():
                 shutil.copyfile(source, mods / source.name)
         shutil.copytree(ROOT / '.veldo/runtime', mods / 'runtime')
+        # VELDO-0253: the service ships the installation schema and template beside the modules.
+        for asset in ('installation_schema', 'installation_template'):
+            shutil.copytree(ROOT / '.veldo' / asset, mods / asset)
         shutil.copytree(ROOT / '.veldo/services', mods / 'services')
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
