@@ -57,3 +57,40 @@ cac07303a2f0f35df539dd3844fd4f4e6188c6afd45a8c1b4c5ce98631d41c5f  scripts/suites
 
 Not run by owner instruction: full unit leg, full mutation stage, full verification script.
 Wider gate work and independent review/owner landing decisions are listed in b2-results.md.
+
+VELDO-0359 B2 fix round 2 checks
+Date: 2026-11-22
+Source commit: 350652220d3d6a9337bf34622e5efcd6ce8a77ca
+Host route: host_heavy.sh python3 -B scripts/selftest.py --suite 158_veldo_0359_store_guard
+Mutation route: host_heavy.sh python3 -B proof/VELDO-0359/b2-mutation-controls.py <receipt.txt> <ten mutant names>
+Each once. Events synchronize payloads; hang detectors are at least 120 seconds.
+
+host suite 158
+  selector    --suite 158_veldo_0359_store_guard
+  running     1 of 238 suites: 158_veldo_0359_store_guard
+   v359 layout/entries: DEFERRED, recorded and not passed: a device entry in the store directory (mknod errno=1); deferred by owner approval 2026-11-22; follow-up: research/specs-pending/VELDO-0359-follow-up-real-mount-fixture.md
+   v359 layout/mounts: DEFERRED, recorded and not passed: real directory, ancestor, database and lock bind mounts in the enforcement namespace ({'not_run': 'Permission denied', 'errno': 13}); deferred by owner approval 2026-11-22; follow-up: research/specs-pending/VELDO-0359-follow-up-real-mount-fixture.md
+  158_veldo_0359_store_guard                      20 passed   36.48s
+selftest (PARTIAL, 1 of 238 suites): 46 passed, 0 failed in 36.48s
+rc=2
+
+rc=2 is the deliberate partial-run exit (zero failed assertions).
+DEFERRED lines: owner approval 2026-11-22 (Telegram 43030); printed, never asserted, never counted as passed.
+Mutation receipt: b2-fix2-mutation-results.txt (passed true: baseline, three no-ops, ten mutants red by assertion).
+Personal setup: 0 findings; no installed setup found, built-in shapes checked only.
+template sync: pass (326 pair(s) compared, 6 declared per-repo, 367 engine-only)
+Whitespace diff check: pass.
+Unchanged: scripts/gate_unconfined.json
+Not run: scripts/verify.sh, full unit leg, full mutation stage, suite 157 on pc2, the remaining B2 mutants.
+
+SHA256 at the source commit:
+0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240  .veldo/control_agent_config_handoff.py
+1b2326365f82d600eb76515eb410d652cf4a7f105cab8f7b300303a21b0f6773  .veldo/control_execution_record.py
+7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e  .veldo/control_launch.py
+0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240  engine/.veldo/control_agent_config_handoff.py
+1b2326365f82d600eb76515eb410d652cf4a7f105cab8f7b300303a21b0f6773  engine/.veldo/control_execution_record.py
+7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e  engine/.veldo/control_launch.py
+dbee09102474e66742ceb8b4bec7290d11aaaf06b653251186d06f1f9d1fb7e4  proof/VELDO-0359/b2-mutation-controls.py
+5e5f39a41eaaf8573b7d4469736bef9fdf1d572f10623646985ffceab36bdfd0  scripts/check_teeth_mutations.py
+699bd5b4911d6b597701cfb32754c9f7a318fee4e8e1f27447600968b6f94fbf  scripts/suites/157_veldo_0359_run_query.py
+5143bc3e3c9ac356caaec6736c5f3b42360c59eb99ed3aec20571e1f6007a15b  scripts/suites/158_veldo_0359_store_guard.py

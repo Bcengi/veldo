@@ -1,0 +1,483 @@
+{
+  "commit": "350652220d3d6a9337bf34622e5efcd6ce8a77ca",
+  "deferred_by_owner_approval_2026_11_22": {
+    "cases": [
+      "layout/mounts: real directory, ancestor, database and lock bind mounts in the enforcement namespace",
+      "layout/entries: a device entry in the store directory",
+      "store359-file-binds-allowed against a real bind mount (it is judged on recorded mountinfo only)"
+    ],
+    "counted_as_passed": false,
+    "follow_up": "research/specs-pending/VELDO-0359-follow-up-real-mount-fixture.md"
+  },
+  "passed": true,
+  "results": [
+    {
+      "case": "store359-socket-exception-removed",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "baseline",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": true,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/entries": [
+          true
+        ]
+      },
+      "tested_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e"
+    },
+    {
+      "case": "store359-socket-exception-removed",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": true,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/entries": [
+          true
+        ]
+      },
+      "tested_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e"
+    },
+    {
+      "case": "store359-role-sandbox-wins",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": true,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240",
+      "targets": {
+        "launch/engines": [
+          true
+        ]
+      },
+      "tested_sha256": "0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240"
+    },
+    {
+      "case": "store359-record-header-dropped",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "rows": {
+        "accepted": true,
+        "launch/abi": true,
+        "launch/ack": true,
+        "launch/descriptors-early": true,
+        "launch/descriptors-leaked": true,
+        "launch/enforce-fail": true,
+        "launch/engines": true,
+        "launch/guard-default": true,
+        "launch/guard-read": true,
+        "launch/receiver-memory": true,
+        "launch/risky-census": true,
+        "launch/risky-real": true,
+        "layout/entries": true,
+        "layout/mounts": true,
+        "layout/placement": true,
+        "paths/canon": true,
+        "query/journey": true,
+        "rejected": true,
+        "ruleset/primitive-symlink-out": true,
+        "switch/off": true,
+        "switch/run-cannot-flip": true,
+        "switch/transitions": true
+      },
+      "source_sha256": "1b2326365f82d600eb76515eb410d652cf4a7f105cab8f7b300303a21b0f6773",
+      "targets": {
+        "launch/ack": [
+          true
+        ],
+        "switch/off": [
+          true
+        ]
+      },
+      "tested_sha256": "1b2326365f82d600eb76515eb410d652cf4a7f105cab8f7b300303a21b0f6773"
+    },
+    {
+      "case": "store359-socket-exception-removed",
+      "failed_details": [
+        [
+          "v359 layout/entries",
+          "normal bound socket; project guarded attacks: payload reached; conversation guarded attacks: payload reached; workflow guarded attacks: payload reached; stale authority socket actual launch; direct/socket-unlink/False: payload reached; descendant/socket-unlink/False: payload reached"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/entries"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "layout/entries": true
+      },
+      "rows": {
+        "accepted": true,
+        "layout/entries": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/entries": [
+          false
+        ]
+      },
+      "tested_sha256": "29916da4b84b5d4ff3750eaa9bd67851faa9634b1ae68f2e93f6baca651cede3"
+    },
+    {
+      "case": "store359-file-binds-allowed",
+      "failed_details": [
+        [
+          "v359 layout/mounts",
+          "database translated alias; lock translated alias"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/mounts"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "layout/mounts": true
+      },
+      "rows": {
+        "accepted": true,
+        "layout/mounts": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/mounts": [
+          false
+        ]
+      },
+      "tested_sha256": "d3656f7b7e281b2e69697a8aada814516c2b7b84abb34936f877dd0603d65c39"
+    },
+    {
+      "case": "store359-placement-skipped",
+      "failed_details": [
+        [
+          "v359 layout/placement",
+          "worktree/var/lib/veldo/v359-b2-xea39em0/state/authority; worktree/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; worktree/var/lib/veldo/v359-b2-xea39em0/state; gitdir/var/lib/veldo/v359-b2-xea39em0/state/authority; gitdir/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; gitdir/var/lib/veldo/v359-b2-xea39em0/state; common/var/lib/veldo/v359-b2-xea39em0/state/authority; common/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; common/var/lib/veldo/v359-b2-xea39em0/state; home/var/lib/veldo/v359-b2-xea39em0/state/authority; home/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; home/var/lib/veldo/v359-b2-xea39em0/state; temporary/var/lib/veldo/v359-b2-xea39em0/state/authority; temporary/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; temporary/var/lib/veldo/v359-b2-xea39em0/state; runtime/var/lib/veldo/v359-b2-xea39em0/state/authority; runtime/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; runtime/var/lib/veldo/v359-b2-xea39em0/state; client_state/var/lib/veldo/v359-b2-xea39em0/state/authority; client_state/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; client_state/var/lib/veldo/v359-b2-xea39em0/state; scratch_parent/var/lib/veldo/v359-b2-xea39em0/state/authority; scratch_parent/var/lib/veldo/v359-b2-xea39em0/state/authority/nested; scratch_parent/var/lib/veldo/v359-b2-xea39em0/state; actual fallback; runs fallback launch is not accepted: None"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/placement"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "layout/placement": true
+      },
+      "rows": {
+        "accepted": true,
+        "layout/placement": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/placement": [
+          false
+        ]
+      },
+      "tested_sha256": "4c6fa1c5eb5a1a5d39ee9fc54088c8cce605c0acee533899e26f0f12fff7905c"
+    },
+    {
+      "case": "store359-placement-check-skipped",
+      "failed_details": [
+        [
+          "v359 layout/placement",
+          "worktree/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; worktree/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; worktree/var/lib/veldo/v359-b2-9ra9p0f4/state; gitdir/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; gitdir/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; gitdir/var/lib/veldo/v359-b2-9ra9p0f4/state; common/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; common/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; common/var/lib/veldo/v359-b2-9ra9p0f4/state; home/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; home/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; home/var/lib/veldo/v359-b2-9ra9p0f4/state; temporary/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; temporary/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; temporary/var/lib/veldo/v359-b2-9ra9p0f4/state; runtime/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; runtime/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; runtime/var/lib/veldo/v359-b2-9ra9p0f4/state; client_state/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; client_state/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; client_state/var/lib/veldo/v359-b2-9ra9p0f4/state; scratch_parent/var/lib/veldo/v359-b2-9ra9p0f4/state/authority; scratch_parent/var/lib/veldo/v359-b2-9ra9p0f4/state/authority/nested; scratch_parent/var/lib/veldo/v359-b2-9ra9p0f4/state"
+        ]
+      ],
+      "failed_rows": [
+        "v359 layout/placement"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "layout/placement": true
+      },
+      "rows": {
+        "accepted": true,
+        "layout/placement": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "layout/placement": [
+          false
+        ]
+      },
+      "tested_sha256": "04be8809acb82adb3e143a621a4c935043396f19306eb1a079704a87ffc6da6b"
+    },
+    {
+      "case": "store359-guard-before-runner",
+      "failed_details": [
+        [
+          "v359 launch/risky-real",
+          "real risky runner: payload reached; real runner reaches fixture"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-real"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "launch/risky-real": true
+      },
+      "rows": {
+        "accepted": true,
+        "launch/risky-real": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "launch/risky-real": [
+          false
+        ]
+      },
+      "tested_sha256": "583b51b9cec432810753b66ef143c06f76e9a2f10c384d52bfc00f9f3afa616b"
+    },
+    {
+      "case": "store359-role-sandbox-wins",
+      "failed_details": [
+        [
+          "v359 launch/engines",
+          "on exactly one sandbox setting, the sampled one: ['sandbox_mode=\"workspace-write\"']; on final argument list: ['exec', '-c', 'model=\"fixture\"', '-c', 'sandbox_mode=\"workspace-write\"', '-c', 'approval_policy=\"never\"']; on generated setting"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/engines"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "launch/engines": true
+      },
+      "rows": {
+        "accepted": true,
+        "launch/engines": false,
+        "rejected": true
+      },
+      "source_sha256": "0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240",
+      "targets": {
+        "launch/engines": [
+          false
+        ]
+      },
+      "tested_sha256": "0c073122445a38bdf5cfa223f4ed5c970f1de54cda1c5ab4c75c04afd4ca1464"
+    },
+    {
+      "case": "store359-role-sandbox-duplicated",
+      "failed_details": [
+        [
+          "v359 launch/engines",
+          "on exactly one sandbox setting, the sampled one: ['sandbox_mode=\"workspace-write\"', 'sandbox_mode=\"danger-full-access\"']; on final argument list: ['exec', '-c', 'model=\"fixture\"', '-c', 'sandbox_mode=\"workspace-write\"', '-c', 'approval_policy=\"never\"', '-c', 'sandbox_mode=\"danger-full-access\"']"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/engines"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "launch/engines": true
+      },
+      "rows": {
+        "accepted": true,
+        "launch/engines": false,
+        "rejected": true
+      },
+      "source_sha256": "0def21baa91f5239683df5bfedd6529c8cffa0bbc0f39e587317e4fba034d240",
+      "targets": {
+        "launch/engines": [
+          false
+        ]
+      },
+      "tested_sha256": "a04baacb79eae257b0f2b70ff2a10fcac5ed14e4d3d6b10390c4a4b4717ac8d7"
+    },
+    {
+      "case": "store359-census-failure-as-reachable",
+      "failed_details": [
+        [
+          "v359 launch/risky-census",
+          "unresolvable root before acceptance; unresolvable root is named, never read as store reachability: '/var/lib/veldo/v359-b2-hnx_90ol/required-missing'"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/risky-census"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "launch/risky-census": true
+      },
+      "rows": {
+        "accepted": true,
+        "launch/risky-census": false,
+        "rejected": true
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "launch/risky-census": [
+          false
+        ]
+      },
+      "tested_sha256": "0b632b74e905a26bef033c0d410874006dd45b79a62d19adf15f66caf708882d"
+    },
+    {
+      "case": "store359-record-header-dropped",
+      "failed_details": [
+        [
+          "v359 launch/ack",
+          "project execution record: pending in its header, then applied on a line: ({}, ['applied']); conversation execution record: pending in its header, then applied on a line: ({}, ['applied']); workflow execution record: pending in its header, then applied on a line: ({}, ['applied'])"
+        ],
+        [
+          "v359 switch/off",
+          "execution record header: off with the marker path: {}; execution record of a refusal before acceptance: reason and fix in its header, no line: {}"
+        ]
+      ],
+      "failed_rows": [
+        "v359 launch/ack",
+        "v359 switch/off"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "launch/ack": true,
+        "switch/off": true
+      },
+      "rows": {
+        "accepted": true,
+        "launch/ack": false,
+        "rejected": true,
+        "switch/off": false
+      },
+      "source_sha256": "1b2326365f82d600eb76515eb410d652cf4a7f105cab8f7b300303a21b0f6773",
+      "targets": {
+        "launch/ack": [
+          false
+        ],
+        "switch/off": [
+          false
+        ]
+      },
+      "tested_sha256": "d1bbd780b90af1e5b74279b61c8606cb523051eb0564c186c11b53de5106b615"
+    },
+    {
+      "case": "store359-refusal-record-skipped",
+      "failed_details": [
+        [
+          "v359 switch/off",
+          "execution record of a refusal before acceptance: reason and fix in its header, no line: {'missing': 'missing_evidence:unknown_run'}"
+        ]
+      ],
+      "failed_rows": [
+        "v359 switch/off"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "red_by_assertion": {
+        "switch/off": true
+      },
+      "rows": {
+        "accepted": true,
+        "rejected": true,
+        "switch/off": false
+      },
+      "source_sha256": "7abde6b97bd2075bb03a361daa01bf93d51f0bd955408d53975ea58296d9f72e",
+      "targets": {
+        "switch/off": [
+          false
+        ]
+      },
+      "tested_sha256": "9b67b528b8da5b6b038fa74e01cf2310754696a8eeb64a1fca5d90107a636f5a"
+    }
+  ],
+  "selected": [
+    "store359-placement-skipped",
+    "store359-placement-check-skipped",
+    "store359-role-sandbox-duplicated",
+    "store359-role-sandbox-wins",
+    "store359-census-failure-as-reachable",
+    "store359-record-header-dropped",
+    "store359-refusal-record-skipped",
+    "store359-guard-before-runner",
+    "store359-socket-exception-removed",
+    "store359-file-binds-allowed"
+  ],
+  "suite_sha256": "5143bc3e3c9ac356caaec6736c5f3b42360c59eb99ed3aec20571e1f6007a15b"
+}
