@@ -1,0 +1,66 @@
+Developer diagnostics only. Selected selftest runs deliberately exit 2 when all selected rows pass.
+These excerpts do not replace the canonical gate or a passed evidence manifest.
+Raw log SHA-256 identifies each source before path-free excerpting.
+
+v258-current
+raw_sha256=587fb6d7e8677cf94e861fe82c585958b87064e33e3ccffc3112bf458d42fc89
+  70_veldo_0073_activation                        11 passed    8.29s
+  107_veldo_0153_identity_push                   120 passed    9.01s
+  108_veldo_0153_executor_profile                  6 passed    0.16s
+  157_veldo_0253_configuration                    26 passed    4.07s
+  158_veldo_0258_outside_calls                    55 passed   12.32s
+selftest (PARTIAL, 5 of 238 suites): 244 passed, 0 failed in 33.84s
+remote_run[pc2 79dbd6cbf96b 04:16:50]: rc=2 in 434s (run rr20261122040936-73a5)
+
+v258-service3
+raw_sha256=9968a3a20fa35206a59914de1ef86745066582d587f39ba0ca7765c9873d70ec
+  71_veldo_0138_channel_service                   13 passed   41.87s
+selftest (PARTIAL, 1 of 238 suites): 39 passed, 0 failed in 41.87s
+remote_run[pc2 6eb3ec57f323 04:14:19]: rc=2 in 169s (run rr20261122041130-f761)
+
+v258-setup
+raw_sha256=88492f76a911587feeab94ade7b905a43afe92a999853464e555f2b7a618d37f
+  73_veldo_0139_factory_setup                     17 passed   87.53s
+selftest (PARTIAL, 1 of 238 suites): 43 passed, 0 failed in 87.53s
+remote_run[pc2 6eb3ec57f323 04:13:34]: rc=2 in 125s (run rr20261122041129-2921)
+
+v258-tracker3
+raw_sha256=1c43144ba1f4946317ce86e938e2dcf39d41a8f5e1177fcb20aef363c49e73a9
+  SELFTEST FAIL: init scaffold gate is GREEN on the empty starter planno such run 'run-does-not-exist' (start it with veldo run)
+  SELFTEST FAIL: init scaffold gate still GREEN after a re-run
+  01_warp_0101_reviewer_notes                    611 passed   27.54s
+  03_plugin_extension_loading_runner             259 passed   21.31s
+  04_run_status_reader_veldo                     254 passed   15.12s
+  05_tracker_routing_resolver_veldo              251 passed    0.76s
+  06_capabilities_manifest_honesty_veldo         262 passed   18.01s
+  07_warp_1103_completion_mandatory              263 passed   12.12s
+  08_restoration_spec_generation_veldo           288 passed    7.75s
+  09_action_whitelist_warp_1205                  271 passed    0.28s
+  10_warp_0613_anti_vacuity                      261 passed    0.43s
+selftest (PARTIAL, 9 of 238 suites): 2746 passed, 2 failed in 103.31s
+remote_run[pc2 84932a01430c 03:56:24]: rc=1 in 110s (run rr20261122035434-9f3f)
+
+v258-parent-tracker2
+raw_sha256=7a75f04655a9c552247bc3ac77fb581189d4b1fbc5fa4fc87d425f5ac707bce0
+  SELFTEST FAIL: init scaffold gate is GREEN on the empty starter planno such run 'run-does-not-exist' (start it with veldo run)
+  SELFTEST FAIL: init scaffold gate still GREEN after a re-run
+  01_warp_0101_reviewer_notes                    611 passed   25.94s
+  03_plugin_extension_loading_runner             259 passed   20.92s
+  04_run_status_reader_veldo                     254 passed   14.82s
+  05_tracker_routing_resolver_veldo              251 passed    0.66s
+  06_capabilities_manifest_honesty_veldo         262 passed   17.53s
+  07_warp_1103_completion_mandatory              263 passed   12.30s
+  08_restoration_spec_generation_veldo           288 passed    8.26s
+  09_action_whitelist_warp_1205                  271 passed    0.30s
+  10_warp_0613_anti_vacuity                      261 passed    0.45s
+selftest (PARTIAL, 9 of 237 suites): 2746 passed, 2 failed in 101.17s
+remote_run[pc2 c65fcc2c7427 03:54:53]: rc=1 in 109s (run rr20261122035304-af16)
+
+v258-final-checks
+raw_sha256=b57264f850949fb780749a4b60108bf8f32965b34fe0c79dcb1ac4f2e5bf0558
+lint: pass (1274 python, 40 shell, 3.39s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+personal setup: 0 finding(s)
+control-plane register findings: []
+remote_run[mac cd7e31879ea3 04:17:10]: rc=0 in 14s (run rr20261122041656-d601)
+
