@@ -1,0 +1,25 @@
+{
+  "account": "claude-1",
+  "auth_exit": 1,
+  "binary_digest": "sha256:d2da3b003dc08b88b7230469014fe3e1dc6fe94bc8f648e89b34175d30269370",
+  "diagnostic_claude_version": "2.1.303",
+  "linux_claude_versions": [
+    "2.1.317"
+  ],
+  "linux_codex_version": "0.166.0",
+  "logged_in": false,
+  "mac_claude_versions_present": [],
+  "no_method": true,
+  "policy_digest": "sha256:b5c578714d7e1aa16481b91441084a3a63dac1e5a5b20a354b673027da1cbd65",
+  "profile_exists": true,
+  "profile_file_credential_exists": false,
+  "profile_module_digest": "sha256:bc2dffff5e43280ea3eeea5b9e863f8b06d2d35fdff598ac71bc0bd7300a9f94",
+  "qualification": false,
+  "reason": "no_subscription_login_in_keychain_denying_sandbox",
+  "retained_codex_installations": [
+    "codex-0.154.0"
+  ],
+  "schema": "veldo.macos_prerequisite_observation/v1",
+  "status": "blocked",
+  "subscription_method": false
+}

@@ -1,0 +1,79 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0147",
+  "commit": "5623ba86fb370f13aa2345dee7ee707934576233",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-11-22",
+  "status": "remaining",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "ref": "proof/VELDO-0147/READINESS.txt"
+        }
+      ],
+      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "ref": "proof/VELDO-0147/READINESS.txt"
+        }
+      ],
+      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "ref": "proof/VELDO-0147/READINESS.txt"
+        }
+      ],
+      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "ref": "proof/VELDO-0147/READINESS.txt"
+        }
+      ],
+      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "pending",
+      "detail": "No VELDO-0147 acceptance suite or mutation inventory implemented."
+    },
+    {
+      "name": "integration",
+      "status": "pending",
+      "detail": "Native diagnostic reports no subscription login for the retained Claude account; no real model turn or qualification performed."
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "Reserved for the lead by the task instructions."
+    },
+    {
+      "name": "independent_review",
+      "status": "not_run"
+    }
+  ],
+  "artifacts": {
+    "proof/VELDO-0147/READINESS.txt": "sha256:ff4bbb3e3d8c9709632fa4ebc3a5409cb07587608d47087748bf244d512f4cc2",
+    "proof/VELDO-0147/baseline-suites.txt": "sha256:bad4707f1d32431e4ba2d9f03ba83e4f3b00aa67816111f8ad65008f5d331c0c",
+    "proof/VELDO-0147/lint.txt": "sha256:94f240075cd7f6230a4c7fdd2a774775cc4742f99f8baff1efb6ef3a6fad1a69",
+    "proof/VELDO-0147/mac-preflight.txt": "sha256:5725b37332ee62fcdd8807cfd3e7e43626dcbae758e86fce04d3e8f52f02b574",
+    "proof/VELDO-0147/personal-setup.txt": "sha256:0a1888feaec94d11a9a2a92076dc4bb39c82ea53eba7ccd894c3448e72bae305",
+    "proof/VELDO-0147/preflight.py": "sha256:8c0dca68619ff7d5e46f88dda230485ea76e59b2d66435875608ec7b5f6a7d02"
+  }
+}
