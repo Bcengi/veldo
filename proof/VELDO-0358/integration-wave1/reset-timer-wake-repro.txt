@@ -1,0 +1,26 @@
+== suite 83 alone, the tree before the fix (b0dba70e), with the reset stated in the first fifth of a second of its window (scratch copy; the aid is the diff below)
+664a665,668
+>         # REPRODUCTION AID, scratch copy only: state the reset in the first fifth of a second of the window.
+>         import time as _phase
+>         while not (30.0 <= _phase.time() % 60 < 30.2):
+>             _phase.sleep(0.01)
+11:              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+20:  <tmp>: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+27:  <tmp>/proof4.json: criterion AC1 passed without evidence
+46:  VELDO-0154 loop/reset-timer-wake detail: at the reset the timer started a pass whose only source is the reset, and it offered the waiting unit on the account the reset freed [['account_reset'], []; that pass: {"pass": 4, "at": 1795314300.0003078, "refused": [{"follows": null, "identity": "builder-154", "refusals": ["missing_authority:claim"], "repository": "repo154b8482227d", "rerun_of": "dispatch/VELDO-9154-L4/a69ce931a6a44114b0198e0035dd5ad8", "station": "build", "unit": "VELDO-9154-L4"}], "waiting": [], "released": [], "faults": [], "provisioning": [{"at": 1795314300.0003273, "caller": "pass", "outcome": "done", "refusal": null, "schema": "veldo.reservation_provisioning/v1", "subjects": [{"caps": {"capacity": 20, "invocations": 200, "wall_seconds": 1000000}, "outcome": "unchanged", "scope": "project", "source": {"project": "journey"}, "subject": "journey", "version": 2}, {"caps": {"capacity": 20, "invocations": 200, "wall_seconds": 1000000}, "outcome": "unchanged", "scope": "account", "source": {"projects": ["journey"]}, "subject": "acct-y1", "version": 2}, {"caps": null, "outcome": "refused", "refusal": "missing_evidence:reservation_source:unit:VELDO-9154-L4", "scope": "unit", "source": {"project": "journey"}, "subject": "VELDO-9154-L4", "taxonomy": "missing_evidence"}], "taxonomy": null}, {"at": 1795314300.000686, "caller": "line:repo154b8482227d", "outcome": "done", "refusal": null, "schema": "veldo.reservation_provisioning/v1", "subjects": [{"caps": {"capacity": 20, "invocations": 200, "wall_seconds": 1000000}, "outcome": "unchanged", "scope": "project", "source
+47:  SELFTEST FAIL: VELDO-0154 loop/reset-timer-wake
+49:  83_veldo_0154_factory_loop                      14 passed  138.08s
+50:selftest (PARTIAL, 1 of 239 suites): 41 passed, 1 failed in 138.09s
+52:exit 1
+
+== the same aid over the fixed tree
+11:              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+20:  <tmp>: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+27:  <tmp>/proof4.json: criterion AC1 passed without evidence
+47:  83_veldo_0154_factory_loop                      15 passed  111.94s
+48:selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 111.95s
+50:exit 2
+
+== the fixed tree, no aid
+47:  83_veldo_0154_factory_loop                      15 passed   43.72s
+48:selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 43.72s

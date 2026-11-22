@@ -58,7 +58,49 @@ import subprocess
 import uuid
 from datetime import datetime, timezone
 
-STALE_AFTER_SECONDS = 90
+import sys
+
+
+def _timers():
+    """VELDO-0358 AC15: the one timers table of this installation (timers.py beside this file). Every module of
+    the directory shares it however it was loaded, so a profile a suite or a configuration selects reaches every
+    arming site. A copy of this module read alone, with no table beside it, keeps its own values."""
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')):
+        return None
+    key = 'veldo_timers:' + os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py')
+    table = sys.modules.get(key)
+    if table is None:
+        spec = _registry_import.spec_from_file_location(
+            key, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'timers.py'))
+        table = _registry_import.module_from_spec(spec)
+        spec.loader.exec_module(table)
+        table = sys.modules.setdefault(key, table)
+    return table
+
+
+TIMERS = _timers()
+_TIMER_DEFAULTS = {}
+
+
+def _contract(name, value):
+    """Register this module's contract timer `name` in the timers table at `value` (its value with no profile)."""
+    _TIMER_DEFAULTS[name] = value
+    if TIMERS is not None:
+        TIMERS.register('claim.' + name, value, 'claim', 'contract')
+    return value
+
+
+def _timer(name):
+    """The effective value of this module's timer `name` now: the table's, under any profile."""
+    return _TIMER_DEFAULTS[name] if TIMERS is None else TIMERS.effective('claim.' + name)
+
+
+# A contract timer (VELDO-0358 AC15): how long after its last heartbeat a claim is still its holder's. Nobody
+# renews the claim of a unit that waits with no run (for an account's reset, for a free slot), so on the path of
+# a suite this window is a clock the suite's own steps race: it is read from the timers table at each judgment,
+# and a suite's profile holds it at the wait hang bound unless the window is what its row tests. The name below
+# keeps the production value for its readers (the lander's heartbeat interval, the budget state's report).
+STALE_AFTER_SECONDS = _contract('STALE_AFTER_SECONDS', 90)
 
 # VELDO-0015: a heartbeat AHEAD of the reader's clock by more than this is not "alive", it is a
 # CLOCK DISAGREEMENT, and liveness is unanswerable. Generous on purpose: NTP-grade skew plus a
@@ -252,7 +294,7 @@ def liveness(rec, now_epoch=None):
     now = now_epoch if now_epoch is not None else _now_epoch()
     if (hb_epoch - now) > CLOCK_SKEW_TOLERANCE_SECONDS:
         return "unanswerable"
-    return "stale" if (now - hb_epoch) > STALE_AFTER_SECONDS else "live"
+    return "stale" if (now - hb_epoch) > _timer('STALE_AFTER_SECONDS') else "live"
 
 
 def _is_stale(rec, now_epoch=None):

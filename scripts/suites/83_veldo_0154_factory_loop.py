@@ -69,6 +69,8 @@ def _v154_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_reservations.py': ROOT / ".veldo" / "control_reservations.py",
         'control_account_pool.py': ROOT / ".veldo" / "control_account_pool.py",
+        # VELDO-0358, wave 1 integration: the claim's liveness window is read from the timers table (the reset row).
+        'claim.py': ROOT / ".veldo" / "claim.py",
     }
     ROWS = ('install/assets', 'loop/runner-in-service', 'loop/journal-wake-offers', 'loop/review-offered',
             'loop/receiver-death', 'loop/rerun-another-account', 'loop/ask-before-rerun', 'loop/owner-yes-reruns',
@@ -412,6 +414,12 @@ sys.exit(chosen['code'])
                     configured = Path(self.installed['config'])
                     configured.write_text(json.dumps(dict(json.loads(configured.read_text()), timers_profile={
                         'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})))
+                    # Wave 1 integration: and so do its launch receivers and their wrappers, which take the profile
+                    # from the receiver configuration (control_launch). Without it they armed the launch path's
+                    # timers, and judged a claim's liveness, at production values beside a profiled service.
+                    for one in sorted(((self.config.get('receiver') or {}).get('configs') or {}).values()):
+                        Path(one).write_text(json.dumps(dict(json.loads(Path(one).read_text()), timers_profile={
+                            'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})))
 
             def boot(self):
                 """The installed service: the unit's ExecStart, run on its installed configuration."""
@@ -665,7 +673,19 @@ sys.exit(chosen['code'])
         reset = end_of_minute(wall_now() + LEAD)
         script(U['L4'], 'build', [limited(reset - 30), SUCCESS])
         script(U['L4'], 'review', [SUCCESS])
-        B.claim(U['L4'])
+        # The unit's claim is as old as a waiting unit's is: nobody renews a claim while no run works for it, and
+        # this unit waits for its reset with none. Its last renewal is stated twice the production window of a
+        # claim's liveness before now, so the reset row never depends on where in a minute it began or on how late
+        # the reset pass ran: the window is a contract timer of the product (claim.STALE_AFTER_SECONDS), which this
+        # suite's profile holds at the wait hang bound in this process and in both services.
+        claim_window = CLM.CL.STALE_AFTER_SECONDS
+        renewed = wall_now() - 2 * claim_window
+        stated_now = CLM.CL._now
+        CLM.CL._now = lambda: datetime.datetime.fromtimestamp(renewed, datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        try:
+            B.claim(U['L4'])
+        finally:
+            CLM.CL._now = stated_now
         mark_b = B.last_pass()
         B.note()
         watch = {}
@@ -1081,6 +1101,15 @@ sys.exit(chosen['code'])
                   'that earliest reset [%s, %s, %s]' % (entry, (waiting or {}).get('timer'), reset),
                   len(entry) == 1 and entry[0]['until'] == reset and entry[0]['rerun_of'] == first_run.get('dispatch_id')
                   and waiting['timer'] == reset)
+            held = (B.entity(CLM.claim_id(B.REPO, U['L4'])) or {}).get('data') or {}
+            check('loop/reset-timer-wake', 'the unit\'s claim was last renewed longer before the reset than the claim\'s '
+                  'production window, and no run renewed it since its first run ended: the window is the timers '
+                  'table\'s, at the wait hang bound under this suite\'s profile [renewed %s, reset %s, window %s, %s]'
+                  % (held.get('heartbeat_at'), reset, claim_window, TIMERS.effective('claim.STALE_AFTER_SECONDS')),
+                  claim_window == 90 and TIMERS.effective('claim.STALE_AFTER_SECONDS') == WAITS.WAIT_HANG_SECONDS
+                  and isinstance(held.get('heartbeat_at'), str)
+                  and reset - datetime.datetime.strptime(held['heartbeat_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                      tzinfo=datetime.timezone.utc).timestamp() > claim_window)
             again = offered(woke, U['L4'], 'build')
             check('loop/reset-timer-wake', 'at the reset the timer started a pass whose only source is the reset, and it '
                   'offered the waiting unit on the account the reset freed [%s, %s; that pass: %s]'
@@ -1111,7 +1140,7 @@ sys.exit(chosen['code'])
         with region('timers/profile-applied'):
             hang = WAITS.WAIT_HANG_SECONDS
             mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
-                    'control_store.BUSY_SECONDS'}
+                    'control_store.BUSY_SECONDS', 'claim.STALE_AFTER_SECONDS'}
 
             def unset(report):
                 """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
