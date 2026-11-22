@@ -1,0 +1,64 @@
+# Fifty loaded runs of suite 151 at 1f0120c6 (after its census row's path fix), through host_heavy.sh, the confined launcher, 8 slots. Driver: loaded50.py.txt.
+queued 2026-11-22T04:42:58Z head 1f0120c6d
+started 2026-11-22T06:55:01Z load 43.29 29.01 36.16
+legs: {"151_veldo_0313_space_run": "confined"}
+151_veldo_0313_space_run run 03 (confined): pass 43.61
+151_veldo_0313_space_run run 07 (confined): pass 43.65
+151_veldo_0313_space_run run 00 (confined): pass 44.04
+151_veldo_0313_space_run run 02 (confined): pass 44.83
+151_veldo_0313_space_run run 01 (confined): pass 44.84
+151_veldo_0313_space_run run 05 (confined): pass 44.81
+151_veldo_0313_space_run run 04 (confined): pass 44.81
+151_veldo_0313_space_run run 06 (confined): pass 45.37
+151_veldo_0313_space_run run 08 (confined): pass 55.23
+151_veldo_0313_space_run run 12 (confined): pass 55.59
+151_veldo_0313_space_run run 14 (confined): pass 55.67
+151_veldo_0313_space_run run 13 (confined): pass 56.21
+151_veldo_0313_space_run run 10 (confined): pass 57.23
+151_veldo_0313_space_run run 11 (confined): pass 56.19
+151_veldo_0313_space_run run 09 (confined): pass 57.33
+151_veldo_0313_space_run run 15 (confined): pass 57.46
+151_veldo_0313_space_run run 16 (confined): pass 46.43
+151_veldo_0313_space_run run 20 (confined): pass 43.62
+151_veldo_0313_space_run run 21 (confined): pass 44.33
+151_veldo_0313_space_run run 17 (confined): pass 46.48
+151_veldo_0313_space_run run 18 (confined): pass 46.11
+151_veldo_0313_space_run run 19 (confined): pass 45.98
+151_veldo_0313_space_run run 23 (confined): pass 46.64
+151_veldo_0313_space_run run 22 (confined): pass 46.98
+151_veldo_0313_space_run run 25 (confined): pass 34.35
+151_veldo_0313_space_run run 24 (confined): pass 35.0
+151_veldo_0313_space_run run 26 (confined): pass 35.97
+151_veldo_0313_space_run run 27 (confined): pass 36.24
+151_veldo_0313_space_run run 28 (confined): pass 36.42
+151_veldo_0313_space_run run 29 (confined): pass 36.52
+151_veldo_0313_space_run run 30 (confined): pass 34.63
+151_veldo_0313_space_run run 31 (confined): pass 34.82
+151_veldo_0313_space_run run 33 (confined): pass 36.93
+151_veldo_0313_space_run run 32 (confined): pass 37.22
+151_veldo_0313_space_run run 34 (confined): pass 36.62
+151_veldo_0313_space_run run 36 (confined): pass 38.27
+151_veldo_0313_space_run run 37 (confined): pass 38.27
+151_veldo_0313_space_run run 35 (confined): pass 38.57
+151_veldo_0313_space_run run 38 (confined): pass 40.89
+151_veldo_0313_space_run run 39 (confined): pass 40.67
+151_veldo_0313_space_run run 41 (confined): pass 40.75
+151_veldo_0313_space_run run 40 (confined): pass 41.89
+151_veldo_0313_space_run run 42 (confined): pass 40.62
+151_veldo_0313_space_run run 44 (confined): pass 38.13
+151_veldo_0313_space_run run 43 (confined): pass 42.18
+151_veldo_0313_space_run run 45 (confined): pass 42.22
+151_veldo_0313_space_run run 46 (confined): pass 39.9
+151_veldo_0313_space_run run 47 (confined): pass 39.66
+151_veldo_0313_space_run run 48 (confined): pass 44.36
+151_veldo_0313_space_run run 49 (confined): pass 46.39
+{
+ "151_veldo_0313_space_run": {
+  "runs": 50,
+  "pass": 50,
+  "red": []
+ }
+}
+load record: {"applied": true, "cpus": [12, 13, 14, 15, 16, 17, 18, 19], "error": null, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000673076, "slowdown": 4.169, "waited_ns": 3171322953}, "problems": [], "schema": "veldo.gate-load/v1", "slots": 8, "spinners": [{"alive": true, "cpu": 12, "cpu_seconds": 99.46, "pid": 3717550}, {"alive": true, "cpu": 12, "cpu_seconds": 99.459, "pid": 3717552}, {"alive": true, "cpu": 12, "cpu_seconds": 99.46, "pid": 3717556}, {"alive": true, "cpu": 13, "cpu_seconds": 96.755, "pid": 3717557}, {"alive": true, "cpu": 13, "cpu_seconds": 96.756, "pid": 3717560}, {"alive": true, "cpu": 13, "cpu_seconds": 96.758, "pid": 3717561}, {"alive": true, "cpu": 14, "cpu_seconds": 96.341, "pid": 3717562}, {"alive": true, "cpu": 14, "cpu_seconds": 96.342, "pid": 3717563}, {"alive": true, "cpu": 14, "cpu_seconds": 96.342, "pid": 3717565}, {"alive": true, "cpu": 15, "cpu_seconds": 96.928, "pid": 3717566}, {"alive": true, "cpu": 15, "cpu_seconds": 96.924, "pid": 3717567}, {"alive": true, "cpu": 15, "cpu_seconds": 96.933, "pid": 3717570}, {"alive": true, "cpu": 16, "cpu_seconds": 99.229, "pid": 3717571}, {"alive": true, "cpu": 16, "cpu_seconds": 99.228, "pid": 3717572}, {"alive": true, "cpu": 16, "cpu_seconds": 99.229, "pid": 3717574}, {"alive": true, "cpu": 17, "cpu_seconds": 96.254, "pid": 3717576}, {"alive": true, "cpu": 17, "cpu_seconds": 96.252, "pid": 3717579}, {"alive": true, "cpu": 17, "cpu_seconds": 96.253, "pid": 3717582}, {"alive": true, "cpu": 18, "cpu_seconds": 96.906, "pid": 3717583}, {"alive": true, "cpu": 18, "cpu_seconds": 96.906, "pid": 3717585}, {"alive": true, "cpu": 18, "cpu_seconds": 96.905, "pid": 3717589}, {"alive": true, "cpu": 19, "cpu_seconds": 96.212, "pid": 3717593}, {"alive": true, "cpu": 19, "cpu_seconds": 96.211, "pid": 3717595}, {"alive": true, "cpu": 19, "cpu_seconds": 96.211, "pid": 3717596}], "spinners_per_cpu": 3, "writers": [{"alive": true, "bytes": 34896609280, "cpu_seconds": 11.166, "files": 129, "pid": 3717598}, {"alive": true, "bytes": 35433480192, "cpu_seconds": 11.248, "files": 131, "pid": 3717599}]}
+exit status 0
+end 2026-11-22T07:00:21Z load 52.38 47.33 42.75
