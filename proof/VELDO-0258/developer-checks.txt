@@ -63,3 +63,27 @@ template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
 personal setup: 0 finding(s)
 control-plane register findings: []
 remote_run[mac cd7e31879ea3 04:17:10]: rc=0 in 14s (run rr20261122041656-d601)
+
+v258-provision
+raw_sha256=fbf1815cfa5867fb966fd3e28ba1a449080e0c0ea7e1c24742af402757db345d
+  VELDO-0143 detail: pm cycle refused unavailable_service:runtime
+  SELFTEST FAIL: VELDO-0143 pm/new-project-run
+  SELFTEST FAIL: VELDO-0143 pm/graph-stage-own
+  SELFTEST FAIL: VELDO-0143 format/fake-lines
+  103_veldo_0142_git_identities                   23 passed   54.23s
+  109_veldo_0161_adoption                         55 passed   54.03s
+  110_veldo_0143_new_project                     106 passed   71.84s
+selftest (PARTIAL, 3 of 238 suites): 210 passed, 3 failed in 180.09s
+remote_run[pc2 0234cf6878b7 04:17:37]: rc=1 in 186s (run rr20261122041431-ae72)
+
+v258-parent-provision
+raw_sha256=b43a2d9154a94aac6574d13cd83bc1f77c38ee60971ab7923b95007791d4e531
+  VELDO-0143 detail: pm cycle refused unavailable_service:runtime
+  SELFTEST FAIL: VELDO-0143 pm/new-project-run
+  SELFTEST FAIL: VELDO-0143 pm/graph-stage-own
+  SELFTEST FAIL: VELDO-0143 format/fake-lines
+  103_veldo_0142_git_identities                   23 passed   58.20s
+  109_veldo_0161_adoption                         55 passed   56.53s
+  110_veldo_0143_new_project                     106 passed   72.68s
+selftest (PARTIAL, 3 of 237 suites): 210 passed, 3 failed in 187.40s
+remote_run[pc2 c65fcc2c7427 04:21:29]: rc=1 in 194s (run rr20261122041815-06cc)

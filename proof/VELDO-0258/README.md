@@ -72,7 +72,11 @@ The tracker prerequisite closure passed 2746 rows and failed two scaffold-gate
 assertions. The parent `c65fcc2c` on the same pc2 node has the identical two failures
 and counts: `init scaffold gate is GREEN on the empty starter plan` and
 `init scaffold gate still GREEN after a re-run`. This is a baseline comparison,
-not a waiver or a passing gate claim. An initial Mac attempt at suite 158 stopped
+not a waiver or a passing gate claim. The identity/adoption/new-project selection
+also has identical results on parent and change: 210 passed, three failures. All
+three (`pm/new-project-run`, `pm/graph-stage-own`, `format/fake-lines`) follow the
+PM runtime refusal `unavailable_service:runtime`; the identity and adoption suites
+pass every row. An initial Mac attempt at suite 158 stopped
 at the authority store's Linux filesystem qualification; its result is excluded.
 
 The confined finding-258 driver and VELDO-0254 launch-canary suite are queued
