@@ -14,6 +14,9 @@ def organ(name):
 
 I = organ('installation')
 C = organ('control_installation_config')
+# VELDO-0168: every text sent to a person goes through the channel's renderer, as
+# Channel.tell_secrets does; the owner's installation notices too.
+TEXT = organ('control_channel_presentation_text')
 
 
 def setup_module():
@@ -45,7 +48,8 @@ def start(service, store):
         presenter = channel.ingress.presenter
         enrollment = channel._entity(presenter.P.enrollment_id(decisions.owner))
         if enrollment:
-            presenter._send(enrollment['data']['chat_id'], json.dumps(event, sort_keys=True), None)
+            text = TEXT.message(json.dumps(event, sort_keys=True), free_text=False)
+            presenter._send(enrollment['data']['chat_id'], text, None)
 
     keystore = organ('control_credential_keystore').SecretService()
     def exists(name):

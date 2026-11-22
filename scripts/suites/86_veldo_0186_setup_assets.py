@@ -124,7 +124,9 @@ def _v186_suite():
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
         expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
                     'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json',
-                    'runtime/claude-mem-qualification.json']
+                    'runtime/claude-mem-qualification.json',
+                    # VELDO-0253: the installation schema and template are installed runtime assets too.
+                    'installation_schema/schema.json', 'installation_template/installation.yaml']
         for name in expected:
             target = installed / name
             check('runtime/assets', name + ' installed with digest', target.is_file()

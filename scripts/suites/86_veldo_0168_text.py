@@ -520,6 +520,10 @@ def _v168_suite():
                 ('control_space.py', 'Ledger.reconcile', 'self', '_send'),
                 ('control_space.py', 'Ledger.set_mode', 'self', '_send'),
                 ('control_service.py', 'reconcile_cli', 'client', 'send'),
+                # VELDO-0253: the installation repository's push is git, not a person; the owner's
+                # installation notice is rendered like Channel.tell_secrets (routes below).
+                ('control_installation_config.py', 'Loader.reconcile', 'self.repo', 'send'),
+                ('control_installation_service.py', 'start.tell', 'presenter', '_send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
             wanted_calls = Counter(wanted_calls)
@@ -549,6 +553,7 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'TEXT.visible'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'V.TEXT.message'),
                 ('control_service_channel.py', 'Channel.tell_secrets', 'V.TEXT.message'),
+                ('control_installation_service.py', 'start.tell', 'TEXT.message'),
                 ('control_conversation_channel.py', 'parts', 'TEXT.visible'),
                 ('control_conversation_channel.py', 'status_line', 'TEXT.message'),
                 ('control_conversation_channel.py', 'Messages.answer', 'TEXT.message'),
@@ -557,6 +562,7 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter._tell', 'text', 'TEXT.message(text, free_text=False)'),
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'line', 'TEXT.visible(line)'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'text', 'V.TEXT.message(text, free_text=False)'),
+                ('control_installation_service.py', 'start.tell', 'text', 'TEXT.message(json.dumps(event, sort_keys=True), free_text=False)'),
                 ('control_conversation_channel.py', 'parts', 'shown', 'TEXT.visible(TEXT.lines(reply), stats)'),
                 ('control_conversation_channel.py', 'status_line', 'text', 'TEXT.message(line, free_text=False)'),
                 ('control_conversation_channel.py', 'Messages.answer', 'sent', 'edge.send(chat, TEXT.message(text), reply_to=message)'),
