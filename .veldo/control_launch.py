@@ -792,8 +792,23 @@ def guard_observe(receiver, outcome, **details):
     if not sample:
         return
     receiver.store_guard = dict(sample, outcome=outcome, **details)
+    metric = outcome
+    if outcome == 'refused':
+        reason = receiver.store_guard.get('reason', '')
+        if reason == 'invalid_input:layout:switch':
+            metric = 'refused_switch'
+        elif reason.startswith('unavailable_service:confinement:store_guard:'):
+            metric = 'refused_kernel'
+        elif reason in ('confined_runner_unavailable:platform', 'confined_runner_unavailable:landlock_abi_below_6'):
+            metric = 'refused_risky_floor'
+        elif reason.startswith('confined_runner_unavailable:store_'):
+            metric = 'refused_census'
+        else:
+            metric = 'refused_layout'
+    elif outcome == 'enforce_failed':
+        metric += '_' + details.get('step', 'unreported')
     message = {'event': 'store_guard', 'store_guard': receiver.store_guard,
-               'metrics': {'store_guard_' + outcome: 1}}
+               'metrics': {'store_guard_' + metric: 1}}
     contract = getattr(receiver, 'contract', None)
     if contract is not None:
         # Pre-acceptance refusals have no execution recorder yet. Keep their sampled decision too.
