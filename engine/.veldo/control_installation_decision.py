@@ -16,6 +16,8 @@ Refused = WF.Refused
 
 
 class Decisions:
+    error_type = Refused
+
     def __init__(self, settlement, owner, principal, command_sign):
         self.settlement, self.owner, self.principal = settlement, owner, principal
         self.sign = command_sign

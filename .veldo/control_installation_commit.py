@@ -39,7 +39,7 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
             problems = WF.layout_problems(layout, definition)
         if problems:
             raise Refused(problems[0], codes=problems)
-        identity = loader.live['installation.yaml'].get('git_identities', {}).get(principal)
+        identity = loader.live[I.SETTINGS_FILE].get('git_identities', {}).get(principal)
         if identity is None:
             raise Refused('installation_missing:git_identities.' + principal)
         snapshot = loader.repo.snapshot(base_commit)
@@ -49,7 +49,9 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         _, problems = loader.validate(files)
         if problems:
             raise Refused(problems[0], codes=problems)
-        message = 'workflow %s base %d version %d command %s' % (workflow, base, base + 1, command_id)
+        head = WF._entity_row(loader.conn, WF.head_id(loader.domain, loader.workflow_repository, workflow))
+        version = base + int(not head or head['data'].get('definition_digest') != WF.definition_digest(definition))
+        message = 'workflow %s base %d version %d command %s' % (workflow, base, version, command_id)
         if retry:
             proposed = loader.repo.snapshot(pending_commit)
             if proposed['files'] != files:
@@ -82,5 +84,6 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         return answer
     except (Refused, loader.repo.error_type) as error:
         loader.saves['refused'] += 1
+        loader.save_refusals[error.code] = loader.save_refusals.get(error.code, 0) + 1
         loader.observe(dict(event, outcome='refused', reason=error.code))
         raise Refused(error.code, codes=getattr(error, 'codes', None)) from None

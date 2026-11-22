@@ -38,6 +38,7 @@ class Loader:
         self.identity = 'installation:' + V.digest([domain, str(Path(repository.folder).resolve())])
         self.status_id = self.identity + ':status'
         self.counts, self.refusals, self.saves = {}, {}, {'accepted': 0, 'refused': 0}
+        self.save_refusals = {}
         WF.attach_installation(store, conn, self)
 
     def record(self):
@@ -107,7 +108,7 @@ class Loader:
         previous, commit = self.accepted_commit, None
         try:
             if bootstrap and previous is not None:
-                raise Refused('installation_invalid:installation.yaml:$:already_initialized')
+                raise Refused('installation_invalid:%s:$:already_initialized' % I.SETTINGS_FILE)
             snapshot = self.repo.snapshot()
             commit = snapshot['commit']
             config, problems = self.validate(snapshot['files'])
@@ -153,18 +154,19 @@ class Loader:
             event = self._event(commit, previous, 'accepted', widening=changes)
             if made or (old_status.get('commit') == commit and old_status.get('made')):
                 try:
-                    self.repo.send(commit, config['installation.yaml'].get('git', {}).get('remote'))
+                    self.repo.send(commit, config[I.SETTINGS_FILE].get('git', {}).get('remote'))
                 except self.repo.error_type as error:
                     event['push_refusal'] = error.code
                     self.notify(dict(event, outcome='push_failed', problems=[error.code]))
             return event
-        except (self.repo.error_type, Refused, self.store.StoreRefused) as error:
+        except (self.repo.error_type, Refused, self.store.StoreRefused,
+                getattr(self.decisions, 'error_type', Refused)) as error:
             return self._event(commit, previous, 'refused', getattr(error, 'codes', [error.code]))
 
     def environment(self):
         if os.environ.get(I.ENVIRONMENT) == self.repo.folder:
-            os.environ['VELDO_INSTALLATION_COMMIT'] = self.accepted_commit
-            os.environ['VELDO_INSTALLATION_BRANCH'] = self.repo.branch
+            os.environ[I.COMMIT_ENVIRONMENT] = self.accepted_commit
+            os.environ[I.BRANCH_ENVIRONMENT] = self.repo.branch
 
     def bindings(self, config, writes):
         result = {}
@@ -203,6 +205,7 @@ class Loader:
     def metrics(self):
         record, status, now = self.record() or {}, self.status(), self.clock()
         return {'loads': dict(self.counts), 'refusals': dict(self.refusals), 'saves': dict(self.saves),
+                'save_refusals': dict(self.save_refusals),
                 'live_age': max(0, now - record.get('accepted_at', now)),
                 'waiting': int(status.get('outcome') == 'waiting'),
                 'waiting_age': max(0, now - status.get('since', now)) if status.get('outcome') == 'waiting' else 0}

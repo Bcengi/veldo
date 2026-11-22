@@ -189,8 +189,6 @@ _FILES = [
     ".veldo/control_installation_decision.py",
     ".veldo/control_installation_service.py",
     ".veldo/control_installation_setup.py",
-    ".veldo/installation_schema/schema.json",
-    ".veldo/installation_template/installation.yaml",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
@@ -576,6 +574,11 @@ _GATE = "scripts/verify.sh"
 # VELDO's suites, so an adopter has none and every stage of its gate is confined.
 _REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_legs.py', 'scripts/gate_schedule.py']
 _FILES += _REUSE_AUTHORITY
+# Asset names come from the installation reader, which owns its layout.
+_installation_spec = importlib.util.spec_from_file_location('scaffold_installation', Path(__file__).with_name('installation.py'))
+_installation = importlib.util.module_from_spec(_installation_spec)
+_installation_spec.loader.exec_module(_installation)
+_FILES += ['.veldo/' + name for name in _installation.PRODUCT_ASSETS]
 # VELDO-0220: the host holder travels with the gate. Its configuration (scripts/gate_host.json)
 # does not: it names this host's lock and limits, so an adopter has none, and its gate takes no
 # lock and makes no scope.

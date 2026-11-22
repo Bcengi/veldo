@@ -711,12 +711,7 @@
               "description": {
                 "type": "string"
               },
-              "input_schema": {
-                "type": "object",
-                "values": {
-                  "type": "string"
-                }
-              }
+              "input_schema": "json_schema"
             },
             "required": []
           }
@@ -743,34 +738,83 @@
             },
             "description": {
               "type": "string"
+            },
+            "termsOfService": {
+              "type": "string"
+            },
+            "contact": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              },
+              "required": []
+            },
+            "license": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "identifier": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": []
             }
           },
           "required": []
         },
         "paths": {
           "type": "object",
-          "values": {
+          "values": "api_path",
+          "key_pattern": "/[^\\x00]*"
+        },
+        "servers": {
+          "type": "array",
+          "items": "api_server"
+        },
+        "security": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "key_pattern": "[^\\x00]+"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
             "type": "object",
             "properties": {
-              "get": {
-                "type": "object",
-                "properties": {
-                  "operationId": {
-                    "type": "string"
-                  },
-                  "summary": {
-                    "type": "string"
-                  }
-                },
-                "required": []
+              "name": {
+                "type": "string"
               },
-              "post": {
+              "description": {
+                "type": "string"
+              },
+              "externalDocs": {
                 "type": "object",
                 "properties": {
-                  "operationId": {
+                  "url": {
                     "type": "string"
                   },
-                  "summary": {
+                  "description": {
                     "type": "string"
                   }
                 },
@@ -779,6 +823,85 @@
             },
             "required": []
           }
+        },
+        "externalDocs": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "jsonSchemaDialect": {
+          "type": "string"
+        },
+        "components": {
+          "type": "object",
+          "properties": {
+            "schemas": {
+              "type": "object",
+              "values": "json_schema",
+              "key_pattern": "[^\\x00]+"
+            },
+            "responses": {
+              "type": "object",
+              "values": "api_response",
+              "key_pattern": "[^\\x00]+"
+            },
+            "parameters": {
+              "type": "object",
+              "values": "api_parameter",
+              "key_pattern": "[^\\x00]+"
+            },
+            "requestBodies": {
+              "type": "object",
+              "values": "api_body",
+              "key_pattern": "[^\\x00]+"
+            },
+            "headers": {
+              "type": "object",
+              "values": "api_parameter",
+              "key_pattern": "[^\\x00]+"
+            },
+            "examples": {
+              "type": "object",
+              "values": {
+                "type": "json"
+              },
+              "key_pattern": "[^\\x00]+"
+            },
+            "securitySchemes": {
+              "type": "object",
+              "values": {
+                "type": "json"
+              },
+              "key_pattern": "[^\\x00]+"
+            },
+            "links": {
+              "type": "object",
+              "values": {
+                "type": "json"
+              },
+              "key_pattern": "[^\\x00]+"
+            },
+            "callbacks": {
+              "type": "object",
+              "values": {
+                "type": "json"
+              },
+              "key_pattern": "[^\\x00]+"
+            },
+            "pathItems": {
+              "type": "object",
+              "values": "api_path",
+              "key_pattern": "[^\\x00]+"
+            }
+          },
+          "required": []
         }
       },
       "required": [
@@ -896,6 +1019,449 @@
       "required": [
         "schema"
       ]
+    },
+    "json_schema": {
+      "one_of": [
+        {
+          "type": "boolean"
+        },
+        "json_schema_object"
+      ]
+    },
+    "json_schema_object": {
+      "type": "object",
+      "properties": {
+        "$id": {
+          "type": "string"
+        },
+        "$schema": {
+          "type": "string"
+        },
+        "$ref": {
+          "type": "string"
+        },
+        "$anchor": {
+          "type": "string"
+        },
+        "$comment": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "contentEncoding": {
+          "type": "string"
+        },
+        "contentMediaType": {
+          "type": "string"
+        },
+        "type": {
+          "type": "json"
+        },
+        "const": {
+          "type": "json"
+        },
+        "default": {
+          "type": "json"
+        },
+        "examples": {
+          "type": "json"
+        },
+        "enum": {
+          "type": "json"
+        },
+        "minimum": {
+          "type": "json"
+        },
+        "maximum": {
+          "type": "json"
+        },
+        "exclusiveMinimum": {
+          "type": "json"
+        },
+        "exclusiveMaximum": {
+          "type": "json"
+        },
+        "multipleOf": {
+          "type": "json"
+        },
+        "minLength": {
+          "type": "json"
+        },
+        "maxLength": {
+          "type": "json"
+        },
+        "minItems": {
+          "type": "json"
+        },
+        "maxItems": {
+          "type": "json"
+        },
+        "minContains": {
+          "type": "json"
+        },
+        "maxContains": {
+          "type": "json"
+        },
+        "minProperties": {
+          "type": "json"
+        },
+        "maxProperties": {
+          "type": "json"
+        },
+        "uniqueItems": {
+          "type": "boolean"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "writeOnly": {
+          "type": "boolean"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "additionalProperties": "json_schema",
+        "unevaluatedProperties": "json_schema",
+        "propertyNames": "json_schema",
+        "items": "json_schema",
+        "contains": "json_schema",
+        "not": "json_schema",
+        "if": "json_schema",
+        "then": "json_schema",
+        "else": "json_schema",
+        "allOf": {
+          "type": "array",
+          "items": "json_schema"
+        },
+        "anyOf": {
+          "type": "array",
+          "items": "json_schema"
+        },
+        "oneOf": {
+          "type": "array",
+          "items": "json_schema"
+        },
+        "prefixItems": {
+          "type": "array",
+          "items": "json_schema"
+        },
+        "properties": {
+          "type": "object",
+          "values": "json_schema",
+          "key_pattern": "[^\\x00]+"
+        },
+        "patternProperties": {
+          "type": "object",
+          "values": "json_schema",
+          "key_pattern": "[^\\x00]+"
+        },
+        "$defs": {
+          "type": "object",
+          "values": "json_schema",
+          "key_pattern": "[^\\x00]+"
+        },
+        "definitions": {
+          "type": "object",
+          "values": "json_schema",
+          "key_pattern": "[^\\x00]+"
+        },
+        "dependentSchemas": {
+          "type": "object",
+          "values": "json_schema",
+          "key_pattern": "[^\\x00]+"
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependentRequired": {
+          "type": "object",
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": []
+    },
+    "api_media": {
+      "type": "object",
+      "properties": {
+        "schema": "json_schema",
+        "example": {
+          "type": "json"
+        },
+        "examples": {
+          "type": "object",
+          "values": {
+            "type": "json"
+          },
+          "key_pattern": "[^\\x00]+"
+        },
+        "encoding": {
+          "type": "object",
+          "values": {
+            "type": "json"
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": []
+    },
+    "api_parameter": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "in": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "allowEmptyValue": {
+          "type": "boolean"
+        },
+        "style": {
+          "type": "string"
+        },
+        "explode": {
+          "type": "boolean"
+        },
+        "allowReserved": {
+          "type": "boolean"
+        },
+        "schema": "json_schema",
+        "example": {
+          "type": "json"
+        },
+        "examples": {
+          "type": "object",
+          "values": {
+            "type": "json"
+          },
+          "key_pattern": "[^\\x00]+"
+        },
+        "content": {
+          "type": "object",
+          "values": "api_media",
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": []
+    },
+    "api_response": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "headers": {
+          "type": "object",
+          "values": "api_parameter",
+          "key_pattern": "[^\\x00]+"
+        },
+        "content": {
+          "type": "object",
+          "values": "api_media",
+          "key_pattern": "[^\\x00]+"
+        },
+        "links": {
+          "type": "object",
+          "values": {
+            "type": "json"
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": []
+    },
+    "api_body": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "content": {
+          "type": "object",
+          "values": "api_media",
+          "key_pattern": "[^\\x00]+"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    },
+    "api_operation": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "summary": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "externalDocs": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "operationId": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "array",
+          "items": "api_parameter"
+        },
+        "requestBody": "api_body",
+        "responses": {
+          "type": "object",
+          "values": "api_response",
+          "key_pattern": "[^\\x00]+"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "security": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "key_pattern": "[^\\x00]+"
+          }
+        },
+        "servers": {
+          "type": "array",
+          "items": "api_server"
+        },
+        "callbacks": {
+          "type": "object",
+          "values": {
+            "type": "json"
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": []
+    },
+    "api_server": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "variables": {
+          "type": "object",
+          "values": {
+            "type": "object",
+            "properties": {
+              "enum": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "default": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "default"
+            ]
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "api_path": {
+      "type": "object",
+      "properties": {
+        "get": "api_operation",
+        "put": "api_operation",
+        "post": "api_operation",
+        "delete": "api_operation",
+        "options": "api_operation",
+        "head": "api_operation",
+        "patch": "api_operation",
+        "trace": "api_operation",
+        "$ref": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "servers": {
+          "type": "array",
+          "items": "api_server"
+        },
+        "parameters": {
+          "type": "array",
+          "items": "api_parameter"
+        }
+      },
+      "required": []
     }
   },
   "widening": {

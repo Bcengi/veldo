@@ -1006,7 +1006,7 @@ def installation_revisions(conn, domain, repository, snapshot, config, principal
     changes = {}
     # Import every earlier definition once; pins retain their original revision
     # and digest, including revisions no longer at a workflow's head.
-    for rid, raw in conn.execute('SELECT id, data FROM entities WHERE kind=?', (REVISION_KIND,)):
+    for rid, raw in conn.execute('SELECT id, data FROM entities WHERE kind=? ORDER BY id', (REVISION_KIND,)):
         data = json.loads(raw)
         if 'definition' not in data:
             continue
@@ -1047,7 +1047,8 @@ def installation_revisions(conn, domain, repository, snapshot, config, principal
                      'revision': rid, 'definition_digest': dd, 'digest': definition_digest(record)}
         lid = 'workflow-layout:' + json.dumps([domain, repository, workflow, snapshot['commit']], separators=(',', ':'))
         changes[lid] = {'kind': LAYOUT_KIND, 'data': {'layout': layout, 'layout_digest': ld, 'commit': snapshot['commit']}}
-        changes[hid] = {'kind': HEAD_KIND, 'data': dict(prior, commit=snapshot['commit'], layout_record=lid, deleted=False)}
+        changes[hid] = {'kind': HEAD_KIND, 'data': dict(prior, commit=snapshot['commit'], layout_record=lid, deleted=False,
+            source={'commit': snapshot['commit'], 'path': path, 'blob': snapshot['blobs'][path]})}
     prefix = 'workflow-head:'
     for eid, text in conn.execute('SELECT id, data FROM entities WHERE kind=?', (HEAD_KIND,)):
         head = json.loads(text)
@@ -1162,6 +1163,8 @@ class Workflows:
                 layout = _entity_row(self.conn, head['data']['layout_record'])
                 if layout:
                     data = dict(data, **{key: layout['data'][key] for key in ('layout', 'layout_digest')})
+                if 'source' not in data and head['data'].get('source'):
+                    data = dict(data, source=head['data']['source'])
         except (Refused, sqlite3.Error) as error:
             if not isinstance(error, Refused):
                 error = Refused('unavailable_service:store', type(error).__name__)
@@ -1174,8 +1177,7 @@ class Workflows:
                 'definition': data['definition'], 'layout': data['layout'],
                 'definition_digest': data['definition_digest'], 'layout_digest': data['layout_digest'],
                 'previous': data['previous'], 'saved': data['saved'], 'source': data.get('source'),
-                'configuration_commit': getattr(self.conn, 'installation_loader', None).accepted_commit
-                if getattr(self.conn, 'installation_loader', None) else None}
+                'configuration_commit': _organ('installation').configuration_commit(self.conn)}
 
     def history(self, workflow):
         """Every stored version of a workflow, oldest first, each {version, revision, definition_digest}."""

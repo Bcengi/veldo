@@ -844,7 +844,7 @@ def runtime_assets(members):
         except OSError:
             raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None
     if 'control_installation_schema.py' in members:
-        for name in ('installation_schema/schema.json', 'installation_template/installation.yaml'):
+        for name in _organ('installation').PRODUCT_ASSETS:
             try:
                 assets[name] = (HERE / name).read_bytes()
             except OSError:

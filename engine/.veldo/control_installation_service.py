@@ -36,7 +36,7 @@ def start(service, store):
         if owner:
             signature = organ('control_signer')
             decisions = organ('control_installation_decision').Decisions(channel.ingress.settlement, owner,
-                service.principal, lambda body: signature.sign_bytes(service.config['journal_key'], body,
+                'pm', lambda body: signature.sign_bytes(service.config['journal_key'], body,
                     organ('authority_contract').SIGNATURE_NAMESPACE))
 
     def tell(event):
@@ -68,6 +68,9 @@ def start(service, store):
         # The API and channel share their own connection. Both read the same accepted records.
         if service.api is not None and service.api.conn is not service.conn:
             C.Loader(store, service.api.conn, repo, **common)
+        if channel is not None and channel.ingress.conn is not service.conn and (
+                service.api is None or channel.ingress.conn is not service.api.conn):
+            C.Loader(store, channel.ingress.conn, repo, **common)
         return loader, watch
     except BaseException:
         watch.close()
