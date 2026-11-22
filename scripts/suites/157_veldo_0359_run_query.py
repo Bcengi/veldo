@@ -50,7 +50,7 @@ def _v359_query_suite():
     def stable(value):
         if isinstance(value, dict):
             return {k: stable(v) for k, v in value.items()
-                    if k not in ('decision_id', 'follows', 'at', 'oldest_pending_age_seconds')}
+                    if k not in ('decision_id', 'follows', 'offer', 'selection', 'at', 'oldest_pending_age_seconds')}
         if isinstance(value, (tuple, list)):
             return [stable(v) for v in value]
         return value
@@ -382,6 +382,180 @@ def _v359_query_suite():
         check('query/lifecycle', 'leftover does not affect next launch', leftover.exists()
               and Q.RemoteGate(repo, later.path).repository_uuid == 'repo-one')
         later.close()
+
+        # Production Receiver.launch and _spawn, with only prerequisite/engine seams replaced.
+        # The payload is a tiny Python process; its stdin is the event that ends the run.
+        payload = base / 'payload.py'
+        payload.write_text("""import json, os, sqlite3, sys
+from pathlib import Path
+query = os.environ.get('VELDO_RUN_QUERY')
+conn = sqlite3.connect(sys.argv[1])
+conn.execute('SELECT 1 FROM entities LIMIT 1').fetchone()
+conn.close()
+print(json.dumps({'query': query, 'store_open': True}), flush=True)
+sys.stdin.buffer.read(1)
+""")
+        harness = base / 'receiver.py'
+        harness.write_text("""import importlib.util, json, os, subprocess, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('fixture_launch', sys.argv[2])
+L = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(L)
+sys.argv = [sys.argv[0], sys.argv[1]]
+class Dispatches:
+    def __init__(self, receiver):
+        self.receiver = receiver
+        self.state = 'prepared'
+    def record(self, dispatch):
+        return {'state': self.state, 'contract_digest': L.D.digest(self.receiver.config['fixture_contract'])}
+    def accept(self, *args, **kwargs):
+        r = self.receiver
+        ready = r.query_server is not None and r.query_server.ready.is_set()
+        r.emit({'event': 'accept_probe', 'ready': ready, 'path': str(r.query_server.path) if ready else None})
+        if r.config.get('fail_accept'):
+            raise L.D.Refused('fixture_accept_refused')
+        self.state = 'accepted'
+    def receipt(self, *args):
+        return 'fixture-acceptance'
+    def refuse(self, *args, **kwargs):
+        self.state = 'refused'
+    def run(self, *args, **kwargs):
+        self.state = 'running'
+class Receiver(L.Receiver):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dispatches = Dispatches(self)
+    def _recheck(self, *args): pass
+    def _qualify(self, *args): pass
+    def _login(self, *args): pass
+    def _bind(self, *args): pass
+    def _space_end(self, *args): pass
+    def _resolve_credentials(self, *args): pass
+    def _space_given(self, dispatch, argv, environment, adapter): return environment
+    def _record(self, adapter, environment): pass
+    def _invoke(self, contract, acceptance, adapter):
+        if self.config.get('flip_after_sample'):
+            Path(self.store_guard['path']).write_text('later launches')
+        return self._spawn(contract['dispatch_id'], acceptance, adapter)
+    def _contained(self, dispatch, argv, environment, cwd=None):
+        return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment)
+    def _reap(self, worker, contract, carry, **kwargs):
+        payload = json.loads(worker.stdout.readline())
+        self.emit({'event': 'payload', 'pid': worker.pid, **payload})
+        if self.config.get('wait_payload'):
+            sys.stdin.buffer.read(1)
+        if worker.poll() is None:
+            try:
+                worker.stdin.write(b'x'); worker.stdin.flush()
+            except BrokenPipeError: pass
+        code = worker.wait(timeout=10)
+        self.emit({'event': 'payload_exit', 'code': code})
+        return code
+    def _finish(self, *args):
+        self.dispatches.state = 'exited'
+        self.emit({'event': 'exited'})
+L.Receiver = Receiver
+L.main()
+""")
+        real_popen = L.subprocess.Popen
+        children = []
+        def spawn_receiver(argv, **kwargs):
+            # invoke owns the receiver as in production; its executable is this fixture harness.
+            argv = [sys.executable, '-B', str(harness), argv[-1], str(mods / 'control_launch.py')]
+            child = real_popen(argv, **kwargs)
+            children.append(child)
+            return child
+        def read_event(child, pending, wanted):
+            deadline = time.monotonic() + 30
+            while True:
+                while b'\n' in pending[0]:
+                    line, _, pending[0] = pending[0].partition(b'\n')
+                    value = json.loads(line)
+                    pending[1].append(value)
+                    if value.get('event') in wanted:
+                        return value
+                with selectors.DefaultSelector() as sel:
+                    sel.register(child.stdout, selectors.EVENT_READ)
+                    assert sel.select(max(.001, deadline - time.monotonic())), 'receiver event deadline'
+                    data = os.read(child.stdout.fileno(), 65536)
+                assert data, ('receiver ended before event', wanted, pending[1])
+                pending[0] += data
+                assert time.monotonic() < deadline, 'receiver event deadline'
+        def run_fixture(label, **options):
+            cfg = dict(config, state_root=str(base / 'state'), adapters={'fixture': {'argv': [sys.executable, '-B', str(payload), str(db)]}})
+            cfg.update(options)
+            cfg_path = base / (label + '.json')
+            contract = dict(dispatch_id=label, unit='VELDO-9359', station='build', capability={'adapter': 'fixture'},
+                            reservation={'project': 'fixture'}, input={'context': {}}, deadline=time.time() + 60)
+            cfg['fixture_contract'] = contract
+            cfg_path.write_text(json.dumps(cfg))
+            with patch.object(L.subprocess, 'Popen', spawn_receiver), patch.object(L.Launch, 'start', lambda self, seconds: self):
+                launch = L.invoke(str(cfg_path), contract, None)
+            return launch, [b'', []]
+        def reap(launch):
+            launch.child.wait(timeout=30)
+            launch._end_receiver()
+        for label, ending in (('normal-end', 'normal'), ('killed-engine', 'engine'), ('killed-receiver', 'receiver')):
+            launch, pending = run_fixture(label, wait_payload=True)
+            seen = read_event(launch.child, pending, {'payload'})
+            path = Q.endpoint(label)
+            accepted_events = [e for e in pending[1] if e.get('event') == 'accept_probe']
+            check('query/lifecycle', label + ' ready before acceptance', accepted_events and accepted_events[0]['ready']
+                  and seen['query'] == str(path) and Path(path).exists())
+            if ending == 'engine':
+                os.kill(seen['pid'], signal.SIGKILL)
+                launch.child.stdin.write(b'x'); launch.child.stdin.flush()
+                reap(launch)
+            elif ending == 'receiver':
+                # The actual supervising Launch owns cleanup after observing its receiver exit.
+                launch.child.kill()
+                launch._end_receiver()
+                # End only the fixture payload the receiver left behind.
+                with contextlib.suppress(ProcessLookupError):
+                    os.kill(seen['pid'], signal.SIGKILL)
+            else:
+                launch.child.stdin.write(b'x'); launch.child.stdin.flush()
+                reap(launch)
+            check('query/lifecycle', label + ' endpoint removed', not path.parent.exists())
+            check('query/lifecycle', label + ' receiver exited', launch.returncode is not None)
+        launch, pending = run_fixture('accept-refusal', fail_accept=True)
+        refused = read_event(launch.child, pending, {'refused'})
+        reap(launch)
+        check('query/lifecycle', 'later refusal removes endpoint', refused['refusal'] == 'fixture_accept_refused'
+              and not Q.endpoint('accept-refusal').parent.exists() and not any(e.get('event') == 'payload' for e in pending[1]))
+        bad_cfg = dict(config, store=str(db), workspace=str(base / 'missing-workspace'))
+        # Creation and readiness failures reach the receiver's pre-acceptance refusal, not a spawn.
+        for label, change in (('launch-creation-failure', {}), ('launch-reader-failure', {'workspace': bad_cfg['workspace']})):
+            path = Q.endpoint(label)
+            if not change:
+                path.parent.mkdir()
+            launch, pending = run_fixture(label, **change)
+            refused = read_event(launch.child, pending, {'refused'})
+            # No endpoint ownership was acquired on collision: preserve the existing directory.
+            launch.query_endpoint = None if not change else launch.query_endpoint
+            reap(launch)
+            check('query/lifecycle', label, refused['refusal'] == 'unavailable_service:run_query'
+                  and not any(e.get('event') in ('accepted', 'payload') for e in pending[1]))
+        # Sample once: changing the marker after acceptance never changes this run's query variable.
+        launch, pending = run_fixture('sample-once', flip_after_sample=True)
+        seen = read_event(launch.child, pending, {'payload'})
+        reap(launch)
+        check('switch/off', 'single held sample', seen['query'] == str(Q.endpoint('sample-once')))
+        marker = db.parent / 'store-guard.off'
+        check('switch/off', 'fixture created marker only', marker.exists())
+        launch, pending = run_fixture('marker-off')
+        seen = read_event(launch.child, pending, {'payload'})
+        reap(launch)
+        accepted_event = next(e for e in pending[1] if e.get('event') == 'accepted')
+        check('switch/off', 'marker restores direct reads and removes inherited variable', seen['query'] is None and seen['store_open']
+              and accepted_event['store_guard']['state'] == 'off' and accepted_event['store_guard']['path'] == str(marker))
+        marker.unlink()
+        # The namespace-less conversation receiver still launches; it grants no repository answers.
+        conversation = Q.Server({k: v for k, v in dict(config, receiver_kind='conversation').items()
+                                 if k not in ('repository', 'workspace')}, 'conversation').start()
+        check('query/scope', 'conversation has no repository',
+              stopped(lambda: Q.RemoteGate(repo, conversation.path)) == 'run_query:other_repository')
+        conversation.close()
 
         marker = db.parent / 'store-guard.off'
         check('switch/off', 'absent means on', Q.switch(db)['state'] == 'on')
