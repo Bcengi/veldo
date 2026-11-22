@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -489 +489 @@
+@@ -698 +698 @@
 -        for other in self.live:
 +        for other in ():

@@ -1,6 +1,6 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -1069 +1069,3 @@
+@@ -1307 +1307,3 @@
 -        failure(r, "collector_death", f"collector terminal status {status}")
 +        r.update(status='COMPLETE', capture_status='COMPLETE', state='drained', failures=[],
 +                 events=[], processes=[], sockets=[])

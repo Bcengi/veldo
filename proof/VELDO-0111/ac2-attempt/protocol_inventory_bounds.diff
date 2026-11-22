@@ -1,5 +1,0 @@
---- a/scripts/fixtures/lifecycle_census.py
-+++ b/scripts/fixtures/lifecycle_census.py
-@@ -287,0 +288,2 @@
-+        if capability == 'protocol_inventory_bounds':
-+            return

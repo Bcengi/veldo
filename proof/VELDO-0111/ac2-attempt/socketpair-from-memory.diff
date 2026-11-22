@@ -1,8 +1,8 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -778 +778 @@
+@@ -1015 +1015 @@
 -            if created != sorted(struct.unpack("<2i", self.memory(pid, a[3], 8))):
 +            if False and created != sorted(struct.unpack("<2i", self.memory(pid, a[3], 8))):
-@@ -780 +780 @@
+@@ -1017 +1017 @@
 -            for fd in created:
 +            for fd in struct.unpack("<2i", self.memory(pid, a[3], 8)):

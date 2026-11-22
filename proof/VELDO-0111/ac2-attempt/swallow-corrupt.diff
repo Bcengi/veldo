@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -678 +678 @@
+@@ -897 +897 @@
 -            op = 255
 +            op = raw[0]

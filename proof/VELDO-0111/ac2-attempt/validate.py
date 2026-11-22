@@ -24,7 +24,9 @@ def main():
                  recheck_digest=HERE / 'recheck.py', witness_digest=HERE / 'socket_destruction.py',
                  shared_witness_digest=HERE / 'shared_memory.py', memory_aba_digest=HERE / 'memory_aba.py',
                  unconfined_declaration_digest=ROOT / 'scripts/gate_unconfined.json')
-    assert report['recheck_completed'] and report['next_obligation'] == 'protocol_inventory_bounds'
+    assert report['recheck_completed'] and report['next_obligation'] is None
+    assert qualification['next_obligation'] is None and qualification['acceptance']['AC2'] is False
+    assert report['qualification']['gaps'] == [] and report['qualification']['reasons'] == []
     assert qualification['receipt_digest'] == sha(HERE / 'receipt.json')
     for key, path in paths.items():
         assert report[key] == sha(path), key
@@ -33,7 +35,7 @@ def main():
     assert all(case['completed'] for case in report['cases'])
     for label in ('baseline', 'final-control'):
         case, = [c for c in report['cases'] if c['label'] == label]
-        assert len(case['rows']) == 17 and all(ok for _, ok in case['rows'])
+        assert len(case['rows']) == 22 and all(ok for _, ok in case['rows'])
     for mode in ('owned', 'sendmmsg', 'imported'):
         for label in ('green', 'ignore-scm-rights', 'ignore-scm-rights-and-release'):
             case, = [c for c in report['cases'] if c['label'] == 'escaped-reference-' + mode + '-' + label]
@@ -63,6 +65,18 @@ def main():
                   'ignore-sharers-red', 'ignore-seccomp-listener-red', 'drop-netlink-implicit-red'):
         case, = [c for c in report['cases'] if c['label'] == label]
         assert case['completed'] and not all(ok for _, ok in case['rows'])
+    # Continuation 2: each retained obligation's mutants redden exactly their row.
+    for row, labels in (
+            ('census/protocol-inventory-covers-kernel', ('narrow-protocol-scan', 'trust-registry')),
+            ('census/undiscovered-protocol-refused', ('skip-undiscovered-refusal',)),
+            ('census/protocol-specific-operations', ('generic-l2tp-address', 'drop-kernel-address-decoding',
+                                                     'ignore-sctp-bindx', 'ignore-l2tp-conn-id')),
+            ('census/io-uring-refused-in-scope', ('skip-inherited-ring-scan', 'ignore-installed-rings')),
+            ('census/compat-abi-qualified', ('drop-i386-socket-map', 'native-compat-message-layout',
+                                             'drop-compat-socketcall-messages', 'compat-aliases-native'))):
+        for label in labels:
+            case, = [c for c in report['cases'] if c['label'] == label + '-red']
+            assert case['completed'] and dict(case['rows'])[row] is False, label
     expected_names = {
         'VELDO-0113': ['unavailable/no-client-starts-the-authority', 'unavailable/no-client-hosts-a-listener',
                        'unavailable/no-auto-start-needs-census'],
@@ -82,7 +96,7 @@ def main():
     total = sum(p.stat().st_size for p in HERE.parent.rglob('*') if p.is_file())
     assert total < 1_000_000, total
     print('Receipt, source, suite, spec, witness and protected-declaration digests: valid')
-    print('Baseline/final: 17 green rows each; escape, release, control/memory-ABA matrices and eight fault receipts: valid')
+    print('Baseline/final: 22 green rows each, no qualification gaps; 13 continuation-2 mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid')
     print('Retained zero-context diffs: apply cleanly')
     print('Proof bytes:', total, '(below 1 MB)')
     spec = importlib.util.spec_from_file_location('personal_setup', ROOT / 'scripts/check_personal_setup.py')

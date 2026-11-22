@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -572 +572 @@
+@@ -781 +781 @@
 -            return None
 +            return dict(unix_name_hex='00', sockaddr_hex='010000')

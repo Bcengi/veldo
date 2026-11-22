@@ -7,139 +7,8 @@
     "python": "3.12.3",
     "system": "Linux"
   },
-  "gaps": [
-    "io_uring_socket_effects",
-    "operation_configuration",
-    "protocol_inventory_bounds"
-  ],
-  "reasons": [
-    {
-      "capability": "protocol_inventory_bounds",
-      "reason": "bounded protocol discovery does not fully qualify the four required families",
-      "evidence": {
-        "qualification_families": [
-          1,
-          2,
-          10,
-          16
-        ],
-        "protocol_scope": {
-          "inet": [
-            0,
-            255,
-            262
-          ],
-          "netlink": [
-            0,
-            31
-          ],
-          "other": [
-            0
-          ]
-        }
-      }
-    },
-    {
-      "capability": "operation_configuration",
-      "reason": "available socket needs a qualified address or operation configuration",
-      "evidence": {
-        "family": 10,
-        "type": 2,
-        "protocol": 115,
-        "operations": [
-          {
-            "operation": "bind",
-            "result": -1,
-            "errno": 22
-          }
-        ],
-        "gap": "operation_configuration"
-      }
-    },
-    {
-      "capability": "io_uring_socket_effects",
-      "reason": "shared ring completions are not correlated to traced socket identities",
-      "evidence": {
-        "available": true,
-        "errno": 0,
-        "socket_effect": {
-          "attempted": true,
-          "enter_result": 1,
-          "errno": 0,
-          "completion_result": 6,
-          "inode": "socket:[4222575458]"
-        },
-        "probe_errno": 0,
-        "supported_opcodes": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          21,
-          22,
-          23,
-          24,
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31,
-          32,
-          33,
-          34,
-          35,
-          36,
-          37,
-          38,
-          39,
-          40,
-          41,
-          42,
-          43,
-          44,
-          45,
-          46,
-          47,
-          48,
-          49,
-          50,
-          51,
-          52,
-          53,
-          54,
-          55,
-          56,
-          57,
-          58,
-          59,
-          60,
-          61,
-          62,
-          63,
-          64
-        ]
-      }
-    }
-  ],
+  "gaps": [],
+  "reasons": [],
   "consumer_rows": {
     "VELDO-0113": [
       {
@@ -203,14 +72,15 @@
       }
     ]
   },
-  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-  "suite_digest": "b17f9faf4fb0cff41454c7295c8596c3f1d28f324adbe441aad26f2f6cd4a072",
+  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+  "suite_digest": "16186fa2f4dee1844af95c9912d236b5519f37e4a8a2ef05394d548414e11e6f",
   "spec_digest": "8df8ec438086c033a0e9fb8475ed7c557a95d36be01ab16caac5ee299e12456c",
   "acceptance": {
-    "AC2": false
+    "AC2": false,
+    "pending": "independent review"
   },
-  "next_obligation": "protocol_inventory_bounds",
+  "next_obligation": null,
   "current_receipt": "ac2-attempt/receipt.json",
-  "receipt_digest": "2179d95a131d2a5d8e6cfc1a6610c8a01073eb4d5b77941c63c7bb3205718ade",
-  "scope": "Live regression and counterexample evidence; full AC2 qualification remains INCOMPLETE"
+  "receipt_digest": "7d9fc6653959245ab89c6b89d6da3491f537c71216ecef563e6d457ab021665d",
+  "scope": "Live regression and counterexample evidence; retained AC2 obligations are addressed; acceptance awaits independent review"
 }

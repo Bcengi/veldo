@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -936 +936 @@
+@@ -1174 +1174 @@
 -                    if req.get("fault") == "loss":
 +                    if False: # swallowed loss

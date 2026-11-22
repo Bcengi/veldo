@@ -1,8 +1,8 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -537 +537 @@
+@@ -746 +746 @@
 -            elif obj['inode'] in alive:
 +            elif False:  # ignore references after drain
-@@ -748 +748 @@
+@@ -981 +981 @@
 -            self.sent_rights(pid, entry, result)
 +            pass  # ignore SCM_RIGHTS sends

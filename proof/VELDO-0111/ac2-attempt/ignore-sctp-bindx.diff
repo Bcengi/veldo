@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -976 +976 @@
+-        if nr in (54, 55) and a[1] == 132 and (nr, a[2]) in SCTP_UNQUALIFIED:
++        if False and nr in (54, 55) and a[1] == 132 and (nr, a[2]) in SCTP_UNQUALIFIED:

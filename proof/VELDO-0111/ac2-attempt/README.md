@@ -1,24 +1,56 @@
 # AC2 continuation, 2026-11-21
 
-Base: `7f1ea5e0`, branch `veldo-0111-complete`. The lead's 2026-11-21 decision
+Base: `b36e4781`, branch `veldo-0111-complete`. The lead's 2026-11-21 decision
 is recorded in the specification History. The owner's 2026-10-28 amendment is
-kept and not weakened. **AC2 remains INCOMPLETE.**
+kept and not weakened. **All retained AC2 obligations are addressed; AC2
+acceptance awaits independent review.**
 
 ## Results
 
 One recheck through the owner's external `host_heavy.sh` completed with exit 0
-(`recheck.txt`, `validation.txt`). Baseline and final control: 17/17 rows. All
-whole-suite mutants, witness mutants and named-gap replays were detected; all
-controls were green. The host's remaining named gaps are
-`protocol_inventory_bounds`, `operation_configuration` and
-`io_uring_socket_effects`; `socket_destruction` and `shared_socket_memory` no
-longer appear as host gaps. Compat message/syscall obligations also remain.
-These are regression and falsifier results, not full AC2 acceptance.
+(`recheck.txt`, `validation.txt`). Baseline and final control: 22/22 rows.
+All whole-suite mutants, witness mutants and the 13 new continuation-2
+mutants were detected; all controls were green. The baseline host receipt
+names **no qualification gaps**: `protocol_inventory_bounds`,
+`operation_configuration` and `io_uring_socket_effects` no longer appear, and
+compat i386 calls are qualified. A plain measured call on this host (for
+example the compat `direct` drive) now yields a COMPLETE receipt with READY
+consumer rows. The inventory drive itself stays INCOMPLETE because it creates
+sockets of families outside the four. No named-gap replay remains to run.
+These are regression and falsifier results; acceptance needs independent
+review.
 
-Closed here: escaped references (lead decision), destruction at drain,
-shared socket memory, and netlink implicit addresses. Next open obligation:
-`protocol_inventory_bounds` - IPPROTO_SMC (256) is available on this host
-outside the scanned range; see OPEN.md.
+## Continuation 2: the four retained obligations
+
+One commit each; each is driven by whole-suite mutants in `recheck.py`
+(red mutant, shared baseline and final control).
+
+| Obligation | Row | Mutants |
+| --- | --- | --- |
+| protocol_inventory_bounds | `census/protocol-inventory-covers-kernel`, `census/undiscovered-protocol-refused` | `narrow-protocol-scan`, `trust-registry`, `skip-undiscovered-refusal` |
+| operation_configuration | `census/protocol-specific-operations` | `generic-l2tp-address`, `drop-kernel-address-decoding`, `ignore-sctp-bindx`, `ignore-l2tp-conn-id` |
+| io_uring_socket_effects | `census/io-uring-refused-in-scope` | `skip-inherited-ring-scan`, `ignore-installed-rings` |
+| compat ABIs | `census/compat-abi-qualified` | `drop-i386-socket-map`, `native-compat-message-layout`, `drop-compat-socketcall-messages`, `compat-aliases-native` |
+
+* Protocols: bounds Unix 0-15, IPv4/IPv6 0-1023, netlink 0-63, each cell with
+  the kernel's (domain, type, protocol); exhaustive only if every
+  `/proc/net/protocols` name and `net-pf-{1,2,10,16}` alias is inside them
+  (unknown names fail closed); an undiscovered measured triple is refused.
+  The row re-probes 0-4095 (netlink and Unix 0-1023) and extreme values with
+  libc `socket` independently of the fixture.
+* Operations: L2TP/IP binds with its own sockaddr and exact connection id;
+  endpoints without a `/proc` table are decoded from the kernel's
+  getsockname; SCTP bindx/connectx/peeloff fail closed (live bindx drive).
+* io_uring: an outside helper owns a ring and permits `pidfd_getfd`; the
+  measured task takes it and tries a `/proc` reopen (ENXIO on this host);
+  capture fails naming syscall 438. A replayed first stop holding a ring fails
+  as inherited.
+* Compat: int 0x80 from a live tracee - direct socket/bind/listen plus an
+  i386 setgid that would alias native sendmsg (a COMPLETE receipt with an
+  i386 listen service), SCM_RIGHTS via socketcall and direct
+  sendmsg/sendmmsg in compat layouts (exactly one escaped_reference each),
+  and i386 clone with CLONE_UNTRACED. The row derives every native number the
+  collector compares from its source and requires an i386 mapping for it.
 
 ## Two independent escape detectors
 

@@ -1,11 +1,11 @@
 {
-  "base": "7f1ea5e0",
+  "base": "b36e4781",
   "status": "INCOMPLETE",
-  "next_obligation": "protocol_inventory_bounds",
+  "next_obligation": null,
   "scope": "VELDO-0111 only; regressions are not AC2 qualification",
-  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-  "suite_digest": "b17f9faf4fb0cff41454c7295c8596c3f1d28f324adbe441aad26f2f6cd4a072",
-  "recheck_digest": "2b68616675e09be5f9967b9e8d42ddc55f300c3a5c67a371abb4a159f0594344",
+  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+  "suite_digest": "16186fa2f4dee1844af95c9912d236b5519f37e4a8a2ef05394d548414e11e6f",
+  "recheck_digest": "f6d2448eb6550f2c0fa191b8dd358407a4b8abe904574660d05629b5d66c3ce8",
   "witness_digest": "8a81c2156e5d878722c401f0b463b08465da8ea841625a6e886a6505b9c79933",
   "shared_witness_digest": "68948ecedc7bd3c3f0ec5d620258852ec2e4c84bf43415abb694db7da9ef8a83",
   "memory_aba_digest": "e6c30046c0bb9a6e4c2075944e8f66c0545c9986cb0322c1f906b41903cfe536",
@@ -42,6 +42,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -51,6 +63,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -86,7 +106,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
     },
     {
@@ -97,7 +117,7 @@
       "row": "census/escaped-reference",
       "passed": true,
       "needs_ptrace": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "families": [
         {
           "family": 1,
@@ -114,7 +134,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222947392]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265778015]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -123,10 +143,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955967038853439,
-            "queued_live_ns": 2955967038904433,
-            "holder_live_ns": 2955967038962806,
-            "external_release_ack_ns": 2955967038964948,
+            "census_returned_ns": 2972535668522735,
+            "queued_live_ns": 2972535668576096,
+            "holder_live_ns": 2972535668636403,
+            "external_release_ack_ns": 2972535668638707,
             "exact_destruction_observed": false
           }
         },
@@ -145,7 +165,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222941737]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265731947]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -154,10 +174,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955972394885339,
-            "queued_live_ns": 2955972395025238,
-            "holder_live_ns": 2955972395091837,
-            "external_release_ack_ns": 2955972395096471,
+            "census_returned_ns": 2972540792939863,
+            "queued_live_ns": 2972540793064983,
+            "holder_live_ns": 2972540793121515,
+            "external_release_ack_ns": 2972540793125261,
             "exact_destruction_observed": false
           }
         },
@@ -176,7 +196,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222955928]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265775784]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -185,10 +205,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955977665951821,
-            "queued_live_ns": 2955977666092306,
-            "holder_live_ns": 2955977666160445,
-            "external_release_ack_ns": 2955977666165269,
+            "census_returned_ns": 2972546515524143,
+            "queued_live_ns": 2972546515673619,
+            "holder_live_ns": 2972546515744861,
+            "external_release_ack_ns": 2972546515749591,
             "exact_destruction_observed": false
           }
         },
@@ -207,7 +227,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222931773]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265807317]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -216,10 +236,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955983271260461,
-            "queued_live_ns": 2955983271312801,
-            "holder_live_ns": 2955983271352644,
-            "external_release_ack_ns": 2955983271357782,
+            "census_returned_ns": 2972551977947564,
+            "queued_live_ns": 2972551978016177,
+            "holder_live_ns": 2972551978058043,
+            "external_release_ack_ns": 2972551978063765,
             "exact_destruction_observed": false
           }
         }
@@ -233,7 +253,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "implementation_digest": "6a383800828176da2d70a7447b51c486bd92523016655f10588d0638b06e76c5",
       "families": [
         {
           "family": 1,
@@ -244,7 +264,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222964728]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265816671]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -253,10 +273,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955988861254534,
-            "queued_live_ns": 2955988861288083,
-            "holder_live_ns": 2955988861331089,
-            "external_release_ack_ns": 2955988861332733,
+            "census_returned_ns": 2972557705144944,
+            "queued_live_ns": 2972557705187528,
+            "holder_live_ns": 2972557705234330,
+            "external_release_ack_ns": 2972557705236252,
             "exact_destruction_observed": false
           }
         },
@@ -269,7 +289,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4222978980]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265816821]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -278,10 +298,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955994436955117,
-            "queued_live_ns": 2955994437109484,
-            "holder_live_ns": 2955994437176518,
-            "external_release_ack_ns": 2955994437181027,
+            "census_returned_ns": 2972562903038614,
+            "queued_live_ns": 2972562903164393,
+            "holder_live_ns": 2972562903222725,
+            "external_release_ack_ns": 2972562903225931,
             "exact_destruction_observed": false
           }
         },
@@ -294,7 +314,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223018601]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265862252]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -303,10 +323,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2955999821707548,
-            "queued_live_ns": 2955999821848059,
-            "holder_live_ns": 2955999821916655,
-            "external_release_ack_ns": 2955999821920957,
+            "census_returned_ns": 2972568809466768,
+            "queued_live_ns": 2972568809646809,
+            "holder_live_ns": 2972568809720013,
+            "external_release_ack_ns": 2972568809724663,
             "exact_destruction_observed": false
           }
         },
@@ -319,7 +339,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223035952]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265875255]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -328,10 +348,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956005295681200,
-            "queued_live_ns": 2956005295732033,
-            "holder_live_ns": 2956005295769494,
-            "external_release_ack_ns": 2956005295773338,
+            "census_returned_ns": 2972574082485964,
+            "queued_live_ns": 2972574082552161,
+            "holder_live_ns": 2972574082599962,
+            "external_release_ack_ns": 2972574082604628,
             "exact_destruction_observed": false
           }
         }
@@ -345,7 +365,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "implementation_digest": "8c0adc414cc237eb7418a31bb7641f4f0180fb0e651e9f527fb1d393a8dca0dd",
       "families": [
         {
           "family": 1,
@@ -358,10 +378,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956010606734371,
-            "queued_live_ns": 2956010606781827,
-            "holder_live_ns": 2956010606839680,
-            "external_release_ack_ns": 2956010606841870,
+            "census_returned_ns": 2972579589876069,
+            "queued_live_ns": 2972579589928091,
+            "holder_live_ns": 2972579589987664,
+            "external_release_ack_ns": 2972579589989896,
             "exact_destruction_observed": false
           }
         },
@@ -376,10 +396,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956015871870262,
-            "queued_live_ns": 2956015872019481,
-            "holder_live_ns": 2956015872085280,
-            "external_release_ack_ns": 2956015872090139,
+            "census_returned_ns": 2972585003827355,
+            "queued_live_ns": 2972585003984194,
+            "holder_live_ns": 2972585004061350,
+            "external_release_ack_ns": 2972585004065954,
             "exact_destruction_observed": false
           }
         },
@@ -394,10 +414,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956021397910849,
-            "queued_live_ns": 2956021398068596,
-            "holder_live_ns": 2956021398133893,
-            "external_release_ack_ns": 2956021398138388,
+            "census_returned_ns": 2972590329459663,
+            "queued_live_ns": 2972590329568979,
+            "holder_live_ns": 2972590329624503,
+            "external_release_ack_ns": 2972590329628172,
             "exact_destruction_observed": false
           }
         },
@@ -412,10 +432,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956026773379076,
-            "queued_live_ns": 2956026773428599,
-            "holder_live_ns": 2956026773466719,
-            "external_release_ack_ns": 2956026773471472,
+            "census_returned_ns": 2972595694369397,
+            "queued_live_ns": 2972595694433797,
+            "holder_live_ns": 2972595694476451,
+            "external_release_ack_ns": 2972595694481108,
             "exact_destruction_observed": false
           }
         }
@@ -429,7 +449,7 @@
       "row": "census/escaped-reference",
       "passed": true,
       "needs_ptrace": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "families": [
         {
           "family": 1,
@@ -446,7 +466,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223123903]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4265971997]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -455,10 +475,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956032035576939,
-            "queued_live_ns": 2956032035624645,
-            "holder_live_ns": 2956032035679384,
-            "external_release_ack_ns": 2956032035681611,
+            "census_returned_ns": 2972601075081967,
+            "queued_live_ns": 2972601075127114,
+            "holder_live_ns": 2972601075176455,
+            "external_release_ack_ns": 2972601075178396,
             "exact_destruction_observed": false
           }
         },
@@ -477,7 +497,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223124384]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266008358]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -486,10 +506,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956037647393292,
-            "queued_live_ns": 2956037647510549,
-            "holder_live_ns": 2956037647565089,
-            "external_release_ack_ns": 2956037647568404,
+            "census_returned_ns": 2972606370354022,
+            "queued_live_ns": 2972606370519576,
+            "holder_live_ns": 2972606370590415,
+            "external_release_ack_ns": 2972606370595103,
             "exact_destruction_observed": false
           }
         },
@@ -508,7 +528,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223138487]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266008462]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -517,10 +537,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956042811937845,
-            "queued_live_ns": 2956042812106126,
-            "holder_live_ns": 2956042812179063,
-            "external_release_ack_ns": 2956042812184276,
+            "census_returned_ns": 2972611829693147,
+            "queued_live_ns": 2972611829843537,
+            "holder_live_ns": 2972611829916459,
+            "external_release_ack_ns": 2972611829921056,
             "exact_destruction_observed": false
           }
         },
@@ -539,7 +559,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223147534]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266005009]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -548,10 +568,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956048115184289,
-            "queued_live_ns": 2956048115223941,
-            "holder_live_ns": 2956048115256434,
-            "external_release_ack_ns": 2956048115259966,
+            "census_returned_ns": 2972617836956332,
+            "queued_live_ns": 2972617837029873,
+            "holder_live_ns": 2972617837077021,
+            "external_release_ack_ns": 2972617837081901,
             "exact_destruction_observed": false
           }
         }
@@ -565,7 +585,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "implementation_digest": "6a383800828176da2d70a7447b51c486bd92523016655f10588d0638b06e76c5",
       "families": [
         {
           "family": 1,
@@ -576,7 +596,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223165848]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266045022]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -585,10 +605,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956053745605904,
-            "queued_live_ns": 2956053745643848,
-            "holder_live_ns": 2956053745690827,
-            "external_release_ack_ns": 2956053745692510,
+            "census_returned_ns": 2972623569588559,
+            "queued_live_ns": 2972623569632607,
+            "holder_live_ns": 2972623569679486,
+            "external_release_ack_ns": 2972623569681613,
             "exact_destruction_observed": false
           }
         },
@@ -601,7 +621,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223170533]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266013287]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -610,10 +630,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956059200235297,
-            "queued_live_ns": 2956059200345924,
-            "holder_live_ns": 2956059200397293,
-            "external_release_ack_ns": 2956059200400986,
+            "census_returned_ns": 2972629165234731,
+            "queued_live_ns": 2972629165408807,
+            "holder_live_ns": 2972629165480594,
+            "external_release_ack_ns": 2972629165485320,
             "exact_destruction_observed": false
           }
         },
@@ -626,7 +646,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223159080]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266069595]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -635,10 +655,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956064935851593,
-            "queued_live_ns": 2956064935974040,
-            "holder_live_ns": 2956064936041924,
-            "external_release_ack_ns": 2956064936046301,
+            "census_returned_ns": 2972634902581748,
+            "queued_live_ns": 2972634902759488,
+            "holder_live_ns": 2972634902832829,
+            "external_release_ack_ns": 2972634902837504,
             "exact_destruction_observed": false
           }
         },
@@ -651,7 +671,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223192160]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266079775]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -660,10 +680,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956070473638974,
-            "queued_live_ns": 2956070473698643,
-            "holder_live_ns": 2956070473748315,
-            "external_release_ack_ns": 2956070473753870,
+            "census_returned_ns": 2972640666767981,
+            "queued_live_ns": 2972640666834075,
+            "holder_live_ns": 2972640666878739,
+            "external_release_ack_ns": 2972640666883704,
             "exact_destruction_observed": false
           }
         }
@@ -677,7 +697,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "implementation_digest": "8c0adc414cc237eb7418a31bb7641f4f0180fb0e651e9f527fb1d393a8dca0dd",
       "families": [
         {
           "family": 1,
@@ -690,10 +710,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956076346075163,
-            "queued_live_ns": 2956076346125444,
-            "holder_live_ns": 2956076346180774,
-            "external_release_ack_ns": 2956076346183280,
+            "census_returned_ns": 2972645777751798,
+            "queued_live_ns": 2972645777792287,
+            "holder_live_ns": 2972645777838979,
+            "external_release_ack_ns": 2972645777841268,
             "exact_destruction_observed": false
           }
         },
@@ -708,10 +728,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956082346570212,
-            "queued_live_ns": 2956082346761668,
-            "holder_live_ns": 2956082346834034,
-            "external_release_ack_ns": 2956082346839285,
+            "census_returned_ns": 2972651540080378,
+            "queued_live_ns": 2972651540182825,
+            "holder_live_ns": 2972651540237130,
+            "external_release_ack_ns": 2972651540239893,
             "exact_destruction_observed": false
           }
         },
@@ -726,10 +746,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956088104910541,
-            "queued_live_ns": 2956088105060151,
-            "holder_live_ns": 2956088105130532,
-            "external_release_ack_ns": 2956088105135413,
+            "census_returned_ns": 2972656987416624,
+            "queued_live_ns": 2972656987557047,
+            "holder_live_ns": 2972656987627865,
+            "external_release_ack_ns": 2972656987632445,
             "exact_destruction_observed": false
           }
         },
@@ -744,10 +764,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956096181843784,
-            "queued_live_ns": 2956096181923215,
-            "holder_live_ns": 2956096181978950,
-            "external_release_ack_ns": 2956096181985743,
+            "census_returned_ns": 2972662730947579,
+            "queued_live_ns": 2972662730990668,
+            "holder_live_ns": 2972662731029422,
+            "external_release_ack_ns": 2972662731033572,
             "exact_destruction_observed": false
           }
         }
@@ -761,7 +781,7 @@
       "row": "census/escaped-reference",
       "passed": true,
       "needs_ptrace": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "families": [
         {
           "family": 1,
@@ -778,7 +798,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223345904]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266198119]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -787,10 +807,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956104662102585,
-            "queued_live_ns": 2956104662207889,
-            "holder_live_ns": 2956104662284609,
-            "external_release_ack_ns": 2956104662287281,
+            "census_returned_ns": 2972668194662899,
+            "queued_live_ns": 2972668194730945,
+            "holder_live_ns": 2972668194785620,
+            "external_release_ack_ns": 2972668194787741,
             "exact_destruction_observed": false
           }
         },
@@ -809,7 +829,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223383302]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266213411]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -818,10 +838,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956118000547747,
-            "queued_live_ns": 2956118000770066,
-            "holder_live_ns": 2956118000859379,
-            "external_release_ack_ns": 2956118000865002,
+            "census_returned_ns": 2972673690106302,
+            "queued_live_ns": 2972673690253658,
+            "holder_live_ns": 2972673690324137,
+            "external_release_ack_ns": 2972673690328982,
             "exact_destruction_observed": false
           }
         },
@@ -840,7 +860,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223406045]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266213539]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -849,10 +869,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956129936195161,
-            "queued_live_ns": 2956129936401365,
-            "holder_live_ns": 2956129936480925,
-            "external_release_ack_ns": 2956129936486595,
+            "census_returned_ns": 2972679166886291,
+            "queued_live_ns": 2972679166999842,
+            "holder_live_ns": 2972679167054215,
+            "external_release_ack_ns": 2972679167057438,
             "exact_destruction_observed": false
           }
         },
@@ -871,7 +891,7 @@
             },
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223441623]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266210275]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -880,10 +900,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956138145312383,
-            "queued_live_ns": 2956138145378508,
-            "holder_live_ns": 2956138145418995,
-            "external_release_ack_ns": 2956138145424173,
+            "census_returned_ns": 2972684651907032,
+            "queued_live_ns": 2972684651981735,
+            "holder_live_ns": 2972684652029057,
+            "external_release_ack_ns": 2972684652034333,
             "exact_destruction_observed": false
           }
         }
@@ -897,7 +917,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "implementation_digest": "6a383800828176da2d70a7447b51c486bd92523016655f10588d0638b06e76c5",
       "families": [
         {
           "family": 1,
@@ -908,7 +928,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223470981]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266253956]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -917,10 +937,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956144026403620,
-            "queued_live_ns": 2956144026456682,
-            "holder_live_ns": 2956144026511110,
-            "external_release_ack_ns": 2956144026513641,
+            "census_returned_ns": 2972689933304097,
+            "queued_live_ns": 2972689933356856,
+            "holder_live_ns": 2972689933407384,
+            "external_release_ack_ns": 2972689933409044,
             "exact_destruction_observed": false
           }
         },
@@ -933,7 +953,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223485615]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266277394]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -942,10 +962,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956149914638243,
-            "queued_live_ns": 2956149914824116,
-            "holder_live_ns": 2956149914901347,
-            "external_release_ack_ns": 2956149914906304,
+            "census_returned_ns": 2972695628985336,
+            "queued_live_ns": 2972695629094619,
+            "holder_live_ns": 2972695629149280,
+            "external_release_ack_ns": 2972695629152649,
             "exact_destruction_observed": false
           }
         },
@@ -958,7 +978,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223503031]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266279444]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -967,10 +987,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956155896738684,
-            "queued_live_ns": 2956155896908101,
-            "holder_live_ns": 2956155896978105,
-            "external_release_ack_ns": 2956155896983100,
+            "census_returned_ns": 2972701014978850,
+            "queued_live_ns": 2972701015166219,
+            "holder_live_ns": 2972701015239602,
+            "external_release_ack_ns": 2972701015244811,
             "exact_destruction_observed": false
           }
         },
@@ -983,7 +1003,7 @@
           "escape_failures": [
             {
               "capability": "escaped_reference",
-              "reason": "socket:[4223543480]:1 file is still referenced after descendant drain",
+              "reason": "socket:[4266251093]:1 file is still referenced after descendant drain",
               "category": "lifecycle_violation",
               "state": "drained"
             }
@@ -992,10 +1012,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956161797533335,
-            "queued_live_ns": 2956161797599871,
-            "holder_live_ns": 2956161797641308,
-            "external_release_ack_ns": 2956161797646821,
+            "census_returned_ns": 2972706458108243,
+            "queued_live_ns": 2972706458181623,
+            "holder_live_ns": 2972706458222590,
+            "external_release_ack_ns": 2972706458227684,
             "exact_destruction_observed": false
           }
         }
@@ -1009,7 +1029,7 @@
       "row": "census/escaped-reference",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "4f52905e13f416b298233fc252d85c393dfe6d13bd387edb6f5c7459c97d22c0",
+      "implementation_digest": "8c0adc414cc237eb7418a31bb7641f4f0180fb0e651e9f527fb1d393a8dca0dd",
       "families": [
         {
           "family": 1,
@@ -1022,10 +1042,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956167604070323,
-            "queued_live_ns": 2956167604126667,
-            "holder_live_ns": 2956167604182542,
-            "external_release_ack_ns": 2956167604184865,
+            "census_returned_ns": 2972712260458173,
+            "queued_live_ns": 2972712260519866,
+            "holder_live_ns": 2972712260576977,
+            "external_release_ack_ns": 2972712260579741,
             "exact_destruction_observed": false
           }
         },
@@ -1040,10 +1060,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956173351340296,
-            "queued_live_ns": 2956173351526672,
-            "holder_live_ns": 2956173351598984,
-            "external_release_ack_ns": 2956173351604049,
+            "census_returned_ns": 2972717800304424,
+            "queued_live_ns": 2972717800470359,
+            "holder_live_ns": 2972717800544965,
+            "external_release_ack_ns": 2972717800549355,
             "exact_destruction_observed": false
           }
         },
@@ -1058,10 +1078,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956179268062578,
-            "queued_live_ns": 2956179268235760,
-            "holder_live_ns": 2956179268320087,
-            "external_release_ack_ns": 2956179268324535,
+            "census_returned_ns": 2972723293349914,
+            "queued_live_ns": 2972723293533020,
+            "holder_live_ns": 2972723293609356,
+            "external_release_ack_ns": 2972723293614243,
             "exact_destruction_observed": false
           }
         },
@@ -1076,10 +1096,10 @@
             "receiver_outside_scope": true,
             "queued_socket_live_after_drain": true,
             "held_socket_live_after_drain": true,
-            "census_returned_ns": 2956185146057407,
-            "queued_live_ns": 2956185146147221,
-            "holder_live_ns": 2956185146194956,
-            "external_release_ack_ns": 2956185146200283,
+            "census_returned_ns": 2972728661677920,
+            "queued_live_ns": 2972728661751208,
+            "holder_live_ns": 2972728661796835,
+            "external_release_ack_ns": 2972728661801774,
             "exact_destruction_observed": false
           }
         }
@@ -1093,8 +1113,8 @@
       "row": "census/escape-detected-despite-control-aba",
       "passed": true,
       "needs_ptrace": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-      "instrumented_digest": "d20a931e7eea04b675296131b7cd38150eda7496e2f618ea4a7fff9d27ce40a2",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+      "instrumented_digest": "949b93cd0829fb309335db37f95ad74e5bab65071bb92bd720f2dbc6ee96f7be",
       "actual_fd_received_after_drain": true,
       "identical_entry_exit_samples": true,
       "send_decoder_attributed": false,
@@ -1109,8 +1129,8 @@
       "row": "census/escape-detected-despite-control-aba",
       "passed": false,
       "needs_ptrace": true,
-      "implementation_digest": "f6125f7cbdc2d976f707cf1fad2703e980def5d032279b583f91ea711d4d8e26",
-      "instrumented_digest": "39691a2fc6d3b226e1c726eb908301546c0190dd6384e8b4d05fb99c381828d6",
+      "implementation_digest": "2af11f33d8ac02009d26c6e3a7179ce981d8708c357ad0456c3209bb4a535f76",
+      "instrumented_digest": "ab0d7651779bd002613c664c5137dc019116c80dec0ce68ac48db8f150619450",
       "actual_fd_received_after_drain": true,
       "identical_entry_exit_samples": true,
       "send_decoder_attributed": false,
@@ -1129,8 +1149,8 @@
         "recvmsg": true
       },
       "needs_ptrace": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-      "instrumented_digest": "8144c6e2ae827dcdfd31e66ea300ef83dbb5a9c62a6e16cc7e9a29b8403a837d"
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+      "instrumented_digest": "e097ab8ba1fb367f6492b5aaa80f81564740a34246595fde18b8fe60a0be7542"
     },
     {
       "label": "memory-aba-trust-bind-sample",
@@ -1144,8 +1164,8 @@
         "recvmsg": true
       },
       "needs_ptrace": true,
-      "implementation_digest": "e518fd5da50a5611f141d21646a24f978e4a998cf86176bbeb9d429eefa78cda",
-      "instrumented_digest": "0b2df36c9adf3eac65b8892099e7fd0e87e888301ef1f5b09ac529199a0ef43f"
+      "implementation_digest": "19495db88d5b395740da00b5c6db609ebdb0dca4ae6e1c795fb9bc1dde34751e",
+      "instrumented_digest": "0897ade44f3c6eabd79913a9599cd903e03c05a8c6a11594d304f189065cd697"
     },
     {
       "label": "memory-aba-socketpair-from-memory",
@@ -1159,8 +1179,8 @@
         "recvmsg": true
       },
       "needs_ptrace": true,
-      "implementation_digest": "8bed00696df2077367ff96bd405bd79940b6a7a78d328b0a84d92476951f8bf8",
-      "instrumented_digest": "3940b734ae997a86284ef40f8acfa33bf208022166923b21e8bd49f0eae33d82"
+      "implementation_digest": "012de83f9c86b42d68424f82ab86c16af9d77d5de784eb6b5c07f44bfc06ba07",
+      "instrumented_digest": "659f039242eb8ddd4f9f40d89f22e454116b2285548c8a49843a670dad592fcc"
     },
     {
       "label": "memory-aba-trust-received-control",
@@ -1174,8 +1194,8 @@
         "recvmsg": false
       },
       "needs_ptrace": true,
-      "implementation_digest": "03d2521c9bd7d7199d60862a9dba3e9088d33b9adfd916855fa73d37bc0a211c",
-      "instrumented_digest": "b676f3f27f97d198a59b769fe2ecd55774d2bf0738af3ebd0ecdcd42ce005784"
+      "implementation_digest": "6d3766f4865be4d30661279eb5836f3fa085b13ae45a52aba49108efc7dec738",
+      "instrumented_digest": "bbc4198a4f65e253b676604e96c6c853716cf26adce54e102c44127762638c87"
     },
     {
       "label": "ignore-scm-rights-red",
@@ -1206,6 +1226,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1216,6 +1248,14 @@
         [
           "census/async-effects-stand-down",
           true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
         ],
         [
           "census/clone-untraced",
@@ -1250,7 +1290,7 @@
           true
         ]
       ],
-      "implementation_digest": "f3ffe9c09d6b387c1ea58e521f871f562ecf9b300fbbfa9bac3f0be7663d80ea",
+      "implementation_digest": "6a383800828176da2d70a7447b51c486bd92523016655f10588d0638b06e76c5",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1286,6 +1326,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1295,6 +1347,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1330,7 +1390,7 @@
           true
         ]
       ],
-      "implementation_digest": "f6125f7cbdc2d976f707cf1fad2703e980def5d032279b583f91ea711d4d8e26",
+      "implementation_digest": "2af11f33d8ac02009d26c6e3a7179ce981d8708c357ad0456c3209bb4a535f76",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1366,6 +1426,18 @@
           false
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          false
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          false
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1376,6 +1448,14 @@
         [
           "census/async-effects-stand-down",
           true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
         ],
         [
           "census/clone-untraced",
@@ -1410,7 +1490,7 @@
           true
         ]
       ],
-      "implementation_digest": "f24f39ace94bd4b4bd85606a740e559860346597b9c01fa4a59c81126e0a979c",
+      "implementation_digest": "4d74cff5d4522e45edafe0acb38fdf62ff9b52b6fc9a0f62b4c0d42865b4d752",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1446,6 +1526,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1455,6 +1547,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1490,7 +1590,7 @@
           true
         ]
       ],
-      "implementation_digest": "e2c425d736190f6bfa0cd73892665c129cb247aaecdb612c59ea085e3c0fe991",
+      "implementation_digest": "2e45caae4735da462048e6a0fc7c01780e81f5a59a63f0fd494ae8431723666b",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1526,6 +1626,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1535,6 +1647,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1570,7 +1690,7 @@
           true
         ]
       ],
-      "implementation_digest": "c9132ec67933c81ec378ee962fd30a102b27b4045d6574fa568928daf24e37d9",
+      "implementation_digest": "6dc2a48d7dafb2161b8aeaa8012273618d8a516a74bf7910fca2b7609ee48e66",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1606,6 +1726,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1615,6 +1747,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1635,6 +1775,106 @@
         ],
         [
           "census/shared-descriptor-table-fails-closed",
+          false
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "f9f9d2df574efbd3bae1dee4123cd1fa96067a0e2417bd54aca1dd0e6fed288b",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "narrow-protocol-scan-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          false
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          false
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
           true
         ],
         [
@@ -1650,7 +1890,1207 @@
           true
         ]
       ],
-      "implementation_digest": "c97d93a76e16578d2737deadbe0aa7ef703bd9f0cf0910ee0d5c955b110334ca",
+      "implementation_digest": "7df90144fa46c3cd788351838c449dbd7ba8a31d6d498ec15e76193869fc782c",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "trust-registry-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          false
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "d1b28b33e735e8f798109ab17fe68737f3a84cbb1f82989fd5671aabbbe515c6",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "skip-undiscovered-refusal-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          false
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "4387528180ac525ed4b75817429174bbb5f62fbe3eb6520ecfc43ceb86a1bac5",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "generic-l2tp-address-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          false
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "02c8ec90d755f39ded87b084a85f03bab0c3d6a8fb2833f91a3b503f73dfa105",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "drop-kernel-address-decoding-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          false
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "33aea845f1c553f781f21b3625cc9adeebe51fc7b0008566e0e0ba1e4f5edabb",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-sctp-bindx-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          false
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "a3e8a7e221ea8634ee459eb8d95cebf9ee35501fa5d92bf409525647209c058c",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-l2tp-conn-id-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          false
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "bc01e0f0c9c5aa968e5759cda30a424be804312ff89677dce246f46748c859dd",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "skip-inherited-ring-scan-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          false
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "9e713775287d01ac365fbac85c4097b2010cf3e9c0ccb212163436229e05a930",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "ignore-installed-rings-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          false
+        ],
+        [
+          "census/compat-abi-qualified",
+          true
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "1a8204de6735bbb5bd4403a0f968acf99028937493b33640308f0a8f1223071e",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "drop-i386-socket-map-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "d58e316230a4e4099b07ea11f99fdc25e355efa814dd6f178d77dffca7d2a48c",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "native-compat-message-layout-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "77c04b16b2c9d4a6df2edfdcd1cf506570c04ae7ae02e4f314002dcc1a9ae163",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "drop-compat-socketcall-messages-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "09dad67aaffb8c12f9a626ec936af23b9f435908825a7701eaad92f66e4647aa",
+      "needs_ptrace": true,
+      "controls": [
+        "baseline",
+        "final-control"
+      ]
+    },
+    {
+      "label": "compat-aliases-native-red",
+      "completed": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ],
+        [
+          "census/named-qualification-reasons",
+          true
+        ],
+        [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
+          "census/accepted-and-implicit",
+          true
+        ],
+        [
+          "census/unsupported-address-and-compat",
+          true
+        ],
+        [
+          "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
+        ],
+        [
+          "census/clone-untraced",
+          true
+        ],
+        [
+          "census/escaped-reference",
+          true
+        ],
+        [
+          "census/destruction-at-drain",
+          true
+        ],
+        [
+          "census/netlink-implicit-binding",
+          true
+        ],
+        [
+          "census/shared-descriptor-table-fails-closed",
+          true
+        ],
+        [
+          "census/family-qualification-boundary",
+          true
+        ],
+        [
+          "census/unix-binding-is-real",
+          true
+        ],
+        [
+          "census/fault-state-coverage",
+          true
+        ]
+      ],
+      "implementation_digest": "7ae90621953c1de4d040eab1ccaa1ad717fee7a6af03a653e08e0424234e9ec2",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1686,6 +3126,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1695,6 +3147,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1730,7 +3190,7 @@
           true
         ]
       ],
-      "implementation_digest": "8dd99e69dbfefa6c690bcbfb12e05f6ef9c7953850f6311c072c41dacba52e44",
+      "implementation_digest": "0d8a24d9a45281a55faba332f20a4c87a50427a2dbd78ab139508b8a98d6001a",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1766,6 +3226,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          false
+        ],
+        [
           "census/accepted-and-implicit",
           false
         ],
@@ -1775,6 +3247,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1810,7 +3290,7 @@
           true
         ]
       ],
-      "implementation_digest": "337e10e0b17aa17b6618375bf5dcb16ab64bf6fa3f4e48ffbe865c148decc8d0",
+      "implementation_digest": "30198f4e0da297a5a6dd35d2b4fd69a7effd290327018e2ee83fd2d7d33516b6",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1846,6 +3326,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1855,6 +3347,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1890,7 +3390,7 @@
           true
         ]
       ],
-      "implementation_digest": "e06ca339119768ad663675797c86a72eb2a1b23d681907ef960553c8fbd526b3",
+      "implementation_digest": "4b70ed5081b0a8f908963fadfd07946a2de983162f109c1dc61ec6044871d54b",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1926,6 +3426,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -1935,6 +3447,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -1970,7 +3490,7 @@
           true
         ]
       ],
-      "implementation_digest": "6750d4e7942ee8ff0e3602744064d3aff034425ec98d4f86ec0410b4554a0ad0",
+      "implementation_digest": "7565386025fc6f09bb2402b5b3050edb87f6fd066186de2185093c4a58f0b6da",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -1986,7 +3506,7 @@
           false
         ]
       ],
-      "implementation_digest": "4d13a0447d7233a938dd5b2f44748c7741bb509ef0d3894f44aa571003e6dbab",
+      "implementation_digest": "af2af9b42264ab454e22e450a5f15d5b1e2c5af3dc8c27dd9c63d31e780cf1e2",
       "needs_ptrace": true
     },
     {
@@ -1998,7 +3518,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
     },
     {
@@ -2010,7 +3530,7 @@
           false
         ]
       ],
-      "implementation_digest": "48dbbe40e22e75e81dc165cee3ec5de5e4c17f1f5609b87d0fc65be7ca3f1fa5",
+      "implementation_digest": "03df960382adf9e6299bdade72704f31db60d464873d2c8e80e95ca83b2c6842",
       "needs_ptrace": true
     },
     {
@@ -2022,7 +3542,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
     },
     {
@@ -2034,7 +3554,7 @@
           false
         ]
       ],
-      "implementation_digest": "6d0564778d85bd516c2b903eca3a0c4d7e48092685d1c25368daea0c27e0f0e9",
+      "implementation_digest": "96ccc7ea9ab89f5fda3189067f2138652dd539931924f60ebaf18c123509f5c1",
       "needs_ptrace": true
     },
     {
@@ -2046,7 +3566,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
     },
     {
@@ -2058,7 +3578,7 @@
           false
         ]
       ],
-      "implementation_digest": "390b1c30f350564ebd041cd3e1df0dc85431edc16257e5b83429f56f78671060",
+      "implementation_digest": "4a8f4311b02c382689c9bc1a3cc422746ee45ff223610be2fc8b06158cd996a5",
       "needs_ptrace": true
     },
     {
@@ -2070,7 +3590,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
     },
     {
@@ -2082,7 +3602,7 @@
           false
         ]
       ],
-      "implementation_digest": "a595fcb26e544454f64aaee945d26944edad5dea648da919c627d9ed5e58bc87",
+      "implementation_digest": "f4aea524f14419f2dad00aeed86e72d2b05d0be28a501a1f7125e2344dda1974",
       "needs_ptrace": false
     },
     {
@@ -2094,7 +3614,7 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": false
     },
     {
@@ -2126,6 +3646,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -2135,6 +3667,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -2170,7 +3710,7 @@
           true
         ]
       ],
-      "implementation_digest": "54b01ac47d23319fafdfd6cb14fd6c3902252020898250ee31e5fbbf686e9f63",
+      "implementation_digest": "794f159dc98438f4cfae8791c2f5757b05efc7f86fb5f006fa8177f40861196d",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -2206,6 +3746,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -2215,6 +3767,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -2250,7 +3810,7 @@
           true
         ]
       ],
-      "implementation_digest": "fbe50b63fa0698149b52f68e2f483c82f703c284ac9bc128d69699ba5d77de38",
+      "implementation_digest": "9d710c149629441317bf712139754cb3b13b4b4ee759fa3f1eda8d3836dd57e0",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -2286,6 +3846,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -2295,6 +3867,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -2330,7 +3910,7 @@
           true
         ]
       ],
-      "implementation_digest": "ecdadbd6c4361013b38e4ea5f142f210c3fb80830ca1100ca9d855f8102eb464",
+      "implementation_digest": "e4fb19cf0d93fcfe7c4072292e0c75bc8f668788da5b947086827bf908cc2b25",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -2366,6 +3946,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -2376,6 +3968,14 @@
         [
           "census/async-effects-stand-down",
           true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
+          false
         ],
         [
           "census/clone-untraced",
@@ -2410,7 +4010,7 @@
           true
         ]
       ],
-      "implementation_digest": "367e24d0d6ecc95fa3b92d869134963ea426a5af9a1354c6daeee05157c68641",
+      "implementation_digest": "f773c07f5defdb47f16c4398c613418aedb8f3d00d357bc598720f7962310cd5",
       "needs_ptrace": true,
       "controls": [
         "baseline",
@@ -2446,6 +4046,18 @@
           true
         ],
         [
+          "census/protocol-inventory-covers-kernel",
+          true
+        ],
+        [
+          "census/undiscovered-protocol-refused",
+          true
+        ],
+        [
+          "census/protocol-specific-operations",
+          true
+        ],
+        [
           "census/accepted-and-implicit",
           true
         ],
@@ -2455,6 +4067,14 @@
         ],
         [
           "census/async-effects-stand-down",
+          true
+        ],
+        [
+          "census/io-uring-refused-in-scope",
+          true
+        ],
+        [
+          "census/compat-abi-qualified",
           true
         ],
         [
@@ -2490,89 +4110,8 @@
           true
         ]
       ],
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
+      "implementation_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
       "needs_ptrace": true
-    },
-    {
-      "label": "io_uring_socket_effects-red",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": false,
-      "actual": [
-        "operation_configuration",
-        "protocol_inventory_bounds"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "a2d67829f77149229ac2d49e00266d8f9b16404875252673b30098d6d9316960"
-    },
-    {
-      "label": "io_uring_socket_effects-green",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": true,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
-    },
-    {
-      "label": "operation_configuration-red",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": false,
-      "actual": [
-        "io_uring_socket_effects",
-        "protocol_inventory_bounds"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "37de5daff0f504dd5c21eb3b70a58dcd69640e13e6d8544f34c9c71e2d148565"
-    },
-    {
-      "label": "operation_configuration-green",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": true,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
-    },
-    {
-      "label": "protocol_inventory_bounds-red",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": false,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "20a0ff01a1daf093ddd0ba350d99e20a99898a429b55964865fd7f5ca05a36eb"
-    },
-    {
-      "label": "protocol_inventory_bounds-green",
-      "completed": true,
-      "row": "census/named-qualification-reasons",
-      "passed": true,
-      "actual": [
-        "io_uring_socket_effects",
-        "operation_configuration",
-        "protocol_inventory_bounds"
-      ],
-      "needs_ptrace": false,
-      "uses_live_baseline": true,
-      "implementation_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39"
     }
   ],
   "observer_environment": {
@@ -2602,139 +4141,8 @@
       "python": "3.12.3",
       "system": "Linux"
     },
-    "gaps": [
-      "io_uring_socket_effects",
-      "operation_configuration",
-      "protocol_inventory_bounds"
-    ],
-    "reasons": [
-      {
-        "capability": "protocol_inventory_bounds",
-        "reason": "bounded protocol discovery does not fully qualify the four required families",
-        "evidence": {
-          "qualification_families": [
-            1,
-            2,
-            10,
-            16
-          ],
-          "protocol_scope": {
-            "inet": [
-              0,
-              255,
-              262
-            ],
-            "netlink": [
-              0,
-              31
-            ],
-            "other": [
-              0
-            ]
-          }
-        }
-      },
-      {
-        "capability": "operation_configuration",
-        "reason": "available socket needs a qualified address or operation configuration",
-        "evidence": {
-          "family": 10,
-          "type": 2,
-          "protocol": 115,
-          "operations": [
-            {
-              "operation": "bind",
-              "result": -1,
-              "errno": 22
-            }
-          ],
-          "gap": "operation_configuration"
-        }
-      },
-      {
-        "capability": "io_uring_socket_effects",
-        "reason": "shared ring completions are not correlated to traced socket identities",
-        "evidence": {
-          "available": true,
-          "errno": 0,
-          "socket_effect": {
-            "attempted": true,
-            "enter_result": 1,
-            "errno": 0,
-            "completion_result": 6,
-            "inode": "socket:[4222575458]"
-          },
-          "probe_errno": 0,
-          "supported_opcodes": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29,
-            30,
-            31,
-            32,
-            33,
-            34,
-            35,
-            36,
-            37,
-            38,
-            39,
-            40,
-            41,
-            42,
-            43,
-            44,
-            45,
-            46,
-            47,
-            48,
-            49,
-            50,
-            51,
-            52,
-            53,
-            54,
-            55,
-            56,
-            57,
-            58,
-            59,
-            60,
-            61,
-            62,
-            63,
-            64
-          ]
-        }
-      }
-    ],
+    "gaps": [],
+    "reasons": [],
     "consumer_rows": {
       "VELDO-0113": [
         {
@@ -2809,24 +4217,6 @@
           "capability": "linux_ptrace",
           "reason": "required Linux native x86_64 facilities unavailable",
           "category": "observer_unavailable",
-          "state": "preflight"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "preflight"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "preflight"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
           "state": "preflight"
         }
       ],
@@ -2905,24 +4295,6 @@
           "reason": "root did not reach pre-exec stop",
           "category": "observer_unavailable",
           "state": "arming"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "arming"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "arming"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "arming"
         }
       ],
       "lost_events": 0,
@@ -2998,24 +4370,6 @@
         {
           "capability": "syscall_abi",
           "reason": "arch=0 size=80",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
           "category": "observation_incomplete",
           "state": "collecting"
         }
@@ -3095,24 +4449,6 @@
           "reason": "unexpected syscall stop 255",
           "category": "event_loss",
           "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "collecting"
         }
       ],
       "lost_events": 1,
@@ -3190,24 +4526,6 @@
           "reason": "missing acknowledged birth event",
           "category": "event_loss",
           "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "collecting"
         }
       ],
       "lost_events": 1,
@@ -3283,24 +4601,6 @@
         {
           "capability": "collector_death",
           "reason": "collector terminal status 9",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "collecting"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
           "category": "observation_incomplete",
           "state": "collecting"
         }
@@ -3380,24 +4680,6 @@
           "reason": "injected drain deadline expiry",
           "category": "observation_incomplete",
           "state": "draining"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "draining"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "draining"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "draining"
         }
       ],
       "lost_events": 0,
@@ -3473,24 +4755,6 @@
         {
           "capability": "receipt_finalization",
           "reason": "injected receipt finalization failure",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
           "category": "observation_incomplete",
           "state": "drained"
         }
@@ -3570,18 +4834,18 @@
       16
     ],
     "evidence": "socket-destruction.txt",
-    "digest": "54b85cf2b221229d1f2016f887f2fd268e93e8d7e70183a72cdc4f2e08350d8e"
+    "digest": "8b721df0100fc56049ddb178ad3c0daf2c1c6e8e7b169bec88d653a6cc783b49"
   },
   "shared_memory_witness": {
     "evidence": "shared-memory.txt",
-    "digest": "d2c2ce10bc9ef871735aa1ef5fe2fdd04f3dc8ba90ab02ce209c2788d4b11a59",
+    "digest": "fdd31a1b509e328049897c32f8b3e110305f4c67d3ca1e07d93664429617c568",
     "row": "census/escape-detected-despite-control-aba"
   },
   "memory_aba_witness": {
     "evidence": "memory-aba.txt",
-    "digest": "a153b2931df31662bf15e449099986f6f372d08b1acd12ea4488915f4f30869e",
+    "digest": "61670505f78ef7400464405cdb44233634a1eebdd8c125371c80cd8acacd2ee6",
     "row": "census/memory-aba-uses-kernel-state"
   },
-  "reason_replay_input_digest": "16f30d41261217bf921a3caba391fad6cb29005f217506957be3c6eb8ba9e7db",
+  "reason_replay_input_digest": "2f9a4282a16d9ec095183bb8cb589702133e3504be0d00ecdab95ab2fb6cf76e",
   "recheck_completed": true
 }
