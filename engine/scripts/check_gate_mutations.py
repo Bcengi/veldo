@@ -443,7 +443,9 @@ def load(path):
     return module
 
 
-AUDIT = load(ROOT / 'scripts/mutation_reuse.py')
+# Loaded when a stage runs, from the ROOT then in force: a mutant of this file is executed from a
+# scratch directory and its authority points ROOT back at the real helpers only after import.
+AUDIT = None
 
 
 def inventory_local(root):
@@ -1184,7 +1186,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
     cases, reuse = [], None
     audits, audit_keys = {}, {}
-    audit_module = AUDIT
+    audit_module = AUDIT or load(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
                             worker_seconds=0.0, suites={})
     previous = signal.getsignal(signal.SIGALRM)

@@ -205,7 +205,9 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
                 if drawn is not None:
                     # The audit draw's outcome is fixed here, never the coordinator's handling of it.
-                    stack.enter_context(patch.object(gate.AUDIT, 'audit_sample', lambda records: set(drawn)))
+                    audit = real_load(ROOT / 'scripts/mutation_reuse.py')
+                    stack.enter_context(patch.object(audit, 'audit_sample', lambda records: set(drawn)))
+                    stack.enter_context(patch.object(gate, 'AUDIT', audit))
                 receipt = gate.run_stage(runroot, runroot / '.git', parallel=parallel, measure=measure)
             return receipt, children, kills, cleaned, times, alarms
 
