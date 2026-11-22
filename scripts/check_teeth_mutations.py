@@ -27,7 +27,8 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
 
 RENDERER_LOADERS = ('control_channel_presentation.py', 'control_channel_projection.py', 'control_intake.py',
                     'control_telegram_report.py')
-RENDERER_COMPANIONS = ('control_channel_presentation_text.py', 'control_channel_presentation_v1.py')
+RENDERER_COMPANIONS = ('control_channel_presentation_text.py', 'control_channel_presentation_v1.py',
+                       'control_plane_calls.py')
 
 
 def cases():
@@ -10511,7 +10512,8 @@ def cases():
 
     # Apply dependency metadata after every case is registered, including VELDO-0152.
     # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
-    # renderer 1) next to themselves by path, so a mutant copy of one runs beside copies of those two.
+    # renderer 1) next to themselves by path. Projection also loads the service boundary (VELDO-0258).
+    # A mutant or no-op copy must retain all three unchanged dependencies.
     for case in result:
         if (case['module'] in RENDERER_LOADERS and case.get('dir', '.veldo') == '.veldo'
                 and not case.get('fixture') and not case.get('siblings')):
