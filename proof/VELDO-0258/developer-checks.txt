@@ -207,3 +207,97 @@ template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
 docs hygiene: pass
 personal setup: 0 finding(s)
 remote_run[pc2 52e17400e6c7 06:02:18]: rc=0 in 14s (run rr20261122060204-083d)
+
+v258-parent-api
+raw_sha256=5c5887f9d8f9f72d42516b8e37e75c9907a00de5b2e6a2bc596909c55cef3a40
+v130s_service.Refused: unavailable_service:profile:user_manager: the worker profile is not qualified on this host
+remote_run[pc2 c65fcc2c7427 06:07:56]: rc=1 in 29s (run rr20261122060727-9ac2)
+
+v258-parent-live
+raw_sha256=3d1d5f037bde308e1f8fc31986fcd8ee482c28e40a94aa7675b63e1360212e44
+remote_run[pc2 c65fcc2c7427 06:07:43]: node busy; waiting for a slot (up to 14400 s): pc2 (rc=95): busy: rr20261122054422-e35b share from 100.127.52.61 at 2026-11-22T05:44:23Z; rr20261122060717-4c45 share from 100.127.52.61 at 2026-11-22T06:07:18Z; rr20261122060727-9ac2 share from 100.127.52.61 at 2026-11-22T06:07:28Z;;
+  SELFTEST FAIL: init scaffold gate is GREEN on the empty starter planno such run 'run-does-not-exist' (start it with veldo run)
+  SELFTEST FAIL: init scaffold gate still GREEN after a re-run
+  01_warp_0101_reviewer_notes                    611 passed   26.45s
+  02_mobile_ios_runner_b8                        261 passed   15.09s
+  03_plugin_extension_loading_runner             259 passed   22.90s
+  04_run_status_reader_veldo                     254 passed   16.12s
+  05_tracker_routing_resolver_veldo              251 passed    0.73s
+  06_capabilities_manifest_honesty_veldo         262 passed   18.31s
+  07_warp_1103_completion_mandatory              263 passed   12.91s
+  08_restoration_spec_generation_veldo           288 passed    8.24s
+  09_action_whitelist_warp_1205                  271 passed    0.37s
+  10_warp_0613_anti_vacuity                      261 passed    0.48s
+  11_inbound_command_receipt_reconcile           307 passed    4.54s
+  13_warp_0623_codified_live                     220 passed   46.14s
+selftest (PARTIAL, 12 of 237 suites): 3534 passed, 2 failed in 172.29s
+remote_run[pc2 c65fcc2c7427 06:11:12]: rc=1 in 210s (run rr20261122060742-73a8)
+
+v258-live-fixed
+raw_sha256=f71ff9535cf49331ee129987acbe7c4f886f12ee33813fd3b3909b3016c248a4
+remote_run[pc2 8bc2d07dede2 06:13:33]: node busy; waiting for a slot (up to 14400 s): pc2 (rc=95): busy: rr20261122054422-e35b share from 100.127.52.61 at 2026-11-22T05:44:23Z; rr20261122061204-2d7b share from 100.127.52.61 at 2026-11-22T06:12:06Z; rr20261122061252-94d6 share from 100.127.52.61 at 2026-11-22T06:13:23Z; rr20261122061252-e388 share from 100.127.52.61 at 2026-11-22T06:13:23Z;;
+remote_run[pc2 8bc2d07dede2 06:14:34]: node busy; waiting for a slot (up to 14400 s): pc2 (rc=95): busy: rr20261122061204-2d7b share from 100.127.52.61 at 2026-11-22T06:12:06Z; rr20261122061252-94d6 share from 100.127.52.61 at 2026-11-22T06:13:23Z; rr20261122061252-e388 share from 100.127.52.61 at 2026-11-22T06:13:23Z;;
+  SELFTEST FAIL: init scaffold gate is GREEN on the empty starter planno such run 'run-does-not-exist' (start it with veldo run)
+  SELFTEST FAIL: init scaffold gate still GREEN after a re-run
+  01_warp_0101_reviewer_notes                    611 passed   29.57s
+  02_mobile_ios_runner_b8                        261 passed   15.08s
+  03_plugin_extension_loading_runner             259 passed   23.66s
+  04_run_status_reader_veldo                     254 passed   16.52s
+  05_tracker_routing_resolver_veldo              251 passed    0.82s
+  06_capabilities_manifest_honesty_veldo         262 passed   19.76s
+  07_warp_1103_completion_mandatory              263 passed   13.28s
+  08_restoration_spec_generation_veldo           288 passed    8.86s
+  09_action_whitelist_warp_1205                  271 passed    0.30s
+  10_warp_0613_anti_vacuity                      261 passed    0.49s
+  11_inbound_command_receipt_reconcile           307 passed    4.69s
+  13_warp_0623_codified_live                     220 passed   48.68s
+selftest (PARTIAL, 12 of 238 suites): 3534 passed, 2 failed in 181.70s
+remote_run[pc2 8bc2d07dede2 06:18:43]: rc=1 in 311s (run rr20261122061332-29fc)
+
+v258-fixtures2
+raw_sha256=df61ee44b9fdf790d8dea48839269c3d99723a6ab04b7008002a20a9baedff19
+remote_run[pc2 5167e6a4c494 06:07:43]: node busy; waiting for a slot (up to 14400 s): pc2 (rc=95): busy: slot mutex held;
+  SELFTEST FAIL: VELDO-0144 credential/replace-delete
+  SELFTEST FAIL: VELDO-0144 credential/no-value-in-records
+  SELFTEST FAIL: VELDO-0169 census/writers
+  SELFTEST FAIL: VELDO-0168 inventory/sends-and-assets
+  SELFTEST FAIL: VELDO-0186 runtime/assets
+  SELFTEST FAIL: VELDO-0259 ac1/one-reader: no product module other than the reader names the folder [['.veldo/control_installation_schema.py', 'engine/.veldo/control_installation_schema.py']]
+  SELFTEST FAIL: VELDO-0259 writers/home-as-tilde
+  72_veldo_0075_andon                             13 passed    6.96s
+  72_veldo_0128_reports                           18 passed    7.03s
+  82_veldo_0144_mcp_catalog                       27 passed   53.46s
+  84_veldo_0169_project_handouts                  26 passed   24.24s
+  86_veldo_0168_text                              25 passed    9.35s
+  86_veldo_0186_setup_assets                      10 passed   48.06s
+  127_veldo_0259_installation                     18 passed   39.57s
+selftest (PARTIAL, 7 of 238 suites): 163 passed, 7 failed in 188.68s
+remote_run[pc2 5167e6a4c494 06:11:59]: rc=1 in 257s (run rr20261122060742-4e59)
+
+v258-parent-fixtures
+raw_sha256=278945aba0252827b811b8f8e342a84ed8817531556a16d12a35fdbf3c361339
+  SELFTEST FAIL: VELDO-0168 inventory/sends-and-assets
+  SELFTEST FAIL: VELDO-0186 runtime/assets
+  SELFTEST FAIL: VELDO-0259 writers/home-as-tilde
+  72_veldo_0075_andon                             13 passed    6.67s
+  72_veldo_0128_reports                           18 passed    6.41s
+  82_veldo_0144_mcp_catalog                       29 passed   48.82s
+  84_veldo_0169_project_handouts                  27 passed   24.28s
+  86_veldo_0168_text                              25 passed    9.66s
+  86_veldo_0186_setup_assets                      10 passed   47.77s
+  127_veldo_0259_installation                     19 passed   43.20s
+selftest (PARTIAL, 7 of 237 suites): 167 passed, 3 failed in 186.79s
+remote_run[pc2 c65fcc2c7427 06:15:20]: rc=1 in 196s (run rr20261122061204-2d7b)
+
+v258-fixture-hygiene
+raw_sha256=0c02a87c033b59db4c8f8aef7409c53d4a0eae9fb048d19d095d97ad47df3ce0
+lint: pass (1274 python, 40 shell, 3.38s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+generated: pass (specs/index.md)
+generated: pass (proof/WARP-0716/crossing-state.md)
+generated: pass (proof/WARP-0712/order-dependence.md)
+generated: pass (proof/WARP-0712/split-plan.md)
+generated: pass (scripts/suites/requires.json)
+generated: pass
+personal setup: 0 finding(s)
+remote_run[mac 1b65768a505d 06:18:22]: rc=0 in 14s (run rr20261122061808-80e3)

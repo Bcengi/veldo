@@ -103,3 +103,17 @@ Its first run exposed a fixture assertion still expecting two canaries; the
 corrected assertion requires seven distinct values and the rerun passed.
 The confined finding-258 driver remains queued through the same wrapper because
 pc2's Python lacks pidfd. Its outcome will be recorded when that run completes.
+
+The extended tracker closure now matches the parent at 3534 passed and the same
+two scaffold failures. Its legacy distribution assertion now checks that the
+service's tracker dependencies ship with identical engine copies. The API service
+fixture stops on both parent and change at `unavailable_service:profile:user_manager`
+on pc2; that incomplete run is not counted as a pass.
+
+Additional compatibility checks exposed fixture assumptions about an empty
+keystore and about the set of returned lookup values. They now retain the owner's
+channel item while checking MCP replacement/deletion and excluding every MCP
+canary from records. The send census includes the shipped doorbell and signed
+tracker IPC. The claim-writer census recognizes a direct `callable(getattr(...))`
+inspection as a boolean-only result; a planted invocation inside `callable` still
+must fail. The schema reuses the installation reader's filename constant.
