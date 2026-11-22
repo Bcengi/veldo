@@ -16493,6 +16493,15 @@ def cases():
             "    os.sched_setaffinity(0, spec['cpus'])  # the same CPUs the spinners are on\n",
             "    pass  # defect: the leg's suites are not bound to the spinners' CPUs\n",
             ['load/level-by-construction'])
+    load358('load358-canary-read-inverted', 'gate_load.py',
+            "        seen = os.path.exists(marker)\n",
+            "        seen = not os.path.exists(marker)  # defect: invert the canary's marker reading\n",
+            ['load/level-by-construction'])
+    add(358, 'load358-canary-event-wait-removed', leg358, leg358,
+        "        wait_for_canary_child()\n",
+        "        pass  # defect: read before the child's completion event\n",
+        ['load/level-by-construction'])
+    result[-1]['dir'] = 'scripts/suites'
     load358('load358-red-is-rerun', 'gate_legs.py',
             "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)  # one run is the verdict\n",
             "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)\n"

@@ -2,7 +2,8 @@
 
 load/level-by-construction drives the real scripts/gate_load.py beside a fixture leg: the load record
 with every generator alive, load_not_applied when a spinner is killed midway, no generator process
-left when the leg itself is killed, and the canary green alone and red inside the load.
+left when the leg itself is killed, an event-synchronized green canary control, and the ordinary
+sleep-synchronized canary result recorded inside the load.
 leg/proves-and-blocks drives the real scripts/verify.sh, scripts/gate_legs.py and scripts/gate_load.py
 as a fixture authority over a fixture candidate whose suites run through the real dispatcher.
 
@@ -22,6 +23,7 @@ def _v358d_load_leg():
     import subprocess
     import sys
     import tempfile
+    import types
 
     # The subjects, each named once so the mutation driver can put a mutant copy in its place.
     load_source = ROOT / "scripts" / "gate_load.py"
@@ -50,7 +52,8 @@ def _v358d_load_leg():
     # ------------------------------------------------------------------ AC12: load/level-by-construction
     # The fixture leg: a fixed amount of CPU work in two halves, on the CPUs of the set. With three
     # spinners beside it, it gets a quarter of a CPU, so fifteen CPU-seconds last sixty seconds or more.
-    fixture_leg = ('import sys, time\n'
+    fixture_leg = ('import json, os, sys, time\n'
+                   'print("fixture leg: cpus " + json.dumps(sorted(os.sched_getaffinity(0))), flush=True)\n'
                    'def burn(amount):\n'
                    '    start = time.process_time()\n'
                    '    while time.process_time() - start < amount:\n'
@@ -105,6 +108,8 @@ def _v358d_load_leg():
         problems += [
             code != 0 and 'the leg ended with status %s' % code,
             'fixture leg: done' not in lines and 'the fixture leg did not finish',
+            'fixture leg: cpus ' + json.dumps(sorted(start['cpus'])) not in lines
+            and 'the fixture leg is not bound to the spinners\' CPUs',
             sorted(s['cpu'] for s in spinners) != sorted(start['cpus'] * 3)
             and 'not three spinners on each CPU of the set: %s on %s' % ([s['cpu'] for s in spinners], start['cpus']),
             len(start['cpus']) != 2 and 'the set is not as many CPUs as the leg has slots: %s' % start['cpus'],
@@ -152,19 +157,70 @@ def _v358d_load_leg():
         not gone and 'leg killed: a generator process was left',
         left and 'leg killed: a writer left files: %s' % left]
 
-    # 4. The canary: green alone, red in the fixture leg. Alone means on every CPU this process may
-    # use, whatever set an enclosing leg bound it to: the canary is the test of the load, and its
-    # control is the same test with no load on its CPUs.
-    alone = subprocess.run(
-        [python, '-c', 'import os, sys\nos.sched_setaffinity(0, range(os.cpu_count()))\n'
-                       'os.execv(sys.executable, [sys.executable, "-I", "-S", sys.argv[1], "--canary"])',
-         str(load_source)], stdin=subprocess.DEVNULL, capture_output=True, text=True, env=env)
+    # 4. Run the canary's own fork, work, marker read and reap. Only its sleep is replaced by
+    # the child's completion event. The child is held on a pipe until that wait releases it;
+    # if the wait is removed, the actual marker read must be false on EVERY schedule. Release
+    # after that read too, so the missing-wait mutant can reap and fail by assertion, not hang.
+    canary_load = module('v358d_canary_control', load_source)
+    release_read, release_write = os.pipe()
+    child_pids, released = [], []
+    real_burn = canary_load.burn
+
+    def held_burn(amount):
+        os.read(release_read, 1)
+        real_burn(amount)
+
+    def canary_fork():
+        pid = os.fork()
+        if pid:
+            child_pids.append(pid)
+        return pid
+
+    def release_canary():
+        if not released:
+            os.write(release_write, b'x')
+            released.append(True)
+
+    def wait_for_canary_child():
+        release_canary()
+        # WNOWAIT leaves the canary's own waitpid responsible for reaping its child.
+        os.waitid(os.P_PID, child_pids[0], os.WEXITED | os.WNOWAIT)
+
+    def event_sleep(_seconds):
+        wait_for_canary_child()
+
+    def read_marker(path):
+        try:
+            return os.path.exists(path)
+        finally:
+            release_canary()
+
+    canary_load.burn = held_burn
+    canary_load.time = types.SimpleNamespace(process_time=canary_load.time.process_time, sleep=event_sleep)
+    canary_load.os = types.SimpleNamespace(**vars(os))
+    canary_load.os.fork = canary_fork
+    canary_load.os.path = types.SimpleNamespace(**vars(os.path))
+    canary_load.os.path.exists = read_marker
+    try:
+        control_green = canary_load.canary()
+    finally:
+        release_canary()
+        for pid in child_pids:
+            try:
+                os.waitpid(pid, 0)
+            except ChildProcessError:  # already reaped by the canary
+                pass
+        os.close(release_read)
+        os.close(release_write)
+    problems += [not control_green and 'the event-synchronized canary control is not green']
+    print('canary control: %s (child completion event)' % ('green' if control_green else 'red'), flush=True)
+
     start, record, code, lines, gone, left = under_load('canary', [python, '-I', '-S', str(load_source), '--canary'])
+    canary_result = [line for line in lines if line.startswith('canary: ')]
+    print('sleep-synchronized canary under generator load: %s (data)' % canary_result, flush=True)
     problems += [
-        (alone.returncode != 0 or 'canary: green' not in alone.stdout)
-        and 'the canary alone is not green: %s %r' % (alone.returncode, alone.stdout + alone.stderr),
-        ('canary: red' not in lines or code != 1)
-        and 'the canary in the fixture leg is not red: status %s, %s' % (code, [l for l in lines if 'canary' in l]),
+        (code not in (0, 1) or canary_result != ['canary: ' + ('green' if code == 0 else 'red')])
+        and 'the canary did not record a valid result: status %s, %s' % (code, canary_result),
         not (record and record['applied']) and 'the canary leg has no applied load record',
         not gone and 'canary: a generator process was left']
     row('load/level-by-construction', problems)
