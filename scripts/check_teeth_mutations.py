@@ -9126,7 +9126,7 @@ def cases():
             ['loop/review-offered'])
     loop154('loop358-poll-record-missing', 'control_service.py',
             "                'unwatched': getattr(self, 'unwatched', []),\n",
-            "                'unwatched': ['missing-poll-record'],\n", ['loop/review-offered'])
+            "", ['loop/review-offered'])
     loop154('loop358-orphan-stop-record-false', 'control_launch.py',
             "                          'stop_issued': entry.get('stop_issued', False)})\n",
             "                          'stop_issued': False})\n", ['loop/receiver-death'])

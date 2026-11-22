@@ -506,6 +506,8 @@ sys.exit(chosen['code'])
                     return self.idle_at[1]
                 status = self.send({'operation': 'inspect', 'entity_ids': []})
                 loop = ((status or {}).get('result') or status or {}).get('loop') or {}
+                if loop.get('available') is True and not isinstance(loop.get('unwatched'), list):
+                    raise AssertionError('service omitted its poll-set record')
                 if loop.get('unwatched'):
                     raise AssertionError('held runs absent from the service poll set: %r' % loop['unwatched'])
                 if (loop.get('passes') == logged and loop.get('pending_wakes') == 0
