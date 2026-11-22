@@ -40,6 +40,7 @@ class Loader:
         self.counts, self.refusals, self.saves = {}, {}, {'accepted': 0, 'refused': 0}
         self.save_refusals = {}
         WF.attach_installation(store, conn, self)
+        self.environment()
 
     def record(self):
         return (WF._entity_row(self.conn, self.identity) or {}).get('data')
@@ -164,6 +165,10 @@ class Loader:
             return self._event(commit, previous, 'refused', getattr(error, 'codes', [error.code]))
 
     def environment(self):
+        record = self.record()
+        if record is None:
+            return
+        I.remember_accepted(self.repo.folder, record['commit'], record['configuration'])
         if os.environ.get(I.ENVIRONMENT) == self.repo.folder:
             os.environ[I.COMMIT_ENVIRONMENT] = self.accepted_commit
             os.environ[I.BRANCH_ENVIRONMENT] = self.repo.branch

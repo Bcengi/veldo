@@ -29,6 +29,7 @@ import os
 import re
 import subprocess
 import sys
+from types import ModuleType
 from pathlib import Path
 
 # Git runs only through the shared boundary, loaded by sibling path.
@@ -44,6 +45,19 @@ COMMIT_ENVIRONMENT = ENVIRONMENT + '_COMMIT'
 BRANCH_ENVIRONMENT = ENVIRONMENT + '_BRANCH'
 SETTINGS_FILE = 'installation.yaml'
 PRODUCT_ASSETS = ('installation_schema/schema.json', 'installation_template/' + SETTINGS_FILE)
+# Organs are loaded by sibling path under different module names. One process-wide
+# snapshot lets every reader see the loader's accepted settings, including after
+# the source Git objects disappear. This is a cache of the accepted store record.
+_accepted_state = sys.modules.setdefault('_veldo_accepted_installation', ModuleType('_veldo_accepted_installation'))
+if not hasattr(_accepted_state, 'settings'):
+    _accepted_state.settings = {}
+
+
+def remember_accepted(folder, commit, configuration):
+    import json
+    _accepted_state.settings[str(Path(folder).resolve())] = (commit, json.dumps(configuration[SETTINGS_FILE]))
+
+
 ERROR_CLASSES = {
     'installation_invalid': 'invalid_input', 'installation_unknown_file': 'invalid_input',
     'installation_secret_inline': 'invalid_input', 'installation_secret_missing': 'unavailable_service',
@@ -251,6 +265,7 @@ class Installation:
     def __init__(self, resolved):
         self.folder, self.how, self.found = resolved['folder'], resolved['how'], resolved['found']
         self._settings = None
+        self._settings_commit = None
 
     def _path(self, *parts):
         return Path(self.folder, *parts)
@@ -269,10 +284,17 @@ class Installation:
 
     def settings(self):
         """installation.yaml, checked against its schema. {} when there is none."""
+        remembered = _accepted_state.settings.get(str(Path(self.folder).resolve()))
+        if remembered is not None:
+            import json
+            commit, body = remembered
+            if self._settings_commit != commit:
+                self._settings, self._settings_commit = json.loads(body), commit
+            return self._settings
         if self._settings is not None:
             return self._settings
         accepted = os.environ.get(COMMIT_ENVIRONMENT)
-        if accepted and self.revision() is not None:
+        if accepted:
             files = Repository(self.folder, os.environ.get(BRANCH_ENVIRONMENT, 'main')).snapshot(accepted)['files']
             import json
             raw = files.get(SETTINGS_FILE, b'{}').decode('utf-8')

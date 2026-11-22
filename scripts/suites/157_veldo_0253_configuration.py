@@ -10,6 +10,7 @@ def _v253_suite():
     import contextlib
     import importlib.util
     import json
+    import io
     from pathlib import Path
     import select
     import shutil
@@ -31,7 +32,7 @@ def _v253_suite():
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
             'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents',
             'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale', 'ac1/approval-validation',
-            'ac4/installation-bindings')
+            'ac4/installation-bindings', 'ac1/last-good-reader')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -114,7 +115,9 @@ def _v253_suite():
                   and 'installation_invalid:connectors/local.yaml:$.unknown:unknown_key' in refused['problems'])
             repo.publish(initial, bad)
             (root / 'installation' / 'installation.yaml').write_text('not: committed\n')
-            check('ac1/committed-only', loader.reconcile()['outcome'] == 'accepted' and loader.live['installation.yaml'] == settings)
+            accepted_reader = C.I.load(environ={C.I.ENVIRONMENT: repo.folder}, stream=io.StringIO())
+            check('ac1/committed-only', loader.reconcile()['outcome'] == 'accepted'
+                  and loader.live['installation.yaml'] == accepted_reader.settings() == settings)
             _, problems = loader.validate(dict(files, **{'runs/current.json': b'{}',
                 'projects/bad.yaml': WF.canonical({'account': 'absent'}),
                 'connectors/local.yaml': WF.canonical(dict(connector, credential='literal')),
@@ -232,6 +235,11 @@ def _v253_suite():
             except C.I.InstallationError:
                 gone = True
             check('ac4/pinned-survives', gone and WU.pinned(S, conn, 'domain', 'repository', pinned) == definition)
+            restarted = C.Loader(S, conn, repo, domain='domain', workflow_repository='repository', signer='setup', sign=sign,
+                secret_exists=lambda name: name == 'present', decisions=decisions, observe=events.append)
+            check('ac1/last-good-reader', gone and accepted_reader.settings() == restarted.live['installation.yaml']
+                  and C.I.load(environ={C.I.ENVIRONMENT: repo.folder}, stream=io.StringIO()).settings()
+                  == restarted.live['installation.yaml'])
             setup = load('v253_setup', mods / 'control_installation_setup.py')
             migration = S.open_store(root / 'migration' / 'authority.sqlite3')
             try:
