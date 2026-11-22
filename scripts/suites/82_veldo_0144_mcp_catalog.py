@@ -914,4 +914,4 @@ for name in paths:
             print('VELDO-0144 detail: ' + name + ': ' + '; '.join(bad))
 
 
-_v144_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v144_suite)

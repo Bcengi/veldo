@@ -769,7 +769,7 @@ _v66_started = _v66_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere (the Mac) the platform's temporary directory is used.
 _v66_fast = fast_temp()
-with _v66_temp.TemporaryDirectory(prefix='v66-', dir=_v66_fast) as _v66_dir:
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v66_temp.TemporaryDirectory(prefix='v66-', dir=_v66_fast) as _v66_dir:
     _v66_rows = _v66_checks(_v66_Path(_v66_dir))
 for _v66_name, _v66_observed in _v66_rows.items():
     _v66_ok = bool(_v66_observed) and all(ok for _, ok in _v66_observed)

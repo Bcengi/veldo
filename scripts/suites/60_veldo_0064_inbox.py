@@ -928,7 +928,7 @@ def _v64_stored_version(conn, eid):
 
 
 _v64_started = _v64_time.monotonic()
-with _v64_temp.TemporaryDirectory(prefix='v64-') as _v64_dir:
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v64_temp.TemporaryDirectory(prefix='v64-') as _v64_dir:
     _v64_rows = _v64_checks(_v64_Path(_v64_dir))
 for _v64_name, _v64_observed in _v64_rows.items():
     _v64_ok = bool(_v64_observed) and all(ok for _, ok in _v64_observed)

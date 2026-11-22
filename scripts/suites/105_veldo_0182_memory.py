@@ -870,4 +870,4 @@ def _v182_suite():
     for name,checks in rows.items():
         expect('VELDO-0182 '+name, bool(checks) and all(checks))
 
-_v182_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v182_suite)

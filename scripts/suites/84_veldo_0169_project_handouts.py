@@ -1013,4 +1013,4 @@ def _v169_suite():
         expect('VELDO-0169 ' + row, not failed)
 
 
-_v169_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v169_suite)
