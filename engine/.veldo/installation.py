@@ -322,6 +322,14 @@ class Installation:
         self._settings = data
         return data
 
+    def accepted_settings(self):
+        """The loader's accepted snapshot only; setup's working tree is never runtime input."""
+        remembered = _accepted_state.settings.get(str(Path(self.folder).resolve()))
+        if remembered is None:
+            return {}
+        import json
+        return json.loads(remembered[1])
+
     def value(self, key):
         """A top-level key of installation.yaml, or installation_missing:<key>."""
         value = self.settings().get(key)

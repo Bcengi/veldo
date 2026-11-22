@@ -152,7 +152,7 @@ def ring(record, sink, terms=()):
         delivered = sink.send(text, link, key=key)
     except Exception as exc:
         return {"request": rid, "status": status, "outcome": "failed",
-                "error": "%s" % exc, "link": link}
+                "error": type(exc).__name__, "link": link}
     return {"request": rid, "status": status, "link": link,
             "outcome": "notified" if delivered else "suppressed"}
 
@@ -207,11 +207,8 @@ class FailingSink:
 
 
 def _resolve_secret_ref(token_ref):
-    """Resolve a token from its secret reference (env:NAME) via the SHIPPED tracker resolver,
-    loaded lazily so the gate - which never constructs the live sink - never imports it. Reuses
-    tracker_intake._default_secret_resolver, never a second implementation of the convention."""
-    ti = _load("veldo_tracker_intake_for_doorbell", "tracker_intake.py")
-    return ti._default_secret_resolver(token_ref)
+    """Resolve only a named keystore item, never a process environment variable."""
+    return _load('doorbell_outside', 'control_plane_calls.py').credential('doorbell', token_ref)
 
 
 class TelegramSink:
@@ -234,12 +231,23 @@ class TelegramSink:
     def __init__(self, chat_id, token_ref, resolve_secret=None, activation=None):
         self._chat_id = chat_id
         self._activation = activation
-        resolver = resolve_secret or _resolve_secret_ref
-        self._token = resolver(token_ref)
+        self._outside = _load('doorbell_outside', 'control_plane_calls.py')
+        self._token = self._outside.credential('doorbell', token_ref, resolve_secret)
         if not self._token:
             raise DoorbellError("no bot token resolved from %r (set the secret, never inline it)" % token_ref)
 
+    @classmethod
+    def from_installation(cls, activation=None):
+        outside = _load('doorbell_outside', 'control_plane_calls.py')
+        settings = outside.settings('doorbell')
+        if settings is None:
+            raise DoorbellError('installation_missing:doorbell')
+        sink = cls(settings['chat_id'], settings['token_ref'], activation=activation)
+        sink.ORIGIN = settings['origin']
+        return sink
+
     def send(self, text, link, key=None):
+        self._outside.require_service('doorbell')
         import urllib.request
         message = text if (link and link in text) else ("%s\n%s" % (text, link) if link else text)
         payload = json.dumps({"chat_id": self._chat_id, "text": message,

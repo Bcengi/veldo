@@ -1014,7 +1014,9 @@
           },
           "required": []
         },
-        "space": {}
+        "space": {},
+        "tracker_routing": "tracker_routing",
+        "doorbell": "doorbell"
       },
       "required": [
         "schema"
@@ -1462,6 +1464,270 @@
         }
       },
       "required": []
+    },
+    "tracker_site": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "jira-cloud",
+            "confluence-cloud"
+          ]
+        },
+        "base_url": {
+          "validator": "outside_url"
+        },
+        "token_ref": {
+          "validator": "control_plane_credential",
+          "caller": "tracker"
+        },
+        "client_id_ref": {
+          "validator": "control_plane_credential",
+          "caller": "tracker"
+        },
+        "client_secret_ref": {
+          "validator": "control_plane_credential",
+          "caller": "tracker"
+        },
+        "auth": {
+          "type": "string",
+          "enum": [
+            "basic",
+            "oauth-client-credentials"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "project": {
+          "type": "string"
+        },
+        "cloud_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "base_url"
+      ]
+    },
+    "tracker_repo": {
+      "type": "object",
+      "properties": {
+        "id": "identifier",
+        "tracker": "identifier",
+        "project": {
+          "type": "string"
+        },
+        "reviewer": {
+          "type": "string"
+        },
+        "status_map": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          },
+          "key_pattern": "[^\\x00]+"
+        },
+        "request_status_map": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          },
+          "key_pattern": "[^\\x00]+"
+        }
+      },
+      "required": [
+        "id",
+        "tracker",
+        "project"
+      ]
+    },
+    "tracker_routing": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "enum": [
+            "veldo.tracker/v1"
+          ]
+        },
+        "routing": {
+          "type": "object",
+          "properties": {
+            "mechanism": {
+              "type": "string",
+              "enum": [
+                "label",
+                "component",
+                "field"
+              ]
+            },
+            "label_prefix": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mechanism"
+          ]
+        },
+        "repos": {
+          "type": "array",
+          "items": "tracker_repo"
+        },
+        "trackers": {
+          "type": "object",
+          "values": "tracker_site"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "reviewer": {
+          "type": "string"
+        },
+        "ready_statuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status_map": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          },
+          "key_pattern": "[^\\x00]+"
+        },
+        "request_status_map": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          },
+          "key_pattern": "[^\\x00]+"
+        },
+        "projection": {
+          "type": "object",
+          "properties": {
+            "repo": {
+              "type": "string"
+            },
+            "approver": {
+              "type": "string"
+            },
+            "role_approvers": {
+              "type": "object",
+              "values": {
+                "type": "string"
+              },
+              "key_pattern": "[^\\x00]+"
+            },
+            "watchers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": []
+        },
+        "bootstrap": {
+          "type": "object",
+          "properties": {
+            "project_key": {
+              "type": "string"
+            },
+            "required_project_type": {
+              "type": "string"
+            },
+            "issue_types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "statuses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "category"
+                ]
+              }
+            },
+            "fence": {
+              "type": "object",
+              "properties": {
+                "agent_group": {
+                  "type": "string"
+                },
+                "approver_group": {
+                  "type": "string"
+                },
+                "agent_account_id": {
+                  "type": "string"
+                },
+                "terminal_states": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": []
+            }
+          },
+          "required": [
+            "project_key"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "routing",
+        "repos",
+        "trackers"
+      ]
+    },
+    "doorbell": {
+      "type": "object",
+      "properties": {
+        "chat_id": {
+          "one_of": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808
+            }
+          ]
+        },
+        "origin": {
+          "validator": "outside_url"
+        },
+        "token_ref": {
+          "validator": "control_plane_credential",
+          "caller": "doorbell"
+        }
+      },
+      "required": [
+        "chat_id",
+        "origin",
+        "token_ref"
+      ]
     }
   },
   "widening": {

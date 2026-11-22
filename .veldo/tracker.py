@@ -14,7 +14,6 @@ refused one.
 No network, no writes, pure stdlib. The tracker adapter itself is the seam in WARP-0603; this is
 just the contract and the resolution."""
 import collections
-import json
 import os
 
 SCHEMA = "veldo.tracker/v1"
@@ -44,13 +43,15 @@ def default_config_path(repo_root=None):
 
 
 def load_tracker_config(repo_root=None, path=None):
-    """Load and validate the per-org tracker config, or return {} if none is present (the
-    integration is simply not wired for this repo). Pure - reads one file, no network."""
-    p = path or default_config_path(repo_root)
-    if not os.path.exists(p):
+    """Read accepted installation routing. Legacy path arguments are never sources."""
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location('tracker_outside', Path(__file__).with_name('control_plane_calls.py'))
+    outside = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(outside)
+    data = outside.settings('tracker_routing')
+    if data is None:
         return {}
-    with open(p) as f:
-        data = json.load(f)
     _validate(data)
     return data
 

@@ -65,6 +65,23 @@ def check(value, rule, definitions, path, key, problems):
                 return
         bad('type')
         return
+    if rule.get('validator') == 'control_plane_credential':
+        try:
+            organ('control_plane_calls').reference(rule['caller'], value)
+        except ValueError as error:
+            problems.append(error.code)
+        return
+    if rule.get('validator') == 'outside_url':
+        from urllib.parse import urlsplit
+        try:
+            url = urlsplit(value)
+            valid = (url.scheme == 'https' or (url.scheme == 'http' and url.hostname in ('127.0.0.1', 'localhost', '::1')))
+            if (not valid or not url.hostname or url.username or url.password or url.query or url.fragment
+                    or any(c.isspace() for c in value) or url.port == 0):
+                bad('site')
+        except (ValueError, TypeError, AttributeError):
+            bad('site')
+        return
     if rule.get('validator') == 'role_configuration':
         try:
             organ('control_agent_config').validate(value)
@@ -126,6 +143,9 @@ def secrets(value, path, exists, problems, key='$'):
             if (not declaration and SECRET_FIELD.fullmatch(str(field))
                     and not (isinstance(child, dict) and set(child) == {'secret'})):
                 problems.append('installation_secret_inline:%s:%s' % (path, at))
+            elif field in ('token_ref', 'client_id_ref', 'client_secret_ref'):
+                if isinstance(child, str) and child.startswith('keychain:') and not exists(child.split(':', 1)[1]):
+                    problems.append('installation_secret_missing:' + child.split(':', 1)[1])
             else:
                 secrets(child, path, exists, problems, at)
     elif isinstance(value, list):
@@ -180,6 +200,14 @@ def validate(files, *, secret_exists, resolve=None):
             organ('control_space_config').read(installation=Reader())
         except Exception as error:
             problems.append(('installation_invalid:%s:space:' % I.SETTINGS_FILE) + getattr(error, 'code', 'schema'))
+    routing = settings.get('tracker_routing')
+    if routing is not None:
+        try:
+            organ('tracker')._validate(routing)
+            if any(r['tracker'] not in routing.get('trackers', {}) for r in routing.get('repos', [])):
+                raise ValueError('unknown_tracker')
+        except (ValueError, TypeError, KeyError, AttributeError):
+            problems.append('installation_invalid:installation.yaml:tracker_routing:routing')
     records = {path: body for path, body in files.items() if path.startswith('records/') and path != 'records/digests.json'}
     if records or 'records/digests.json' in files:
         try:
