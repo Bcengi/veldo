@@ -1,9 +1,9 @@
 {
   "ticket-diagnostic": {
-    "run": "rr20261122031401-243d",
-    "raw_sha256": "1ff859981b8a0370831f2c31942e0c168781b3440623ae6addfd1e39df47db21",
-    "raw_bytes": 12108,
-    "transcript_lines": 46
+    "run": "rr20261122032421-919a",
+    "raw_sha256": "67f8ec755edb0950cd3a06dadaefe22dd35153b6e6ff281f0c9b432e8707ce47",
+    "raw_bytes": 12247,
+    "transcript_lines": 47
   },
   "bindings-diagnostic": {
     "run": "rr20261122030853-c9e5",
@@ -18,8 +18,8 @@
     "transcript_lines": 47
   },
   "static-checks": {
-    "run": "rr20261122031435-d433",
-    "raw_sha256": "a7a5ccf98696dd9e481429339b3bf1b0097c7e2dafec9b0c5a6a21e53bc1629d",
+    "run": "rr20261122032505-2cba",
+    "raw_sha256": "b548e77783cf3d3dba632512ddbc2b34a729e8dd00be56ae1370df4ca27818ed",
     "raw_bytes": 912,
     "transcript_lines": 9
   },

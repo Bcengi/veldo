@@ -8,10 +8,12 @@ this bundle is not an independent review, an aggregate unit pass, a gate pass, o
 `installation.py` owns Git tree/object/ref operations and the OS reference subscription. The shipped
 `installation_schema/schema.json` declares paths, closed kinds, and widening fields. The loader validates
 all files and cross references before one store transaction records the accepted configuration, provenance,
-resolved bindings, workflow content copies, revisions and layouts. Invalid trees retain the last good record.
+resolved bindings, workflow content copies, revisions and layouts. Invalid trees retain the last good record. Every settings reader in the service uses the accepted
+snapshot, including when the original commit has been pruned; working files cannot replace it.
 
 `control_installation_decision.py` uses ordinary signed VELDO-0068 terms, presentation and settlement for
-an exact commit and widening digest. The Git author is provenance only. A superseding commit cancels the
+an exact commit and widening digest. The Git author is provenance only. Metadata-only edits and authority reductions do not request
+approval; changing the declared remote does, since it changes where the private configuration is sent. A superseding commit cancels the
 old decision. A signed owner-save packet verifies the exact proposed commit and settles that same request.
 
 Canvas saves validate the whole proposed tree, create Git objects without touching the working copy/index,
@@ -51,7 +53,7 @@ The `.txt` transcripts retain the partial-run warning and exit code 2 where appl
 records, not unit verification evidence. `diagnostic-sources.json` records each node run and raw log hash;
 home roots are redacted and remote cleanup messages after command exit are omitted.
 
-- Ticket diagnostic: 25 ticket rows, zero failed (plus 26 shared validator rows).
+- Ticket diagnostic: 26 ticket rows and 24 existing workflow-binding rows, zero failed (plus 26 shared validator rows).
 - Workflow binding diagnostic: 24 existing VELDO-0241 rows and 25 ticket rows, zero failed.
 - Setup diagnostic: 30 existing space/setup rows and 25 ticket rows, zero failed.
 - Static checks: 1,259 Python files and 40 shell files; 333 template pairs; zero personal-setup findings.
