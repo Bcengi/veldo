@@ -127,6 +127,17 @@ def cases():
         '    if not (ready and one_each):\n',
         ['relay/listener-proof-needs-census', 'relay/stand-down-is-not-green'])
     result[-1]['dir'] = 'scripts/suites'
+    # Fix round 1 (review F1): suite 48's composite let an incomplete census decide first, so on a leg
+    # without ptrace a failed endpoint/judgement comparison printed STANDS DOWN and the suite stayed
+    # green. The falsifier restores that ordering; it needs no census, so it is judged on every leg.
+    S48 = '48_veldo_0108_relay.py'
+    add(114, 'v114-stand-down-hides-failed-comparison', S48, S48,
+        '    if not comparison:\n        return "FAIL", "comparison_failed"\n',
+        '    if not census_ready:  # defect: an incomplete census silences a failed comparison\n'
+        '        return "STANDS DOWN", "census_incomplete"\n'
+        '    if not comparison:\n        return "FAIL", "comparison_failed"\n',
+        ['relay/stand-down-never-hides-a-failed-comparison'])
+    result[-1]['dir'] = 'scripts/suites'
     def grammar(name, module, old, new, row):
         add(118, name, '54_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
         result[-1]['fixture'] = True
