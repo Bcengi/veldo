@@ -276,7 +276,7 @@ def _v253_suite():
                     imported_loader = migration.installation_loader
                     imported_repo = imported_loader.repo
                     code = WU.shipped()
-                    code['budget']['steps'] += 1
+                    code['budget']['steps'] -= 1
                     imported_files = dict(imported_repo.snapshot()['files'], **{
                         'workflows/code.json': WF.canonical(code), 'workflows/code.layout.json': b'{}',
                         'projects/example.yaml': WF.canonical({'workflows': {'default': {'workflow': 'code'}}})})
