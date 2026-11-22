@@ -24,7 +24,7 @@ HTTP/socket/Git call conventions, not arbitrary dynamically synthesized Python.
 
 ## Registered mutation checks
 
-`scripts/check_teeth_mutations.py:10472` registers finding 258 for the confined
+`scripts/check_teeth_mutations.py:10474` registers finding 258 for the confined
 gate driver. Every case carries its production siblings and targets an observed
 row, rather than a source-text assertion.
 
@@ -41,6 +41,12 @@ subprocesses. `mutation-diagnostic.txt` records baseline/no-op green and the
 intended mutant red for all five cases on pc2. This diagnostic does not replace
 the confined mutation driver. Its subprocess deadlines are generous hang
 detectors; the rows synchronize on completed operations and never assert speed.
+
+The existing renderer mutation cases also retain the new service-boundary helper
+next to isolated copies. `legacy-mutation-diagnostic.txt` records the parent
+comparison, the missing-dependency no-op failure before the fix, and the corrected
+baseline/no-op green with the intended correlation mutant still red. The diagnostic
+script accepts `--case <registered-name>` for these dependency checks.
 
 ## Observations and compatibility
 
