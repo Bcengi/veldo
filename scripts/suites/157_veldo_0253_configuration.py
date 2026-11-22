@@ -28,7 +28,7 @@ def _v253_suite():
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
-            'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save')
+            'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -121,6 +121,22 @@ def _v253_suite():
                   and any(':account:unknown_reference' in p for p in problems)
                   and any(p.startswith('installation_secret_inline:') for p in problems)
                   and 'installation_secret_missing:missing' in problems)
+            service_files = dict(files, **{
+                'services/catalog.yaml': WF.canonical({'schema': 'veldo.outside_service/v1',
+                    'base_url': 'https://catalog.example', 'openapi': 'catalog.openapi.json',
+                    'tools_snapshot': 'catalog.tools.json'}),
+                'services/catalog.openapi.json': WF.canonical({'openapi': '3.1.0',
+                    'info': {'title': 'Catalog', 'version': '1'}, 'paths': {'/items': {'get': {
+                        'responses': {'200': {'description': 'Items', 'content': {'application/json': {
+                            'schema': {'type': 'object', 'properties': {'id': {'type': 'string'}},
+                                       'required': ['id'], 'additionalProperties': False}}}}}}}}}),
+                'services/catalog.tools.json': WF.canonical({'tools': [{'name': 'read', 'input_schema': {
+                    'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']}}]})})
+            _, valid_service = loader.validate(service_files)
+            service_files.pop('services/catalog.tools.json')
+            _, missing_service = loader.validate(service_files)
+            check('ac1/service-documents', not valid_service and
+                  'installation_invalid:services/catalog.yaml:tools_snapshot:unknown_reference' in missing_service)
             with contextlib.closing(C.I.RefChanges(repo)) as watch:
                 widened = commit({'connectors/local.yaml': dict(connector, allowed_tools=['read', 'write'])})
                 ready = select.select([watch], [], [], 120)[0]

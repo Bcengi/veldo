@@ -60,7 +60,7 @@ def export(conn, settings, files=None):
         elif kind == 'account':
             settings.setdefault('accounts', {})[data['id']] = {
                 key: data[key] for key in ('label', 'provider', 'profiles', 'concurrency') if key in data}
-    files['installation.yaml'] = WF.canonical(settings)
+    files[I.SETTINGS_FILE] = WF.canonical(settings)
     return files
 
 
@@ -76,7 +76,7 @@ def create(store, conn, folder, *, settings, identity, domain, repository, signe
         files = repo.snapshot(parent)['files']
     except I.InstallationError:
         parent, files = None, repo.import_files()
-    template = I._yamlish().read(Path(__file__).with_name('installation_template') / 'installation.yaml')
+    template = I._yamlish().read(Path(__file__).with_name('installation_template') / I.SETTINGS_FILE)
     settings = dict(template, **settings)
     files = export(conn, settings, files)
     _, problems = loader.validate(files)
@@ -122,7 +122,7 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     # Preserve additional previously declared installation kinds and settings at import.
     record = WF._entity_row(conn, 'installation:' + C.V.digest([ids['domain_uuid'], str(Path(folder).resolve())]))
     if record is not None:
-        existing = record['data']['configuration']['installation.yaml']
+        existing = record['data']['configuration'][I.SETTINGS_FILE]
     else:
         repository = I.Repository.create(folder)
         try:
@@ -130,7 +130,7 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
         except I.InstallationError:
             parent = None
         files = repository.snapshot(parent)['files'] if parent else repository.import_files()
-        existing = C.V.decode(files.get('installation.yaml', b'{}'))
+        existing = C.V.decode(files.get(I.SETTINGS_FILE, b'{}'))
     for field in ('channels', 'hosts', 'ports', 'git_identities'):
         settings[field] = dict(existing.get(field, {}), **settings[field])
     settings['git'] = dict(existing.get('git', {'branch': 'main'}))
@@ -143,7 +143,7 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     directory = Path(installed['unit_path'] + '.d')
     directory.mkdir(mode=0o700, exist_ok=True)
     # systemd specifier expansion is disabled for the literal installation path.
-    value = json.dumps('VELDO_INSTALLATION=' + str(Path(folder).resolve()).replace('%', '%%'))
+    value = json.dumps(I.ENVIRONMENT + '=' + str(Path(folder).resolve()).replace('%', '%%'))
     (directory / 'installation.conf').write_text('[Service]\nEnvironment=' + value + '\n')
     os.chmod(directory / 'installation.conf', 0o600)
     config['installation_repository'] = result['commit']

@@ -40,7 +40,10 @@ _git_spec.loader.exec_module(_git_process)
 SCHEMA = 'veldo.installation/v1'
 PATTERNS_SCHEMA = 'veldo.installation.patterns/v1'
 ENVIRONMENT = 'VELDO_INSTALLATION'
+COMMIT_ENVIRONMENT = ENVIRONMENT + '_COMMIT'
+BRANCH_ENVIRONMENT = ENVIRONMENT + '_BRANCH'
 SETTINGS_FILE = 'installation.yaml'
+PRODUCT_ASSETS = ('installation_schema/schema.json', 'installation_template/' + SETTINGS_FILE)
 OVERRIDE_KINDS = {'connectors': '.yaml', 'services': '.yaml', 'workflows': '.json'}
 
 _IDENT = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
@@ -261,9 +264,9 @@ class Installation:
         """installation.yaml, checked against its schema. {} when there is none."""
         if self._settings is not None:
             return self._settings
-        accepted = os.environ.get('VELDO_INSTALLATION_COMMIT')
+        accepted = os.environ.get(COMMIT_ENVIRONMENT)
         if accepted and self.revision() is not None:
-            files = Repository(self.folder, os.environ.get('VELDO_INSTALLATION_BRANCH', 'main')).snapshot(accepted)['files']
+            files = Repository(self.folder, os.environ.get(BRANCH_ENVIRONMENT, 'main')).snapshot(accepted)['files']
             import json
             raw = files.get(SETTINGS_FILE, b'{}').decode('utf-8')
             self._settings = json.loads(raw) if raw.lstrip().startswith('{') else _yamlish().parse(raw)

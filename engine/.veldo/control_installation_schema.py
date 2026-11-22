@@ -20,6 +20,7 @@ def organ(name):
 
 
 WF = organ('control_workflow')
+I = organ('installation')
 IDENT = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
 SECRET_FIELD = re.compile(r'^(token|password|passwd|credential|api_key|access_token|refresh_token|client_secret)$', re.I)
 SECRET_VALUE = re.compile(r'-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\b(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})')
@@ -53,6 +54,17 @@ def check(value, rule, definitions, path, key, problems):
         rule = definitions[rule]
     def bad(reason):
         problems.append('installation_invalid:%s:%s:%s' % (path, key, reason))
+    if key.count('.') + key.count('[') > 64:
+        bad('too_deep')
+        return
+    if 'one_of' in rule:
+        for candidate in rule['one_of']:
+            failed = []
+            check(value, candidate, definitions, path, key, failed)
+            if not failed:
+                return
+        bad('type')
+        return
     if rule.get('validator') == 'role_configuration':
         try:
             organ('control_agent_config').validate(value)
@@ -87,7 +99,8 @@ def check(value, rule, definitions, path, key, problems):
             if field in fields:
                 check(entry, fields[field], definitions, path, at, problems)
             elif 'values' in rule:
-                if not isinstance(field, str) or not IDENT.fullmatch(field) or '..' in field:
+                valid_key = isinstance(field, str) and re.fullmatch(rule.get('key_pattern', IDENT.pattern), field)
+                if not valid_key or ('key_pattern' not in rule and '..' in field):
                     problems.append('installation_invalid:%s:%s:identifier' % (path, at))
                 check(entry, rule['values'], definitions, path, at, problems)
             else:
@@ -153,9 +166,9 @@ def validate(files, *, secret_exists, resolve=None):
                 problems.append('installation_invalid:%s:id:path_mismatch' % path)
         if len(problems) == before:
             config[path] = value
-    if 'installation.yaml' not in files:
-        problems.append('installation_invalid:installation.yaml:$:missing')
-    settings = config.get('installation.yaml', {})
+    if I.SETTINGS_FILE not in files:
+        problems.append('installation_invalid:%s:$:missing' % I.SETTINGS_FILE)
+    settings = config.get(I.SETTINGS_FILE, {})
     if 'space' in settings:
         class Reader:
             def space(self):
@@ -163,7 +176,7 @@ def validate(files, *, secret_exists, resolve=None):
         try:
             organ('control_space_config').read(installation=Reader())
         except Exception as error:
-            problems.append('installation_invalid:installation.yaml:space:' + getattr(error, 'code', 'schema'))
+            problems.append(('installation_invalid:%s:space:' % I.SETTINGS_FILE) + getattr(error, 'code', 'schema'))
     records = {path: body for path, body in files.items() if path.startswith('records/') and path != 'records/digests.json'}
     if records:
         try:
