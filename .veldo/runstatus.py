@@ -282,7 +282,7 @@ def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
         "events_tail": [_project_event(e) for e in tail_events],
         "recent_verdicts": verdicts,
         "tripwires": _tripwires(root),
-        "replication": _replication(root, now, db_path=control_db, eligibility=eligibility),
+        "replication": _replication(root, now, db_path=control_db),
         "store_guard": _store_guard(root),
     }
     if stopped:
@@ -298,7 +298,7 @@ def _store_guard(root):
             return None
         if EL.E.binding_problems(binding):
             return {'state': 'invalid', 'reason': 'enrollment_refused:malformed_binding'}
-        return EL._organ('control_run_query').switch(EL.E.store_path_for(binding))
+        return EL._late('control_run_query').switch(EL.E.store_path_for(binding))
     except (EL.E.EnrollmentRefused, OSError):
         return {'state': 'invalid', 'reason': 'enrollment_unanswerable'}
 

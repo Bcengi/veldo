@@ -181,7 +181,7 @@ def _held(entry, reason, lane=None, detail=()):
 
 
 def _floor_entry(gate, sid, word, landed=False):
-    return gate.floor_entry(sid, word, landed)
+    return gate.floor_entry(sid, word, landed, reader=_local_floor_entry)
 
 
 def _local_floor_entry(gate, sid, word, landed=False):

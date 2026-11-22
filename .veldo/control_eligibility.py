@@ -110,6 +110,17 @@ def _organ(name):
     return module
 
 
+# VELDO-0359: organs first needed after import (the run query client, the frontier's floor reading), loaded
+# once per process and kept. A floor entry or an entry gate never loads a module again.
+_LATE = {}
+
+
+def _late(name):
+    if name not in _LATE:
+        _LATE[name] = _organ(name)
+    return _LATE[name]
+
+
 CC = _organ('completion_contract')
 E = _organ('control_enrollment')
 # VELDO-0076: the membership reading (scope_covers, authority_contract.active_member) a project's owner is judged by.
@@ -466,7 +477,7 @@ def entry_gate(repo_root, gate=None, trust=None, observe=None):
     if not enrolled(repo_root):
         return None
     if os.environ.get('VELDO_RUN_QUERY'):
-        return _organ('control_run_query').RemoteGate(repo_root, os.environ['VELDO_RUN_QUERY'], observe)
+        return _late('control_run_query').RemoteGate(repo_root, os.environ['VELDO_RUN_QUERY'], observe)
     if trust is None:
         trust = load_host_trust()
     if trust is None:
@@ -741,8 +752,12 @@ class Gate:
         state['revision_landed'] = state['revision_landed'] and self._landed_from(receipts, subject) is not None
         return state
 
-    def floor_entry(self, unit, word, landed=False):
-        return _organ('frontier')._local_floor_entry(self, unit, word, landed)
+    def floor_entry(self, unit, word, landed=False, reader=None):
+        """The unit's place on the floor. The frontier passes its own reading as `reader`, so a frontier
+        pass loads nothing; any other caller gets the frontier's, loaded once."""
+        if reader is None:
+            reader = _late('frontier')._local_floor_entry
+        return reader(self, unit, word, landed)
 
     def landed(self, unit):
         return self.completion(unit)['revision_landed']

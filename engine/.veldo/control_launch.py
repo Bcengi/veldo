@@ -200,6 +200,7 @@ import contextlib
 import copy
 import errno
 import fnmatch
+import functools
 import hashlib
 import math
 import importlib.util
@@ -1999,6 +2000,7 @@ class Launch:
         self.query_endpoint = None
         self.query_identity = None
         self.query_counts = None
+        self.query_left = None  # why the run's query endpoint directory was left, when it was
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -2064,9 +2066,10 @@ class Launch:
         if not isinstance(message, dict):
             return {}
         if message.get('event') == 'run_query_end':
-            self.query_counts = message['counts']
+            self.query_counts = message.get('counts')
+            self.query_left = message.get('left') or self.query_left
         if message.get('event') == 'run_query_created':
-            self.query_identity = message['identity']
+            self.query_identity = message.get('identity')
         if isinstance(message.get('group'), dict):
             self.group = message['group']
         if message.get('supervision') is not None:
@@ -2111,7 +2114,15 @@ class Launch:
                 while b'\n' in self.pending:
                     self._take()
         if self.query_endpoint is not None and self.query_identity is not None:
-            RQ.remove(self.query_endpoint, self.query_identity)
+            # Never raises: a directory something else was put in is left and named here.
+            left = RQ.remove(self.query_endpoint, self.query_identity)
+            if left:
+                self.query_left = left
+                if self.receiver_log:
+                    # Recorded beside the run's records, where the receiver's own words are kept.
+                    with contextlib.suppress(OSError, ValueError, TypeError):
+                        with open(self.receiver_log, 'a') as handle:
+                            handle.write('run query endpoint %s (after the receiver was reaped)\n' % left)
         with contextlib.suppress(OSError, ValueError):
             if self.child.stdin is not None:
                 self.child.stdin.close()
@@ -2257,6 +2268,53 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 # The receiver process.
 
+def close_query(receiver):
+    """VELDO-0359: stop the receiver's run query server and remove its endpoint, once. Never raises
+    and never writes to the launch pipe, so nothing here stands between a run and the record of its
+    end; a directory that could not be removed is left and named in what `report_query` reports."""
+    server = getattr(receiver, 'query_server', None)
+    if server is None:
+        return
+    receiver.query_server = None
+    summary = {'event': 'run_query_end', 'counts': {}}
+    try:
+        server.close()
+        summary['counts'] = dict(server.counts)
+        if server.left:
+            summary['left'] = server.left
+    except Exception as error:  # noqa: BLE001 - cleanup never stops an end from being recorded
+        summary['left'] = 'left:' + type(error).__name__
+    receiver.query_summary = summary
+
+
+def report_query(receiver):
+    """The closed server's final counts and what it left, reported once, after the run's end is
+    recorded. A report that cannot be written changes nothing."""
+    summary = getattr(receiver, 'query_summary', None)
+    if summary is None:
+        return
+    receiver.query_summary = None
+    with contextlib.suppress(Exception):
+        if summary.get('left'):
+            # The receiver's standard error is the run's receiver log.
+            sys.stderr.write('run query endpoint %s\n' % summary['left'])
+            sys.stderr.flush()
+    with contextlib.suppress(Exception):
+        receiver.emit(summary)
+
+
+def _query_ended(launch):
+    """Receiver.launch with its query endpoint closed and reported however the launch ends."""
+    @functools.wraps(launch)
+    def ended(self, contract):
+        try:
+            return launch(self, contract)
+        finally:
+            close_query(self)
+            report_query(self)
+    return ended
+
+
 def _write_held_input(stdin, data, last, terminal):
     """Mark the prompt before an engine can answer during write or flush."""
     if last and getattr(terminal, 'require_prompt', False):
@@ -2324,6 +2382,7 @@ class Receiver:
         self.recorder = None
         self.committed = None
         self.query_server = None
+        self.query_summary = None
         self.store_guard = None
 
     def _unstage_skills(self):
@@ -2534,10 +2593,8 @@ class Receiver:
         return self.qualification['refusal']
 
     def _close_query(self):
-        server, self.query_server = getattr(self, 'query_server', None), None
-        if server is not None:
-            server.close()
-            self.emit({'event': 'run_query_end', 'counts': dict(server.counts)})
+        close_query(self)
+        report_query(self)
 
     def _prepare_query(self, contract, adapter):
         if adapter.get('identity', 'local') == 'reported':
@@ -2552,7 +2609,10 @@ class Receiver:
             # The existing risky runner has no Unix sockets (design section 14).
             return None
         try:
-            self.query_server = RQ.Server(self.config, contract['dispatch_id'], observe=self.emit,
+            # Each request's name and outcome goes to a file beside the run's records; the launch
+            # pipe carries the endpoint's creation and, once, its final counts.
+            self.query_server = RQ.Server(self.config, contract['dispatch_id'],
+                log=RQ.log_path(ER.directory(self.config), contract['dispatch_id']),
                 created=lambda identity: self.emit({'event': 'run_query_created', 'identity': identity}))
             self.query_server.start()
         except RQ.Refused:
@@ -2560,13 +2620,8 @@ class Receiver:
             return 'unavailable_service:run_query'
         return None
 
+    @_query_ended
     def launch(self, contract):
-        try:
-            return self._launch(contract)
-        finally:
-            self._close_query()
-
-    def _launch(self, contract):
         dispatch_id = contract['dispatch_id']
         record = self.dispatches.record(dispatch_id)
         self.contract = contract
@@ -2725,7 +2780,9 @@ class Receiver:
                 self._exit_group = None
 
     def _finish(self, termination, contract, contract_digest, process, remote):
-        self._close_query()
+        # The run has ended: its query endpoint goes before the end is recorded. Never raises and
+        # writes nothing; the counts are reported once the launch returns.
+        close_query(self)
         dispatch_id = contract['dispatch_id']
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
@@ -3180,8 +3237,8 @@ class Receiver:
                                RUNNER_CLIENTS.get((self.binding or {}).get('engine')))
         # VELDO-0254 AC1: what the run starts with, scanned before it starts; a credential refuses the launch.
         project = _project(getattr(self, 'contract', None) or {})
-        own = [getattr(self, 'token', None), environment.get(RQ.VARIABLE),
-               environment.get('VELDO_DISPATCH_ACCEPTANCE')] + list((getattr(self, 'delivered', None) or {}).values())
+        own = [getattr(self, 'token', None), environment.get(RQ.VARIABLE)] + list(
+            (getattr(self, 'delivered', None) or {}).values())
         refusal = launch_scan(config, dispatch_id, project, environment, argv, own=own)
         if refusal:
             raise C.Refused(refusal)
