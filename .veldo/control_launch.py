@@ -2236,6 +2236,7 @@ class Launch:
         self.flags = []
         self.session = None
         self.query_endpoint = None
+        self.query_identity = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -2302,6 +2303,8 @@ class Launch:
             return {}
         if message.get('event') in ('exited', 'unknown'):
             self.ended = True  # its last report: the receiver is ending by itself (VELDO-0358)
+        if message.get('event') == 'run_query_created':
+            self.query_identity = message['identity']
         if isinstance(message.get('group'), dict):
             self.group = message['group']
         if message.get('supervision') is not None:
@@ -2334,8 +2337,8 @@ class Launch:
             self.child.kill()
         self.child.wait()  # after SIGKILL its exit is certain: awaited with no bound of its own
         self.returncode = self.child.returncode
-        if self.query_endpoint is not None:
-            RQ.remove(self.query_endpoint)
+        if self.query_endpoint is not None and self.query_identity is not None:
+            RQ.remove(self.query_endpoint, self.query_identity)
         with contextlib.suppress(OSError, ValueError):
             if self.child.stdin is not None:
                 self.child.stdin.close()
@@ -2975,7 +2978,8 @@ class Receiver:
         if self.store_guard['state'] == 'off':
             return None
         try:
-            self.query_server = RQ.Server(self.config, contract['dispatch_id'], observe=self.emit)
+            self.query_server = RQ.Server(self.config, contract['dispatch_id'], observe=self.emit,
+                created=lambda identity: self.emit({'event': 'run_query_created', 'identity': identity}))
             self.query_server.start()
         except RQ.Refused:
             self._close_query()
