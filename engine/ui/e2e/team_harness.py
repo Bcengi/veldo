@@ -78,7 +78,7 @@ class TeamFactory(H.Factory):
         for who in WORKERS:
             path = self.base / 'keys' / who
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'e2e-' + who, '-f', str(path)],
-                           check=True, capture_output=True, timeout=10)
+                           check=True, capture_output=True, timeout=H.WAIT_HANG_SECONDS)
             self.keyfile[who] = path
             public = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
             self.admin('steward', 'enroll_principal', {'principal': who, 'principal_type': 'agent_run', 'roles': [],

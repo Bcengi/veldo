@@ -3,7 +3,7 @@ piece fits the mutation stage's floor (the four ac1/screens rows took 60 of suit
 
 Run: python3 scripts/selftest.py --suite 122_veldo_0131_factory_screens_wide
 
-Only shared ROOT and expect are consumed. As suite 120 does: the UI source (engine/ui) is copied into scratch with the
+Only shared ROOT, expect and WAITS (the support module) are consumed. As suite 120 does: the UI source (engine/ui) is copied into scratch with the
 production copies named in PRODUCTION below laid over it (the registered mutation driver substitutes each of them
 here), its locked dependencies are the checkout's engine/ui/node_modules (or `npm ci --prefer-offline` into the
 scratch copy when the checkout has none), and it is built with the package's own build script (vue-tsc, then vite).
@@ -13,6 +13,11 @@ team harness over VELDO-0145's real factory, as suite 120 describes): every scre
 loading, empty, error and populated states, with no page-wide overflow, no overlapping controls, the primary action
 visible, unclipped and uncovered, and axe on the real accessibility tree. A row is green only
 when its test ran and passed.
+
+VELDO-0358 (wave 1 integration): as suite 121, every child this suite starts (the install, the build, the browser
+run) is a heavy child: WAITS.run_heavy, with no bound on its total time, ended only after the process hang bound has
+passed with no output from it, and then reported as hung. The browser run writes a line at each test and step
+(VELDO_E2E_PROGRESS), so that bound counts from its last step. Suite 121's row wave1/no-sites reads this file.
 
 Needs node (the nvm toolchain), the npm cache or a checkout node_modules, and system Chrome; without them every
 row fails by name. Writes only temporary files.
@@ -27,9 +32,7 @@ def _v131_screens_wide():
     import re
     from pathlib import Path
     import shutil
-    import subprocess
     import tempfile
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -53,7 +56,7 @@ def _v131_screens_wide():
     BROWSER = ('ac1/screens-1280', 'ac1/screens-1440')
     ROWS = BROWSER
     rows = {name: [] for name in ROWS}
-    started = time.monotonic()
+    started = WAITS.stamp()
     UI = ROOT / 'engine' / 'ui'
     SKIP = {'node_modules', 'dist', 'test-results', 'playwright-report'}
 
@@ -65,7 +68,8 @@ def _v131_screens_wide():
             check(row, label, condition)
 
     def tail(text, n=12):
-        lines = [line.strip() for line in (text or '').splitlines() if line.strip()]
+        lines = [line.strip() for line in (text or '').splitlines()
+                 if line.strip() and not line.startswith('e2e progress: ')]
         return ' | '.join(line.encode('ascii', 'replace').decode() for line in lines[-n:])[:900]
 
     def environment():
@@ -79,13 +83,17 @@ def _v131_screens_wide():
             env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
         return env
 
-    def run(args, cwd, env=None, timeout=900):
+    def run(args, cwd, kind, env=None):
+        """One heavy child of `kind` (VELDO-0358): no bound on its total time. It is ended only after the process
+        hang bound has passed with no output from it, and that is said in what is returned."""
         try:
-            done = subprocess.run(args, cwd=str(cwd), env=dict(environment(), **(env or {})), capture_output=True,
-                                  text=True, timeout=timeout, stdin=subprocess.DEVNULL)
-            return done.returncode, (done.stdout or '') + (done.stderr or '')
-        except (OSError, subprocess.TimeoutExpired) as error:
+            done = WAITS.run_heavy(args, kind, cwd=str(cwd), env=dict(environment(), **(env or {})))
+        except OSError as error:
             return -1, '%s: %s' % (type(error).__name__, error)
+        out = (done.stdout or '') + (done.stderr or '')
+        if done.hung:
+            return -1, out + '\nHUNG: the %s wrote nothing for the process hang bound and was ended' % kind
+        return done.returncode, out
 
     def exercise(base):
         ui = base / 'engine' / 'ui'
@@ -108,12 +116,13 @@ def _v131_screens_wide():
         if modules.is_dir():
             os.symlink(modules, ui / 'node_modules')
         else:
-            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui)
+            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, 'package install')
             if code != 0:
                 all_rows('the locked UI dependencies are installed (npm ci) [%s]' % tail(out))
                 return
         dist = base / 'dist'
-        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui)
+        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui,
+                        'package install')  # the package's own build script, run by npm as its install is
         if code != 0 or not (dist / 'index.html').is_file():
             all_rows('the UI builds with its own build script (vue-tsc, then vite) [%s]' % tail(out))
             return
@@ -121,8 +130,8 @@ def _v131_screens_wide():
         e2e = base / 'e2e.json'
         # Only this suite's rows: the title of each test begins with its row name and a colon.
         code, out = run(['npx', 'playwright', 'test', 'e2e/factory.spec.ts', '--grep', 'ac1/screens-(1280|1440):'],
-                        ui, env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
-                                 'VELDO_E2E_REPORT': str(e2e)}, timeout=3000)
+                        ui, 'browser run', env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
+                                                'VELDO_E2E_REPORT': str(e2e), 'VELDO_E2E_PROGRESS': '1'})
         try:
             browser = json.loads(e2e.read_text())
         except (OSError, ValueError):
@@ -159,7 +168,7 @@ def _v131_screens_wide():
             print('  VELDO-0131 %s detail: no check ran' % name)
         failed = next((label for label, one in observed if not one), 'no check ran' if not observed else '')
         expect('VELDO-0131 ' + name + (': ' + failed if failed else ''), ok)
-    print('VELDO-0131 suite seconds: %.3f' % (time.monotonic() - started))
+    print('VELDO-0131 suite began %s, ended %s' % (started.iso(), WAITS.stamp().iso()))
 
 
 _v131_screens_wide()

@@ -1,15 +1,13 @@
 import type { Page } from '@playwright/test'
-import { expect, signIn, test, type Factory } from './fixtures'
+import { expect, signIn, test, unique, type Factory } from './fixtures'
 
 /**
  * VELDO-0145 AC3: each pending decision exactly as presented, answered inline through the API bound to the
  * presentation version shown, settling once with Telegram; each refusal named beside the action.
  */
 
-let serial = 0
 async function freshRequest(factory: Factory, owner = 'owner') {
-  serial += 1
-  const alias = `dx${Date.now() % 100000}${serial}`
+  const alias = `dx${unique()}`
   const { request } = await factory.control<{ request: string }>('/request/open', { alias, owner })
   return { alias, request }
 }
