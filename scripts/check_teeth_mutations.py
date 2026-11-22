@@ -18436,6 +18436,12 @@ def cases():
             "                           check=True, capture_output=True, timeout=H.WAIT_HANG_SECONDS)\n",
             "                           check=True, capture_output=True, timeout=10)  # defect: the bound restored\n",
             ['wave1/no-sites'], 'engine/ui/e2e')
+    # AC15, the root cause of loop/reset-timer-wake: a claim's liveness judged by the production window whatever
+    # the profile says, so a unit whose claim nobody renewed while it waited is refused at its reset.
+    lead358('timers358-claim-window-literal', '83_veldo_0154_factory_loop.py', 'claim.py',
+            "    return \"stale\" if (now - hb_epoch) > _timer('STALE_AFTER_SECONDS') else \"live\"",
+            "    return \"stale\" if (now - hb_epoch) > STALE_AFTER_SECONDS else \"live\"  # defect: the profile skips it",
+            ['loop/reset-timer-wake'], '.veldo')
     # ==== end of VELDO-0358 wave 1 integration ====
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads

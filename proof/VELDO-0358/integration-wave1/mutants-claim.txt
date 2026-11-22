@@ -1,0 +1,12 @@
+====================================================================================================
+CASE timers358-claim-window-literal targets ['loop/reset-timer-wake']
+baseline rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -297 +297 @@
+-    return "stale" if (now - hb_epoch) > _timer('STALE_AFTER_SECONDS') else "live"
++    return "stale" if (now - hb_epoch) > STALE_AFTER_SECONDS else "live"  # defect: the profile skips it
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/reset-timer-wake': [False]}
+done
