@@ -1,0 +1,18 @@
+"""The full unit leg: one dispatcher process over every suite, with the claims of opened files taken on a ledger
+descriptor (as the authority hands one), written afterwards as suite -> paths. Usage: <worktree> <out dir>"""
+import json, os, subprocess, sys
+from pathlib import Path
+root, out = Path(sys.argv[1]), Path(sys.argv[2])
+ledger = out / 'ledger.jsonl'
+fd = os.open(str(ledger), os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+hang = out / 'hang'; hang.mkdir(exist_ok=True)
+env = dict(os.environ, VELDO_OPENED_LEDGER_FD=str(fd), PYTHONDONTWRITEBYTECODE='1', VELDO_HANG_DIR=str(hang))
+with open(out / 'full-unit.out', 'w') as f:
+    code = subprocess.run([sys.executable, 'scripts/selftest.py'], cwd=str(root), stdout=f, stderr=subprocess.STDOUT,
+                          stdin=subprocess.DEVNULL, env=env, pass_fds=(fd,)).returncode
+record = {}
+for line in ledger.read_text().splitlines():
+    one = json.loads(line)
+    record.setdefault(one['suite'], set()).update(one['paths'])
+(out / 'opened_files.json').write_text(json.dumps({k: sorted(v) for k, v in sorted(record.items())}, indent=1))
+print('dispatcher exit status %s; record of %d suites' % (code, len(record)), flush=True)
