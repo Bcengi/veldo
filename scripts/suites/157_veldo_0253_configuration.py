@@ -23,13 +23,15 @@ def _v253_suite():
         'control_installation_commit.py': ROOT / ".veldo" / "control_installation_commit.py",
         'control_workflow.py': ROOT / ".veldo" / "control_workflow.py",
         'control_workflow_unit.py': ROOT / ".veldo" / "control_workflow_unit.py",
+        'control_project.py': ROOT / ".veldo" / "control_project.py",
     }
     rows = ('ac1/whole-commit', 'ac1/committed-only', 'ac1/schema', 'ac1/notification',
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
             'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents',
-            'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale', 'ac1/approval-validation')
+            'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale', 'ac1/approval-validation',
+            'ac4/installation-bindings')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -258,6 +260,38 @@ def _v253_suite():
                     except WF.Refused as error:
                         refused_writer = error.code == 'installation_managed'
                     check('ac3/no-store-writer', refused_writer and detached.history('example') == before)
+                    projects_module = load('v253_projects', mods / 'control_project.py')
+                    membership = load('v253_membership', mods / 'control_membership.py')
+                    coordinates = dict(domain_uuid='domain', repository_uuid='repository', store_uuid='store')
+                    projects = projects_module.Projects(S, membership, reader, coordinates, 'setup', sign,
+                                                        stop=lambda _: None)
+                    refused_binding = projects.apply({'command': dict(coordinates, operation=projects_module.BIND,
+                        project='example', principal='owner', command_id='legacy-binding', nonce='legacy-binding'),
+                        'signature': 'unsigned'})
+                    try:
+                        projects._bind(reader, {}, {}, {})
+                        refused_transition = False
+                    except projects_module.Refused as error:
+                        refused_transition = error.code == 'installation_managed'
+                    imported_loader = migration.installation_loader
+                    imported_repo = imported_loader.repo
+                    code = WU.shipped()
+                    code['budget']['steps'] += 1
+                    imported_files = dict(imported_repo.snapshot()['files'], **{
+                        'workflows/code.json': WF.canonical(code), 'workflows/code.layout.json': b'{}',
+                        'projects/example.yaml': WF.canonical({'workflows': {'default': {'workflow': 'code'}}})})
+                    binding_commit = imported_repo.commit(imported_files, imported_repo.head(), identity, 'Bind code')
+                    imported_repo.publish(binding_commit, imported_repo.head())
+                    imported_loader.decisions = decisions
+                    waiting_binding = imported_loader.reconcile()
+                    decisions.approve(decisions.requests[binding_commit])
+                    accepted_binding = imported_loader.reconcile()
+                    bound_pin, bound_code = WU.resolve(S, migration, 'domain', 'repository', {'name': 'example'})
+                    default_pin, default_code = WU.resolve(S, migration, 'domain', 'repository', {'name': 'other'})
+                    check('ac4/installation-bindings', refused_binding['reason'] == 'installation_managed'
+                          and refused_transition and waiting_binding['outcome'] == 'waiting'
+                          and accepted_binding['outcome'] == 'accepted' and bound_code == default_code == code
+                          and bound_pin == default_pin and bound_pin['version'] == 1)
                 finally:
                     reader.close()
             finally:
