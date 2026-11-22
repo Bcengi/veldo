@@ -1,0 +1,9 @@
+# The survivor and the red control of suite 86_veldo_0148 in the full stage at 9e3acdd1, each driven alone through its own worker (5342fa22).
+CASE receiver148-release-deadline-not-finite targets ['receiver/pre-release-budget']
+baseline rc 0 rows 52 failed [] targets {'receiver/pre-release-budget': [True]}
+noop rc 0 rows 52 failed ['VELDO-0148 receiver/pre-release-budget'] targets {'receiver/pre-release-budget': [False]}
+mutant rc 0 rows 52 failed ['VELDO-0148 receiver/pre-release-budget'] targets {'receiver/pre-release-budget': [False]}
+CASE reland148-landed-rebuilt targets ['reland/review-kept']
+baseline rc 0 rows 52 failed [] targets {'reland/review-kept': [True]}
+noop rc 0 rows 52 failed [] targets {'reland/review-kept': [True]}
+mutant rc 0 rows 52 failed ['VELDO-0148 reland/review-kept', 'VELDO-0148 receiver/normal-exit', 'VELDO-0148 receiver/fast-exit'] targets {'reland/review-kept': [False]}

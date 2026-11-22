@@ -1,0 +1,52 @@
+"""The cases the full stage at 9e3acdd1 did not judge, in groups: one stage of the gate's own driver
+(scripts/check_gate_mutations.py --case ...) per wave 1 suite, then the other suites in groups of about 400
+cases. A group that stops (a cleanup error stops a stage) costs only that group. Not run here: the 58 cases of
+suite 86_veldo_0127 (its controls are red until the live recapture) and loop154-orphan-not-stopped (hangs).
+Usage: <worktree> <out dir> <validated.json of the first stage>"""
+import importlib.util, json, os, subprocess, sys, time
+from pathlib import Path
+root, out, validated = Path(sys.argv[1]), Path(sys.argv[2]), set(json.loads(Path(sys.argv[3]).read_text()))
+s = importlib.util.spec_from_file_location('t', root / 'scripts/check_teeth_mutations.py'); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+cases = m.cases()
+skip_suites = {'86_veldo_0127_agent_configuration.py'}
+skip_cases = {'loop154-orphan-not-stopped'}
+rerun_suites = {'83_veldo_0154_factory_loop.py', '151_veldo_0313_space_run.py', '101_veldo_0208_landing_reuse.py'}
+wave1 = ['83_veldo_0154', '62_veldo_0039', '63_veldo_0040', '66_veldo_0042', '66_veldo_0047', '71_veldo_0138', '78_veldo_0060',
+         '85_veldo_0171', '106_veldo_0185', '151_veldo_0313', '157_veldo_0358', '158_veldo_0358', '160_veldo_0358',
+         '112_veldo_0215', '121_veldo_0131', '86_veldo_0148', '101_veldo_0208']
+pending = [c for c in cases if c['suite'] not in skip_suites and c['name'] not in skip_cases
+           and ('check_teeth_mutations.py:' + c['name'] not in validated or c['suite'] in rerun_suites)]
+groups, rest = [], []
+for prefix in wave1:
+    mine = [c['name'] for c in pending if c['suite'].startswith(prefix + '_')]
+    if mine:
+        groups.append((prefix, mine))
+taken = {n for _, names in groups for n in names}
+rest = [c for c in pending if c['name'] not in taken]
+rest.sort(key=lambda c: c['suite'])
+for i in range(0, len(rest), 400):
+    groups.append(('rest-%02d' % (i // 400), [c['name'] for c in rest[i:i + 400]]))
+print('registered in check_teeth_mutations.py: %d; pending here: %d in %d groups' % (len(cases), len(pending), len(groups)), flush=True)
+only = sys.argv[4:]
+for name, names in groups:
+    if only and name not in only:
+        continue
+    receipt = out / ('receipt-%s.json' % name)
+    argv = [sys.executable, '-I', '-S', 'scripts/check_gate_mutations.py', '--root', str(root), '--receipt', str(receipt)]
+    for n in names:
+        argv += ['--case', n]
+    began = time.time()
+    with open(out / ('stage-%s.txt' % name), 'w') as f:
+        code = subprocess.run(argv, cwd=str(root), stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                              env=dict(os.environ, VELDO_GATE_FORCE_FRESH='1')).returncode
+    line = {'group': name, 'cases': len(names), 'exit': code, 'seconds': round(time.time() - began)}
+    try:
+        r = json.loads(receipt.read_text())
+        line.update(status=r.get('status'), executed=r.get('executed'), rejected=r.get('rejected'), error=r.get('error'),
+                    invalid=[[(i.get('case') or {}).get('name') or str(i.get('detail'))[:120], str(i.get('detail')).split(':')[0]]
+                             for i in r.get('invalid_results') or []][:40],
+                    kill_by=sorted({k: sum(1 for x in r.get('results') or [] if x.get('kill_by') == k)
+                                    for k in {x.get('kill_by') for x in r.get('results') or []}}.items()))
+    except (OSError, ValueError) as error:
+        line.update(receipt='unreadable: %s' % error)
+    print(json.dumps(line), flush=True)
