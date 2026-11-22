@@ -48,8 +48,8 @@ These changes wait for the owner's decision (the schema's `widening` and `deleti
   tailnet name, a changed publisher identity, a raised inbound file cap;
 - space (what Veldo may remove): removals turned on, a protect entry dropped (a path, volume,
   container, image, network or compose project), an engine, scratch root, build root, plain
-  repository or client account added, a changed session pattern, time zone or process reader, a
-  pool dropped or its floor or needs lowered;
+  repository or client account added, a changed session pattern or process reader, a pool dropped
+  or its floor lowered;
 - projects: a new project; a changed, added or removed workflow binding, account, landing
   destination, remote, repository, trunk, render command or renumber hook; a new or changed deploy
   target; deleting a project file that declares bindings (its work falls back to the default);
@@ -68,7 +68,8 @@ tool from an allowed list, adding a never rule, removing a port, account, channe
 deploy target, lowering a limit, and deleting a connector, service, schedule, role, team, memory
 server or a project file with no bindings. In the space section: turning removals off, adding a
 protect entry, removing an engine, root, plain repository or client account, adding a pool or
-raising its floor or needs, and removing the section (space management off). Metadata such as
+raising its floor, changing the time zone or a pool's needs (nothing reads either at runtime, so
+neither lets Veldo remove more), and removing the section (space management off). Metadata such as
 labels and display names also applies directly.
 
 Every cross reference is checked: a project's account, workflow bindings and deploy target services,
