@@ -75,8 +75,9 @@ An existing file-based ingress must be migrated before restarting it.
 
 `developer-checks.txt` contains path-free excerpts with original-log hashes and
 remote run identifiers. Selected selftests intentionally return 2 even when every
-selected row passes; they cannot generate passed unit evidence. The latest effects/ticket selection passed 140 checks: 52 effect rows, all 62
-ticket rows and shared prerequisites. An earlier five-suite pc2 run passed 244
+selected row passes; they cannot generate passed unit evidence. The final ticket suite passed all 63 rows (89 including shared prerequisites).
+The effects/ticket selection passed 140 checks before the last two rows were added;
+the new executor observation row also passes in the registered mutation baseline. An earlier five-suite pc2 run passed 244
 checks covering landing identity, executor profile, installation and activation. Separate factory-setup
 and channel-service runs passed 17 and 13 suite rows respectively. Lint, template
 sync, the complete engine census and personal-setup checking passed; the latter
@@ -92,7 +93,7 @@ three (`pm/new-project-run`, `pm/graph-stage-own`, `format/fake-lines`) follow t
 PM runtime refusal `unavailable_service:runtime`; the identity and adoption suites
 pass every row. The re-land suite has 25 matching failures on both parent and
 change, all following missing unit-run observations; the effects suite now passes
-all 52 rows after repairing direct fixture custody and replay response metrics.
+all rows after repairing direct fixture custody and replay response metrics.
 An initial Mac attempt at suite 158 stopped
 at the authority store's Linux filesystem qualification; its result is excluded.
 
